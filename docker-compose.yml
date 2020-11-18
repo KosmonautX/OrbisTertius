@@ -1,0 +1,28 @@
+version: "3.8"
+services:
+  heimdallr:
+    build: ./HeimdallrNode
+    volumes:
+      - ./HeimdallrNode:/usr/src/heimdallr
+    ports:
+      - "5000:5000"
+    depends_on:
+      - dynamodb
+    links:
+      - "dynamodb:database"
+  mercury:
+    build: ./MercuryFlask/
+    volumes:
+      - ./MercuryFlask:/usr/src/mercury
+    ports:
+      - "3000:3000"
+    depends_on:
+      - dynamodb
+      - heimdallr
+    links:
+      - "dynamodb:database"
+  dynamodb:
+    image: amazon/dynamodb-local
+    ports:
+      - "8000:8000"
+    

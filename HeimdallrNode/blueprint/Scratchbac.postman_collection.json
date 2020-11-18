@@ -1,0 +1,274 @@
+{
+	"info": {
+		"_postman_id": "aa77adfc-e6b2-46d0-9cdc-77e2f3e09ad4",
+		"name": "Scratchbac",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Post ORB",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"orb_uuid\": 2,\n    \"time_created\": 1604135907,\n    \"postal_code\": 659921,\n    \"acceptor_uuid\" : [],\n    \"title\": \"free\",\n    \"payload\": {\n        \"msg\": \"hello\",\n        \"price\": \"foc\"\n    },\n    \"init_uuid\": \"U0001\",\n    \"dormancy\": 1604131952,\n    \"nature\": 4\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:5000/api/orb/post",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"orb",
+						"post"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"uuid\": \"U0001\",\n    \"postal_code\": 659924,\n    \"nature\" : [6,7],\n    \"friends\": [],\n    \"orb_uuid\": null\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:5000/api/user/create",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"user",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieve user",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:5000/api/user/get?uuid=U0001",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"user",
+						"get"
+					],
+					"query": [
+						{
+							"key": "uuid",
+							"value": "U0001"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieve orb",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:5000/api/orb/get?orb_uuid=1",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"orb",
+						"get"
+					],
+					"query": [
+						{
+							"key": "orb_uuid",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieve user by postal code",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:5000/api/user/getps?postal_code=659921",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"user",
+						"getps"
+					],
+					"query": [
+						{
+							"key": "postal_code",
+							"value": "659921"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieve orb by specific postal code",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:5000/api/orb/getLoc?postal_code=659921&nature=4",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"orb",
+						"getLoc"
+					],
+					"query": [
+						{
+							"key": "postal_code",
+							"value": "659921"
+						},
+						{
+							"key": "nature",
+							"value": "4"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieve orb by range postal code",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:5000/api/orb/getRange?lower_code=659919&upper_code=659925&nature=4",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"orb",
+						"getRange"
+					],
+					"query": [
+						{
+							"key": "lower_code",
+							"value": "659919"
+						},
+						{
+							"key": "upper_code",
+							"value": "659925"
+						},
+						{
+							"key": "nature",
+							"value": "4"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieve orb by recency",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:5000/api/orb/getRecent?time1=1&time2=999999999999&nature=4",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"orb",
+						"getRecent"
+					],
+					"query": [
+						{
+							"key": "time1",
+							"value": "1"
+						},
+						{
+							"key": "time2",
+							"value": "999999999999"
+						},
+						{
+							"key": "nature",
+							"value": "4"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieve orb by name",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:5000/api/orb/getName?title=titl&nature=4",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"orb",
+						"getName"
+					],
+					"query": [
+						{
+							"key": "title",
+							"value": "titl"
+						},
+						{
+							"key": "nature",
+							"value": "4"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}

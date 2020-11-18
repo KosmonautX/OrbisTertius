@@ -1,0 +1,29 @@
+{
+  "name": "my-space-login-server",
+  "version": "1.0.0",
+  "description": "Node server with jwt",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "node.js",
+    "express",
+    "jwt",
+    "authentication",
+    "mysql"
+  ],
+  "author": "Yang Aobo",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.783.0",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "kafka-node": "^5.0.0",
+    "mysql2": "^2.2.5",
+    "sequelize": "^6.3.5"
+  }
+}
