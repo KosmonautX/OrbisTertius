@@ -73,7 +73,14 @@ const orb_template = require('./blueprint/orb_net_table.json')
 
 dynamodb.createTable(user_template, function(err, data) {
     if (err) {
-        console.log("ERR: ", err);
+        if (err.code === "ResourceInUseException" && err.message === "Cannot create preexisting table") {
+            console.log("message ====>" + err.message);
+            debugger;
+        } else {
+
+            console.log("ERR: ", err);
+
+        }
     } else{
         console.log("USER TABLE CREATED: ", data);
     }
@@ -81,7 +88,14 @@ dynamodb.createTable(user_template, function(err, data) {
 
 dynamodb.createTable(orb_template, function(err, data) {
     if (err) {
-        console.log("ERR: ", err);
+        if (err.code === "ResourceInUseException" && err.message === "Cannot create preexisting table") {
+            console.log("message ====>" + err.message);
+        } else {
+
+            console.log("ERR: ", err);
+
+        }
+
     } else{
         console.log("ORB TABLE CREATED: ", data);
     }

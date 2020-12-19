@@ -1,3 +1,3 @@
 module.exports = {
-    secret: 'sample-key',  // key
+    secret: 'TENET',  // key
 };

@@ -19,11 +19,13 @@ exports.create = (req, res) => {
             dormancy: req.body.dormancy,
             nature: req.body.nature
         },
+
     };
     docClient.put(params, function(err, data) {
         if (err) {
             res.status(400).send({ Error: err.message });
         } else {
+            debugger;
             res.json({"Big 200 PutItem succeeded:": params.Item.orb_uuid});
         }
       });
