@@ -4,6 +4,7 @@ services:
     build: ./HeimdallrNode/
     volumes:
       - ./HeimdallrNode:/usr/src/heimdallr
+      - ~/.aws/:/root/.aws:ro
     ports:
       - "5000:5000"
       - "9229:9229"

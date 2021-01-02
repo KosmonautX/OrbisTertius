@@ -1,0 +1,94 @@
+{
+        "AttributeDefinitions": [
+            {
+                "AttributeName": "PK",
+                "AttributeType": "S"
+            },
+            {
+                "AttributeName": "SK",
+                "AttributeType": "S"
+            },
+            {
+                "AttributeName": "inverse",
+                "AttributeType": "S"
+            }
+        ],
+        "TableName": "ORB_NET",
+        "KeySchema": [
+            {
+                "AttributeName": "PK",
+                "KeyType": "HASH"
+            },
+            {
+                "AttributeName": "SK",
+                "KeyType": "RANGE"
+            }
+        ],
+        "ProvisionedThroughput": {
+            "ReadCapacityUnits": 5,
+            "WriteCapacityUnits": 5
+        },
+        "GlobalSecondaryIndexes": [
+            {
+                "IndexName": "Constellation",
+                "KeySchema": [
+                    {
+                        "AttributeName": "PK",
+                        "KeyType": "HASH"
+                    },
+                    {
+                        "AttributeName": "inverse",
+                        "KeyType": "RANGE"
+                    }
+                ],
+                "Projection": {
+                    "ProjectionType": "ALL"
+                },
+                "ProvisionedThroughput": {
+                    "ReadCapacityUnits": 5,
+                    "WriteCapacityUnits": 5
+                }
+            },
+            {
+                "IndexName": "Inverted",
+                "KeySchema": [
+                    {
+                        "AttributeName": "SK",
+                        "KeyType": "HASH"
+                    },
+                    {
+                        "AttributeName": "PK",
+                        "KeyType": "RANGE"
+                    }
+                ],
+                "Projection": {
+                    "ProjectionType": "ALL"
+                },
+                "ProvisionedThroughput": {
+                    "ReadCapacityUnits": 5,
+                    "WriteCapacityUnits": 5
+                }
+            },
+            {
+                "IndexName": "Chronicle",
+                "KeySchema": [
+                    {
+                        "AttributeName": "SK",
+                        "KeyType": "HASH"
+                    },
+                    {
+                        "AttributeName": "inverse",
+                        "KeyType": "RANGE"
+                    }
+                ],
+                "Projection": {
+                    "ProjectionType": "ALL"
+                },
+                "ProvisionedThroughput": {
+                    "ReadCapacityUnits": 5,
+                    "WriteCapacityUnits": 5
+                }
+            }
+        ]
+    }
+

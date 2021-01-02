@@ -35,7 +35,7 @@ app.get('/', (req, res) => {
 });
 
 require(`./route_paths/orb_net`)(app);
-require(`./route_paths/user`)(app);
+// require(`./route_paths/user`)(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 5000;
@@ -44,9 +44,9 @@ app.listen(PORT, () => {
 });
 
 
-// const dynamodb = new AWS.DynamoDB({endpoint: new AWS.Endpoint("http://localhost:8000")});
+const dynamodb = new AWS.DynamoDB({endpoint: new AWS.Endpoint("http://dynamodb:8000")});
 // const user_template = require('./user_table.json');
-// const orb_template = require('./orb_net_table.json')
+const orb_template = require('./orbisezimport.json')
 
 // dynamodb.createTable(user_template, function(err, data) {
 //     if (err) {
@@ -56,13 +56,13 @@ app.listen(PORT, () => {
 //     }
 // });
 
-// dynamodb.createTable(orb_template, function(err, data) {
-//     if (err) {
-//         console.log("ERR: ", err);
-//     } else{
-//         console.log("ORB TABLE CREATED: ", data);
-//     }
-// });
+dynamodb.createTable(orb_template, function(err, data) {
+    if (err) {
+        console.log("ERR: ", err);
+    } else{
+        console.log("ORB TABLE CREATED: ", data);
+    }
+});
 
 // catch 404 and forward to error handler
 let error404Map = new Map();

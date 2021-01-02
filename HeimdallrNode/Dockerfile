@@ -11,6 +11,7 @@ ENV AWS_SECRET_ACCESS_KEY=scratchbac1
 ENV AWS_ACCESS_KEY_ID=scratchbac
 ENV AWS_DEFAULT_REGION=ap-southeast-1
 
+
 # Copy the file from your host to your current location.
 COPY package*.json ./
 
