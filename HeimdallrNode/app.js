@@ -86,13 +86,10 @@ app.use(function (err, req, res, next) {
 	// render the error page
 	let status = err.status || 500;
 	res.status(status);
-	let response;
-	if (err.sql) {
-		response = rb.buildError(err.message, status, { sql: err.sql });
-	} else {
-		response = rb.buildError(err.message, status, err);
-	}
-	res.json(response);
+	res.json({
+		"status": status,
+		"message": err.message
+	});
 });
 
 
