@@ -53,7 +53,8 @@ router.post(`/post_orb`, async function (req, res, next) {
                                 user_id: body.user_id,
                                 username: body.username,
                                 created_dt: created_dt,
-                                expires_in: body.expires_in
+                                expires_in: body.expires_in,
+                                tags: body.tags
                             })
                         }
                     }
@@ -265,6 +266,7 @@ router.get(`/get`, async function (req, res, next) {
                 dao.user_id = JSON.parse(data.Item.payload).user_id;
                 dao.username = JSON.parse(data.Item.payload).username;
                 dao.photo = JSON.parse(data.Item.payload).photo;
+                dao.tags = JSON.parse(data.Item.payload).tags;
                 dao.expiry_dt = data.Item.time;
                 dao.created_dt = JSON.parse(data.Item.payload).created_dt;
                 dao.nature = data.Item.numeric;
