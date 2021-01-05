@@ -6,13 +6,13 @@
 	},
 	"item": [
 		{
-			"name": "Post ORB",
+			"name": "0. Post ORB",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"orb_uuid\": 2,\n    \"time_created\": 1604135907,\n    \"postal_code\": 659921,\n    \"acceptor_uuid\" : [],\n    \"title\": \"free\",\n    \"payload\": {\n        \"msg\": \"hello\",\n        \"price\": \"foc\"\n    },\n    \"init_uuid\": \"U0001\",\n    \"dormancy\": 1604131952,\n    \"nature\": 4\n}",
+					"raw": "{   \n    \"user_id\": 1234,\n    \"username\": \"Passerby A\",\n    \"title\": \"gifting season\",\n    \"info\": \"nil\",\n    \"where\": \"my house\",\n    \"When\": \"now\",\n    \"tip\": \"foc\",\n    \"tags\": [\"free\", \"christmas\"],\n    \"photo\": \"www.pic.com\",\n    \"nature\": 10021000000, \n    \"postal_code\": 659921,\n    \"expires_in\": \"1 month\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -20,7 +20,7 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:5000/api/orb/post",
+					"raw": "localhost:5000/api/orb/post_orb",
 					"host": [
 						"localhost"
 					],
@@ -28,20 +28,21 @@
 					"path": [
 						"api",
 						"orb",
-						"post"
+						"post_orb"
 					]
-				}
+				},
+				"description": "expires_in: \"1 day\" | \"3 day\" | \"1 week\" | \"1 month\" </br>\npostal code has to be correct! </br>\nuser_id = telegram ID </br>\nnature: 100 OFFER, 200 REQUEST, 300 BROADCAST"
 			},
 			"response": []
 		},
 		{
-			"name": "Create user",
+			"name": "0. Post ORB w/ latlon",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"uuid\": \"U0001\",\n    \"postal_code\": 659924,\n    \"nature\" : [6,7],\n    \"friends\": [],\n    \"orb_uuid\": null\n}",
+					"raw": "{   \n    \"user_id\": 1234,\n    \"title\": \"gifting season\",\n    \"info\": \"nil\",\n    \"where\": \"my house\",\n    \"When\": \"now\",\n    \"tip\": \"foc\",\n    \"nature\": 10021000000, \n    \"expires_in\": \"1 month\",\n    \"latlon\": {\n        \"LATITUDE\": 1.351660296,\n        \"LONGITUDE\": 103.75600190000002\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -49,40 +50,112 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:5000/api/user/create",
+					"raw": "localhost:5000/api/orb/post_orb",
 					"host": [
 						"localhost"
 					],
 					"port": "5000",
 					"path": [
 						"api",
-						"user",
-						"create"
+						"orb",
+						"post_orb"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "Retrieve user",
+			"name": "1. Register user",
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": 1235,\n    \"bio\": \"Hello\",\n    \"profile_pic\": \"www.pic.com\",\n    \"username\": \"username\",\n    \"verified\": 1,\n    \"postal_code\": 659921\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
-					"raw": "localhost:5000/api/user/get?uuid=U0001",
+					"raw": "localhost:5000/api/orb/post_user",
 					"host": [
 						"localhost"
 					],
 					"port": "5000",
 					"path": [
 						"api",
-						"user",
-						"get"
+						"orb",
+						"post_user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2. Interact with ORB",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": 1235,\n    \"orb_uuid\": \"9aa27d62-259e-4cd7-981d-0e986f40f666\",\n    \"keyword\": \"ACCEPT\",\n    \"postal_code\": 659921\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:5000/api/orb/interact",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"orb",
+						"interact"
+					]
+				},
+				"description": "\"keyword\": ACCEPT | BOOKMARK </br>\nallows for latlon instead of postal code </br>\n\"comment\" : \"any comments\""
+			},
+			"response": []
+		},
+		{
+			"name": "3. Complete ORB",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:5000/api/orb/complete_orb?orb_uuid=2094f8af-11ac-4d19-8eca-4f2e0a76638a&user_id=1234",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"orb",
+						"complete_orb"
 					],
 					"query": [
 						{
-							"key": "uuid",
-							"value": "U0001"
+							"key": "orb_uuid",
+							"value": "2094f8af-11ac-4d19-8eca-4f2e0a76638a"
+						},
+						{
+							"key": "user_id",
+							"value": "1234"
 						}
 					]
 				}
@@ -90,12 +163,12 @@
 			"response": []
 		},
 		{
-			"name": "Retrieve orb",
+			"name": "1. Retrieve orb",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:5000/api/orb/get?orb_uuid=1",
+					"raw": "localhost:5000/api/orb/get?orb_uuid=60c4ac46-5fff-4839-8c89-db0859cdabb7",
 					"host": [
 						"localhost"
 					],
@@ -108,7 +181,7 @@
 					"query": [
 						{
 							"key": "orb_uuid",
-							"value": "1"
+							"value": "60c4ac46-5fff-4839-8c89-db0859cdabb7"
 						}
 					]
 				}
@@ -116,20 +189,20 @@
 			"response": []
 		},
 		{
-			"name": "Retrieve user by postal code",
+			"name": "2. Get all orbs not expired yet",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:5000/api/user/getps?postal_code=659921",
+					"raw": "localhost:5000/api/orb/orbs_in_loc_fresh_batch?postal_code=659921",
 					"host": [
 						"localhost"
 					],
 					"port": "5000",
 					"path": [
 						"api",
-						"user",
-						"getps"
+						"orb",
+						"orbs_in_loc_fresh_batch"
 					],
 					"query": [
 						{
@@ -142,12 +215,12 @@
 			"response": []
 		},
 		{
-			"name": "Retrieve orb by specific postal code",
+			"name": "3. Get ORB profile",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:5000/api/orb/getLoc?postal_code=659921&nature=4",
+					"raw": "localhost:5000/api/orb/get_orb_profile?user_id=1234&keyword=INIT",
 					"host": [
 						"localhost"
 					],
@@ -155,16 +228,16 @@
 					"path": [
 						"api",
 						"orb",
-						"getLoc"
+						"get_orb_profile"
 					],
 					"query": [
 						{
-							"key": "postal_code",
-							"value": "659921"
+							"key": "user_id",
+							"value": "1234"
 						},
 						{
-							"key": "nature",
-							"value": "4"
+							"key": "keyword",
+							"value": "INIT"
 						}
 					]
 				}
@@ -172,12 +245,12 @@
 			"response": []
 		},
 		{
-			"name": "Retrieve orb by range postal code",
+			"name": "4. Retrieve user",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:5000/api/orb/getRange?lower_code=659919&upper_code=659925&nature=4",
+					"raw": "localhost:5000/api/orb/get_user?user_id=1234",
 					"host": [
 						"localhost"
 					],
@@ -185,20 +258,12 @@
 					"path": [
 						"api",
 						"orb",
-						"getRange"
+						"get_user"
 					],
 					"query": [
 						{
-							"key": "lower_code",
-							"value": "659919"
-						},
-						{
-							"key": "upper_code",
-							"value": "659925"
-						},
-						{
-							"key": "nature",
-							"value": "4"
+							"key": "user_id",
+							"value": "1234"
 						}
 					]
 				}
@@ -206,12 +271,12 @@
 			"response": []
 		},
 		{
-			"name": "Retrieve orb by recency",
+			"name": "Get comments for particular ORB",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:5000/api/orb/getRecent?time1=1&time2=999999999999&nature=4",
+					"raw": "localhost:5000/api/orb/comment?orb_uuid=1",
 					"host": [
 						"localhost"
 					],
@@ -219,20 +284,17 @@
 					"path": [
 						"api",
 						"orb",
-						"getRecent"
+						"comment"
 					],
 					"query": [
 						{
-							"key": "time1",
+							"key": "orb_uuid",
+							"value": "ORB%231",
+							"disabled": true
+						},
+						{
+							"key": "orb_uuid",
 							"value": "1"
-						},
-						{
-							"key": "time2",
-							"value": "999999999999"
-						},
-						{
-							"key": "nature",
-							"value": "4"
 						}
 					]
 				}
@@ -240,12 +302,12 @@
 			"response": []
 		},
 		{
-			"name": "Retrieve orb by name",
+			"name": "Query via PK (DEV)",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:5000/api/orb/getName?title=titl&nature=4",
+					"raw": "localhost:5000/api/orb/query?pk=ORB%231",
 					"host": [
 						"localhost"
 					],
@@ -253,22 +315,78 @@
 					"path": [
 						"api",
 						"orb",
-						"getName"
+						"query"
 					],
 					"query": [
 						{
-							"key": "title",
-							"value": "titl"
+							"key": "orb_uuid",
+							"value": "ORB%231",
+							"disabled": true
 						},
 						{
-							"key": "nature",
-							"value": "4"
+							"key": "pk",
+							"value": "ORB%231"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Scan ALL (DEV)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:5000/api/orb/scan_all?key=ORB",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"orb",
+						"scan_all"
+					],
+					"query": [
+						{
+							"key": "key",
+							"value": "ORB"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Scan all orbs after certain time (DEV)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:5000/api/orb/all_orbs?date=2020-12-24&time=00:00:00",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"orb",
+						"all_orbs"
+					],
+					"query": [
+						{
+							"key": "date",
+							"value": "2020-12-24"
+						},
+						{
+							"key": "time",
+							"value": "00:00:00"
 						}
 					]
 				}
 			},
 			"response": []
 		}
-	],
-	"protocolProfileBehavior": {}
+	]
 }
