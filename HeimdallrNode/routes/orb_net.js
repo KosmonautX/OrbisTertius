@@ -11,7 +11,9 @@ AWS.config.update({
 const docClient = new AWS.DynamoDB.DocumentClient();
 const geohash = require('ngeohash');
 const fs = require('fs');
-const rawdata = fs.readFileSync('./resources/onemap3.json', 'utf-8');
+const path = require('path');
+// const rawdata = fs.readFileSync('~/HeimdallrNode/resources/onemap3.json', 'utf-8');
+const rawdata = fs.readFileSync(path.resolve(__dirname, '../resources/onemap3.json'), 'utf-8');
 const onemap = JSON.parse(rawdata);
 
 /**
@@ -62,20 +64,24 @@ router.post(`/post_orb`, async function (req, res, next) {
                 {
                     PutRequest: {
                         Item: {
-                            PK: "LOC#" + geohashing,
-                            SK: expiry_dt.toString() + "#ORB#" + orb_uuid,
-                            inverse: body.nature.toString(),
-                            geohash : geohashing
-                        }
-                    }
-                },
-                {
-                    PutRequest: {
-                        Item: {
                             PK: "ORB#" + orb_uuid,
                             SK: "USER#" + body.user_id,
                             inverse: "600#INIT",
-                            time : created_dt
+                            time: created_dt,
+                            geohash: geohashing,
+                            payload: JSON.stringify({
+                                title: body.title,
+                                info: body.info,
+                                where: body.where,
+                                when: body.when,
+                                tip: body.tip,
+                                photo: body.photo,
+                                user_id: body.user_id,
+                                username: body.username,
+                                created_dt: created_dt,
+                                expires_in: body.expires_in,
+                                tags: body.tags
+                            })
                         }
                     }
                 }
@@ -86,7 +92,7 @@ router.post(`/post_orb`, async function (req, res, next) {
         if (err) {
             res.status(400).send({ Error: err.message });
         } else {
-            res.json({
+            res.status(201).json({
                 "PutItem succeeded:": {
                     "ORB UUID": orb_uuid,
                     "expiry": expiry_dt
@@ -115,7 +121,10 @@ function keyword_to_code(keyword) {
     let code = "9000#ERROR"
     if (keyword.toUpperCase() == "INIT") code = "600#INIT";
     else if (keyword.toUpperCase() == "ACCEPT") code = "500#ACCEPT";
-    else if (keyword.toUpperCase() == "BOOKMARK") code = "400#BOOKMARK"
+    else if (keyword.toUpperCase() == "BOOKMARK") code = "400#BOOKMARK";
+    else if (keyword.toUpperCase() == "DELETE") code = "300#DELETE";
+    else if (keyword.toUpperCase() == "HIDE") code = "200#HIDE";
+    else if (keyword.toUpperCase() == "REPORT") code = "100#REPORT";
     return code;
 }
 
@@ -137,34 +146,61 @@ router.post(`/post_user`, async function (req, res, next) {
             geohashing = postal_to_geo(body.postal_code);
         }
         let params = {
-            TableName: ddb_config.tableNames.orb_table,        
-            Item: {
-                PK: "USER#" + body.user_id, 
-                SK: "USER#" + body.user_id,
-                payload: JSON.stringify({
-                    bio: body.bio,
-                    profile_pic: body.profile_pic,
-                    username: body.username,
-                    verified: body.verified,
-
-                }),
-                numeric: body.postal_code,
-                geohash: geohashing
-            }
-        };
-        docClient.put(params, function(err, data) {
-            if (err) {
-                res.status(400).send({ Error: err.message });
-            } else {
-                res.json({
-                    "User Registered:": {
-                        "USER ID": body.user_id
+            "TransactItems": [
+                {
+                    Put: {
+                        TableName: ddb_config.tableNames.orb_table,
+                        ConditionExpression: "attribute_not_exists(PK)",
+                        Item: {
+                            PK: "USER#" + body.user_id, 
+                            SK: "USER#" + body.user_id,
+                            payload: JSON.stringify({
+                                bio: body.bio,
+                                profile_pic: body.profile_pic,
+                                username: body.username,
+                                verified: body.verified,
+                                country_code: body.country_code,
+                                hp_number: body.hp_number,
+                                gender: body.gender,
+                                birthday: body.birthday, //DD-MM-YYYY
+                            }),
+                            alphanumeric: body.username,
+                            numeric: body.postal_code,
+                            geohash: geohashing
+                        }
                     }
+                },
+                {
+                    Put: {
+                        TableName: ddb_config.tableNames.orb_table,
+                        ConditionExpression: "attribute_not_exists(PK)",
+                        Item: {
+                            PK: "phone#" + body.country_code + body.hp_number,
+                            SK: "phone#" + body.country_code + body.hp_number
+                        }
+                    }
+                }
+            ] 
+        };
+        docClient.transactWrite(params, function(err, data) {
+            if (err) {
+                let err_msg = [];
+                let result = err.message.slice(79);
+                result = result.slice(0,-1);
+                let result_arr = result.split(",");
+                if (result_arr[0].trim() != "None" ) err_msg.push("user_id");
+                if (result_arr[1].trim() != "None" ) err_msg.push("hp_number");
+                res.status(409).json({
+                    "Duplicate Entries:": err_msg
+                });
+            } else {
+                res.status(201).json({
+                    "User Registered:": body
                 });
             }
             });
     } catch (err) {
-        res.json(err.message);
+        res.status(400).json(err.message);
     }
 })
 
@@ -196,7 +232,7 @@ router.post(`/interact`, async function (req, res, next) {
             if (err) {
                 res.status(400).send({ Error: err.message });
             } else {
-                res.json({
+                res.status(200).json({
                     "Interaction:": {
                         "Type": body.keyword,
                         "ORB UUID": body.orb_uuid,
@@ -206,346 +242,180 @@ router.post(`/interact`, async function (req, res, next) {
             }
           });
     } catch (err) {
-        res.json(err.message);
+        res.status(400).json(err.message);
     }
-});
-
-/**
- * API 0.3
- * Update ORB status
- */
-router.put(`/complete_orb`, async function (req, res, next) {
-    let params = {
-        TableName: ddb_config.tableNames.orb_table,        
-        Key: {
-            PK: "ORB#" + req.query.orb_uuid,
-            SK: "USER#" + req.query.user_id
-        },
-        UpdateExpression: "set inverse = :status",
-        ExpressionAttributeValues: {
-            ":status": "800#FULFILLED"
-        }
-    };
-    docClient.update(params, function(err, data) {
-        if (err) {
-            res.status(400).send({ Error: err.message });
-        } else {
-            res.json({
-                "ORB updated as FULFILLED:": {
-                    "ORB UUID": req.query.orb_uuid,
-                    "USER ID": req.query.user_id
-                }
-            });
-        }
-    });
 });
 
 /**
  * API 1.1
- * Get specific orb (all info) by ORB:uuid
+ * Update ORB status
  */
-router.get(`/get`, async function (req, res, next) {
-    let params = {
-        TableName: ddb_config.tableNames.orb_table,        
-        Key: {
-            PK: "ORB#" + req.query.orb_uuid,
-            SK: "ORB#" + req.query.orb_uuid
-        }
-    };
-    docClient.get(params, function(err, data) {
-        if (err) {
-            res.status(400).send({ Error: err.message });
-        } else {
-            if (data.Item){
-                let dao = {};
-                dao.title = JSON.parse(data.Item.payload).title;
-                dao.info = JSON.parse(data.Item.payload).info;
-                dao.where = JSON.parse(data.Item.payload).where;
-                dao.when = JSON.parse(data.Item.payload).when;
-                dao.tip = JSON.parse(data.Item.payload).tip;
-                dao.user_id = JSON.parse(data.Item.payload).user_id;
-                dao.username = JSON.parse(data.Item.payload).username;
-                dao.photo = JSON.parse(data.Item.payload).photo;
-                dao.tags = JSON.parse(data.Item.payload).tags;
-                dao.expiry_dt = data.Item.time;
-                dao.created_dt = JSON.parse(data.Item.payload).created_dt;
-                dao.nature = data.Item.numeric;
-                dao.uuid = data.Item.PK.slice(4);
-                dao.geohash = data.Item.geohash;
-                res.json(dao);
-            } else {
-                res.json("ORB not found")
+router.put(`/update_user`, async function (req, res, next) {
+    try {
+        let body = { ...req.body };
+        let params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "USER#" + body.user_id, 
+                SK: "USER#" + body.user_id,
+            },
+            UpdateExpression: "set payload = :payload",
+            ConditionExpression:":username",
+            ExpressionAttributeValues: {
+                ":payload": JSON.stringify({
+                    bio: body.bio,
+                    profile_pic: body.profile_pic,
+                    username: body.username,
+                    verified: body.verified,
+                    country_code: body.country_code,
+                    hp_number: body.hp_number,
+                    gender: body.gender,
+                    birthday: body.birthday,
+                }),
             }
-        }
-    });
-});
-
-/**
- * API 1.4
- * Get specific user (all info) 
- */
-router.get(`/get_user`, async function (req, res, next) {
-    let params = {
-        TableName: ddb_config.tableNames.orb_table,        
-        Key: {
-            PK: "USER#" + req.query.user_id,
-            SK: "USER#" + req.query.user_id
-        }
-    };
-    docClient.get(params, function(err, data) {
-        if (err) {
-            res.status(400).send({ Error: err.message });
-        } else {
-            if (data.Item){
-                let dao = {};
-                dao.user_id = data.Item.PK.slice(5);
-                dao.username = JSON.parse(data.Item.payload).username;
-                dao.bio = JSON.parse(data.Item.payload).bio;
-                dao.profile_pic = JSON.parse(data.Item.payload).profile_pic;
-                dao.verified = JSON.parse(data.Item.payload).verified;
-                dao.postal_code = data.Item.numeric;
-                dao.geohash = data.Item.geohash;
-                res.json(dao);
+        };
+        docClient.update(params, function(err, data) {
+            if (err) {
+                res.status(400).send({ Error: err.message });
             } else {
-                res.json("User not found")
+                res.json({
+                    "User updated:": body
+                });
             }
-        }
-    });
+        });
+    } catch (err) {
+        res.json(err.message);
+    }
+});
+
+router.put(`/update_username`, async function (req, res, next) {
+    try {
+        let body = { ...req.body };
+        let params = {
+            "TransacItems": [
+                {  
+                    Put: {
+                        TableName: ddb_config.tableNames.orb_table,   
+                        ConditionExpression: "attribute_not_exists(PK)",     
+                        Item: {
+                            PK: "username#" + body.username, 
+                            SK: "username#" + body.username,
+                        }
+                }}
+            ]
+        };
+        docClient.transactWrite(params, function(err, data) {
+            if (err) {
+                res.status(400).send({ Error: err.message });
+            } else {
+                res.json({data});
+            }
+        });
+    } catch (err) {
+        res.json(err.message);
+    }
 });
 
 /**
- * API DEV
- * Query via PK to retrieve everything related to primary key
+ * API 1.1
+ * Update user location
+ * ONLY supports postal code for now
  */
-// // Get orbs posted by user with U:uuid
-router.get(`/query`, async function (req, res, next) {
-    let params = {
-        TableName: ddb_config.tableNames.orb_table,    
-        KeyConditionExpression: "PK = :pk",
-        ExpressionAttributeValues: {
-            ":pk": req.query.pk,
-        }
-    };
-    docClient.query(params, function(err, data) {
-        if (err) {
-            res.status(400).send({ Error: err.message });
-        } else {
-            // res.json(data);
-            let dao = [];
-            data.Items.forEach(function(item) {
-                dao.push(item)
-            })
-            res.json(dao)
-        }
-    });
-});
-
-/**
- * API UNRELEASED
- * Query to get comments for particular ORB
- */
-// // Get orbs posted by user with U:uuid
-router.get(`/comment`, async function (req, res, next) {
-    let params = {
-        TableName: ddb_config.tableNames.orb_table,    
-        KeyConditionExpression: "PK = :pk and begins_with(SK, :comment)",
-        ExpressionAttributeValues: {
-            ":pk": "ORB#" + req.query.orb_uuid,
-            ":comment": "COMMENT"
-        }
-    };
-    docClient.query(params, function(err, data) {
-        if (err) {
-            res.status(400).send({ Error: err.message });
-        } else {
-            let dao = [];
-            data.Items.forEach(function(item) {
-                dao.push(item)
-            })
-            res.json(dao)
-        }
-    });
-});
-
-/**
- * API DEV
- * Scan for all pk = ORB
- */
-router.get(`/scan_all`, async function (req, res, next) {
-    let params = {
-        TableName: ddb_config.tableNames.orb_table,    
-        FilterExpression: "begins_with(PK, :orb)",
-        ExpressionAttributeValues: {
-            ":orb": req.query.key
-        }
-    };
-    docClient.scan(params, function(err, data) {
-        if (err) {
-            res.status(400).send({ Error: err.message });
-        } else {
-            // res.json(data);
-            let dao = [];
-            data.Items.forEach(function(item) {
-                dao.push(item)
-            })
-            res.json(dao)
-        }
-    });
-});
-
-/**
- * API DEV
- * Scan for all ORBs after certain time
- */
-router.get(`/all_orbs`, async function (req, res, next) {
-    let dt = req.query.date + " " + req.query.time
-    let params = {
-        TableName: ddb_config.tableNames.orb_table,    
-        FilterExpression: "begins_with(PK, :orb) and SK > :current_time and begins_with(SK,:orb)",
-        ExpressionAttributeValues: {
-            ":orb":"ORB#",
-            ":current_time": "ORB#" + moment(dt).unix()
-        }
-    };
-    docClient.scan(params, function(err, data) {
-        if (err) {
-            res.status(400).send({ Error: err.message });
-        } else {
-            // res.json(data);
-            let dao = [];
-            data.Items.forEach(function(item) {
-                dao.push(item)
-            })
-            res.json(dao)
-        }
-    });
-});
-
-/**
- * API DEV
- * Scan for all ORBs not expired yet
- */
-router.get(`/current_orbs`, async function (req, res, next) {
-    let params = {
-        TableName: ddb_config.tableNames.orb_table,    
-        FilterExpression: "begins_with(PK, :orb) and SK > :current_time and begins_with(SK,:orb)",
-        ExpressionAttributeValues: {
-            ":orb":"ORB#",
-            ":current_time": "ORB#" + moment().unix()
-        }
-    };
-    docClient.scan(params, function(err, data) {
-        if (err) {
-            res.status(400).send({ Error: err.message });
-        } else {
-            let dao = [];
-            data.Items.forEach(function(item) {
-                dao.push(item)
-            })
-            res.json(dao)
-        }
-    });
-});
-
-
-/**
- * API 1.3
- * Multiple functions: 
- *      1. Get orbs posted by a user
- *      2. Get orbs accepted by a user
- *      3. Get orbs bookmarked by a user 
- */
-router.get(`/get_orb_profile`, async function (req, res, next) {
-    let params = {
-        TableName: ddb_config.tableNames.orb_table,
-        IndexName: "Chronicle",
-        KeyConditionExpression: "SK = :user and inverse = :sort",
-        ExpressionAttributeValues: {
-            ":user": "USER#" + req.query.user_id,
-            ":sort": keyword_to_code(req.query.keyword)
-        }
-    };
-    docClient.query(params, function(err, data) {
-        if (err) {
-            res.status(400).send({ Error: err.message });
-        } else {
-            let dao = [];
-            data.Items.forEach(function(item) {
-                dao.push(item)
-            })
-            res.json(dao)
-        }
-    });
+router.put(`/update_user_location`, async function (req, res, next) {
+    try {
+        let body = { ...req.body };
+        let geohashing = postal_to_geo(body.postal_code);
+        let params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "USER#" + body.user_id, 
+                SK: "USER#" + body.user_id,
+            },
+            UpdateExpression: "set geohash = :geohash, numeric = :ps",
+            ExpressionAttributeValues: {
+                ":geohash": geohashing,
+                ":ps": body.postal_code
+            }
+        };
+        docClient.update(params, function(err, data) {
+            if (err) {
+                res.status(400).send({ Error: err.message });
+            } else {
+                res.status(201).json({
+                    "User updated:": body.postal_code
+                });
+            }
+        });
+    } catch (err) {
+        res.status(400).json(err.message);
+    }
 });
 
 /**
  * API 1.2
- * QUERY for all fresh ORBs in a geohash
+ * Update ORB status
+ * unable catch an orb that has already been fulfilled
  */
-router.get(`/orbs_in_loc_fresh`, async function (req, res, next) {
-    let postal = req.query.postal_code.toString();
-    let latlon = onemap[postal];
-    let geohashing = geohash.encode(latlon.LATITUDE, latlon.LONGTITUDE, 9);
-    let params = {
-        TableName: ddb_config.tableNames.orb_table,
-        KeyConditionExpression: "PK = :loc and SK > :current_time",
-        ExpressionAttributeValues: {
-            ":loc": "LOC#" + geohashing,
-            ":current_time": moment().unix() + "#ORB#"
-        }
-    };
-    docClient.query(params, function(err, data) {
-        if (err) {
-            res.status(400).send({ Error: err.message });
-        } else {
-            // res.json(data);
-            let dao = [];
-            data.Items.forEach(function(item) {
-                dao.push(item)
-            })
-            res.json(dao)
-        }
-    });
-});
-
-/**
- * API 1.5
- * QUERY for all fresh ORBs in a geohash
- */
-router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
+router.put(`/complete_orb`, async function (req, res, next) {
     try {
-        let geohashing;
-        if (req.query.lat && req.query.lon) {
-            let latlon = {};
-            latlon.LATITUDE = req.query.lat;
-            latlon.LONGTITUDE = req.query.lon;
-            geohashing = latlon_to_geo(latlon);
-        } else if (req.query.postal_code) {
-            let postal = req.query.postal_code;
-            geohashing = postal_to_geo(postal);
-        } else {
-            throw new Error('Please give either postal_code or latlon')
+        let body = { ...req.body };
+        let update = await update_orb(body.orb_uuid); // update the expiry dt to current dt so it will not show up in fresh orbs anymore
+        if (!update) {
+            throw new Error("orb not updated")
         }
-        let geohash_arr = get_geo_array(geohashing);
-        let page = [];
-        for (let g of geohash_arr) {
-            let result = await batch_query_location(g);
-            if (result){
-                for (let i of result) {
-                    page.push(i);
-                }
+        let params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "ORB#" + body.orb_uuid,
+                SK: "USER#" + body.user_id
+            },
+            UpdateExpression: "set inverse = :status",
+            ExpressionAttributeValues: {
+                ":status": "800#FULFILLED"
             }
-        }
-        if (page.length > 0) {
-            res.json(page)
-        } else {
-            res.json("No fresh ORBS")
-        }
+        };
+        docClient.update(params, function(err, data) {
+            if (err) {
+                res.status(400).send({ Error: err.message });
+            } else {
+                res.status(200).json({
+                    "ORB updated as FULFILLED:": {
+                        "ORB UUID": body.orb_uuid,
+                        "USER ID": body.user_id
+                    }
+                });
+            }
+        });
     } catch (err) {
         res.json(err.message);
     }
-    
 });
+
+async function update_orb(orb_uuid) {
+    return new Promise((resolve, reject) => {
+        let params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Key: {
+                PK: "ORB#" + orb_uuid,
+                SK: "ORB#" + orb_uuid
+            },
+            UpdateExpression: "set #t = :time",
+            ExpressionAttributeNames:{
+                "#t": "time"
+            },
+            ExpressionAttributeValues: {
+                ":time": moment().unix()
+            }
+        };
+        docClient.update(params, function(err, data) {
+            if (err) {
+                reject(err.message);
+            } else {
+                resolve(data);
+            }
+        });
+    })
+}
 
 function postal_to_geo(postal) {
     if (typeof postal !== 'string') {
@@ -570,30 +440,5 @@ function get_geo_array(geohashing) {
     return arr;
 }
 
-async function batch_query_location(geohashing) {
-    return new Promise((resolve, reject) => {
-        let params = {
-            TableName: ddb_config.tableNames.orb_table,
-            KeyConditionExpression: "PK = :loc and SK > :current_time",
-            // FilterExpression: "",
-            ExpressionAttributeValues: {
-                ":loc": "LOC#" + geohashing.toString(),
-                ":current_time": moment().unix().toString()
-            }
-        };
-        docClient.query(params, function(err, data) {
-            if (err) {
-                // console.log(err.message);
-                reject(err.message);
-            } else {
-                let dao = [];
-                data.Items.forEach(function(item) {
-                    dao.push(item)
-                })
-                resolve(dao);
-            }
-        });
-    })
-}
 
 module.exports = router;
