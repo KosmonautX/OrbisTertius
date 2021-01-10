@@ -1,5 +1,5 @@
 module.exports = {
-    endpoint: "http://dynamodb:8000",
+    dyn: "http://dynamodb:8000",
     sthree: "http://localstack:3000",
     sthreebucket: "orbis-tertius" ,
     region: "ap-southeast-1",
