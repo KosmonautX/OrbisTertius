@@ -45,16 +45,7 @@ app.listen(PORT, () => {
 
 
 const dynamodb = new AWS.DynamoDB({endpoint: new AWS.Endpoint("http://dynamodb:8000")});
-// const user_template = require('./user_table.json');
-const orb_template = require('./orbisezimport.json')
-
-// dynamodb.createTable(user_template, function(err, data) {
-//     if (err) {
-//         console.log("ERR: ", err);
-//     } else{
-//         console.log("USER TABLE CREATED: ", data);
-//     }
-// });
+const orb_template = require('./OrbisV2Import.json')
 
 dynamodb.createTable(orb_template, function(err, data) {
     if (err) {
