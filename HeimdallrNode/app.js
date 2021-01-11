@@ -45,7 +45,7 @@ app.listen(PORT, () => {
 
 
 const dynamodb = new AWS.DynamoDB({endpoint: new AWS.Endpoint("http://dynamodb:8000")});
-const orb_template = require('./OrbisV2Import.json')
+const orb_template = require('./blueprint/OrbisV2Import.json')
 
 dynamodb.createTable(orb_template, function(err, data) {
     if (err) {

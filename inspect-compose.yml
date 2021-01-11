@@ -16,17 +16,18 @@ services:
       - node
       - "--inspect-brk=0.0.0.0"
       - "." 
-  mercury:
-    build: ./MercuryFlask/
+  localstack:
+    image: localstack/localstack-full:latest
     volumes:
-      - ./MercuryFlask:/usr/src/mercury
+      - ./.localstack:/tmp/localstack
     ports:
-      - "3000:3000"
-    depends_on:
-      - dynamodb
-      - heimdallr
-    links:
-      - "dynamodb:database"
+      - "3000:4566"
+      - "3001:41629"
+      - "8080:8080"
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
   dynamodb:
     image: amazon/dynamodb-local
     ports:

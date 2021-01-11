@@ -6,7 +6,7 @@ const ddb_config = require('../config/ddb.config');
 const AWS = require('aws-sdk');
 AWS.config.update({
     region: ddb_config.region,
-    endpoint: ddb_config.endpoint
+    endpoint: ddb_config.dyn
 })
 const docClient = new AWS.DynamoDB.DocumentClient();
 const geohash = require('ngeohash');
@@ -190,7 +190,7 @@ router.post(`/post_user`, async function (req, res, next) {
                 let result_arr = result.split(",");
                 if (result_arr[0].trim() != "None" ) err_msg.push("user_id");
                 if (result_arr[1].trim() != "None" ) err_msg.push("hp_number");
-                res.status(409).json({
+               res.status(409).json({
                     "Duplicate Entries:": err_msg
                 });
             } else {

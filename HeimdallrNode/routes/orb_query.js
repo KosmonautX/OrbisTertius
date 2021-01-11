@@ -6,7 +6,7 @@ const ddb_config = require('../config/ddb.config');
 const AWS = require('aws-sdk');
 AWS.config.update({
     region: ddb_config.region,
-    endpoint: ddb_config.endpoint
+    endpoint: ddb_config.dyn
 })
 const docClient = new AWS.DynamoDB.DocumentClient();
 const geohash = require('ngeohash');
