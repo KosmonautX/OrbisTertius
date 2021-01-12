@@ -8,7 +8,8 @@ AWS.config.update({
     region: ddb_config.region
 })
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint:ddb_config.dyna});
-const s3 = new AWS.S3({endpoint:ddb_config.sthree, signatureVersion: 'v4'});
+const s3 = new AWS.S3({endpoint:ddb_config.sthree,
+                       s3ForcePathStyle: true, signatureVersion: 'v4'});
 const geohash = require('ngeohash');
 const fs = require('fs');
 const rawdata = fs.readFileSync('./resources/onemap3.json', 'utf-8');
@@ -360,7 +361,6 @@ router.put(`/update_user`, async function (req, res, next) {
                 SK: "USER#" + body.user_id,
             },
             UpdateExpression: "set payload = :payload",
-            ConditionExpression:":username",
             ExpressionAttributeValues: {
                 ":payload": JSON.stringify({
                     bio: body.bio,
