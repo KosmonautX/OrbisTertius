@@ -5,16 +5,13 @@ const moment = require('moment')
 const ddb_config = require('../config/ddb.config');
 const AWS = require('aws-sdk');
 AWS.config.update({
-    region: ddb_config.region,
-    endpoint: ddb_config.dyn
+    region: ddb_config.region
 })
-const docClient = new AWS.DynamoDB.DocumentClient();
+const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
 const geohash = require('ngeohash');
 const fs = require('fs');
 const { param } = require('./orb_query');
-const path = require('path');
-// const rawdata = fs.readFileSync('~/HeimdallrNode/resources/onemap3.json', 'utf-8');
-const rawdata = fs.readFileSync(path.resolve(__dirname, '../resources/onemap3.json'), 'utf-8');
+const rawdata = fs.readFileSync('./resources/onemap3.json', 'utf-8');
 const onemap = JSON.parse(rawdata);
 
 

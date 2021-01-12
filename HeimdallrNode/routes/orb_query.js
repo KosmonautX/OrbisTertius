@@ -5,15 +5,12 @@ const moment = require('moment')
 const ddb_config = require('../config/ddb.config');
 const AWS = require('aws-sdk');
 AWS.config.update({
-    region: ddb_config.region,
-    endpoint: ddb_config.dyn
+    region: ddb_config.region
 })
-const docClient = new AWS.DynamoDB.DocumentClient();
+const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
 const geohash = require('ngeohash');
 const fs = require('fs');
-const path = require('path');
-// const rawdata = fs.readFileSync('~/HeimdallrNode/resources/onemap3.json', 'utf-8');
-const rawdata = fs.readFileSync(path.resolve(__dirname, '../resources/onemap3.json'), 'utf-8');
+const rawdata = fs.readFileSync('./resources/onemap3.json', 'utf-8');
 const onemap = JSON.parse(rawdata);
 
 /**
@@ -47,7 +44,8 @@ router.get(`/get`, async function (req, res, next) {
                 dao.created_dt = JSON.parse(data.Item.payload).created_dt;
                 dao.nature = data.Item.numeric;
                 dao.orb_uuid = data.Item.PK.slice(4);
-                dao.geohash = data.Item.geohash;
+                dao.geohash = parseInt(data.Item.inverse.slice(4));
+                dao.geohash52 = data.Item.geohash;
                 res.json(dao);
             } else {
                 res.status(404).json("ORB not found")
@@ -74,7 +72,7 @@ router.get(`/get_user`, async function (req, res, next) {
         } else {
             if (data.Item){
                 let dao = {};
-                dao.user_id = data.Item.PK.slice(5);
+                dao.user_id = parseInt(data.Item.PK.slice(5));
                 dao.username = JSON.parse(data.Item.payload).username;
                 dao.bio = JSON.parse(data.Item.payload).bio;
                 dao.profile_pic = JSON.parse(data.Item.payload).profile_pic;
@@ -107,8 +105,16 @@ router.get(`/get_orb_profile`, async function (req, res, next) {
         ExpressionAttributeValues: {
             ":user": "USER#" + req.query.user_id,
             ":sort": keyword_to_code(req.query.keyword)
-        }
+        },
+        Limit: 8,
     };
+    if (req.query.start) {
+        params.ExclusiveStartKey = {
+            "SK": "USER#" + req.query.user_id,
+            "inverse": keyword_to_code(req.query.keyword),
+            "PK": req.query.start
+        }
+    }
     docClient.query(params, function(err, data) {
         if (err) {
             res.status(400).send({ Error: err.message });
@@ -124,7 +130,11 @@ router.get(`/get_orb_profile`, async function (req, res, next) {
                 if (item.payload) dao.payload = JSON.parse(item.payload);
                 data_arr.push(dao);
             })
-            res.json(data_arr);
+            let result = {
+                "data" : data_arr
+            }
+            if (data.LastEvaluatedKey) result.LastEvaluatedKey = data.LastEvaluatedKey.PK.slice(4)
+            res.json(result);
         }
     });
 });
@@ -145,16 +155,29 @@ function keyword_to_code(keyword) {
  * API 1.5
  * QUERY for all fresh ORBs in a geohash
  */
-router.get(`/orbs_in_loc_fresh`, async function (req, res, next) {
-    let postal = req.query.postal_code.toString();
-    let latlon = onemap[postal];
-    let geohashing = geohash.encode(latlon.LATITUDE, latlon.LONGTITUDE, 9);
+router.get(`/orbs_in_loc_fresh_page`, async function (req, res, next) {
+    let geohashing;
+    if (req.query.lat && req.query.lon) {
+        let latlon = {};
+        latlon.LATITUDE = req.query.lat;
+        latlon.LONGTITUDE = req.query.lon;
+        geohashing = latlon_to_geo(latlon);
+    } else if (req.query.postal_code) {
+        let postal = req.query.postal_code;
+        geohashing = postal_to_geo(postal);
+    } else {
+        throw new Error('Please give either postal_code or latlon')
+    }
+    if (req.query.page) {
+        let geohash_arr = get_geo_array(geohashing);
+        geohashing = geohash_arr[req.query.page]
+    }
     let params = {
         TableName: ddb_config.tableNames.orb_table,
         KeyConditionExpression: "PK = :loc and SK > :current_time",
         ExpressionAttributeValues: {
             ":loc": "LOC#" + geohashing,
-            ":current_time": moment().unix() + "#ORB#"
+            ":current_time": moment().unix().toString()
         }
     };
     docClient.query(params, function(err, data) {
@@ -165,9 +188,11 @@ router.get(`/orbs_in_loc_fresh`, async function (req, res, next) {
             data.Items.forEach(function(item) {
                 let dao = {};
                 dao.orb_uuid = item.SK.slice(15);
-                dao.geohash = item.geohash;
-                dao.nature = item.inverse;
-                dao.expiry_dt = item.SK.substr(0,10);
+                dao.geohash = parseInt(item.PK.slice(4))
+                dao.geohash52 = item.geohash;
+                dao.nature = parseInt(item.inverse);
+                dao.expiry_dt = parseInt(item.SK.substr(0, 10));
+                if (item.payload) dao.payload = JSON.parse(item.payload);
                 data_arr.push(dao);
             })
             res.json(data_arr);
@@ -200,10 +225,11 @@ router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
             if (result){
                 for (let item of result) {
                     let dao = {};
-                    dao.orb_uuid = item.PK.slice(4);
-                    dao.geohash = item.geohash;
-                    dao.nature = item.numeric;
-                    dao.expiry_dt = item.time;
+                    dao.orb_uuid = item.SK.slice(15);
+                    dao.geohash = parseInt(item.PK.slice(4))
+                    dao.geohash52 = item.geohash;
+                    dao.nature = parseInt(item.inverse);
+                    dao.expiry_dt = parseInt(item.SK.substr(0, 10));
                     if (item.payload) dao.payload = JSON.parse(item.payload);
                     page.push(dao);
                 }
@@ -247,15 +273,11 @@ async function batch_query_location(geohashing) {
     return new Promise((resolve, reject) => {
         let params = {
             TableName: ddb_config.tableNames.orb_table,
-            IndexName: "LocationTime",
-            KeyConditionExpression: "geohash = :loc and #t > :current_time",
+            KeyConditionExpression: "PK = :loc and SK > :current_time",
             // FilterExpression: "",
-            ExpressionAttributeNames:{
-                "#t": "time"
-            },
             ExpressionAttributeValues: {
-                ":loc": geohashing,
-                ":current_time": moment().unix()
+                ":loc": "LOC#" + geohashing,
+                ":current_time": moment().unix().toString()
             }
         };
         docClient.query(params, function(err, data) {
