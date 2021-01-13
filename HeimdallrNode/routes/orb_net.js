@@ -43,7 +43,7 @@ router.post(`/post_orb`, async function (req, res, next) {
         img = body.photo;
     } else {
         img =  s3.getSignedUrl('putObject', { Bucket: ddb_config.sthreebucket
-                                                    , Key: orb_uuid, Expires: 300});
+                                              , Key: orb_uuid, Expires: 300});
     }
     let params = {
         RequestItems: {
@@ -361,6 +361,7 @@ router.put(`/update_user`, async function (req, res, next) {
                 SK: "USER#" + body.user_id,
             },
             UpdateExpression: "set payload = :payload",
+            // ConditionExpression:":username",
             ExpressionAttributeValues: {
                 ":payload": JSON.stringify({
                     bio: body.bio,

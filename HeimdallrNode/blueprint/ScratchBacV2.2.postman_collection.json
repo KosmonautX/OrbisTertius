@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "18f43fb1-2786-496c-918c-e1d9b0528725",
+		"_postman_id": "e824c81b-2b99-4df4-a7b4-975907a3f451",
 		"name": "ScratchBacV2.1",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -199,35 +199,6 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{   \n    \"user_id\": 1234,\n    \"username\": \"Passerby A\",\n    \"title\": \"tes2\",\n    \"info\": \"nil\",\n    \"where\": \"my house\",\n    \"when\": \"now\",\n    \"tip\": \"foc\",\n    \"tags\": [\"free\", \"christmas\"],\n    \"photo\": \"www.unsplash.com\",\n    \"nature\": 10021000000, \n    \"postal_code\": 659921,\n    \"expires_in\": \"1 month\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "localhost:5000/api/orb/post_orb",
-					"host": [
-						"localhost"
-					],
-					"port": "5000",
-					"path": [
-						"api",
-						"orb",
-						"post_orb"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "0.1 Post ORB Presigned Image test",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
 					"raw": "{   \n    \"user_id\": 1234,\n    \"username\": \"Passerby A\",\n    \"title\": \"tes2\",\n    \"info\": \"nil\",\n    \"where\": \"my house\",\n    \"when\": \"now\",\n    \"tip\": \"foc\",\n    \"tags\": [\"free\", \"christmas\"],\n    \"photo\": \"www.pic.com\",\n    \"nature\": 10021000000, \n    \"postal_code\": 659921,\n    \"expires_in\": \"1 month\"\n}",
 					"options": {
 						"raw": {
@@ -246,7 +217,8 @@
 						"orb",
 						"post_orb"
 					]
-				}
+				},
+				"description": "expires_in: \"1 day\" | \"3 day\" | \"1 week\" | \"1 month\" </br>\nuser_id = telegram ID </br>\nusername: string </br>\ntitle: string </br>\ninfo: string </br>\nwhere: string </br>\nwhen: string </br>\ntip: string </br>\ntags: array of strings </br>\nphoto </br>\nnature: 100 OFFER, 200 REQUEST, 300 BROADCAST </br>\npostal_code: **postal code has to be correct! </br>"
 			},
 			"response": []
 		},
@@ -275,7 +247,8 @@
 						"orb",
 						"post_orb"
 					]
-				}
+				},
+				"description": "expires_in: \"1 day\" | \"3 day\" | \"1 week\" | \"1 month\" </br>\nlatlon: { </br>\n&nbsp;&nbsp; &nbsp;&nbsp;    LATITUDE: </br>\n&nbsp;&nbsp; &nbsp;&nbsp;     LONGITUDE: </br>\n} </br>\nuser_id = telegram ID </br>\nusername: string </br>\ntitle: string </br>\ninfo: string </br>\nwhere: string </br>\nwhen: string </br>\ntip: string </br>\ntags: array of strings </br>\nphoto </br>\nnature: 100 OFFER, 200 REQUEST, 300 BROADCAST </br>"
 			},
 			"response": []
 		},
@@ -294,7 +267,7 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:5000/api/orb/post_user",
+					"raw": "localhost:5000/api/orb/create_user",
 					"host": [
 						"localhost"
 					],
@@ -302,9 +275,10 @@
 					"path": [
 						"api",
 						"orb",
-						"post_user"
+						"create_user"
 					]
-				}
+				},
+				"description": "user id = telegram id </br>\nusername: string</br>\nbio: string</br>\nprofile pic </br>\nverified: 1 | 0</br>\npostal code: integer </br>\ncountry code: integer (dont have the +) </br>\nhp number: integer</br>\ngender: string</br>\nbirthday : string"
 			},
 			"response": []
 		},
@@ -333,7 +307,8 @@
 						"orb",
 						"interact"
 					]
-				}
+				},
+				"description": "keyword: ACCEPT | BOOKMARK | DELETE | HIDE | REPORT</br>\nallows for latlon instead of postal code </br>\nTo use latlon: </br> \n\"latlon\": { </br> \n&nbsp;&nbsp;  \"LATITUDE\": </br> \n&nbsp;&nbsp;    \"LONGITUDE\": </br> \n}</br>\nuser id:</br>\norb uuid:</br>"
 			},
 			"response": []
 		},
@@ -343,7 +318,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:5000/api/query/get?orb_uuid=527061d2-cd3f-4b4f-b431-0c8384d46ed1",
+					"raw": "localhost:5000/api/query/get?orb_uuid=ce54e26d-1557-481e-b118-2de95d4a24dd",
 					"host": [
 						"localhost"
 					],
@@ -356,7 +331,7 @@
 					"query": [
 						{
 							"key": "orb_uuid",
-							"value": "527061d2-cd3f-4b4f-b431-0c8384d46ed1"
+							"value": "ce54e26d-1557-481e-b118-2de95d4a24dd"
 						}
 					]
 				}
@@ -395,7 +370,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:5000/api/query/get_orb_profile?user_id=1234&keyword=FULFILLED",
+					"raw": "localhost:5000/api/query/get_orb_profile?user_id=1234&keyword=INIT&start=527061d2-cd3f-4b4f-b431-0c8384d46ed1",
 					"host": [
 						"localhost"
 					],
@@ -412,10 +387,15 @@
 						},
 						{
 							"key": "keyword",
-							"value": "FULFILLED"
+							"value": "INIT"
+						},
+						{
+							"key": "start",
+							"value": "527061d2-cd3f-4b4f-b431-0c8384d46ed1"
 						}
 					]
-				}
+				},
+				"description": "keyword\": INIT | ACCEPT | BOOKMARK | DELETE | HIDE | REPORT"
 			},
 			"response": []
 		},
@@ -446,42 +426,13 @@
 			"response": []
 		},
 		{
-			"name": "3. Complete ORB",
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"orb_uuid\": \"d34fa9e3-f80d-4418-88df-f158a0c03bc1\",\n    \"user_id\": 1234\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "localhost:5000/api/orb/complete_orb",
-					"host": [
-						"localhost"
-					],
-					"port": "5000",
-					"path": [
-						"api",
-						"orb",
-						"complete_orb"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "1. Update user",
 			"request": {
 				"method": "PUT",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"user_id\": 3765,\n    \"username\": \"tester1\",\n    \"bio\": \"Bye\",\n    \"profile_pic\": \"www.pic.com\",\n    \"verified\": 1,\n    \"postal_code\": 659921,\n    \"hp_number\": 999,\n    \"email\": \"test@email.com\",\n    \"gender\": \"nil\",\n    \"birthday\": \"1st Jan\"\n}",
+					"raw": "{\n    \"user_id\": 1234,\n    \"username\": \"tester1\",\n    \"bio\": \"Hi\",\n    \"profile_pic\": \"www.pic.com\",\n    \"verified\": 1,\n    \"postal_code\": 659921,\n    \"hp_number\": 999,\n    \"email\": \"test@email.com\",\n    \"gender\": \"nil\",\n    \"birthday\": \"1st Jan\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -499,18 +450,19 @@
 						"orb",
 						"update_user"
 					]
-				}
+				},
+				"description": "Things that can be editted: **have to send the original data of the params which will be remain unchanged, coz everything here will be overwritten. </br>\nbio: string </br>\nprofile pic: string</br>\nverified: 1 | 0</br>\ncountry_code: int (without the +)</br>\nhp_number: int</br>\ngender: string</br>\nbirthday: string</br>"
 			},
 			"response": []
 		},
 		{
-			"name": "1. Update tester",
+			"name": "3. Complete ORB (FULFILL)",
 			"request": {
 				"method": "PUT",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"username\": \"tester88\",\n    \"new_username\": \"tester69\"\n}",
+					"raw": "{   \n    \"user_id\": 1234,\n    \"orb_uuid\": \"05f86450-c21e-411d-92f1-5017bd33afe3\",\n    \"username\": \"Passerby A\",\n    \"title\": \"tes2\",\n    \"info\": \"nil\",\n    \"where\": \"my house\",\n    \"when\": \"now\",\n    \"tip\": \"foc\",\n    \"tags\": [\"free\", \"christmas\"],\n    \"photo\": \"www.pic.com\",\n    \"nature\": 10021000000, \n    \"postal_code\": 659921,\n    \"expires_in\": \"1 month\",\n    \"expiry_dt\": 1613044107,\n    \"geohash\": 268457236,\n    \"geohash52\": 1125991258849301\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -518,7 +470,7 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:5000/api/orb/update_username",
+					"raw": "localhost:5000/api/orb/complete_orb",
 					"host": [
 						"localhost"
 					],
@@ -526,7 +478,38 @@
 					"path": [
 						"api",
 						"orb",
-						"update_username"
+						"complete_orb"
+					]
+				},
+				"description": "for a user to complete his orb (mark his orb as Fulfilled) </br>\nput all the info to create the orb again </br>\n    \"user_id\": </br>\n    \"orb_uuid\": </br>\n    \"username\": </br>\n    \"title\": string</br>\n    \"info\": string</br>\n    \"where\": string</br>\n    \"when\": string</br>\n    \"tip\": string</br>\n    \"tags\": array of string</br>\n    \"photo\": </br>\n    \"nature\": int</br>\n    \"postal_code\": int</br>\n    \"expires_in\": \"1 day\" | \"3 day\" | \"1 week\" | \"1 month\" </br>\n    \"expiry_dt\": int</br>\n    \"geohash\": int</br>\n    \"geohash52\": int</br>"
+			},
+			"response": []
+		},
+		{
+			"name": "2. Get all fresh orbs PAGE",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:5000/api/query/orbs_in_loc_fresh_page?postal_code=659921&page=0",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"query",
+						"orbs_in_loc_fresh_page"
+					],
+					"query": [
+						{
+							"key": "postal_code",
+							"value": "659921"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						}
 					]
 				}
 			},

@@ -37,7 +37,7 @@ router.get(`/get`, async function (req, res, next) {
                 dao.when = JSON.parse(data.Item.payload).when;
                 dao.tip = JSON.parse(data.Item.payload).tip;
                 dao.user_id = JSON.parse(data.Item.payload).user_id;
-                dao.username = JSON.parse(data.Item.payload).username;
+                dao.username = data.Item.alphanumeric;
                 dao.photo = JSON.parse(data.Item.payload).photo;
                 dao.tags = JSON.parse(data.Item.payload).tags;
                 dao.expiry_dt = data.Item.time;
@@ -73,7 +73,7 @@ router.get(`/get_user`, async function (req, res, next) {
             if (data.Item){
                 let dao = {};
                 dao.user_id = parseInt(data.Item.PK.slice(5));
-                dao.username = JSON.parse(data.Item.payload).username;
+                dao.username = data.Item.alphanumeric;
                 dao.bio = JSON.parse(data.Item.payload).bio;
                 dao.profile_pic = JSON.parse(data.Item.payload).profile_pic;
                 dao.verified = JSON.parse(data.Item.payload).verified;
