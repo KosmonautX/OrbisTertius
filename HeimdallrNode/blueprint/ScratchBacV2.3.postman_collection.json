@@ -259,7 +259,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"user_id\": 1236,\n    \"username\": \"tester69\",\n    \"bio\": \"Bye\",\n    \"profile_pic\": \"www.pic.com\",\n    \"verified\": 1,\n    \"postal_code\": 659921,\n    \"country_code\": 65,\n    \"hp_number\": 9999999,\n    \"gender\": \"nil\",\n    \"birthday\": \"01-01-2000\"\n}",
+					"raw": "{\n    \"user_id\": 1234,\n    \"username\": \"tester1234\",\n    \"bio\": \"Bye\",\n    \"profile_pic\": \"www.pic.com\",\n    \"verified\": 1,\n    \"postal_code\": 659921,\n    \"country_code\": 65,\n    \"hp_number\": 99999,\n    \"gender\": \"nil\",\n    \"birthday\": \"01-01-2000\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -358,6 +358,36 @@
 						{
 							"key": "postal_code",
 							"value": "659921"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2. Get all fresh orbs PAGE",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:5000/api/query/orbs_in_loc_fresh_page?postal_code=659921&page=0",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"query",
+						"orbs_in_loc_fresh_page"
+					],
+					"query": [
+						{
+							"key": "postal_code",
+							"value": "659921"
+						},
+						{
+							"key": "page",
+							"value": "0"
 						}
 					]
 				}
@@ -484,7 +514,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"user_id\": 1234,\n    \"username\": \"tester1\",\n    \"bio\": \"Hi\",\n    \"profile_pic\": \"www.pic.com\",\n    \"verified\": 1,\n    \"postal_code\": 659921,\n    \"hp_number\": 999,\n    \"email\": \"test@email.com\",\n    \"gender\": \"nil\",\n    \"birthday\": \"1st Jan\"\n}",
+					"raw": "{\n    \"user_id\": 1234,\n    \"bio\": \"Hi\",\n    \"profile_pic\": \"www.pic.com\",\n    \"verified\": 1,\n    \"postal_code\": 659921,\n    \"hp_number\": 999,\n    \"email\": \"test@email.com\",\n    \"gender\": \"nil\",\n    \"birthday\": \"1st Jan\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -504,6 +534,35 @@
 					]
 				},
 				"description": "Things that can be editted: **have to send the original data of the params which will be remain unchanged, coz everything here will be overwritten. </br>\nbio: string </br>\nprofile pic: string</br>\nverified: 1 | 0</br>\ncountry_code: int (without the +)</br>\nhp_number: int</br>\ngender: string</br>\nbirthday: string</br>"
+			},
+			"response": []
+		},
+		{
+			"name": "2. Update username",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": 1234,\n    \"username\": \"tester1\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:5000/api/orb/update_username",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"orb",
+						"update_username"
+					]
+				}
 			},
 			"response": []
 		},
@@ -534,36 +593,6 @@
 					]
 				},
 				"description": "for a user to complete his orb (mark his orb as Fulfilled) </br>\nput all the info to create the orb again </br>\n    \"user_id\": </br>\n    \"orb_uuid\": </br>\n    \"username\": </br>\n    \"title\": string</br>\n    \"info\": string</br>\n    \"where\": string</br>\n    \"when\": string</br>\n    \"tip\": string</br>\n    \"tags\": array of string</br>\n    \"photo\": </br>\n    \"nature\": int</br>\n    \"postal_code\": int</br>\n    \"expires_in\": \"1 day\" | \"3 day\" | \"1 week\" | \"1 month\" </br>\n    \"expiry_dt\": int</br>\n    \"geohash\": int</br>\n    \"geohash52\": int</br>"
-			},
-			"response": []
-		},
-		{
-			"name": "2. Get all fresh orbs PAGE",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "localhost:5000/api/query/orbs_in_loc_fresh_page?postal_code=659921&page=0",
-					"host": [
-						"localhost"
-					],
-					"port": "5000",
-					"path": [
-						"api",
-						"query",
-						"orbs_in_loc_fresh_page"
-					],
-					"query": [
-						{
-							"key": "postal_code",
-							"value": "659921"
-						},
-						{
-							"key": "page",
-							"value": "0"
-						}
-					]
-				}
 			},
 			"response": []
 		}
