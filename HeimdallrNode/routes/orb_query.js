@@ -97,7 +97,7 @@ router.get(`/get_user`, async function (req, res, next) {
  * Get orbs for a user:
  * INIT | ACCEPT | BOOKMARK | FULFILLED
  */
-router.get(`/get_orb_profile`, async function (req, res, next) {
+router.get(`/user_profile`, async function (req, res, next) {
     let params = {
         TableName: ddb_config.tableNames.orb_table,
         IndexName: "Chronicle",
@@ -150,6 +150,61 @@ function keyword_to_code(keyword) {
     else if (keyword.toUpperCase() == "REPORT") code = "100#REPORT";
     return code;
 }
+
+/**
+ * API 1.2
+ * Query for all ORB to user interactions
+ */
+router.get(`/orb_acceptance`, async function (req, res, next) {
+    let params = {
+        TableName: ddb_config.tableNames.orb_table,    
+        KeyConditionExpression: "PK = :pk and begins_with(SK, :user)",
+        FilterExpression: "inverse > :space",
+        ExpressionAttributeValues: {
+            ":pk": "ORB#" + req.query.orb_uuid,
+            ":user": "USER#",
+            ":space": "499#"
+        },
+    };
+    docClient.query(params, function(err, data) {
+        if (err) {
+            res.status(400).send({ Error: err.message });
+        } else {
+            let dao = [];
+            data.Items.forEach(function(item) {
+                dao.push(item)
+            })
+            res.json(dao)
+        }
+    });
+});
+
+/**
+ * API 1.2
+ * Query for all ORB to user interactions
+ */
+router.get(`/orb_interactions`, async function (req, res, next) {
+    let params = {
+        TableName: ddb_config.tableNames.orb_table,    
+        KeyConditionExpression: "PK = :pk and begins_with(SK, :user)",
+        ExpressionAttributeValues: {
+            ":pk": "ORB#" + req.query.orb_uuid,
+            ":user": "USER#"
+        },
+    };
+    docClient.query(params, function(err, data) {
+        if (err) {
+            res.status(400).send({ Error: err.message });
+        } else {
+            let dao = [];
+            data.Items.forEach(function(item) {
+                dao.push(item)
+            })
+            res.json(dao)
+        }
+    });
+});
+
 
 /**
  * API 1.5

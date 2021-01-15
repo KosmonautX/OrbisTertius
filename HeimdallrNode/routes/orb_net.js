@@ -27,6 +27,7 @@ router.post(`/post_orb`, async function (req, res, next) {
     let expiry_dt = slider_time(body.expires_in);
     let created_dt = moment().unix();
     let geohashing;
+    let img;
     if (body.latlon) {
         geohashing = latlon_to_geo(body.latlon); 
     } else if (body.postal_code) {
@@ -38,12 +39,11 @@ router.post(`/post_orb`, async function (req, res, next) {
     } else if (body.postal_code) {
         geohashing52 = postal_to_geo52(body.postal_code);
     }
-    let img;
     if (body.photo){
         img = body.photo;
     } else {
         img =  s3.getSignedUrl('putObject', { Bucket: ddb_config.sthreebucket
-                                              , Key: orb_uuid, Expires: 300});
+                                                    , Key: orb_uuid, Expires: 300});
     }
     let params = {
         RequestItems: {
@@ -162,81 +162,6 @@ function keyword_to_code(keyword) {
     else if (keyword.toUpperCase() == "REPORT") code = "100#REPORT";
     return code;
 }
-
-/**
- * API 0.1
- * Register user
- * user_id = telegram_id
- */
-// router.post(`/post_user123`, async function (req, res, next) {
-//     try {
-//         let body = { ...req.body };
-//         let geohashing;
-//         if (body.lat && body.lon) {
-//             let latlon = {};
-//             latlon.LATITUDE = body.lat;
-//             latlon.LONGTITUDE = body.lon;
-//             geohashing = latlon_to_geo(latlon);
-//         } else if (body.postal_code) {
-//             geohashing = postal_to_geo(body.postal_code);
-//         }
-//         let params = {
-//             RequestItems: {
-//                 "ORB_NET": [
-//                     {
-//                         PutRequest: {
-//                             Item: {
-//                                 PK: "USER#" + body.user_id, 
-//                                 SK: "USER#" + body.user_id,
-//                                 payload: JSON.stringify({
-//                                     bio: body.bio,
-//                                     profile_pic: body.profile_pic,
-//                                     username: body.username,
-//                                     verified: body.verified,
-//                                     hp_number: body.hp_number,
-//                                     email: body.email,
-//                                     gender: body.gender,
-//                                     birthday: body.birthday,
-//                                 }),
-//                                 alphanumeric: body.username,
-//                                 numeric: body.postal_code,
-//                                 geohash: geohashing
-//                             }
-//                         }
-//                     },
-//                     {
-//                         PutRequest: {
-//                             Item: {
-//                                 PK: "username#" + body.username,
-//                                 SK: "USER#" + body.user_id
-//                             }
-//                         }
-//                     },
-//                     {
-//                         PutRequest: {
-//                             Item: {
-//                                 PK: "email#" + body.email,
-//                                 SK: "USER#" + body.user_id
-//                             }
-//                         }
-//                     }
-//                 ] 
-//             }
-
-//         };
-//         docClient.batchWrite(params, function(err, data) {
-//             if (err) {
-//                 res.status(400).send({ Error: err.message });
-//             } else {
-//                 res.status(201).json({
-//                     "User Registered:": data
-//                 });
-//             }
-//             });
-//     } catch (err) {
-//         res.status(400).json(err.message);
-//     }
-// })
 
 router.post(`/create_user`, async function (req, res, next) {
     try {
@@ -388,34 +313,6 @@ router.put(`/update_user`, async function (req, res, next) {
     }
 });
 
-// router.put(`/update_username`, async function (req, res, next) {
-//     try {
-//         let body = { ...req.body };
-//         let params = {
-//             "TransacItems": [
-//                 {  
-//                     Put: {
-//                         TableName: ddb_config.tableNames.orb_table,   
-//                         ConditionExpression: "attribute_not_exists(PK)",     
-//                         Item: {
-//                             PK: "username#" + body.username, 
-//                             SK: "username#" + body.username,
-//                         }
-//                 }}
-//             ]
-//         };
-//         docClient.transactWrite(params, function(err, data) {
-//             if (err) {
-//                 res.status(400).send({ Error: err.message });
-//             } else {
-//                 res.json({data});
-//             }
-//         });
-//     } catch (err) {
-//         res.json(err.message);
-//     }
-// });
-
 /**
  * API 1.1
  * Update username
@@ -493,40 +390,36 @@ router.put(`/update_user_location`, async function (req, res, next) {
  * Update ORB status
  * unable catch an orb that has already been fulfilled
  */
-// router.put(`/complete_orb`, async function (req, res, next) {
-//     try {
-//         let body = { ...req.body };
-//         let update = await update_orb(body.orb_uuid); // update the expiry dt to current dt so it will not show up in fresh orbs anymore
-//         if (!update) {
-//             throw new Error("orb not updated")
-//         }
-//         let params = {
-//             TableName: ddb_config.tableNames.orb_table,        
-//             Key: {
-//                 PK: "ORB#" + body.orb_uuid,
-//                 SK: "USER#" + body.user_id
-//             },
-//             UpdateExpression: "set inverse = :status",
-//             ExpressionAttributeValues: {
-//                 ":status": "800#FULFILLED"
-//             }
-//         };
-//         docClient.update(params, function(err, data) {
-//             if (err) {
-//                 res.status(400).send({ Error: err.message });
-//             } else {
-//                 res.status(200).json({
-//                     "ORB updated as FULFILLED:": {
-//                         "ORB UUID": body.orb_uuid,
-//                         "USER ID": body.user_id
-//                     }
-//                 });
-//             }
-//         });
-//     } catch (err) {
-//         res.status(400).json(err.message);
-//     }
-// });
+router.put(`/complete_orb_acceptor`, async function (req, res, next) {
+    try {
+        let body = { ...req.body };
+        let params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "ORB#" + body.orb_uuid,
+                SK: "USER#" + body.user_id
+            },
+            UpdateExpression: "set inverse = :status",
+            ExpressionAttributeValues: {
+                ":status": "800#FULFILLED"
+            }
+        };
+        docClient.update(params, function(err, data) {
+            if (err) {
+                res.status(400).send({ Error: err.message });
+            } else {
+                res.status(200).json({
+                    "ORB updated as FULFILLED:": {
+                        "orb_uuid": body.orb_uuid,
+                        "user_id": body.user_id
+                    }
+                });
+            }
+        });
+    } catch (err) {
+        res.status(400).json(err.message);
+    }
+});
 
 router.put(`/complete_orb`, async function (req, res, next) {
     try {
@@ -582,6 +475,19 @@ router.put(`/complete_orb`, async function (req, res, next) {
                         }
                     }
                 },
+                {
+                    Update: {
+                        TableName: ddb_config.tableNames.orb_table,
+                        Key: {
+                            PK: "ORB#" + body.orb_uuid,
+                            SK: "USER#" + body.user_id, 
+                        },
+                        UpdateExpression: "set inverse = :status",
+                        ExpressionAttributeValues: {
+                            ":status": "801#INIT_FULFILLED" 
+                        }
+                    }
+                },
             ] 
         };
         docClient.transactWrite(params, function(err, data) {
@@ -596,7 +502,7 @@ router.put(`/complete_orb`, async function (req, res, next) {
     } catch (err) {
         res.status(400).json(err.message);
     }
-})
+});
 
 function postal_to_geo(postal) {
     if (typeof postal !== 'string') {
