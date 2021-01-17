@@ -114,7 +114,7 @@ router.get(`/user_profile`, async function (req, res, next) {
             "inverse": keyword_to_code(req.query.keyword),
             "PK": req.query.start
         }
-    }
+    };
     docClient.query(params, function(err, data) {
         if (err) {
             res.status(400).send({ Error: err.message });
@@ -165,16 +165,34 @@ router.get(`/orb_acceptance`, async function (req, res, next) {
             ":user": "USER#",
             ":space": "499#"
         },
+        Limit: 8,
+    };
+    if (req.query.start) {
+        params.ExclusiveStartKey = {
+            "PK": "ORB#" + req.query.orb_uuid,
+            "SK": "USER#" + req.query.start
+        }
     };
     docClient.query(params, function(err, data) {
         if (err) {
             res.status(400).send({ Error: err.message });
         } else {
-            let dao = [];
+            let data_arr = [];
             data.Items.forEach(function(item) {
-                dao.push(item)
+                let dao = {};
+                dao.user_id = item.SK.slice(5);
+                dao.orb_uuid = item.PK.slice(4);
+                dao.created_dt = item.time;
+                dao.geohash = item.geohash;
+                dao.info = item.inverse.slice(4);
+                if (item.payload) dao.payload = JSON.parse(item.payload);
+                data_arr.push(dao);
             })
-            res.json(dao)
+            let result = {
+                "data" : data_arr
+            }
+            if (data.LastEvaluatedKey) result.LastEvaluatedKey = data.LastEvaluatedKey.SK.slice(5);
+            res.json(result);
         }
     });
 });
@@ -191,16 +209,33 @@ router.get(`/orb_interactions`, async function (req, res, next) {
             ":pk": "ORB#" + req.query.orb_uuid,
             ":user": "USER#"
         },
+        Limit: 8
+    };
+    if (req.query.start) {
+        params.ExclusiveStartKey = {
+            "PK": "ORB#" + req.query.orb_uuid,
+            "SK": "USER#" + req.query.start
+        }
     };
     docClient.query(params, function(err, data) {
         if (err) {
             res.status(400).send({ Error: err.message });
         } else {
-            let dao = [];
+            let data_arr = [];
             data.Items.forEach(function(item) {
-                dao.push(item)
+                let dao = {};
+                dao.user_id = item.SK.slice(5);
+                dao.orb_uuid = item.PK.slice(4);
+                dao.created_dt = item.time;
+                dao.geohash = item.geohash;
+                dao.info = item.inverse.slice(4);
+                data_arr.push(dao);
             })
-            res.json(dao)
+            let result = {
+                "data" : data_arr
+            }
+            if (data.LastEvaluatedKey) result.LastEvaluatedKey = data.LastEvaluatedKey.SK.slice(5);
+            res.json(result);
         }
     });
 });

@@ -58,7 +58,7 @@ router.post(`/post_orb`, async function (req, res, next) {
                             geohash : geohashing52,
                             inverse: "LOC#" + geohashing,
                             payload: JSON.stringify({
-                                title: body.title,
+                                title: body.title, // title might have to go to the alphanumeric
                                 info: body.info,
                                 where: body.where,
                                 when: body.when,
