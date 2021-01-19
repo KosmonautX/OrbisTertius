@@ -215,6 +215,7 @@ const dynaOrb = {
                                     username: body.username,
                                     created_dt: body.created_dt,
                                     expires_in: body.expires_in,
+                                    expiry_dt: body.expiry_dt,
                                     tags: body.tags
                                 })
                             }
