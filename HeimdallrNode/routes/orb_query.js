@@ -120,25 +120,26 @@ router.get(`/user_profile`, async function (req, res, next) {
         if (err) {
             res.status(400).send({ Error: err.message });
         } else {
-            if (!data || !data.Items) {
-                res.status(204).json("nothing")
+            if (data.Items.length == 0) {
+                res.status(204).send()
+            } else {
+                let data_arr = [];
+                data.Items.forEach(function(item) {
+                    let dao = {};
+                    dao.user_id = item.SK.slice(5);
+                    dao.orb_uuid = item.PK.slice(4);
+                    dao.created_dt = item.time;
+                    dao.geohash = item.geohash;
+                    dao.info = item.inverse.slice(4);
+                    if (item.payload) dao.payload = JSON.parse(item.payload);
+                    data_arr.push(dao);
+                })
+                let result = {
+                    "data" : data_arr
+                }
+                if (data.LastEvaluatedKey) result.LastEvaluatedKey = data.LastEvaluatedKey.PK.slice(4)
+                res.json(result);
             }
-            let data_arr = [];
-            data.Items.forEach(function(item) {
-                let dao = {};
-                dao.user_id = item.SK.slice(5);
-                dao.orb_uuid = item.PK.slice(4);
-                dao.created_dt = item.time;
-                dao.geohash = item.geohash;
-                dao.info = item.inverse.slice(4);
-                if (item.payload) dao.payload = JSON.parse(item.payload);
-                data_arr.push(dao);
-            })
-            let result = {
-                "data" : data_arr
-            }
-            if (data.LastEvaluatedKey) result.LastEvaluatedKey = data.LastEvaluatedKey.PK.slice(4)
-            res.json(result);
         }
     });
 });
@@ -181,25 +182,26 @@ router.get(`/orb_acceptance`, async function (req, res, next) {
         if (err) {
             res.status(400).send({ Error: err.message });
         } else {
-            if (!data || !data.Items) {
-                res.status(204).json("nothing")
+            if (data.Items.length == 0) {
+                res.status(204).send()
+            } else {
+                let data_arr = [];
+                data.Items.forEach(function(item) {
+                    let dao = {};
+                    dao.user_id = item.SK.slice(5);
+                    dao.orb_uuid = item.PK.slice(4);
+                    dao.created_dt = item.time;
+                    dao.geohash = item.geohash;
+                    dao.info = item.inverse.slice(4);
+                    if (item.payload) dao.payload = JSON.parse(item.payload);
+                    data_arr.push(dao);
+                })
+                let result = {
+                    "data" : data_arr
+                }
+                if (data.LastEvaluatedKey) result.LastEvaluatedKey = data.LastEvaluatedKey.SK.slice(5);
+                res.json(result);
             }
-            let data_arr = [];
-            data.Items.forEach(function(item) {
-                let dao = {};
-                dao.user_id = item.SK.slice(5);
-                dao.orb_uuid = item.PK.slice(4);
-                dao.created_dt = item.time;
-                dao.geohash = item.geohash;
-                dao.info = item.inverse.slice(4);
-                if (item.payload) dao.payload = JSON.parse(item.payload);
-                data_arr.push(dao);
-            })
-            let result = {
-                "data" : data_arr
-            }
-            if (data.LastEvaluatedKey) result.LastEvaluatedKey = data.LastEvaluatedKey.SK.slice(5);
-            res.json(result);
         }
     });
 });
@@ -228,24 +230,25 @@ router.get(`/orb_interactions`, async function (req, res, next) {
         if (err) {
             res.status(400).send({ Error: err.message });
         } else {
-            if (!data || !data.Items) {
-                res.status(204).json("nothing")
+            if (data.Items.length == 0) {
+                res.status(204).send()
+            } else {
+                let data_arr = [];
+                data.Items.forEach(function(item) {
+                    let dao = {};
+                    dao.user_id = item.SK.slice(5);
+                    dao.orb_uuid = item.PK.slice(4);
+                    dao.created_dt = item.time;
+                    dao.geohash = item.geohash;
+                    dao.info = item.inverse.slice(4);
+                    data_arr.push(dao);
+                })
+                let result = {
+                    "data" : data_arr
+                }
+                if (data.LastEvaluatedKey) result.LastEvaluatedKey = data.LastEvaluatedKey.SK.slice(5);
+                res.json(result);
             }
-            let data_arr = [];
-            data.Items.forEach(function(item) {
-                let dao = {};
-                dao.user_id = item.SK.slice(5);
-                dao.orb_uuid = item.PK.slice(4);
-                dao.created_dt = item.time;
-                dao.geohash = item.geohash;
-                dao.info = item.inverse.slice(4);
-                data_arr.push(dao);
-            })
-            let result = {
-                "data" : data_arr
-            }
-            if (data.LastEvaluatedKey) result.LastEvaluatedKey = data.LastEvaluatedKey.SK.slice(5);
-            res.json(result);
         }
     });
 });
@@ -284,21 +287,22 @@ router.get(`/orbs_in_loc_fresh_page`, async function (req, res, next) {
         if (err) {
             res.status(400).send({ Error: err.message });
         } else {
-            if (!data || !data.Items) {
-                res.status(204).json("nothing")
+            if (data.Items.length == 0) {
+                res.status(204).send()
+            } else {
+                let data_arr = [];
+                data.Items.forEach(function(item) {
+                    let dao = {};
+                    dao.orb_uuid = item.SK.slice(15);
+                    dao.geohash = parseInt(item.PK.slice(4))
+                    dao.geohash52 = item.geohash;
+                    dao.nature = parseInt(item.inverse);
+                    dao.expiry_dt = parseInt(item.SK.substr(0, 10));
+                    if (item.payload) dao.payload = JSON.parse(item.payload);
+                    data_arr.push(dao);
+                })
+                res.json(data_arr);
             }
-            let data_arr = [];
-            data.Items.forEach(function(item) {
-                let dao = {};
-                dao.orb_uuid = item.SK.slice(15);
-                dao.geohash = parseInt(item.PK.slice(4))
-                dao.geohash52 = item.geohash;
-                dao.nature = parseInt(item.inverse);
-                dao.expiry_dt = parseInt(item.SK.substr(0, 10));
-                if (item.payload) dao.payload = JSON.parse(item.payload);
-                data_arr.push(dao);
-            })
-            res.json(data_arr);
         }
     });
 });
