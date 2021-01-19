@@ -46,6 +46,7 @@ router.get(`/get`, async function (req, res, next) {
                 dao.orb_uuid = data.Item.PK.slice(4);
                 dao.geohash = parseInt(data.Item.inverse.slice(4));
                 dao.geohash52 = data.Item.geohash;
+                dao.postal_code = JSON.parse(data.Item.payload).postal_code;
                 res.json(dao);
             } else {
                 res.status(404).json("ORB not found")
@@ -77,13 +78,13 @@ router.get(`/get_user`, async function (req, res, next) {
                 dao.bio = JSON.parse(data.Item.payload).bio;
                 dao.profile_pic = JSON.parse(data.Item.payload).profile_pic;
                 dao.verified = JSON.parse(data.Item.payload).verified;
-                dao.postal_code = data.Item.numeric;
                 dao.verified = JSON.parse(data.Item.payload).verified;
                 dao.country_code = JSON.parse(data.Item.payload).country_code;
                 dao.hp_number = JSON.parse(data.Item.payload).hp_number;
                 dao.gender = JSON.parse(data.Item.payload).gender;
                 dao.birthday = JSON.parse(data.Item.payload).birthday;
-                dao.geohash = data.Item.geohash;
+                dao.home = data.Item.numeric;
+                dao.office = data.Item.geohash;
                 res.json(dao);
             } else {
                 res.status(404).json("User not found")
@@ -119,6 +120,9 @@ router.get(`/user_profile`, async function (req, res, next) {
         if (err) {
             res.status(400).send({ Error: err.message });
         } else {
+            if (!data || !data.Items) {
+                res.status(204).json("nothing")
+            }
             let data_arr = [];
             data.Items.forEach(function(item) {
                 let dao = {};
@@ -177,6 +181,9 @@ router.get(`/orb_acceptance`, async function (req, res, next) {
         if (err) {
             res.status(400).send({ Error: err.message });
         } else {
+            if (!data || !data.Items) {
+                res.status(204).json("nothing")
+            }
             let data_arr = [];
             data.Items.forEach(function(item) {
                 let dao = {};
@@ -221,6 +228,9 @@ router.get(`/orb_interactions`, async function (req, res, next) {
         if (err) {
             res.status(400).send({ Error: err.message });
         } else {
+            if (!data || !data.Items) {
+                res.status(204).json("nothing")
+            }
             let data_arr = [];
             data.Items.forEach(function(item) {
                 let dao = {};
@@ -274,6 +284,9 @@ router.get(`/orbs_in_loc_fresh_page`, async function (req, res, next) {
         if (err) {
             res.status(400).send({ Error: err.message });
         } else {
+            if (!data || !data.Items) {
+                res.status(204).json("nothing")
+            }
             let data_arr = [];
             data.Items.forEach(function(item) {
                 let dao = {};
@@ -328,7 +341,7 @@ router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
         if (page.length > 0) {
             res.json(page)
         } else {
-            res.json("No fresh ORBS")
+            res.status(204).json("nothing")
         }
     } catch (err) {
         res.json(err.message);

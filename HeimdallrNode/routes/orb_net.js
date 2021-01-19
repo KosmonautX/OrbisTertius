@@ -23,21 +23,16 @@ const onemap = JSON.parse(rawdata);
  */
 router.post(`/post_orb`, async function (req, res, next) {
     let body = { ...req.body };
-    const orb_uuid = uuidv4();
-    let expiry_dt = slider_time(body.expires_in);
-    let created_dt = moment().unix();
-    let geohashing;
+    body.orb_uuid = uuidv4();
+    body.expiry_dt = slider_time(body.expires_in);
+    body.created_dt = moment().unix();
     let img;
     if (body.latlon) {
-        geohashing = latlon_to_geo(body.latlon); 
+        body.geohashing = latlon_to_geo(body.latlon); 
+        body.geohashing52 = latlon_to_geo52(body.latlon); 
     } else if (body.postal_code) {
-        geohashing = postal_to_geo(body.postal_code);
-    }
-    let geohashing52;
-    if (body.latlon) {
-        geohashing52 = latlon_to_geo52(body.latlon); 
-    } else if (body.postal_code) {
-        geohashing52 = postal_to_geo52(body.postal_code);
+        body.geohashing = postal_to_geo(body.postal_code);
+        body.geohashing52 = postal_to_geo52(body.postal_code);
     }
     if (body.photo){
         img = body.photo;
@@ -45,97 +40,18 @@ router.post(`/post_orb`, async function (req, res, next) {
         img =  s3.getSignedUrl('putObject', { Bucket: ddb_config.sthreebucket
                                                     , Key: orb_uuid, Expires: 300});
     }
-    let params = {
-        RequestItems: {
-            "ORB_NET": [
-                {
-                    PutRequest: {
-                        Item: {
-                            PK: "ORB#" + orb_uuid,
-                            SK: "ORB#" + orb_uuid, 
-                            numeric: body.nature,
-                            time: expiry_dt,
-                            geohash : geohashing52,
-                            inverse: "LOC#" + geohashing,
-                            payload: JSON.stringify({
-                                title: body.title, // title might have to go to the alphanumeric
-                                info: body.info,
-                                where: body.where,
-                                when: body.when,
-                                tip: body.tip,
-                                photo: body.photo,
-                                user_id: body.user_id,
-                                username: body.username,
-                                created_dt: created_dt,
-                                expires_in: body.expires_in,
-                                tags: body.tags
-                            })
-                        }
-                    }
-                },
-                {
-                    PutRequest: {
-                        Item: {
-                            PK: "LOC#" + geohashing,
-                            SK: expiry_dt.toString() + "#ORB#" + orb_uuid,
-                            inverse: body.nature.toString(),
-                            geohash : geohashing52,
-                            payload: JSON.stringify({
-                                title: body.title,
-                                info: body.info,
-                                where: body.where,
-                                when: body.when,
-                                tip: body.tip,
-                                photo: body.photo,
-                                user_id: body.user_id,
-                                username: body.username,
-                                created_dt: created_dt,
-                                expires_in: body.expires_in,
-                                tags: body.tags
-                            })
-                        }
-                    }
-                },
-                {
-                    PutRequest: {
-                        Item: {
-                            PK: "ORB#" + orb_uuid,
-                            SK: "USER#" + body.user_id,
-                            inverse: "600#INIT",
-                            time: created_dt,
-                            geohash: geohashing52,
-                            payload: JSON.stringify({
-                                title: body.title,
-                                info: body.info,
-                                where: body.where,
-                                when: body.when,
-                                tip: body.tip,
-                                photo: body.photo,
-                                user_id: body.user_id,
-                                username: body.username,
-                                created_dt: created_dt,
-                                expires_in: body.expires_in,
-                                tags: body.tags
-                            })
-                        }
-                    }
-                }
-            ]
-        }
-    }
-    docClient.batchWrite(params, function(err, data) {
-        if (err) {
-            res.status(400).send({ Error: err.message });
-        } else {
-            res.status(201).json({
-                "PutItem succeeded:": {
-                    "ORB UUID": orb_uuid,
-                    "expiry": expiry_dt,
-                    "Image URL": img
-                }
-            });
-        }
+
+    let response = await dynaOrb.create(body).catch(err => {
+        res.status(400).json(err.message);
     });
+    if (response) {
+        res.status(201).json({
+            "ORB UUID": body.orb_uuid,
+            "expiry": body.expiry_dt,
+            "Image URL": img,
+            "message": response
+        });
+    }
 });
 
 function slider_time(dt){
@@ -164,15 +80,25 @@ function keyword_to_code(keyword) {
 }
 
 router.post(`/create_user`, async function (req, res, next) {
-    try {
-        let body = { ...req.body };
-        let geohashing;
-        if (body.latlon) {
-            geohashing = latlon_to_geo(body.latlon); 
-        } else if (body.postal_code) {
-            geohashing = postal_to_geo(body.postal_code);
-        }
-        let params = {
+    let body = { ...req.body };
+    // if (body.latlon) {
+    //     body.geohashing = latlon_to_geo(body.latlon); 
+    // } else if (body.postal_code) {
+    //     body.geohashing = postal_to_geo(body.postal_code);
+    // }
+    let response = await dynaUser.create(body).catch(err => {
+        res.status(409).json(err.message);
+    });
+    if (response == true) {
+        res.status(201).json("User created");
+    } else {
+        res.status(409).json(response)
+    }
+})
+
+const dynaUser = {
+    async create(body) {
+        const params = {
             "TransactItems": [
                 {
                     Put: {
@@ -181,6 +107,9 @@ router.post(`/create_user`, async function (req, res, next) {
                         Item: {
                             PK: "USER#" + body.user_id, 
                             SK: "USER#" + body.user_id,
+                            alphanumeric: body.username,
+                            numeric: body.postal_code.home,
+                            geohash: body.postal_code.office, 
                             payload: JSON.stringify({
                                 bio: body.bio,
                                 profile_pic: body.profile_pic,
@@ -190,9 +119,6 @@ router.post(`/create_user`, async function (req, res, next) {
                                 gender: body.gender,
                                 birthday: body.birthday, //DD-MM-YYYY
                             }),
-                            alphanumeric: body.username,
-                            numeric: body.postal_code,
-                            geohash: geohashing
                         }
                     }
                 },
@@ -208,27 +134,102 @@ router.post(`/create_user`, async function (req, res, next) {
                 }
             ] 
         };
-        docClient.transactWrite(params, function(err, data) {
-            if (err) {
-                let err_msg = [];
-                let result = err.message.slice(79);
-                result = result.slice(0,-1);
-                let result_arr = result.split(",");
-                if (result_arr[0].trim() != "None" ) err_msg.push("user_id");
-                if (result_arr[1].trim() != "None" ) err_msg.push("hp_number");
-                res.status(409).json({
-                    "Duplicate Entries:": err_msg
-                });
-            } else {
-                res.status(201).json({
-                    "User Registered:": body
-                });
+        const data = await docClient.transactWrite(params).promise();
+        if (!data || !data.Item) {
+            return true;
+        }
+        return data;
+    },
+};
+
+const dynaOrb = {
+    async create(body) {
+        const params = {
+            RequestItems: {
+                ORB_NET: [
+                    {
+                        PutRequest: {
+                            Item: {
+                                PK: "ORB#" + body.orb_uuid,
+                                SK: "ORB#" + body.orb_uuid, 
+                                numeric: body.nature,
+                                time: body.expiry_dt,
+                                geohash : body.geohashing52,
+                                inverse: "LOC#" + body.geohashing,
+                                payload: JSON.stringify({
+                                    title: body.title, // title might have to go to the alphanumeric
+                                    info: body.info,
+                                    where: body.where,
+                                    when: body.when,
+                                    tip: body.tip,
+                                    photo: body.photo,
+                                    user_id: body.user_id,
+                                    username: body.username,
+                                    created_dt: body.created_dt,
+                                    expires_in: body.expires_in,
+                                    tags: body.tags,
+                                    postal_code: body.postal_code
+                                })
+                            }
+                        }
+                    },
+                    {
+                        PutRequest: {
+                            Item: {
+                                PK: "LOC#" + body.geohashing,
+                                SK: body.expiry_dt.toString() + "#ORB#" + body.orb_uuid,
+                                inverse: body.nature.toString(),
+                                geohash : body.geohashing52,
+                                payload: JSON.stringify({
+                                    title: body.title,
+                                    info: body.info,
+                                    where: body.where,
+                                    when: body.when,
+                                    tip: body.tip,
+                                    photo: body.photo,
+                                    user_id: body.user_id,
+                                    username: body.username,
+                                    created_dt: body.created_dt,
+                                    expires_in: body.expires_in,
+                                    tags: body.tags
+                                })
+                            }
+                        }
+                    },
+                    {
+                        PutRequest: {
+                            Item: {
+                                PK: "ORB#" + body.orb_uuid,
+                                SK: "USER#" + body.user_id,
+                                inverse: "600#INIT",
+                                time: body.created_dt,
+                                geohash: body.geohashing52,
+                                payload: JSON.stringify({
+                                    title: body.title,
+                                    info: body.info,
+                                    where: body.where,
+                                    when: body.when,
+                                    tip: body.tip,
+                                    photo: body.photo,
+                                    user_id: body.user_id,
+                                    username: body.username,
+                                    created_dt: body.created_dt,
+                                    expires_in: body.expires_in,
+                                    tags: body.tags
+                                })
+                            }
+                        }
+                    }
+                ]
             }
-            });
-    } catch (err) {
-        res.status(400).json(err.message);
+        };
+        const data = await docClient.batchWrite(params).promise();
+        return data;
+    },
+    async interact(body) {
+
     }
-})
+}
 
 /**
  * API 0.2
@@ -353,22 +354,25 @@ router.put(`/update_username`, async function (req, res, next) {
 router.put(`/update_user_location`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        let geohashing;
-        if (body.latlon) {
-            geohashing = latlon_to_geo(body.latlon); 
-        } else if (body.postal_code) {
-            geohashing = postal_to_geo(body.postal_code);
-        }
+        // let geohashing;
+        // if (body.latlon) {
+        //     geohashing = latlon_to_geo(body.latlon); 
+        // } else if (body.postal_code) {
+        //     geohashing = postal_to_geo(body.postal_code);
+        // }
         let params = {
             TableName: ddb_config.tableNames.orb_table,        
             Key: {
                 PK: "USER#" + body.user_id, 
                 SK: "USER#" + body.user_id,
             },
-            UpdateExpression: "set geohash = :geohash, numeric = :ps",
+            UpdateExpression: "set geohash = :office, #n = :home",
+            ExpressionAttributeNames:{
+                "#n": "numeric"
+            },
             ExpressionAttributeValues: {
-                ":geohash": geohashing,
-                ":ps": body.postal_code || 0
+                ":office": body.postal_code.office,
+                ":home": body.postal_code.home
             }
         };
         docClient.update(params, function(err, data) {

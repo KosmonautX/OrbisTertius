@@ -14,7 +14,8 @@ const { param } = require('./orb_query');
 const rawdata = fs.readFileSync('./resources/onemap3.json', 'utf-8');
 const onemap = JSON.parse(rawdata);
 
-
+const jwt = require(`jsonwebtoken`);
+const secret = require('../resources/global').SECRET;
 /**
  * API 1.1 DEV
  * Query via PK to retrieve everything related to primary key
@@ -218,9 +219,57 @@ router.delete(`/delete_orb`, async function (req, res, next) {
         if (err) {
             res.status(400).send({ Error: err.message });
         } else {
-            res.json(data)
+            res.status(200).json("Orb deleted")
         }
     });
+});
+
+router.post('/login', async function (req, res, next) {
+    let body = { ...req.body };
+    try {
+        if (body.login == "login") {
+            // if (body.password !== result.password) {
+            //     if (!passwordHash.verify(body.password, result.password)) {
+            //         let error = new Error(`Invalid password.`);
+            //         error.status = 401;
+            //         throw error;
+            //     }
+            // };
+            // delete result.password;
+        
+            // NEW AUTHENTICATION
+            let payload = { };
+            payload.user_id = "007";
+            payload.name = "login boi";
+            payload.role = "normie";
+
+            const iss = "Princeton";
+            const sub = "ScratchBac";
+            // const aud = "";
+            const exp = moment().add(20, "minute").unix();
+            const signOptions = {
+                issuer:  iss,
+                subject:  sub,
+                // audience:  aud,
+                expiresIn: exp,
+                algorithm: "HS256"
+            };
+            // Create the JWT Token
+            const token = jwt.sign(payload, secret, signOptions);
+
+            res.json({
+                "token" : token
+            });
+        
+        } else {
+            let error = new Error(`User does not exist.`);
+            error.status = 401;
+            throw error;
+        }
+
+    } catch (err) {
+        next(err);
+    }
 });
 
 module.exports = router;
