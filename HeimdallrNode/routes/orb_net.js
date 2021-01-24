@@ -346,6 +346,36 @@ const dynaOrb = {
         }
         return data;
     },
+
+    async buddy(body) {
+        const params = {
+            RequestItems: {
+                ORB_NET: [
+                    {
+                        PutRequest: {
+                            Item: {
+                                PK: "USR#" + body.init_uuid,
+                                SK: "BUD#" + body.acc_uuid, 
+                                inverse: body.expiry_dt
+                                }
+                            }
+                    },
+                    {
+                        PutRequest: {
+                            Item: {
+                                PK: "USR#" + body.acc_uuid,
+                                SK: "BUD#" + body.init_id,
+                                inverse: "600#INIT"
+                            }
+                        }
+                    }
+                ]
+            }
+        };
+        const data = await docClient.batchWrite(params).promise();
+        return data;
+    },
+    
     async delete(body) { // return true if success
         const params = {
             "TransactItems": [
@@ -671,7 +701,7 @@ router.put(`/update_user_location`, async function (req, res, next) {
 
 /**
  * API 1.2
- * Complete orb (as an acceptor)
+ * Complete orb handshake (for an acceptor)
  */
 router.put(`/complete_orb_acceptor`, async function (req, res, next) {
     try {
@@ -692,7 +722,7 @@ router.put(`/complete_orb_acceptor`, async function (req, res, next) {
                 res.status(400).send({ Error: err.message });
             } else {
                 res.status(200).json({
-                    "ORB completed as Acceptor": body.orb_uuid,
+                    "ORB completed for Acceptor": body.orb_uuid,
                     "user_id": body.user_id
                 });
             }
@@ -723,6 +753,39 @@ router.put(`/complete_orb`, async function (req, res, next) {
         res.status(201).json({
             "Orb completed": body.orb_uuid
         })
+    }
+});
+
+/**
+ * API 1.2
+ * Init acceptance handshake for eventual two way to completed
+ */
+router.put(`/pending_orb_acceptor`, async function (req, res, next) {
+    try {
+        let body = { ...req.body };
+        let params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "ORB#" + body.orb_uuid,
+                SK: "USR#" + body.user_id
+            },
+            UpdateExpression: "set inverse = :status",
+            ExpressionAttributeValues: {
+                ":status": "550#PENDING"
+            }
+        };
+        docClient.update(params, function(err, data) {
+            if (err) {
+                res.status(400).send({ Error: err.message });
+            } else {
+                res.status(200).json({
+                    "ORB handshake initialised": body.orb_uuid,
+                    "user_id": body.user_id
+                });
+            }
+        });
+    } catch (err) {
+        res.status(400).json(err.message);
     }
 });
 

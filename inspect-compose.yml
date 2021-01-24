@@ -16,6 +16,7 @@ services:
       - node
       - "--inspect-brk=0.0.0.0"
       - "." 
+    restart: always
   localstack:
     image: localstack/localstack-full:latest
     volumes:
