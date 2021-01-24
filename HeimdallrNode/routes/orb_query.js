@@ -102,7 +102,7 @@ router.get(`/get_user`, async function (req, res, next) {
         err.status = 400;
         next(err);
     });
-    if (pteData?.Item && pubData?.Item) {
+    if (pteData && pubData) {
         let dao = {};
         dao.user_id = req.query.user_id;
         dao.username = pubData.Item.alphanumeric;
