@@ -171,6 +171,19 @@ const dynaUser = {
         const data = await docClient.batchWrite(params).promise();
         return data;
     },
+    async buddy(alpha,beta,friendshiptime) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Item: {
+                PK: "USR#" + alpha + "#REL",
+                SK: "BUD#" + beta,
+                time: friendshiptime,
+            },
+        };
+        const data = await docClient.put(params).promise();
+        return data;
+    },
+    
     async updatePayload(body) {
         const params = {
             TableName: ddb_config.tableNames.orb_table,        
@@ -297,6 +310,21 @@ const dynaOrb = {
         } 
         return dao;
     },
+    async acceptance(body){
+        const  params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "ORB#" + body.orb_uuid,
+                SK: "USR#" + body.user_id
+            },
+            UpdateExpression: "set inverse = :status",
+            ExpressionAttributeValues: {
+                ":status": "800#FULFILLED"
+            }
+        };
+        const data = await docClient.update(params).promise();
+        return data;
+    },
     async update(body) { // return true if success
         const params = {
             "TransactItems": [
@@ -346,36 +374,6 @@ const dynaOrb = {
         }
         return data;
     },
-
-    async buddy(body) {
-        const params = {
-            RequestItems: {
-                ORB_NET: [
-                    {
-                        PutRequest: {
-                            Item: {
-                                PK: "USR#" + body.init_uuid,
-                                SK: "BUD#" + body.acc_uuid, 
-                                inverse: body.expiry_dt
-                                }
-                            }
-                    },
-                    {
-                        PutRequest: {
-                            Item: {
-                                PK: "USR#" + body.acc_uuid,
-                                SK: "BUD#" + body.init_id,
-                                inverse: "600#INIT"
-                            }
-                        }
-                    }
-                ]
-            }
-        };
-        const data = await docClient.batchWrite(params).promise();
-        return data;
-    },
-    
     async delete(body) { // return true if success
         const params = {
             "TransactItems": [
@@ -704,32 +702,25 @@ router.put(`/update_user_location`, async function (req, res, next) {
  * Complete orb handshake (for an acceptor)
  */
 router.put(`/complete_orb_acceptor`, async function (req, res, next) {
-    try {
-        let body = { ...req.body };
-        let params = {
-            TableName: ddb_config.tableNames.orb_table,        
-            Key: {
-                PK: "ORB#" + body.orb_uuid,
-                SK: "USR#" + body.user_id
-            },
-            UpdateExpression: "set inverse = :status",
-            ExpressionAttributeValues: {
-                ":status": "800#FULFILLED"
-            }
+    let body = { ...req.body };
+    let clock = moment().unix()
+    const accepted = await dynaOrb.acceptance(body).catch(err => {
+            err.status = 400;
+            next(err);})
+    const buddied = await dynaUser.buddy(body.init_id,body.user_id,clock).catch(err=> {
+        err.status = 400;
+        next(err);
+    })
+    const buddys = await dynaUser.buddy(body.user_id,body.init_id,clock).catch(err=> {
+        err.status = 400;
+        next(err);
+    })
+    if (accepted && buddied && buddys) {
+            res.status(200).json({
+                "ORB completed for Acceptor": body.orb_uuid,
+                "user_id": body.user_id
+            });
         };
-        docClient.update(params, function(err, data) {
-            if (err) {
-                res.status(400).send({ Error: err.message });
-            } else {
-                res.status(200).json({
-                    "ORB completed for Acceptor": body.orb_uuid,
-                    "user_id": body.user_id
-                });
-            }
-        });
-    } catch (err) {
-        res.status(400).json(err.message);
-    }
 });
 
 /**
@@ -748,6 +739,10 @@ router.put(`/complete_orb`, async function (req, res, next) {
     const completion = await dynaOrb.update(body).catch(err => {
         err.status = 500;
         next(err);
+    });
+    res.status(201).json({
+        "ORB UUID": body.orb_uuid,
+        "expiry": body.expiry_dt
     });
     if (completion == true) {
         res.status(201).json({
