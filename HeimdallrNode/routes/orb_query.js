@@ -212,6 +212,7 @@ function keyword_to_code(keyword) {
     else if (keyword.toUpperCase() == "FULFILLED") code = "800#FULFILLED";
     else if (keyword.toUpperCase() == "ACCEPT") code = "500#ACCEPT";
     else if (keyword.toUpperCase() == "COMPLETED") code = "801#COMPLETED";
+    else if (keyword.toUpperCase() == "PENDING") code = "550#PENDING";
     return code;
 }
 
@@ -425,6 +426,53 @@ router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
     }
     
 });
+
+/**
+ * API 4.0
+ * Query for all ORB to user interactions
+ * Query for all your buddies or baddies(?)
+ */
+router.get(`/buddy`, async function (req, res, next) {
+    let params = {
+        TableName: ddb_config.tableNames.orb_table,    
+        KeyConditionExpression: "PK = :pk and begins_with(SK, :buddy)",
+        ExpressionAttributeValues: {
+            ":pk": "USR#" + req.query.user_id + "#REL",
+            ":buddy": "BUD#",
+        },
+        Limit: 8,
+        ScanIndexForward: req.query.ascending,
+    };
+    if (req.query.start) {
+        params.ExclusiveStartKey = {
+            "PK": "USR#" + req.query.user_id,
+            "SK": "BUD#" + req.query.start
+        }
+    };
+    docClient.query(params, function(err, data) {
+        if (err) {
+            err.status = 400;
+            next(err);
+        } else {
+            if (data.Items.length == 0) {
+                res.status(204).send()
+            } else {
+                let data_arr = [];
+                data.Items.forEach(function(item) {
+                    let dao = {};
+                    dao.buddy_id = parseInt(item.SK.slice(4));
+                    data_arr.push(dao);
+                })
+                let result = {
+                    "data" : data_arr
+                }
+                if (data.LastEvaluatedKey) result.LastEvaluatedKey = data.LastEvaluatedKey.SK.slice(4);
+                res.json(result);
+            }
+        }
+    });
+});
+
 
 function postal_to_geo(postal) {
     if (typeof postal !== 'string') {
