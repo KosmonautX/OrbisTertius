@@ -36,7 +36,7 @@ router.get(`/get`, async function (req, res, next) {
                 dao.where = data.Item.payload.where;
                 dao.when = data.Item.payload.when;
                 dao.tip = data.Item.payload.tip;
-                dao.user_id = data.Item.payload.user_id;
+                dao.user_id = parseInt(data.Item.payload.user_id);
                 dao.username = data.Item.alphanumeric;
                 dao.photo = data.Item.payload.photo;
                 dao.tags = data.Item.payload.tags;
@@ -105,7 +105,7 @@ router.get(`/get_user`, async function (req, res, next) {
 
     if (pteData && pubData) {
         let dao = {};
-        dao.user_id = req.query.user_id;
+        dao.user_id = parseInt(req.query.user_id);
         dao.username = pubData.Item.alphanumeric;
         dao.bio = pubData.Item.payload.bio;
         dao.profile_pic = pubData.Item.payload.profile_pic;
