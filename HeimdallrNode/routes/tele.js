@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {v4 : uuidv4} = require('uuid');
-const moment = require('moment')
+const moment = require('moment');
 const ddb_config = require('../config/ddb.config');
 const AWS = require('aws-sdk');
 AWS.config.update({
@@ -12,12 +12,6 @@ const geohash = require('ngeohash');
 const fs = require('fs');
 const rawdata = fs.readFileSync('./resources/onemap3.json', 'utf-8');
 const onemap = JSON.parse(rawdata);
-
-
-// function checkUser(id) {
-//     // check if user exists. -> create user
-//     // check if postal code exists. -> error, postal code 404
-// }
 
 // body: first, second, username, gender, age
 router.post(`/setup`, async function (req, res, next) {
@@ -67,6 +61,10 @@ router.get(`/start`, async function (req, res, next) {
                 err.status = 500;
                 throw err;
             })
+            let checkGender = true;
+            let checkAge = true;
+            if (pteData.Item.payload.gender == null) checkGender = false;
+            if (pteData.Item.payload.age == null) checkAge = false;
             res.status(200).send({
                 "commercial": pubData.Item.payload.commercial,
                 "first": pteData.Item.numeric,
@@ -75,6 +73,8 @@ router.get(`/start`, async function (req, res, next) {
                 "secondGeo": pubData.Item.geohash,
                 "homeCount": homeUser.Count,
                 "officeCount": officeUser.Count,
+                "gender": checkGender,
+                "age": checkAge,
             })
         } else {
             res.status(404).json("User not found")
@@ -88,22 +88,6 @@ router.get(`/start`, async function (req, res, next) {
 // returns list of users
 router.get(`/recipients`, async function (req, res, next) {
     try {
-        // let body = {};
-        // let pubData = await dynaUser.getPUBinfo(req).catch(err => {
-        //     err.status = 500;
-        //     throw err;
-        // });
-        // if (pubData) {
-        //     if (req.query.geohash) {
-        //         body.geohash = req.query.geohash
-        //     } else if (req.query.location == "first") {
-        //         body.geohash = pubData.Item.numeric
-        //     } else {
-        //         body.geohash = pubData.Item.geohash
-        //     }
-        // } else {
-        //     throw new Error("User not found")
-        // }
         const geohashing = postal_to_geo(req.query.postal_code);
         let blockedList = await dynaUser.getBlockedList(req.query).catch(err => {
             err.status = 500;
@@ -125,7 +109,7 @@ router.get(`/recipients`, async function (req, res, next) {
             } else {
                 let users_arr = [];
                 users.Items.forEach( item => {
-                    users_arr.push(parseInt(item.SK.slice(4)));
+                    users_arr.push(parseInt(item.SK.slice(5)));
                 });
                 if (blockedUsers.length > 0) {
                     users_arr = users_arr.filter(item => !blockedUsers.includes(item))
@@ -144,9 +128,9 @@ router.get(`/recipients`, async function (req, res, next) {
             } else {
                 let users_arr = [];
                 users.Items.forEach( item => {
-                    users_arr.push(parseInt(item.SK.slice(4)));
+                    users_arr.push(parseInt(item.SK.split('#')[1]));
                 });
-                if (blockedUsers != []) {
+                if (blockedUsers.length > 0) {
                     users_arr = users_arr.filter(item => !blockedUsers.includes(item))
                 }
                 res.status(200).send({
@@ -162,21 +146,39 @@ router.get(`/recipients`, async function (req, res, next) {
 // user block a user
 router.post(`/block`, async function (req, res, next) {
     let body = { ...req.body};
-    let block = await dynaUser.blockUser(body).catch(err => {
+    let orbInfo = await dynaOrb.retrieve(body).catch(err => {
         err.status = 500;
         next(err);
     });
+    let block;
+    if (orbInfo) {
+        body.block_id = orbInfo.user_id;
+        block = await dynaUser.blockUser(body).catch(err => {
+            err.status = 500;
+            next(err);
+        });
+    }
     if (block) res.status(200).send("user block");
 });
 
-// user set age and gender
-router.put(`/setGage`, async function (req, res, next) {
+// user set age  
+router.put(`/setAge`, async function (req, res, next) {
     let body = { ...req.body};
-    let setting = await dynaUser.setGage(body).catch(err => {
+    let setting = await dynaUser.setAge(body).catch(err => {
         err.status = 500;
         next(err);
     });
-    if (setting) res.status(200).send("Gender and Age set");
+    if (setting) res.status(200).send("Age set");
+});
+
+// user set   gender
+router.put(`/setGender`, async function (req, res, next) {
+    let body = { ...req.body};
+    let setting = await dynaUser.setGender(body).catch(err => {
+        err.status = 500;
+        next(err);
+    });
+    if (setting) res.status(200).send("Gender set");
 });
 
 // Set commercial setting
@@ -247,11 +249,15 @@ router.put(`/setPostal`, async function (req, res, next) {
     }
 });
 
+router.get('/getuuid', async function (req, res, next) {
+    const uuid = uuidv4();
+    res.status(200).send(uuid);
+})
+
 // receive offer/request (orb), info, where, when, tip, username, postal_code, commercial, success_dict
 router.post(`/post_orb`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        body.orb_uuid = uuidv4();
         body.expiry_dt = moment().add(7, 'days').unix();
         body.created_dt = moment().unix();
         body.geohashing = postal_to_geo(body.postal_code);
@@ -432,7 +438,7 @@ const dynaUser = {
             KeyConditionExpression: "PK = :loc and begins_with(SK, :user)",
             ExpressionAttributeValues: {
                 ":loc": "LOC#" + geohash,
-                ":user": "USR#",
+                ":user": "USR",
             },
         }
         const data = await docClient.query(params).promise();
@@ -474,19 +480,31 @@ const dynaUser = {
         const data = await docClient.put(params).promise();
         return data;
     },
-    async setGage (body) {
+    async setAge (body) {
         const params = {
             TableName: ddb_config.tableNames.orb_table,        
             Key: {
                 PK: "USR#" + body.user_id, 
                 SK: "USR#" + body.user_id + "#pte"
             },
-            UpdateExpression: "set payload = :payload",
+            UpdateExpression: "set payload.age = :age",
             ExpressionAttributeValues: {
-                ":payload": {
-                    age: body.age,
-                    gender: body.gender,
-                }
+                ":age": body.age
+            }
+        };
+        const data = await docClient.update(params).promise();
+        return data;
+    },
+    async setGender (body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "USR#" + body.user_id, 
+                SK: "USR#" + body.user_id + "#pte"
+            },
+            UpdateExpression: "set payload.gender = :gender",
+            ExpressionAttributeValues: {
+                ":gender": body.gender
             }
         };
         const data = await docClient.update(params).promise();
@@ -690,7 +708,7 @@ const dynaOrb = {
             dao.where = data.Item.payload.where;
             dao.when = data.Item.payload.when;
             dao.tip = data.Item.payload.tip;
-            dao.user_id = data.Item.payload.user_id;
+            dao.user_id = parseInt(data.Item.payload.user_id);
             dao.username = data.Item.payload.username;
             dao.expiry_dt = data.Item.time;
             dao.created_dt = data.Item.payload.created_dt;

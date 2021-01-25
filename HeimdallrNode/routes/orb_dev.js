@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {v4 : uuidv4} = require('uuid');
-const moment = require('moment')
+const moment = require('moment');
 const ddb_config = require('../config/ddb.config');
 const AWS = require('aws-sdk');
 AWS.config.update({
