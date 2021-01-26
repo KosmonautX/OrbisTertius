@@ -349,11 +349,13 @@ router.get(`/orbs_in_loc_fresh_page`, async function (req, res, next) {
     }
     let params = {
         TableName: ddb_config.tableNames.orb_table,
-        KeyConditionExpression: "PK = :loc and SK > :current_time",
+        KeyConditionExpression: "PK = :loc and SK BETWEEN :current_time AND :future_time",
         ExpressionAttributeValues: {
             ":loc": "LOC#" + geohashing,
-            ":current_time": moment().unix().toString()
-        }
+            ":current_time": moment().unix().toString(),
+            ":future_time": "4136173415"
+        },
+        ScanIndexForward: false,
     };
     docClient.query(params, function(err, data) {
         if (err) {
@@ -501,12 +503,13 @@ async function batch_query_location(geohashing) {
     return new Promise((resolve, reject) => {
         let params = {
             TableName: ddb_config.tableNames.orb_table,
-            KeyConditionExpression: "PK = :loc and SK > :current_time",
-            // FilterExpression: "",
+            KeyConditionExpression: "PK = :loc and SK BETWEEN :current_time AND :future_time",
             ExpressionAttributeValues: {
                 ":loc": "LOC#" + geohashing,
-                ":current_time": moment().unix().toString()
-            }
+                ":current_time": moment().unix().toString(),
+                ":future_time": "4136173415"
+            },
+            ScanIndexForward: false,
         };
         docClient.query(params, function(err, data) {
             if (err) {
