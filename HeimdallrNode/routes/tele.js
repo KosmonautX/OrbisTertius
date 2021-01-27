@@ -862,12 +862,12 @@ function postal_to_geo52(postal) {
 }
 
 function latlon_to_geo(latlon) {
-    let geohashing = geohash.encode_int(parseFloat(latlon.LATITUDE), parseFloat(latlon.LONGTITUDE), 30);
+    let geohashing = geohash.encode_int(parseFloat(latlon.LATITUDE), parseFloat(latlon.LONGITUDE), 30);
     return geohashing;
 };
 
 function latlon_to_geo52(latlon) {
-    let geohashing = geohash.encode_int(parseFloat(latlon.LATITUDE), parseFloat(latlon.LONGTITUDE), 52);
+    let geohashing = geohash.encode_int(parseFloat(latlon.LATITUDE), parseFloat(latlon.LONGITUDE), 52);
     return geohashing;
 }
 

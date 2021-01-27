@@ -335,7 +335,7 @@ router.get(`/orbs_in_loc_fresh_page`, async function (req, res, next) {
     if (req.query.lat && req.query.lon) {
         let latlon = {};
         latlon.LATITUDE = req.query.lat;
-        latlon.LONGTITUDE = req.query.lon;
+        latlon.LONGITUDE = req.query.lon;
         geohashing = latlon_to_geo(latlon);
     } else if (req.query.postal_code) {
         let postal = req.query.postal_code;
@@ -392,7 +392,7 @@ router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
         if (req.query.lat && req.query.lon) {
             let latlon = {};
             latlon.LATITUDE = req.query.lat;
-            latlon.LONGTITUDE = req.query.lon;
+            latlon.LONGITUDE = req.query.lon;
             geohashing = latlon_to_geo(latlon);
         } else if (req.query.postal_code) {
             let postal = req.query.postal_code;
@@ -484,12 +484,12 @@ function postal_to_geo(postal) {
     if (latlon == "undefined" || latlon == null) {
         throw new Error("Postal code does not exist!")
     }
-    let geohashing = geohash.encode_int(parseFloat(latlon.LATITUDE), parseFloat(latlon.LONGTITUDE), 30);
+    let geohashing = geohash.encode_int(parseFloat(latlon.LATITUDE), parseFloat(latlon.LONGITUDE), 30);
     return geohashing;
 }
 
 function latlon_to_geo(latlon) {
-    let geohashing = geohash.encode_int(parseFloat(latlon.LATITUDE), parseFloat(latlon.LONGTITUDE), 30);
+    let geohashing = geohash.encode_int(parseFloat(latlon.LATITUDE), parseFloat(latlon.LONGITUDE), 30);
     return geohashing;
 }
 
