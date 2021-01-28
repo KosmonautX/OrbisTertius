@@ -116,6 +116,8 @@ router.get(`/get_user`, async function (req, res, next) {
         dao.birthday = pteData.Item.payload.birthday;
         dao.home = pteData.Item.numeric;
         dao.office = pteData.Item.geohash;
+        dao.home_geohash = pubData.Item.numeric;
+        dao.office_geohash = pubData.Item.geohash;
         res.json(dao);
     } else {
         res.status(404).json("User not found")
