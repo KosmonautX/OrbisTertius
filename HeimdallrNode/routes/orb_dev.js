@@ -379,6 +379,17 @@ function decrypt(text) {
     return decrypted.toString();
 }
 
+router.get(`/decode_geohash`, async function (req, res, next) {
+    if (req.query.geohash.length == 16) {
+        let latlon = geohash.decode_int(req.query.geohash, 52);
+        res.send(latlon);
+    } else if (req.query.geohash.length == 9) {
+        let latlon = geohash.decode_int(req.query.geohash, 30);
+        res.send(latlon);
+    } else {
+        res.status(400).send("geohash looks sus");
+    }
+});
 // async function deleteItems(tableName, partitionId ) {
   
 //     const queryParams = {
