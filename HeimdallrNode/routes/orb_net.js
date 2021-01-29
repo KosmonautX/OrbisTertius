@@ -451,7 +451,7 @@ const dynaOrb = {
                             "#t": "time"
                         },
                         ExpressionAttributeValues: {
-                            ":time": moment().unix()
+                            ":time": moment().subtract(1, "minutes").unix(),
                         }
                     }
                 },
@@ -500,7 +500,7 @@ const dynaOrb = {
                             "#t": "time"
                         },
                         ExpressionAttributeValues: {
-                            ":time": moment().unix(),
+                            ":time": moment().subtract(1, "minutes").unix(),
                             ":payload": body.payload
                         }
                     }
@@ -530,14 +530,14 @@ const dynaOrb = {
 
 /**
  * API POST 3
- * User personal interactions with orb: SAVE | HIDE | RPRT
+ * User personal interactions with orb: SAVE | HIDE
  */
 router.post(`/user_action`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        let userActions = ['save','hide','rprt'] 
+        let userActions = ['save','hide'] 
         if (!userActions.includes(body.action.toLowerCase())) {
-            throw new Error('Missing or Invalid user action. Only supports save|hide|rprt.')
+            throw new Error('Missing or Invalid user action. Only supports save|hide')
         }
         let params = {
             TableName: ddb_config.tableNames.orb_table,
@@ -567,14 +567,14 @@ router.post(`/user_action`, async function (req, res, next) {
 
 /**
  * API POST 3
- * UNDO User personal interactions with orb: SAVE | HIDE | RPRT
+ * UNDO User personal interactions with orb: SAVE | HIDE
  */
 router.post(`/undo_user_action`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        let userActions = ['save','hide','rprt'] 
+        let userActions = ['save','hide'] 
         if (!userActions.includes(body.action.toLowerCase())) {
-            throw new Error('Missing or Invalid user action. Only supports save|hide|rprt.')
+            throw new Error('Missing or Invalid user action. Only supports save|hide.')
         }
         let params = {
             TableName: ddb_config.tableNames.orb_table,
@@ -592,6 +592,36 @@ router.post(`/undo_user_action`, async function (req, res, next) {
                     "UNDO User Action": body.action.toLowerCase(),
                     "ORB UUID": body.orb_uuid,
                     "USER ID": body.user_id
+                });
+            }
+          });
+    } catch (err) {
+        err.status = 400;
+        next(err);
+    }
+});
+
+// user reports a post 
+router.post(`/report`, async function (req, res, next) {
+    try {
+        let body = { ...req.body };
+        let params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Item: {
+                PK: "ORB#" + body.orb_uuid,
+                SK: "REPORT#" + body.user_id,
+                inverse: moment().unix().toString(),
+                payload: body.reason,
+            },
+        };
+        docClient.put(params, function(err, data) {
+            if (err) {
+                err.status = 400;
+                next(err);
+            } else {
+                res.status(200).json({
+                    "ORB Reported": body.orb_uuid,
+                    "user_id": body.user_id
                 });
             }
           });
@@ -777,16 +807,15 @@ router.put(`/complete_orb`, async function (req, res, next) {
         err.status = 404;
         err.message = "ORB not found"
     });
-    body.expiry_dt = orbData.expiry_dt;
-    body.geohash = orbData.geohash;
-    const completion = await dynaOrb.update(body).catch(err => {
-        err.status = 500;
-        next(err);
-    });
-    res.status(201).json({
-        "ORB UUID": body.orb_uuid,
-        "expiry": body.expiry_dt
-    });
+    let completion = false;
+    if (orbData) {
+        body.expiry_dt = orbData.expiry_dt;
+        body.geohash = orbData.geohash;
+        completion = await dynaOrb.update(body).catch(err => {
+            err.status = 500;
+            next(err);
+        });
+    }
     if (completion == true) {
         res.status(201).json({
             "Orb completed": body.orb_uuid
