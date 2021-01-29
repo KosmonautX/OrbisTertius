@@ -72,6 +72,10 @@ router.post(`/create_user`, async function (req, res, next) {
                 home: latlon_to_geo(body.latlon.home),
                 office: latlon_to_geo(body.latlon.office)
             };
+            body.geohashing52 = {
+                home: postal_to_geo52(body.home),
+                office: postal_to_geo52(body.office)
+            };
             body.loc = {
                 home: body.latlon.home,
                 office: body.latlon.office
@@ -183,7 +187,6 @@ const dynaUser = {
         const data = await docClient.put(params).promise();
         return data;
     },
-    
     async updatePayload(body) {
         const params = {
             TableName: ddb_config.tableNames.orb_table,        
@@ -200,6 +203,105 @@ const dynaUser = {
                     verified: body.verified,
                 }
             },
+        };
+        const data = await docClient.update(params).promise();
+        return data;
+    },
+    async updateUserHome(body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "USR#" + body.user_id,
+                SK: "USR#" + body.user_id + "#pte"
+            },
+            UpdateExpression: "set #n = :home",
+            ExpressionAttributeNames:{
+                "#n": "numeric"
+            },
+            ExpressionAttributeValues: {
+                ":home": body.home
+            }
+        };
+        const data = await docClient.update(params).promise();
+        return data;
+    },
+    async updateUserHomeGeohash(body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "USR#" + body.user_id,
+                SK: "USR#" + body.user_id + "#pub"
+            },
+            UpdateExpression: "set #n = :home",
+            ExpressionAttributeNames:{
+                "#n": "numeric"
+            },
+            ExpressionAttributeValues: {
+                ":home": postal_to_geo(body.home)
+            }
+        };
+        const data = await docClient.update(params).promise();
+        return data;
+    },
+    async updateUserHomeGeohash52(body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "USR#" + body.user_id,
+                SK: "USR#" + body.user_id + "#pub"
+            },
+            UpdateExpression: "set #n = :home",
+            ExpressionAttributeNames:{
+                "#n": "numeric2"
+            },
+            ExpressionAttributeValues: {
+                ":home": postal_to_geo52(body.home)
+            }
+        };
+        const data = await docClient.update(params).promise();
+        return data;
+    },
+    async updateUserOffice(body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "USR#" + body.user_id,
+                SK: "USR#" + body.user_id + "#pte"
+            },
+            UpdateExpression: "set geohash = :office",
+            ExpressionAttributeValues: {
+                ":office": body.office,
+            }
+        };
+        const data = await docClient.update(params).promise();
+        return data;
+    },
+    async updateUserOfficeGeohash(body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "USR#" + body.user_id,
+                SK: "USR#" + body.user_id + "#pub"
+            },
+            UpdateExpression: "set geohash = :office",
+            ExpressionAttributeValues: {
+                ":office": postal_to_geo(body.office),
+            }
+        };
+        const data = await docClient.update(params).promise();
+        return data;
+    },
+    async updateUserOfficeGeohash52(body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "USR#" + body.user_id,
+                SK: "USR#" + body.user_id + "#pub"
+            },
+            UpdateExpression: "set geohash2 = :office",
+            ExpressionAttributeValues: {
+                ":office": postal_to_geo52(body.office),
+            }
         };
         const data = await docClient.update(params).promise();
         return data;
@@ -567,45 +669,6 @@ router.put(`/delete_acceptance`, async function (req, res, next) {
  * API 1.1
  * Update user payload
  */
-// router.put(`/update_user`, async function (req, res, next) {
-//     try {
-//         let body = { ...req.body };
-//         let params = {
-//             TableName: ddb_config.tableNames.orb_table,        
-//             Key: {
-//                 PK: "USR#" + body.user_id, 
-//                 SK: "USR#" + body.user_id,
-//             },
-//             UpdateExpression: "set payload = :payload",
-//             // ConditionExpression:":username",
-//             ExpressionAttributeValues: {
-//                 ":payload": {
-//                     bio: body.bio,
-//                     profile_pic: body.profile_pic,
-//                     verified: body.verified,
-//                     country_code: body.country_code,
-//                     hp_number: body.hp_number,
-//                     gender: body.gender,
-//                     birthday: body.birthday,
-//                 },
-//             }
-//         };
-//         docClient.update(params, function(err, data) {
-//             if (err) {
-//                 err.status = 400;
-//                 next(err);
-//             } else {
-//                 res.json({
-//                     "User updated:": body
-//                 });
-//             }
-//         });
-//     } catch (err) {
-//         err.status = 400;
-//         next(err);
-//     }
-// });
-
 router.put(`/update_user`, async function (req, res, next) {
     let body = { ...req.body };
     let data = await dynaUser.updatePayload(body).catch(err => {
@@ -658,45 +721,25 @@ router.put(`/update_username`, async function (req, res, next) {
  * Update user location
  * ONLY supports postal code for now
  */
-// ! GEOHASHING NOT DONE YET
 router.put(`/update_user_location`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        // let geohashing;
-        // if (body.latlon) {
-        //     geohashing = latlon_to_geo(body.latlon); 
-        // } else if (body.postal_code) {
-        //     geohashing = postal_to_geo(body.postal_code);
-        // }
-        let params = {
-            TableName: ddb_config.tableNames.orb_table,        
-            Key: {
-                PK: "USR#" + body.user_id, 
-                SK: "USR#" + body.user_id + "#pte",
-            },
-            UpdateExpression: "set geohash = :office, #n = :home",
-            ExpressionAttributeNames:{
-                "#n": "numeric"
-            },
-            ExpressionAttributeValues: {
-                ":office": body.office,
-                ":home": body.home
-            }
-        };
-        docClient.update(params, function(err, data) {
-            if (err) {
-                res.status(400).send({ Error: err.message });
-            } else {
-                res.status(201).json({
-                    "User updated:": body
-                });
-            }
-        });
+        if (body.home){
+            await dynaUser.updateUserHome(body);
+            await dynaUser.updateUserHomeGeohash(body);
+            await dynaUser.updateUserHomeGeohash52(body);
+        } 
+        if (body.office){
+            await dynaUser.updateUserOffice(body);
+            await dynaUser.updateUserOfficeGeohash(body);
+            await dynaUser.updateUserOfficeGeohash52(body);
+        }
+        res.json({ "User updated:": body });
     } catch (err) {
-        res.status(400).json(err.message);
+        err.status = 400;
+        next(err)
     }
 });
-
 /**
  * API 1.2
  * Complete orb handshake (for an acceptor)
@@ -820,12 +863,6 @@ function postal_to_geo(postal) {
 function latlon_to_geo(latlon) {
     let geohashing = geohash.encode_int(parseFloat(latlon.LATITUDE), parseFloat(latlon.LONGITUDE), 30);
     return geohashing;
-}
-
-function get_geo_array(geohashing) {
-    let arr = geohash.neighbors_int(geohashing, 30); // array
-    arr.unshift(geohashing);
-    return arr;
 }
 
 function postal_to_geo52(postal) {

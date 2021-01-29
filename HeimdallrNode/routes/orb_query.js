@@ -56,43 +56,6 @@ router.get(`/get`, async function (req, res, next) {
     });
 });
 
-/**
- * API 1 
- * Get specific user (all info) 
- */
-// router.get(`/get_user`, async function (req, res, next) {
-//     let params = {
-//         TableName: ddb_config.tableNames.orb_table,        
-//         Key: {
-//             PK: "USR#" + req.query.user_id,
-//             SK: "USR#" + req.query.user_id
-//         }
-//     };
-//     docClient.get(params, function(err, data) {
-//         if (err) {
-//             res.status(400).send({ Error: err.message });
-//         } else {
-//             if (data.Item){
-//                 let dao = {};
-//                 dao.user_id = req.query.user_id;
-//                 dao.username = data.Item.alphanumeric;
-//                 dao.bio = data.Item.payload.bio;
-//                 dao.profile_pic = data.Item.payload.profile_pic;
-//                 dao.verified = data.Item.payload.verified;
-//                 dao.country_code = data.Item.payload.country_code;
-//                 dao.hp_number = data.Item.payload.hp_number;
-//                 dao.gender = data.Item.payload.gender;
-//                 dao.birthday = data.Item.payload.birthday;
-//                 dao.home = data.Item.numeric;
-//                 dao.office = data.Item.geohash;
-//                 res.json(dao);
-//             } else {
-//                 res.status(404).json("User not found")
-//             }
-//         }
-//     });
-// });
-
 router.get(`/get_user`, async function (req, res, next) {
     let pteData = await userQuery.queryPTE(req).catch(err => {
         err.status = 400;
@@ -118,6 +81,8 @@ router.get(`/get_user`, async function (req, res, next) {
         dao.office = pteData.Item.geohash;
         dao.home_geohash = pubData.Item.numeric;
         dao.office_geohash = pubData.Item.geohash;
+        dao.home_geohash52 = pubData.Item.numeric2;
+        dao.office_geohash52 = pubData.Item.geohash2;
         res.json(dao);
     } else {
         res.status(404).json("User not found")
