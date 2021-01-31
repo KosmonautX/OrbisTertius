@@ -123,6 +123,8 @@ const dynaUser = {
                             alphanumeric: body.username,
                             numeric: body.geohashing.home,
                             geohash: body.geohashing.office, 
+                            numeric2: body.geohashing52.home,
+                            geohash2: body.geohashing52.office,
                             payload: {
                                 bio: body.bio,
                                 profile_pic: body.profile_pic,
