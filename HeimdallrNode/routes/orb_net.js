@@ -72,10 +72,6 @@ router.post(`/create_user`, async function (req, res, next) {
                 home: latlon_to_geo(body.latlon.home),
                 office: latlon_to_geo(body.latlon.office)
             };
-            body.geohashing52 = {
-                home: postal_to_geo52(body.home),
-                office: postal_to_geo52(body.office)
-            };
             body.loc = {
                 home: body.latlon.home,
                 office: body.latlon.office
@@ -84,6 +80,10 @@ router.post(`/create_user`, async function (req, res, next) {
             body.geohashing = {
                 home: postal_to_geo(body.home),
                 office: postal_to_geo(body.office)
+            };
+            body.geohashing52 = {
+                home: postal_to_geo52(body.home),
+                office: postal_to_geo52(body.office)
             };
             body.loc = {
                 home: body.home,
