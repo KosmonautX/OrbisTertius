@@ -10,10 +10,9 @@ AWS.config.update({
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint:ddb_config.dyna});
 const s3 = new AWS.S3({endpoint:ddb_config.sthree,
                        s3ForcePathStyle: true, signatureVersion: 'v4'});
-const geohash = require('ngeohash');
-const fs = require('fs');
-const rawdata = fs.readFileSync('./resources/onemap3.json', 'utf-8');
-const onemap = JSON.parse(rawdata);
+const geohash = require('../controller/geohash');
+const teleMessaging = require('../controller/teleMessaging');
+
 
 /**
  * API 0.0
@@ -29,11 +28,11 @@ router.post(`/post_orb`, async function (req, res, next) {
         body.created_dt = moment().unix();
         let img;
         if (body.latlon) {
-            body.geohashing = latlon_to_geo(body.latlon); 
-            body.geohashing52 = latlon_to_geo52(body.latlon); 
+            body.geohashing = geohash.latlon_to_geo(body.latlon); 
+            body.geohashing52 = geohash.latlon_to_geo52(body.latlon); 
         } else if (body.postal_code) {
-            body.geohashing = postal_to_geo(body.postal_code);
-            body.geohashing52 = postal_to_geo52(body.postal_code);
+            body.geohashing = geohash.postal_to_geo(body.postal_code);
+            body.geohashing52 = geohash.postal_to_geo52(body.postal_code);
         }
         if (body.photo){
             img = body.photo;
@@ -45,6 +44,9 @@ router.post(`/post_orb`, async function (req, res, next) {
             err.status = 400
             throw err;
         })
+        // when user post orb on app, send the orb to telebro
+        let recipients = await teleMessaging.getRecipient(body);
+        await teleMessaging.postOrbOnTele(body, recipients);
         res.status(201).json({
             "ORB UUID": body.orb_uuid,
             "expiry": body.expiry_dt,
@@ -69,8 +71,8 @@ router.post(`/create_user`, async function (req, res, next) {
         let body = { ...req.body };
         if (body.latlon) {
             body.geohashing = {
-                home: latlon_to_geo(body.latlon.home),
-                office: latlon_to_geo(body.latlon.office)
+                home: geohash.latlon_to_geo(body.latlon.home),
+                office: geohash.latlon_to_geo(body.latlon.office)
             };
             body.loc = {
                 home: body.latlon.home,
@@ -78,12 +80,12 @@ router.post(`/create_user`, async function (req, res, next) {
             };
         } else if (body.home) {
             body.geohashing = {
-                home: postal_to_geo(body.home),
-                office: postal_to_geo(body.office)
+                home: geohash.postal_to_geo(body.home),
+                office: geohash.postal_to_geo(body.office)
             };
             body.geohashing52 = {
-                home: postal_to_geo52(body.home),
-                office: postal_to_geo52(body.office)
+                home: geohash.postal_to_geo52(body.home),
+                office: geohash.postal_to_geo52(body.office)
             };
             body.loc = {
                 home: body.home,
@@ -239,7 +241,7 @@ const dynaUser = {
                 "#n": "numeric"
             },
             ExpressionAttributeValues: {
-                ":home": postal_to_geo(body.home)
+                ":home": geohash.postal_to_geo(body.home)
             }
         };
         const data = await docClient.update(params).promise();
@@ -257,7 +259,7 @@ const dynaUser = {
                 "#n": "numeric2"
             },
             ExpressionAttributeValues: {
-                ":home": postal_to_geo52(body.home)
+                ":home": geohash.postal_to_geo52(body.home)
             }
         };
         const data = await docClient.update(params).promise();
@@ -287,7 +289,7 @@ const dynaUser = {
             },
             UpdateExpression: "set geohash = :office",
             ExpressionAttributeValues: {
-                ":office": postal_to_geo(body.office),
+                ":office": geohash.postal_to_geo(body.office),
             }
         };
         const data = await docClient.update(params).promise();
@@ -302,7 +304,7 @@ const dynaUser = {
             },
             UpdateExpression: "set geohash2 = :office",
             ExpressionAttributeValues: {
-                ":office": postal_to_geo52(body.office),
+                ":office": geohash.postal_to_geo52(body.office),
             }
         };
         const data = await docClient.update(params).promise();
@@ -878,39 +880,5 @@ router.put(`/delete_orb`, async function (req, res, next) {
         })
     }
 });
-
-
-function postal_to_geo(postal) {
-    if (typeof postal !== 'string') {
-        postal = postal.toString();
-    }
-    let latlon = onemap[postal];
-    if (latlon == "undefined" || latlon == null) {
-        throw new Error("Postal code does not exist!")
-    }
-    return latlon_to_geo(latlon);
-}
-
-function latlon_to_geo(latlon) {
-    let geohashing = geohash.encode_int(parseFloat(latlon.LATITUDE), parseFloat(latlon.LONGITUDE), 30);
-    return geohashing;
-}
-
-function postal_to_geo52(postal) {
-    if (typeof postal !== 'string') {
-        postal = postal.toString();
-    }
-    let latlon = onemap[postal];
-    if (latlon == "undefined" || latlon == null) {
-        throw new Error("Postal code does not exist!")
-    }
-    return latlon_to_geo52(latlon);
-}
-
-function latlon_to_geo52(latlon) {
-    let geohashing = geohash.encode_int(parseFloat(latlon.LATITUDE), parseFloat(latlon.LONGITUDE), 52);
-    return geohashing;
-}
-
 
 module.exports = router;

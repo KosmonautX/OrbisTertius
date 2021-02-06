@@ -6,12 +6,9 @@ const ddb_config = require('../config/ddb.config');
 const AWS = require('aws-sdk');
 AWS.config.update({
     region: ddb_config.region
-})
+});
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
-const geohash = require('ngeohash');
-const fs = require('fs');
-const rawdata = fs.readFileSync('./resources/onemap3.json', 'utf-8');
-const onemap = JSON.parse(rawdata);
+const geohash = require('../controller/geohash');
 
 /**
  * API 1 
@@ -303,15 +300,15 @@ router.get(`/orbs_in_loc_fresh_page`, async function (req, res, next) {
         let latlon = {};
         latlon.LATITUDE = req.query.lat;
         latlon.LONGITUDE = req.query.lon;
-        geohashing = latlon_to_geo(latlon);
+        geohashing = geohash.latlon_to_geo(latlon);
     } else if (req.query.postal_code) {
         let postal = req.query.postal_code;
-        geohashing = postal_to_geo(postal);
+        geohashing = geohash.postal_to_geo(postal);
     } else {
         throw new Error('Please give either postal_code or latlon')
     }
     if (req.query.page) {
-        let geohash_arr = get_geo_array(geohashing);
+        let geohash_arr = geohash.get_geo_array(geohashing);
         geohashing = geohash_arr[req.query.page]
     }
     let params = {
@@ -360,14 +357,14 @@ router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
             let latlon = {};
             latlon.LATITUDE = req.query.lat;
             latlon.LONGITUDE = req.query.lon;
-            geohashing = latlon_to_geo(latlon);
+            geohashing = geohash.latlon_to_geo(latlon);
         } else if (req.query.postal_code) {
             let postal = req.query.postal_code;
-            geohashing = postal_to_geo(postal);
+            geohashing = geohash.postal_to_geo(postal);
         } else {
             throw new Error('Please give either postal_code or latlon')
         }
-        let geohash_arr = get_geo_array(geohashing);
+        let geohash_arr = geohash.get_geo_array(geohashing);
         let page = [];
         for (let g of geohash_arr) {
             let result = await batch_query_location(g);
@@ -441,30 +438,6 @@ router.get(`/buddy`, async function (req, res, next) {
         }
     });
 });
-
-
-function postal_to_geo(postal) {
-    if (typeof postal !== 'string') {
-        postal = postal.toString();
-    }
-    let latlon = onemap[postal];
-    if (latlon == "undefined" || latlon == null) {
-        throw new Error("Postal code does not exist!")
-    }
-    let geohashing = geohash.encode_int(parseFloat(latlon.LATITUDE), parseFloat(latlon.LONGITUDE), 30);
-    return geohashing;
-}
-
-function latlon_to_geo(latlon) {
-    let geohashing = geohash.encode_int(parseFloat(latlon.LATITUDE), parseFloat(latlon.LONGITUDE), 30);
-    return geohashing;
-}
-
-function get_geo_array(geohashing) {
-    let arr = geohash.neighbors_int(geohashing, 30); // array
-    arr.unshift(geohashing);
-    return arr;
-}
 
 async function batch_query_location(geohashing) {
     return new Promise((resolve, reject) => {
