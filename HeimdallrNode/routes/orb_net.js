@@ -172,7 +172,23 @@ const dynaUser = {
                                 },
                             }
                         }
-                    }
+                    },
+                    {
+                        PutRequest: {
+                            Item: {
+                                PK: "LOC#" + body.geohashing.home,
+                                SK: "USR#" + body.user_id,
+                            }
+                        }
+                    },
+                    {
+                        PutRequest: {
+                            Item: {
+                                PK: "LOC#" + body.geohashing.office,
+                                SK: "USR#" + body.user_id,
+                            }
+                        }
+                    },
                 ]
             }
         };
