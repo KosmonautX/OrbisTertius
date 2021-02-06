@@ -16,7 +16,7 @@ async function getRecipient (body) {
                 blockedUsers.push(parseInt(item.SK.slice(4)));
             });
         }
-        if (body.commercial == true || body.commercial.toLowerCase() == 'true') {
+        if (body.commercial) {
             let users = await dynaUser.getCommercialUsers(geohashing).catch(err => {
                 err.status = 500;
                 throw err;
@@ -75,7 +75,7 @@ async function postOrbOnTele(body, recipients) {
             where: body.where,
             when: body.when,
             tip: body.tip,
-            user_id_list: [98667304],
+            user_id_list: recipients,
             if_commercial: false,
         })
         // console.log(body);
@@ -84,7 +84,19 @@ async function postOrbOnTele(body, recipients) {
     }
 };
 
+async function exchangeContact(body) {
+    try {
+        const response = await axios.post(ddb_config.mercury +'/api/fizz/tele/messaging', {
+            acceptor_id: body.init_id,
+            user_id: body.user_id,
+        })
+    } catch (err) {
+        console.log(err);
+    }
+};
+
 module.exports = {
     getRecipient: getRecipient,
     postOrbOnTele: postOrbOnTele,
+    exchangeContact:exchangeContact
 };

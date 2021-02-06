@@ -1,7 +1,7 @@
 from mypy_extensions import TypedDict
 
 class TeleMessagingInterface(TypedDict, total=False):
-    acceptor_id: int
+    acceptor_id: str
     user_id: int
 
 class TelePostingInterface(TypedDict, total=False):

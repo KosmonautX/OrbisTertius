@@ -657,9 +657,12 @@ router.post(`/accept`, async function (req, res, next) {
                 err.status = 400;
                 next(err);
             } else {
-                res.status(200).json({
-                    "ORB accepted": body.orb_uuid,
-                    "USER ID": body.user_id
+                teleMessaging.exchangeContact(body).then(
+                    function(value){
+                        res.status(200).json({
+                            "ORB accepted by": body.orb_uuid,
+                            "USER ID": body.user_id
+                    });
                 });
             }
           });
