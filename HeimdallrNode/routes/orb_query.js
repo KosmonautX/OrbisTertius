@@ -53,6 +53,10 @@ router.get(`/get`, async function (req, res, next) {
     });
 });
 
+/**
+ * API 1 
+ * Get specific user (all info) 
+ */
 router.get(`/get_user`, async function (req, res, next) {
     let pteData = await userQuery.queryPTE(req).catch(err => {
         err.status = 400;

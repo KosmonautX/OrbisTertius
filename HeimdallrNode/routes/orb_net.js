@@ -41,7 +41,7 @@ router.post(`/post_orb`, async function (req, res, next) {
                                                         , Key: body.orb_uuid, Expires: 300});
         }
         let response = await dynaOrb.create(body).catch(err => {
-            err.status = 400
+            err.status = 400;
             throw err;
         })
         // when user post orb on app, send the orb to telebro
@@ -374,7 +374,8 @@ const dynaOrb = {
                                 SK: "USR#" + body.user_id,
                                 inverse: "600#INIT",
                                 time: body.created_dt,
-                                geohash: body.geohashing52
+                                geohash: body.geohashing52,
+                                numeric: body.nature,
                             }
                         }
                     }
@@ -401,7 +402,7 @@ const dynaOrb = {
             dao.when = data.Item.payload.when;
             dao.tip = data.Item.payload.tip;
             dao.user_id = data.Item.payload.user_id;
-            dao.username = data.Item.alphanumeric;
+            dao.username = data.Item.payload.username;
             dao.photo = data.Item.payload.photo;
             dao.tags = data.Item.payload.tags;
             dao.expiry_dt = data.Item.time;

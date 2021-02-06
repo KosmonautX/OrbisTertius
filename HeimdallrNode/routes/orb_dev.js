@@ -8,12 +8,6 @@ AWS.config.update({
     region: ddb_config.region
 })
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
-const geohash = require('ngeohash');
-const fs = require('fs');
-const { param } = require('./orb_query');
-const rawdata = fs.readFileSync('./resources/onemap3.json', 'utf-8');
-const onemap = JSON.parse(rawdata);
-
 const jwt = require(`jsonwebtoken`);
 const secret = require('../resources/global').SECRET;
 const crypto = require('crypto');
@@ -283,73 +277,6 @@ router.post('/login', async function (req, res, next) {
     }
 });
 
-
-const dyna = {
-    async write (body) {
-        const params = {
-            "TransactItems": [
-                {
-                    Put: {
-                        TableName: "ORB_NET",
-                        ConditionExpression: "attribute_not_exists(PK)",
-                        Item: {
-                            PK: "USR#" + body.user_id, 
-                            SK: "USR#" + body.user_id + "#pte",
-                            alphanumeric: body.username,
-                            numeric: body.postal_code,
-                            payload: {
-                                hp_number: body.hp_number,
-                            },
-                        }
-                    }
-                },
-                {
-                    Put: {
-                        TableName: "ORB_NET",
-                        ConditionExpression: "attribute_not_exists(PK)",
-                        Item: {
-                            PK: "phone#65" + body.hp_number,
-                            SK: "phone#65" + body.hp_number
-                        }
-                    }
-                }
-            ] 
-        };
-        const data = await docClient.transactWrite(params).promise();
-        // if (!data || !data.Item) {
-        //     throw new Error('error retrieving data');
-        // }
-        return data;
-    },
-    async bulkCreate(body) {
-        const params = {
-            RequestItems: {
-                ORB_NET: [
-                    {
-                        PutRequest: {
-                            Item: {
-                                PK: "USR#" + body.user_id,
-                                SK: "USR#" + body.user_id + "#pte",
-                                alphanumeric: body.username,
-                                numeric: body.loc.home,
-                                geohash: body.loc.office, 
-                                payload: {
-                                    country_code: body.country_code,
-                                    hp_number: body.hp_number,
-                                    gender: body.gender,
-                                    birthday: body.birthday, //DD-MM-YYYY
-                                }, // blocked List?
-                            }
-                        }
-                    }
-                ]
-            }
-        };
-        const data = await docClient.batchWrite(params).promise();
-        return data;
-    }
-};
-
 router.get('/hash', async function (req, res, next) {
     let pw = encrypt("93999");
     let decry = decrypt(pw)
@@ -390,49 +317,5 @@ router.get(`/decode_geohash`, async function (req, res, next) {
         res.status(400).send("geohash looks sus");
     }
 });
-// async function deleteItems(tableName, partitionId ) {
-  
-//     const queryParams = {
-//       TableName: tableName,
-//       KeyConditionExpression: 'partitionId = :partitionId',
-//       ExpressionAttributeValues: { ':partitionId': partitionId } ,
-//     };
-  
-//     const queryResults = await docClient.query(queryParams).promise()
-//     if (queryResults.Items && queryResults.Items.length > 0) {
-      
-//       const batchCalls = chunks(queryResults.Items, 25).map( async (chunk) => {
-//         const deleteRequests = chunk.map( item => {
-//           return {
-//             DeleteRequest : {
-//               Key : {
-//                 'partitionId' : item.partitionId,
-//                 'sortId' : item.sortId,
-  
-//               }
-//             }
-//           }
-//         })
-  
-//         const batchWriteParams = {
-//           RequestItems : {
-//             [tableName] : deleteRequests
-//           }
-//         }
-//         await docClient.batchWrite(batchWriteParams).promise()
-//       })
-  
-//       await Promise.all(batchCalls)
-//     }
-//   }
-  
-//   // https://stackoverflow.com/a/37826698/3221253
-//   function chunks(inputArray, perChunk) {
-//     return inputArray.reduce((all,one,i) => {
-//       const ch = Math.floor(i/perChunk); 
-//       all[ch] = [].concat((all[ch]||[]),one); 
-//       return all
-//    }, [])
-//   }
 
 module.exports = router;
