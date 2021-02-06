@@ -12,6 +12,7 @@ services:
     links:
       - "dynamodb:database"
       - "localstack:s3"
+      - "mercury:flask"
   localstack:
     image: localstack/localstack-full:latest
     volumes:
@@ -24,6 +25,19 @@ services:
       - SERVICES=s3
       - DEBUG=1
       - DATA_DIR=/tmp/localstack/data
+
+  mercury:
+    build: ./MercuryFlask/
+    volumes:
+      - ./MercuryFlask:/usr/src/mercury
+    ports:
+      - "7000:3000"
+    depends_on:
+      - dynamodb
+    links:
+      - "dynamodb:database"
+    restart: always
+
   dynamodb:
     image: amazon/dynamodb-local
     ports:

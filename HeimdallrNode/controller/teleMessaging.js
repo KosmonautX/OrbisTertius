@@ -1,6 +1,7 @@
 const axios = require('axios');
 const dynaUser = require('./dynamoUser');
 const geohash = require('./geohash');
+const ddb_config = require('../config/ddb.config');
 
 async function getRecipient (body) {
     try {
@@ -57,7 +58,7 @@ async function getRecipient (body) {
 
 async function postOrbOnTele(body, recipients) {
     try {
-        const response = await axios.post('http://localhost:7000/api/fizz/tele/posting', {
+        const response = await axios.post(ddb_config.mercury +'/api/fizz/tele/posting', {
 
             // fizzbarId: 0,
             // name: body.username,
@@ -74,7 +75,7 @@ async function postOrbOnTele(body, recipients) {
             where: body.where,
             when: body.when,
             tip: body.tip,
-            user_id_list: recipients,
+            user_id_list: [98667304],
             if_commercial: false,
         })
         // console.log(body);
