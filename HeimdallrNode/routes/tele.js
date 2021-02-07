@@ -16,6 +16,10 @@ router.post(`/setup`, async function (req, res, next) {
             first: geohash.postal_to_geo(body.first),
             second: geohash.postal_to_geo(body.second)
         };
+        body.geohashing52 = {
+            first: geohash.postal_to_geo52(body.first),
+            second: geohash.postal_to_geo52(body.second)
+        };
         let success = await dynaUser.Tcreate(body).catch(err => {
             res.status(400).json(err.message);
         })
