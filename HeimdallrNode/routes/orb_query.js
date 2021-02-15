@@ -67,7 +67,7 @@ router.get(`/get_user`, async function (req, res, next) {
         next(err);
     });
 
-    if (pteData && pubData) {
+    if (pteData.Item && pubData.Item) {
         let dao = {};
         dao.user_id = parseInt(req.query.user_id);
         dao.username = pubData.Item.alphanumeric;
@@ -86,7 +86,7 @@ router.get(`/get_user`, async function (req, res, next) {
         dao.office_geohash52 = pubData.Item.geohash2;
         res.json(dao);
     } else {
-        res.status(404).json("User not found")
+        res.status(204).json("User not found")
     }
 });
 

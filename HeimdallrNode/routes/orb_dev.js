@@ -8,6 +8,7 @@ AWS.config.update({
     region: ddb_config.region
 })
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
+const geohash = require('ngeohash');
 const jwt = require(`jsonwebtoken`);
 const secret = require('../resources/global').SECRET;
 const crypto = require('crypto');
@@ -153,11 +154,19 @@ router.delete(`/delete_user`, async function (req, res, next) {
         DeleteRequest: {
             Key : {
                 PK: "USR#" + req.query.user_id,
-                SK: "USR#" + req.query.user_id, 
+                SK: "USR#" + req.query.user_id + "#pte", 
             }
         }
     };
     let param2 = {
+        DeleteRequest: {
+            Key : {
+                PK: "USR#" + req.query.user_id,
+                SK: "USR#" + req.query.user_id + "#pub", 
+            }
+        }
+    };
+    let param3 = {
         DeleteRequest: {
             Key : {
                 PK: "phone#" + req.query.country_code + req.query.hp_number,
@@ -168,6 +177,7 @@ router.delete(`/delete_user`, async function (req, res, next) {
     let itemsArray = [];
     itemsArray.push(param1);
     itemsArray.push(param2);
+    itemsArray.push(param3);
     let params = {
         RequestItems: {
             "ORB_NET": itemsArray
@@ -227,6 +237,18 @@ router.delete(`/delete_orb`, async function (req, res, next) {
             res.status(200).json("Orb deleted")
         }
     });
+});
+
+router.get(`/decode_geohash`, async function (req, res, next) {
+    if (req.query.geohash.length == 16) {
+        let latlon = geohash.decode_int(req.query.geohash, 52);
+        res.send(latlon);
+    } else if (req.query.geohash.length == 9) {
+        let latlon = geohash.decode_int(req.query.geohash, 30);
+        res.send(latlon);
+    } else {
+        res.status(400).send("geohash looks sus");
+    }
 });
 
 router.post('/login', async function (req, res, next) {
@@ -305,17 +327,5 @@ function decrypt(text) {
     decrypted = Buffer.concat([decrypted, decipher.final()]);
     return decrypted.toString();
 }
-
-router.get(`/decode_geohash`, async function (req, res, next) {
-    if (req.query.geohash.length == 16) {
-        let latlon = geohash.decode_int(req.query.geohash, 52);
-        res.send(latlon);
-    } else if (req.query.geohash.length == 9) {
-        let latlon = geohash.decode_int(req.query.geohash, 30);
-        res.send(latlon);
-    } else {
-        res.status(400).send("geohash looks sus");
-    }
-});
 
 module.exports = router;
