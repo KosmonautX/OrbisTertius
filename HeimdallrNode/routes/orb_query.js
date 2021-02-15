@@ -86,7 +86,7 @@ router.get(`/get_user`, async function (req, res, next) {
         dao.office_geohash52 = pubData.Item.geohash2;
         res.json(dao);
     } else {
-        res.status(204).json("User not found")
+        res.status(404).json("User not found")
     }
 });
 
