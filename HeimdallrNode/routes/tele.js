@@ -3,8 +3,8 @@ const router = express.Router();
 const {v4 : uuidv4} = require('uuid');
 const moment = require('moment');
 const geohash = require('../controller/geohash');
-const dynaUser = require('../controller/dynamoUser');
-const dynaOrb = require('../controller/dynamoOrb');
+const dynaUser = require('../controller/telegramUser').dynaUser;
+const dynaOrb = require('../controller/telegramUser').dynaOrb;
 
 // body: first, second, username, gender, age
 router.post(`/setup`, async function (req, res, next) {

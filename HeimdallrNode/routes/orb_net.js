@@ -787,7 +787,8 @@ router.put(`/complete_orb_acceptor`, async function (req, res, next) {
     let clock = moment().unix()
     const accepted = await dynaOrb.acceptance(body).catch(err => {
             err.status = 400;
-            next(err);})
+            next(err);
+    })
     const buddied = await dynaUser.buddy(body.init_id,body.user_id,clock).catch(err=> {
         err.status = 400;
         next(err);

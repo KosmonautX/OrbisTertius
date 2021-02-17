@@ -1,5 +1,5 @@
 const axios = require('axios');
-const dynaUser = require('./dynamoUser');
+const dynaUser = require('./telegramUser');
 const geohash = require('./geohash');
 const ddb_config = require('../config/ddb.config');
 
