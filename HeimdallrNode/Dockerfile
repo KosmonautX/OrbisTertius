@@ -16,7 +16,7 @@ ENV AWS_DEFAULT_REGION=ap-southeast-1
 COPY package*.json ./
 
 # Run the command inside your image filesystem.
-RUN npm install
+RUN npm install npm@latest -g
 
 # Add metadata to the image to describe which port the container is listening on at runtime. Check docker-compose for 9229 its only for inspection remove for production
 # EXPOSE 5000
