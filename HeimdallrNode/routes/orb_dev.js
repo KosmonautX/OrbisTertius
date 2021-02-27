@@ -254,7 +254,7 @@ router.get(`/decode_geohash`, async function (req, res, next) {
 router.post('/login', async function (req, res, next) {
     let body = { ...req.body };
     try {
-        if (body.login == "login") {
+        if (body.login == ".v#Z~_0/,>!9oAH66S;t7!+DN07N") {
             // if (body.password !== result.password) {
             //     if (!passwordHash.verify(body.password, result.password)) {
             //         let error = new Error(`Invalid password.`);
@@ -266,14 +266,14 @@ router.post('/login', async function (req, res, next) {
         
             // NEW AUTHENTICATION
             let payload = { };
-            payload.user_id = "007";
+            payload.user_id = 1234;
             payload.name = "login boi";
             payload.role = "normie";
 
             const iss = "Princeton";
             const sub = "ScratchBac";
             // const aud = "";
-            const exp = moment().add(20, "minute").unix();
+            const exp = "1d"; //"20min";
             const signOptions = {
                 issuer:  iss,
                 subject:  sub,
@@ -283,10 +283,7 @@ router.post('/login', async function (req, res, next) {
             };
             // Create the JWT Token
             const token = jwt.sign(payload, secret, signOptions);
-
-            res.json({
-                "token" : token
-            });
+            res.send(token)
         
         } else {
             let error = new Error(`User does not exist.`);

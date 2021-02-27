@@ -12,7 +12,32 @@ const s3 = new AWS.S3({endpoint:ddb_config.sthree,
                        s3ForcePathStyle: true, signatureVersion: 'v4'});
 const geohash = require('../controller/geohash');
 const teleMessaging = require('../controller/teleMessaging');
+const security = require('../controller/security');
 
+
+router.post(`/upload_photo`, async function (req, res, next) {
+    try {
+        let body = { ...req.body };
+        // security.checkUser(req.verification.user_id, body.user_id)
+        let orb_uuid = uuidv4();
+        let resp = await dynaOrb.retrieve(orb_uuid);
+        if (Object.keys(resp).length > 0) {
+            orb_uuid = uuidv4();
+        };
+        if (body.photo){
+            var img =  s3.getSignedUrl('putObject', { 
+                Bucket: ddb_config.sthreebucket, 
+                Key: orb_uuid, Expires: 300
+            });
+        };
+        res.status(201).json({
+            "orb_uuid": orb_uuid,
+            "image_url": img
+        });
+    } catch (err) {
+        next(err);
+    }
+});
 
 /**
  * API 0.0
@@ -23,38 +48,38 @@ const teleMessaging = require('../controller/teleMessaging');
 router.post(`/post_orb`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        body.orb_uuid = uuidv4();
+        if (!body.orb_uuid) {
+            body.orb_uuid = uuidv4();
+        }
         body.expiry_dt = slider_time(body.expires_in);
         body.created_dt = moment().unix();
-        let img;
         if (body.latlon) {
             body.geohashing = geohash.latlon_to_geo(body.latlon); 
             body.geohashing52 = geohash.latlon_to_geo52(body.latlon); 
         } else if (body.postal_code) {
             body.geohashing = geohash.postal_to_geo(body.postal_code);
             body.geohashing52 = geohash.postal_to_geo52(body.postal_code);
-        }
-        if (body.photo){
-            img = body.photo;
+        };
+        if (body.photo.startsWith("http")){
+            var img = body.photo;
         } else {
-            img =  s3.getSignedUrl('putObject', { Bucket: ddb_config.sthreebucket
-                                                        , Key: body.orb_uuid, Expires: 300});
-        }
-        let response = await dynaOrb.create(body).catch(err => {
-            err.status = 400;
-            throw err;
-        })
+            var img =  s3.getSignedUrl('putObject', { 
+                Bucket: ddb_config.sthreebucket, 
+                Key: body.orb_uuid, Expires: 300
+            });
+            body.photo = img;
+        };
+        await dynaOrb.create(body);
         // when user post orb on app, send the orb to telebro
-        let recipients = await teleMessaging.getRecipient(body);
-        await teleMessaging.postOrbOnTele(body, recipients);
+        // let recipients = await teleMessaging.getRecipient(body);
+        // await teleMessaging.postOrbOnTele(body, recipients);
         res.status(201).json({
-            "ORB UUID": body.orb_uuid,
+            "orb_uuid": body.orb_uuid,
             "expiry": body.expiry_dt,
-            "Image URL": img
         });
     } catch (err) {
         if (err.message == 'Postal code does not exist!') err.status = 404;
-        next(err)
+        next(err);
     }
 });
 

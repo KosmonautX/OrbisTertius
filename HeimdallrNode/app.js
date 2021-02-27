@@ -52,7 +52,7 @@ app.get('/verify', (req, res) => {
     
 });
 
-require(`./route_paths/orb_net`)(app);
+require(`./route_paths/orb_net`)(app, verifyToken);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 5000;
@@ -109,26 +109,31 @@ app.use(function (err, req, res, next) {
 	});
 });
 
-function verifyToken(jwtoken) {
+function verifyToken(req, res, next) {
     try {
-      const iss = "Princeton";
-      const sub = "ScratchBac";
-      const exp = "10min";
-      const verifyOptions = {
-        issuer : iss,
-        subject : sub,
-        maxAge : exp,
-        algorithms : ["HS256"]
-      };
-    //   req.token = req.headers["authorization"] || "";
-	//   req.token = req.token.replace(/BEARER /gi, ``);
-      if (jwtoken) {
-        let verified = jwt.verify(jwtoken, secret, verifyOptions);
-        return verified;
-      }
+		const iss = "Princeton";
+		const sub = "ScratchBac";
+		const exp = "10min";
+		const verifyOptions = {
+			issuer : iss,
+			subject : sub,
+			maxAge : exp,
+			algorithms : ["HS256"]
+		};
+		req.token = req.headers["authorization"] || "";
+		req.token = req.token.replace(/BEARER /gi, ``);
+		// prod!
+		if (req.token) {
+			req.verification = jwt.verify(req.token, secret, verifyOptions);
+			next();
+		} else {
+			let err = new Error(`No token, please login again!`);
+			err.status = 401;
+			next(err);
+		}
     } catch (err) {
-      console.log(err)
+      next(err);
     }
-  }
+}
 
 module.exports = { app: app };
