@@ -236,14 +236,29 @@ const dynaUser = {
         const data = await docClient.batchWrite(params).promise();
         return data;
     },
-    async setPostal (body, pubpte, code) { 
+    async setGeohashPostal (body, pubpte, code) { 
         const params = {
             TableName: ddb_config.tableNames.orb_table,        
             Key: {
                 PK: "USR#" + body.user_id, 
                 SK: "USR#" + body.user_id + `#${pubpte}`
             },
-            UpdateExpression: `set ${body.place} = :loc`,
+            UpdateExpression: `set geohash = :loc`,
+            ExpressionAttributeValues: {
+                ":loc": code
+            }
+        };
+        const data = await docClient.update(params).promise();
+        return data;
+    },
+    async setNumericPostal (body, pubpte, code) { 
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "USR#" + body.user_id, 
+                SK: "USR#" + body.user_id + `#${pubpte}`
+            },
+            UpdateExpression: `set #n = :loc`,
             ExpressionAttributeNames:{
                 "#n": "numeric"
             },
