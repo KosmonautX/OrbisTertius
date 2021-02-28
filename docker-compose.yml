@@ -13,6 +13,7 @@ services:
       - "dynamodb:database"
       - "localstack:s3"
       - "mercury:flask"
+      
   localstack:
     image: localstack/localstack-full:latest
     volumes:

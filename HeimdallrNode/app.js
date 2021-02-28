@@ -60,26 +60,36 @@ app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
 });
 
+try{
+    const dynamodb = new AWS.DynamoDB({endpoint: new AWS.Endpoint("http://dynamodb:8000")});
+    // const user_template = require('./blueprint/user_table.json');
+    const orb_template = require('./blueprint/orb_net_table.json')
 
-const dynamodb = new AWS.DynamoDB({endpoint: new AWS.Endpoint("http://dynamodb:8000")});
-// const user_template = require('./blueprint/user_table.json');
-const orb_template = require('./blueprint/orb_net_table.json')
+    // dynamodb.createTable(user_template, function(err, data) {
+    //     if (err) {
+    //         console.log("ERR: ", err);
+    //     } else{
+    //         console.log("USER TABLE CREATED: ", data);
+    //     }
+    // });
 
-// dynamodb.createTable(user_template, function(err, data) {
-//     if (err) {
-//         console.log("ERR: ", err);
-//     } else{
-//         console.log("USER TABLE CREATED: ", data);
-//     }
-// });
+    dynamodb.createTable(orb_template, function(err, data) {
+        if (err) {
+            console.log("ERR: ", err);
+        } else{
+            console.log("ORB TABLE CREATED: ", data);
+        }
+    });
 
-dynamodb.createTable(orb_template, function(err, data) {
-    if (err) {
-        console.log("ERR: ", err);
-    } else{
-        console.log("ORB TABLE CREATED: ", data);
+}
+catch (err){
+    if (err.code === "ResourceInUseException" && err.message === "Cannot create preexisting table") {
+        console.log("message ====>" + err.message);
+    } else {
+        console.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2)); 
     }
-});
+}
+
 
 // catch 404 and forward to error handler
 let error404Map = new Map();

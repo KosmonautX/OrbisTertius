@@ -13,7 +13,8 @@ services:
     links:
       - "dynamodb:database"
     command:
-      - node
+      - npx
+      - nodemon
       - "--inspect-brk=0.0.0.0"
       - "." 
   localstack:
@@ -32,3 +33,15 @@ services:
     image: amazon/dynamodb-local
     ports:
       - "8000:8000"
+
+  mercury:
+    build: ./MercuryFlask/
+    volumes:
+      - ./MercuryFlask:/usr/src/mercury
+    ports:
+      - "7000:3000"
+    depends_on:
+      - dynamodb
+    links:
+      - "dynamodb:database"
+    restart: always

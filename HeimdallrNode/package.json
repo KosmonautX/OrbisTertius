@@ -23,8 +23,12 @@
     "log-prefix": "^0.1.1",
     "moment": "^2.27.0",
     "morgan": "^1.10.0",
+    "n": "^7.0.2",
     "ngeohash": "^0.6.3",
     "system-sleep": "^1.3.6",
     "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
   }
 }

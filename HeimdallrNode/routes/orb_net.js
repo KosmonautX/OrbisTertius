@@ -15,25 +15,24 @@ const teleMessaging = require('../controller/teleMessaging');
 const security = require('../controller/security');
 
 
-router.post(`/upload_photo`, async function (req, res, next) {
+router.post(`/gen_uuid`, async function (req, res, next) {
     try {
         let body = { ...req.body };
+        let promises = new Map();
         // security.checkUser(req.verification.user_id, body.user_id)
-        let orb_uuid = uuidv4();
-        let resp = await dynaOrb.retrieve(orb_uuid);
-        if (Object.keys(resp).length > 0) {
-            orb_uuid = uuidv4();
+        orb_uuid = await dynaOrb.gen();
+        promises.set('orb_uuid',orb_uuid)
+        if (body.media){
+            promises.set('lossy', await serve3.preSign('putObject',orb_uuid,'150x150'));
+            promises.set('lossless', await serve3.preSign('putObject',orb_uuid,'1920x1080'));
         };
-        if (body.photo){
-            var img =  s3.getSignedUrl('putObject', { 
-                Bucket: ddb_config.sthreebucket, 
-                Key: orb_uuid, Expires: 300
+        Promise.all(promises).then(response => {
+            res.status(201).json({
+                response
+               
             });
-        };
-        res.status(201).json({
-            "orb_uuid": orb_uuid,
-            "image_url": img
         });
+        
     } catch (err) {
         next(err);
     }
@@ -338,6 +337,7 @@ const dynaUser = {
 };
 
 const dynaOrb = {
+    
     async create(body) {
         const params = {
             RequestItems: {
@@ -457,6 +457,28 @@ const dynaOrb = {
         const data = await docClient.update(params).promise();
         return data;
     },
+    async gen(){
+        try{
+            let orb_uuid = uuidv4();
+            const  params = {
+                TableName: ddb_config.tableNames.orb_table,        
+                Item: {
+                    PK: "ORB#" + orb_uuid,
+                    SK: "ORB#" + orb_uuid
+                },
+                ConditionExpression: "attribute_not_exists(PK)"
+            };
+            const data = await docClient.put(params).promise();
+            return orb_uuid;
+        } catch (err){
+            if (err.code == 'ConditionalCheckFailedException'){
+                return dynaOrb.gen();
+            }
+            else{
+                return err;
+            }
+        }
+    },
     async update(body) { // return true if success
         const params = {
             "TransactItems": [
@@ -556,7 +578,19 @@ const dynaOrb = {
         }
         return data;
     },
-}
+};
+
+const serve3 = {
+    
+    async preSign(action, orb_uuid, form) {
+        const sign = s3.getSignedUrl(action, { 
+            Bucket: ddb_config.sthreebucket, 
+            Key: orb_uuid + '/' + form, Expires: 300
+        });
+        return sign
+    },
+
+};
 
 /**
  * API POST 3
