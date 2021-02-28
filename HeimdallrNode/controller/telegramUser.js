@@ -24,7 +24,8 @@ const dynaUser = {
                             numeric2: body.geohashing52.first,
                             geohash2: body.geohashing52.second,
                             payload: {
-                                commercial: true
+                                commercial: true,
+                                available: true,
                             }
                         }
                     }
@@ -64,18 +65,21 @@ const dynaUser = {
                             }
                         }
                     },
-                    {
-                        PutRequest: {
-                            Item: {
-                                PK: "LOC#" + body.geohashing.second,
-                                SK: "USRc#" + body.user_id,
-                            }
-                        }
-                    },
                 ]
             }
         };
         const data = await docClient.batchWrite(params).promise();
+        return data;
+    },
+    async putSecondLocation(body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Item: {
+                PK: "LOC#" + body.geohashing.second,
+                SK: "USRc#" + body.user_id,
+            },
+        };
+        const data = await docClient.put(params).promise();
         return data;
     },
     async getPTEinfo(body) {
@@ -187,7 +191,7 @@ const dynaUser = {
             },
             UpdateExpression: "set payload.commercial = :val",
             ExpressionAttributeValues: {
-                ":val": !body.value
+                ":val": body.value
             },
             ReturnValues:"UPDATED_NEW"
         };
@@ -235,14 +239,32 @@ const dynaUser = {
         const data = await docClient.batchWrite(params).promise();
         return data;
     },
-    async setPostal (body, pubpte, code) { 
+    async setGeohashPostal (body, pubpte, code) { 
         const params = {
             TableName: ddb_config.tableNames.orb_table,        
             Key: {
                 PK: "USR#" + body.user_id, 
                 SK: "USR#" + body.user_id + `#${pubpte}`
             },
-            UpdateExpression: `set ${body.place} = :loc`,
+            UpdateExpression: `set geohash = :loc`,
+            ExpressionAttributeValues: {
+                ":loc": code
+            }
+        };
+        const data = await docClient.update(params).promise();
+        return data;
+    },
+    async setNumericPostal (body, pubpte, code) { 
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "USR#" + body.user_id, 
+                SK: "USR#" + body.user_id + `#${pubpte}`
+            },
+            UpdateExpression: `set #n = :loc`,
+            ExpressionAttributeNames:{
+                "#n": "numeric"
+            },
             ExpressionAttributeValues: {
                 ":loc": code
             }
@@ -284,6 +306,36 @@ const dynaUser = {
             },
         };
         const data = await docClient.delete(params).promise();
+        return data;
+    },
+    async banUser(body) { 
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "USR#" + body.user_id, 
+                SK: "USR#" + body.user_id + "#pub"
+            },
+            UpdateExpression: "set payload.available = :stat",
+            ExpressionAttributeValues: {
+                ":stat": "ban",
+            }
+        };
+        const data = await docClient.update(params).promise();
+        return data;
+    },
+    async unbanUser(body) { 
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "USR#" + body.user_id, 
+                SK: "USR#" + body.user_id + "#pub"
+            },
+            UpdateExpression: "set payload.available = :stat",
+            ExpressionAttributeValues: {
+                ":stat": true,
+            }
+        };
+        const data = await docClient.update(params).promise();
         return data;
     },
 };
@@ -507,9 +559,33 @@ const dynaOrb = {
     },
 };
 
+async function checkAvailable(body) {
+    const params = {
+        TableName: ddb_config.tableNames.orb_table,      
+        Key: {
+            PK: "USR#" + body.user_id,
+            SK: "USR#" + body.user_id + "#pub"
+        }
+    };
+    const data = await docClient.get(params).promise();
+    if (data.Item){
+        if (data.Item.payload.available != true) {
+            let err = new Error(`User banned`);
+            err.status = 401;
+            throw err;
+        } 
+    } else {
+        let err = new Error(`User not found`);
+        err.status = 404;
+        throw err;
+    }
+    
+}
+
 
 module.exports = {
     dynaUser: dynaUser,
-    dynaOrb: dynaOrb
+    dynaOrb: dynaOrb,
+    checkAvailable: checkAvailable,
 }
 

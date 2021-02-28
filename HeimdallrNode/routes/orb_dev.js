@@ -266,9 +266,9 @@ router.post('/login', async function (req, res, next) {
         
             // NEW AUTHENTICATION
             let payload = { };
-            payload.user_id = 1234;
-            payload.name = "login boi";
-            payload.role = "normie";
+            payload.user_id = body.user_id || 1234;
+            payload.username = body.username || "login boi";
+            payload.role = "normal";
 
             const iss = "Princeton";
             const sub = "ScratchBac";

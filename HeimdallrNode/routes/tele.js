@@ -5,29 +5,41 @@ const moment = require('moment');
 const geohash = require('../controller/geohash');
 const dynaUser = require('../controller/telegramUser').dynaUser;
 const dynaOrb = require('../controller/telegramUser').dynaOrb;
+const checkAvailable = require('../controller/telegramUser').checkAvailable;
 
 // body: first, second, username, gender, age
 router.post(`/setup`, async function (req, res, next) {
     let body = { ...req.body };
     // body.orb_uuid = uuidv4();
-    body.created_dt = moment().unix();
+    body.join_dt = moment().unix();
     try {
         body.geohashing = {
-            first: geohash.postal_to_geo(body.first),
-            second: geohash.postal_to_geo(body.second)
+            first: null,
+            second: null
         };
         body.geohashing52 = {
-            first: geohash.postal_to_geo52(body.first),
-            second: geohash.postal_to_geo52(body.second)
+            first: null,
+            second: null
         };
+        if (body.first && body.second) {
+            body.geohashing = {
+                first: geohash.postal_to_geo(body.first),
+                second: geohash.postal_to_geo(body.second)
+            };
+            body.geohashing52 = {
+                first: geohash.postal_to_geo52(body.first),
+                second: geohash.postal_to_geo52(body.second)
+            };
+        } else if (body.first) {
+            body.geohashing.first = geohash.postal_to_geo(body.first);          
+            body.geohashing52.first = geohash.postal_to_geo52(body.first);
+        }
         let success = await dynaUser.Tcreate(body).catch(err => {
             res.status(400).json(err.message);
         })
         if (success == true) {
-            await dynaUser.Bcreate(body).catch(err => {
-                err.status = 400
-                throw err;
-            })
+            await dynaUser.Bcreate(body);
+            if (body.second) await dynaUser.putSecondLocation(body);
             res.status(201).json({
                 "User created": body.user_id,
             });
@@ -41,6 +53,7 @@ router.post(`/setup`, async function (req, res, next) {
 // returns commercial, first, second, no. of users (count)
 router.get(`/start`, async function (req, res, next) {
     try {
+        await checkAvailable(req.query);
         let pteData = await dynaUser.getPTEinfo(req.query).catch(err => {
             err.status = 500;
             throw err;
@@ -180,30 +193,27 @@ router.put(`/setGender`, async function (req, res, next) {
 
 // Set commercial setting
 router.put(`/setCommercial`, async function (req, res, next) {
-    let body = { ...req.body};
-    let userInfo = await dynaUser.getPUBinfo(body).catch(err => {
-        err.status = 500;
-        next(err);
-    });
-    body.first = userInfo.Item.numeric;
-    body.second = userInfo.Item.geohash;
-    if (body.value) {
-        body.old = "c";
-        body.new = "";
-    } else {
-        body.old = "";
-        body.new = "c";
-    }
-    let setting = await dynaUser.setCommercial(body).catch(err => {
-        err.status = 500;
-        next(err);
-    });
-    if (setting) { 
-        let finish = await dynaUser.setCommercial2(body).catch(err => {
+    try {
+        let body = { ...req.body};
+        let userInfo = await dynaUser.getPUBinfo(body).catch(err => {
             err.status = 500;
             next(err);
         });
-        if (finish) res.status(200).send();
+        body.first = userInfo.Item.numeric;
+        body.second = userInfo.Item.geohash;
+        if (body.value) {
+            body.old = "c";
+            body.new = "";
+        } else {
+            body.old = "";
+            body.new = "c";
+        }
+        await dynaUser.setCommercial(body);
+        await dynaUser.setCommercial2(body);
+        res.status(200).send();
+        
+    } catch (err) {
+        next(err);
     }
 });
 
@@ -212,35 +222,24 @@ router.put(`/setCommercial`, async function (req, res, next) {
 router.put(`/setPostal`, async function (req, res, next) {
     try {
         let body = { ...req.body};
-        let userInfo = await dynaUser.getPUBinfo(body).catch(err => {
-            err.status = 500;
-            throw err;
-        });
+        let userInfo = await dynaUser.getPUBinfo(body)
         if (userInfo.Item.payload.commercial == true){
             body.value = "c";
         } else {
             body.value = "";
-        }
+        };
         if (body.setting == "first") {
-            body.place = 'numeric'
+            // set geohash first to check if postal code exists
+            await dynaUser.setNumericPostal(body, 'pub', geohash.postal_to_geo(body.postal_code));
+            await dynaUser.setNumericPostal(body, 'pte', body.postal_code);
+            await dynaUser.setPostal2(body);
         } else {
-            body.place = 'geohash'
-        }
-        let setting = await dynaUser.setPostal(body, 'pte', body.postal_code).catch(err => {
-            err.status = 500;
-            throw err;
-        });
-        let setting2 = await dynaUser.setPostal(body, 'pub', geohash.postal_to_geo(body.postal_code)).catch(err => {
-            err.status = 500;
-            throw err;
-        });
-        if (setting) { 
-            let finish = await dynaUser.setPostal2(body,).catch(err => {
-                err.status = 500;
-                throw err;
-            });
-            if (finish) res.status(200).send();
-        }
+            await dynaUser.setGeohashPostal(body, 'pub', geohash.postal_to_geo(body.postal_code));
+            await dynaUser.setGeohashPostal(body, 'pte', body.postal_code);
+            await dynaUser.setPostal2(body);
+        };
+        res.status(200).send();
+        
     } catch (err) {
         next(err);
     }
@@ -336,6 +335,26 @@ router.put(`/delete_orb`, async function (req, res, next) {
                 res.status(204).send();
             }
         }
+    }
+});
+
+router.post(`/ban`, async function (req, res, next) {
+    try {
+        let body = { ...req.body };
+        await dynaUser.banUser(body);
+        res.status(201).send()
+    } catch (err) {
+        next(err)
+    }
+});
+
+router.post(`/unban`, async function (req, res, next) {
+    try {
+        let body = { ...req.body };
+        await dynaUser.unbanUser(body);
+        res.status(201).send()
+    } catch (err) {
+        next(err)
     }
 });
 
