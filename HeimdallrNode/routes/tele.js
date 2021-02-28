@@ -229,12 +229,13 @@ router.put(`/setPostal`, async function (req, res, next) {
             body.value = "";
         };
         if (body.setting == "first") {
-            await dynaUser.setNumericPostal(body, 'pte', body.postal_code);
+            // set geohash first to check if postal code exists
             await dynaUser.setNumericPostal(body, 'pub', geohash.postal_to_geo(body.postal_code));
+            await dynaUser.setNumericPostal(body, 'pte', body.postal_code);
             await dynaUser.setPostal2(body);
         } else {
-            await dynaUser.setGeohashPostal(body, 'pte', body.postal_code);
             await dynaUser.setGeohashPostal(body, 'pub', geohash.postal_to_geo(body.postal_code));
+            await dynaUser.setGeohashPostal(body, 'pte', body.postal_code);
             await dynaUser.setPostal2(body);
         };
         res.status(200).send();
