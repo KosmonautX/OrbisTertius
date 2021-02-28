@@ -65,18 +65,21 @@ const dynaUser = {
                             }
                         }
                     },
-                    {
-                        PutRequest: {
-                            Item: {
-                                PK: "LOC#" + body.geohashing.second,
-                                SK: "USRc#" + body.user_id,
-                            }
-                        }
-                    },
                 ]
             }
         };
         const data = await docClient.batchWrite(params).promise();
+        return data;
+    },
+    async putSecondLocation(body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Item: {
+                PK: "LOC#" + body.geohashing.second,
+                SK: "USRc#" + body.user_id,
+            },
+        };
+        const data = await docClient.put(params).promise();
         return data;
     },
     async getPTEinfo(body) {

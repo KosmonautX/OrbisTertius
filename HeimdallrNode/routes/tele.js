@@ -14,21 +14,32 @@ router.post(`/setup`, async function (req, res, next) {
     body.join_dt = moment().unix();
     try {
         body.geohashing = {
-            first: geohash.postal_to_geo(body.first),
-            second: geohash.postal_to_geo(body.second)
+            first: null,
+            second: null
         };
         body.geohashing52 = {
-            first: geohash.postal_to_geo52(body.first),
-            second: geohash.postal_to_geo52(body.second)
+            first: null,
+            second: null
         };
+        if (body.first && body.second) {
+            body.geohashing = {
+                first: geohash.postal_to_geo(body.first),
+                second: geohash.postal_to_geo(body.second)
+            };
+            body.geohashing52 = {
+                first: geohash.postal_to_geo52(body.first),
+                second: geohash.postal_to_geo52(body.second)
+            };
+        } else if (body.first) {
+            body.geohashing.first = geohash.postal_to_geo(body.first);          
+            body.geohashing52.first = geohash.postal_to_geo52(body.first);
+        }
         let success = await dynaUser.Tcreate(body).catch(err => {
             res.status(400).json(err.message);
         })
         if (success == true) {
-            await dynaUser.Bcreate(body).catch(err => {
-                err.status = 400
-                throw err;
-            })
+            await dynaUser.Bcreate(body);
+            if (body.second) await dynaUser.putSecondLocation(body);
             res.status(201).json({
                 "User created": body.user_id,
             });
@@ -226,7 +237,6 @@ router.put(`/setPostal`, async function (req, res, next) {
             await dynaUser.setGeohashPostal(body, 'pub', geohash.postal_to_geo(body.postal_code));
             await dynaUser.setPostal2(body);
         };
-
         res.status(200).send();
         
     } catch (err) {
