@@ -97,14 +97,18 @@ const dynaUser = {
     },
     async getPUBinfo(body) {
         const params = {
-            TableName: ddb_config.tableNames.orb_table,      
+            TableName: ddb_config.tableNames.orb_table,
             Key: {
                 PK: "USR#" + body.user_id,
                 SK: "USR#" + body.user_id + "#pub"
             }
         };
-        const data = await docClient.get(params).promise();
-        return data;
+        try{
+            const data = await docClient.get(params).promise();
+            return data;
+        } catch (err){
+            return err;
+        }
     },
     async getAllUsers(geohash) {
         const params = {
@@ -114,7 +118,7 @@ const dynaUser = {
                 ":loc": "LOC#" + geohash,
                 ":user": "USR",
             },
-        }
+        };
         const data = await docClient.query(params).promise();
         return data;
     },

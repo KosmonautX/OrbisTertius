@@ -20,5 +20,5 @@ class TeleMessagingSchema(Schema):
     where = fields.String(attribute="where")
     when = fields.String(attribute="when")
     tip = fields.String(attribute="tip")
-    user_id_list = fields.List(fields.Str, attribute="userIdList")
+    user_id_list = fields.List(fields.Int, attribute="userIdList")
     if_commercial = fields.Boolean(attribute="ifCommercial")

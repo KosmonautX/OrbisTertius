@@ -1,12 +1,12 @@
 const axios = require('axios');
-const dynaUser = require('./telegramUser');
+const tele = require('./telegramUser');
 const geohash = require('./geohash');
 const ddb_config = require('../config/ddb.config');
 
 async function getRecipient (body) {
     try {
         const geohashing = geohash.postal_to_geo(body.postal_code);
-        let blockedList = await dynaUser.getBlockedList(body).catch(err => {
+        let blockedList = await tele.dynaUser.getBlockedList(body).catch(err => {
             err.status = 500;
             throw err;
         });
@@ -16,8 +16,8 @@ async function getRecipient (body) {
                 blockedUsers.push(parseInt(item.SK.slice(4)));
             });
         }
-        if (body.commercial) {
-            let users = await dynaUser.getCommercialUsers(geohashing).catch(err => {
+        if (body.commercial == true) {
+            let users = await tele.dynaUser.getCommercialUsers(geohashing).catch(err => {
                 err.status = 500;
                 throw err;
             });
@@ -34,13 +34,10 @@ async function getRecipient (body) {
                 return users_arr;
             }
         } else {
-            let users = await dynaUser.getAllUsers(geohashing).catch(err => {
+            let users = await tele.dynaUser.getAllUsers(geohashing).catch(err => {
                 err.status = 500;
                 throw err;
             });
-            if (users.Count == 0 ) {
-                return [];
-            } else {
                 let users_arr = [];
                 users.Items.forEach( item => {
                     users_arr.push(parseInt(item.SK.split('#')[1]));
@@ -49,7 +46,7 @@ async function getRecipient (body) {
                     users_arr = users_arr.filter(item => !blockedUsers.includes(item));
                 }
                 return users_arr;
-            }
+            
         }
     } catch (err) {
         console.log(err);
