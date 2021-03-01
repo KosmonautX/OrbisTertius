@@ -26,6 +26,8 @@ const dynaUser = {
                             payload: {
                                 commercial: true,
                                 available: true,
+                                lastCommercialPost: 0,
+                                star: false,
                             }
                         }
                     }
@@ -49,10 +51,10 @@ const dynaUser = {
                                 SK: "USR#" + body.user_id + "#pte",
                                 numeric: body.first,
                                 geohash: body.second, 
+                                time: body.join_dt,
                                 payload: {
                                     gender: body.gender,
-                                    age: body.age, 
-                                    join_dt: body.join_dt
+                                    age: body.age,
                                 },
                             }
                         }
@@ -297,13 +299,13 @@ const dynaUser = {
         const data = await docClient.batchWrite(params).promise();
         return data;
     },
-    async delete (body) {
+    async removeLocation (body, location) {
         const params = {
             TableName: ddb_config.tableNames.orb_table,
             Key: {
-                PK: "ORB#" + body.orb_uuid,
-                SK: "ORB#"
-            },
+                PK: "LOC#" + location,
+                SK: `USR${body.comm}#` + body.user_id, 
+            }
         };
         const data = await docClient.delete(params).promise();
         return data;
@@ -333,6 +335,36 @@ const dynaUser = {
             UpdateExpression: "set payload.available = :stat",
             ExpressionAttributeValues: {
                 ":stat": true,
+            }
+        };
+        const data = await docClient.update(params).promise();
+        return data;
+    },
+    async starUser(body) { 
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "USR#" + body.user_id, 
+                SK: "USR#" + body.user_id + "#pub"
+            },
+            UpdateExpression: "set payload.star = :star",
+            ExpressionAttributeValues: {
+                ":star": true,
+            }
+        };
+        const data = await docClient.update(params).promise();
+        return data;
+    },
+    async setLastCommercialPost(body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "USR#" + body.user_id, 
+                SK: "USR#" + body.user_id + "#pub"
+            },
+            UpdateExpression: "set payload.lastCommercialPost = :post_time",
+            ExpressionAttributeValues: {
+                ":post_time": body.created_dt
             }
         };
         const data = await docClient.update(params).promise();
