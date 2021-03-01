@@ -29,7 +29,7 @@ async function getRecipient (body) {
                     users_arr.push(parseInt(item.SK.slice(5)));
                 });
                 if (blockedUsers.length > 0) {
-                    users_arr = users_arr.filter(item => !blockedUsers.includes(item))
+                    users_arr = users_arr.filter(item => !blockedUsers.includes(item));
                 }
                 return users_arr;
             }
@@ -46,13 +46,13 @@ async function getRecipient (body) {
                     users_arr.push(parseInt(item.SK.split('#')[1]));
                 });
                 if (blockedUsers.length > 0) {
-                    users_arr = users_arr.filter(item => !blockedUsers.includes(item))
+                    users_arr = users_arr.filter(item => !blockedUsers.includes(item));
                 }
                 return users_arr;
             }
         }
     } catch (err) {
-        console.log(err)
+        console.log(err);
     }
 };
 

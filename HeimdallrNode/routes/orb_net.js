@@ -59,22 +59,19 @@ router.post(`/post_orb`, async function (req, res, next) {
             body.geohashing = geohash.postal_to_geo(body.postal_code);
             body.geohashing52 = geohash.postal_to_geo52(body.postal_code);
         };
-        if (body.photo.startsWith("http")){
+        if (body.media !== true){
             var img = body.photo;
         } else {
-            var img =  s3.getSignedUrl('putObject', { 
-                Bucket: ddb_config.sthreebucket, 
-                Key: body.orb_uuid, Expires: 300
-            });
-            body.photo = img;
+            var img =  await serve3.preSign('getObject',orb_uuid,'150x150');
         };
         await dynaOrb.create(body);
         // when user post orb on app, send the orb to telebro
-        // let recipients = await teleMessaging.getRecipient(body);
-        // await teleMessaging.postOrbOnTele(body, recipients);
+        let recipients = await teleMessaging.getRecipient(body);
+        await teleMessaging.postOrbOnTele(body, recipients);
         res.status(201).json({
             "orb_uuid": body.orb_uuid,
             "expiry": body.expiry_dt,
+            "img": img
         });
     } catch (err) {
         if (err.message == 'Postal code does not exist!') err.status = 404;
