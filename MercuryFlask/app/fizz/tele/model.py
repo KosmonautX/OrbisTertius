@@ -1,6 +1,6 @@
 import telegram
 from .interface import TeleMessagingInterface, TelePostingInterface
-from os import environ as env
+from os import getenv as env
 from telegram import (ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, ConversationHandler, CallbackQueryHandler, InlineQueryHandler)
 import requests
@@ -12,7 +12,7 @@ import concurrent.futures
 
 class TeleServiceModel():
     def message_user(acceptor_id, poster_id):
-        bot = telegram.Bot(token='1184812909:AAE1kZB5QcX46a7Ul_wkFATFdIjUfLiwmPw')      #neib
+        bot = telegram.Bot(token=env("NEIB"))      #neib
         buttons = [[InlineKeyboardButton("Sign up form", url='https://scrbac.com/yihling_form')]]
         keyboard = InlineKeyboardMarkup(buttons)
         bot.send_message(chat_id= acceptor_id, text = "Private message the user [here](tg://user?id={})".format(str(poster_id)), parse_mode="markdown")
@@ -20,7 +20,7 @@ class TeleServiceModel():
 
     # def posting(info, where, when, tip, comm, postal):
     def posting(orb_UUID, user_id, star_user, tele_username, user_location, title, info, where, when, tip, user_id_list, if_commercial):
-        bot = telegram.Bot(token='1184812909:AAE1kZB5QcX46a7Ul_wkFATFdIjUfLiwmPw')      #neib
+        bot = telegram.Bot(token=env("NEIB"))      #neib
 
         ### since this is sent from the app, it doesnt need to handle the case: 'no username'
 

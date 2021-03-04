@@ -47,7 +47,7 @@ router.get(`/get`, async function (req, res, next) {
                 dao.available = data.Item.payload.available;
                 res.json(dao);
             } else {
-                res.status(404).json("ORB not found")
+                res.status(404).json("ORB not found");
             }
         }
     });
@@ -86,7 +86,7 @@ router.get(`/get_user`, async function (req, res, next) {
         dao.office_geohash52 = pubData.Item.geohash2;
         res.json(dao);
     } else {
-        res.status(404).json("User not found")
+        res.status(404).json("User not found");
     }
 });
 
@@ -313,7 +313,7 @@ router.get(`/orbs_in_loc_fresh_page`, async function (req, res, next) {
     }
     if (req.query.page) {
         let geohash_arr = geohash.get_geo_array(geohashing);
-        geohashing = geohash_arr[req.query.page]
+        geohashing = geohash_arr[req.query.page];
     }
     let params = {
         TableName: ddb_config.tableNames.orb_table,
@@ -331,19 +331,19 @@ router.get(`/orbs_in_loc_fresh_page`, async function (req, res, next) {
             next(err);
         } else {
             if (data.Items.length == 0) {
-                res.status(204).send()
+                res.status(204).send();
             } else {
                 let data_arr = [];
                 data.Items.forEach(function(item) {
                     let dao = {};
                     dao.orb_uuid = item.SK.slice(15);
-                    dao.geohash = parseInt(item.PK.slice(4))
+                    dao.geohash = parseInt(item.PK.slice(4));
                     dao.geohash52 = item.geohash;
                     dao.nature = parseInt(item.inverse);
                     dao.expiry_dt = parseInt(item.SK.substr(0, 10));
                     if (item.payload) dao.payload = item.payload;
                     data_arr.push(dao);
-                })
+                });
                 res.json(data_arr);
             }
         }

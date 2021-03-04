@@ -23,7 +23,7 @@ services:
       - "3001:41629"
       - "8080:8080"
     environment:
-      - SERVICES=s3
+      - SERVICES=s3,sqs
       - DEBUG=1
       - DATA_DIR=/tmp/localstack/data
 
@@ -38,6 +38,11 @@ services:
     links:
       - "dynamodb:database"
     restart: always
+    environment:
+      - DEBUG=1
+    env_file:
+      - .env
+    
 
   dynamodb:
     image: amazon/dynamodb-local

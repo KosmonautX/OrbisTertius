@@ -27,30 +27,15 @@ class TestingConfig(BaseConfig):
     CONFIG_NAME = "test"
     SECRET_KEY = os.getenv("TEST_SECRET_KEY", "Thanos did nothing wrong")
     DEBUG = True
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///{0}/app-test.db".format(basedir)
 
-    # os.environ['AWS_CONFIG_FILE'] = 'boto.config.txt'
-
-    # AWS Required Environment Variables
-    # AWS_ACCESS_KEY_ID = 'scratchbac'
-    # AWS_SECRET_ACCESS_KEY = 'testing'
-
-    # AWS Optional variables (Used for DynamoDB local instance)
-    # AWS_REGION (Default: 'us-east-1')
-    # DYNAMO_ENABLE_LOCAL = True # (Default: False)
-    # DYNAMO_LOCAL_HOST = 'localhost' # (Default: None)
-    # DYNAMO_LOCAL_PORT = 8000 # (Default: None)
 
 
 class ProductionConfig(BaseConfig):
     CONFIG_NAME = "prod"
-    SECRET_KEY = os.getenv("PROD_SECRET_KEY", "I'm Ron Burgundy?")
+    SECRET_KEY = os.getenv("SECRET_TUNNEL", "I'm Ron Burgundy?")
     DEBUG = False
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
     TESTING = False
-    SQLALCHEMY_DATABASE_URI = "sqlite:///{0}/app-prod.db".format(basedir)
 
 
 EXPORT_CONFIGS: List[Type[BaseConfig]] = [
