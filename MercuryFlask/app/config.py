@@ -20,8 +20,6 @@ class DevelopmentConfig(BaseConfig):
     DEBUG = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     TESTING = False
-    SQLALCHEMY_DATABASE_URI = "sqlite:///{0}/app-dev.db".format(basedir)
-
 
 class TestingConfig(BaseConfig):
     CONFIG_NAME = "test"
