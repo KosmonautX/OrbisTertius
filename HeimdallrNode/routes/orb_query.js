@@ -218,7 +218,8 @@ function keyword_to_code(keyword) {
  * Get orbs saved / hidden for a user:
  */
 router.get(`/user_pref`, async function (req, res, next) {
-    let userActions = ['save','hide','rprt'] 
+    security.checkUser(req.verification.user_id, req.query.user_id);
+    let userActions = ['save','hide','rprt'] ;
     if (!userActions.includes(req.query.action.toLowerCase())) {
         res.status(400).send({ Error: 'Missing or Invalid user action. Only supports save|hide|rprt.' });
     }
