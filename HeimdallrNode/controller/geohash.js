@@ -1,7 +1,8 @@
 const geohash = require('ngeohash');
-const fs = require('fs');
-const rawdata = fs.readFileSync('./resources/onemap3.json', 'utf-8');
-const onemap = JSON.parse(rawdata);
+// const fs = require('fs');
+// const rawdata = fs.readFileSync('./HeimdallrNode/resources/onemap3.json', 'utf-8');
+// const onemap = JSON.parse(rawdata);
+const onemap = require('../resources/onemap3.json');
 
 function postal_to_geo(postal) {
     if (typeof postal !== 'string') {
@@ -21,7 +22,6 @@ function postal_to_geo52(postal) {
     let latlon = onemap[postal];
     if (latlon == "undefined" || latlon == null) {
         throw new Error("Postal code does not exist!")
- 
     }
     return latlon_to_geo52(latlon);
 }
@@ -42,10 +42,23 @@ function get_geo_array(geohashing) {
     return arr;
 }
 
+function check_postal(postal) {
+    if (typeof postal !== 'string') {
+        postal = postal.toString();
+    }
+    let latlon = onemap[postal];
+    if (latlon == "undefined" || latlon == null) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
 module.exports = {
     postal_to_geo: postal_to_geo,
     postal_to_geo52: postal_to_geo52,
     latlon_to_geo: latlon_to_geo,
     latlon_to_geo52: latlon_to_geo52,
     get_geo_array: get_geo_array,
+    check_postal: check_postal,
 }
