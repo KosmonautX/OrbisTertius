@@ -13,6 +13,7 @@ const s3 = new AWS.S3({endpoint:ddb_config.sthree,
 const geohash = require('../controller/geohash');
 const teleMessaging = require('../controller/teleMessaging');
 const security = require('../controller/security');
+const orbSpace = require('../controller/dynamoOrb').orbSpace;
 
 
 router.post(`/gen_uuid`, async function (req, res, next) {
@@ -20,8 +21,8 @@ router.post(`/gen_uuid`, async function (req, res, next) {
         let body = { ...req.body };
         let promises = new Map();
         // security.checkUser(req.verification.user_id, body.user_id)
-        orb_uuid = await dynaOrb.gen();
-        promises.set('orb_uuid',orb_uuid)
+        orb_uuid = await dynaOrb.gen(body);
+        promises.set('orb_uuid',orb_uuid);
         if (body.media){
             promises.set('lossy', await serve3.preSign('putObject',orb_uuid,'150x150'));
             promises.set('lossless', await serve3.preSign('putObject',orb_uuid,'1920x1080'));
@@ -62,12 +63,12 @@ router.post(`/post_orb`, async function (req, res, next) {
         if (body.media !== true){
             var img = body.photo;
         } else {
-            var img =  await serve3.preSign('getObject',orb_uuid,'150x150');
+            var img =  await serve3.preSign('getObject',body.orb_uuid,'150x150');
         };
         await dynaOrb.create(body);
         // when user post orb on app, send the orb to telebro
-        let recipients = await teleMessaging.getRecipient(body);
-        await teleMessaging.postOrbOnTele(body, recipients);
+        // let recipients = await teleMessaging.getRecipient(body);
+        // await teleMessaging.postOrbOnTele(body, recipients);
         res.status(201).json({
             "orb_uuid": body.orb_uuid,
             "expiry": body.expiry_dt,
@@ -86,6 +87,26 @@ function slider_time(dt){
     }
     return expiry_dt;
 }
+
+router.post(`/upload_profile_pic`, async function (req, res, next) {
+    try {
+        let body = { ...req.body };
+        if (body.media){
+            var img_lossy = await serve3.preSign('putObject',body.user_id,'150x150');
+            var img_lossless = await serve3.preSign('putObject',body.user_id,'1920x1080');
+            res.status(200).json({
+                "lossy": img_lossy,
+                "lossless": img_lossless,
+            });
+        } else {
+            res.status(400).json({
+                "Error": "No media"
+            });
+        }
+    } catch (err) {
+        next(err);
+    }
+});
 
 router.post(`/create_user`, async function (req, res, next) {
     try {
@@ -113,6 +134,8 @@ router.post(`/create_user`, async function (req, res, next) {
                 office: body.office
             };
         }
+        if (body.profile_pic == null) body.profile_pic = "null";
+        body.join_dt = moment().unix();
         let transacSuccess = await dynaUser.transacCreate(body).catch(err => {
             err.status = 409;
             throw err;
@@ -148,10 +171,12 @@ const dynaUser = {
                             geohash: body.geohashing.office, 
                             numeric2: body.geohashing52.home,
                             geohash2: body.geohashing52.office,
+                            time: body.join_dt,
                             payload: {
                                 bio: body.bio,
                                 profile_pic: body.profile_pic,
                                 verified: body.verified,
+                                available: true
                             },
                         }
                     }
@@ -161,8 +186,8 @@ const dynaUser = {
                         TableName: ddb_config.tableNames.orb_table,
                         ConditionExpression: "attribute_not_exists(PK)",
                         Item: {
-                            PK: "phone#" + body.country_code + body.hp_number,
-                            SK: "phone#" + body.country_code + body.hp_number
+                            PK: "username#" + body.username,
+                            SK: "username#" + body.username
                         }
                     }
                 }
@@ -331,7 +356,78 @@ const dynaUser = {
         const data = await docClient.update(params).promise();
         return data;
     },
+    async usernameTransaction(body) {
+        const params = {
+            "TransactItems": [
+                {
+                    Put: {
+                        TableName: ddb_config.tableNames.orb_table,
+                        ConditionExpression: "attribute_not_exists(PK)",
+                        Item: {
+                            PK: "username#" + body.username,
+                            SK: "username#" + body.username
+                        }
+                    }
+                },
+                {
+                    Delete: {
+                        TableName: ddb_config.tableNames.orb_table,
+                        // ConditionExpression: "attribute_exists(PK)",
+                        Key: {
+                            PK: "username#" + body.old_username,
+                            SK: "username#" + body.old_username
+                        }
+                    }
+                },
+            ] 
+        };
+        const data = await docClient.transactWrite(params).promise();
+        if (!data || !data.Item) {
+            return true;
+        }
+        return data;
+    },
+    // async uploadProfilePic(body) {
+    //     const params = {
+    //         TableName: ddb_config.tableNames.orb_table,        
+    //         Key: {
+    //             PK: "USR#" + body.user_id, 
+    //             SK: "USR#" + body.user_id + "pub",
+    //         },
+    //         UpdateExpression: "set payload.profile_pic = :pic",
+    //         ExpressionAttributeValues: {
+    //             ":pic": body.upload
+    //         }
+    //     };
+    //     const data = await docClient.update(params).promise();
+    //     return data;
+    // }
 };
+
+const userQuery = {
+    async queryPTE(body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "USR#" + body.user_id,
+                SK: "USR#" + body.user_id + "#pte"
+            }
+        };
+        const data = await docClient.get(params).promise();
+        return data;
+    },
+    async queryPUB(body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Key: {
+                PK: "USR#" + body.user_id,
+                SK: "USR#" + body.user_id + "#pub"
+            }
+        };
+        const data = await docClient.get(params).promise();
+        return data;
+    },
+}
 
 const dynaOrb = {
     
@@ -454,14 +550,15 @@ const dynaOrb = {
         const data = await docClient.update(params).promise();
         return data;
     },
-    async gen(){
+    async gen(body){
         try{
             let orb_uuid = uuidv4();
             const  params = {
                 TableName: ddb_config.tableNames.orb_table,        
                 Item: {
                     PK: "ORB#" + orb_uuid,
-                    SK: "ORB#" + orb_uuid
+                    SK: "ORB#" + orb_uuid,
+                    alphanumeric2: body.user_id,
                 },
                 ConditionExpression: "attribute_not_exists(PK)"
             };
@@ -579,10 +676,10 @@ const dynaOrb = {
 
 const serve3 = {
     
-    async preSign(action, orb_uuid, form) {
+    async preSign(action, uuid, form) {
         const sign = s3.getSignedUrl(action, { 
             Bucket: ddb_config.sthreebucket, 
-            Key: orb_uuid + '/' + form, Expires: 300
+            Key: uuid + '/' + form, Expires: 300
         });
         return sign
     },
@@ -605,7 +702,7 @@ router.post(`/user_action`, async function (req, res, next) {
             Item: {
                 PK: "ORB#" + body.orb_uuid,
                 SK: "ACT#" + body.user_id.toString() + "#" + body.action.toLowerCase(),
-                inverse: moment().unix().toString(),
+                inverse: moment().unix().toString(), // inverse attribute requires it to be a string!
             },
         };
         docClient.put(params, function(err, data) {
@@ -619,7 +716,7 @@ router.post(`/user_action`, async function (req, res, next) {
                     "USER ID": body.user_id
                 });
             }
-          });
+        });
     } catch (err) {
         err.status = 400;
         next(err);
@@ -693,6 +790,99 @@ router.post(`/report`, async function (req, res, next) {
 });
 
 /**
+ * API 1.1
+ * Update user payload
+ */
+router.put(`/update_user`, async function (req, res, next) {
+    let body = { ...req.body };
+    let data = await dynaUser.updatePayload(body).catch(err => {
+        err.status = 400;
+        next(err);
+    });
+    if (data) {
+        res.json({
+            "User updated:": body
+        });
+    } 
+});
+
+/**
+ * API 1.1
+ * Update username
+ */
+router.put(`/update_username`, async function (req, res, next) {
+    try {
+        let body = { ...req.body };
+        // transac create username, if true, then change and delete old username, else no go
+        let pubData = await userQuery.queryPUB(body);
+        if (pubData.Item) { // get old username
+            body.old_username = pubData.Item.alphanumeric;
+            let transac = await dynaUser.usernameTransaction(body);
+            if (transac == true) {
+                let params = {
+                    TableName: ddb_config.tableNames.orb_table,      
+                    Key: {
+                        PK: "USR#" + body.user_id, 
+                        SK: "USR#" + body.user_id + "#pub",
+                    },
+                    UpdateExpression: "set alphanumeric = :username",
+                    ExpressionAttributeValues: {
+                        ":username": body.username,
+                    }
+                };
+                docClient.update(params, function(err, data) {
+                    if (err) {
+                        err.status = 400;
+                        next(err);
+                    } else {
+                        res.status(201).json({
+                            "User updated:": body
+                        });
+                    }
+                });
+            } else {
+                let err = new Error("Username taken");
+                err.status = 409;
+                throw err;
+            }
+        } else {
+            // user id invalid
+            let err = new Error("User_id not found");
+            err.status = 404;
+            throw err;
+        }
+   
+    } catch (err) {
+        next(err);
+    }
+});
+
+/**
+ * API 1.1
+ * Update user location
+ * ONLY supports postal code for now
+ */
+router.put(`/update_user_location`, async function (req, res, next) {
+    try {
+        let body = { ...req.body };
+        if (body.home){
+            await dynaUser.updateUserHome(body);
+            await dynaUser.updateUserHomeGeohash(body);
+            await dynaUser.updateUserHomeGeohash52(body);
+        } 
+        if (body.office){
+            await dynaUser.updateUserOffice(body);
+            await dynaUser.updateUserOfficeGeohash(body);
+            await dynaUser.updateUserOfficeGeohash52(body);
+        }
+        res.json({ "User updated:": body });
+    } catch (err) {
+        err.status = 400;
+        next(err)
+    }
+});
+
+/**
  * API 0.2
  * Accept orb
  */
@@ -735,74 +925,45 @@ router.post(`/accept`, async function (req, res, next) {
 router.put(`/delete_acceptance`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        let params = {
-            TableName: ddb_config.tableNames.orb_table,
-            Key: {
-                PK: "ORB#" + body.orb_uuid,
-                SK: "USR#" + body.user_id.toString(),
-            },
-        };
-        docClient.delete(params, function(err, data) {
-            if (err) {
-                err.status = 400;
-                next(err);
-            } else {
-                res.status(200).json({
-                    "ORB interaction removed": body.orb_uuid,
-                    "user_id": body.user_id
-                });
-            }
+        // let params = {
+        //     TableName: ddb_config.tableNames.orb_table,
+        //     Key: {
+        //         PK: "ORB#" + body.orb_uuid,
+        //         SK: "USR#" + body.user_id.toString(),
+        //     },
+        // };
+        // docClient.delete(params, function(err, data) {
+        //     if (err) {
+        //         err.status = 400;
+        //         next(err);
+        //     } else {
+        //         res.status(200).json({
+        //             "ORB interaction removed": body.orb_uuid,
+        //             "user_id": body.user_id
+        //         });
+        //     }
+        // });
+        await orbSpace.deleteAcceptance(body);
+        res.status(200).json({
+            "ORB interaction removed": body.orb_uuid,
+            "user_id": body.user_id
         });
     } catch (err) {
-        err.status = 400;
         next(err);
     }
 });
 
 /**
- * API 1.1
- * Update user payload
+ * API 
+ * 
  */
-router.put(`/update_user`, async function (req, res, next) {
-    let body = { ...req.body };
-    let data = await dynaUser.updatePayload(body).catch(err => {
-        err.status = 400;
-        next(err);
-    });
-    if (data) {
-        res.json({
-            "User updated:": body
-        });
-    } 
-});
-
-/**
- * API 1.1
- * Update username
- */
-router.put(`/update_username`, async function (req, res, next) {
+router.put(`/not_interested`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        let params = {
-            TableName: ddb_config.tableNames.orb_table,        
-            Key: {
-                PK: "USR#" + body.user_id, 
-                SK: "USR#" + body.user_id + "#pub",
-            },
-            UpdateExpression: "set alphanumeric = :username",
-            ExpressionAttributeValues: {
-                ":username": body.username
-            }
-        };
-        docClient.update(params, function(err, data) {
-            if (err) {
-                err.status = 400;
-                next(err);
-            } else {
-                res.status(201).json({
-                    "User updated:": body
-                });
-            }
+        await orbSpace.notInterested_i(body);
+        res.status(200).json({
+            "ORB not interested": body.orb_uuid,
+            "user_id": body.user_id
         });
     } catch (err) {
         err.status = 400;
@@ -811,29 +972,23 @@ router.put(`/update_username`, async function (req, res, next) {
 });
 
 /**
- * API 1.1
- * Update user location
- * ONLY supports postal code for now
+ * API 
+ * 
  */
-router.put(`/update_user_location`, async function (req, res, next) {
+router.put(`/not_interested_acceptor`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        if (body.home){
-            await dynaUser.updateUserHome(body);
-            await dynaUser.updateUserHomeGeohash(body);
-            await dynaUser.updateUserHomeGeohash52(body);
-        } 
-        if (body.office){
-            await dynaUser.updateUserOffice(body);
-            await dynaUser.updateUserOfficeGeohash(body);
-            await dynaUser.updateUserOfficeGeohash52(body);
-        }
-        res.json({ "User updated:": body });
+        await orbSpace.notInterested_a(body);
+        res.status(200).json({
+            "ORB not interested": body.orb_uuid,
+            "user_id": body.user_id
+        });
     } catch (err) {
         err.status = 400;
-        next(err)
+        next(err);
     }
 });
+
 /**
  * API 1.2
  * Complete orb handshake (for an acceptor)

@@ -46,7 +46,7 @@ router.post(`/setup`, async function (req, res, next) {
         }
     } catch (err) {
         if (err.message == 'Postal code does not exist!') err.status = 404;
-        next(err)
+        next(err);
     }
 });
 
@@ -97,10 +97,7 @@ router.get(`/start`, async function (req, res, next) {
 router.get(`/recipients`, async function (req, res, next) {
     try {
         const geohashing = geohash.postal_to_geo(req.query.postal_code);
-        let blockedList = await dynaUser.getBlockedList(req.query).catch(err => {
-            err.status = 500;
-            throw err;
-        });
+        let blockedList = await dynaUser.getBlockedList(req.query);
         let blockedUsers = [];
         if (blockedList.Count != 0) {
             blockedList.Items.forEach( item => {
@@ -127,10 +124,7 @@ router.get(`/recipients`, async function (req, res, next) {
                 })
             }
         } else {
-            let users = await dynaUser.getAllUsers(geohashing).catch(err => {
-                err.status = 500;
-                throw err;
-            });
+            let users = await dynaUser.getAllUsers(geohashing);
             if (users.Count == 0 ) {
                 res.status(204).send();
             } else {
@@ -179,7 +173,7 @@ router.put(`/setAge`, async function (req, res, next) {
     if (setting) res.status(200).send("Age set");
 });
 
-// user set   gender
+// user set gender
 router.put(`/setGender`, async function (req, res, next) {
     let body = { ...req.body};
     let setting = await dynaUser.setGender(body).catch(err => {
@@ -302,23 +296,30 @@ router.put(`/complete_orb`, async function (req, res, next) {
         err.status = 404;
         err.message = "ORB not found";
     });
-    if (orbData.Item) {
-        body.expiry_dt = orbData.expiry_dt;
-        body.geohash = orbData.geohash;
-        const completion = await dynaOrb.update(body).catch(err => {
-            err.status = 500;
-            next(err);
-        });
-        if (completion == true) {
-            const sDict = await dynaOrb.retrieveSucc(body).catch(err => {
+    if (orbData) {
+        if (orbData.user_id == body.user_id) {
+            // initiator complete
+            body.expiry_dt = orbData.expiry_dt;
+            body.geohash = orbData.geohash;
+            const completion = await dynaOrb.update(body).catch(err => {
                 err.status = 500;
                 next(err);
             });
-            if (sDict) {
-                res.status(200).send(sDict);
-            } else {
-                res.status(204).send();
+            if (completion == true) {
+                const sDict = await dynaOrb.retrieveSucc(body).catch(err => {
+                    err.status = 500;
+                    next(err);
+                });
+                if (sDict) {
+                    res.status(200).send(sDict);
+                } else {
+                    res.status(204).send();
+                }
             }
+        } else {
+            // someone else complete
+            await dynaOrb.acceptance(body);
+            res.status(200).send();
         }
     }
 });
@@ -353,6 +354,17 @@ router.put(`/delete_orb`, async function (req, res, next) {
     }
 });
 
+router.post(`/report`, async function (req, res, next) {
+    try {
+        let body = { ...req.body };
+        await dynaOrb.report(body);
+        res.status(201).send();
+    } catch (err) {
+        next(err)
+    }
+});
+
+// ADMIN FUNCTIONS
 router.post(`/ban`, async function (req, res, next) {
     try {
         let body = { ...req.body };
@@ -405,9 +417,39 @@ router.post(`/star`, async function (req, res, next) {
     try {
         let body = { ...req.body };
         await dynaUser.starUser(body);
-        res.status(201).send()
+        res.status(201).send();
     } catch (err) {
         next(err)
+    }
+});
+
+router.put(`/delete_orb_admin`, async function (req, res, next) {
+    let body = { ...req.body};
+    const orbData = await dynaOrb.retrieve(body).catch(err => {
+        err.status = 404;
+        err.message = "ORB not found"
+    });
+    if (orbData) {
+        body.expiry_dt = orbData.expiry_dt;
+        body.geohash = orbData.geohash;
+        body.admin_id = body.user_id;
+        body.user_id = orbData.user_id; // change user_id from admin to orb initiator
+
+        const deletion = await dynaOrb.adminDelete(body).catch(err => {
+            err.status = 500;
+            next(err);
+        });
+        if (deletion == true) {
+            const sDict = await dynaOrb.retrieveSucc(body).catch(err => {
+                err.status = 500;
+                next(err);
+            });
+            if (sDict) {
+                res.status(200).send(sDict);
+            } else {
+                res.status(204).send();
+            }
+        }
     }
 });
 

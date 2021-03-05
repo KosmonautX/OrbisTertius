@@ -8,7 +8,7 @@ AWS.config.update({
     region: ddb_config.region
 });
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
-const dynaOrb = require('../controller/dynamoOrb');
+const dynaOrb = require('../controller/dynamoOrb').comment;
 
 router.get(`/check`, async function (req, res, next) {
     try {

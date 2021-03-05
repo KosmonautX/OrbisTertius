@@ -47,7 +47,7 @@ router.get(`/get`, async function (req, res, next) {
                 dao.available = data.Item.payload.available;
                 res.json(dao);
             } else {
-                res.status(404).json("ORB not found");
+                res.status(404).json("ORB not found")
             }
         }
     });
@@ -84,9 +84,27 @@ router.get(`/get_user`, async function (req, res, next) {
         dao.office_geohash = pubData.Item.geohash;
         dao.home_geohash52 = pubData.Item.numeric2;
         dao.office_geohash52 = pubData.Item.geohash2;
+        dao.join_dt = pubData.Item.join_dt;
         res.json(dao);
     } else {
-        res.status(404).json("User not found");
+        res.status(404).json("User not found")
+    }
+});
+
+router.get(`/check_username`, async function (req, res, next) {
+    try {
+        let username = await userQuery.checkUsername(req.query.username);
+        if (username.Item) {
+            res.status(409).send({
+                "username": "taken"
+            });
+        } else {
+            res.status(200).send({
+                "username": "empty"
+            });
+        }
+    } catch (err) {
+        next(err)
     }
 });
 
@@ -108,6 +126,17 @@ const userQuery = {
             Key: {
                 PK: "USR#" + req.query.user_id,
                 SK: "USR#" + req.query.user_id + "#pub"
+            }
+        };
+        const data = await docClient.get(params).promise();
+        return data;
+    },
+    async checkUsername (username) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Key: {
+                PK: "username#" + username,
+                SK: "username#" + username
             }
         };
         const data = await docClient.get(params).promise();
@@ -313,7 +342,7 @@ router.get(`/orbs_in_loc_fresh_page`, async function (req, res, next) {
     }
     if (req.query.page) {
         let geohash_arr = geohash.get_geo_array(geohashing);
-        geohashing = geohash_arr[req.query.page];
+        geohashing = geohash_arr[req.query.page]
     }
     let params = {
         TableName: ddb_config.tableNames.orb_table,
@@ -331,19 +360,19 @@ router.get(`/orbs_in_loc_fresh_page`, async function (req, res, next) {
             next(err);
         } else {
             if (data.Items.length == 0) {
-                res.status(204).send();
+                res.status(204).send()
             } else {
                 let data_arr = [];
                 data.Items.forEach(function(item) {
                     let dao = {};
                     dao.orb_uuid = item.SK.slice(15);
-                    dao.geohash = parseInt(item.PK.slice(4));
+                    dao.geohash = parseInt(item.PK.slice(4))
                     dao.geohash52 = item.geohash;
                     dao.nature = parseInt(item.inverse);
                     dao.expiry_dt = parseInt(item.SK.substr(0, 10));
                     if (item.payload) dao.payload = item.payload;
                     data_arr.push(dao);
-                });
+                })
                 res.json(data_arr);
             }
         }
@@ -441,6 +470,25 @@ router.get(`/buddy`, async function (req, res, next) {
             }
         }
     });
+});
+
+router.get(`/postal_check`, async function (req, res, next) {
+    if (req.query.code) {
+        let check = geohash.check_postal(req.query.code);
+        if (check) {
+            res.status(200).json({
+                "postal": true
+            });
+        } else {
+            res.status(404).json({
+                "postal": false
+            });
+        }
+    } else {
+        res.status(400).json({
+            "Error": "please input code"
+        });
+    }
 });
 
 async function batch_query_location(geohashing) {
