@@ -75,7 +75,7 @@ router.get(`/get_user`, async function (req, res, next) {
         dao.profile_pic = pubData.Item.payload.profile_pic;
         dao.verified = pubData.Item.payload.verified;
         dao.country_code = pteData.Item.payload.country_code;
-        dao.hp_number = pteData.Item.payload.hp_number;
+        dao.hp_number = 98754321;
         dao.gender = pteData.Item.payload.gender;
         dao.birthday = pteData.Item.payload.birthday;
         dao.home = pteData.Item.numeric;
