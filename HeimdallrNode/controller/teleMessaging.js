@@ -1,12 +1,12 @@
 const axios = require('axios');
-const tele = require('./telegramUser');
+const dynaUser = require('./telegramUser').dynaUser;
 const geohash = require('./geohash');
 const ddb_config = require('../config/ddb.config');
 
 async function getRecipient (body) {
     try {
         const geohashing = geohash.postal_to_geo(body.postal_code);
-        let blockedList = await tele.dynaUser.getBlockedList(body).catch(err => {
+        let blockedList = await dynaUser.getBlockedList(body).catch(err => {
             err.status = 500;
             throw err;
         });
@@ -17,7 +17,7 @@ async function getRecipient (body) {
             });
         }
         if (body.commercial == true) {
-            let users = await tele.dynaUser.getCommercialUsers(geohashing).catch(err => {
+            let users = await dynaUser.getCommercialUsers(geohashing).catch(err => {
                 err.status = 500;
                 throw err;
             });
@@ -34,7 +34,7 @@ async function getRecipient (body) {
                 return users_arr;
             }
         } else {
-            let users = await tele.dynaUser.getAllUsers(geohashing).catch(err => {
+            let users = await dynaUser.getAllUsers(geohashing).catch(err => {
                 err.status = 500;
                 throw err;
             });

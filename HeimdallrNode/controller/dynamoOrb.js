@@ -129,4 +129,55 @@ const comment = {
     },
 };
 
-module.exports = comment;
+const orbSpace = {
+    async deleteAcceptance(body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Key: {
+                PK: "ORB#" + body.orb_uuid,
+                SK: "USR#" + body.user_id.toString(),
+            },
+        };
+        const data = await docClient.delete(params).promise();
+        return data;
+    },
+    // initiator
+    async notInterested_i(body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Item: {
+                PK: "ORB#" + body.orb_uuid,
+                SK: "USR#" + body.acceptor_id.toString(),
+                time: moment().unix(),
+                inverse: "505#DISINTERESTED_INITIATOR",
+                payload: {
+                    who: body.user_id.toString()
+                }
+            },
+        };
+        const data = await docClient.put(params).promise();
+        return data;
+    },
+    // acceptor
+    async notInterested_a(body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Item: {
+                PK: "ORB#" + body.orb_uuid,
+                SK: "USR#" + body.user_id.toString(),
+                time: moment().unix(),
+                inverse: "550#DISINTERESTED_ACCEPTOR",
+                payload: {
+                    who: body.user_id.toString()
+                }
+            },
+        };
+        const data = await docClient.put(params).promise();
+        return data;
+    },
+}
+
+module.exports = {
+    comment: comment,
+    orbSpace: orbSpace,
+};

@@ -578,6 +578,57 @@ const dynaOrb = {
         }
         return data;
     },
+    async adminDelete(body) { // return true if success
+        const params = {
+            "TransactItems": [
+                {
+                    Delete: {
+                        TableName: ddb_config.tableNames.orb_table,
+                        Key: {
+                            PK: "LOC#" + body.geohash,
+                            SK: body.expiry_dt + "#ORB#" + body.orb_uuid
+                        }
+                    }
+                },
+                {
+                    Update: {
+                        TableName: ddb_config.tableNames.orb_table,
+                        Key: {
+                            PK: "ORB#" + body.orb_uuid,
+                            SK: "ORB#" + body.orb_uuid, 
+                        },
+                        UpdateExpression: "set #t = :time, payload.available = :payload",
+                        ExpressionAttributeNames:{
+                            "#t": "time"
+                        },
+                        ExpressionAttributeValues: {
+                            ":time": moment().unix(),
+                            ":payload": false,
+                        }
+                    }
+                },
+                {
+                    Update: {
+                        TableName: ddb_config.tableNames.orb_table,
+                        Key: {
+                            PK: "ORB#" + body.orb_uuid,
+                            SK: "USR#" + body.user_id, // initiator id
+                        },
+                        UpdateExpression: "set inverse = :status, payload2 = :admin",
+                        ExpressionAttributeValues: {
+                            ":status": "300#ADMINDELETE",
+                            ":admin": {"admin" : body.admin_id}
+                        }
+                    }
+                },
+            ] 
+        };
+        const data = await docClient.transactWrite(params).promise();
+        if (!data || !data.Item) {
+            return true;
+        }
+        return data;
+    },
     async retrieveSucc (body) {
         const params = {
             TableName: ddb_config.tableNames.orb_table,      
@@ -592,6 +643,32 @@ const dynaOrb = {
         } else {
             return false;
         }
+    },
+    async report(body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,      
+            Item: {
+                PK: "ORB#" + body.orb_uuid,
+                SK: "REPORT#" + body.user_id,
+                inverse: moment().unix().toString(),
+                payload: body.reason,
+            },
+        };
+        const data = await docClient.put(params).promise();
+        return data;
+    },
+    async acceptance(body){
+        const  params = {
+            TableName: ddb_config.tableNames.orb_table,        
+            Item: {
+                PK: "ORB#" + body.orb_uuid,
+                SK: "USR#" + body.user_id,
+                inverse : "800#FULFILLED",
+                time: moment().unix(),
+            },
+        };
+        const data = await docClient.put(params).promise();
+        return data;
     },
 };
 
