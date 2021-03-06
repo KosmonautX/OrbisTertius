@@ -123,7 +123,7 @@ function verifyToken(req, res, next) {
     try {
 		const iss = "Princeton";
 		const sub = "ScratchBac";
-		const exp = "10min";
+		const exp = "1d";
 		const verifyOptions = {
 			issuer : iss,
 			subject : sub,
@@ -142,7 +142,8 @@ function verifyToken(req, res, next) {
 			next(err);
 		}
     } catch (err) {
-      next(err);
+		if (err.message == "maxAge exceeded") err.status = 403;
+      	next(err);
     }
 }
 

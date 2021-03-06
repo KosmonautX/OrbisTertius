@@ -69,15 +69,17 @@ router.get(`/get_user`, async function (req, res, next) {
 
     if (pteData.Item && pubData.Item) {
         let dao = {};
+        if (pteData.Item.payload) {
+            dao.bio = pubData.Item.payload.bio;
+            dao.profile_pic = pubData.Item.payload.profile_pic;
+            dao.verified = pubData.Item.payload.verified;
+            dao.country_code = pteData.Item.payload.country_code;
+            dao.gender = pteData.Item.payload.gender;
+            dao.birthday = pteData.Item.payload.birthday;
+        }
         dao.user_id = parseInt(req.query.user_id);
         dao.username = pubData.Item.alphanumeric;
-        dao.bio = pubData.Item.payload.bio;
-        dao.profile_pic = pubData.Item.payload.profile_pic;
-        dao.verified = pubData.Item.payload.verified;
-        dao.country_code = pteData.Item.payload.country_code;
         dao.hp_number = 98754321;
-        dao.gender = pteData.Item.payload.gender;
-        dao.birthday = pteData.Item.payload.birthday;
         dao.home = pteData.Item.numeric;
         dao.office = pteData.Item.geohash;
         dao.home_geohash = pubData.Item.numeric;
