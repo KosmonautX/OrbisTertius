@@ -2,53 +2,21 @@ version: "3.8"
 services:
   heimdallr:
     build: ./HeimdallrNode/
-    volumes:
-      - ./HeimdallrNode:/usr/src/heimdallr
     ports:
-      - "5000:5000"
-    depends_on:
-      - dynamodb
-      - localstack
+      - "80:5000"
     links:
-      - "dynamodb:database"
-      - "localstack:s3"
       - "mercury:flask"
     environment:
       - DEBUG=1
     env_file:
       - .env      
-  localstack:
-    image: localstack/localstack-full:latest
-    volumes:
-      - ./.localstack:/tmp/localstack
-    ports:
-      - "3000:4566"
-      - "3001:41629"
-      - "8080:8080"
-    environment:
-      - SERVICES=s3,sqs
-      - DEBUG=1
-      - DATA_DIR=/tmp/localstack/data
-
   mercury:
     build: ./MercuryFlask/
     volumes:
       - ./MercuryFlask:/usr/src/mercury
-    ports:
-      - "7000:3000"
-    depends_on:
-      - dynamodb
-    links:
-      - "dynamodb:database"
     restart: always
     environment:
       - DEBUG=1
     env_file:
       - .env
-    
-
-  dynamodb:
-    image: amazon/dynamodb-local
-    ports:
-      - "8000:8000"
-    
+ 

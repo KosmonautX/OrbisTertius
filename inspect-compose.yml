@@ -3,7 +3,7 @@ services:
   heimdallr:
     build: ./HeimdallrNode/
     volumes:
-      - ./HeimdallrNode:/usr/src/heimdallr
+      - ./HeimdallrNode/access.log:/usr/src/heimdallr/access.log
       - ~/.aws/:/root/.aws:ro
     ports:
       - "5000:5000"
@@ -16,7 +16,11 @@ services:
       - npx
       - nodemon
       - "--inspect-brk=0.0.0.0"
-      - "." 
+      - "."
+    env_file:
+      - .env
+    
+
   localstack:
     image: localstack/localstack-full:latest
     volumes:
@@ -45,3 +49,5 @@ services:
     links:
       - "dynamodb:database"
     restart: always
+    env_file:
+      - .env

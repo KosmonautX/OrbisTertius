@@ -8,8 +8,7 @@ AWS.config.update({
     region: ddb_config.region
 })
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint:ddb_config.dyna});
-const s3 = new AWS.S3({endpoint:ddb_config.sthree,
-                       s3ForcePathStyle: true, signatureVersion: 'v4'});
+const s3 = new AWS.S3({region:ddb_config.region, signatureVersion: 'v4'});
 const geohash = require('../controller/geohash');
 const teleMessaging = require('../controller/teleMessaging');
 const security = require('../controller/security');
