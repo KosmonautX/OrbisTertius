@@ -190,15 +190,15 @@ router.put(`/setCommercial`, async function (req, res, next) {
         let userInfo = await dynaUser.getPUBinfo(body);
         body.first = userInfo.Item.numeric;
         body.second = userInfo.Item.geohash;
-        if (userInfo.Item.commercial) {
+        if (userInfo.Item.payload.commercial) {
             body.old = "c";
             body.new = "";
         } else {
             body.old = "";
             body.new = "c";
         }
-        await dynaUser.setCommercial(body);
-        await dynaUser.setCommercial2(body);
+        dynaUser.setCommercial(body);
+        dynaUser.setCommercial2(body);
         res.status(200).send();
         
     } catch (err) {
