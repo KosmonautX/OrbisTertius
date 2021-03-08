@@ -22,7 +22,10 @@ require(`log-prefix`)(function () {
 	return `[` + moment().format(`YYYY-MM-DD HH:mm:ss`) + `]`;
 });
 
-app.use(logger(`[:date] :method :url :status :res[content-length] - :response-time ms`));
+// app.use(logger(`[:date] :method :url :status :res[content-length] - :response-time ms`));
+app.use(logger('common', {
+	stream: fs.createWriteStream(path.join(__dirname, 'access.log'), {flags: 'a'})
+}));
 app.use(bodyParser.json({ limit: `500mb` }));
 app.use(bodyParser.urlencoded({ limit: `500mb`, extended: true, parameterLimit: 50000 }));
 app.use(express.json());
