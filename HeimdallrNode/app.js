@@ -24,7 +24,7 @@ require(`log-prefix`)(function () {
 
 // app.use(logger(`[:date] :method :url :status :res[content-length] - :response-time ms`));
 app.use(logger('common', {
-	stream: fs.createWriteStream(path.join(__dirname, 'access.log'), {flags: 'a'})
+	  stream: fs.createWriteStream("/timber/access.log", {flags: 'a'}, {mode: 0o755 })
 }));
 app.use(bodyParser.json({ limit: `500mb` }));
 app.use(bodyParser.urlencoded({ limit: `500mb`, extended: true, parameterLimit: 50000 }));
@@ -37,22 +37,6 @@ app.use(cors({ exposedHeaders: `Content-Disposition` }));
 // root route
 app.get('/', (req, res) => {
     res.json({ message: 'Root Access Successful' });
-});
-
-app.get('/verify', (req, res) => {
-	// let verified = verifyToken(req, res)
-	let verified 
-	if (req.headers.authorization) {
-		verified = verifyToken(req.headers.authorization)
-	} else {
-		res.json({"good":"bye"})
-	}
-	if (verified) {
-		res.json(verified);
-	} else {
-		res.json({"good":"bye"})
-	}
-    
 });
 
 require(`./route_paths/orb_net`)(app, verifyToken);
@@ -135,8 +119,9 @@ function verifyToken(req, res, next) {
 		};
 		req.token = req.headers["authorization"] || "";
 		req.token = req.token.replace(/BEARER /gi, ``);
-		// prod!
-		if (req.token) {
+		    // prod!
+        if (req.token && process.env.NODE_ENV == 'prod') {
+
 			req.verification = jwt.verify(req.token, secret, verifyOptions);
 			next();
 		} else {

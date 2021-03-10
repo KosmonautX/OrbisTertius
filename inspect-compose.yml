@@ -3,7 +3,8 @@ services:
   heimdallr:
     build: ./HeimdallrNode/
     volumes:
-      - ./HeimdallrNode/access.log:/usr/src/heimdallr/access.log
+      - ./HeimdallrNode:/home/node/heimdallr
+      - /home/node_modules/
       - ~/.aws/:/root/.aws:ro
     ports:
       - "5000:5000"
