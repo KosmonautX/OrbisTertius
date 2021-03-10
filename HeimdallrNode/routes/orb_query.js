@@ -69,11 +69,13 @@ router.get(`/get_user`, async function (req, res, next) {
 
     if (pteData.Item && pubData.Item) {
         let dao = {};
-        if (pteData.Item.payload) {
+        if (pubData.Item.payload) {
             dao.bio = pubData.Item.payload.bio;
             dao.profile_pic = pubData.Item.payload.profile_pic;
             dao.verified = pubData.Item.payload.verified;
             dao.country_code = pteData.Item.payload.country_code;
+        }
+        if (pteData.Item.payload){
             dao.gender = pteData.Item.payload.gender;
             dao.birthday = pteData.Item.payload.birthday;
         }
