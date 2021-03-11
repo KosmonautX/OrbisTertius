@@ -53,13 +53,14 @@ router.post(`/post_orb`, async function (req, res, next) {
         }
         body.expiry_dt = slider_time(body.expires_in);
         body.created_dt = moment().unix();
+        if(!body.geohashing || !body.geohashing52){
         if (body.latlon) {
             body.geohashing = geohash.latlon_to_geo(body.latlon); 
             body.geohashing52 = geohash.latlon_to_geo52(body.latlon); 
         } else if (body.postal_code) {
             body.geohashing = geohash.postal_to_geo(body.postal_code);
             body.geohashing52 = geohash.postal_to_geo52(body.postal_code);
-        };
+        }};
         if (body.media !== true){
             var img = body.photo;
         } else {

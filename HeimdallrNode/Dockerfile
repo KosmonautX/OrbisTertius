@@ -12,12 +12,11 @@ FROM alpine:3.10
 FROM alpine:3.10
 RUN apk add --update nodejs npm
 RUN addgroup -S node && adduser -S node -G node
+USER node
 
 
 WORKDIR /home/node/heimdallr
 COPY --from=0 --chown=node:node /build .
-RUN mkdir /timber && chown -R node:node /timber
-USER node
 
 # Add metadata to the image to describe which port the container is listening on at runtime. Check docker-compose for 9229 its only for inspection remove for production
 

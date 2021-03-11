@@ -13,6 +13,7 @@ const AWS = require('aws-sdk');
 const fs = require("fs");
 
 const secret = require(`./resources/global`).SECRET;
+const log = '../timber';
 
 logger.token(`date`, () => {
 	return moment().format(`YYYY-MM-DD HH:mm:ss`);
@@ -23,8 +24,11 @@ require(`log-prefix`)(function () {
 });
 
 // app.use(logger(`[:date] :method :url :status :res[content-length] - :response-time ms`));
+if (!fs.existsSync(log)){
+    fs.mkdirSync(log);
+}
 app.use(logger('common', {
-	  stream: fs.createWriteStream("/timber/access.log", {flags: 'a'}, {mode: 0o755 })
+	  stream: fs.createWriteStream(log + '/access.log' , {flags: 'a'}, {mode: 0o755 })
 }));
 app.use(bodyParser.json({ limit: `500mb` }));
 app.use(bodyParser.urlencoded({ limit: `500mb`, extended: true, parameterLimit: 50000 }));
@@ -120,7 +124,7 @@ function verifyToken(req, res, next) {
 		req.token = req.headers["authorization"] || "";
 		req.token = req.token.replace(/BEARER /gi, ``);
 		    // prod!
-        if (req.token && process.env.NODE_ENV == 'prod') {
+        if (req.token) {
 
 			req.verification = jwt.verify(req.token, secret, verifyOptions);
 			next();
