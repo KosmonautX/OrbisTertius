@@ -58,40 +58,40 @@ router.get(`/get`, async function (req, res, next) {
  * Get specific user (all info) 
  */
 router.get(`/get_user`, async function (req, res, next) {
-    let pteData = await userQuery.queryPTE(req).catch(err => {
-        err.status = 400;
-        next(err);
-    });
+    // let pteData = await userQuery.queryPTE(req).catch(err => {
+    //     err.status = 400;
+    //     next(err);
+    // });
     let pubData = await userQuery.queryPUB(req).catch(err => {
         err.status = 400;
         next(err);
     });
 
-    if (pteData.Item && pubData.Item) {
+    if (pubData.Item) {
         let dao = {};
         if (pubData.Item.payload) {
             dao.bio = pubData.Item.payload.bio;
             dao.profile_pic = pubData.Item.payload.profile_pic;
             dao.verified = pubData.Item.payload.verified;
-            dao.country_code = pteData.Item.payload.country_code;
+            // dao.country_code = pteData.Item.payload.country_code;
         }
-        if (pteData.Item.payload){
-            dao.gender = pteData.Item.payload.gender;
-            dao.birthday = pteData.Item.payload.birthday;
-        }
+        // if (pteData.Item.payload){
+        //     dao.gender = pteData.Item.payload.gender;
+        //     dao.birthday = pteData.Item.payload.birthday;
+        // }
         dao.user_id = parseInt(req.query.user_id);
         dao.username = pubData.Item.alphanumeric;
         dao.hp_number = 98754321;
-        dao.home = pteData.Item.numeric;
-        dao.office = pteData.Item.geohash;
+        // dao.home = pteData.Item.numeric;
+        // dao.office = pteData.Item.geohash;
         dao.home_geohash = pubData.Item.numeric;
         dao.office_geohash = pubData.Item.geohash;
         dao.home_geohash52 = pubData.Item.numeric2;
         dao.office_geohash52 = pubData.Item.geohash2;
-        dao.join_dt = pteData.Item.join_dt;
+        // dao.join_dt = pteData.Item.join_dt;
         res.json(dao);
     } else {
-        res.status(404).json("User not found")
+        res.status(404).json("User not found");
     }
 });
 
@@ -370,7 +370,7 @@ router.get(`/orbs_in_loc_fresh_page`, async function (req, res, next) {
                 data.Items.forEach(function(item) {
                     let dao = {};
                     dao.orb_uuid = item.SK.slice(15);
-                    dao.geohash = parseInt(item.PK.slice(4))
+                    dao.geohash = parseInt(item.PK.slice(4));
                     dao.geohash52 = item.geohash;
                     dao.nature = parseInt(item.inverse);
                     dao.expiry_dt = parseInt(item.SK.substr(0, 10));
