@@ -54,6 +54,9 @@ function check_postal(postal) {
     }
 }
 
+function decode_hash(hash, bit){
+    return geohash.decode_int(hash, bit);
+}
 module.exports = {
     postal_to_geo: postal_to_geo,
     postal_to_geo52: postal_to_geo52,
@@ -61,4 +64,5 @@ module.exports = {
     latlon_to_geo52: latlon_to_geo52,
     get_geo_array: get_geo_array,
     check_postal: check_postal,
+    decode_hash: decode_hash,
 }

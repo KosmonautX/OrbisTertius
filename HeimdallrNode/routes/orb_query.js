@@ -383,6 +383,20 @@ router.get(`/orbs_in_loc_fresh_page`, async function (req, res, next) {
     });
 });
 
+// transferred from dev added function call to geohash library
+
+router.get(`/decode_geohash`, async function (req, res, next) {
+    if (req.query.geohash.length == 16) {
+        let latlon = geohash.decode_hash(req.query.geohash, 52);
+        res.send(latlon);
+    } else if (req.query.geohash.length == 9) {
+        let latlon = geohash.decode_hash(req.query.geohash, 30);
+        res.send(latlon);
+    } else {
+        res.status(400).send("geohash looks sus");
+    }
+});
+
 /**
  * API 1.5
  * QUERY for all fresh ORBs in a geohash
@@ -520,5 +534,6 @@ async function batch_query_location(geohashing) {
         });
     })
 }
+
 
 module.exports = router;

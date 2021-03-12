@@ -679,10 +679,13 @@ const dynaOrb = {
 const serve3 = {
     
     async preSign(action,entity, uuid, form) {
-        const sign = s3.getSignedUrl(action, { 
+        var sign = s3.getSignedUrl(action, { 
             Bucket: ddb_config.sthreebucket, 
             Key: entity+ '/' +uuid + '/' + form, Expires: 300
         });
+        if(sign.length < 50 )
+        {sign = serve3.preSign(action,entity,uuid,form);}
+
         return sign;
     },
 
