@@ -47,7 +47,7 @@ router.get(`/get`, async function (req, res, next) {
                 dao.available = data.Item.payload.available;
                 res.json(dao);
             } else {
-                res.status(404).json("ORB not found")
+                res.status(404).json("ORB not found");
             }
         }
     });

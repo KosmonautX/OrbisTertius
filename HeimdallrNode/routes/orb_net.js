@@ -23,8 +23,8 @@ router.post(`/gen_uuid`, async function (req, res, next) {
         orb_uuid = await dynaOrb.gen(body);
         promises.set('orb_uuid',orb_uuid);
         if (body.media){
-            promises.set('lossy', await serve3.preSign('putObject',orb_uuid,'150x150'));
-            promises.set('lossless', await serve3.preSign('putObject',orb_uuid,'1920x1080'));
+            promises.set('lossy', await serve3.preSign('putObject','ORB',orb_uuid,'150x150'));
+            promises.set('lossless', await serve3.preSign('putObject','ORB',orb_uuid,'1920x1080'));
         };
         Promise.all(promises).then(response => {
             res.status(201).json({
@@ -64,7 +64,7 @@ router.post(`/post_orb`, async function (req, res, next) {
         if (body.media !== true){
             var img = body.photo;
         } else {
-            var img =  await serve3.preSign('getObject',body.orb_uuid,'150x150');
+            var img =  await serve3.preSign('getObject','ORB',body.orb_uuid,'150x150');
         };
         await dynaOrb.create(body);
         // when user post orb on app, send the orb to telebro
@@ -94,8 +94,8 @@ router.post(`/upload_profile_pic`, async function (req, res, next) {
         let body = { ...req.body };
         security.checkUser(req.verification.user_id, body.user_id);
         if (body.media){
-            var img_lossy = await serve3.preSign('putObject',body.user_id,'150x150');
-            var img_lossless = await serve3.preSign('putObject',body.user_id,'1920x1080');
+            var img_lossy = await serve3.preSign('putObject','USR',body.user_id,'150x150');
+            var img_lossless = await serve3.preSign('putObject','USR',body.user_id,'1920x1080');
             res.status(200).json({
                 "lossy": img_lossy,
                 "lossless": img_lossless,
@@ -678,12 +678,12 @@ const dynaOrb = {
 
 const serve3 = {
     
-    async preSign(action, uuid, form) {
+    async preSign(action,entity, uuid, form) {
         const sign = s3.getSignedUrl(action, { 
             Bucket: ddb_config.sthreebucket, 
-            Key: uuid + '/' + form, Expires: 300
+            Key: entity+ '/' +uuid + '/' + form, Expires: 300
         });
-        return sign
+        return sign;
     },
 
 };

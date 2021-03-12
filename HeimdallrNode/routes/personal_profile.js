@@ -8,6 +8,7 @@ AWS.config.update({
     region: ddb_config.region
 });
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
+const s3 = new AWS.S3({region:ddb_config.region, signatureVersion: 'v4'});
 const geohash = require('../controller/geohash');
 
 
@@ -38,6 +39,47 @@ const geohash = require('../controller/geohash');
 
 });
 
+router.get(`/get_media`, async function (req, res, next) {
+    try{
+        var getUrl;
+        switch (req.query.entity){
+        case "ORB":
+            getUrl = await serve3.preSign('getObject','ORB',req.query.uuid, req.query.form);
+            res.status(201).json({
+                "media": getUrl,
+            });
+            break;
+        case "USR":
+            getUrl = await serve3.preSign('getObject','USR',req.query.uuid, req.query.form);
+            debugger;
+            if(req.query.uuid == req.verification.user_id)
+            {res.status(201).json({"User's own": getUrl});}
+            else{
+            var params = {
+                TableName : ddb_config.tableNames.orb_table,
+                Key: {
+                    'PK': "USR#" + req.query.uuid + "#REL",
+                    'SK': "BUD#" + req.verification.user_id
+                }
+            };
+            docClient.get(params, function(err, data) {
+                if (err) throw err;
+                else {
+                    if (data.Item){
+                        res.status(201).json({"Buddy's":getUrl});
+                       }
+                }
+            });
+            }
+            break;
+        }
+
+        res.status(401).json({"Begone": "Imposter"});
+    } catch (err){
+        next(err);
+    }
+
+});
 
 const userQuery = {
     async queryPTE(req, arr) {
@@ -76,5 +118,16 @@ const userQuery = {
     },
 }
 
+const serve3 = {
+    
+    async preSign(action,entity, uuid, form) {
+        const sign = s3.getSignedUrl(action, { 
+            Bucket: ddb_config.sthreebucket, 
+            Key: entity+ '/' +uuid + '/' + form, Expires: 300
+        });
+        return sign;
+    },
+
+};
 
 module.exports = router;
