@@ -204,7 +204,7 @@ const dynaUser = {
     async bulkCreate(body) {
         const params = {
             RequestItems: {
-                ORB_NET: [
+                [ddb_config.tableNames.orb_table]: [
                     {
                         PutRequest: {
                             Item: {
@@ -436,7 +436,7 @@ const dynaOrb = {
     async create(body) {
         const params = {
             RequestItems: {
-                ORB_NET: [
+                [ddb_config.tableNames.orb_table]: [
                     {
                         PutRequest: {
                             Item: {

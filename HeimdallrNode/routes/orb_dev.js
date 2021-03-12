@@ -180,7 +180,7 @@ router.delete(`/delete_user`, async function (req, res, next) {
     itemsArray.push(param3);
     let params = {
         RequestItems: {
-            "ORB_NET": itemsArray
+            [ddb_config.tableNames.orb_table]: itemsArray
         }
     }
     docClient.batchWrite(params, function(err, data) {
@@ -227,7 +227,7 @@ router.delete(`/delete_orb`, async function (req, res, next) {
     itemsArray.push(param3);
     let params = {
         RequestItems: {
-            "ORB_NET": itemsArray
+            [ddb_config.tableNames.orb_table]: itemsArray
         }
     }
     docClient.batchWrite(params, function(err, data) {

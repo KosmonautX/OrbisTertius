@@ -43,7 +43,7 @@ const dynaUser = {
     async Bcreate(body) {
         const params = {
             RequestItems: {
-                ORB_NET: [
+                [ddb_config.tableNames.orb_table]: [
                     {
                         PutRequest: {
                             Item: {
@@ -239,7 +239,7 @@ const dynaUser = {
         };
         let params = {
             RequestItems: {
-                ORB_NET: [param1, param2, param3, param4]
+                [ddb_config.tableNames.orb_table]: [param1, param2, param3, param4]
             }
         }
         const data = await docClient.batchWrite(params).promise();
@@ -297,7 +297,7 @@ const dynaUser = {
         };
         let params = {
             RequestItems: {
-                ORB_NET: [param1, param2]
+                [ddb_config.tableNames.orb_table]: [param1, param2]
             }
         }
         const data = await docClient.batchWrite(params).promise();
@@ -380,7 +380,7 @@ const dynaOrb = {
     async postOrb (body) {
         const params = {
             RequestItems: {
-                ORB_NET: [
+                [ddb_config.tableNames.orb_table]: [
                     {
                         PutRequest: {
                             Item: {
