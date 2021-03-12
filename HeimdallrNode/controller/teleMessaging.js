@@ -74,7 +74,7 @@ async function postOrbOnTele(body, recipients) {
             tip: body.tip,
             user_id_list: recipients,
             if_commercial: false,
-        })
+        });
         // console.log(body);
     } catch (err) {
         console.log(err);
@@ -84,9 +84,9 @@ async function postOrbOnTele(body, recipients) {
 async function exchangeContact(body) {
     try {
         const response = await axios.post(ddb_config.mercury +'/api/fizz/tele/messaging', {
-            acceptor_id: body.init_id,
-            user_id: body.user_id,
-        })
+            acceptor_id: body.user_id,
+            user_id: body.init_id,
+        });
     } catch (err) {
         console.log(err);
     }

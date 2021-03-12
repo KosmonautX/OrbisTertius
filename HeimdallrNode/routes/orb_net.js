@@ -918,8 +918,8 @@ router.post(`/accept`, async function (req, res, next) {
                 teleMessaging.exchangeContact(body).then(
                     function(value){
                         res.status(200).json({
-                            "ORB accepted by": body.orb_uuid,
-                            "USER ID": body.user_id
+                            "ORB accepted by": body.user_id,
+                            "USER ID": body.orb_uuid
                     });
                 });
             }
