@@ -8,7 +8,7 @@ class TeleMessagingSchema(Schema):
     name = fields.String(attribute="name")
     purpose = fields.String(attribute="purpose")
 
-    orb_UUID = fields.Int(attribute="orbUUID")
+    orb_UUID = fields.String(attribute="orbUUID")
     acceptor_id = fields.Int(attribute="acceptorId")
     user_id = fields.Int(attribute="userId")
     star_user = fields.Boolean(attribute="starUser")

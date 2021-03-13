@@ -6,17 +6,14 @@ services:
       - "80:5000"
     links:
       - "mercury:flask"
-    environment:
-      - DEBUG=1
     env_file:
-      - .env      
+      - .env
+    restart: always
   mercury:
     build: ./MercuryFlask/
     volumes:
       - ./MercuryFlask:/usr/src/mercury
     restart: always
-    environment:
-      - DEBUG=1
     env_file:
       - .env
  

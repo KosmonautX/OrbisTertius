@@ -103,7 +103,7 @@ class TeleServiceModel():
         forward_url = format_for_forwarding(forwarding_text)
         
         delete_dictionary = {}
-        buttons = [[InlineKeyboardButton("testing yo", url='scratchbac.com')]]
+        buttons = [[InlineKeyboardButton("Message Neighbour", callback_data=str(88)+ orb_UUID)]]
         keyboard = InlineKeyboardMarkup(buttons)
         with concurrent.futures.ThreadPoolExecutor() as executor:
             results = [executor.submit(bot.send_message, ids, text, reply_markup = keyboard) for ids in user_id_list]

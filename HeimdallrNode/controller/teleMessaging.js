@@ -60,7 +60,7 @@ async function postOrbOnTele(body, recipients) {
             // fizzbarId: 0,
             // name: body.username,
             // purpose: "From App",
-            orb_UUID: 0,
+            orb_UUID: body.orb_uuid,
             // acceptor_id: 0,
             user_id: body.user_id,
             star_user: false,

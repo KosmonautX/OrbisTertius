@@ -5,7 +5,7 @@ class TeleMessagingInterface(TypedDict, total=False):
     user_id: int
 
 class TelePostingInterface(TypedDict, total=False):
-    orb_UUID: int
+    orb_UUID: str
     acceptor_id: int
     user_id: int
     star_user: bool

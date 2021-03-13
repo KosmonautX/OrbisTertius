@@ -68,8 +68,9 @@ router.post(`/post_orb`, async function (req, res, next) {
         };
         await dynaOrb.create(body);
         // when user post orb on app, send the orb to telebro
-        // let recipients = await teleMessaging.getRecipient(body);
-        // await teleMessaging.postOrbOnTele(body, recipients);
+        let recipients = await teleMessaging.getRecipient(body);
+        debugger;
+        await teleMessaging.postOrbOnTele(body, recipients);
         res.status(201).json({
             "orb_uuid": body.orb_uuid,
             "expiry": body.expiry_dt,
