@@ -121,7 +121,7 @@ class TeleServiceModel():
         #     db.child('commercial buffer').update({user_id:time}, user['idToken']) 
 
         # send to the team admin account
-        admin_button = [[InlineKeyboardButton(text = "message user", url = 't.me/'+tele_username)]]
+        admin_button = [[InlineKeyboardButton(text = "message user", callback_data=str(88)+ orb_UUID)]]
         admin_keyboard = InlineKeyboardMarkup(admin_button)
         bot.send_message(chat_id='1349902925', text = user_location + '\n' + text, reply_markup = admin_keyboard)   #SB admin
         bot.send_message(chat_id = '-1001250889655', text = 'Postal code: ' + user_location[:2] + '****\n' + text)
