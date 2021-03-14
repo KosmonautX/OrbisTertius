@@ -117,7 +117,7 @@ router.get(`/recipients`, async function (req, res, next) {
                     users_arr.push(parseInt(item.SK.slice(5)));
                 });
                 if (blockedUsers.length > 0) {
-                    users_arr = users_arr.filter(item => !blockedUsers.includes(item))
+                    users_arr = users_arr.filter(item => !blockedUsers.includes(item));
                 }
                 res.status(200).send({
                     "users": users_arr,
@@ -211,7 +211,7 @@ router.put(`/setCommercial`, async function (req, res, next) {
 router.put(`/setPostal`, async function (req, res, next) {
     try {
         let body = { ...req.body};
-        let userInfo = await dynaUser.getPUBinfo(body)
+        let userInfo = await dynaUser.getPUBinfo(body);
         if (userInfo.Item.payload.commercial == true){
             body.value = "c";
         } else {
@@ -249,6 +249,7 @@ router.post(`/post_orb`, async function (req, res, next) {
         body.geohashing52 = geohash.postal_to_geo52(body.postal_code);
         body.title = body.info.split(' ').slice(0,2).join(' ');
         body.title = "From Telegram: " + body.title + "...";
+        body.media = false;
         // offer/request logic
         if (body.orb == "offer") {
             body.nature = 600;

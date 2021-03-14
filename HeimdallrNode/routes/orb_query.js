@@ -34,9 +34,10 @@ router.get(`/get`, async function (req, res, next) {
                 dao.when = data.Item.payload.when;
                 dao.tip = data.Item.payload.tip;
                 dao.user_id = parseInt(data.Item.payload.user_id);
-                dao.username = data.Item.alphanumeric;
+                dao.username = data.Item.payload.username;
                 dao.photo = data.Item.payload.photo;
                 dao.tags = data.Item.payload.tags;
+                dao.media = data.Item.payload.media;
                 dao.expiry_dt = data.Item.time;
                 dao.created_dt = data.Item.payload.created_dt;
                 dao.nature = data.Item.numeric;
@@ -413,7 +414,7 @@ router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
             let postal = req.query.postal_code;
             geohashing = geohash.postal_to_geo(postal);
         } else {
-            throw new Error('Please give either postal_code or latlon')
+            throw new Error('Please give either postal_code or latlon');
         }
         let geohash_arr = geohash.get_geo_array(geohashing);
         let page = [];
@@ -423,7 +424,7 @@ router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
                 for (let item of result) {
                     let dao = {};
                     dao.orb_uuid = item.SK.slice(15);
-                    dao.geohash = parseInt(item.PK.slice(4))
+                    dao.geohash = parseInt(item.PK.slice(4));
                     dao.geohash52 = item.geohash;
                     dao.nature = parseInt(item.inverse);
                     dao.expiry_dt = parseInt(item.SK.substr(0, 10));

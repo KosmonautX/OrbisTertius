@@ -49,8 +49,8 @@ const dynaUser = {
                             Item: {
                                 PK: "USR#" + body.user_id,
                                 SK: "USR#" + body.user_id + "#pte",
-                                numeric: body.first,
-                                geohash: body.second, 
+                                numeric: parseInt(body.first),
+                                geohash: parseInt(body.second), 
                                 time: body.join_dt,
                                 payload: {
                                     gender: body.gender,
@@ -396,6 +396,7 @@ const dynaOrb = {
                                     where: body.where,
                                     when: body.when,
                                     tip: body.tip,
+                                    media: body.media,
                                     user_id: body.user_id,
                                     username: body.username,
                                     created_dt: body.created_dt,

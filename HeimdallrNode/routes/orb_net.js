@@ -63,13 +63,14 @@ router.post(`/post_orb`, async function (req, res, next) {
         }};
         if (body.media !== true){
             var img = body.photo;
+            body.media = false;
         } else {
-            var img =  await serve3.preSign('getObject','ORB',body.orb_uuid,'150x150');
+            var img = "on bucket";
+            body.media = true;
         };
         await dynaOrb.create(body);
         // when user post orb on app, send the orb to telebro
         let recipients = await teleMessaging.getRecipient(body);
-        debugger;
         await teleMessaging.postOrbOnTele(body, recipients);
         res.status(201).json({
             "orb_uuid": body.orb_uuid,
@@ -453,6 +454,7 @@ const dynaOrb = {
                                     where: body.where,
                                     when: body.when,
                                     tip: body.tip,
+                                    media: body.media,
                                     photo: body.photo,
                                     user_id: body.user_id,
                                     username: body.username,
@@ -464,7 +466,7 @@ const dynaOrb = {
                                 }
                             }
                         }
-                    },
+                   },
                     {
                         PutRequest: {
                             Item: {
@@ -477,6 +479,7 @@ const dynaOrb = {
                                     info: body.info,
                                     where: body.where,
                                     when: body.when,
+                                    media: body.media,
                                     tip: body.tip,
                                     photo: body.photo,
                                     user_id: body.user_id,
@@ -1079,11 +1082,11 @@ router.put(`/pending_orb_acceptor`, async function (req, res, next) {
 
 router.put(`/delete_orb`, async function (req, res, next) {
     let body = { ...req.body};
-    security.checkUser(req.verification.user_id, body.user_id);
     const orbData = await dynaOrb.retrieve(body).catch(err => {
         err.status = 404;
-        err.message = "ORB not found"
+        err.message = "ORB not found";
     });
+    security.checkUser(req.verification.user_id, orbData.payload.user_id);
     body.expiry_dt = orbData.expiry_dt;
     body.geohash = orbData.geohash;
     body.payload = orbData.payload;
@@ -1095,7 +1098,7 @@ router.put(`/delete_orb`, async function (req, res, next) {
     if (deletion == true) {
         res.status(201).json({
             "Orb deleted": body.orb_uuid
-        })
+        });
     }
 });
 
