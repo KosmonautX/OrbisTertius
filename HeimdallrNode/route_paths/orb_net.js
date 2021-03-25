@@ -1,4 +1,7 @@
 module.exports = (app, verifyToken) => {
+    if(process.env.NODE_ENV == "dev"){
+        app.use('/api/dev', require('../routes/orb_dev'));
+    }
 	app.use(`/api/orb`, verifyToken, require(`../routes/orb_net`));
 	// app.use(`/api/orb`, require(`../routes/orb_net`));
 	app.use(`/api/query`, require(`../routes/orb_query`));

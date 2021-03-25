@@ -10,7 +10,6 @@ AWS.config.update({
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
 const geohash = require('ngeohash');
 const jwt = require(`jsonwebtoken`);
-const secret = require('../resources/global').SECRET;
 const crypto = require('crypto');
 const hash = crypto.createHash('sha256');
 /**
@@ -248,51 +247,6 @@ router.get(`/decode_geohash`, async function (req, res, next) {
         res.send(latlon);
     } else {
         res.status(400).send("geohash looks sus");
-    }
-});
-
-router.post('/login', async function (req, res, next) {
-    let body = { ...req.body };
-    try {
-        if (body.login == ".v#Z~_0/,>!9oAH66S;t7!+DN07N") {
-            // if (body.password !== result.password) {
-            //     if (!passwordHash.verify(body.password, result.password)) {
-            //         let error = new Error(`Invalid password.`);
-            //         error.status = 401;
-            //         throw error;
-            //     }
-            // };
-            // delete result.password;
-        
-            // NEW AUTHENTICATION
-            let payload = { };
-            payload.user_id = body.user_id || 1234;
-            payload.username = body.username || "login boi";
-            payload.role = "normal";
-
-            const iss = "Princeton";
-            const sub = "ScratchBac";
-            // const aud = "";
-            const exp = "1d"; //"20min";
-            const signOptions = {
-                issuer:  iss,
-                subject:  sub,
-                // audience:  aud,
-                expiresIn: exp,
-                algorithm: "HS256"
-            };
-            // Create the JWT Token
-            const token = jwt.sign(payload, secret, signOptions);
-            res.send(token)
-        
-        } else {
-            let error = new Error(`User does not exist.`);
-            error.status = 401;
-            throw error;
-        }
-
-    } catch (err) {
-        next(err);
     }
 });
 

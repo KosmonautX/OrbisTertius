@@ -1,4 +1,3 @@
-require(`./resources/global`); //initialized all global variable;
 const createError = require(`http-errors`);
 const express = require(`express`);
 const path = require(`path`);
@@ -12,7 +11,7 @@ const cors = require(`cors`);
 const AWS = require('aws-sdk');
 const fs = require("fs");
 
-const secret = require(`./resources/global`).SECRET;
+const secret = process.env.SECRET_TUNNEL;
 const log = '../timber';
 
 logger.token(`date`, () => {
@@ -43,6 +42,27 @@ app.get('/', (req, res) => {
     res.json({ message: 'Root Access Successful' });
 });
 
+if(process.env.NODE_ENV == "dev"){
+app.post('/auth_server' , function (req,res) {
+    let payload = {};
+    payload.user_id = req.body.user_id;
+    payload.username = "ChongaldXrump";
+    payload.role = "pleb";
+    const iss = 'Princeton';
+    const sub = 'ScratchBac';
+    const exp = '20min'
+    const signOptions = {
+        issuer: iss,
+        subject: sub,
+        expiresIn: exp,
+        algorithm: 'HS256',
+    };
+    const token = jwt.sign(payload, secret, signOptions);
+    res.json(token);
+});
+}
+
+
 require(`./route_paths/orb_net`)(app, verifyToken);
 
 // set port, listen for requests
@@ -54,7 +74,7 @@ app.listen(PORT, () => {
 try{
     const dynamodb = new AWS.DynamoDB({endpoint: new AWS.Endpoint("http://dynamodb:8000")});
     // const user_template = require('./blueprint/user_table.json');
-    const orb_template = require('./blueprint/orb_net_table.json')
+    const orb_template = require('./blueprint/orb_net_table.json');
 
     // dynamodb.createTable(user_template, function(err, data) {
     //     if (err) {

@@ -2,3 +2,4 @@ HeimdallrNode/node_modules
 .DS_Store
 .vscode
 *.pyc
+.localstack/data/recorded_api_calls.json
