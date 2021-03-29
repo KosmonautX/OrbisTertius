@@ -247,8 +247,8 @@ router.post(`/post_orb`, async function (req, res, next) {
         body.created_dt = moment().unix();
         body.geohashing = geohash.postal_to_geo(body.postal_code);
         body.geohashing52 = geohash.postal_to_geo52(body.postal_code);
-        body.title = body.info.split(' ').slice(0,2).join(' ');
-        body.title = "From Telegram: " + body.title + "...";
+        // body.title = body.info.split(' ').slice(0,2).join(' ');
+        // body.title = "From Telegram: " + body.title + "...";
         body.media = false;
         // offer/request logic
         if (body.orb == "offer") {
