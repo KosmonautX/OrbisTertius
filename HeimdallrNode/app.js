@@ -58,7 +58,7 @@ if(process.env.NODE_ENV == "dev"){
             algorithm: 'HS256',
         };
         const token = jwt.sign(payload, secret, signOptions);
-        res.json(token);
+        res.send(token);
     });
 }
 
