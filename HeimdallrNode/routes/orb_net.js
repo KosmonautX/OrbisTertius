@@ -131,7 +131,8 @@ router.post(`/create_user`, async function (req, res, next) {
                 home: body.latlon.home,
                 office: body.latlon.office
             };
-        } else if (body.home) {
+        } else if (body.home || body.office) {
+            // if only 1 is given (either home or office postal codes)
             body.geohashing = {
                 home: geohash.postal_to_geo(body.home),
                 office: geohash.postal_to_geo(body.office)
@@ -219,8 +220,8 @@ const dynaUser = {
                             Item: {
                                 PK: "USR#" + body.user_id,
                                 SK: "USR#" + body.user_id + "#pte",
-                                numeric: body.loc.home,
-                                geohash: body.loc.office, 
+                                numeric: parseInt(body.loc.home),
+                                geohash: parseInt(body.loc.office), 
                                 payload: {
                                     country_code: body.country_code,
                                     hp_number: body.hp_number,
