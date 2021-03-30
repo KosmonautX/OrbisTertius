@@ -5,19 +5,32 @@ const geohash = require('ngeohash');
 const onemap = require('../resources/onemap3.json');
 
 function postal_to_geo(postal) {
+    if (postal == null || postal == "") {
+        return null;
+    }
     if (typeof postal !== 'string') {
         postal = postal.toString();
     }
+    // if the zero got omitted due to integers
+    if (postal.length == 5) {
+        postal = "0" + postal;
+    }
     let latlon = onemap[postal];
     if (latlon == "undefined" || latlon == null) {
-        throw new Error("Postal code does not exist!")
+        throw new Error("Postal code does not exist!");
     }
     return latlon_to_geo(latlon);
 };
 
 function postal_to_geo52(postal) {
+    if (postal == null || postal == "") {
+        return null;
+    }
     if (typeof postal !== 'string') {
         postal = postal.toString();
+    }
+    if (postal.length == 5) {
+        postal = "0" + postal;
     }
     let latlon = onemap[postal];
     if (latlon == "undefined" || latlon == null) {

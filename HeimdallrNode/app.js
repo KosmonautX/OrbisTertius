@@ -43,23 +43,23 @@ app.get('/', (req, res) => {
 });
 
 if(process.env.NODE_ENV == "dev"){
-app.post('/auth_server' , function (req,res) {
-    let payload = {};
-    payload.user_id = req.body.user_id;
-    payload.username = "ChongaldXrump";
-    payload.role = "pleb";
-    const iss = 'Princeton';
-    const sub = 'ScratchBac';
-    const exp = '20min'
-    const signOptions = {
-        issuer: iss,
-        subject: sub,
-        expiresIn: exp,
-        algorithm: 'HS256',
-    };
-    const token = jwt.sign(payload, secret, signOptions);
-    res.json(token);
-});
+    app.post('/auth_server' , function (req,res) {
+        let payload = {};
+        payload.user_id = req.body.user_id;
+        payload.username = "ChongaldXrump";
+        payload.role = "pleb";
+        const iss = 'Princeton';
+        const sub = 'ScratchBac';
+        const exp = '20min'
+        const signOptions = {
+            issuer: iss,
+            subject: sub,
+            expiresIn: exp,
+            algorithm: 'HS256',
+        };
+        const token = jwt.sign(payload, secret, signOptions);
+        res.json(token);
+    });
 }
 
 
@@ -146,7 +146,7 @@ function verifyToken(req, res, next) {
 		    // prod!
         if (req.token) {
 
-			req.verification = jwt.verify(req.token, secret, verifyOptions);
+			req.verification = jwt.verify(req.token, "BALA", verifyOptions);
 			next();
 		} else {
 			let err = new Error(`No token, please login again!`);

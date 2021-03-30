@@ -131,7 +131,8 @@ router.post(`/create_user`, async function (req, res, next) {
                 home: body.latlon.home,
                 office: body.latlon.office
             };
-        } else if (body.home) {
+        } else if (body.home || body.office) {
+            // if only 1 is given (either home or office postal codes)
             body.geohashing = {
                 home: geohash.postal_to_geo(body.home),
                 office: geohash.postal_to_geo(body.office)
@@ -146,6 +147,8 @@ router.post(`/create_user`, async function (req, res, next) {
             };
         }
         if (body.profile_pic == null) body.profile_pic = "null";
+        if ((typeof body.loc.home) == "string") body.loc.home = parseInt(body.loc.home);
+        if ((typeof body.loc.office) == "string") body.loc.office = parseInt(body.loc.office);
         body.join_dt = moment().unix();
         let transacSuccess = await dynaUser.transacCreate(body).catch(err => {
             err.status = 409;
