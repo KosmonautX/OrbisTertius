@@ -147,6 +147,8 @@ router.post(`/create_user`, async function (req, res, next) {
             };
         }
         if (body.profile_pic == null) body.profile_pic = "null";
+        if ((typeof body.loc.home) == "string") body.loc.home = parseInt(body.loc.home);
+        if ((typeof body.loc.office) == "string") body.loc.office = parseInt(body.loc.office);
         body.join_dt = moment().unix();
         let transacSuccess = await dynaUser.transacCreate(body).catch(err => {
             err.status = 409;
@@ -220,8 +222,8 @@ const dynaUser = {
                             Item: {
                                 PK: "USR#" + body.user_id,
                                 SK: "USR#" + body.user_id + "#pte",
-                                numeric: parseInt(body.loc.home),
-                                geohash: parseInt(body.loc.office), 
+                                numeric: body.loc.home,
+                                geohash: body.loc.office, 
                                 payload: {
                                     country_code: body.country_code,
                                     hp_number: body.hp_number,
