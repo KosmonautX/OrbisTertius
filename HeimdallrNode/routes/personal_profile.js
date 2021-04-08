@@ -10,14 +10,14 @@ AWS.config.update({
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
 const s3 = new AWS.S3({region:ddb_config.region, signatureVersion: 'v4'});
 const geohash = require('../controller/geohash');
-
+const userQuery = require('../controller/dynamoUser').userQuery;
 
 /**
  * API 1 
  * Get specific user (all info) 
  */
  router.get(`/get_postal`, async function (req, res, next) {
-     let pteData = await userQuery.queryPTE(req, ['numeric','geohash']).catch(err => {
+     let pteData = await userQuery.queryPTE(req.query, ['numeric','geohash']).catch(err => {
         err.status = 400;
         next(err);
     });
@@ -80,43 +80,6 @@ router.get(`/get_media`, async function (req, res, next) {
     }
 
 });
-
-const userQuery = {
-    async queryPTE(req, arr) {
-        const params = {
-            TableName: ddb_config.tableNames.orb_table,        
-            Key: {
-                PK: "USR#" + req.query.user_id,
-                SK: "USR#" + req.query.user_id + "#pte"
-            },
-            AttributesToGet: arr
-        };
-        const data = await docClient.get(params).promise();
-        return data;
-    },
-    async queryPUB(req) {
-        const params = {
-            TableName: ddb_config.tableNames.orb_table,        
-            Key: {
-                PK: "USR#" + req.query.user_id,
-                SK: "USR#" + req.query.user_id + "#pub"
-            }
-        };
-        const data = await docClient.get(params).promise();
-        return data;
-    },
-    async checkUsername (username) {
-        const params = {
-            TableName: ddb_config.tableNames.orb_table,
-            Key: {
-                PK: "username#" + username,
-                SK: "username#" + username
-            }
-        };
-        const data = await docClient.get(params).promise();
-        return data;
-    },
-}
 
 const serve3 = {
     

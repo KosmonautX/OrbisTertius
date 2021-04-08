@@ -9,6 +9,7 @@ AWS.config.update({
 });
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
 const geohash = require('../controller/geohash');
+const userQuery = require('../controller/dynamoUser').userQuery;
 
 /**
  * API 1 
@@ -63,7 +64,7 @@ router.get(`/get_user`, async function (req, res, next) {
     //     err.status = 400;
     //     next(err);
     // });
-    let pubData = await userQuery.queryPUB(req).catch(err => {
+    let pubData = await userQuery.queryPUB(req.query).catch(err => {
         err.status = 400;
         next(err);
     });
@@ -113,42 +114,6 @@ router.get(`/check_username`, async function (req, res, next) {
         next(err)
     }
 });
-
-const userQuery = {
-    async queryPTE(req) {
-        const params = {
-            TableName: ddb_config.tableNames.orb_table,        
-            Key: {
-                PK: "USR#" + req.query.user_id,
-                SK: "USR#" + req.query.user_id + "#pte"
-            }
-        };
-        const data = await docClient.get(params).promise();
-        return data;
-    },
-    async queryPUB(req) {
-        const params = {
-            TableName: ddb_config.tableNames.orb_table,        
-            Key: {
-                PK: "USR#" + req.query.user_id,
-                SK: "USR#" + req.query.user_id + "#pub"
-            }
-        };
-        const data = await docClient.get(params).promise();
-        return data;
-    },
-    async checkUsername (username) {
-        const params = {
-            TableName: ddb_config.tableNames.orb_table,
-            Key: {
-                PK: "username#" + username,
-                SK: "username#" + username
-            }
-        };
-        const data = await docClient.get(params).promise();
-        return data;
-    },
-}
 
 /**
  * API GET 3
