@@ -6,6 +6,7 @@ AWS.config.update({
 });
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint:ddb_config.dyna});
 const geohash = require('./geohash');
+const {v4 : uuidv4} = require('uuid');
 
 const comment = {
     async postComment(body) {

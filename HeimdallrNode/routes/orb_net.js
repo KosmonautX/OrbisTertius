@@ -31,7 +31,7 @@ router.post(`/gen_uuid`, async function (req, res, next) {
         let promises = new Map();
         security.checkUser(req.verification.user_id, body.user_id);
         orb_uuid = await dynaOrb.gen(body);
-        promises.set('orb_uuid',orb_uuid);
+        promises.set('orb_uuid', orb_uuid);
         if (body.media){
             promises.set('lossy', await serve3.preSign('putObject','ORB',orb_uuid,'150x150'));
             promises.set('lossless', await serve3.preSign('putObject','ORB',orb_uuid,'1920x1080'));
@@ -39,7 +39,6 @@ router.post(`/gen_uuid`, async function (req, res, next) {
         Promise.all(promises).then(response => {
             res.status(201).json({
                 response
-               
             });
         });
         
