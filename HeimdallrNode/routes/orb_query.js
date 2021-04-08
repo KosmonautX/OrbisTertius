@@ -101,7 +101,8 @@ router.get(`/check_username`, async function (req, res, next) {
         let username = await userQuery.checkUsername(req.query.username);
         if (username.Item) {
             res.status(409).send({
-                "username": "taken"
+                "username": "taken",
+                "user_id": username.Item.alphanumeric
             });
         } else {
             res.status(200).send({

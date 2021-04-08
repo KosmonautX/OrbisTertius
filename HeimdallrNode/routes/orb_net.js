@@ -201,7 +201,8 @@ const dynaUser = {
                         ConditionExpression: "attribute_not_exists(PK)",
                         Item: {
                             PK: "username#" + body.username,
-                            SK: "username#" + body.username
+                            SK: "username#" + body.username,
+                            alphanumeric: body.user_id
                         }
                     }
                 }
@@ -379,7 +380,8 @@ const dynaUser = {
                         ConditionExpression: "attribute_not_exists(PK)",
                         Item: {
                             PK: "username#" + body.username,
-                            SK: "username#" + body.username
+                            SK: "username#" + body.username,
+                            alphanumeric: body.user_id
                         }
                     }
                 },
