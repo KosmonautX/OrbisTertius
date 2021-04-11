@@ -432,6 +432,28 @@ router.post(`/accept`, async function (req, res, next) {
 
 /**
  * API 0.2
+ * Chat with user on telegram
+ */
+ router.post(`/chatWithTelegram`, async function (req, res, next) {
+    try {
+        let body = { ...req.body };
+        security.checkUser(req.verification.user_id, body.user_id);
+        
+        teleMessaging.exchangeContact(body).then(
+            function(value){
+                res.status(200).json({
+                    "User_id": body.user_id,
+                    "Chatting with this init_id": body.init_id
+            });
+        });
+    } catch (err) {
+        err.status = 400;
+        next(err);
+    }
+});
+
+/**
+ * API 0.2
  * Unaccept orb
  */
 router.put(`/delete_acceptance`, async function (req, res, next) {
