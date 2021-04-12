@@ -59,7 +59,10 @@ class TeleMessagingService:
 
     @staticmethod
     def message_user(new_attrs: TeleMessagingInterface) -> TeleServiceModel:
-        new_TeleMessaging = TeleServiceModel.message_user(acceptor_id=new_attrs['acceptorId'], poster_id=new_attrs['userId'])
+        try:
+            username = new_attrs['username']
+        except:
+            username = 'user'
+        new_TeleMessaging = TeleServiceModel.message_user(acceptor_id=new_attrs['acceptorId'], poster_id=new_attrs['userId'], username=username)
 
         return new_TeleMessaging
-    

@@ -11,6 +11,7 @@ class TeleMessagingSchema(Schema):
     orb_UUID = fields.String(attribute="orbUUID")
     acceptor_id = fields.Int(attribute="acceptorId")
     user_id = fields.Int(attribute="userId")
+    username = fields.String(attribute="username")
     star_user = fields.Boolean(attribute="starUser")
     tele_username = fields.String(attribute="teleUsername")
     message_id = fields.Int(attribute="messageId")
