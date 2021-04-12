@@ -146,7 +146,7 @@ function verifyToken(req, res, next) {
 		    // prod!
         if (req.token) {
 
-			req.verification = jwt.verify(req.token, "BALA", verifyOptions);
+			req.verification = jwt.verify(req.token, secret, verifyOptions);
 			next();
 		} else {
 			let err = new Error(`No token, please login again!`);
