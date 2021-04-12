@@ -3,6 +3,7 @@ from mypy_extensions import TypedDict
 class TeleMessagingInterface(TypedDict, total=False):
     acceptor_id: str
     user_id: int
+    username: str
 
 class TelePostingInterface(TypedDict, total=False):
     orb_UUID: str

@@ -86,6 +86,7 @@ async function exchangeContact(body) {
         const response = await axios.post(ddb_config.mercury +'/api/fizz/tele/messaging', {
             acceptor_id: body.user_id,
             user_id: body.init_id,
+            username: body.username
         });
     } catch (err) {
         console.log(err);
