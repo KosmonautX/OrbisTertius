@@ -11,11 +11,11 @@ import hashlib
 import concurrent.futures
 
 class TeleServiceModel():
-    def message_user(acceptor_id, poster_id, username):
+    def message_user(acceptor_id, poster_id, username, title):
         bot = telegram.Bot(token=env("NEIB"))      #neib
         buttons = [[InlineKeyboardButton("Sign up form", url='https://scrbac.com/yihling_form')]]
         keyboard = InlineKeyboardMarkup(buttons)
-        bot.send_message(chat_id= acceptor_id, text = "Private message \"{}\" [here](tg://user?id={})".format(username, str(poster_id)), parse_mode="markdown")
+        bot.send_message(chat_id= acceptor_id, text = "Click [here](tg://user?id={}) to private message \"{}\" {}".format(str(poster_id), username, title), parse_mode="markdown")
 
 
     # def posting(info, where, when, tip, comm, postal):

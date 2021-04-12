@@ -63,6 +63,14 @@ class TeleMessagingService:
             username = new_attrs['username']
         except:
             username = 'user'
-        new_TeleMessaging = TeleServiceModel.message_user(acceptor_id=new_attrs['acceptorId'], poster_id=new_attrs['userId'], username=username)
+        try:
+            title = 'regarding the post: ' + new_attrs['title']
+        except:
+            title = ' '
+        new_TeleMessaging = TeleServiceModel.message_user(
+                                                        acceptor_id=new_attrs['acceptorId'], 
+                                                        poster_id=new_attrs['userId'], 
+                                                        username=username, 
+                                                        title=title)
 
         return new_TeleMessaging
