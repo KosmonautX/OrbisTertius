@@ -45,9 +45,15 @@ app.get('/', (req, res) => {
 if(process.env.NODE_ENV == "dev"){
     app.post('/auth_server' , function (req,res) {
         let payload = {};
-        payload.user_id = req.body.user_id;
-        payload.username = "ChongaldXrump";
-        payload.role = "pleb";
+        if (!req.body.user_id){
+            payload.device_id = req.body.device_id
+            payload.username = "AttilaHun"
+            payload.role = "barb"
+        } else {
+            payload.user_id = req.body.user_id;
+            payload.username = "ChongaldXrump";
+            payload.role = "pleb";
+        }
         const iss = 'Princeton';
         const sub = 'ScratchBac';
         const exp = '20min'
