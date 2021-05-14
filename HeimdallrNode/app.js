@@ -64,7 +64,7 @@ if(process.env.NODE_ENV == "dev"){
             algorithm: 'HS256',
         };
         const token = jwt.sign(payload, secret, signOptions);
-        res.send(token);
+        res.send({payload: token});
     });
 }
 
@@ -161,6 +161,7 @@ function verifyToken(req, res, next) {
 		}
     } catch (err) {
 		if (err.message == "maxAge exceeded") err.status = 403;
+        if (err.message == "jwt expired") err.status = 403;
       	next(err);
     }
 }

@@ -1,4 +1,5 @@
 const moment = require('moment');
+const {v4 : uuidv4} = require('uuid');
 const ddb_config = require('../config/ddb.config');
 const AWS = require('aws-sdk');
 AWS.config.update({
@@ -375,7 +376,19 @@ const dynaUser = {
         return data;
     },
 };
+const dynaUserBirth ={
+    async telespawn() {
+        // triggered by telegram passport loop
+        // hp.no, tele user_id, tele username
+        break;
+    },
+    async smsspawn(){
+        // hp.no, check if exists => generate user_id if null else fetch user_id
+        // and craft url message to pass to sms endpoint pagekite
+        break;
+    }
 
+}
 const dynaOrb = {
     async postOrb (body) {
         const params = {

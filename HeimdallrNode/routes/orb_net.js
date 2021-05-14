@@ -29,7 +29,7 @@ router.post(`/gen_uuid`, async function (req, res, next) {
     try {
         let body = { ...req.body };
         let promises = new Map();
-        security.checkUser(req.verification.user_id, body.user_id);
+        security.checkUser(req.verification, body.user_id);
         orb_uuid = await dynaOrb.gen(body);
         promises.set('orb_uuid', orb_uuid);
         if (body.media){
@@ -56,7 +56,7 @@ router.post(`/gen_uuid`, async function (req, res, next) {
 router.post(`/post_orb`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        security.checkUser(req.verification.user_id, body.user_id);
+        security.checkUser(req.verification, body.user_id);
         if (!body.orb_uuid) {
             body.orb_uuid = uuidv4();
         }
@@ -104,7 +104,7 @@ function slider_time(dt){
 router.post(`/upload_profile_pic`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        security.checkUser(req.verification.user_id, body.user_id);
+        security.checkUser(req.verification, body.user_id);
         if (body.media){
             var img_lossy = await serve3.preSign('putObject','USR',body.user_id,'150x150');
             var img_lossless = await serve3.preSign('putObject','USR',body.user_id,'1920x1080');
@@ -198,7 +198,7 @@ const serve3 = {
 router.post(`/user_action`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        security.checkUser(req.verification.user_id, body.user_id);
+        security.checkUser(req.verification, body.user_id);
         let userActions = ['save','hide'] 
         if (!userActions.includes(body.action.toLowerCase())) {
             throw new Error('Missing or Invalid user action. Only supports save|hide')
@@ -236,7 +236,7 @@ router.post(`/user_action`, async function (req, res, next) {
 router.post(`/undo_user_action`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        security.checkUser(req.verification.user_id, body.user_id);
+        security.checkUser(req.verification, body.user_id);
         let userActions = ['save','hide'] 
         if (!userActions.includes(body.action.toLowerCase())) {
             throw new Error('Missing or Invalid user action. Only supports save|hide.')
@@ -270,7 +270,7 @@ router.post(`/undo_user_action`, async function (req, res, next) {
 router.post(`/report`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        security.checkUser(req.verification.user_id, body.user_id);
+        security.checkUser(req.verification, body.user_id);
         let params = {
             TableName: ddb_config.tableNames.orb_table,
             Item: {
@@ -303,7 +303,7 @@ router.post(`/report`, async function (req, res, next) {
  */
 router.put(`/update_user`, async function (req, res, next) {
     let body = { ...req.body };
-    security.checkUser(req.verification.user_id, body.user_id);
+    security.checkUser(req.verification, body.user_id);
     let data = await dynaUser.updatePayload(body).catch(err => {
         err.status = 400;
         next(err);
@@ -323,7 +323,7 @@ router.put(`/update_username`, async function (req, res, next) {
     try {
         let body = { ...req.body };
         // transac create username, if true, then change and delete old username, else no go
-        security.checkUser(req.verification.user_id, body.user_id);
+        security.checkUser(req.verification, body.user_id);
         let pubData = await userQuery.queryPUB(body);
         if (pubData.Item) { // get old username
             body.old_username = pubData.Item.alphanumeric;
@@ -375,7 +375,7 @@ router.put(`/update_username`, async function (req, res, next) {
 router.put(`/update_user_location`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        security.checkUser(req.verification.user_id, body.user_id);
+        security.checkUser(req.verification, body.user_id);
         if (body.home){
             await dynaUser.updateUserHome(body);
             await dynaUser.updateUserHomeGeohash(body);
@@ -400,7 +400,7 @@ router.put(`/update_user_location`, async function (req, res, next) {
 router.post(`/accept`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        security.checkUser(req.verification.user_id, body.user_id);
+        security.checkUser(req.verification, body.user_id);
         let params = {
             TableName: ddb_config.tableNames.orb_table,
             Item: {
@@ -437,7 +437,7 @@ router.post(`/accept`, async function (req, res, next) {
  router.post(`/chatWithTelegram`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        security.checkUser(req.verification.user_id, body.user_id);
+        security.checkUser(req.verification, body.user_id);
         
         teleMessaging.exchangeContact(body).then(
             function(value){
@@ -459,7 +459,7 @@ router.post(`/accept`, async function (req, res, next) {
 router.put(`/delete_acceptance`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        security.checkUser(req.verification.user_id, body.user_id);
+        security.checkUser(req.verification, body.user_id);
         await orbSpace.deleteAcceptance(body);
         res.status(200).json({
             "ORB interaction removed": body.orb_uuid,
@@ -477,7 +477,7 @@ router.put(`/delete_acceptance`, async function (req, res, next) {
 router.put(`/not_interested`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        security.checkUser(req.verification.user_id, body.user_id);
+        security.checkUser(req.verification, body.user_id);
         await orbSpace.notInterested_i(body);
         res.status(200).json({
             "ORB not interested": body.orb_uuid,
@@ -496,7 +496,7 @@ router.put(`/not_interested`, async function (req, res, next) {
 router.put(`/not_interested_acceptor`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        security.checkUser(req.verification.user_id, body.user_id);
+        security.checkUser(req.verification, body.user_id);
         await orbSpace.notInterested_a(body);
         res.status(200).json({
             "ORB not interested": body.orb_uuid,
@@ -515,7 +515,7 @@ router.put(`/not_interested_acceptor`, async function (req, res, next) {
 router.put(`/complete_orb_acceptor`, async function (req, res, next) {
     let body = { ...req.body };
     let clock = moment().unix();
-    security.checkUser(req.verification.user_id, body.init_id);
+    security.checkUser(req.verification, body.init_id);
     const accepted = await dynaOrb.acceptance(body).catch(err => {
             err.status = 400;
             next(err);
@@ -543,7 +543,7 @@ router.put(`/complete_orb_acceptor`, async function (req, res, next) {
  */
 router.put(`/complete_orb`, async function (req, res, next) {
     let body = { ...req.body };
-    security.checkUser(req.verification.user_id, body.user_id);
+    security.checkUser(req.verification, body.user_id);
     const orbData = await dynaOrb.retrieve(body).catch(err => {
         err.status = 404;
         err.message = "ORB not found"
@@ -571,7 +571,7 @@ router.put(`/complete_orb`, async function (req, res, next) {
 router.put(`/pending_orb_acceptor`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        security.checkUser(req.verification.user_id, body.user_id);
+        security.checkUser(req.verification, body.user_id);
         let params = {
             TableName: ddb_config.tableNames.orb_table,        
             Key: {
@@ -604,7 +604,7 @@ router.put(`/delete_orb`, async function (req, res, next) {
         err.status = 404;
         err.message = "ORB not found";
     });
-    security.checkUser(req.verification.user_id, orbData.payload.user_id);
+    security.checkUser(req.verification, orbData.payload.user_id);
     body.expiry_dt = orbData.expiry_dt;
     body.geohash = orbData.geohash;
     body.payload = orbData.payload;
