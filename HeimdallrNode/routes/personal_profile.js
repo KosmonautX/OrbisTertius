@@ -22,9 +22,9 @@ const userQuery = require('../controller/dynamoUser').userQuery;
         next(err);
     });
     let dao = {};
-    if (req.verification.user_id == parseInt(req.query.user_id)){
+    if (req.verification.user_id == req.query.user_id){
         if (pteData.Item) {
-            dao.user_id = parseInt(req.query.user_id);
+            dao.user_id = req.query.user_id;
             dao.home = pteData.Item.numeric;
             dao.office = pteData.Item.geohash;
             res.json(dao);

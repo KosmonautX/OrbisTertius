@@ -151,7 +151,6 @@ function verifyToken(req, res, next) {
 		req.token = req.token.replace(/BEARER /gi, ``);
 		    // prod!
         if (req.token) {
-
 			req.verification = jwt.verify(req.token, secret, verifyOptions);
 			next();
 		} else {

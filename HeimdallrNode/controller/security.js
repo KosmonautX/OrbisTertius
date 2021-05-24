@@ -1,13 +1,34 @@
-function checkUser(jwt, user_id) {
-    switch (jwt){
-        case jwt.role == "barb":
-            let err = new Error("Guest User needs to Login for action");
-            err.status = 401;
-            throw err;
-        case jwt.user_id != user_id :
-            let err = new Error("User does not match");
-            err.status = 401;
-            throw err;
+var checkUser = function (req) {
+    switch (req.verification.role){
+        case "barb":
+            throw new Error("Guest User needs to Login for action");
+        case "pleb":
+            if(req.verification.user_id === req.body.user_id){
+                break;
+            }
+            else{
+                throw new Error("User does not match");
+            }
+
+        default:
+            throw new Error("Unknown Role")
+    }
+}
+
+var checkActor = function(auth, actor_id){
+    switch (auth.role){
+        case "barb":
+            throw new Error("Guest User needs to Login for action");
+        case "pleb":
+            if(auth.user_id === actor_id){
+                break;
+            }
+            else{
+                throw new Error("User does not match");
+            }
+
+        default:
+            throw new Error("Unknown Role")
     }
 }
 
@@ -22,4 +43,5 @@ function checkAdmin(jwt) {
 module.exports = {
     checkUser: checkUser,
     checkAdmin: checkAdmin,
+    checkActor: checkActor,
 }

@@ -29,24 +29,12 @@ router.get(`/get`, async function (req, res, next) {
         } else {
             if (data.Item){
                 let dao = {};
-                dao.title = data.Item.payload.title;
-                dao.info = data.Item.payload.info;
-                dao.where = data.Item.payload.where;
-                dao.when = data.Item.payload.when;
-                dao.tip = data.Item.payload.tip;
-                dao.user_id = parseInt(data.Item.payload.user_id);
-                dao.username = data.Item.payload.username;
-                dao.photo = data.Item.payload.photo;
-                dao.tags = data.Item.payload.tags;
-                dao.media = data.Item.payload.media;
                 dao.expiry_dt = data.Item.time;
-                dao.created_dt = data.Item.payload.created_dt;
                 dao.nature = data.Item.numeric;
                 dao.orb_uuid = data.Item.PK.slice(4);
                 dao.geohash = parseInt(data.Item.inverse.slice(4));
                 dao.geohash52 = data.Item.geohash;
-                dao.postal_code = data.Item.payload.postal_code;
-                dao.available = data.Item.payload.available;
+                dao.payload = data.Item.payload
                 res.json(dao);
             } else {
                 res.status(404).json("ORB not found");
