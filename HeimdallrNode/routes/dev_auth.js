@@ -1,17 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const {v4 : uuidv4} = require('uuid');
-const moment = require('moment');
-const ddb_config = require('../config/ddb.config');
-const AWS = require('aws-sdk');
-AWS.config.update({
-    region: ddb_config.region
-});
-const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
-const userQuery = require('../controller/dynamoUser').userQuery
+const land = require('../controller/graphspace').Land
 const crypto = require('crypto')
+const jwt = require(`jsonwebtoken`);
 
-router.get('/tele', (req, res, next) =>
+router.get('/tele', async (req, res, next) =>
     {
       try{
         const bot_token = process.env.NEIB
@@ -32,10 +26,26 @@ router.get('/tele', (req, res, next) =>
               .digest('hex');
         
         if (hmac === req.query.hash){
-            //check if existing user pass back postal code else create
+          //check if existing user pass back postal code else create
+          let user = land.Entity
+          user.claim("USR", req.query.id,"pte");
+          payload= await user.upsert().catch(err => {
+            err.status = 400;
+            next(err);
+          });
+          if(payload){
           res.status(201).json({
+            "Returning User": req.query.id,
+            "Home Postal": payload.Attributes.numeric,
+            "Office Postal": payload.Attributes.geohash,
+            "Last Login": payload.Attributes.time
+          })
+          }
+          else{
+            res.status(201).json({
             "Creating User": req.query.id
           })
+          }
         }
         else{
           let err = new Error("Corrupted Authentication");
@@ -48,5 +58,61 @@ router.get('/tele', (req, res, next) =>
         next(err);
     }}
 )
+
+router.get('/handshake',(req, res ,next ) =>
+  {
+    try{
+
+
+
+    }catch(err){
+      next(err);
+    }
+
+
+  }
+          );
+
+router.post('/server' , async (req,res, next) => {
+  // integrate handshake (AES128 ECDH-ES)
+  // device id check and integration for exists
+  try{
+    let payload = {};
+    const secret = process.env.SECRET_TUNNEL;
+    if (req.body.device_id){
+            payload.device_id = req.body.device_id
+            payload.username = "AttilaHun"
+            payload.role = "barb"
+        } else if (req.body.user_id) {
+          let user = land.Entity
+          user.claim("USR", req.body.user_id,"pte");
+          payload= await user.exists().catch(err => {
+            err.status = 400;
+            next(err);
+          });
+          if(payload.Item){
+            payload.user_id = req.body.user_id;
+            payload.username = "ChongaldXrump";
+            payload.role = "pleb";
+          }
+          else{
+            throw new Error("User does not Exist")
+          }
+        }
+        const iss = 'Princeton';
+        const sub = 'ScratchBac';
+        const exp = '20min'
+        const signOptions = {
+            issuer: iss,
+            subject: sub,
+            expiresIn: exp,
+            algorithm: 'HS256',
+        };
+        const token = jwt.sign(payload, secret, signOptions);
+        res.send({payload: token});
+  }catch(err)
+  {
+    next(err);}
+    });
 
 module.exports = router;

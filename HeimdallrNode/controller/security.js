@@ -1,4 +1,5 @@
-var checkUser = function (req) {
+var checkUser = function (req, next) {
+    try{
     switch (req.verification.role){
         case "barb":
             throw new Error("Guest User needs to Login for action");
@@ -12,6 +13,11 @@ var checkUser = function (req) {
 
         default:
             throw new Error("Unknown Role")
+    }
+    }
+    catch(err){
+        err.status = 401
+        next(err);
     }
 }
 

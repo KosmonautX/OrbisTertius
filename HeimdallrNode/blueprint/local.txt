@@ -1,0 +1,363 @@
+# -*- restclient -*-
+#
+# ScratchbacV4.7 (local env)
+#
+:ipAddress = http://localhost:5000
+:id = "01234567-89ABCDEF-01234567-89ABCDEF"
+:prince = 175181189
+:evange = 188681901
+:bala = 98667304
+:ryan = 464704141
+:my-headers = <<
+Authorization: :token
+Content-Type: application/json
+User-Agent: Emacs27
+##
+GET :ipAddress/api/devland/auth/tele/?id=464704141&first_name=Ryanyipyip&username=Ryanyipyip&photo_url=https://t.me/i/userpic/320/dV38J4bA70_Y11-n9kmBm32BqWJEN8WVWbuj0htY1W4.jpg&auth_date=1621588461&hash=20906b54bb3c68b2f61258f53941f41a9d26c4b21bfcb735434d876287cff130
+#
+## LOCAL auth_server
+POST :ipAddress/api/devland/auth/server
+-> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
+Content-Type: application/json
+
+{
+    "user_id": :ryan
+}
+
+## FOR USER GENSIS PIPELINE
+
+#
+#
+## Generate ORB UUID & Media assets
+POST :ipAddress/api/orb/gen_uuid
+:my-headers
+{   
+   "user_id": :prince,
+   "media": false
+}
+#
+
+POST :ipAddress/api/orb/post_orb
+:my-headers
+{ 
+    "orb_uuid": "2",
+    "user_id": :prince,
+    "username": "evangeline",
+    "title": "postman",
+    "info": "nil",
+    "where": "my house",
+    "when": "now",
+    "tip": "foc",
+    "tags": ["free", "christmas"],
+    "media": false,
+    "photo": "https://media.newyorker.com/photos/5e1e73f9108f1f000812e432/4:3/w_1919,h_1439,c_limit/Tolentino-CheerDoc.jpg",
+    "nature": 10021000000, 
+    "postal_code": 457399,
+    "expires_in": 30
+}
+
+## 1. Register user
+# user id = telegram id </br>
+# username: string</br>
+# bio: string</br>
+# profile pic </br>
+# verified: 1 | 0</br>
+# postal code: integer </br>
+# country code: integer (dont have the +) </br>
+# hp number: integer</br>
+# gender: string</br>
+# birthday : string
+POST :ipAddress/api/orb/create_user
+:my-headers
+{
+    "user_id": 188681901,
+    "username": "evange",
+    "bio": "Hi I'm new to Scratchbac!",
+    "profile_pic": "assets/scratchbac_friends/scratchy4x.png",
+    "home": 457399,
+    "office": 487372
+}
+
+
+## 1b. Upload Profile Pic
+POST :ipAddress/api/orb/upload_profile_pic
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjM0LCJuYW1lIjoibG9naW4gYm9pIiwicm9sZSI6Im5vcm1pZSIsImlhdCI6MTYxNDM0MjM2NSwiZXhwIjoxNjE0NDI4NzY1LCJpc3MiOiJQcmluY2V0b24iLCJzdWIiOiJTY3JhdGNoQmFjIn0.wmsWZgsogNOqiZbCbv79LCWQsTQnTxzMbS4TeaoaiBQ
+{   
+   "user_id": 1234,
+   "media": "<---image--->"
+}
+
+## 2. Accept ORB
+# keyword: ACCEPT | BOOKMARK | DELETE | HIDE | REPORT</br>
+# allows for latlon instead of postal code </br>
+# To use latlon: </br> 
+# "latlon": { </br> 
+# &nbsp;&nbsp;  "LATITUDE": </br> 
+# &nbsp;&nbsp;    "LONGITUDE": </br> 
+# }</br>
+# user id:</br>
+# orb uuid:</br>
+POST :ipAddress/api/orb/accept
+{
+    "user_id": 1234,
+    "orb_uuid": "9ef8779c-9e90-468e-8c2f-2c09e864619b"
+}
+
+## 3. user personal interaction with ORB
+# action: save | hide
+POST :ipAddress/api/orb/user_action
+{
+    "user_id": 1236,
+    "orb_uuid": "1",
+    "action": "save"
+}
+
+## 3. Undo user personal interaction with ORB
+POST :ipAddress/api/orb/undo_user_action
+{
+    "user_id": 1234,
+    "orb_uuid": "1",
+    "action": "save"
+}
+
+## 4. Report ORB
+POST :ipAddress/api/orb/report
+{
+    "orb_uuid": "9a69a0ea-cce6-42c3-a158-7b3e85d8908d",
+    "user_id": 1234,
+    "reason": "fake"
+}
+
+## 5. chat with user (through tele)
+# - username (optional)
+# - title (optional)
+POST :ipAddress/api/orb/chatWithTelegram
+:my-headers
+{
+    "user_id": :bala,
+    "init_id": :prince,
+    "username": "ppman3",
+    "title": "giving away some dogs"
+}
+
+## 1. fetch orb
+GET :ipAddress/api/query/get?orb_uuid=1
+:my-headers
+## 2. Get all fresh orbs
+GET :ipAddress/api/query/orbs_in_loc_fresh_batch?postal_code=457399
+
+## 2. Get all fresh orbs PAGE
+GET :ipAddress/api/query/orbs_in_loc_fresh_page?postal_code=457399&page=0
+
+## 3. Get user's ORB profile
+# fulfilled: acceptor fulfills another person's orb </br>
+# completed: initiator completes his own orb
+GET :ipAddress/api/query/user_profile?user_id=188681901&keyword=INIT
+
+## 4. Retrieve user
+GET :ipAddress/api/query/get_user?user_id=188681901
+
+## 4b. Check username
+GET :ipAddress/api/query/check_username?username=evange
+
+## 5. Get ORB acceptance
+GET :ipAddress/api/query/orb_acceptance?orb_uuid=300c8c13-4da3-4ae8-9a26-d69f3f09aea2
+
+## 6. Get user preferences ORB
+# actions: rprt | hide | save
+GET :ipAddress/api/query/user_pref?user_id=1236&action=save
+
+## 7.buddies or baddies or conmate
+GET :ipAddress/api/query/buddy?user_id=1234
+
+## get media of entities
+GET https://orbis.scratchbac.org/api/query/user/get_media?entity=ORB&uuid=5b746de0-ec1a-479c-93c6-47f9970191a7&form=1920x1080
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMTg4NDUyMTk2Iiwicm9sZSI6Im5vcm1hbCIsImlhdCI6MTYxNTU0NDQ0NSwiZXhwIjoxNjE1NTQ1NjQ1LCJpc3MiOiJQcmluY2V0b24iLCJzdWIiOiJTY3JhdGNoQmFjIn0.opcmt4J6mJqHzs2hXV6zFJrD9yol4fGpVCwiSF5UCgc
+
+## 8. Check Postal
+GET :ipAddress/api/query/postal_check?code=65992
+
+## INIT ORB completion handshake
+# for a user to complete his orb (mark his orb as Fulfilled) </br>
+# put all the info to create the orb again </br>
+#     "user_id": </br>
+#     "orb_uuid": </br>
+#     "username": </br>
+#     "title": string</br>
+#     "info": string</br>
+#     "where": string</br>
+#     "when": string</br>
+#     "tip": string</br>
+#     "tags": array of string</br>
+#     "photo": </br>
+#     "nature": int</br>
+#     "postal_code": int</br>
+#     "expires_in": "1 day" | "3 day" | "1 week" | "1 month" </br>
+#     "expiry_dt": int</br>
+#     "geohash": int</br>
+#     "geohash52": int</br>
+PUT :ipAddress/api/orb/complete_orb
+{   
+    "user_id": 1234,
+    "orb_uuid": "05f86450-c21e-411d-92f1-5017bd33afe3"
+}
+
+## 1. Update user
+# Things that can be editted: **have to send the original data of the params which will be remain unchanged, coz everything here will be overwritten. </br>
+# bio: string </br>
+# profile pic: string</br>
+# verified: 1 | 0</br>
+# country_code: int (without the +)</br>
+# hp_number: int</br>
+# gender: string</br>
+# birthday: string</br>
+PUT :ipAddress/api/orb/update_user
+{
+    "user_id": 175181189,
+    "bio": "bye",
+    "profile_pic": "www.pic.com",
+    "verified": 1
+}
+
+## 2. Update username
+PUT :ipAddress/api/orb/update_username
+{
+    "user_id": 188681901,
+    "username": "evange"
+}
+
+## 2. Update user home&office POSTAL
+PUT :ipAddress/api/orb/update_user_location
+:my-headers
+{
+    "user_id": :ryan,
+    "home": 457399,
+    "office": 487372
+}
+
+## 3. Complete ORB (for initiator)
+# for a user to complete his orb (mark his orb as Fulfilled) </br>
+# put all the info to create the orb again </br>
+#     "user_id": </br>
+#     "orb_uuid": </br>
+#     "username": </br>
+#     "title": string</br>
+#     "info": string</br>
+#     "where": string</br>
+#     "when": string</br>
+#     "tip": string</br>
+#     "tags": array of string</br>
+#     "photo": </br>
+#     "nature": int</br>
+#     "postal_code": int</br>
+#     "expires_in": "1 day" | "3 day" | "1 week" | "1 month" </br>
+#     "expiry_dt": int</br>
+#     "geohash": int</br>
+#     "geohash52": int</br>
+PUT :ipAddress/api/orb/complete_orb
+{   
+    "user_id": 1234,
+    "orb_uuid": "05f86450-c21e-411d-92f1-5017bd33afe3"
+}
+
+## 4. Complete ORB (for acceptor)
+PUT :ipAddress/api/orb/complete_orb_acceptor
+{   
+    "user_id": 1234,
+    "orb_uuid": "05f86450-c21e-411d-92f1-5017bd33afe3"
+}
+
+## 5. Delete acceptance interaction
+PUT :ipAddress/api/orb/delete_acceptance
+{   
+    "user_id": 1236,
+    "orb_uuid": "05f86450-c21e-411d-92f1-5017bd33afe3"
+}
+
+## 6. Delete ORB
+PUT :ipAddress/api/orb/delete_orb
+{   
+    "user_id": 1236,
+    "orb_uuid": "c2fe14ac-a808-4207-b091-9e350455cace"
+}
+
+## 7a. Not interested (initiator)
+PUT :ipAddress/api/orb/not_interested
+{   
+    "user_id": 1236,
+    "orb_uuid": "05f86450-c21e-411d-92f1-5017bd33afe3",
+    "acceptor_id": 1234 
+}
+
+## 7b. Not interested (acceptor)
+PUT :ipAddress/api/orb/not_interested_acceptor
+{   
+    "user_id": 1234,
+    "orb_uuid": "903dab61-9cde-46c4-960e-078fd22fee8a"
+}
+
+
+## comments
+### check comment
+# check if an orb has comments
+GET localhost:5000/api/comment/check?orb_uuid=1234abcdef
+### query comment
+# check if a comment has children
+GET localhost:5000/api/comment/query?comment_id=0ea7d4a8-6ce4-4f90-b9ee-72a88d373821
+### get comment
+# get a specific comment. </br>
+# If the comment is a parent comment, then both parent_id and comment_id shall be the same. </br>
+# If comment is a child comment, then parent_id of the parent comment is required.
+GET localhost:5000/api/comment/query?parent_id=0ea7d4a8-6ce4-4f90-b9ee-72a88d373821&comment_id=0ea7d4a8-6ce4-4f90-b9ee-72a88d373821
+### post commenteyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4
+# post a PARENT comment
+POST localhost:5000/api/comment/post
+{
+    "orb_uuid": "1234",
+    "user_id": 12345,
+    "comment": "hello there"
+}
+### post comment reply
+# Post a child comment
+POST localhost:5000/api/comment/postReply
+{
+    "parent_id": "4be3759f-e91f-4aab-ba39-7ca2fefc5e25",
+    "user_id": 123456,
+    "comment": "Thank you!"
+}
+### delete comment
+# this is a soft delete, so comment will still be available in database.
+DELETE localhost:5000/api/comment/delete
+{
+    "parent_id": "0ea7d4a8-6ce4-4f90-b9ee-72a88d373821",
+    "comment_id": "0ea7d4a8-6ce4-4f90-b9ee-72a88d373821"
+}
+
+## DEV
+### Get user postal code
+GET :ipAddress/api/query/user/get_postal?user_id=:prince
+:my-headers
+### Decode geohash
+GET :ipAddress/api/dev/decode_geohash?geohash=null
+### Query via PK (DEV)
+GET :ipAddress/api/dev/query?pk=ORB%231
+### Scan ALL (DEV)
+GET :ipAddress/api/dev/scan_all?key=ORB
+### Scan all orbs after certain time (DEV)
+GET :ipAddress/api/dev/all_orbs?date=2020-12-24&time=00:00:00
+### Get comments for particular ORB
+GET :ipAddress/api/dev/comment?orb_uuid=1
+### 1. Delete orb
+DELETE :ipAddress/api/dev/delete_orb?orb_uuid=9cbdc1ce-3a8e-40df-ba8a-b1e76618429a&user_id=1234&expiry_dt=&geohash=
+### Delete user
+DELETE :ipAddress/api/dev/delete_user?user_id=1234&country_code=65&hp_number=999999999
+
+### Login
+POST :ipAddress/api/dev/login
+{
+    "login": ".v#Z~_0/,>!9oAH66S;t7!+DN07N",
+    "user_id": 1234,
+    "username": "Joe"
+}
+
+# End of ScratchbacV4.7 (local env)
