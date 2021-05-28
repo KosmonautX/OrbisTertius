@@ -24,7 +24,9 @@ Content-Type: application/json
     "user_id": :ryan,
     "device_id": :id
 }
-
+## 2. Get all fresh orbs
+GET :ipAddress/api/query/orbs_in_loc_fresh_batch?postal_code=457399
+:my-headers
 ## FOR USER GENSIS PIPELINE
 ## 2. Update user home&office POSTAL
 PUT :ipAddress/api/orb/update_user_location
@@ -41,16 +43,16 @@ PUT :ipAddress/api/orb/update_user_location
 POST :ipAddress/api/orb/gen_uuid
 :my-headers
 {   
-   "user_id": :prince,
-   "media": false
+   "user_id": :ryan,
+   "media": true
 }
 #
 
 POST :ipAddress/api/orb/post_orb
 :my-headers
 { 
-    "orb_uuid": "2",
-    "user_id": :prince,
+    "orb_uuid": "3",
+    "user_id": :ryan,
     "username": "evangeline",
     "title": "postman",
     "info": "nil",
@@ -154,7 +156,7 @@ GET :ipAddress/api/query/get?orb_uuid=1
 :my-headers
 ## 2. Get all fresh orbs
 GET :ipAddress/api/query/orbs_in_loc_fresh_batch?postal_code=457399
-
+:my-headers
 ## 2. Get all fresh orbs PAGE
 GET :ipAddress/api/query/orbs_in_loc_fresh_page?postal_code=457399&page=0
 

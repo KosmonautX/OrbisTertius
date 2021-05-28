@@ -8,17 +8,10 @@ AWS.config.update({
     region: ddb_config.region
 })
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint:ddb_config.dyna});
-var s3;
-switch(process.env.NODE_ENV)
-{
-    case "dev": s3 = new AWS.S3({endpoint:ddb_config.sthree, s3ForcePathStyle: true, signatureVersion: 'v4'});
-    case "test": s3 = new AWS.S3({region:ddb_config.region, signatureVersion: 'v4'});
-    case "prod": s3 = new AWS.S3({region:ddb_config.region, signatureVersion: 'v4'});
-}
-
 const geohash = require('../controller/geohash');
 const teleMessaging = require('../controller/teleMessaging');
 const security = require('../controller/security');
+const serve3 = require ('../controller/orbjectStore').serve3
 const orbSpace = require('../controller/dynamoOrb').orbSpace;
 const dynaOrb = require('../controller/dynamoOrb').dynaOrb;
 const dynaUser = require('../controller/dynamoUser').dynaUser;
@@ -41,9 +34,10 @@ router.post(`/gen_uuid`, async function (req, res, next) {
             promises.set('lossless', await serve3.preSign('putObject','ORB',orb_uuid,'1920x1080'));
         };
         Promise.all(promises).then(response => {
-            res.status(201).json({
-                response
-            });
+            //m = new Map(response.map(obj => [obj[0], obj[1]])) jsonObject[key] = value
+            let jsonObject = {};
+            response.map(obj => [jsonObject[obj[0]] = obj[1]])
+            res.status(201).json(jsonObject);
         });
         
     } catch (err) {
@@ -178,21 +172,6 @@ router.post(`/create_user`, async function (req, res, next) {
         next(err)
     }
 });
-
-const serve3 = {
-    
-    async preSign(action,entity, uuid, form) {
-        var sign = s3.getSignedUrl(action, { 
-            Bucket: ddb_config.sthreebucket, 
-            Key: entity+ '/' +uuid + '/' + form, Expires: 300
-        });
-        if(sign.length < 50 ){
-            sign = serve3.preSign(action,entity,uuid,form);}
-
-        return sign;
-    },
-
-};
 
 /**
  * API POST 3

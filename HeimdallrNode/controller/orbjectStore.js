@@ -1,0 +1,26 @@
+const ddb_config = require('../config/ddb.config');
+const AWS = require('aws-sdk');
+switch(process.env.NODE_ENV)
+{
+  case 'dev': s3 = new AWS.S3({endpoint:ddb_config.sthree, s3ForcePathStyle: true, signatureVersion: 'v4'}); break;
+  case "test": s3 = new AWS.S3({region:ddb_config.region, signatureVersion: 'v4'}); break;
+  case "prod": s3 = new AWS.S3({region:ddb_config.region, signatureVersion: 'v4'}); break;
+}
+
+const serve3 = {
+    async preSign(action,entity, uuid, form) {
+        var sign = s3.getSignedUrl(action, {
+            Bucket: ddb_config.sthreebucket,
+            Key: entity+ '/' +uuid + '/' + form, Expires: 300
+        });
+        if(sign.length < 50 ){
+            sign = serve3.preSign(action,entity,uuid,form);}
+
+        return sign;
+    },
+
+};
+
+module.exports= {
+  serve3:serve3
+}
