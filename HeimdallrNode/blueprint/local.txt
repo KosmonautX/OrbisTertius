@@ -21,10 +21,19 @@ POST :ipAddress/api/devland/auth/server
 Content-Type: application/json
 
 {
-    "user_id": :ryan
+    "user_id": :ryan,
+    "device_id": :id
 }
 
 ## FOR USER GENSIS PIPELINE
+## 2. Update user home&office POSTAL
+PUT :ipAddress/api/orb/update_user_location
+:my-headers
+{
+    "user_id": :ryan,
+    "home": 457399,
+    "office": 487372
+}
 
 #
 #
@@ -226,14 +235,6 @@ PUT :ipAddress/api/orb/update_username
     "username": "evange"
 }
 
-## 2. Update user home&office POSTAL
-PUT :ipAddress/api/orb/update_user_location
-:my-headers
-{
-    "user_id": :ryan,
-    "home": 457399,
-    "office": 487372
-}
 
 ## 3. Complete ORB (for initiator)
 # for a user to complete his orb (mark his orb as Fulfilled) </br>

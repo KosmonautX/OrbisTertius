@@ -12,7 +12,7 @@ Land.Entity = (function (archetype, id ,access) {
     `use strict`
 
     //init state
-    var state = {TableName: ddb_config.tableNames.orb_table, Key:{}}
+    var state = {TableName: ddb_config.tableNames.orb_table, Key:{}};
     //add public facing interface
 	var interface = {};
 

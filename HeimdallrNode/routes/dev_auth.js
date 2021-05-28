@@ -79,11 +79,11 @@ router.post('/server' , async (req,res, next) => {
   try{
     let payload = {};
     const secret = process.env.SECRET_TUNNEL;
-    if (req.body.device_id){
+    if (!req.body.user_id){
             payload.device_id = req.body.device_id
             payload.username = "AttilaHun"
             payload.role = "barb"
-        } else if (req.body.user_id) {
+    } else if (req.body.user_id && req.body.device_id) {
           var user = land.Entity;
           user.claim("USR", req.body.user_id,"pte");
           payload= await user.exists().catch(err => {
