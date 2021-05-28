@@ -33,8 +33,9 @@ services:
       - SERVICES=s3,sqs
       - DEBUG=1
       - DATA_DIR=/tmp/localstack/data
+
   dynamodb:
-    image: amazon/dynamodb-local
+    build: ./Dyna/
     ports:
       - "8000:8000"
 

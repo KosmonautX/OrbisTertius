@@ -27,13 +27,13 @@ router.get('/tele', async (req, res, next) =>
         
         if (hmac === req.query.hash){
           //check if existing user pass back postal code else create
-          let user = land.Entity
+          var user = land.Entity;
           user.claim("USR", req.query.id,"pte");
           payload= await user.upsert().catch(err => {
             err.status = 400;
             next(err);
           });
-          if(payload){
+          if(payload.Attributes){
           res.status(201).json({
             "Returning User": req.query.id,
             "Home Postal": payload.Attributes.numeric,
@@ -84,7 +84,7 @@ router.post('/server' , async (req,res, next) => {
             payload.username = "AttilaHun"
             payload.role = "barb"
         } else if (req.body.user_id) {
-          let user = land.Entity
+          var user = land.Entity;
           user.claim("USR", req.body.user_id,"pte");
           payload= await user.exists().catch(err => {
             err.status = 400;

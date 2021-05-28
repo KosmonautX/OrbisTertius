@@ -5,13 +5,14 @@ AWS.config.update({
     region: ddb_config.region
 });
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint:ddb_config.dyna});
-const Network = {TableName: ddb_config.tableNames.orb_table, Key:{}}
 
 var Land = {} // plane that cuts through network
 
 Land.Entity = (function (archetype, id ,access) {
+    `use strict`
+
     //init state
-    var state = Network;
+    var state = {TableName: ddb_config.tableNames.orb_table, Key:{}}
     //add public facing interface
 	var interface = {};
 
@@ -37,6 +38,7 @@ Land.Entity = (function (archetype, id ,access) {
 
 	// A public method
 	interface.claim = (_archetype, _id, _access) => {
+        state = {TableName: ddb_config.tableNames.orb_table, Key:{}};
         if (_access) {
         state.Key.PK = _archetype + '#' + _id;
         state.Key.SK = state.Key.PK+ '#' + _access;

@@ -37,7 +37,7 @@ RUN set -ex && \
     done
 
 # config arm64 for rpi x64 for rest
-RUN NODE_FILE="$(curl -sfS https://nodejs.org/dist/latest-v$NODE_VERSION.x/ | grep -oE node-v${NODE_VERSION}\.[0-9.]+-linux-arm64.tar.xz | sort -r | head -n 1)" && \
+RUN NODE_FILE="$(curl -sfS https://nodejs.org/dist/latest-v$NODE_VERSION.x/ | grep -oE node-v${NODE_VERSION}\.[0-9.]+-linux-x64.tar.xz | sort -r | head -n 1)" && \
   NODE_LATEST_VERSION=$(echo $NODE_FILE | grep -oE "v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+") && \
   curl -fsSLO --compressed "https://nodejs.org/dist/$NODE_LATEST_VERSION/$NODE_FILE" && \
   curl -fsSLO --compressed "https://nodejs.org/dist/$NODE_LATEST_VERSION/SHASUMS256.txt.asc" && \
