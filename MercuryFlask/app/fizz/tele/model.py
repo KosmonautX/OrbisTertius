@@ -15,7 +15,7 @@ class TeleServiceModel():
         bot = telegram.Bot(token=env("NEIB"))      #neib
         buttons = [[InlineKeyboardButton("Sign up form", url='https://scrbac.com/yihling_form')]]
         keyboard = InlineKeyboardMarkup(buttons)
-        bot.send_message(chat_id= acceptor_id, text = "Private message [{}](tg://user?id={}) here {}".format(username, str(poster_id), title), parse_mode="markdown")
+        bot.send_message(chat_id= acceptor_id, text = "Click [here](tg://user?id={}) to message *{}* about:\n{}".format(str(poster_id), username, title), parse_mode="markdown")
 
 
     # def posting(info, where, when, tip, comm, postal):
