@@ -4,6 +4,24 @@ const {v4 : uuidv4} = require('uuid');
 const land = require('../controller/graphLand').Land
 const crypto = require('crypto')
 const jwt = require(`jsonwebtoken`);
+const buffer = require('buffer');
+const axios = require('axios')
+const algorithm = 'aes-256-ctr';
+const ENCRYPTION_KEY = process.env.SECRET_TUNNEL;
+const IV_LENGTH = 16;
+
+async function sms(body, messagebody) {
+    let url = "http://10.12.184.21:8082/"
+    let config = {
+      headers:{
+        Authorization:'3f4e4360'
+      }
+    }
+      return await axios.post(url, {
+        to: body.number,
+        message: messagebody
+        }, config);
+}
 
 router.get('/tele', async (req, res, next) =>
     {
@@ -86,7 +104,7 @@ router.post('/server' , async (req,res, next) => {
     } else if (req.body.user_id && req.body.device_id) {
           var user = land.Entity;
           user.claim("USR", req.body.user_id,"pte");
-          payload= await user.exists().catch(err => {
+          payload= await user.exist().catch(err => {
             err.status = 400;
             next(err);
           });
@@ -114,5 +132,63 @@ router.post('/server' , async (req,res, next) => {
   {
     next(err);}
     });
+
+
+
+router.post('/message', async (req, res, next) => {
+  var encrypted;
+  let message = {}
+  user_id = uuidv4();
+  let payload = land.Entity.affirm("TEL", req.body.code+ req.body.number,user_id )
+  payload.then(response => {
+  if(payload.Attributes){
+    user_id = payload.Attributes.alphanumeric
+  }})
+  .catch(error => {
+    console.log(error);
+  })
+  message.hash = encrypt(req.body.number)
+  const secretKey = crypto.createHash('sha256')
+                          .update(process.env.SECRET_TUNNEL)
+                                .digest();
+  const hmac = crypto.createHmac('sha256', secretKey)
+                     .update(message.hash)
+              .digest('hex');
+  let redirect = "https://i.scratchbac.org/?hash="+hmac+"&id="+message.hash
+  let reply =sms(req.body, redirect)
+    reply.then(response => {
+      res.status(201).json({
+        "Await": "User"
+      })})
+  .catch(error => {
+    console.log(error);
+    error = new Error("SMS Gateway Failed");
+      error.status = 500;
+      next(error);
+  });
+
+
+      
+           
+} );
+
+
+function encrypt(text) {
+    let iv = crypto.randomBytes(IV_LENGTH);
+    let cipher = crypto.createCipheriv(algorithm, Buffer.concat([Buffer.from(ENCRYPTION_KEY), Buffer.alloc(32)], 32), iv);
+    let encrypted = cipher.update(text);
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+    return iv.toString('hex') + ':' + encrypted.toString('hex');
+}
+
+function decrypt(text) {
+    let textParts = text.split(':');
+    let iv = Buffer.from(textParts.shift(), 'hex');
+    let encryptedText = Buffer.from(textParts.join(':'), 'hex');
+    let decipher = crypto.createDecipheriv(algorithm, Buffer.concat([Buffer.from(ENCRYPTION_KEY), Buffer.alloc(32)], 32), iv);
+    let decrypted = decipher.update(encryptedText);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    return decrypted.toString();
+}
 
 module.exports = router;

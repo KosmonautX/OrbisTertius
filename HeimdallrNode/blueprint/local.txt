@@ -8,12 +8,14 @@
 :evange = 188681901
 :bala = 98667304
 :ryan = 464704141
+:printon= "90181531"
+:admin = "90565482"
 :my-headers = <<
 Authorization: :token
 Content-Type: application/json
 User-Agent: Emacs27
 ##
-GET :ipAddress/api/devland/auth/tele/?id=464704141&first_name=Ryanyipyip&username=Ryanyipyip&photo_url=https://t.me/i/userpic/320/dV38J4bA70_Y11-n9kmBm32BqWJEN8WVWbuj0htY1W4.jpg&auth_date=1621588461&hash=20906b54bb3c68b2f61258f53941f41a9d26c4b21bfcb735434d876287cff130
+GET :ipAddress/api/devland/auth/tele?id=464704141&first_name=Ryanyipyip&username=Ryanyipyip&photo_url=https://t.me/i/userpic/320/dV38J4bA70_Y11-n9kmBm32BqWJEN8WVWbuj0htY1W4.jpg&auth_date=1621588461&hash=20906b54bb3c68b2f61258f53941f41a9d26c4b21bfcb735434d876287cff130
 #
 ## LOCAL auth_server
 POST :ipAddress/api/devland/auth/server
@@ -28,6 +30,16 @@ Content-Type: application/json
 GET :ipAddress/api/query/orbs_in_loc_fresh_batch?postal_code=457399
 :my-headers
 ## FOR USER GENSIS PIPELINE
+#
+## PHONE NUMBERS
+POST :ipAddress/api/devland/auth/message
+Content-Type: application/json
+
+{
+    "number": :printon,
+    "code": "+65"
+}
+#
 ## 2. Update user home&office POSTAL
 PUT :ipAddress/api/orb/update_user_location
 :my-headers

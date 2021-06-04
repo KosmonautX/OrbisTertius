@@ -8,19 +8,25 @@ const docClient = new AWS.DynamoDB.DocumentClient({endpoint:ddb_config.dyna});
 
 var Land = {} // plane that cuts through network
 
-Land.Entity = (function (archetype, id ,access) {
+Land.Entity = (function () {
     `use strict`
 
     //init state
-    var state = {TableName: ddb_config.tableNames.orb_table, Key:{}};
+    var state = {TableName: ddb_config.tableNames.orb_table};
     //add public facing interface
-	var interface = {};
+	var interface_dao = {};
 
     time = function() {
         state.UpdateExpression = 'SET #t = :time';
         state.ExpressionAttributeNames = {"#t": "time",};
         state.ExpressionAttributeValues = {":time": moment().unix()};
         state.ReturnValues= 'ALL_OLD'
+    }
+
+    condition = function(fields){
+        state.Item.alphanumeric = fields
+        state.ConditionExpression = "attribute_not_exists(PK)";
+        state.ReturnValues = 'ALL_OLD';
     }
 
     projection = function(array) {
@@ -31,38 +37,63 @@ Land.Entity = (function (archetype, id ,access) {
     wish = async() => {
         return await docClient.update(state).promise();
      }
-    // private method recalls past state
+    //closure  private method recalls past state
     recall = async() =>{
         return await docClient.get(state).promise();
     }
 
-	// A public method
-	interface.claim = (_archetype, _id, _access) => {
-        state = {TableName: ddb_config.tableNames.orb_table, Key:{}};
-        if (_access) {
-        state.Key.PK = _archetype + '#' + _id;
-        state.Key.SK = state.Key.PK+ '#' + _access;
+
+
+    // pattern refers to the data access required by DynamoDb
+    entity_init  = function(_dBaction,_archetype, _id, _access, _bridge=false){
+        state = {TableName: ddb_config.tableNames.orb_table};
+        switch (_dBaction){
+            case "PUT":
+                patternStr = "Item"
+                break;
+            case "UPDATE":
+                patternStr = "Key"
+                break;
+        }
+        state[patternStr]= {}
+        if(_bridge){
+            state[patternStr].PK = _archetype + '#' + _id;
+            state[patternStr].SK = state[patternStr].PK+ '#' + _access + '#' + _bridge;
+        }
+        else if (_access) {
+            state[patternStr].PK = _archetype + '#' + _id;
+            state[patternStr].SK = state[patternStr].PK+ '#' + _access;
 
         } else {
-            state.Key.PK = _archetype + '#' + _id;
-            state.Key.SK = state.Key.PK
+            state[patternStr].PK = _archetype + '#' + _id;
+            state[patternStr].SK = state[patternStr].PK
         }
+    }
 
+	// A public method to claim about world state
+	interface_dao.claim = (archetype, id, access, tie, dbaction) => {
+        entity_init(archetype, id, access, tie, dbaction);
     };
 
-    interface.upsert = async () => {
+    interface_dao.affirm = async (archetype, id, fields) => {
+        entity_init("PUT",archetype, id);
+        condition(fields);
+        return await docClient.put(state).promise();
+    }
+
+    interface_dao.upsert = async () => {
         time();
         return await wish();
     };
 
-    interface.exists = async() =>{
+    interface_dao.exist = async() =>{
         projection(['PK']);
         return await recall();
 
     };
 
 	// access public methods
-	return interface;
+	return interface_dao;
 
 })();
 
