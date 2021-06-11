@@ -23,17 +23,21 @@ services:
     
 
   localstack:
-    image: localstack/localstack-full:latest
+    image: localstack/localstack:0.12.12
     volumes:
       - ./.localstack:/tmp/localstack
+      - ./.localstack/ses:/tmp/localstack/data/ses
+      - ./.localstack/setup.sh:/docker-entrypoint-initaws.d
     ports:
       - "3000:4566"
       - "3001:41629"
       - "8080:8080"
+      - "4579:4579"
     environment:
-      - SERVICES=s3,sqs
+      - SERVICES=s3,sqs,ses
       - DEBUG=1
       - DATA_DIR=/tmp/localstack/data
+
   dynamodb:
     build: ./Dyna/
     ports:
