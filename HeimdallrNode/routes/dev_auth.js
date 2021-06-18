@@ -88,10 +88,10 @@ router.get('/mailin', async (req, res ,next ) =>
         user_id = decrypt(req.verification.hash).split('#')[0]
         if(user_id=="undefined")
         {var identifier = land.Entity;
-         payloads=await identifier.usergen(req.query.source,req.query.mail, req.query.device_id).catch(err => {
+         payload =await identifier.usergen(req.query.source,req.query.mail, req.query.device_id).catch(err => {
            res.status(400).json(err.message);
         })
-         if(payloads.Attributes) res.status(201).json({"Creating User": payload.Attributes.alphanumeric});
+         if(payload.Attributes) res.status(201).json({"Creating User": payload.Attributes.alphanumeric});
         }else{
           var user = land.Entity;
           user.init("USR", user_id,"pte");
