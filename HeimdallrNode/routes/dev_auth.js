@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const {v4 : uuidv4} = require('uuid');
 const land = require('../controller/graphLand').Land
 const crypto = require('crypto')
 const jwt = require(`jsonwebtoken`);
@@ -10,6 +9,7 @@ let mail = require('../controller/mailAngareion').Angareion.Mail
 const algorithm = 'aes-256-ctr';
 const ENCRYPTION_KEY = process.env.SECRET_TUNNEL;
 const IV_LENGTH = 16;
+const secret = process.env.SECRET_TUNNEL;
 
 router.get('/tele', async (req, res, next) =>
     {
@@ -23,7 +23,7 @@ router.get('/tele', async (req, res, next) =>
         
         //data to be authenticated i.e. telegram user id, first_name, last_name etc.
         const dataCheckString = Object.keys(req.query)
-                                      .filter((key) => key!=="hash")
+                                      .filter((key) => !['hash','device_id','source','pub'].includes(key))
                                       .sort()
                                       .map(key => (`${key}=${req.query[key]}`))
                                       .join('\n');
@@ -35,8 +35,7 @@ router.get('/tele', async (req, res, next) =>
         
         if (hmac === req.query.hash){
           //check if existing user pass back postal code else create
-          var user = land.Entity;
-          user.claim("USR", req.query.id,"pte");
+          var user = land.Entity.init("USR", req.query.id,"pte");
           payload= await user.upsert().catch(err => {
             err.status = 400;
             next(err);
@@ -77,7 +76,7 @@ router.get('/mailin', async (req, res ,next ) =>
     try {
 		const iss = "ppmail";
 		const sub = "sb";
-		const exp = "10min";
+		const exp = "100min";
 		const verifyOptions = {
 			issuer : iss,
 			subject : sub,
@@ -86,16 +85,24 @@ router.get('/mailin', async (req, res ,next ) =>
 		};
       if (req.query.hash) {
 			  req.verification = jwt.verify(req.query.hash, secret, verifyOptions);
-        req.query.id = decrypt(req.verification).split('#')[0]
-        var user = land.Entity;
-        user.claim("USR", req.query.id,"pte");
-        payload= await user.upsert().catch(err => {
-            err.status = 400;
+        user_id = decrypt(req.verification.hash).split('#')[0]
+        if(user_id=="undefined")
+        {var identifier = land.Entity;
+         payloads=await identifier.usergen(req.query.source,req.query.mail, req.query.device_id).catch(err => {
+           res.status(400).json(err.message);
+        })
+         if(payloads.Attributes) res.status(201).json({"Creating User": payload.Attributes.alphanumeric});
+        }else{
+          var user = land.Entity;
+          user.init("USR", user_id,"pte");
+          //check device id
+          payload= await user.upsert().catch(err => {
+            res.status = 400;
             next(err);
-          });
+        });
           if(payload.Attributes){
-          res.status(201).json({
-            "Returning User": req.query.id,
+            res.status(201).json({
+            "Returning User": user_id,
             "Home Postal": payload.Attributes.numeric,
             "Office Postal": payload.Attributes.geohash,
             "Last Login": payload.Attributes.time
@@ -103,12 +110,13 @@ router.get('/mailin', async (req, res ,next ) =>
           }
           else{
             res.status(201).json({
-            "Creating User": req.query.id
+            "Creating User": user_id
           })
           }
+        }
 
 		} else {
-			let err = new Error(`No token, please login again!`);
+			let err = new Error(`No hash, please login again!`);
 			err.status = 401;
 			next(err);
 		}
@@ -121,7 +129,7 @@ router.get('/mailin', async (req, res ,next ) =>
   }
           );
 
-router.get('/handshake',(req, res ,next ) =>
+router.get('/notokens',(req, res ,next ) =>
   {
     try{
 
@@ -138,14 +146,13 @@ router.post('/server' , async (req,res, next) => {
   // device id check and integration for exists
   try{
     let payload = {};
-    const secret = process.env.SECRET_TUNNEL;
     if (!req.body.user_id){
             payload.device_id = req.body.device_id
             payload.username = "AttilaHun"
             payload.role = "barb"
     } else if (req.body.user_id && req.body.device_id) {
           var user = land.Entity;
-          user.claim("USR", req.body.user_id,"pte");
+          user.init("USR", req.body.user_id,"pte");
           payload= await user.exist().catch(err => {
             err.status = 400;
             next(err);
@@ -179,24 +186,25 @@ router.post('/server' , async (req,res, next) => {
 
 router.post('/mail', async (req, res, next) => {
   var encrypted;
-  var signup = true
+  var source = "email";
   let message = {}
-  let user_id = uuidv4();
   let nonce = '#' + crypto.randomBytes(16).toString('base64')
   // device id addition to login path and check on uuid existence
-  let payload = land.Entity.affirm("MSG", req.body.mail,user_id )
-  payload.then(response => {
+  identifier = land.Entity
+  identifier.init("MSG", req.body.mail)
+  let payload = await identifier.upsert(req.body.device_id).catch(err => {
+        err.status = 400;
+        next(err);
+      });
   if(payload.Attributes){
-    user_id = payload.Attributes.alphanumeric
-    signup = false
-  }})
-  .catch(error => {
-    console.log(error);
-  })
-  message.hash = encrypt(user_id + nonce)
+    message.hash = encrypt(payload.Attributes.alphanumeric + nonce)
+  }
+  else{
+    message.hash = encrypt(nonce)
+  }
   const iss = 'ppmail';
         const sub = 'sb';
-        const exp = '10min'
+        const exp = '100min'
         const signOptions = {
             issuer: iss,
             subject: sub,
@@ -204,7 +212,7 @@ router.post('/mail', async (req, res, next) => {
             algorithm: 'HS256',
         };
   const token = jwt.sign(message, ENCRYPTION_KEY, signOptions);
-  let redirect = "https://i.scratchbac.org/?hash="+ token +"&id=" + signup
+  let redirect = "https://i.scratchbac.org/?hash="+ token +"&source=" + source
   let sent  = mail.signup(req.body, redirect)
     sent.then(response => {
       res.status(201).json({
