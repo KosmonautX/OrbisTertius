@@ -152,7 +152,7 @@ router.post('/server' , async (req,res, next) => {
             payload.role = "barb"
     } else if (req.body.user_id && req.body.device_id) {
           var user = land.Entity;
-          user.init("USR", req.body.user_id,"pte");
+          user.spawn("USR", req.body.user_id,"pte");
           payload= await user.exist().catch(err => {
             err.status = 400;
             next(err);

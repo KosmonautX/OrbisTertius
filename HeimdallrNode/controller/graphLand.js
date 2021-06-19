@@ -162,6 +162,11 @@ Land.Entity = (function () {
 
     }
 
+    interface_dao.spawn = function (archetype, id,access,deviceID=false){
+        entity_init("UPDATE",archetype, id, access);
+
+    }
+
     // update event and identifiers(login) edge/field later
     interface_dao.upsert = async (deviceID=false) => {
         time();
