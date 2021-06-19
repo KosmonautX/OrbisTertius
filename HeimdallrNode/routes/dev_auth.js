@@ -35,8 +35,8 @@ router.get('/tele', async (req, res, next) =>
         
         if (hmac === req.query.hash){
           //check if existing user pass back postal code else create
-          var user = land.Entity.init("USR", req.query.id,"pte");
-          payload= await user.upsert().catch(err => {
+          var user = land.Entity;
+          payload= await user.init("USR", req.query.id,"pte",req.query.device_id).catch(err => {
             err.status = 400;
             next(err);
           });

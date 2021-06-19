@@ -156,8 +156,9 @@ Land.Entity = (function () {
             return await docClient.put(state).promise();
     };
 
-    interface_dao.init = function (archetype, id,access,tie){
-        entity_init("UPDATE",archetype, id, access, tie);
+    interface_dao.init = function (archetype, id,access,deviceID=false){
+        entity_init("UPDATE",archetype, id, access);
+        return interface_dao.upsert(deviceID)
 
     }
 
