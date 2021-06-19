@@ -64,7 +64,7 @@ class TeleMessagingService:
         except:
             username = 'user'
         try:
-            title = 'regarding the post: ' + new_attrs['title']
+            title = '\"' + new_attrs['title'] + '\"'
         except:
             title = ' '
         new_TeleMessaging = TeleServiceModel.message_user(
