@@ -309,7 +309,7 @@ const dynaOrb = {
                 Item: {
                     PK: "ORB#" + orb_uuid,
                     SK: "ORB#" + orb_uuid,
-                    alphanumeric2: body.user_id,
+                    alphanumeric: body.user_id,
                 },
                 ConditionExpression: "attribute_not_exists(PK)"
             };

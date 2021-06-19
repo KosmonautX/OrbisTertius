@@ -19,7 +19,11 @@
         {
             "AttributeName": "time",
             "AttributeType": "N"
-        }
+        },
+	{
+	    "AttributeName": "identifier",
+	    "AttributeType": "S"
+	}
     ],
     "TableName": "ORB_NET",
     "KeySchema": [
