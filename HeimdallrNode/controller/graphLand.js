@@ -139,7 +139,7 @@ Land.Entity = (function () {
             state.ExpressionAttributeNames = {};
             state.ExpressionAttributeValues= {};
             condition.absence("alphanumeric")
-            condition.timesensitivity(60000," AND ")
+            condition.timesensitivity(600," AND ")
             condition.match("identifier", deviceID," AND ")
             fieldweaver("alphanumeric",user_id)
             state.ReturnValues="UPDATED_NEW"

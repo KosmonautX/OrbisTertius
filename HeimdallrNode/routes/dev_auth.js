@@ -76,7 +76,7 @@ router.get('/mailin', async (req, res ,next ) =>
     try {
 		const iss = "ppmail";
 		const sub = "sb";
-		const exp = "100min";
+		const exp = "10min";
 		const verifyOptions = {
 			issuer : iss,
 			subject : sub,
@@ -204,7 +204,7 @@ router.post('/mail', async (req, res, next) => {
   }
   const iss = 'ppmail';
         const sub = 'sb';
-        const exp = '100min'
+        const exp = '10min'
         const signOptions = {
             issuer: iss,
             subject: sub,

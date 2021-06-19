@@ -7,7 +7,7 @@
 :prince = 175181189
 :evange = 188681901
 :bala = 98667304
-:ryan = 5e3c609b-01e8-48c0-ae73-c4219cff801d
+:ryan = cd7e2a6b-d40b-4228-bdb9-f04b18a44d46
 :printon= "90181531"
 :admin = "90565482"
 :printonemail = "niceprinceton@gmail.com"
@@ -18,18 +18,19 @@ Authorization: :token
 Content-Type: application/json
 User-Agent: Emacs27
 ##
-GET :ipAddress/api/devland/auth/tele?id=464704141&first_name=Ryanyipyip&username=Ryanyipyip&photo_url=https://t.me/i/userpic/320/dV38J4bA70_Y11-n9kmBm32BqWJEN8WVWbuj0htY1W4.jpg&auth_date=1621588461&hash=20906b54bb3c68b2f61258f53941f41a9d26c4b21bfcb735434d876287cff130
+GET :ipAddress/api/devland/auth/tele?id=464704141&first_name=Ryanyipyip&username=Ryanyipyip&photo_url=https://t.me/i/userpic/320/dV38J4bA70_Y11-n9kmBm32BqWJEN8WVWbuj0htY1W4.jpg&auth_date=1621588461&hash=20906b54bb3c68b2f61258f53941f41a9d26c4b21bfcb735434d876287cff130&device_id=2
 #
 ##
-GET :ipAddress/api/devland/auth/mailin?hash=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJoYXNoIjoiYjQzNTk5YjU2NTkzYmZjZTU1MWE1OGU5YWJkYzQyNzM6MzFmMGM2NjZhN2NmOTA4OWRiZWRmMzgyYjBkNTY4MzAxMGViNzU3ZmU1NjcyZGNiYzFhMDEzMTU4Mjk5ODI2MDY0M2NjNDhmZjM0ZDViZWQxMGUxMjFmOTMyZDJkMGY0YmIwM2M3ZTRmN2YxZWQ3OWEwMjQzODVlYjIiLCJpYXQiOjE2MjQwMjkzNTUsImV4cCI6MTYyNDAzNTM1NSwiaXNzIjoicHBtYWlsIiwic3ViIjoic2IifQ.bKRw3O822wnjy2JrX62_kG0WLDe-M17j1IdTcq0MSNk&source=email&mail=:ryanemail&device_id=:id
-#&mail=:ryanemail&device_id=:id
+#
+GET :ipAddress/api/devland/auth/mailin?hash=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJoYXNoIjoiYjM3ZjAxNWFmNzllOTNlY2YxYTQwOWE3M2E4MDFjMjQ6NzczOTk5ZDcxYTk0YzJmYzRhYjA5MWM1YTAyOWNkMjg0YmQyNmY2ZTBlYTE1MWZiY2Q5YzNhZTExOThmMDQ2MTA4OTM3OTcxNzJkOTkxOTc3NjgwMjUzMDJkZTk1MzZlMTBkZDlmM2E3ZWRhZmMzMDNiYzYzMDI0NzAiLCJpYXQiOjE2MjQwODAyNzAsImV4cCI6MTYyNDA4NjI3MCwiaXNzIjoicHBtYWlsIiwic3ViIjoic2IifQ.PV3pXL9mXGrtnzYW8wBcAg_A5K88Rzw2aMJGR9BI-9E&source=email&mail=:myemail&device_id=:id
+#&mail=:myemail&device_id=:id
 #
 ##
 POST :ipAddress/api/devland/auth/mail
 Content-Type: application/json
 
 {
-    "mail": ":ryanemail",
+    "mail": ":myemail",
     "device_id": ":id"
 }
 #
@@ -60,7 +61,7 @@ Content-Type: application/json
 PUT :ipAddress/api/orb/update_user_location
 :my-headers
 {
-    "user_id": :ryan,
+    "user_id": ":ryan",
     "home": 457399,
     "office": 487372
 }
@@ -260,9 +261,10 @@ PUT :ipAddress/api/orb/update_user
 
 ## 2. Update username
 PUT :ipAddress/api/orb/update_username
+:my-headers
 {
-    "user_id": 188681901,
-    "username": "evange"
+    "user_id": ":ryan",
+    "username": "yipyip"
 }
 
 
