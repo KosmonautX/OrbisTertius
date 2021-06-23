@@ -137,6 +137,7 @@ app.use(function (err, req, res, next) {
 });
 
 function verifyToken(req, res, next) {
+    // use firebase auth to preserve functionality
     try {
 		const iss = "Princeton";
 		const sub = "ScratchBac";
