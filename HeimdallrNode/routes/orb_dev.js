@@ -12,6 +12,8 @@ const geohash = require('ngeohash');
 const jwt = require(`jsonwebtoken`);
 const crypto = require('crypto');
 const hash = crypto.createHash('sha256');
+const admin = require('firebase-admin')
+const axios = require('axios')
 /**
  * API 1.1 DEV
  * Query via PK to retrieve everything related to primary key
@@ -37,6 +39,31 @@ router.get(`/query`, async function (req, res, next) {
             res.json(dao)
         }
     });
+});
+
+router.get(`/fyr`, async function (req, res, next) {
+    token = admin.auth().createCustomToken(req.query.id)
+                 .then((customToken) => {
+                     const url = `https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyCustomToken?key=${process.env.LOCAL_FYR}`;
+                     const data = {
+                         token: customToken,
+                         returnSecureToken: true
+                     };
+                     const configs={"Content-Type": "application/json"}
+                     axios.post(url, data, configs).then(response => {
+                         res.status(201).json({
+                             "payload": response.data.idToken
+                         })})
+                          .catch(error => {
+                              console.log(error);
+                              error = new Error("SMS Gateway Failed");
+                              error.status = 500;
+                              next(error);
+                          });;
+                 })
+                 .catch((error) => {
+                     console.log('Error creating custom token:', error);
+                 });
 });
 
 /**

@@ -149,11 +149,21 @@ Land.Entity = (function () {
             new Error("User Genesis Failed")
             }
          };
+    interface_dao.fyrgen = async(userID,deviceID) => {
+        try{
+            interface_dao.spawn("USR",userID,"pte")
+            return interface_dao.upsert(deviceID)
+        } catch(err){
+            console.log(err)
+            new Error("User Genesis Failed")
+            }
+
+    };
 
     interface_dao.affirm = async (archetype, id, fields) => {
         entity_init("PUT",archetype, id);
         condition("alphanumeric",fields);
-            return await docClient.put(state).promise();
+        return await docClient.put(state).promise();
     };
 
     interface_dao.init = function (archetype, id,access,deviceID=false){

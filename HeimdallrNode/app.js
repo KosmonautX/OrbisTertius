@@ -10,6 +10,7 @@ const app = express();
 const cors = require(`cors`);
 const AWS = require('aws-sdk');
 const fs = require("fs");
+const fyr = require("firebase-admin");
 
 const secret = process.env.SECRET_TUNNEL;
 const log = '../timber';
@@ -69,7 +70,7 @@ if(process.env.NODE_ENV == "dev"){
 }
 
 
-require(`./route_paths/orb_net`)(app, verifyToken);
+require(`./route_paths/orb_net`)(app, verifyToken, fyrwalk);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 5000;
@@ -137,6 +138,7 @@ app.use(function (err, req, res, next) {
 });
 
 function verifyToken(req, res, next) {
+    // use firebase auth to preserve functionality
     try {
 		const iss = "Princeton";
 		const sub = "ScratchBac";
@@ -163,6 +165,42 @@ function verifyToken(req, res, next) {
         if (err.message == "jwt expired") err.status = 403;
       	next(err);
     }
+}
+
+fyr.initializeApp({
+    credential: fyr.credential.cert({
+      "type": "service_account",
+      "project_id": "sbpoc-b6fcb",
+      "private_key_id": "9e128768bd0d39ffbb642f489e1f3a053d2f6c66",
+        "private_key": process.env.FYR_KEY,
+      "client_email": "firebase-adminsdk-zrr1s@sbpoc-b6fcb.iam.gserviceaccount.com",
+      "client_id": "101832228741717072639",
+      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+      "token_uri": "https://oauth2.googleapis.com/token",
+      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+      "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-zrr1s%40sbpoc-b6fcb.iam.gserviceaccount.com"
+    }),
+  authDomain: "sbpoc-b6fcb.firebaseapp.com"         // Auth with popup/redirect
+  // databaseURL: "https://YOUR_APP.firebaseio.com", // Realtime Database
+  // storageBucket: "YOUR_APP.appspot.com",          // Storage
+  // messagingSenderId: "123456789",                 // Cloud Messaging
+  // measurementId: "G-12345"                        // Analytics
+  });
+
+function fyrwalk(req, res, next) {
+  fyr
+    .auth()
+    .verifyIdToken(req.headers["authorization"])
+    .then((decodedToken) => {
+        req.user_id = decodedToken.uid;
+        next();
+    })
+    .catch((error) => {
+        let err = new Error(`Google Token Unauthorised`);
+			err.status = 401;
+			next(err);
+    });
+
 }
 
 module.exports = { app: app };

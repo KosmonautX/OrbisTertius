@@ -1,0 +1,14 @@
+version: 0.2
+
+phases:
+    install:
+        runtime-versions:
+            docker: 19
+    build:
+        commands:
+        - docker-compose -f docker-compose.yml build
+artifacts:
+    files:
+        - docker-compose.yml
+        - ./HeimdallrNode/**/*
+        - ./MercuryFlask/**/*
