@@ -193,13 +193,14 @@ function fyrwalk(req, res, next) {
     .verifyIdToken(req.headers["authorization"])
     .then((decodedToken) => {
         req.user_id = decodedToken.uid;
-      next()
+        next();
     })
     .catch((error) => {
         let err = new Error(`Google Token Unauthorised`);
 			err.status = 401;
 			next(err);
     });
+
 }
 
 module.exports = { app: app };

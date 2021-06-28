@@ -30,16 +30,11 @@ router.post('/serveronfyr' , async (req,res, next) => {
             payload.role = "pleb";
           }
           else{
-            res.status(401).json({
-              "User": "Not Exist Yet"
-            })
-
+            throw new Error("User not created")
           }
         }
     else{
-      res.status(403).json({
-              "User": "Is Fyred"
-            })
+      throw new Error ("User not synced")
     }
         const iss = 'Princeton';
         const sub = 'ScratchBac';
@@ -54,7 +49,10 @@ router.post('/serveronfyr' , async (req,res, next) => {
         res.send({payload: token});
   }catch(err)
   {
-    next(err);}
+    if (err.message == "User not created") err.status = 403;
+    if (err.message == "User not synced") err.status = 401;
+    next(err);
+  }
     });
 
 
