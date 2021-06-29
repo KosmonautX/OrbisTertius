@@ -56,3 +56,19 @@ services:
     restart: always
     env_file:
       - .env
+
+  wolfsmoke:
+    build: ./WolfSmoke
+    command: npm run debug
+    volumes:
+      - ./WolfSmoke/dist/src:/usr/src/wolf/dist/src/
+    ports:
+      - "5001:3001"
+      - "9222:9222"
+    depends_on:
+      - dynamodb
+    links:
+      - "dynamodb:database"
+    restart: always
+    env_file:
+      - .env
