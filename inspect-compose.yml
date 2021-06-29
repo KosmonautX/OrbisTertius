@@ -58,17 +58,24 @@ services:
       - .env
 
   wolfsmoke:
-    build: ./WolfSmoke
-    command: npm run debug
+    build:
+      context: ./WolfSmoke
+      dockerfile: Dockerfile
+      target: builder
     volumes:
-      - ./WolfSmoke/dist/src:/usr/src/wolf/dist/src/
+      - ./WolfSmoke/src:/home/wolf/src/
+      - ./WolfSmoke/nodemon.json:/home/wolf/nodemon.json
     ports:
-      - "5001:3001"
+      - "5001:3000"
       - "9222:9222"
     depends_on:
       - dynamodb
     links:
       - "dynamodb:database"
     restart: always
+    command:
+      - npx
+      - nodemon
+      - "src/index.ts"
     env_file:
       - .env

@@ -23,7 +23,7 @@ app.get('/:n?', (req, res) => {
   if (n === undefined || !isInteger(n)) {
     res.send('Please pass an integer number in the path to calculate the Fibonacci sequence. Examples: /6 or /10')
   } else {
-    const fibSequence = getFibonacciSequence(n as number)
+    const fibSequence = getFibonacciSequence((n as unknown) as number)
     res.send(fibSequence.join(' '))
   }
 })
