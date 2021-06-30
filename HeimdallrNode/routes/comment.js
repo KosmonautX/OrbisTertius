@@ -18,7 +18,7 @@ router.get(`/check`, async function (req, res, next) {
             for (let item of comments.Items) {
                 let dao = {};
                 dao.comment_id = item.SK.slice(4);
-                dao.user_id = parseInt(item.inverse.slice(4));
+                dao.user_id = item.inverse.slice(4);
                 dao.orb_uuid = item.PK.slice(4);
                 dao.created_dt = item.time;
                 dao.comment = item.payload.comment;
@@ -43,7 +43,7 @@ router.get(`/query`, async function (req, res, next) {
             for (let item of comments.Items) {
                 let dao = {};
                 dao.comment_id = item.SK.slice(4);
-                dao.user_id = parseInt(item.inverse.slice(4));
+                dao.user_id = item.inverse.slice(4);
                 if (item.payload.orb_uuid) {
                     dao.orb_uuid = item.payload.orb_uuid.slice(4);
                 }
@@ -108,7 +108,7 @@ router.get(`/get`, async function (req, res, next) {
             let item = comments.Item;
             let dao = {};
             dao.comment_id = item.SK.slice(4);
-            dao.user_id = parseInt(item.inverse.slice(4));
+            dao.user_id = item.inverse.slice(4);
             if (item.payload.orb_uuid) {
                 dao.orb_uuid = item.payload.orb_uuid.slice(4);
             }
