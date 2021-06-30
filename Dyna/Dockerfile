@@ -1,6 +1,7 @@
 FROM openjdk:11-jre-slim
 MAINTAINER ks0m1c_m0rpʒus <john@doe.com>
 ENV DEBIAN_FRONTEND=noninteractive
+RUN echo "Acquire::Check-Valid-Until \"false\";\nAcquire::Check-Date \"false\";" | cat > /etc/apt/apt.conf.d/10no--check-valid-until
 RUN apt-get update && apt-get install -y --no-install-recommends \
       curl \
       dirmngr \
@@ -33,6 +34,8 @@ RUN set -ex && \
     ; do \
       gpg --batch --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" || \
       gpg --batch --keyserver hkp://ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
+      gpg --batch --keyserver hkp://keyserver.ubuntu.com:80  --recv-keys "$key" || \
+      gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" || \
       gpg --batch --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" ; \
     done
 

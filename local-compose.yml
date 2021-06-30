@@ -38,6 +38,8 @@ services:
     build: ./Dyna/
     ports:
       - "8000:8000"
+    environment:
+      - TZ=Asia/Singapore
 
   mercury:
     build: ./MercuryFlask/

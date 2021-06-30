@@ -169,6 +169,7 @@ function verifyToken(req, res, next) {
 
 fyr.initializeApp({
     credential: fyr.credential.cert({
+<<<<<<< HEAD
       "type": "service_account",
       "project_id": "sbpoc-b6fcb",
       "private_key_id": "9e128768bd0d39ffbb642f489e1f3a053d2f6c66",
@@ -182,6 +183,21 @@ fyr.initializeApp({
     }),
   authDomain: "sbpoc-b6fcb.firebaseapp.com"         // Auth with popup/redirect
   // databaseURL: "https://YOUR_APP.firebaseio.com", // Realtime Database
+=======
+        "type": "service_account",
+        "project_id": "scratchbac-v1-ee11a",
+        "private_key_id": "5a37185e016ecc397228fc6f6fea664f76bb4ccd",
+        "private_key": process.env.FYR_KEY,
+        "client_email": "firebase-adminsdk-b1dh2@scratchbac-v1-ee11a.iam.gserviceaccount.com",
+        "client_id": "110193704511744996466",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-b1dh2%40scratchbac-v1-ee11a.iam.gserviceaccount.com"
+    }),
+    authDomain: "scratchbac-v1-ee11a.firebaseapp.com"         // Auth with popup/redirect
+    // databaseURL: "https://YOUR_APP.firebaseio.com", // Realtime Database
+>>>>>>> 08b6f007b4e1a3a966809daa653205b7e0d370c7
   // storageBucket: "YOUR_APP.appspot.com",          // Storage
   // messagingSenderId: "123456789",                 // Cloud Messaging
   // measurementId: "G-12345"                        // Analytics
@@ -193,13 +209,21 @@ function fyrwalk(req, res, next) {
     .verifyIdToken(req.headers["authorization"])
     .then((decodedToken) => {
         req.user_id = decodedToken.uid;
+<<<<<<< HEAD
       next()
+=======
+        next();
+>>>>>>> 08b6f007b4e1a3a966809daa653205b7e0d370c7
     })
     .catch((error) => {
         let err = new Error(`Google Token Unauthorised`);
 			err.status = 401;
 			next(err);
     });
+<<<<<<< HEAD
+=======
+
+>>>>>>> 08b6f007b4e1a3a966809daa653205b7e0d370c7
 }
 
 module.exports = { app: app };

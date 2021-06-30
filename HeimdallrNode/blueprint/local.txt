@@ -6,13 +6,20 @@
 # :ipAddress = https://norbandy.scratchbac.org
 :id = 01234567-89ABCDEF-01234567-89ABCDEF
 :googleAuth = <<
+<<<<<<< HEAD
 Authorization: eyJhbGciOiJSUzI1NiIsImtpZCI6Ijg4ZGYxMzgwM2I3NDM2NjExYWQ0ODE0NmE4ZGExYjA3MTg2ZmQxZTkiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vc2Jwb2MtYjZmY2IiLCJhdWQiOiJzYnBvYy1iNmZjYiIsImF1dGhfdGltZSI6MTYyNDYyNDIwMCwidXNlcl9pZCI6Ilh5T2dTcnd1QnZmcUVZandJV2tHcE5TS2dMMzMiLCJzdWIiOiJYeU9nU3J3dUJ2ZnFFWWp3SVdrR3BOU0tnTDMzIiwiaWF0IjoxNjI0NjI0MjAwLCJleHAiOjE2MjQ2Mjc4MDAsInBob25lX251bWJlciI6Iis2NTkxMjM0NTY3IiwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJwaG9uZSI6WyIrNjU5MTIzNDU2NyJdfSwic2lnbl9pbl9wcm92aWRlciI6InBob25lIn19.lu7aLXKsSvuf9lH6m6DGto19Rts02oKXPwchnhiLOLv10LouTQZ5QNUKTCSdrTekgf6j65yVqMKO82jnNk9JngHzkOJBF1nYW2_c9BBizdeHbAQ1huvN5MqJLmBZruNdRRGbALO0Bg4eBo5c-R-b6v4Q2A_7EPBOuDw0CmYoMKW5yyxup2myR-M8iIseUqOyBf_UJQO5xBrr4Py2cQqE2uiqVu-zZDzLs4EE8cVsrwnoMm7YeuPbFB9M8xpTcTgH8ZhgAR5lnd1j9d7GD1L-aBt7kSDPWODTZIuIQ0h_3jHYB5oi2xrKbgqykTBEH7LvStPP0zXlf40AFh4rhRFFsw
 Content-Type: application/json
 User-Agent: Emacs27
+=======
+Authorization: :fyrtoken
+Content-Type: application/json
+User-Agent: Emacs27
+##
+>>>>>>> 08b6f007b4e1a3a966809daa653205b7e0d370c7
 :prince = 175181189
 :evange = 188681901
 :bala = 98667304
-:ryan = cd7e2a6b-d40b-4228-bdb9-f04b18a44d46
+:ryan = 0wqnETY9wlXQ7kvKIQAqs5gJZaD2
 :printon= "90181531"
 :admin = "90565482"
 :printonemail = "niceprinceton@gmail.com"
@@ -23,14 +30,30 @@ Authorization: :token
 Content-Type: application/json
 User-Agent: Emacs27
 ##
+<<<<<<< HEAD
 ##
+=======
+### Generate Client-side like firetoken
+GET :ipAddress/api/dev/fyr?id=:ryan
+-> run-hook (restclient-set-var ":fyrtoken" (cdr (assq 'payload (json-read))))
+###
+## Initialise user
+>>>>>>> 08b6f007b4e1a3a966809daa653205b7e0d370c7
 GET :ipAddress/api/devland/fyr/flameon?device_id=:id
 :googleAuth
 ##
 POST :ipAddress/api/devland/fyr/serveronfyr
+<<<<<<< HEAD
 :googleAuth
 {
     "user_id": "XyOgSrwuBvfqEYjwIWkGpNSKgL33",
+=======
+-> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
+:googleAuth
+
+{
+    "user_id": ":ryan",
+>>>>>>> 08b6f007b4e1a3a966809daa653205b7e0d370c7
     "device_id": ":id"
 }
 #
