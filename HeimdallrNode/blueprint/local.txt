@@ -3,11 +3,17 @@
 # ScratchbacV4.7 (local env)
 #
 :ipAddress = http://localhost:5000
+# :ipAddress = https://norbandy.scratchbac.org
 :id = 01234567-89ABCDEF-01234567-89ABCDEF
+:googleAuth = <<
+Authorization: :fyrtoken
+Content-Type: application/json
+User-Agent: Emacs27
+##
 :prince = 175181189
 :evange = 188681901
 :bala = 98667304
-:ryan = cd7e2a6b-d40b-4228-bdb9-f04b18a44d46
+:ryan = 0wqnETY9wlXQ7kvKIQAqs5gJZaD2
 :printon= "90181531"
 :admin = "90565482"
 :printonemail = "niceprinceton@gmail.com"
@@ -17,6 +23,24 @@
 Authorization: :token
 Content-Type: application/json
 User-Agent: Emacs27
+##
+### Generate Client-side like firetoken
+GET :ipAddress/api/dev/fyr?id=:ryan
+-> run-hook (restclient-set-var ":fyrtoken" (cdr (assq 'payload (json-read))))
+###
+## Initialise user
+GET :ipAddress/api/devland/fyr/flameon?device_id=:id
+:googleAuth
+##
+POST :ipAddress/api/devland/fyr/serveronfyr
+-> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
+:googleAuth
+
+{
+    "user_id": ":ryan",
+    "device_id": ":id"
+}
+#
 ##
 GET :ipAddress/api/devland/auth/tele?id=464704141&first_name=Ryanyipyip&username=Ryanyipyip&photo_url=https://t.me/i/userpic/320/dV38J4bA70_Y11-n9kmBm32BqWJEN8WVWbuj0htY1W4.jpg&auth_date=1621588461&hash=20906b54bb3c68b2f61258f53941f41a9d26c4b21bfcb735434d876287cff130&device_id=2
 #
@@ -57,7 +81,7 @@ Content-Type: application/json
     "code": "+65"
 }
 #
-## 2. Update user home&office POSTAL
+## 2. Update user home&office POSTAL // lambda authoriser
 PUT :ipAddress/api/orb/update_user_location
 :my-headers
 {
@@ -72,7 +96,7 @@ PUT :ipAddress/api/orb/update_user_location
 POST :ipAddress/api/orb/gen_uuid
 :my-headers
 {   
-   "user_id": :ryan,
+   "user_id": ":ryan",
    "media": true
 }
 #
@@ -213,8 +237,11 @@ GET :ipAddress/api/query/buddy?user_id=1234
 ## get media of entities
 GET https://orbis.scratchbac.org/api/query/user/get_media?entity=ORB&uuid=5b746de0-ec1a-479c-93c6-47f9970191a7&form=1920x1080
 Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMTg4NDUyMTk2Iiwicm9sZSI6Im5vcm1hbCIsImlhdCI6MTYxNTU0NDQ0NSwiZXhwIjoxNjE1NTQ1NjQ1LCJpc3MiOiJQcmluY2V0b24iLCJzdWIiOiJTY3JhdGNoQmFjIn0.opcmt4J6mJqHzs2hXV6zFJrD9yol4fGpVCwiSF5UCgc
+##
+#
 
 ## 8. Check Postal
+:my-headers
 GET :ipAddress/api/query/postal_check?code=65992
 
 ## INIT ORB completion handshake
