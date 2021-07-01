@@ -13,7 +13,7 @@ User-Agent: Emacs27
 :prince = 175181189
 :evange = 188681901
 :bala = 98667304
-:ryan = 0wqnETY9wlXQ7kvKIQAqs5gJZaD2
+:ryan = SxD23ctxrIUDPi1lXkAOq5BKm1l1
 :printon= "90181531"
 :admin = "90565482"
 :printonemail = "niceprinceton@gmail.com"
@@ -219,7 +219,8 @@ GET :ipAddress/api/query/orbs_in_loc_fresh_page?postal_code=457399&page=0
 GET :ipAddress/api/query/user_profile?user_id=188681901&keyword=INIT
 
 ## 4. Retrieve user
-GET :ipAddress/api/query/get_user?user_id=188681901
+GET :ipAddress/api/query/get_user?user_id=:ryan
+:my-headers
 
 ## 4b. Check username
 GET :ipAddress/api/query/check_username?username=evange
