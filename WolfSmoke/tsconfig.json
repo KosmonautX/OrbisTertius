@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "allowSyntheticDefaultImports": true,
-        "lib": ["ES2020"],
+        "lib": ["ES2020", "dom"],
         "module": "commonjs",
         "types": ["@types/node", "node"],
         "typeRoots": ["./node_modules/@types"],

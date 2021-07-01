@@ -25,6 +25,10 @@
 	    "AttributeType": "S"
 	}
     ],
+    "StreamSpecification": {
+        "StreamEnabled": true,
+        "StreamViewType": "NEW_IMAGE"
+    },
     "TableName": "ORB_NET",
     "KeySchema": [
         {

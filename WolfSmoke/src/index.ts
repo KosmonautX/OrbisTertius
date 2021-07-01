@@ -1,31 +1,54 @@
-import express from 'express'
+//import { DynamoDBStreamsClient} from "@aws-sdk/client-dynamodb-streams";
+import * as AWS from "@aws-sdk/client-dynamodb-streams";
+// import { MulticastMessage, TopicMessage } from "./interface/notif";
+import {ServiceAccount} from "firebase-admin";
+import * as fyr from 'firebase-admin';
+import {DynaStream} from "./library/pregolyaStream"
+import { unmarshall } from "@aws-sdk/util-dynamodb"
+const fs = require('fs').promises
 
-const app = express()
+const STREAM_ARN = "arn:aws:dynamodb:ddblocal:000000000000:table/ORB_NET/stream/2021-07-01T10:06:56.196"
+const FILE = 'shardState.json'
 
-function getFibonacciSequence (n: number): number[] {
-  if (n < 2) {
-    return [1]
-  }
-  if (n < 3) {
-    return [1, 1]
-  }
-  const a = getFibonacciSequence(n - 1)
-  a.push(a[n - 2] + a[n - 3])
-  return a
+async function main() {
+	const ddbStream = new DynaStream(
+		new AWS.DynamoDBStreams({endpoint: process.env.DYNA, region: "localhost"}),
+		STREAM_ARN,
+		unmarshall
+	)
+
+	// update the state so it will pick up from where it left last time
+	// remember this has a limit of 24 hours or something along these lines
+	// https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html
+	ddbStream.setShardState(await loadShardState())
+
+	const fetchStreamState = async () => {
+		await ddbStream.fetchStreamState()
+		const shardState = ddbStream.getShardState()
+		await fs.writeFile(FILE, JSON.stringify(shardState))
+		setTimeout(fetchStreamState, 1000 * 20)
+	}
+
+	fetchStreamState()
 }
 
-function isInteger (value: any) {
-  return !isNaN(value) && parseInt(Number(value) as any) == value && !isNaN(parseInt(value, 10))
+async function loadShardState() {
+	try {
+		return JSON.parse(await fs.readFile(FILE, 'utf8'))
+	} catch (e) {
+		if (e.code === 'ENOENT') return {}
+		throw e
+	}
 }
 
-app.get('/:n?', (req, res) => {
-  const n = req.params.n
-  if (n === undefined || !isInteger(n)) {
-    res.send('Please pass an integer number in the path to calculate the Fibonacci sequence. Examples: /6 or /10')
-  } else {
-    const fibSequence = getFibonacciSequence((n as unknown) as number)
-    res.send(fibSequence.join(' '))
-  }
+main()
+
+
+const adminConfig: ServiceAccount = {
+  "projectId": "scratchbac-v1-ee11a",
+  "privateKey": process.env.FYR_KEY,
+  "clientEmail": "firebase-adminsdk-b1dh2@scratchbac-v1-ee11a.iam.gserviceaccount.com",
+}
+fyr.initializeApp({
+  credential: fyr.credential.cert(adminConfig),
 })
-
-app.listen(3000, () => console.log('Fibonacci app listening on port 3000!'))

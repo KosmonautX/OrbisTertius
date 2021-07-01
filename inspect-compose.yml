@@ -72,7 +72,6 @@ services:
       - dynamodb
     links:
       - "dynamodb:database"
-    restart: always
     command:
       - npx
       - nodemon
