@@ -150,7 +150,7 @@ const orbSpace = {
                 PK: "ORB#" + body.orb_uuid,
                 SK: "USR#" + body.acceptor_id.toString(),
                 time: moment().unix(),
-                inverse: "505#DISINTERESTED_INITIATOR",
+                inverse: "505#DISINIT",
                 payload: {
                     who: body.user_id.toString()
                 }
@@ -167,7 +167,7 @@ const orbSpace = {
                 PK: "ORB#" + body.orb_uuid,
                 SK: "USR#" + body.user_id.toString(),
                 time: moment().unix(),
-                inverse: "550#DISINTERESTED_ACCEPTOR",
+                inverse: "550#DISACCEPT",
                 payload: {
                     who: body.user_id.toString()
                 }
@@ -192,7 +192,7 @@ const dynaOrb = {
                                 numeric: body.nature,
                                 time: body.expiry_dt,
                                 geohash : body.geohashing52,
-                                inverse: "LOC#" + body.geohashing,
+                                alphanumeric: "LOC#" + body.geohashing,
                                 payload: {
                                     title: body.title, // title might have to go to the alphanumeric
                                     info: body.info,
@@ -217,7 +217,7 @@ const dynaOrb = {
                             Item: {
                                 PK: "LOC#" + body.geohashing,
                                 SK: body.expiry_dt.toString() + "#ORB#" + body.orb_uuid,
-                                inverse: body.nature.toString(),
+                                inverse: "TAX#" + body.nature,
                                 geohash : body.geohashing52,
                                 payload: {
                                     title: body.title,
@@ -278,7 +278,7 @@ const dynaOrb = {
             dao.created_dt = data.Item.payload.created_dt;
             dao.nature = data.Item.numeric;
             dao.orb_uuid = data.Item.PK.slice(4);
-            dao.geohash = parseInt(data.Item.inverse.slice(4));
+            dao.geohash = parseInt(data.Item.alphanumeric.slice(4));
             dao.geohash52 = data.Item.geohash;
             dao.postal_code = data.Item.payload.postal_code;
             dao.available = data.Item.payload.available;

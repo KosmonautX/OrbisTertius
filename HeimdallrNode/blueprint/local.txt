@@ -14,7 +14,6 @@ User-Agent: Emacs27
 :evange = 188681901
 :bala = 98667304
 :ryan = SxD23ctxrIUDPi1lXkAOq5BKm1l1
-:printon= "90181531"
 :admin = "90565482"
 :printonemail = "niceprinceton@gmail.com"
 :ryanemail = luckuveryx@gmail.com
@@ -42,9 +41,30 @@ POST :ipAddress/api/devland/fyr/serveronfyr
 }
 #
 ##
+## 2. Update user home&office POSTAL // lambda authoriser
+PUT :ipAddress/api/orb/update_user_location
+:my-headers
+{
+    "user_id": ":ryan",
+    "home": 650307,
+    "office": 650308
+}
+
+#
+## FCM Token Generator
+PUT :ipAddress/api/orb/tokenonfyr
+:my-headers
+{
+    "user_id": ":ryan",
+    "token": "d4focXxkTG2n42XS_rGxoS:APA91bFFhq_V8pDgC96EhhWbl96siPitBz1-X80M-WMqiwbP9OpQ4QZTutt5348LBLAX6r7NrdJ5fv592DfWUI3vfFd6xcQhzppOq4SWGKDs0Lx0ZhmWZgzZXAdM3MD142wTtox8QZBp"
+}
+
+#
+##
 GET :ipAddress/api/devland/auth/tele?id=464704141&first_name=Ryanyipyip&username=Ryanyipyip&photo_url=https://t.me/i/userpic/320/dV38J4bA70_Y11-n9kmBm32BqWJEN8WVWbuj0htY1W4.jpg&auth_date=1621588461&hash=20906b54bb3c68b2f61258f53941f41a9d26c4b21bfcb735434d876287cff130&device_id=2
 #
 ##
+PUT :ipAddress/api/devland/auth/tokenonfyr
 #
 GET :ipAddress/api/devland/auth/mailin?hash=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJoYXNoIjoiYjM3ZjAxNWFmNzllOTNlY2YxYTQwOWE3M2E4MDFjMjQ6NzczOTk5ZDcxYTk0YzJmYzRhYjA5MWM1YTAyOWNkMjg0YmQyNmY2ZTBlYTE1MWZiY2Q5YzNhZTExOThmMDQ2MTA4OTM3OTcxNzJkOTkxOTc3NjgwMjUzMDJkZTk1MzZlMTBkZDlmM2E3ZWRhZmMzMDNiYzYzMDI0NzAiLCJpYXQiOjE2MjQwODAyNzAsImV4cCI6MTYyNDA4NjI3MCwiaXNzIjoicHBtYWlsIiwic3ViIjoic2IifQ.PV3pXL9mXGrtnzYW8wBcAg_A5K88Rzw2aMJGR9BI-9E&source=email&mail=:myemail&device_id=:id
 #&mail=:myemail&device_id=:id
@@ -81,16 +101,7 @@ Content-Type: application/json
     "code": "+65"
 }
 #
-## 2. Update user home&office POSTAL // lambda authoriser
-PUT :ipAddress/api/orb/update_user_location
-:my-headers
-{
-    "user_id": ":ryan",
-    "home": 457399,
-    "office": 487372
-}
 
-#
 #
 ## Generate ORB UUID & Media assets
 POST :ipAddress/api/orb/gen_uuid
@@ -104,9 +115,8 @@ POST :ipAddress/api/orb/gen_uuid
 POST :ipAddress/api/orb/post_orb
 :my-headers
 { 
-    "orb_uuid": "3",
-    "user_id": :ryan,
-    "username": "evangeline",
+    "orb_uuid": "8",
+    "user_id": ":ryan",
     "title": "postman",
     "info": "nil",
     "where": "my house",
@@ -114,9 +124,8 @@ POST :ipAddress/api/orb/post_orb
     "tip": "foc",
     "tags": ["free", "christmas"],
     "media": false,
-    "photo": "https://media.newyorker.com/photos/5e1e73f9108f1f000812e432/4:3/w_1919,h_1439,c_limit/Tolentino-CheerDoc.jpg",
     "nature": 10021000000, 
-    "postal_code": 457399,
+    "postal_code": 650301,
     "expires_in": 30
 }
 

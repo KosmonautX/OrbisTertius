@@ -6,16 +6,14 @@ import * as fyr from 'firebase-admin';
 import {DynaStream} from "./library/pregolyaStream"
 import { unmarshall } from "@aws-sdk/util-dynamodb"
 const fs = require('fs').promises
-
-const STREAM_ARN = "arn:aws:dynamodb:ddblocal:000000000000:table/ORB_NET/stream/2021-07-01T10:06:56.196"
+const STREAM_ARN = "arn:aws:dynamodb:ddblocal:000000000000:table/ORB_NET/stream/2021-07-02T10:04:03.407"
 const FILE = 'shardState.json'
 
 async function main() {
 	const ddbStream = new DynaStream(
 		new AWS.DynamoDBStreams({endpoint: process.env.DYNA, region: "localhost"}),
 		STREAM_ARN,
-		unmarshall
-	)
+		unmarshall,fyr.messaging())
 
 	// update the state so it will pick up from where it left last time
 	// remember this has a limit of 24 hours or something along these lines
@@ -29,7 +27,9 @@ async function main() {
 		setTimeout(fetchStreamState, 1000 * 20)
 	}
 
-	fetchStreamState()
+	fetchStreamState().catch(err => {
+        console.log(err)
+    });
 }
 
 async function loadShardState() {
@@ -40,10 +40,6 @@ async function loadShardState() {
 		throw e
 	}
 }
-
-main()
-
-
 const adminConfig: ServiceAccount = {
   "projectId": "scratchbac-v1-ee11a",
   "privateKey": process.env.FYR_KEY,
@@ -52,3 +48,4 @@ const adminConfig: ServiceAccount = {
 fyr.initializeApp({
   credential: fyr.credential.cert(adminConfig),
 })
+main()

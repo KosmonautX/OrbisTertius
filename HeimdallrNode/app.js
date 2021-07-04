@@ -130,7 +130,6 @@ app.use(function (err, req, res, next) {
 
 	// render the error page
 	let status = err.status || 500;
-	res.status(status);
 	res.send({
 		"status": status,
 		"message": err.message

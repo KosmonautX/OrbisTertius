@@ -1,5 +1,6 @@
 const debug = require('debug')('DynaStream')
 import { EventEmitter } from "events"
+import { insnotif, modnotif } from "./parseSTongue";
 
 
 export class DynaStream extends EventEmitter {
@@ -7,6 +8,7 @@ export class DynaStream extends EventEmitter {
   _streamArn: string;
   _shards: Map<any,any>;
   _unmarshall: Function;
+  _fyrClient?: any;
 
   /**
    *	@param {object} ddbStreams - an instance of DynamoDBStreams
@@ -17,12 +19,13 @@ export class DynaStream extends EventEmitter {
    *			```
    *			 if not provided then records will be returned using low level api/shape
    */
-  constructor(ddbStreams: any, streamArn: string, unmarshall: Function) {
+  constructor(ddbStreams: any, streamArn: string, unmarshall: Function, fyrClient?: any) {
 	  super()
 	  this._ddbStreams = ddbStreams
 	  this._streamArn = streamArn
 	  this._shards = new Map()
 	  this._unmarshall = unmarshall
+    this._fyrClient = fyrClient
   }
   /**
    * this will update the stream, shards and records included
@@ -31,8 +34,12 @@ export class DynaStream extends EventEmitter {
   async fetchStreamState() {
 	debug('fetchStreamState')
 
-	await this.fetchStreamShards()
-	await this.fetchStreamRecords()
+	await this.fetchStreamShards().catch((error)=>{
+                console.log("Error emitting Records" , error)
+            })
+	await this.fetchStreamRecords().catch((error)=>{
+                console.log("Error emitting Records" , error)
+            })
   }
 
   /**
@@ -83,13 +90,19 @@ export class DynaStream extends EventEmitter {
 	  return
 	}
 
-	await this._getShardIterators()
-	const records = await this._getRecords()
+	await this._getShardIterators().catch((error)=>{
+                console.log("Error emitting Records" , error)
+            })
+	const records = await this._getRecords().catch((error)=>{
+                console.log("Error emitting Records" , error)
+            })
 
 	debug('fetchStreamRecords', records)
 
 	this._trimShards()
-	this._emitRecordEvents(records)
+	this._emitRecordEvents(records).catch((error)=>{
+                console.log("Error emitting Records" , error)
+            })
 
 	return records
   }
@@ -124,14 +137,17 @@ export class DynaStream extends EventEmitter {
 	}
   }
 
-  _getShardIterators() {
+  async _getShardIterators() {
 	debug('_getShardIterators')
 	  // return this.parallelomap(this._shards.values(), this._getShardIterator , 10)
-    return this.parallelomap(this._shards.values(), ((shardData: any) => this._getShardIterator(shardData)), 10)
+    return this.parallelomap(this._shards.values(), ((shardData: any) => this._getShardIterator(shardData)), 10).catch((error)=>{
+                console.log("Error emitting Records" , error)
+            })
     //return this._getShardIterator(this._shards.values())
   }
 
   async  _getShardIterator(shardData: any) {
+    try{
 	  debug('_getShardIterator')
 	  debug(shardData)
 
@@ -147,8 +163,11 @@ export class DynaStream extends EventEmitter {
 	    StreamArn: this._streamArn
 	  }
 
-	  const { ShardIterator } = await this._ddbStreams.getShardIterator(params)
+	  const { ShardIterator } = await this._ddbStreams.getShardIterator(params).catch((error:any)=>{
+                console.log("Error emitting Records" , error)
+            })
 	    shardData.nextShardIterator = ShardIterator}
+    }catch(e){console.log(e)}
   }
 
   async _getRecords() : Promise<any> {
@@ -212,7 +231,7 @@ export class DynaStream extends EventEmitter {
 	}
   }
 
-  _emitRecordEvents(events: any) {
+  async _emitRecordEvents(events: any) {
 	debug('_emitRecordEvents')
 
 	for (const event of events) {
@@ -223,11 +242,16 @@ export class DynaStream extends EventEmitter {
 	  switch (event.eventName) {
 		case 'INSERT':
 		  this.emit('insert record', newRecord, keys)
+        {
+        await insnotif(newRecord,this._fyrClient)
+      }
 		  break
 
 		case 'MODIFY':
-		  this.emit('modify record', newRecord, oldRecord, keys)
-          break
+        this.emit('modify record', newRecord, oldRecord, keys)
+        {
+          await modnotif(newRecord,this._fyrClient,oldRecord)
+        }
 
 		case 'REMOVE':
 		  this.emit('remove record', oldRecord, keys)
@@ -273,7 +297,9 @@ export class DynaStream extends EventEmitter {
 			// its important to increment before the async operation
 			const myPosition = position++
 			concurrentOps++
-			const mapResult = await mapper(value)
+			const mapResult = await mapper(value).catch((error:any)=>{
+                console.log("Error resolving mapped Promises" , error)
+            })
 			if (mapResult) {
 				map[myPosition] = mapResult
 			}
