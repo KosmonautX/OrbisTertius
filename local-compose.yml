@@ -38,9 +38,9 @@ services:
     build: ./Dyna/
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000"]
-      interval: 8s
-      timeout: 8s
-      retries: 8
+      interval: 30s
+      timeout: 10s
+      retries: 5
     ports:
       - "8000:8000"
     environment:
@@ -63,7 +63,7 @@ services:
   wolfsmoke:
     build: ./WolfSmoke
     volumes:
-      - ./WolfSmoke/src:/home/wolf/src/\
+      - ./WolfSmoke/src:/home/wolf/src/
       - ./WolfSmoke/shardState.json:/home/wolf/shardState.json:rw
     depends_on:
       dynamodb:
