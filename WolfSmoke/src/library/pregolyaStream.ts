@@ -252,6 +252,7 @@ export class DynaStream extends EventEmitter {
         {
           await modnotif(newRecord,this._fyrClient,oldRecord)
         }
+        break
 
 		case 'REMOVE':
 		  this.emit('remove record', oldRecord, keys)

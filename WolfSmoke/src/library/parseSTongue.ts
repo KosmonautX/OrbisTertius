@@ -49,7 +49,7 @@ async function subscribe(token:string, topic:string, client:any): Promise<void>{
     const topic_new = "/topics/" + topic;
     client.subscribeToTopic(token, topic_new).then((response:any) => {console.log("Message Sent", response)})
             .catch((error:any)=>{
-                console.log("Errpr sending Message" , error)
+                console.log("Error sending Message" , error)
             });
 }
 
@@ -57,7 +57,7 @@ async function unsubscribe(token:string, topic:string, client:any): Promise<void
     const topic_old = "/topics/" + topic;
     client.subscribeToTopic(token, topic_old).then((response:any) => {console.log("Message Sent", response)})
             .catch((error:any)=>{
-                console.log("Errpr sending Message" , error)
+                console.log("Error sending Message" , error)
             });
 }
 

@@ -1,20 +1,15 @@
-//import { DynamoDBStreamsClient} from "@aws-sdk/client-dynamodb-streams";
 import * as AWS from "@aws-sdk/client-dynamodb-streams";
-// import { MulticastMessage, TopicMessage } from "./interface/notif";
 import {ServiceAccount} from "firebase-admin";
 import * as fyr from 'firebase-admin';
 import {DynaStream} from "./library/pregolyaStream"
 import { unmarshall } from "@aws-sdk/util-dynamodb"
+import { DynamoDBStreamsClient } from "@aws-sdk/client-dynamodb-streams";
 const fs = require('fs').promises
-const STREAM_ARN = "arn:aws:dynamodb:ddblocal:000000000000:table/ORB_NET/stream/2021-07-02T10:04:03.407"
 const FILE = 'shardState.json'
 
-async function main() {
-	const ddbStream = new DynaStream(
-		new AWS.DynamoDBStreams({endpoint: process.env.DYNA, region: "localhost"}),
-		STREAM_ARN,
-		unmarshall,fyr.messaging())
-
+async function main(stream: DynamoDBStreamsClient, stream_arn:string) {
+    if(process.env.STREAM_ARN){
+	const ddbStream = new DynaStream(stream,stream_arn,unmarshall,fyr.messaging())
 	// update the state so it will pick up from where it left last time
 	// remember this has a limit of 24 hours or something along these lines
 	// https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html
@@ -30,6 +25,7 @@ async function main() {
 	fetchStreamState().catch(err => {
         console.log(err)
     });
+    }
 }
 
 async function loadShardState() {
@@ -40,6 +36,12 @@ async function loadShardState() {
 		throw e
 	}
 }
+
+// function sleep (time: number) {
+//   return new Promise((resolve) => setTimeout(resolve, time));
+// }
+
+
 const adminConfig: ServiceAccount = {
   "projectId": "scratchbac-v1-ee11a",
   "privateKey": process.env.FYR_KEY,
@@ -48,4 +50,16 @@ const adminConfig: ServiceAccount = {
 fyr.initializeApp({
   credential: fyr.credential.cert(adminConfig),
 })
-main()
+//sleep(5000).then(() => {
+// wait a while in local development for dynamodb to be up
+try{
+var straum = new AWS.DynamoDBStreams({endpoint: process.env.DYNA, region: "localhost"})
+straum.listStreams({TableName: process.env.TABLE || "ORB_NET"}).then(
+  (data: any) => {
+      var straumArn = (data.Streams[0]!.StreamArn as string)
+      main(straum, straumArn)
+  },
+  (error) => {
+    console.log(error)
+  })} catch(error) { console.log(error); throw new Error("Main Loop Failed")}
+//});
