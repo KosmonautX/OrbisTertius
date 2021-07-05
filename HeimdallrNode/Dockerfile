@@ -5,9 +5,6 @@ COPY package-lock.json package.json ./
 RUN npm ci
 COPY . .
 
-
-FROM alpine:3.10
-
 # Set the working directory.
 FROM alpine:3.10
 RUN apk add --update nodejs npm

@@ -130,7 +130,6 @@ app.use(function (err, req, res, next) {
 
 	// render the error page
 	let status = err.status || 500;
-	res.status(status);
 	res.send({
 		"status": status,
 		"message": err.message
@@ -172,7 +171,7 @@ fyr.initializeApp({
         "type": "service_account",
         "project_id": "scratchbac-v1-ee11a",
         "private_key_id": "5a37185e016ecc397228fc6f6fea664f76bb4ccd",
-        "private_key": process.env.FYR_KEY,
+        "private_key": process.env.FYR_KEY.replace(/\\n/g, '\n'),
         "client_email": "firebase-adminsdk-b1dh2@scratchbac-v1-ee11a.iam.gserviceaccount.com",
         "client_id": "110193704511744996466",
         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
@@ -193,14 +192,13 @@ function fyrwalk(req, res, next) {
     .verifyIdToken(req.headers["authorization"])
     .then((decodedToken) => {
         req.user_id = decodedToken.uid;
-        next();
+      next();
     })
     .catch((error) => {
         let err = new Error(`Google Token Unauthorised`);
 			err.status = 401;
 			next(err);
     });
-
 }
 
 module.exports = { app: app };

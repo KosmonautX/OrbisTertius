@@ -34,10 +34,11 @@ Land.Entity = (function () {
 
     identity ={
         set : function(deviceID){
-        state.UpdateExpression += ', #did = :did';
+            if(state.UpdateExpression) state.UpdateExpression += ', #did = :did';
+            else state.UpdateExpression = 'SET #did = :did'; state.ReturnValues= 'ALL_NEW';
         state.ExpressionAttributeNames["#did"]= "identifier"
         state.ExpressionAttributeValues[":did"] =deviceID
-        }
+        },
 
     }
 
@@ -160,6 +161,17 @@ Land.Entity = (function () {
 
     };
 
+    interface_dao.fcmtoken = async(userID,token) => {
+        try{
+            interface_dao.spawn("USR",userID,"pub")
+            return interface_dao.untimedupsert(token)
+        } catch(err){
+            console.log(err)
+            new Error("Firebase Cloud Token Update Failed")
+            }
+
+    };
+
     interface_dao.affirm = async (archetype, id, fields) => {
         entity_init("PUT",archetype, id);
         condition("alphanumeric",fields);
@@ -180,6 +192,13 @@ Land.Entity = (function () {
     // update event and identifiers(login) edge/field later
     interface_dao.upsert = async (deviceID=false) => {
         time();
+        if(deviceID) identity.set(deviceID)
+        return await wish();
+    };
+
+    interface_dao.untimedupsert = async (deviceID=false) => {
+        state.ExpressionAttributeNames={}
+        state.ExpressionAttributeValues={}
         if(deviceID) identity.set(deviceID)
         return await wish();
     };

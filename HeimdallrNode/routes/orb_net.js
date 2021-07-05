@@ -16,12 +16,26 @@ const orbSpace = require('../controller/dynamoOrb').orbSpace;
 const dynaOrb = require('../controller/dynamoOrb').dynaOrb;
 const dynaUser = require('../controller/dynamoUser').dynaUser;
 const userQuery = require('../controller/dynamoUser').userQuery;
-
+const land = require('../controller/graphLand').Land
 router.use(function (req, res, next){
     security.checkUser(req, next);
     next()
 }
           )
+// fcm token
+router.put('/tokenonfyr', async (req,res,next) => {
+    try{
+    fyrUser = land.Entity
+        payload= await fyrUser.fcmtoken(req.body.user_id,req.body.token).catch(err => {
+      res.status = 400;
+      next(err);});
+    if(payload.Attributes){
+      res.status(201).json({
+        "FCM Token": "Updated"
+      })
+    }}catch(err){
+        next(err);
+    }})
 // generate uuid and a presigned buffer for image in s3 bucket
 router.post(`/gen_uuid`, async function (req, res, next) {
     try {
