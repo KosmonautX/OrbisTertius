@@ -36,6 +36,11 @@ services:
 
   dynamodb:
     build: ./Dyna/
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     ports:
       - "8000:8000"
     environment:
@@ -52,5 +57,18 @@ services:
     links:
       - "dynamodb:database"
     restart: always
+    env_file:
+      - .env
+
+  wolfsmoke:
+    build: ./WolfSmoke
+    volumes:
+      - ./WolfSmoke/src:/home/wolf/src/
+      - ./WolfSmoke/shardState.json:/home/wolf/shardState.json:rw
+    depends_on:
+      dynamodb:
+        condition: service_healthy
+    links:
+      - "dynamodb:database"
     env_file:
       - .env
