@@ -49,6 +49,7 @@ router.post('/serveronfyr' , async (req,res, next) => {
         res.send({payload: token});
   }catch(err)
   {
+
     if (err.message == "User not created") err.status = 403;
     if (err.message == "User not synced") err.status = 401;
     next(err);

@@ -69,9 +69,8 @@ router.get(`/get_user`, async function (req, res, next) {
         //     dao.gender = pteData.Item.payload.gender;
         //     dao.birthday = pteData.Item.payload.birthday;
         // }
-        dao.user_id = parseInt(req.query.user_id);
+        dao.user_id = req.query.user_id;
         dao.username = pubData.Item.alphanumeric;
-        dao.hp_number = 98754321;
         // dao.home = pteData.Item.numeric;
         // dao.office = pteData.Item.geohash;
         dao.home_geohash = pubData.Item.numeric;
@@ -144,7 +143,7 @@ router.get(`/user_profile`, async function (req, res, next) {
                 let data_arr = [];
                 data.Items.forEach(function(item) {
                     let dao = {};
-                    dao.user_id = parseInt(item.SK.slice(4));
+                    dao.user_id = item.SK.slice(4);
                     dao.orb_uuid = item.PK.slice(4);
                     dao.created_dt = item.time;
                     dao.geohash = item.geohash;
@@ -210,7 +209,7 @@ router.get(`/user_pref`, async function (req, res, next) {
                 let data_arr = [];
                 data.Items.forEach(function(item) {
                     let dao = {};
-                    dao.user_id = parseInt(item.SK.slice(4).slice(0,-5));
+                    dao.user_id = item.SK.slice(4).slice(0,-5);
                     dao.orb_uuid = item.PK.slice(4);
                     dao.created_dt = item.inverse;
                     data_arr.push(dao);
@@ -265,7 +264,7 @@ router.get(`/orb_acceptance`, async function (req, res, next) {
                 let data_arr = [];
                 data.Items.forEach(function(item) {
                     let dao = {};
-                    dao.user_id = parseInt(item.SK.slice(4));
+                    dao.user_id = item.SK.slice(4);
                     dao.orb_uuid = item.PK.slice(4);
                     dao.created_dt = item.time;
                     dao.geohash = item.geohash;
@@ -432,7 +431,7 @@ router.get(`/buddy`, async function (req, res, next) {
                 let data_arr = [];
                 data.Items.forEach(function(item) {
                     let dao = {};
-                    dao.buddy_id = parseInt(item.SK.slice(4));
+                    dao.buddy_id = item.SK.slice(4);
                     data_arr.push(dao);
                 })
                 let result = {

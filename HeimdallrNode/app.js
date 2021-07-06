@@ -160,8 +160,8 @@ function verifyToken(req, res, next) {
 			next(err);
 		}
     } catch (err) {
-		if (err.message == "maxAge exceeded") err.status = 403;
-        if (err.message == "jwt expired") err.status = 403;
+		if (err.message == "maxAge exceeded") err.status = 401;
+        if (err.message == "jwt expired") err.status = 401;
       	next(err);
     }
 }

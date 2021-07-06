@@ -13,7 +13,7 @@ async function getRecipient (body) {
         let blockedUsers = [];
         if (blockedList.Count != 0) {
             blockedList.Items.forEach( item => {
-                blockedUsers.push(parseInt(item.SK.slice(4)));
+                blockedUsers.push(item.SK.slice(4));
             });
         }
         if (body.commercial == true) {
@@ -26,7 +26,7 @@ async function getRecipient (body) {
             } else {
                 let users_arr = [];
                 users.Items.forEach( item => {
-                    users_arr.push(parseInt(item.SK.slice(5)));
+                    users_arr.push(item.SK.slice(5));
                 });
                 if (blockedUsers.length > 0) {
                     users_arr = users_arr.filter(item => !blockedUsers.includes(item));
@@ -40,7 +40,7 @@ async function getRecipient (body) {
             });
                 let users_arr = [];
                 users.Items.forEach( item => {
-                    users_arr.push(parseInt(item.SK.split('#')[1]));
+                    users_arr.push(item.SK.split('#')[1]);
                 });
                 if (blockedUsers.length > 0) {
                     users_arr = users_arr.filter(item => !blockedUsers.includes(item));
