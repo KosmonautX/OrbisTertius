@@ -16,4 +16,11 @@ services:
     restart: always
     env_file:
       - .env
- 
+  wolfsmoke:
+    build: ./WolfSmoke/
+    volumes:
+      - ./WolfSmoke/src:/home/wolf/src/
+      - ./WolfSmoke/shardState.json:/home/wolf/shardState.json:rw
+    restart: always
+    env_file:
+      -.env

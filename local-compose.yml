@@ -68,6 +68,7 @@ services:
     depends_on:
       dynamodb:
         condition: service_healthy
+    restart: always
     links:
       - "dynamodb:database"
     env_file:
