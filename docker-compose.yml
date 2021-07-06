@@ -23,4 +23,4 @@ services:
       - ./WolfSmoke/shardState.json:/home/wolf/shardState.json:rw
     restart: always
     env_file:
-      -.env
+      - .env
