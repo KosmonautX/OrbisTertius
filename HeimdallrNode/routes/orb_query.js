@@ -10,6 +10,7 @@ AWS.config.update({
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
 const geohash = require('../controller/geohash');
 const userQuery = require('../controller/dynamoUser').userQuery;
+const serve3 = require ('../controller/orbjectStore').serve3
 
 /**
  * API 1 
@@ -379,9 +380,12 @@ router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
                     dao.orb_uuid = item.SK.slice(15);
                     // dao.geohash = parseInt(item.PK.slice(4));
                     // dao.geohash52 = item.geohash;
-                    // dao.nature = parseInt(item.inverse);
-                    // dao.expiry_dt = parseInt(item.SK.substr(0, 10));
-                    // if (item.payload) dao.payload = item.payload;
+                    dao.nature = parseInt(item.inverse.slice(4));
+                    dao.expiry_dt = parseInt(item.SK.substr(0, 10));
+                    if (item.payload){
+                        dao.payload = item.payload
+                        if(item.payload.media) item.payload.media = await serve3.preSign('getObject','ORB',dao.orb_uuid,'150x150')
+                    }
                     page.push(dao);
                 }
             }
@@ -389,7 +393,7 @@ router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
         if (page.length > 0) {
             res.json(page)
         } else {
-            res.status(204).json("nothing")
+            res.status(204).json("nothing burger")
         }
     } catch (err) {
         if (err.message == 'Please give either postal_code or latlon') err.status = 400;

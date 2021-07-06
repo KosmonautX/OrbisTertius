@@ -35,7 +35,7 @@ Land.Entity = (function () {
     identity ={
         set : function(deviceID){
             if(state.UpdateExpression) state.UpdateExpression += ', #did = :did';
-            else state.UpdateExpression = 'SET #did = :did'; state.ReturnValues= 'ALL_NEW';
+            else {state.UpdateExpression = 'SET #did = :did';}
         state.ExpressionAttributeNames["#did"]= "identifier"
         state.ExpressionAttributeValues[":did"] =deviceID
         },
@@ -197,6 +197,7 @@ Land.Entity = (function () {
     };
 
     interface_dao.untimedupsert = async (deviceID=false) => {
+        state.ReturnValues= 'ALL_NEW';
         state.ExpressionAttributeNames={}
         state.ExpressionAttributeValues={}
         if(deviceID) identity.set(deviceID)
@@ -206,7 +207,7 @@ Land.Entity = (function () {
     // conditional update check device id identical (signup)
 
     interface_dao.exist = async() =>{
-        projection(['PK']);
+        projection(['PK','identifier']);
         return await recall();
 
     };
