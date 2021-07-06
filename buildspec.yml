@@ -12,3 +12,4 @@ artifacts:
         - docker-compose.yml
         - ./HeimdallrNode/**/*
         - ./MercuryFlask/**/*
+        - ./WolfSmoke/**/*
