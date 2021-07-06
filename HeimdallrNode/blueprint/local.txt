@@ -60,8 +60,9 @@ PUT :ipAddress/api/orb/tokenonfyr
 }
 
 #
-##
-GET :ipAddress/api/devland/auth/tele?id=464704141&first_name=Ryanyipyip&username=Ryanyipyip&photo_url=https://t.me/i/userpic/320/dV38J4bA70_Y11-n9kmBm32BqWJEN8WVWbuj0htY1W4.jpg&auth_date=1621588461&hash=20906b54bb3c68b2f61258f53941f41a9d26c4b21bfcb735434d876287cff130&device_id=2
+## TELEGRAM LOGIN ENDPOINT HASH
+
+GET :ipAddress/api/devland/auth/tele?auth_date=1625546430&first_name=Vivekbala&hash=c25b77225728c587003a7cebde8bfecbebfefdf493ac902062604d47eb379e3c&id=98667304&photo_url=https://t.me/i/userpic/320/-X_-_IzPQaVHRTU9kyvKYmOX5RoZzEpvSnIju4pYQGM.jpg&source=telegram&device_id=:id
 #
 ##
 PUT :ipAddress/api/devland/auth/tokenonfyr
@@ -84,7 +85,7 @@ POST :ipAddress/api/devland/auth/server
 Content-Type: application/json
 
 {
-    "user_id": ":ryan",
+    "user_id": ":bala",
     "device_id": ":id"
 }
 ## 2. Get all fresh orbs
@@ -115,7 +116,7 @@ POST :ipAddress/api/orb/gen_uuid
 POST :ipAddress/api/orb/post_orb
 :my-headers
 { 
-    "orb_uuid": "10",
+    "orb_uuid": "12",
     "user_id": ":ryan",
     "title": "postman",
     "info": "nil",
@@ -123,7 +124,7 @@ POST :ipAddress/api/orb/post_orb
     "when": "now",
     "tip": "foc",
     "tags": ["free", "christmas"],
-    "media": false,
+    "media": true,
     "nature": 10021000000, 
     "postal_code": 650301,
     "expires_in": 30
@@ -217,7 +218,7 @@ POST :ipAddress/api/orb/chatWithTelegram
 GET :ipAddress/api/query/get?orb_uuid=1
 :my-headers
 ## 2. Get all fresh orbs
-GET :ipAddress/api/query/orbs_in_loc_fresh_batch?postal_code=457399
+GET :ipAddress/api/query/orbs_in_loc_fresh_batch?postal_code=650301
 :my-headers
 ## 2. Get all fresh orbs PAGE
 GET :ipAddress/api/query/orbs_in_loc_fresh_page?postal_code=457399&page=0

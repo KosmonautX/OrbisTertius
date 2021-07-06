@@ -166,38 +166,40 @@ function verifyToken(req, res, next) {
     }
 }
 
+{
+    let proj = process.env.FYR_PROJ
 fyr.initializeApp({
     credential: fyr.credential.cert({
-        "type": "service_account",
-        "project_id": "scratchbac-v1-ee11a",
-        "private_key_id": "5a37185e016ecc397228fc6f6fea664f76bb4ccd",
+        "project_id": proj,
         "private_key": process.env.FYR_KEY.replace(/\\n/g, '\n'),
-        "client_email": "firebase-adminsdk-b1dh2@scratchbac-v1-ee11a.iam.gserviceaccount.com",
-        "client_id": "110193704511744996466",
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-b1dh2%40scratchbac-v1-ee11a.iam.gserviceaccount.com"
+        "client_email": "firebase-adminsdk-b1dh2@"+ proj +".iam.gserviceaccount.com",
     }),
-    authDomain: "scratchbac-v1-ee11a.firebaseapp.com"         // Auth with popup/redirect
+    authDomain: proj+".firebaseapp.com"         // Auth with popup/redirect
     // databaseURL: "https://YOUR_APP.firebaseio.com", // Realtime Database
   // storageBucket: "YOUR_APP.appspot.com",          // Storage
   // messagingSenderId: "123456789",                 // Cloud Messaging
   // measurementId: "G-12345"                        // Analytics
   });
+}
 
 function fyrwalk(req, res, next) {
   fyr
     .auth()
     .verifyIdToken(req.headers["authorization"])
     .then((decodedToken) => {
-        req.user_id = decodedToken.uid;
+        res.user_id = decodedToken.uid;
       next();
     })
     .catch((error) => {
-        let err = new Error(`Google Token Unauthorised`);
+        if (error.code == 'auth/id-token-revoked') {
+            let err = new Error(`Signout User`);
 			err.status = 401;
 			next(err);
+    }else{
+        let err = new Error(`Google Token Unauthorised`);
+			err.status = 401;
+		next(err);
+    }
     });
 }
 

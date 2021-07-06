@@ -43,9 +43,9 @@ async function loadShardState() {
 
 
 const adminConfig: ServiceAccount = {
-  "projectId": "scratchbac-v1-ee11a",
+  "projectId": process.env.FYR_PROJ,
   "privateKey": process.env.FYR_KEY,
-  "clientEmail": "firebase-adminsdk-b1dh2@scratchbac-v1-ee11a.iam.gserviceaccount.com",
+  "clientEmail": "firebase-adminsdk-b1dh2@"+process.env.FYR_PROJ+".iam.gserviceaccount.com",
 }
 fyr.initializeApp({
   credential: fyr.credential.cert(adminConfig),

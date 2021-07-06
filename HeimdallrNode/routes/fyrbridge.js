@@ -14,59 +14,60 @@ router.post('/serveronfyr' , async (req,res, next) => {
   try{
     let payload = {};
     if (!req.body.user_id){
-            payload.device_id = req.body.device_id
-            payload.username = "AttilaHun"
-            payload.role = "barb"
-    } else if (req.body.user_id === req.user_id && req.body.device_id) {
-          var user = land.Entity;
-          user.spawn("USR", req.body.user_id,"pte");
-          payloadz= await user.exist().catch(err => {
-            err.status = 400;
-            next(err);
-          });
-          if(payloadz.Item){
-            payload.user_id = req.body.user_id;
-            payload.username = "ChongaldXrump";
-            payload.role = "pleb";
-          }
-          else{
-            throw new Error("User not created")
-          }
-        }
-    else{
-      throw new Error ("User not synced")
-    }
-        const iss = 'Princeton';
-        const sub = 'ScratchBac';
-        const exp = '20min'
-        const signOptions = {
-            issuer: iss,
-            subject: sub,
-            expiresIn: exp,
-            algorithm: 'HS256',
-        };
-        const token = jwt.sign(payload, secret, signOptions);
-        res.send({payload: token});
+      payload.device_id = req.body.device_id
+      payload.username = "AttilaHun"
+      payload.role = "barb"
+    } else if (req.body.user_id === res.user_id && req.body.device_id) {
+      var user = land.Entity;
+      user.spawn("USR", req.body.user_id,"pte");
+      payloadz= await user.exist().catch(err => {
+        err.status = 400;
+        next(err);
+      });
+      if(payloadz.Item && payloadz.Item.identifier === req.body.device_id){
+        payload.user_id = req.body.user_id;
+        payload.username = "ChongaldXrump";
+        payload.role = "pleb";
+      }
+      else{
+        await fyr.auth()
+                 .revokeRefreshTokens(res.user_id).then(() => {
+                   throw new Error("Unauthorised Access");
+                 })
+                 .catch(err => {
+                   console.log(err + " :: " + res.user_id);
+                   throw new Error("Unauthorised Access");
+                 });
+      }}
+    const iss = 'Princeton';
+    const sub = 'ScratchBac';
+    const exp = '20min'
+    const signOptions = {
+      issuer: iss,
+      subject: sub,
+      expiresIn: exp,
+      algorithm: 'HS256',
+    };
+    const token = jwt.sign(payload, secret, signOptions);
+    res.send({payload: token});
   }catch(err)
   {
-
-    if (err.message == "User not created") err.status = 403;
-    if (err.message == "User not synced") err.status = 401;
+    if (err.message == "Unauthorised Access") err.status = 401;
     next(err);
   }
-    });
+});
 
 
 router.get('/flameon', async (req, res, next) => {
   // device id addition to login path and check on uuid existence
   fyrUser = land.Entity
-  payload= await fyrUser.fyrgen(req.user_id,req.query.device_id).catch(err => {
-            res.status = 400;
-            next(err);
-        });
+  payload= await fyrUser.fyrgen(res.user_id,req.query.device_id).catch(err => {
+    res.status = 400;
+    next(err);
+  });
   if(payload.Attributes){
     res.status(201).json({
-      "Returning User": req.user_id,
+      "Returning User": res.user_id,
       "Home Postal": payload.Attributes.numeric,
       "Office Postal": payload.Attributes.geohash,
       "Last Login": payload.Attributes.time
@@ -74,7 +75,7 @@ router.get('/flameon', async (req, res, next) => {
   }
   else{
     res.status(201).json({
-      "Creating User": req.user_id
+      "Creating User": res.user_id
     })
   }
 });
