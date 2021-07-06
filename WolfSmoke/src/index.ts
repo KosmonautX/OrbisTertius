@@ -44,7 +44,7 @@ async function loadShardState() {
 
 const adminConfig: ServiceAccount = {
   "projectId": process.env.FYR_PROJ,
-  "privateKey": process.env.FYR_KEY.replace(/\\n/g, '\n'),
+  "privateKey": process.env.FYR_KEY!.replace(/\\n/g, '\n'),
   "clientEmail": "firebase-adminsdk-b1dh2@"+process.env.FYR_PROJ+".iam.gserviceaccount.com",
 }
 fyr.initializeApp({
