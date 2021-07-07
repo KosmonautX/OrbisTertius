@@ -8,7 +8,7 @@ AWS.config.update({
     region: ddb_config.region
 });
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
-const s3 = new AWS.S3({region:ddb_config.region, signatureVersion: 'v4'});
+const serve3 = require('../controller/orbjectStore').serve3
 const geohash = require('../controller/geohash');
 const userQuery = require('../controller/dynamoUser').userQuery;
 
@@ -80,17 +80,5 @@ router.get(`/get_media`, async function (req, res, next) {
     }
 
 });
-
-const serve3 = {
-    
-    async preSign(action,entity, uuid, form) {
-        const sign = s3.getSignedUrl(action, { 
-            Bucket: ddb_config.sthreebucket, 
-            Key: entity+ '/' +uuid + '/' + form, Expires: 300
-        });
-        return sign;
-    },
-
-};
 
 module.exports = router;
