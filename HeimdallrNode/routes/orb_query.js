@@ -33,7 +33,7 @@ router.get(`/get`, async function (req, res, next) {
                 dao.expiry_dt = data.Item.time;
                 dao.nature = data.Item.numeric;
                 dao.orb_uuid = data.Item.PK.slice(4);
-                dao.geohash = parseInt(data.Item.inverse.slice(4));
+                dao.geohash = parseInt(data.Item.alphanumeric.slice(4));
                 dao.geohash52 = data.Item.geohash;
                 dao.payload = data.Item.payload
                 res.json(dao);

@@ -53,13 +53,25 @@ fyr.initializeApp({
 //sleep(5000).then(() => {
 // wait a while in local development for dynamodb to be up
 try{
-var straum = new AWS.DynamoDBStreams({endpoint: process.env.DYNA, region: "localhost"})
-straum.listStreams({TableName: process.env.TABLE || "ORB_NET"}).then(
-  (data: any) => {
-      var straumArn = (data.Streams[0]!.StreamArn as string)
-      main(straum, straumArn)
-  },
-  (error) => {
-    console.log(error)
-  })} catch(error) { console.log(error); throw new Error("Main Loop Failed")}
+  switch(process.env.NODE_ENV){
+    case 'dev':
+      var straum = new AWS.DynamoDBStreams({endpoint: process.env.DYNA, region: "localhost"});
+      straum.listStreams({TableName: process.env.TABLE || "ORB_NET"}).then(
+        (data: any) => {
+          var straumArn = (data.Streams[0]!.StreamArn as string)
+          main(straum, straumArn)
+        },
+        (error) => {
+          console.log(error)
+        })
+      break;
+  case 'stage':
+      var straum = new AWS.DynamoDBStreams({region: "ap-southeast-1"});
+      main(straum,process.env.DYNASTREAM_ARN as string)
+      break;
+  case 'prod':
+      var straum = new AWS.DynamoDBStreams({region: process.env.AWS_DEFAULT_REGION});
+      main(straum,process.env.DYNASTREAM_ARN as string)
+      break;
+  }} catch(error) { console.log(error); throw new Error("Main Loop Failed")}
 //});
