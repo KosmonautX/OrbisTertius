@@ -65,13 +65,13 @@ try{
           console.log(error)
         })
       break;
-  case "stage":
-      var straum = new AWS.DynamoDBStreams({region: process.env.AWS_DEFAULT_REGION});
-      main(straum,process.env.DYNASTREAM_ARN!)
+  case 'stage':
+      var straum = new AWS.DynamoDBStreams({region: "ap-southeast-1"});
+      main(straum,process.env.DYNASTREAM_ARN as string)
       break;
-  case "prod":
+  case 'prod':
       var straum = new AWS.DynamoDBStreams({region: process.env.AWS_DEFAULT_REGION});
-      main(straum,process.env.DYNASTREAM_ARN!)
+      main(straum,process.env.DYNASTREAM_ARN as string)
       break;
   }} catch(error) { console.log(error); throw new Error("Main Loop Failed")}
 //});
