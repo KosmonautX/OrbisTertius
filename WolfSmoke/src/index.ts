@@ -3,7 +3,7 @@ import {ServiceAccount} from "firebase-admin";
 import * as fyr from 'firebase-admin';
 import {DynaStream} from "./library/pregolyaStream"
 import { unmarshall } from "@aws-sdk/util-dynamodb"
-import { DynamoDBStreamsClient } from "@aws-sdk/client-dynamodb-streams";
+import { DynamoDBStreamsClient, ListStreamsCommandOutput } from "@aws-sdk/client-dynamodb-streams";
 const fs = require('fs').promises
 const FILE = 'shardState.json'
 
@@ -50,28 +50,22 @@ const adminConfig: ServiceAccount = {
 fyr.initializeApp({
   credential: fyr.credential.cert(adminConfig),
 })
-//sleep(5000).then(() => {
-// wait a while in local development for dynamodb to be up
-try{
-  switch(process.env.NODE_ENV){
-    case 'dev':
-      var straum = new AWS.DynamoDBStreams({endpoint: process.env.DYNA, region: "localhost"});
-      straum.listStreams({TableName: process.env.TABLE || "ORB_NET"}).then(
-        (data: any) => {
-          var straumArn = (data.Streams[0]!.StreamArn as string)
-          main(straum, straumArn)
-        },
-        (error) => {
-          console.log(error)
-        })
-      break;
-  case 'stage':
-      var straum = new AWS.DynamoDBStreams({region: "ap-southeast-1"});
-      main(straum,process.env.DYNASTREAM_ARN as string)
-      break;
-  case 'prod':
-      var straum = new AWS.DynamoDBStreams({region: process.env.AWS_DEFAULT_REGION});
-      main(straum,process.env.DYNASTREAM_ARN as string)
-      break;
-  }} catch(error) { console.log(error); throw new Error("Main Loop Failed")}
-//});
+
+if(process.env.NODE_ENV === 'dev'){
+  var straum = new AWS.DynamoDBStreams({endpoint: process.env.DYNA, region: "localhost"});
+  let streams: Promise<ListStreamsCommandOutput>  =  straum.listStreams({
+    TableName: process.env.TABLE || "ORB_NET"})
+  streams.then((data: any) => {
+    try{
+      main(straum, data.Streams[0]!.StreamArn as string)
+    } catch(error) { console.log(error); throw new Error("Main Loop Failed")}})
+    .catch((error) => {
+      console.log(error)
+    })
+}else{
+  var straum = new AWS.DynamoDBStreams({region: "ap-southeast-1"});
+
+  try{
+    main(straum, process.env.DYNASTREAM_ARN as string)
+  } catch(error) { console.log(error); throw new Error("Main Loop Failed")}
+}

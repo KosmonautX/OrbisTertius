@@ -3,8 +3,8 @@ const AWS = require('aws-sdk');
 switch(process.env.NODE_ENV)
 {
   case 'dev': s3 = new AWS.S3({endpoint:ddb_config.sthree, s3ForcePathStyle: true, signatureVersion: 'v4'}); break;
-  case "stage": s3 = new AWS.S3({region:ddb_config.region, signatureVersion: 'v4'}); break;
-  case "prod": s3 = new AWS.S3({region:ddb_config.region, signatureVersion: 'v4'}); break;
+  case 'stage': s3 = new AWS.S3({region:ddb_config.region, signatureVersion: 'v4'}); break;
+  case 'prod': s3 = new AWS.S3({region:ddb_config.region, signatureVersion: 'v4'}); break;
 }
 
 const serve3 = {
