@@ -1,4 +1,5 @@
 const debug = require('debug')('DynaStream')
+import { DescribeStreamInput} from "@aws-sdk/client-dynamodb-streams";
 import { EventEmitter } from "events"
 
 export class DynaStream extends EventEmitter {
@@ -47,26 +48,35 @@ export class DynaStream extends EventEmitter {
 
 	this._trimShards()
 
-	const params = {
+	const params: DescribeStreamInput = {
 	  StreamArn: this._streamArn
 	}
+    const newShardIds = []
+    let lastShardId = null
 
-	const { StreamDescription } = await this._ddbStreams.describeStream(params)
-	const shards = StreamDescription.Shards
-	const newShardIds = []
+		do {
+			if (lastShardId) {
+				debug('lastShardId: %s', lastShardId)
+				params.ExclusiveStartShardId = lastShardId
+			}
+			const { StreamDescription } = await this._ddbStreams.describeStream(params)
 
-	// collect all the new shards of this stream
-	for (const newShardEntry of shards) {
-	  const existingShardEntry = this._shards.get(newShardEntry.ShardId)
+			const shards = StreamDescription.Shards
+			lastShardId = StreamDescription.LastEvaluatedShardId
 
-	  if (!existingShardEntry) {
-		this._shards.set(newShardEntry.ShardId, {
-		  shardId: newShardEntry.ShardId
-		})
+			// collect all the new shards of this stream
+			for (const newShardEntry of shards) {
+				const existingShardEntry = this._shards.get(newShardEntry.ShardId)
 
-		newShardIds.push(newShardEntry.ShardId)
-	  }
-	}
+				if (!existingShardEntry) {
+					this._shards.set(newShardEntry.ShardId, {
+						shardId: newShardEntry.ShardId
+					})
+
+					newShardIds.push(newShardEntry.ShardId)
+				}
+			}
+		} while (lastShardId)
 
 	if (newShardIds.length > 0) {
 	  debug('Added %d new shards', newShardIds.length)
@@ -164,7 +174,12 @@ export class DynaStream extends EventEmitter {
                 console.log("Error emitting Records" , error)
             })
 	    shardData.nextShardIterator = ShardIterator}
-    }catch(e){console.log(e)}
+    }catch(e){
+      if (e.name === 'ResourceNotFoundException') {
+				debug('shard %s no longer exists, skipping', shardData.shardId)
+      }
+      else console.log(e);
+    }
   }
 
   async _getRecords() : Promise<any> {
@@ -177,27 +192,28 @@ export class DynaStream extends EventEmitter {
   }
 
   async _getShardRecords(shardData: any) {
-	debug('_getShardRecords')
+	  debug('_getShardRecords')
+    if (!shardData.nextShardIterator) return []
 
-	const params = { ShardIterator: shardData.nextShardIterator }
+	  const params = { ShardIterator: shardData.nextShardIterator }
 
-	try {
-	  const { Records, NextShardIterator } = await this._ddbStreams.getRecords(params)
-	  if (NextShardIterator) {
-		shardData.nextShardIterator = NextShardIterator
-	  } else {
-		shardData.nextShardIterator = null
+	  try {
+	    const { Records, NextShardIterator } = await this._ddbStreams.getRecords(params)
+	    if (NextShardIterator) {
+		    shardData.nextShardIterator = NextShardIterator
+	    } else {
+		    shardData.nextShardIterator = null
+	    }
+
+	    return Records
+	  } catch (e) {
+	    if (e.name === 'ExpiredIteratorException') {
+		    debug('_getShardRecords expired iterator', shardData)
+		    shardData.nextShardIterator = null
+	    } else {
+		    throw e
+	    }
 	  }
-
-	  return Records
-	} catch (e) {
-	  if (e.name === 'ExpiredIteratorException') {
-		debug('_getShardRecords expired iterator', shardData)
-		shardData.nextShardIterator = null
-	  } else {
-		throw e
-	  }
-	}
   }
 
   _trimShards() {

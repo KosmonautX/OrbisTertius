@@ -5,7 +5,6 @@ import {DynaStream} from "./library/pregolyaStream"
 import { unmarshall } from "@aws-sdk/util-dynamodb"
 import { DynamoDBStreams, ListStreamsCommandOutput } from "@aws-sdk/client-dynamodb-streams";
 import { insnotif, modnotif } from "./library/parseSTongue";
-//import { insnotif, modnotif } from "./library/parseSTongue";
 const fs = require('fs').promises
 const FILE = './shard/shardState.json'
 var straum: DynamoDBStreams
@@ -23,14 +22,23 @@ async function main(stream: DynamoDBStreams, stream_arn:string) {
 	  // update the state so it will pick up from where it left last time
 	  // remember this has a limit of 24 hours or something along these lines
 	  // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html
-	  DynaRipples.setShardState(await loadShardState())
+	  DynaRipples.setShardState( await loadShardState())
 
-	  const fetchStreamState = async () => {
-		  await DynaRipples.fetchStreamState()
-		  const shardState = DynaRipples.getShardState()
-		  await fs.writeFile(FILE, JSON.stringify(shardState))
-		  setTimeout(fetchStreamState, 1000 * 20)
-	  }
+    const fetchStreamState = async() => {
+    setTimeout(async () => {
+      await DynaRipples.fetchStreamState()
+      const shardState = DynaRipples.getShardState()
+      await fs.writeFile(FILE, JSON.stringify(shardState))
+      fetchStreamState()
+    }, 1000 * 20)
+  }
+
+	  // const fetchStreamState = async () => {
+		//   await DynaRipples.fetchStreamState()
+		//   const shardState = DynaRipples.getShardState()
+		//   await fs.writeFile(FILE, JSON.stringify(shardState))
+		//   setTimeout(fetchStreamState, 1000 * 20)
+	  // }
 
     //panta rhei
 
@@ -85,9 +93,10 @@ if(process.env.NODE_ENV === 'dev'){
     .catch((error) => {
       console.log(error)
     })
-}
-else{
+}else{
   try{
-    main(straum, process.env.DYNASTREAM_ARN as string)
+    main(straum, process.env.DYNASTREAM_ARN as string).catch(err => {
+      console.log(err)
+    });
   } catch(error) { console.log(error); throw new Error("Main Loop Failed")}
 }
