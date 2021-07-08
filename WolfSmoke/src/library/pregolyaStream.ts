@@ -1,14 +1,11 @@
 const debug = require('debug')('DynaStream')
 import { EventEmitter } from "events"
-import { insnotif, modnotif } from "./parseSTongue";
-
 
 export class DynaStream extends EventEmitter {
   _ddbStreams: any;
   _streamArn: string;
   _shards: Map<any,any>;
   _unmarshall: Function;
-  _fyrClient?: any;
 
   /**
    *	@param {object} ddbStreams - an instance of DynamoDBStreams
@@ -19,13 +16,12 @@ export class DynaStream extends EventEmitter {
    *			```
    *			 if not provided then records will be returned using low level api/shape
    */
-  constructor(ddbStreams: any, streamArn: string, unmarshall: Function, fyrClient?: any) {
+  constructor(ddbStreams: any, streamArn: string, unmarshall: Function) {
 	  super()
 	  this._ddbStreams = ddbStreams
 	  this._streamArn = streamArn
 	  this._shards = new Map()
 	  this._unmarshall = unmarshall
-    this._fyrClient = fyrClient
   }
   /**
    * this will update the stream, shards and records included
@@ -108,6 +104,7 @@ export class DynaStream extends EventEmitter {
   }
 
   /**
+   * Sotapanna
    * 	get a COPY of the current/internal shard state.
    * 	this, in conjuction with setShardState is used to
    * 	persist the stream state locally.
@@ -238,24 +235,18 @@ export class DynaStream extends EventEmitter {
 	  const keys = this._transformRecord(event.dynamodb.Keys)
 	  const newRecord = this._transformRecord(event.dynamodb.NewImage)
 	  const oldRecord = this._transformRecord(event.dynamodb.OldImage)
-
+    // seperation of concerns between emission control and listener
 	  switch (event.eventName) {
 		case 'INSERT':
-		  this.emit('insert record', newRecord, keys)
-        {
-        await insnotif(newRecord,this._fyrClient)
-      }
+		  this.emit('GENESIS', newRecord, keys)
 		  break
 
 		case 'MODIFY':
-        this.emit('modify record', newRecord, oldRecord, keys)
-        {
-          await modnotif(newRecord,this._fyrClient,oldRecord)
-        }
+        this.emit('FLUX', newRecord, oldRecord, keys)
         break
 
 		case 'REMOVE':
-		  this.emit('remove record', oldRecord, keys)
+		  this.emit('TERMIUS', oldRecord, keys)
 		  break
 
 		default:
