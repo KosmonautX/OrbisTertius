@@ -17,12 +17,11 @@ switch(process.env.NODE_ENV)
 }
 
 async function main(stream: DynamoDBStreams, stream_arn:string) {
-  if(process.env.STREAM_ARN){
 	  const DynaRipples = new DynaStream(stream,stream_arn,unmarshall)
 	  // update the state so it will pick up from where it left last time
 	  // remember this has a limit of 24 hours or something along these lines
 	  // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html
-	  DynaRipples.setShardState( await loadShardState())
+	  DynaRipples.setShardState(await loadShardState())
 
     const fetchStreamState = async() => {
     setTimeout(async () => {
@@ -57,7 +56,6 @@ async function main(stream: DynamoDBStreams, stream_arn:string) {
 	  fetchStreamState().catch(err => {
       console.log(err)
     });
-  }
 }
 
 async function loadShardState() {
@@ -88,11 +86,10 @@ if(process.env.NODE_ENV === 'dev'){
     TableName: process.env.TABLE || "ORB_NET"})
   streams.then((data: any) => {
     try{
-      main(straum, data.Streams[0]!.StreamArn as string)
+      main(straum, data.Streams[0]!.StreamArn as string).catch((error) => {
+        console.log(error)
+      })
     } catch(error) { console.log(error); throw new Error("Main Loop Failed")}})
-    .catch((error) => {
-      console.log(error)
-    })
 }else{
   try{
     main(straum, process.env.DYNASTREAM_ARN as string).catch(err => {
