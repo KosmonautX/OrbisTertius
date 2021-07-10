@@ -56,13 +56,13 @@ router.get('/tele', async (req, res, next) =>
         }
         else{
           let err = new Error("Corrupted Authentication");
-          err.status = 401
+          err.status = 403
           throw err;
         }
         }
         else if (req.query.auth_date <= moment().subtract(600, 'seconds').unix()) {
           let err = new Error("Expired Authentication")
-          err.status = 401
+          err.status = 403
           throw err;
         }
       }

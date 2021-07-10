@@ -20,7 +20,7 @@ services:
     build: ./WolfSmoke/
     volumes:
       - ./WolfSmoke/src:/home/wolf/src/
-      - ./WolfSmoke/shardState.json:/home/wolf/shardState.json:rw
+      - ./WolfSmoke/shard:/home/wolf/shard:rw
     restart: always
     env_file:
       - .env

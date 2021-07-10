@@ -1,14 +1,12 @@
 const debug = require('debug')('DynaStream')
+import { DescribeStreamInput} from "@aws-sdk/client-dynamodb-streams";
 import { EventEmitter } from "events"
-import { insnotif, modnotif } from "./parseSTongue";
-
 
 export class DynaStream extends EventEmitter {
   _ddbStreams: any;
   _streamArn: string;
   _shards: Map<any,any>;
   _unmarshall: Function;
-  _fyrClient?: any;
 
   /**
    *	@param {object} ddbStreams - an instance of DynamoDBStreams
@@ -19,13 +17,12 @@ export class DynaStream extends EventEmitter {
    *			```
    *			 if not provided then records will be returned using low level api/shape
    */
-  constructor(ddbStreams: any, streamArn: string, unmarshall: Function, fyrClient?: any) {
+  constructor(ddbStreams: any, streamArn: string, unmarshall: Function) {
 	  super()
 	  this._ddbStreams = ddbStreams
 	  this._streamArn = streamArn
 	  this._shards = new Map()
 	  this._unmarshall = unmarshall
-    this._fyrClient = fyrClient
   }
   /**
    * this will update the stream, shards and records included
@@ -51,26 +48,35 @@ export class DynaStream extends EventEmitter {
 
 	this._trimShards()
 
-	const params = {
+	const params: DescribeStreamInput = {
 	  StreamArn: this._streamArn
 	}
+    const newShardIds = []
+    let lastShardId = null
 
-	const { StreamDescription } = await this._ddbStreams.describeStream(params)
-	const shards = StreamDescription.Shards
-	const newShardIds = []
+		do {
+			if (lastShardId) {
+				debug('lastShardId: %s', lastShardId)
+				params.ExclusiveStartShardId = lastShardId
+			}
+			const { StreamDescription } = await this._ddbStreams.describeStream(params)
 
-	// collect all the new shards of this stream
-	for (const newShardEntry of shards) {
-	  const existingShardEntry = this._shards.get(newShardEntry.ShardId)
+			const shards = StreamDescription.Shards
+			lastShardId = StreamDescription.LastEvaluatedShardId
 
-	  if (!existingShardEntry) {
-		this._shards.set(newShardEntry.ShardId, {
-		  shardId: newShardEntry.ShardId
-		})
+			// collect all the new shards of this stream
+			for (const newShardEntry of shards) {
+				const existingShardEntry = this._shards.get(newShardEntry.ShardId)
 
-		newShardIds.push(newShardEntry.ShardId)
-	  }
-	}
+				if (!existingShardEntry) {
+					this._shards.set(newShardEntry.ShardId, {
+						shardId: newShardEntry.ShardId
+					})
+
+					newShardIds.push(newShardEntry.ShardId)
+				}
+			}
+		} while (lastShardId)
 
 	if (newShardIds.length > 0) {
 	  debug('Added %d new shards', newShardIds.length)
@@ -108,6 +114,7 @@ export class DynaStream extends EventEmitter {
   }
 
   /**
+   * Sotapanna
    * 	get a COPY of the current/internal shard state.
    * 	this, in conjuction with setShardState is used to
    * 	persist the stream state locally.
@@ -167,7 +174,12 @@ export class DynaStream extends EventEmitter {
                 console.log("Error emitting Records" , error)
             })
 	    shardData.nextShardIterator = ShardIterator}
-    }catch(e){console.log(e)}
+    }catch(e){
+      if (e.name === 'ResourceNotFoundException') {
+				debug('shard %s no longer exists, skipping', shardData.shardId)
+      }
+      else console.log(e);
+    }
   }
 
   async _getRecords() : Promise<any> {
@@ -180,27 +192,28 @@ export class DynaStream extends EventEmitter {
   }
 
   async _getShardRecords(shardData: any) {
-	debug('_getShardRecords')
+	  debug('_getShardRecords')
+    if (!shardData.nextShardIterator) return []
 
-	const params = { ShardIterator: shardData.nextShardIterator }
+	  const params = { ShardIterator: shardData.nextShardIterator }
 
-	try {
-	  const { Records, NextShardIterator } = await this._ddbStreams.getRecords(params)
-	  if (NextShardIterator) {
-		shardData.nextShardIterator = NextShardIterator
-	  } else {
-		shardData.nextShardIterator = null
+	  try {
+	    const { Records, NextShardIterator } = await this._ddbStreams.getRecords(params)
+	    if (NextShardIterator) {
+		    shardData.nextShardIterator = NextShardIterator
+	    } else {
+		    shardData.nextShardIterator = null
+	    }
+
+	    return Records
+	  } catch (e) {
+	    if (e.name === 'ExpiredIteratorException') {
+		    debug('_getShardRecords expired iterator', shardData)
+		    shardData.nextShardIterator = null
+	    } else {
+		    throw e
+	    }
 	  }
-
-	  return Records
-	} catch (e) {
-	  if (e.name === 'ExpiredIteratorException') {
-		debug('_getShardRecords expired iterator', shardData)
-		shardData.nextShardIterator = null
-	  } else {
-		throw e
-	  }
-	}
   }
 
   _trimShards() {
@@ -238,24 +251,18 @@ export class DynaStream extends EventEmitter {
 	  const keys = this._transformRecord(event.dynamodb.Keys)
 	  const newRecord = this._transformRecord(event.dynamodb.NewImage)
 	  const oldRecord = this._transformRecord(event.dynamodb.OldImage)
-
+    // seperation of concerns between emission control and listener
 	  switch (event.eventName) {
 		case 'INSERT':
-		  this.emit('insert record', newRecord, keys)
-        {
-        await insnotif(newRecord,this._fyrClient)
-      }
+		  this.emit('GENESIS', newRecord, keys)
 		  break
 
 		case 'MODIFY':
-        this.emit('modify record', newRecord, oldRecord, keys)
-        {
-          await modnotif(newRecord,this._fyrClient,oldRecord)
-        }
+        this.emit('FLUX', newRecord, oldRecord, keys)
         break
 
 		case 'REMOVE':
-		  this.emit('remove record', oldRecord, keys)
+		  this.emit('TERMINUS', oldRecord, keys)
 		  break
 
 		default:
@@ -299,7 +306,8 @@ export class DynaStream extends EventEmitter {
 			const myPosition = position++
 			concurrentOps++
 			const mapResult = await mapper(value).catch((error:any)=>{
-                console.log("Error resolving mapped Promises" , error)
+        if(error.message === "ResourceNotFoundException") debug('shard %s no longer exists, skipping', value.shardId)
+        else console.log("Error resolving mapped Promises" , error)
             })
 			if (mapResult) {
 				map[myPosition] = mapResult

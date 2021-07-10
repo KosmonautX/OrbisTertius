@@ -71,7 +71,7 @@ services:
     volumes:
       - ./WolfSmoke/src:/home/wolf/src/
       - ./WolfSmoke/nodemon.json:/home/wolf/nodemon.json
-      - ./WolfSmoke/shardState.json:/home/wolf/shardState.json:rw
+      - ./WolfSmoke/shard:/home/wolf/shard:rw
     ports:
       - "9222:9222"
     depends_on:
