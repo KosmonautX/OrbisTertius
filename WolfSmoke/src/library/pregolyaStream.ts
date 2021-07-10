@@ -262,7 +262,7 @@ export class DynaStream extends EventEmitter {
         break
 
 		case 'REMOVE':
-		  this.emit('TERMIUS', oldRecord, keys)
+		  this.emit('TERMINUS', oldRecord, keys)
 		  break
 
 		default:
@@ -306,7 +306,8 @@ export class DynaStream extends EventEmitter {
 			const myPosition = position++
 			concurrentOps++
 			const mapResult = await mapper(value).catch((error:any)=>{
-                console.log("Error resolving mapped Promises" , error)
+        if(error.message === "ResourceNotFoundException") debug('shard %s no longer exists, skipping', value.shardId)
+        else console.log("Error resolving mapped Promises" , error)
             })
 			if (mapResult) {
 				map[myPosition] = mapResult
