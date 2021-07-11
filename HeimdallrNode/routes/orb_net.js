@@ -265,6 +265,7 @@ router.post(`/undo_user_action`, async function (req, res, next) {
 // user reports a post 
 router.post(`/report`, async function (req, res, next) {
     try {
+        let clock = moment().unix()
         let body = { ...req.body };
         const bullied = await dynaUser.bully(body.acpt_id,body.user_id,clock).catch(err=> {
             err.status = 400;

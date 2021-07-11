@@ -116,7 +116,7 @@ POST :ipAddress/api/orb/gen_uuid
 POST :ipAddress/api/orb/post_orb
 :my-headers
 { 
-    "orb_uuid": "12",
+    "orb_uuid": "14",
     "user_id": ":ryan",
     "title": "postman",
     "info": "nil",
@@ -196,9 +196,11 @@ POST :ipAddress/api/orb/undo_user_action
 
 ## 4. Report ORB
 POST :ipAddress/api/orb/report
+:my-headers
 {
-    "orb_uuid": "9a69a0ea-cce6-42c3-a158-7b3e85d8908d",
-    "user_id": 1234,
+    "orb_uuid": "14",
+    "acpt_id": "2",
+    "user_id": ":ryan",
     "reason": "fake"
 }
 
@@ -243,7 +245,8 @@ GET :ipAddress/api/query/orb_acceptance?orb_uuid=300c8c13-4da3-4ae8-9a26-d69f3f0
 GET :ipAddress/api/query/user_pref?user_id=1236&action=save
 
 ## 7.buddies or baddies or conmate
-GET :ipAddress/api/query/buddy?user_id=1234
+GET :ipAddress/api/query/buddy?user_id=:ryan&relation=BUL
+:my-headers
 
 ## get media of entities
 GET https://orbis.scratchbac.org/api/query/user/get_media?entity=ORB&uuid=5b746de0-ec1a-479c-93c6-47f9970191a7&form=1920x1080
@@ -335,6 +338,14 @@ PUT :ipAddress/api/orb/complete_orb
 PUT :ipAddress/api/orb/complete_orb_acceptor
 {   
     "user_id": 1234,
+    "orb_uuid": "05f86450-c21e-411d-92f1-5017bd33afe3"
+}
+
+## 4. Complete ORB (for acceptor)
+PUT :ipAddress/api/orb/complete_orb_dictator
+{
+    "user_id": 1234,
+    "acpt_id":,
     "orb_uuid": "05f86450-c21e-411d-92f1-5017bd33afe3"
 }
 

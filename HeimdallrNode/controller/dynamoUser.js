@@ -95,7 +95,7 @@ const dynaUser = {
             TableName: ddb_config.tableNames.orb_table,
             Item: {
                 PK: "USR#" + alpha + "#REL",
-                SK: "BUL" + beta,
+                SK: "BUL#" + beta,
                 time: endshiptime,
             },
         };

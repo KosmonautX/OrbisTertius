@@ -413,7 +413,7 @@ router.get(`/buddy`, async function (req, res, next) {
         KeyConditionExpression: "PK = :pk and begins_with(SK, :buddy)",
         ExpressionAttributeValues: {
             ":pk": "USR#" + req.query.user_id + "#REL",
-            ":buddy": "BUD#",
+            ":buddy": req.query.relation + "#",
         },
         Limit: 8,
         ScanIndexForward: req.query.ascending,
@@ -421,7 +421,7 @@ router.get(`/buddy`, async function (req, res, next) {
     if (req.query.start) {
         params.ExclusiveStartKey = {
             "PK": "USR#" + req.query.user_id,
-            "SK": "BUD#" + req.query.start
+            "SK": req.query.relation +"#" + req.query.start
         }
     };
     docClient.query(params, function(err, data) {
