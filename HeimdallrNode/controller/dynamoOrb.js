@@ -301,6 +301,21 @@ const dynaOrb = {
         const data = await docClient.update(params).promise();
         return data;
     },
+    async forceaccept(body){
+        const  params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Key: {
+                PK: "ORB#" + body.orb_uuid,
+                SK: "USR#" + body.acpt_id
+            },
+            UpdateExpression: "set inverse = :status",
+            ExpressionAttributeValues: {
+                ":status": "800#FULFILLED"
+            }
+        };
+        const data = await docClient.update(params).promise();
+        return data;
+    },
     async gen(body){
         try{
             let orb_uuid = uuidv4();

@@ -141,7 +141,7 @@ const dynaUser = {
             KeyConditionExpression: "PK = :usr and begins_with(SK, :ban)",
             ExpressionAttributeValues: {
                 ":usr": "USR#" + body.user_id + "#REL",
-                ":ban": "BAN#",
+                ":ban": "BUL#",
             },
         }
         const data = await docClient.query(params).promise();
@@ -152,7 +152,7 @@ const dynaUser = {
             TableName: ddb_config.tableNames.orb_table,
             Item: {
                 PK: "USR#" + body.user_id + "#REL",
-                SK: "BAN#" + body.block_id,
+                SK: "BUL#" + body.block_id,
                 time: moment().unix(),
             },
         };

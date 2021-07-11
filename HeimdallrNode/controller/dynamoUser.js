@@ -90,6 +90,18 @@ const dynaUser = {
         const data = await docClient.put(params).promise();
         return data;
     },
+    async bully(alpha,beta,endshiptime) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Item: {
+                PK: "USR#" + alpha + "#REL",
+                SK: "BUL" + beta,
+                time: endshiptime,
+            },
+        };
+        const data = await docClient.put(params).promise();
+        return data;
+    },
     async updatePayload(body) {
         const params = {
             TableName: ddb_config.tableNames.orb_table,        
@@ -177,6 +189,18 @@ const dynaUser = {
             }
         };
         const data = await docClient.update(params).promise();
+        return data;
+    },
+    async blockUser(body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Item: {
+                PK: "USR#" + body.user_id + "#REL",
+                SK: "BUL#" + body.block_id,
+                time: moment().unix(),
+            },
+        };
+        const data = await docClient.put(params).promise();
         return data;
     },
     async updateUserOfficeGeohash(body) {

@@ -266,7 +266,14 @@ router.post(`/undo_user_action`, async function (req, res, next) {
 router.post(`/report`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-
+        const bullied = await dynaUser.bully(body.acpt_id,body.user_id,clock).catch(err=> {
+            err.status = 400;
+            next(err);
+        })
+        const bullyd = await dynaUser.bully(body.user_id,body.acpt_id,clock).catch(err=> {
+            err.status = 400;
+            next(err);
+        })
         let params = {
             TableName: ddb_config.tableNames.orb_table,
             Item: {
@@ -531,6 +538,34 @@ router.put(`/complete_orb_acceptor`, async function (req, res, next) {
             });
         };
 });
+
+/*
+ * Completing accept cycle through dictatorial means
+ */
+router.put(`/complete_orb_dictator`, async function (req, res, next) {
+    let body = { ...req.body };
+    // from user_id to accept_id security middleware shift
+    let clock = moment().unix();
+    const accepted = await dynaOrb.forceaccept(body).catch(err => {
+            err.status = 400;
+            next(err);
+    })
+    const buddied = await dynaUser.buddy(body.acpt_id,body.user_id,clock).catch(err=> {
+        err.status = 400;
+        next(err);
+    })
+    const buddys = await dynaUser.buddy(body.user_id,body.acpt_id,clock).catch(err=> {
+        err.status = 400;
+        next(err);
+    })
+    if (accepted && buddied && buddys) {
+            res.status(200).json({
+                "ORB completed for Acceptor": body.orb_uuid,
+                "user_id": body.acpt_id
+            });
+        };
+});
+
 
 /**
  * API 1.2
