@@ -115,7 +115,7 @@ const dynaUser = {
                 ":payload": {
                     bio: body.bio,
                     profile_pic: body.profile_pic,
-                    verified: body.verified,
+                    media: body.media
                 }
             },
         };
@@ -243,7 +243,8 @@ const dynaUser = {
                         Item: {
                             PK: "username#" + body.username,
                             SK: "username#" + body.username,
-                            alphanumeric: body.user_id
+                            alphanumeric: body.user_id,
+                            time: moment().unix()
                         }
                     }
                 },

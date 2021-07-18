@@ -16,7 +16,8 @@ const orbSpace = require('../controller/dynamoOrb').orbSpace;
 const dynaOrb = require('../controller/dynamoOrb').dynaOrb;
 const dynaUser = require('../controller/dynamoUser').dynaUser;
 const userQuery = require('../controller/dynamoUser').userQuery;
-const land = require('../controller/graphLand').Land
+const graph = require('../controller/graphLand');
+const dynamoOrb = require('../controller/dynamoOrb');
 router.use(function (req, res, next){
     security.checkUser(req, next);
     next()
@@ -25,7 +26,7 @@ router.use(function (req, res, next){
 // fcm token
 router.put('/tokenonfyr', async (req,res,next) => {
     try{
-    fyrUser = land.Entity
+        fyrUser = graph.Land.Entity();
         payload= await fyrUser.fcmtoken(req.body.user_id,req.body.token).catch(err => {
       res.status = 400;
       next(err);});
@@ -68,9 +69,7 @@ router.post(`/gen_uuid`, async function (req, res, next) {
 router.post(`/post_orb`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        if (!body.orb_uuid) {
-            body.orb_uuid = uuidv4();
-        }
+        let promises = new Map();
         body.expiry_dt = slider_time(body.expires_in);
         body.created_dt = moment().unix();
         if(!body.geohashing || !body.geohashing52){
@@ -81,21 +80,34 @@ router.post(`/post_orb`, async function (req, res, next) {
             body.geohashing = geohash.postal_to_geo(body.postal_code);
             body.geohashing52 = geohash.postal_to_geo52(body.postal_code);
         }};
-        if (body.media !== true){
-            var img = body.photo;
-            body.media = false;
-        } else {
-            var img = "on bucket";
-            body.media = true;
+        //initators public data
+        let pubData = await userQuery.queryPUB(req.body).catch(err => {
+            err.status = 400;
+            next(err);
+        });
+        if (pubData.Item){
+            body.init = {}
+            body.init.username = pubData.Item.alphanumeric
+            if(pubData.Item.payload){
+            if(pubData.Item.payload.media) body.init.media = true;
+                if(pubData.Item.payload.profile_pic)body.init.profile_pic= pubData.Item.payload.profile_pic;
+            }
+        }
+        orb_uuid = await dynaOrb.create(body,dynaOrb.gen(body)).catch(err => {
+            err.status = 400;
+            next(err);
+        });
+        promises.set('orb_uuid', body.orb_uuid);
+        promises.set('expiry', body.expiry_dt);
+        if (body.media){
+            promises.set('lossy', await serve3.preSign('putObject','ORB',body.orb_uuid,'150x150'));
+            promises.set('lossless', await serve3.preSign('putObject','ORB',body.orb_uuid,'1920x1080'));
         };
-        await dynaOrb.create(body);
-        // when user post orb on app, send the orb to telebro
-        let recipients = await teleMessaging.getRecipient(body);
-        await teleMessaging.postOrbOnTele(body, recipients);
-        res.status(201).json({
-            "orb_uuid": body.orb_uuid,
-            "expiry": body.expiry_dt,
-            "img": img
+        Promise.all(promises).then(response => {
+            //m = new Map(response.map(obj => [obj[0], obj[1]])) jsonObject[key] = value
+            let jsonObject = {};
+            response.map(obj => [jsonObject[obj[0]] = obj[1]])
+            res.status(201).json(jsonObject);
         });
     } catch (err) {
         if (err.message == 'Postal code does not exist!') err.status = 404;
@@ -116,7 +128,7 @@ router.post(`/upload_profile_pic`, async function (req, res, next) {
     try {
         let body = { ...req.body };
 
-        if (body.media){
+        if (body.media===true){
             var img_lossy = await serve3.preSign('putObject','USR',body.user_id,'150x150');
             var img_lossless = await serve3.preSign('putObject','USR',body.user_id,'1920x1080');
             res.status(200).json({
@@ -307,14 +319,19 @@ router.post(`/report`, async function (req, res, next) {
  */
 router.put(`/update_user`, async function (req, res, next) {
     let body = { ...req.body };
-
+    if (body.media===true){
+            var img_lossy = await serve3.preSign('putObject','USR',body.user_id,'150x150');
+            var img_lossless = await serve3.preSign('putObject','USR',body.user_id,'1920x1080');
+    }
     let data = await dynaUser.updatePayload(body).catch(err => {
         err.status = 400;
         next(err);
     });
     if (data) {
-        res.json({
-            "User updated:": body
+        res.status(200).json({
+            "User" : "Updated",
+            "lossy": img_lossy,
+            "lossless": img_lossless,
         });
     } 
 });

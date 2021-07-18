@@ -119,7 +119,7 @@ async function switchsubscribe(archetype:string,token : string, client: any, new
 
 export async function insnotif(newRecord: Mutation, client: any): Promise<void>{
     try {
-        if(newRecord.PK === newRecord.SK) {
+        if(newRecord.PK === newRecord.SK){
             let Element = KeyParser(newRecord.PK, newRecord.SK);
             if (Element) await messenger(newRecord,Element,client);}
     } catch (e) {

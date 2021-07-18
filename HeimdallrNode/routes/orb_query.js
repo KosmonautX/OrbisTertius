@@ -63,7 +63,7 @@ router.get(`/get_user`, async function (req, res, next) {
         if (pubData.Item.payload) {
             dao.bio = pubData.Item.payload.bio;
             dao.profile_pic = pubData.Item.payload.profile_pic;
-            dao.verified = pubData.Item.payload.verified;
+            //dao.verified = pubData.Item.payload.verified;
             // dao.country_code = pteData.Item.payload.country_code;
         }
         // if (pteData.Item.payload){
@@ -384,7 +384,8 @@ router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
                     dao.expiry_dt = parseInt(item.SK.substr(0, 10));
                     if (item.payload){
                         dao.payload = item.payload
-                        if(item.payload.media) item.payload.media = await serve3.preSign('getObject','ORB',dao.orb_uuid,'150x150')
+                        if(item.payload.media) dao.payload.media = await serve3.preSign('getObject','ORB',dao.orb_uuid,'150x150')
+                        if(item.payload.init.media) dao.payload.init.media = await serve3.preSign('getObject','ORB',item.payload.user_id,'150x150')
                     }
                     page.push(dao);
                 }

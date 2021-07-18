@@ -15,6 +15,7 @@ User-Agent: Emacs27
 :bala = 98667304
 :ryan = SxD23ctxrIUDPi1lXkAOq5BKm1l1
 :admin = "90565482"
+:applefcm = c6ZkucGHnEuXqjdqATVDbc:APA91bHo0lPVfD4KPIiZUBH8zIthAgvItRtxlNSKF0Noxrn479Az9j-Rbcjep3TW5KqWBKhClaew2kG3XTWdNJDDvDrzz3Hsia-x4yLwQV-OApJKdypUqSa8-T9KOnYeFU0R8gBP5r
 :printonemail = "niceprinceton@gmail.com"
 :ryanemail = luckuveryx@gmail.com
 :myemail = avivekbala@gmail.com
@@ -41,6 +42,15 @@ POST :ipAddress/api/devland/fyr/serveronfyr
 }
 #
 ##
+## FCM Token Generator
+PUT :ipAddress/api/orb/tokenonfyr
+:my-headers
+{
+    "user_id": ":ryan",
+    "token": ":applefcm"
+}
+#
+
 ## 2. Update user home&office POSTAL // lambda authoriser
 PUT :ipAddress/api/orb/update_user_location
 :my-headers
@@ -51,14 +61,6 @@ PUT :ipAddress/api/orb/update_user_location
 }
 
 #
-## FCM Token Generator
-PUT :ipAddress/api/orb/tokenonfyr
-:my-headers
-{
-    "user_id": ":ryan",
-    "token": "d4focXxkTG2n42XS_rGxoS:APA91bFFhq_V8pDgC96EhhWbl96siPitBz1-X80M-WMqiwbP9OpQ4QZTutt5348LBLAX6r7NrdJ5fv592DfWUI3vfFd6xcQhzppOq4SWGKDs0Lx0ZhmWZgzZXAdM3MD142wTtox8QZBp"
-}
-
 #
 ## TELEGRAM LOGIN ENDPOINT HASH
 
@@ -85,7 +87,7 @@ POST :ipAddress/api/devland/auth/server
 Content-Type: application/json
 
 {
-    "user_id": ":bala",
+    "user_id": ":ryan",
     "device_id": ":id"
 }
 ## 2. Get all fresh orbs
@@ -112,13 +114,13 @@ POST :ipAddress/api/orb/gen_uuid
    "media": true
 }
 #
-
+## POST ORB
 POST :ipAddress/api/orb/post_orb
 :my-headers
 { 
     "orb_uuid": "14",
     "user_id": ":ryan",
-    "title": "postman",
+    "title": "brothers keeper",
     "info": "nil",
     "where": "my house",
     "when": "now",
@@ -219,7 +221,7 @@ POST :ipAddress/api/orb/chatWithTelegram
 ## 1. fetch orb
 GET :ipAddress/api/query/get?orb_uuid=1
 :my-headers
-## 2. Get all fresh orbs
+## 2. FRESHORBS
 GET :ipAddress/api/query/orbs_in_loc_fresh_batch?postal_code=650301
 :my-headers
 ## 2. Get all fresh orbs PAGE
@@ -293,14 +295,14 @@ PUT :ipAddress/api/orb/complete_orb
 # gender: string</br>
 # birthday: string</br>
 PUT :ipAddress/api/orb/update_user
+:my-headers
 {
-    "user_id": 175181189,
-    "bio": "bye",
-    "profile_pic": "www.pic.com",
-    "verified": 1
+    "user_id": ":ryan",
+    "bio": "hello there",
+    "media": true
 }
 
-## 2. Update username
+## 2. UPDATE USERNAME
 PUT :ipAddress/api/orb/update_username
 :my-headers
 {

@@ -35,7 +35,7 @@ router.get('/tele', async (req, res, next) =>
         
         if (hmac === req.query.hash){
           //check if existing user pass back postal code else create
-          var user = land.Entity;
+          var user = land.Entity();
           payload= await user.init("USR", req.query.id,"pte",req.query.device_id).catch(err => {
             err.status = 400;
             next(err);
@@ -87,13 +87,13 @@ router.get('/mailin', async (req, res ,next ) =>
 			  req.verification = jwt.verify(req.query.hash, secret, verifyOptions);
         user_id = decrypt(req.verification.hash).split('#')[0]
         if(user_id=="undefined")
-        {var identifier = land.Entity;
+        {var identifier = land.Entity();
          payload =await identifier.usergen(req.query.source,req.query.mail, req.query.device_id).catch(err => {
            res.status(400).json(err.message);
         })
          if(payload.Attributes) res.status(201).json({"Creating User": payload.Attributes.alphanumeric});
         }else{
-          var user = land.Entity;
+          var user = land.Entity();
           user.init("USR", user_id,"pte");
           //check device id
           payload= await user.upsert().catch(err => {
@@ -151,7 +151,7 @@ router.post('/server' , async (req,res, next) => {
             payload.username = "AttilaHun"
             payload.role = "barb"
     } else if (req.body.user_id && req.body.device_id) {
-          var user = land.Entity;
+      var user = land.Entity();
           user.spawn("USR", req.body.user_id,"pte");
           payloadz= await user.exist().catch(err => {
             err.status = 400;
@@ -163,7 +163,7 @@ router.post('/server' , async (req,res, next) => {
             payload.role = "pleb";
           }
           else{
-            throw new Error("User does not Exist")
+            throw new Error("Unauthenticated")
           }
         }
         const iss = 'Princeton';
@@ -179,6 +179,7 @@ router.post('/server' , async (req,res, next) => {
         res.send({payload: token});
   }catch(err)
   {
+    if (err.message == "Unauthenticated") err.status = 401;
     next(err);}
     });
 
@@ -190,7 +191,7 @@ router.post('/mail', async (req, res, next) => {
   let message = {}
   let nonce = '#' + crypto.randomBytes(16).toString('base64')
   // device id addition to login path and check on uuid existence
-  identifier = land.Entity
+  identifier = land.Entity();
   identifier.init("MSG", req.body.mail)
   let payload = await identifier.upsert(req.body.device_id).catch(err => {
         err.status = 400;
