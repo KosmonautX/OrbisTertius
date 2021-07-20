@@ -63,7 +63,7 @@ router.get(`/get_user`, async function (req, res, next) {
         if (pubData.Item.payload) {
             dao.bio = pubData.Item.payload.bio;
             dao.profile_pic = pubData.Item.payload.profile_pic;
-            if(pubData.Item.payload.media) dao.media_asset = await serve3.preSign('getObject','ORB',item.payload.user_id,'1920x1080')
+            if(pubData.Item.payload.media) dao.media_asset = await serve3.preSign('getObject','ORB',body.user_id,'1920x1080')
             //dao.verified = pubData.Item.payload.verified;
             // dao.country_code = pteData.Item.payload.country_code;
         }
@@ -386,7 +386,9 @@ router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
                     if (item.payload){
                         dao.payload = item.payload
                         if(item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'150x150')
-                        if(item.payload.init.media) dao.payload.init.media_asset = await serve3.preSign('getObject','ORB',item.payload.user_id,'150x150')
+                        if(item.payload.init){
+                            dao.payload.init = item.payload.init;
+                            if(item.payload.init.media) dao.payload.init.media_asset = await serve3.preSign('getObject','ORB',item.payload.user_id,'150x150')}
                     }
                     page.push(dao);
                 }
