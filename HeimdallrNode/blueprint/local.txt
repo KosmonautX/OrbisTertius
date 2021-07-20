@@ -127,7 +127,7 @@ POST :ipAddress/api/orb/post_orb
     "tip": "foc",
     "tags": ["free", "christmas"],
     "media": true,
-    "nature": 10021000000, 
+    "orb_nature": 10021000000,
     "postal_code": 650301,
     "expires_in": 30
 }

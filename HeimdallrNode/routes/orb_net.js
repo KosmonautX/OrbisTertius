@@ -79,7 +79,10 @@ router.post(`/post_orb`, async function (req, res, next) {
         } else if (body.postal_code) {
             body.geohashing = geohash.postal_to_geo(body.postal_code);
             body.geohashing52 = geohash.postal_to_geo52(body.postal_code);
-        }};
+        } else{
+            throw new Error('Postal code does not exist!')
+        }
+        };
         //initators public data
         let pubData = await userQuery.queryPUB(req.body).catch(err => {
             err.status = 400;
@@ -92,8 +95,7 @@ router.post(`/post_orb`, async function (req, res, next) {
             if(pubData.Item.payload.media) body.init.media = true;
                 if(pubData.Item.payload.profile_pic)body.init.profile_pic= pubData.Item.payload.profile_pic;
             }
-        }
-        orb_uuid = await dynaOrb.create(body,dynaOrb.gen(body)).catch(err => {
+            orb_uuid = await dynaOrb.create(body,dynaOrb.gen(body)).catch(err => {
             err.status = 400;
             next(err);
         });
@@ -103,6 +105,8 @@ router.post(`/post_orb`, async function (req, res, next) {
             promises.set('lossy', await serve3.preSign('putObject','ORB',body.orb_uuid,'150x150'));
             promises.set('lossless', await serve3.preSign('putObject','ORB',body.orb_uuid,'1920x1080'));
         };
+        }
+
         Promise.all(promises).then(response => {
             //m = new Map(response.map(obj => [obj[0], obj[1]])) jsonObject[key] = value
             let jsonObject = {};

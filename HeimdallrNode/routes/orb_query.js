@@ -381,7 +381,7 @@ router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
                     dao.orb_uuid = item.SK.slice(15);
                     // dao.geohash = parseInt(item.PK.slice(4));
                     // dao.geohash52 = item.geohash;
-                    dao.nature = parseInt(item.inverse.slice(4));
+                    //dao.nature = parseInt(item.inverse.slice(4));
                     dao.expiry_dt = parseInt(item.SK.substr(0, 10));
                     if (item.payload){
                         dao.payload = item.payload
