@@ -190,10 +190,10 @@ const dynaOrb = {
                             Item: {
                                 PK: "LOC#" + body.geohashing,
                                 SK: body.expiry_dt.toString() + "#ORB#" + orb_uuid,
-                                inverse: "TAX#" + body.nature,
                                 geohash : body.geohashing52,
                                 extinguish: body.expiry_dt,
                                 payload: {
+                                    orb_nature: body.orb_nature,
                                     title: body.title,
                                     info: body.info,
                                     where: body.where,
