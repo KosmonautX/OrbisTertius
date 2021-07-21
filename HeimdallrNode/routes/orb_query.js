@@ -63,7 +63,7 @@ router.get(`/get_user`, async function (req, res, next) {
         if (pubData.Item.payload) {
             dao.bio = pubData.Item.payload.bio;
             dao.profile_pic = pubData.Item.payload.profile_pic;
-            if(pubData.Item.payload.media) dao.media_asset = await serve3.preSign('getObject','ORB',req.query.user_id,'1920x1080')
+            if(pubData.Item.payload.media) dao.media_asset = await serve3.preSign('getObject','USR',req.query.user_id,'1920x1080')
             //dao.verified = pubData.Item.payload.verified;
             // dao.country_code = pteData.Item.payload.country_code;
         }
