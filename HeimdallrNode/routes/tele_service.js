@@ -5,6 +5,7 @@ const userQuery= require('../controller/dynamoUser').userQuery;
 const moment = require('moment');
 const dynaOrb= require('../controller/dynamoOrb').dynaOrb;
 const land = require('../controller/graphLand').Land
+const geohash = require('../controller/geohash')
 
 
 router.use(function (req, res, next){
