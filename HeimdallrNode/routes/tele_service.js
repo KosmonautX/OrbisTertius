@@ -87,28 +87,39 @@ router.post(`/gen_user`, async function (req, res, next) {
 
 
 router.put(`/delete_orb`, async function (req, res, next) {
+  try{
     let body = { ...req.body};
     const orbData = await dynaOrb.retrieve(body).catch(err => {
-        err.status = 404;
-        err.message = "ORB not found";
+      err.status = 404;
+      err.message = "ORB not found";
     });
     // shift to orbland security will fail (state machine capture)
-  if(req.body.user_id === orbData.payload.user_id){
-    body.expiry_dt = orbData.expiry_dt;
-    body.geohash = orbData.geohash;
-    body.payload = orbData.payload;
-    body.payload.available = false;
-    const deletion = await dynaOrb.delete(body).catch(err => {
-        err.status = 500;
-        next(err);
-    });
-}
-    if (deletion == true) {
-        res.status(201).json({
-            "Orb deleted": body.orb_uuid
+    if(orbData.payload){
+      if(req.body.user_id === orbData.payload.user_id){
+        body.expiry_dt = orbData.expiry_dt;
+        body.geohash = orbData.geohash;
+        body.payload = orbData.payload;
+        body.payload.available = false;
+        deletion = await dynaOrb.delete(body).catch(err => {
+          err.status = 500;
+          next(err);
         });
+      }
+      if (deletion == true) {
+        res.status(201).json({
+          "Orb deleted": body.orb_uuid
+        });
+      }
     }
-});
+    else{
+      res.status(404).json({
+        "Orb": "Not Found"
+      })
+
+    }
+  }catch(err) {
+    next(err);
+  }});
 
 function slider_time(dt){
   let expiry_dt = moment().add(7, 'days').unix(); // default expire in 1 day
