@@ -658,7 +658,7 @@ router.put(`/delete_orb`, async function (req, res, next) {
         err.message = "ORB not found";
     });
     // shift to orbland security will fail (state machine capture)
-    security.checkActor(req.verification, orbData.payload.user_id);
+    if(req.verification.user_id === orbData.payload.user_id){
     body.expiry_dt = orbData.expiry_dt;
     body.geohash = orbData.geohash;
     body.payload = orbData.payload;
@@ -667,6 +667,7 @@ router.put(`/delete_orb`, async function (req, res, next) {
         err.status = 500;
         next(err);
     });
+}
     if (deletion == true) {
         res.status(201).json({
             "Orb deleted": body.orb_uuid

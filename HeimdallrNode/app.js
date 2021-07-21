@@ -52,8 +52,8 @@ if(process.env.NODE_ENV == "dev"){
             payload.role = "barb"
         } else {
             payload.user_id = req.body.user_id;
-            payload.username = "ChongaldXrump";
-            payload.role = "pleb";
+            payload.username = "Sulla";
+            payload.role = "boni";
         }
         const iss = 'Princeton';
         const sub = 'ScratchBac';

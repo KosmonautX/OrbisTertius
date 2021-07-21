@@ -23,7 +23,11 @@ User-Agent: Emacs27
 Authorization: :token
 Content-Type: application/json
 User-Agent: Emacs27
-##
+###
+#
+GET :ipAddress/api/dev/telechan?chat=-1001239569373&text=hello
+#
+###
 ### Generate Client-side like firetoken
 GET :ipAddress/api/dev/fyr?id=:ryan
 -> run-hook (restclient-set-var ":fyrtoken" (cdr (assq 'payload (json-read))))
@@ -90,6 +94,23 @@ Content-Type: application/json
     "user_id": ":ryan",
     "device_id": ":id"
 }
+## LOCAL auth_server boni
+POST :ipAddress/auth_server
+-> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
+Content-Type: application/json
+
+{
+    "user_id": ":ryan",
+    "device_id": ":id"
+}
+## LOCAL auth_server boni
+POST :ipAddress/api/mercury/gen_user
+:my-headers
+{
+    "user_id": "2",
+    "username": "ryry"
+}
+#
 ## 2. Get all fresh orbs
 GET :ipAddress/api/query/orbs_in_loc_fresh_batch?postal_code=457399
 :my-headers

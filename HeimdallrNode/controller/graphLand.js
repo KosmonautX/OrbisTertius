@@ -26,7 +26,8 @@ Land.Entity = (function () {
     }
 
     var fieldweaver = function(edge,field) {
-        state.UpdateExpression = 'SET #edge = :field';
+        if(state.UpdateExpression) state.UpdateExpression += ', #edge = :field';
+        else state.UpdateExpression = 'SET #edge = :field';
         state.ExpressionAttributeNames["#edge"] = edge
         state.ExpressionAttributeValues[":field"] = field
         state.ReturnValues= 'ALL_OLD'
@@ -155,7 +156,19 @@ Land.Entity = (function () {
             console.log(err)
             new Error("User Genesis Failed")
             }
+    };
 
+    interface_dao.telegen = async(userID,username) => {
+        try{
+            interface_dao.spawn("USR",userID,"pub")
+            time();
+            identity.set("telegram");
+            fieldweaver("payload", {bio:"Hello from Telegram", alias: username})
+            return await wish();
+        } catch(err){
+            console.log(err)
+            new Error("User Genesis Failed")
+            }
     };
 
     interface_dao.fcmtoken = async(userID,token) => {

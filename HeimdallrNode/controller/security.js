@@ -10,6 +10,9 @@ var checkUser = function (req, next) {
             else{
                 throw new Error("User does not match");
             }
+        case "boni":
+            throw new Error("Return thee to your pastures")
+            break;
 
         default:
             throw new Error("Unknown Role")
@@ -38,11 +41,13 @@ var checkActor = function(auth, actor_id){
     }
 }
 
-function checkAdmin(jwt) {
-    if (jwt != 'penguinman') {
-        let err = new Error("User is not admin");
-        err.status = 401;
-        throw err;
+function checkAdmin(req, next) {
+    try{
+    if (req.verification.role !== "boni") {
+        throw new Error("You ain't serving");}
+    }catch(err){
+        err.status = 401
+        next(err);
     }
 }
 

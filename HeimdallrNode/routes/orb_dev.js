@@ -40,6 +40,9 @@ router.get(`/query`, async function (req, res, next) {
         }
     });
 });
+/**
+ * FYR TOKEN CUSTOM GEN
+ */
 
 router.get(`/fyr`, async function (req, res, next) {
     token = admin.auth().createCustomToken(req.query.id)
@@ -65,6 +68,29 @@ router.get(`/fyr`, async function (req, res, next) {
                      console.log('Error creating custom token:', error);
                  });
 });
+
+/**
+ * FYR TOKEN CUSTOM GEN
+ */
+
+router.get(`/telechan`, async function (req, res, next) {
+    const url = `https://api.telegram.org/bot${process.env.MERCURY}/sendMessage`
+    const data = new URLSearchParams();
+    data.append('chat_id', req.query.chat);
+    data.append('text', req.query.text);
+    axios.post(url, data).then(response => {
+        res.status(201).json({
+            "chat_id": req.query.chat,
+            "text": req.query.text
+        })})
+         .catch(error => {
+             console.log(error);
+             error = new Error("Telechan failed");
+             error.status = 500;
+             next(error);
+         });;
+})
+
 
 /**
  * API 1.2 UNRELEASED
