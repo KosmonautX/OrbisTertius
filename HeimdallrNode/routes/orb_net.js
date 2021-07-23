@@ -9,7 +9,7 @@ AWS.config.update({
 })
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint:ddb_config.dyna});
 const geohash = require('../controller/geohash');
-const teleMessaging = require('../controller/teleMessaging');
+const teleMessaging = require('../controller/teleAngareion');
 const security = require('../controller/security');
 const serve3 = require ('../controller/orbjectStore').serve3
 const orbSpace = require('../controller/dynamoOrb').orbSpace;
@@ -440,7 +440,7 @@ router.post(`/accept`, async function (req, res, next) {
                 err.status = 400;
                 next(err);
             } else {
-                teleMessaging.exchangeContact(body).then(
+                teleMessaging.exchangeContact(body.init_id,body.user_id,body.username,body.title).then(
                     function(value){
                         res.status(200).json({
                             "ORB accepted by": body.user_id,
@@ -462,9 +462,7 @@ router.post(`/accept`, async function (req, res, next) {
  router.post(`/chatWithTelegram`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-
-        
-        teleMessaging.exchangeContact(body).then(
+        teleMessaging.exchangeContact(body.init_id,body.user_id,body.username,body.title).then(
             function(value){
                 res.status(200).json({
                     "User_id": body.user_id,

@@ -163,7 +163,8 @@ Land.Entity = (function () {
             interface_dao.spawn("USR",userID,"pub")
             time();
             identity.set("telegram");
-            fieldweaver("payload", {bio:"Hello from Telegram", alias: username})
+            //fieldweaver("payload", {bio:"Hello from Telegram"})
+            fieldweaver("alphanumeric", username)
             return await wish();
         } catch(err){
             console.log(err)

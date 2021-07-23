@@ -7,6 +7,7 @@ const AWS = require('aws-sdk');
 AWS.config.update({
     region: ddb_config.region
 })
+const telemessage = require('../controller/teleAngareion').exchangeContact
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
 const geohash = require('ngeohash');
 const jwt = require(`jsonwebtoken`);
@@ -74,14 +75,10 @@ router.get(`/fyr`, async function (req, res, next) {
  */
 
 router.get(`/telechan`, async function (req, res, next) {
-    const url = `https://api.telegram.org/bot${process.env.MERCURY}/sendMessage`
-    const data = new URLSearchParams();
-    data.append('chat_id', req.query.chat);
-    data.append('text', req.query.text);
-    axios.post(url, data).then(response => {
+    telemessage(req.query.init_id,req.query.user_id,req.query.username,req.query.title).then(response => {
         res.status(201).json({
-            "chat_id": req.query.chat,
-            "text": req.query.text
+            "chat_id": req.query.init_id,
+            "text": req.query.title
         })})
          .catch(error => {
              console.log(error);
