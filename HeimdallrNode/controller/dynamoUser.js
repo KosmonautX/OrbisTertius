@@ -296,12 +296,12 @@ const userQuery = {
         const data = await docClient.get(params).promise();
         return data;
     },
-    async queryPUB(body) {
+    async queryPUB(user_id) {
         const params = {
             TableName: ddb_config.tableNames.orb_table,        
             Key: {
-                PK: "USR#" + body.user_id,
-                SK: "USR#" + body.user_id + "#pub"
+                PK: "USR#" + user_id,
+                SK: "USR#" + user_id + "#pub"
             }
         };
         const data = await docClient.get(params).promise();

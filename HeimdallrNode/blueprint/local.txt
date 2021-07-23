@@ -131,7 +131,7 @@ POST :ipAddress/api/orb/post_orb
     "postal_code": 650301,
     "expires_in": 30
 }
-
+#
 ## 1. Register user
 # user id = telegram id </br>
 # username: string</br>
@@ -174,9 +174,10 @@ Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjM0LCJuYW1l
 # user id:</br>
 # orb uuid:</br>
 POST :ipAddress/api/orb/accept
+:my-headers
 {
-    "user_id": 1234,
-    "orb_uuid": "9ef8779c-9e90-468e-8c2f-2c09e864619b"
+    "user_id": ":ryan",
+    "orb_uuid": "c04615d4-7dad-4438-bd4f-da57b0f605bf"
 }
 
 ## 3. user personal interaction with ORB
@@ -219,7 +220,13 @@ POST :ipAddress/api/orb/chatWithTelegram
 }
 
 ## 1. fetch orb
-GET :ipAddress/api/query/get?orb_uuid=1
+GET :ipAddress/api/query/get?orb_uuid=c04615d4-7dad-4438-bd4f-da57b0f605bf
+:my-headers
+## 1. fetch orbs
+GET :ipAddress/api/query/get_orbs/c04615d4-7dad-4438-bd4f-da57b0f605bf,79696fdc-a605-4d02-b5e9-bb7468517e4c
+:my-headers
+## 1. fetch users
+GET :ipAddress/api/query/get_orbs/2
 :my-headers
 ## 2. FRESHORBS
 GET :ipAddress/api/query/orbs_in_loc_fresh_batch?postal_code=650301

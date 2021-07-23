@@ -84,7 +84,7 @@ router.post(`/post_orb`, async function (req, res, next) {
         }
         };
         //initators public data
-        let pubData = await userQuery.queryPUB(req.body).catch(err => {
+        let pubData = await userQuery.queryPUB(req.body.user_id).catch(err => {
             err.status = 400;
             next(err);
         });
@@ -349,7 +349,7 @@ router.put(`/update_username`, async function (req, res, next) {
         let body = { ...req.body };
         // transac create username, if true, then change and delete old username, else no go
 
-        let pubData = await userQuery.queryPUB(body);
+        let pubData = await userQuery.queryPUB(body.user_id);
         if (pubData.Item) { // get old username
             body.old_username = pubData.Item.alphanumeric;
             let transac = await dynaUser.usernameTransaction(body);

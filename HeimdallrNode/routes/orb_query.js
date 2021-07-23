@@ -43,7 +43,80 @@ router.get(`/get`, async function (req, res, next) {
         }
     });
 });
-
+/**
+ * API 1
+ * Get specific orb (all info) by ORB:uuid
+ */
+router.get(`/get_orbs/:orb_uuids`, async function (req, res, next) {
+    try{
+        const n = 5 // limit to 5
+        const orbs = req.params.orb_uuids.split(',').slice(0,n)
+        const getter = async orb_uuid => {
+            let params = {
+                TableName: ddb_config.tableNames.orb_table,
+                Key: {
+                    PK: "ORB#" + orb_uuid,
+                    SK: "ORB#" + orb_uuid
+                }}
+            return docClient.get(params).promise()
+        };
+        Promise.all(orbs.map(orb_uuid => getter(orb_uuid))).then(response => {
+            daos = response.map(async(data) => {
+                var dao = {}
+                if(data.Item){
+                    dao.expiry_dt = data.Item.time;
+                    dao.orb_uuid = data.Item.PK.slice(4);
+                    dao.payload = data.Item.payload
+                    if(data.Item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'1920x1080');
+                    dao.geohash = parseInt(data.Item.alphanumeric.slice(4));
+                    dao.geohash52 = data.Item.geohash;
+                }
+                return dao
+            })
+            Promise.all(daos).then(sandwich => {
+                res.status(201).json(sandwich);
+            })
+        }).catch(error => {
+            throw new Error("Recall ORB failed")
+        });
+    }catch(err){
+        if (err.message == "Recall ORB failed") err.status = 401;
+        next(err);
+    }
+});
+/**
+ * API 1
+ * Get specific users (all info)
+ */
+router.get(`/get_users/:user_ids`, async function (req, res, next) {
+    try{
+        const n = 5
+        const users = req.params.user_ids.split(',').slice(0,n)
+        Promise.all(users.map(user_id => userQuery.queryPUB(user_id))).then(response => {
+            daos = response.map(async(data) => {
+                var dao = {}
+                if(data.Item){
+                    if (data.Item.payload) {
+                        dao.payload = data.Item.payload
+                        if(data.Item.payload.media) dao.media_asset = await serve3.preSign('getObject','USR',req.query.user_id,'150x150')}
+                    dao.user_id = data.Item.PK.slice(4);
+                    dao.username = data.Item.alphanumeric;
+                    dao.home_geohash = data.Item.numeric;
+                    dao.office_geohash = data.Item.geohash;
+                }
+                return dao
+            })
+            Promise.all(daos).then(sandwich => {
+                res.status(201).json(sandwich);
+            })
+        }).catch(error => {
+            throw new Error("Recall User failed")
+        });
+    }catch(err){
+        if (err.message == "Recall User failed") err.status = 401;
+        next(err);
+    }
+});
 /**
  * API 1 
  * Get specific user (all info) 
@@ -53,7 +126,7 @@ router.get(`/get_user`, async function (req, res, next) {
     //     err.status = 400;
     //     next(err);
     // });
-    let pubData = await userQuery.queryPUB(req.query).catch(err => {
+    let pubData = await userQuery.queryPUB(req.query.user_id).catch(err => {
         err.status = 400;
         next(err);
     });

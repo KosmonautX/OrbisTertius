@@ -67,6 +67,35 @@ router.get(`/fyr`, async function (req, res, next) {
 });
 
 /**
+ * FYR TOKEN CUSTOM GEN
+ */
+
+router.get(`/telechan`, async function (req, res, next) {
+    const url = `https://api.telegram.org/bot${process.env.MERCURY}/sendMessage`
+    const data = new URLSearchParams();
+    data.append('chat_id', req.query.chat);
+    user_id = 175181189
+    username = "Princeton"
+    title = "OrbRise"
+    req.query.text = `Click [here](tg://user?id=${user_id}) to message *${username}* about: ${title}`
+    //req.query.text = "https://angora.post/?nature=88&userUuid=175181189&username=Pprinceton&postalCode=819642&title=Here%20is%20thetitle&where=this%20meeting&when=youla&tip=freeplox&info=additionallinformationsss12"
+    data.append('text', req.query.text);
+    data.append('parse_mode', "markdown")
+    axios.post(url, data).then(response => {
+        res.status(201).json({
+            "chat_id": req.query.chat,
+            "text": req.query.text
+        })})
+         .catch(error => {
+             console.log(error);
+             error = new Error("Telechan failed");
+             error.status = 500;
+             next(error);
+         });;
+})
+
+
+/**
  * API 1.2 UNRELEASED
  * Query to get comments for particular ORB
  */
