@@ -288,28 +288,61 @@ export class DynaStream extends EventEmitter {
   async _emitRecordEvents(events: any) {
 	debug('_emitRecordEvents')
 
-	for (const event of events) {
-	  const keys = this._transformRecord(event.dynamodb.Keys)
-	  const newRecord = this._transformRecord(event.dynamodb.NewImage)
-	  const oldRecord = this._transformRecord(event.dynamodb.OldImage)
-    // seperation of concerns between emission control and listener
-	  switch (event.eventName) {
-		case 'INSERT':
-		  this.emit('GENESIS', newRecord, keys)
-		  break
+	  for (const event of events) {
+	    const keys = this._transformRecord(event.dynamodb.Keys)
+	    const newRecord = this._transformRecord(event.dynamodb.NewImage)
+	    const oldRecord = this._transformRecord(event.dynamodb.OldImage)
+      // seperation of concerns between emission control and listener
+	    switch (event.eventName) {
+		    case 'INSERT':
+          switch(keys.PK.substr(0,3)){
+            case 'ORB':
+              switch(keys.SK.substr(0,3)){
+                case 'ORB':
+                  this.emit('ORB_GENESIS', newRecord)
+                  break;
+                //case 'USR': break;
+              }
+              break;
+            //case 'USR': break;
+            //case 'LOC': break;
+          }
 
-		case 'MODIFY':
-        this.emit('FLUX', newRecord, oldRecord, keys)
-        break
+		      break;
 
-		case 'REMOVE':
-		  this.emit('TERMINUS', oldRecord, keys)
-		  break
+		    case 'MODIFY':
+          switch(keys.PK.substr(0,3)){
+            //case 'ORB':break;
+            case 'USR':
+              switch(keys.SK.substr(0,3)){
+                case 'USR':
+                  this.emit('USR_FLUX', newRecord, oldRecord)
+                  break;
+              }
+              break;
+            //case 'LOC': break;
+          }
+          break
 
-		default:
-		  throw new Error(`unknown dynamodb event ${event.eventName}`)
+		    case 'REMOVE':
+          switch(keys.PK.substr(0,3)){
+            //case 'ORB':break;
+            //case 'USR': break;
+            case 'LOC':
+              switch(keys.SK.substr(11,3)){
+                case 'ORB':
+                  this.emit('ORB_TERMINUS', oldRecord)
+                  break;
+                //case 'USR': break;
+              }
+              break;
+          }
+		      break
+
+		    default:
+		      throw new Error(`unknown dynamodb event ${event.eventName}`)
+	    }
 	  }
-	}
   }
 
   _emitRemoveShardsEvent(shardIds: string) {

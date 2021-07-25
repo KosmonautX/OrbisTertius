@@ -7,6 +7,7 @@ const AWS = require('aws-sdk');
 AWS.config.update({
     region: ddb_config.region
 })
+const telemessage = require('../controller/teleAngareion').exchangeContact
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
 const geohash = require('ngeohash');
 const jwt = require(`jsonwebtoken`);
@@ -40,6 +41,9 @@ router.get(`/query`, async function (req, res, next) {
         }
     });
 });
+/**
+ * FYR TOKEN CUSTOM GEN
+ */
 
 router.get(`/fyr`, async function (req, res, next) {
     token = admin.auth().createCustomToken(req.query.id)
@@ -71,20 +75,10 @@ router.get(`/fyr`, async function (req, res, next) {
  */
 
 router.get(`/telechan`, async function (req, res, next) {
-    const url = `https://api.telegram.org/bot${process.env.MERCURY}/sendMessage`
-    const data = new URLSearchParams();
-    data.append('chat_id', req.query.chat);
-    user_id = 175181189
-    username = "Princeton"
-    title = "OrbRise"
-    req.query.text = `Click [here](tg://user?id=${user_id}) to message *${username}* about: ${title}`
-    //req.query.text = "https://angora.post/?nature=88&userUuid=175181189&username=Pprinceton&postalCode=819642&title=Here%20is%20thetitle&where=this%20meeting&when=youla&tip=freeplox&info=additionallinformationsss12"
-    data.append('text', req.query.text);
-    data.append('parse_mode', "markdown")
-    axios.post(url, data).then(response => {
+    telemessage(req.query.init_id,req.query.user_id,req.query.username,req.query.title).then(response => {
         res.status(201).json({
-            "chat_id": req.query.chat,
-            "text": req.query.text
+            "chat_id": req.query.init_id,
+            "text": req.query.title
         })})
          .catch(error => {
              console.log(error);

@@ -9,7 +9,7 @@ AWS.config.update({
 })
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint:ddb_config.dyna});
 const geohash = require('../controller/geohash');
-const teleMessaging = require('../controller/teleMessaging');
+const teleMessaging = require('../controller/teleAngareion');
 const security = require('../controller/security');
 const serve3 = require ('../controller/orbjectStore').serve3
 const orbSpace = require('../controller/dynamoOrb').orbSpace;
@@ -440,7 +440,7 @@ router.post(`/accept`, async function (req, res, next) {
                 err.status = 400;
                 next(err);
             } else {
-                teleMessaging.exchangeContact(body).then(
+                teleMessaging.exchangeContact(body.init_id,body.user_id,body.username,body.title).then(
                     function(value){
                         res.status(200).json({
                             "ORB accepted by": body.user_id,
@@ -462,9 +462,7 @@ router.post(`/accept`, async function (req, res, next) {
  router.post(`/chatWithTelegram`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-
-        
-        teleMessaging.exchangeContact(body).then(
+        teleMessaging.exchangeContact(body.init_id,body.user_id,body.username,body.title).then(
             function(value){
                 res.status(200).json({
                     "User_id": body.user_id,
@@ -652,26 +650,38 @@ router.put(`/pending_orb_acceptor`, async function (req, res, next) {
 });
 
 router.put(`/delete_orb`, async function (req, res, next) {
-    let body = { ...req.body};
-    const orbData = await dynaOrb.retrieve(body).catch(err => {
-        err.status = 404;
-        err.message = "ORB not found";
-    });
-    // shift to orbland security will fail (state machine capture)
-    security.checkActor(req.verification, orbData.payload.user_id);
-    body.expiry_dt = orbData.expiry_dt;
-    body.geohash = orbData.geohash;
-    body.payload = orbData.payload;
-    body.payload.available = false;
-    const deletion = await dynaOrb.delete(body).catch(err => {
-        err.status = 500;
-        next(err);
-    });
-    if (deletion == true) {
-        res.status(201).json({
-            "Orb deleted": body.orb_uuid
+    try{
+        let body = { ...req.body};
+        const orbData = await dynaOrb.retrieve(body).catch(err => {
+            err.status = 404;
+            err.message = "ORB not found";
         });
-    }
-});
+        // shift to orbland security will fail (state machine capture)
+        if(orbData.payload){
+            if(req.verification.user_id === orbData.payload.user_id){
+                body.expiry_dt = orbData.expiry_dt;
+                body.geohash = orbData.geohash;
+                body.payload = orbData.payload;
+                body.payload.available = false;
+                var deletion = await dynaOrb.delete(body).catch(err => {
+                    err.status = 500;
+                    next(err);
+                });
+            }
+            if (deletion == true) {
+                res.status(201).json({
+                    "Orb deleted": body.orb_uuid
+                });
+            }
+        }
+        else{
+            res.status(404).json({
+                "Orb": "Not Found"
+            })
+
+        }
+    }catch(err) {
+        next(err);
+    }});
 
 module.exports = router;

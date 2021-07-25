@@ -10,7 +10,7 @@ module.exports = (app, verifyToken,fyrwalk) => {
     //app.use(`/api/orbland/state`,verifyToken, require(`../routes/orb_state`))
     // shift security into middleware verifyToken too coarse
 	app.use(`/api/query`,verifyToken, require(`../routes/orb_query`));
+    app.use(`/api/mercury`,verifyToken, require(`../routes/tele_service`));
 	app.use(`/api/comment`, require(`../routes/comment`));
-	app.use(`/api/tele`, require(`../routes/tele`));
   	app.use(`/api/query/user`, verifyToken, require(`../routes/personal_profile`));
 };

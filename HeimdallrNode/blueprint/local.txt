@@ -23,7 +23,11 @@ User-Agent: Emacs27
 Authorization: :token
 Content-Type: application/json
 User-Agent: Emacs27
-##
+###
+#
+GET :ipAddress/api/dev/telechan?init_id=-1001239569373&user_id=:prince&username=printon&title=uninstallingwindows
+#
+###
 ### Generate Client-side like firetoken
 GET :ipAddress/api/dev/fyr?id=:ryan
 -> run-hook (restclient-set-var ":fyrtoken" (cdr (assq 'payload (json-read))))
@@ -56,8 +60,8 @@ PUT :ipAddress/api/orb/update_user_location
 :my-headers
 {
     "user_id": ":ryan",
-    "home": 650307,
-    "office": 650308
+    "home": 650301,
+    "office": 650330
 }
 
 #
@@ -90,8 +94,42 @@ Content-Type: application/json
     "user_id": ":ryan",
     "device_id": ":id"
 }
+## MERCURY STACK LOCAL auth_server boni
+POST :ipAddress/auth_server
+-> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
+Content-Type: application/json
+
+{
+    "user_id": ":ryan",
+    "device_id": ":id"
+}
+## LOCAL auth_server boni
+POST :ipAddress/api/mercury/gen_user
+:my-headers
+{
+    "user_id": ":ryan",
+    "username": "ryry"
+}
+#
+## LOCAL auth_server boni
+POST :ipAddress/api/mercury/gen_orb
+:my-headers
+{
+    "user_id": "2",
+    "title": "brothers keeper",
+    "media": false,
+    "orb_nature": 10021000000,
+    "postal_code": 650301
+}
+##DELETE ORB
+PUT :ipAddress/api/mercury/delete_orb
+:my-headers
+{
+    "user_id": "2",
+    "orb_uuid": "0319dfcf-9c0e-4e2d-af10-3304193c5859"
+}
 ## 2. Get all fresh orbs
-GET :ipAddress/api/query/orbs_in_loc_fresh_batch?postal_code=457399
+GET :ipAddress/api/query/orbs_in_loc_fresh_batch?postal_code=650301
 :my-headers
 ## FOR USER GENSIS PIPELINE
 #
@@ -117,8 +155,7 @@ POST :ipAddress/api/orb/gen_uuid
 ## POST ORB
 POST :ipAddress/api/orb/post_orb
 :my-headers
-{ 
-    "orb_uuid": "14",
+{
     "user_id": ":ryan",
     "title": "brothers keeper",
     "info": "nil",
@@ -126,7 +163,7 @@ POST :ipAddress/api/orb/post_orb
     "when": "now",
     "tip": "foc",
     "tags": ["free", "christmas"],
-    "media": true,
+    "media": false,
     "orb_nature": 10021000000,
     "postal_code": 650301,
     "expires_in": 30

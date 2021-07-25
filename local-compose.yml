@@ -19,7 +19,6 @@ services:
       - start
     env_file:
       - .env
-    
 
   localstack:
     image: localstack/localstack-full:latest
@@ -45,20 +44,6 @@ services:
       - "8000:8000"
     environment:
       - TZ=Asia/Singapore
-
-  mercury:
-    build: ./MercuryFlask/
-    volumes:
-      - ./MercuryFlask:/usr/src/mercury
-    ports:
-      - "7000:3000"
-    depends_on:
-      - dynamodb
-    links:
-      - "dynamodb:database"
-    restart: always
-    env_file:
-      - .env
 
   wolfsmoke:
     build: ./WolfSmoke
