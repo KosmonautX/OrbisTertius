@@ -1,22 +1,5 @@
-export interface Mutation {
-    PK: string
-    SK: string
-    inverse?: string
-    geohash?: number
-    time?: number
-    identifier?: string
-    numeric?: number
-    alphanumeric?: string
-    payload?: any
-}
-// extend KeyElementto Relations and Time
-interface KeyElement{
-    archetype: string
-    id: string
-    access?: string
-    bridge?: string
-    relationid?: string
-}
+import {Mutation, KeyElement} from "../types/parsesTongue"
+import {KeyParser} from "./parsesUrTongue"
 
 interface Message{
     notification:Object
@@ -25,25 +8,6 @@ interface Message{
 }
 
 //type Message =  Map<string, Map<string, string|number>|string>
-
-function KeyParser(PK:string, SK:string)
-{
-    if(SK.startsWith(PK))
-    {
-        let attr = SK.split('#')
-        let Element: KeyElement = {archetype:attr[0], id: attr[1]};
-        Element.access = attr[2]
-        Element.bridge = attr[3]
-        return Element
-    }
-    // else
-    //     {
-    //         let relation = SK.split('#')
-    //         let entity = PK.split('#')
-    //         let Element: KeyElement = {archetype:entity[0]+relation[0], id: entity[1], relationid: relation[1]}
-
-    //     }
-}
 
 async function subscribe(token:string, topic:string, client:any): Promise<void>{
     const topic_new = "/topics/" + topic;
@@ -121,6 +85,7 @@ export async function insnotif(newRecord: Mutation, client: any): Promise<void>{
     try {
         if(newRecord.PK === newRecord.SK){
             let Element = KeyParser(newRecord.PK, newRecord.SK);
+            // shift to Location feed listener
             if (Element) await messenger(newRecord,Element,client);}
     } catch (e) {
             console.log(e)

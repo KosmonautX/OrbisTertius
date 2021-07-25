@@ -155,8 +155,7 @@ POST :ipAddress/api/orb/gen_uuid
 ## POST ORB
 POST :ipAddress/api/orb/post_orb
 :my-headers
-{ 
-    "orb_uuid": "14",
+{
     "user_id": ":ryan",
     "title": "brothers keeper",
     "info": "nil",
@@ -164,7 +163,7 @@ POST :ipAddress/api/orb/post_orb
     "when": "now",
     "tip": "foc",
     "tags": ["free", "christmas"],
-    "media": true,
+    "media": false,
     "orb_nature": 10021000000,
     "postal_code": 650301,
     "expires_in": 30

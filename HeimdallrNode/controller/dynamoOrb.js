@@ -301,12 +301,12 @@ const dynaOrb = {
                 Item: {
                     PK: "ORB#" + body.orb_uuid,
                     SK: "ORB#" + body.orb_uuid,
-                    numeric: body.nature,
                     time: body.expiry_dt,
                     geohash : body.geohashing52,
                     alphanumeric: "LOC#" + body.geohashing,
                     payload: {
                         title: body.title, // title might have to go to the alphanumeric
+                        orb_nature: body.orb_nature,
                         info: body.info,
                         where: body.where,
                         when: body.when,
