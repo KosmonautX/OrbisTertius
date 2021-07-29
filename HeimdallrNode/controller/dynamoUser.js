@@ -152,7 +152,7 @@ const dynaUser = {
                 "#n": "numeric"
             },
             ExpressionAttributeValues: {
-                ":home": geohash.postal_to_geo(body.home)
+                ":home": body.home.geohashing ||geohash.postal_to_geo(body.home)
             }
         };
         const data = await docClient.update(params).promise();
@@ -170,7 +170,7 @@ const dynaUser = {
                 "#n": "numeric2"
             },
             ExpressionAttributeValues: {
-                ":home": geohash.postal_to_geo52(body.home)
+                ":home": body.home.geohashing52 ||geohash.postal_to_geo52(body.home)
             }
         };
         const data = await docClient.update(params).promise();
@@ -212,7 +212,7 @@ const dynaUser = {
             },
             UpdateExpression: "set geohash = :office",
             ExpressionAttributeValues: {
-                ":office": geohash.postal_to_geo(body.office),
+                ":office": body.office.geohashing || geohash.postal_to_geo(body.office),
             }
         };
         const data = await docClient.update(params).promise();
@@ -227,7 +227,7 @@ const dynaUser = {
             },
             UpdateExpression: "set geohash2 = :office",
             ExpressionAttributeValues: {
-                ":office": geohash.postal_to_geo52(body.office),
+                ":office": body.office.geohashing52 || geohash.postal_to_geo52(body.office),
             }
         };
         const data = await docClient.update(params).promise();

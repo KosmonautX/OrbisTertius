@@ -398,15 +398,22 @@ router.put(`/update_username`, async function (req, res, next) {
  * ONLY supports postal code for now
  */
 router.put(`/update_user_location`, async function (req, res, next) {
+    body = {...req.body}
     try {
-        let body = { ...req.body };
-
         if (body.home){
+            if(body.home.latlon) {
+                body.home.geohashing = geohash.latlon_to_geo(body.home.latlon);
+                body.home.geohashing52 = geohash.latlon_to_geo52(body.home.latlon);
+            }
             await dynaUser.updateUserHome(body);
             await dynaUser.updateUserHomeGeohash(body);
             await dynaUser.updateUserHomeGeohash52(body);
         } 
         if (body.office){
+            if(body.home.latlon) {
+                body.office.geohashing = geohash.latlon_to_geo(body.office.latlon);
+                body.office.geohashing52 = geohash.latlon_to_geo52(body.office.latlon);
+            }
             await dynaUser.updateUserOffice(body);
             await dynaUser.updateUserOfficeGeohash(body);
             await dynaUser.updateUserOfficeGeohash52(body);
@@ -444,7 +451,7 @@ router.post(`/accept`, async function (req, res, next) {
                     function(value){
                         res.status(200).json({
                             "ORB accepted by": body.user_id,
-                            "USER ID": body.orb_uuid
+                            "orb_uuid": body.orb_uuid
                     });
                 });
             }

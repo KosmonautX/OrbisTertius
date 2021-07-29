@@ -331,7 +331,7 @@ export class DynaStream extends EventEmitter {
             case 'LOC':
               switch(keys.SK.substr(11,3)){
                 case 'ORB':
-                  this.emit('ORB_TERMINUS', oldRecord)
+                  this.emit('ORB_EXTINGUISH', oldRecord)
                   break;
                 //case 'USR': break;
               }

@@ -42,16 +42,16 @@ async function main(stream: DynamoDBStreams, stream_arn:string) {
 
   //panta rhei
 
-  DynaRipples.on('ORB_GENESIS', async function InsertNotifListener(rise){
+  DynaRipples.on('ORB_GENESIS', async function GenesisListener(rise){
     await telePostOrb(rise)
     await insnotif(rise,fyr.messaging())
   });
 
-  DynaRipples.on('ORB_TERMINUS', async function secondListener(fall) {
+  DynaRipples.on('ORB_EXTINGUISH', async function TerminusListener(fall) {
     await teleExtinguishOrb(fall)
   });
 
-  DynaRipples.on('USR_FLUX', async function secondListener(present, past) {
+  DynaRipples.on('USR_FLUX', async function FluxListener(present, past) {
     await modnotif(present,fyr.messaging(),past)
   });
 
