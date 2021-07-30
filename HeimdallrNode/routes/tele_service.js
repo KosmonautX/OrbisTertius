@@ -6,6 +6,7 @@ const moment = require('moment');
 const dynaOrb= require('../controller/dynamoOrb').dynaOrb;
 const land = require('../controller/graphLand').Land
 const geohash = require('../controller/geohash')
+const serve3 = require('../controller/orbjectStore').serve3
 
 
 router.use(function (req, res, next){
@@ -85,6 +86,14 @@ router.post(`/gen_user`, async function (req, res, next) {
   }
 });
 
+router.post('/control_media', async function(req, res, next) {
+
+  getUrl = await serve3.preSign('getObject','ORB',req.body.uuid, "1920x1080");
+            res.status(201).json({
+                "media_asset": getUrl,
+            });
+
+})
 
 router.put(`/delete_orb`, async function (req, res, next) {
   try{

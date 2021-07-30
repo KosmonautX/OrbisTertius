@@ -97,9 +97,9 @@ router.get(`/get_users/:user_ids`, async function (req, res, next) {
                 var dao = {}
                 if(data.Item){
                     if (data.Item.payload) {
+                        dao.user_id = data.Item.PK.slice(4);
                         dao.payload = data.Item.payload
-                        if(data.Item.payload.media) dao.media_asset = await serve3.preSign('getObject','USR',req.params.user_id,'150x150')}
-                    dao.user_id = data.Item.PK.slice(4);
+                        if(data.Item.payload.media) dao.media_asset = await serve3.preSign('getObject','USR',dao.user_id,'150x150')}
                     dao.username = data.Item.alphanumeric;
                     dao.home_geohash = data.Item.numeric;
                     dao.office_geohash = data.Item.geohash;

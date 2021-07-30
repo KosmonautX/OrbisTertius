@@ -314,6 +314,7 @@ const dynaOrb = {
                         media: body.media,
                         photo: body.photo,
                         user_id: body.user_id,
+                        username: body.init.username,
                         created_dt: body.created_dt,
                         expires_in: body.expires_in,
                         tags: body.tags,
