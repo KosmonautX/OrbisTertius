@@ -410,7 +410,7 @@ router.put(`/update_user_location`, async function (req, res, next) {
             await dynaUser.updateUserHomeGeohash52(body);
         } 
         if (body.office){
-            if(body.home.latlon) {
+            if(body.office.latlon) {
                 body.office.geohashing = geohash.latlon_to_geo(body.office.latlon);
                 body.office.geohashing52 = geohash.latlon_to_geo52(body.office.latlon);
             }
