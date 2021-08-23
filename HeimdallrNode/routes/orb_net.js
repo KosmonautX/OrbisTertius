@@ -18,6 +18,7 @@ const dynaUser = require('../controller/dynamoUser').dynaUser;
 const userQuery = require('../controller/dynamoUser').userQuery;
 const graph = require('../controller/graphLand');
 const dynamoOrb = require('../controller/dynamoOrb');
+const carto = require('../controller/graphCarto');
 router.use(function (req, res, next){
     security.checkUser(req, next);
     next()
@@ -395,7 +396,7 @@ router.put(`/update_username`, async function (req, res, next) {
 /**
  * API 1.1
  * Update user location
- * ONLY supports postal code for now
+ * supports postal code for now
  */
 router.put(`/update_user_location`, async function (req, res, next) {
     body = {...req.body}
@@ -425,6 +426,25 @@ router.put(`/update_user_location`, async function (req, res, next) {
     }
 });
 
+router.put(`/user_location`, async function (req, res, next) {
+    try {
+        switch(req.body.event){
+            case "genesis":
+                payload = await carto.Graph.Edge().loc_genesis(req.body.user_id, req.body).catch(err => {
+                    res.status = 400;
+                    next(err);});
+                break;
+            case "update":
+                payload = await carto.Graph.Edge().loc_update(req.body.user_id, req.body).catch(err => {
+                    res.status = 400;
+                    next(err);});
+                break;
+        }
+        if(payload) res.json({ "User Location Updated:": payload.Attributes.geohash});
+    }catch (err) {
+        err.status = 400;
+        next(err)
+    }});
 /**
  * API 0.2
  * Accept orb

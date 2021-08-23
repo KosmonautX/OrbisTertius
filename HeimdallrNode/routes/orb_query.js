@@ -365,8 +365,8 @@ router.get(`/orbs_in_loc_fresh_page`, async function (req, res, next) {
     let geohashing;
     if (req.query.lat && req.query.lon) {
         let latlon = {};
-        latlon.LATITUDE = req.query.lat;
-        latlon.LONGITUDE = req.query.lon;
+        latlon.lat = req.query.lat;
+        latlon.lon = req.query.lon;
         geohashing = geohash.latlon_to_geo(latlon);
     } else if (req.query.postal_code) {
         let postal = req.query.postal_code;
@@ -436,8 +436,8 @@ router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
         let geohashing;
         if (req.query.lat && req.query.lon) {
             let latlon = {};
-            latlon.LATITUDE = req.query.lat;
-            latlon.LONGITUDE = req.query.lon;
+            latlon.lat = req.query.lat;
+            latlon.lon = req.query.lon;
             geohashing = geohash.latlon_to_geo(latlon);
         } else if (req.query.postal_code) {
             let postal = req.query.postal_code;

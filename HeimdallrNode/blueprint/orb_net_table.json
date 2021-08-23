@@ -13,10 +13,6 @@
             "AttributeType": "S"
         },
         {
-            "AttributeName": "geohash",
-            "AttributeType": "N"
-        },
-        {
             "AttributeName": "time",
             "AttributeType": "N"
         },
@@ -47,10 +43,10 @@
     },
     "GlobalSecondaryIndexes": [
         {
-            "IndexName": "LocationTime",
+            "IndexName": "TimeSearch",
             "KeySchema": [
                 {
-                    "AttributeName": "geohash",
+                    "AttributeName": "SK",
                     "KeyType": "HASH"
                 },
                 {

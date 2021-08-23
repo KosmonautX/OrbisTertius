@@ -66,6 +66,33 @@ PUT :ipAddress/api/orb/update_user_location
 
 #
 #
+## 2. Update user home&office POSTAL // lambda authoriser
+PUT :ipAddress/api/orb/update_user_location
+:my-headers
+{
+    "user_id": ":ryan",
+    "home": {"latlon":{
+    "LATITUDE":1.3521,
+    "LONGITUDE":103.8198
+    }},
+    "office": 650330
+}
+
+#
+## 2. Update user home&office POSTAL // lambda authoriser
+PUT :ipAddress/api/orb/user_location
+:my-headers
+{
+    "user_id": ":ryan",
+    "event": "update",
+    "home": {"latlon":{
+    "lat":1.3522,
+    "lon":103.8198
+    }},
+    "office": {"postal": 670110}
+}
+
+#
 ## TELEGRAM LOGIN ENDPOINT HASH
 
 GET :ipAddress/api/devland/auth/tele?auth_date=1625546430&first_name=Vivekbala&hash=c25b77225728c587003a7cebde8bfecbebfefdf493ac902062604d47eb379e3c&id=98667304&photo_url=https://t.me/i/userpic/320/-X_-_IzPQaVHRTU9kyvKYmOX5RoZzEpvSnIju4pYQGM.jpg&source=telegram&device_id=:id
