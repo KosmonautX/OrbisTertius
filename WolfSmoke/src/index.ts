@@ -4,7 +4,7 @@ import * as fyr from 'firebase-admin';
 import {DynaStream} from "./library/pregolyaStream"
 import { unmarshall } from "@aws-sdk/util-dynamodb"
 import { DynamoDBStreams, ListStreamsCommandOutput } from "@aws-sdk/client-dynamodb-streams";
-import { insnotif, modnotif } from "./library/fyrTongue";
+import { triggerNotif, mutateSubscription} from "./library/fyrTongue";
 import {telePostOrb, teleExtinguishOrb} from "./library/teleriaTongue"
 const fs = require('fs').promises
 const FILE = './shard/shardState.json'
@@ -44,7 +44,7 @@ async function main(stream: DynamoDBStreams, stream_arn:string) {
 
   DynaRipples.on('ORB_GENESIS', async function GenesisListener(rise){
     await telePostOrb(rise)
-    await insnotif(rise,fyr.messaging())
+    await triggerNotif(rise,fyr.messaging())
   });
 
   DynaRipples.on('ORB_EXTINGUISH', async function TerminusListener(fall) {
@@ -52,7 +52,11 @@ async function main(stream: DynamoDBStreams, stream_arn:string) {
   });
 
   DynaRipples.on('USR_FLUX', async function FluxListener(present, past) {
-    await modnotif(present,fyr.messaging(),past)
+    await mutateSubscription(present,fyr.messaging(),past)
+  });
+
+  DynaRipples.on('USR_GENESIS', async function GenesisListener(present) {
+    await mutateSubscription(present,fyr.messaging())
   });
 
 

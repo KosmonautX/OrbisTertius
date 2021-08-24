@@ -301,11 +301,17 @@ export class DynaStream extends EventEmitter {
                 case 'ORB':
                   this.emit('ORB_GENESIS', newRecord)
                   break;
-                //case 'USR': break;
+                case 'USR':
+                  this.emit('ORB_USR_GENESIS', newRecord)
+                  break;
               }
-              break;
-            //case 'USR': break;
-            //case 'LOC': break;
+            case 'USR':
+              switch(keys.SK.substr(0,3)){
+                case 'USR':
+                  this.emit('USR_GENESIS', newRecord)
+                  break;
+              }
+              //case 'LOC': break;
           }
 
 		      break;

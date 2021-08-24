@@ -2,7 +2,7 @@ export interface Mutation {
     PK: string
     SK: string
     inverse?: string
-    geohash?: number
+    geohash?: any
     time?: number
     identifier?: string
     numeric?: number

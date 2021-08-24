@@ -54,37 +54,12 @@ PUT :ipAddress/api/orb/tokenonfyr
     "token": ":applefcm"
 }
 #
-
-## 2. Update user home&office POSTAL // lambda authoriser
-PUT :ipAddress/api/orb/update_user_location
-:my-headers
-{
-    "user_id": ":ryan",
-    "home": 650301,
-    "office": 650330
-}
-
-#
-#
-## 2. Update user home&office POSTAL // lambda authoriser
-PUT :ipAddress/api/orb/update_user_location
-:my-headers
-{
-    "user_id": ":ryan",
-    "home": {"latlon":{
-    "LATITUDE":1.3521,
-    "LONGITUDE":103.8198
-    }},
-    "office": 650330
-}
-
-#
 ## 2. Update user home&office POSTAL // lambda authoriser
 PUT :ipAddress/api/orb/user_location
 :my-headers
 {
     "user_id": ":ryan",
-    "event": "update",
+    "event": "genesis",
     "home": {"latlon":{
     "lat":1.3522,
     "lon":103.8198

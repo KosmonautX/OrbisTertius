@@ -76,7 +76,7 @@ Graph.Edge = (function () {
       address = geohasher(address, radius)
       map.set(name, address)
       territory[name] = {hash: address.geohashing, granularity: radius}
-      })
+    })
     return territory
   };
 
@@ -86,7 +86,7 @@ Graph.Edge = (function () {
       addressed = geohasher(address, radius)
       locmap[name] = addressed
       territory[name] = {hash: addressed.geohashing, granularity: radius}
-      })
+    })
     map.rebirth(locmap)
     return territory
   };
@@ -120,21 +120,20 @@ Graph.Edge = (function () {
         TableName: ddb_config.tableNames.orb_table,
         Key: {
           PK: "USR#" + agent,
-          SK: "USR#" + agent + "#pub",
-          ExpressionAttributeNames: {},
-          ExpressionAttributeValues: {}
-        }
+          SK: "USR#" + agent + "#pub"
+        },
+        ExpressionAttributeNames: {},
+        ExpressionAttributeValues: {}
       }
-    Object.entries(data).slice(0,MAX_TERRITORIES).forEach(([geoName, address]) => {
-      if(params.UpdateExpression) params.UpdateExpression += `, #geoloc.#${geoName} = :${geoName}`;
-      else {params.UpdateExpression = `SET #geoloc.#${geoName} = :${geoName}`;}
-      params.ExpressionAttributeNames["#geoloc"]= "geohash"
-      params.ExpressionAttributeNames["#"+ geoName] = geoName
-      params.ExpressionAttributeValues[":" + geoName] = address
-    })
+      Object.entries(data).slice(0,MAX_TERRITORIES).forEach(([geoName, address]) => {
+        if(params.UpdateExpression) params.UpdateExpression += `, #geoloc.#${geoName} = :${geoName}`;
+        else {params.UpdateExpression = `SET #geoloc.#${geoName} = :${geoName}`;}
+        params.ExpressionAttributeNames["#geoloc"]= "geohash"
+        params.ExpressionAttributeNames["#"+ geoName] = geoName
+        params.ExpressionAttributeValues[":" + geoName] = address
+      })
       docClient.update(params, function(err, data) {
         if (err) console.log(err);
-        else console.log(data);
       });
     })
   }

@@ -114,6 +114,7 @@ const dynaUser = {
             ExpressionAttributeValues: {
                 ":payload": {
                     bio: body.bio,
+                    birthday: body.birthday,
                     profile_pic: body.profile_pic,
                     media: body.media
                 }

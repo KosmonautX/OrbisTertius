@@ -6,6 +6,13 @@ interface Message{
     data?:Object
     topic?: string
 }
+interface GeoHash{
+    hash: number
+    granularity: number
+}
+interface TerritoryPub{
+    [index: string]: GeoHash
+}
 
 //type Message =  Map<string, Map<string, string|number>|string>
 
@@ -52,10 +59,11 @@ async function messenger(newRecord: Mutation, Element: KeyElement, client:any): 
         }}
         sendsubscribers(message, newRecord.alphanumeric!.replace('#',"."), client).then((response) => {console.log("Message Sent", response)})
             .catch((error)=>{
-                console.log("Errpr sending Message" , error)
+                console.log("Error sending Message" , error)
             })
     }}
 
+// async function diffObj(): Promise,
 
 
 // switch to archetype based constructor
@@ -81,7 +89,7 @@ async function switchsubscribe(archetype:string,token : string, client: any, new
     }
 }
 
-export async function insnotif(newRecord: Mutation, client: any): Promise<void>{
+export async function triggerNotif(newRecord: Mutation, client: any): Promise<void>{
     try {
         if(newRecord.PK === newRecord.SK){
             let Element = KeyParser(newRecord.PK, newRecord.SK);
@@ -92,16 +100,35 @@ export async function insnotif(newRecord: Mutation, client: any): Promise<void>{
         }
 }
 
-export async function modnotif(newRecord: Mutation, client: any,  oldRecord?: Mutation): Promise<void>{
+export async function territory_subscriber(neoTerritory: TerritoryPub, identifier: string, client: any, retroTerritory?: TerritoryPub): Promise<void>{
+    try {
+        if(retroTerritory){
+        Object.entries(neoTerritory).forEach(([geoName, address]) =>{
+            if(address.hash !== retroTerritory[geoName].hash){
+                switchsubscribe("LOC", identifier, client, address.hash, retroTerritory[geoName].hash)}
+        })}
+        else{
+            Object.entries(neoTerritory).forEach(([geoName, address]) =>{
+                switchsubscribe("LOC",identifier,client, address.hash)
+            })
+        }
+    } catch (e) {
+            console.log(e)
+        }
+}
+
+export async function mutateSubscription(newRecord: Mutation, client: any,  oldRecord?: Mutation): Promise<void>{
     try {
         if(newRecord.identifier){
             var Element = KeyParser(newRecord.PK, newRecord.SK);
             if (Element?.access==="pub"){
-                if (newRecord.geohash!==oldRecord?.geohash){
-                    await switchsubscribe("LOC",newRecord.identifier,client, newRecord.geohash,oldRecord?.geohash)
+                if (oldRecord?.geohash){
+                    if (newRecord.geohash!==oldRecord?.geohash){
+                        await territory_subscriber(newRecord.geohash, newRecord.identifier, client, oldRecord.geohash)
+                    }
                 }
-                else if (newRecord.numeric !== oldRecord?.numeric){
-                    await switchsubscribe("LOC",newRecord.identifier,client, newRecord.numeric,oldRecord?.numeric)
+                else if(newRecord.geohash) {
+                    await territory_subscriber(newRecord.geohash, newRecord.identifier, client)
                 }
             }
 
