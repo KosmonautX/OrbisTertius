@@ -9,13 +9,6 @@ services:
     env_file:
       - .env
     restart: always
-  mercury:
-    build: ./MercuryFlask/
-    volumes:
-      - ./MercuryFlask:/usr/src/mercury
-    restart: always
-    env_file:
-      - .env
   wolfsmoke:
     build: ./WolfSmoke/
     volumes:

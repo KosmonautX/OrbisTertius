@@ -18,21 +18,22 @@ Land.Entity = (function () {
     //add public facing interface
 	var interface_dao = {};
 
-    time = function() {
+    var time = function() {
         state.UpdateExpression = 'SET #t = :time';
         state.ExpressionAttributeNames = {"#t":"time"}
         state.ExpressionAttributeValues = {":time": moment().unix()}
         state.ReturnValues= 'ALL_OLD'
     }
 
-    fieldweaver = function(edge,field) {
-        state.UpdateExpression = 'SET #edge = :field';
+    var fieldweaver = function(edge,field) {
+        if(state.UpdateExpression) state.UpdateExpression += ', #edge = :field';
+        else state.UpdateExpression = 'SET #edge = :field';
         state.ExpressionAttributeNames["#edge"] = edge
         state.ExpressionAttributeValues[":field"] = field
         state.ReturnValues= 'ALL_OLD'
     }
 
-    identity ={
+    var identity ={
         set : function(deviceID){
             if(state.UpdateExpression) state.UpdateExpression += ', #did = :did';
             else {state.UpdateExpression = 'SET #did = :did';}
@@ -43,7 +44,7 @@ Land.Entity = (function () {
     }
 
     // implement further encapsulation
-    condition = (function(){
+    var condition = (function(){
         // Composite Keys are vertices not edges (init handles)
         var internal_dao= {};
         internal_dao.absence = function(edge,operator=''){
@@ -61,29 +62,26 @@ Land.Entity = (function () {
             state.ExpressionAttributeValues[":outdb"] = field
             state.ConditionExpression+=operator+"#indb = :outdb"
        }
-        internal_dao
-
-
         return internal_dao
     })();
 
  
 
-    projection = function(array) {
+    var projection = function(array) {
         state.ProjectionExpression = array.join(', ')
     }
 
 	// private method declares wished future state in database (upsert)
-    wish = async() => {
+    var wish = async() => {
         return await docClient.update(state).promise();
      }
     
     //closure  private method recalls past state
-    recall = async() =>{
+    var recall = async() =>{
         return await docClient.get(state).promise();
     }
     // pattern refers to the data access required by DynamoDb
-    entity_init  = function(_dBaction,_archetype, _id, _access=false, _bridge=false){
+    var entity_init  = function(_dBaction,_archetype, _id, _access=false, _bridge=false){
         state = {TableName: ddb_config.tableNames.orb_table};
         switch (_dBaction){
             case "PUT":
@@ -108,7 +106,7 @@ Land.Entity = (function () {
         }
     }
 
-    gen = async(archetype,access,identifier=false) => {
+    var gen = async(archetype,access,identifier=false) => {
         try{
             let genUUID = uuidv4();
             entity_init("PUT",archetype,genUUID,access)
@@ -158,7 +156,20 @@ Land.Entity = (function () {
             console.log(err)
             new Error("User Genesis Failed")
             }
+    };
 
+    interface_dao.telegen = async(userID,username) => {
+        try{
+            interface_dao.spawn("USR",userID,"pub")
+            time();
+            identity.set("telegram");
+            //fieldweaver("payload", {bio:"Hello from Telegram"})
+            fieldweaver("alphanumeric", username)
+            return await wish();
+        } catch(err){
+            console.log(err)
+            new Error("User Genesis Failed")
+            }
     };
 
     interface_dao.fcmtoken = async(userID,token) => {
@@ -215,7 +226,7 @@ Land.Entity = (function () {
 	// access public methods
 	return interface_dao;
 
-    })();
+});
 
 module.exports ={
     Land: Land

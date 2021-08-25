@@ -9,14 +9,16 @@ AWS.config.update({
 })
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint:ddb_config.dyna});
 const geohash = require('../controller/geohash');
-const teleMessaging = require('../controller/teleMessaging');
+const teleMessaging = require('../controller/teleAngareion');
 const security = require('../controller/security');
 const serve3 = require ('../controller/orbjectStore').serve3
 const orbSpace = require('../controller/dynamoOrb').orbSpace;
 const dynaOrb = require('../controller/dynamoOrb').dynaOrb;
 const dynaUser = require('../controller/dynamoUser').dynaUser;
 const userQuery = require('../controller/dynamoUser').userQuery;
-const land = require('../controller/graphLand').Land
+const graph = require('../controller/graphLand');
+const dynamoOrb = require('../controller/dynamoOrb');
+const carto = require('../controller/graphCarto');
 router.use(function (req, res, next){
     security.checkUser(req, next);
     next()
@@ -25,7 +27,7 @@ router.use(function (req, res, next){
 // fcm token
 router.put('/tokenonfyr', async (req,res,next) => {
     try{
-    fyrUser = land.Entity
+        fyrUser = graph.Land.Entity();
         payload= await fyrUser.fcmtoken(req.body.user_id,req.body.token).catch(err => {
       res.status = 400;
       next(err);});
@@ -68,9 +70,7 @@ router.post(`/gen_uuid`, async function (req, res, next) {
 router.post(`/post_orb`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        if (!body.orb_uuid) {
-            body.orb_uuid = uuidv4();
-        }
+        let promises = new Map();
         body.expiry_dt = slider_time(body.expires_in);
         body.created_dt = moment().unix();
         if(!body.geohashing || !body.geohashing52){
@@ -80,22 +80,39 @@ router.post(`/post_orb`, async function (req, res, next) {
         } else if (body.postal_code) {
             body.geohashing = geohash.postal_to_geo(body.postal_code);
             body.geohashing52 = geohash.postal_to_geo52(body.postal_code);
-        }};
-        if (body.media !== true){
-            var img = body.photo;
-            body.media = false;
-        } else {
-            var img = "on bucket";
-            body.media = true;
+        } else{
+            throw new Error('Postal code does not exist!')
+        }
         };
-        await dynaOrb.create(body);
-        // when user post orb on app, send the orb to telebro
-        let recipients = await teleMessaging.getRecipient(body);
-        await teleMessaging.postOrbOnTele(body, recipients);
-        res.status(201).json({
-            "orb_uuid": body.orb_uuid,
-            "expiry": body.expiry_dt,
-            "img": img
+        //initators public data
+        let pubData = await userQuery.queryPUB(req.body.user_id).catch(err => {
+            err.status = 400;
+            next(err);
+        });
+        if (pubData.Item){
+            body.init = {}
+            body.init.username = pubData.Item.alphanumeric
+            if(pubData.Item.payload){
+            if(pubData.Item.payload.media) body.init.media = true;
+                if(pubData.Item.payload.profile_pic)body.init.profile_pic= pubData.Item.payload.profile_pic;
+            }
+            orb_uuid = await dynaOrb.create(body,dynaOrb.gen(body)).catch(err => {
+            err.status = 400;
+            next(err);
+        });
+        promises.set('orb_uuid', body.orb_uuid);
+        promises.set('expiry', body.expiry_dt);
+        if (body.media){
+            promises.set('lossy', await serve3.preSign('putObject','ORB',body.orb_uuid,'150x150'));
+            promises.set('lossless', await serve3.preSign('putObject','ORB',body.orb_uuid,'1920x1080'));
+        };
+        }
+
+        Promise.all(promises).then(response => {
+            //m = new Map(response.map(obj => [obj[0], obj[1]])) jsonObject[key] = value
+            let jsonObject = {};
+            response.map(obj => [jsonObject[obj[0]] = obj[1]])
+            res.status(201).json(jsonObject);
         });
     } catch (err) {
         if (err.message == 'Postal code does not exist!') err.status = 404;
@@ -116,7 +133,7 @@ router.post(`/upload_profile_pic`, async function (req, res, next) {
     try {
         let body = { ...req.body };
 
-        if (body.media){
+        if (body.media===true){
             var img_lossy = await serve3.preSign('putObject','USR',body.user_id,'150x150');
             var img_lossless = await serve3.preSign('putObject','USR',body.user_id,'1920x1080');
             res.status(200).json({
@@ -265,8 +282,16 @@ router.post(`/undo_user_action`, async function (req, res, next) {
 // user reports a post 
 router.post(`/report`, async function (req, res, next) {
     try {
+        let clock = moment().unix()
         let body = { ...req.body };
-
+        const bullied = await dynaUser.bully(body.acpt_id,body.user_id,clock).catch(err=> {
+            err.status = 400;
+            next(err);
+        })
+        const bullyd = await dynaUser.bully(body.user_id,body.acpt_id,clock).catch(err=> {
+            err.status = 400;
+            next(err);
+        })
         let params = {
             TableName: ddb_config.tableNames.orb_table,
             Item: {
@@ -299,14 +324,19 @@ router.post(`/report`, async function (req, res, next) {
  */
 router.put(`/update_user`, async function (req, res, next) {
     let body = { ...req.body };
-
+    if (body.media===true){
+            var img_lossy = await serve3.preSign('putObject','USR',body.user_id,'150x150');
+            var img_lossless = await serve3.preSign('putObject','USR',body.user_id,'1920x1080');
+    }
     let data = await dynaUser.updatePayload(body).catch(err => {
         err.status = 400;
         next(err);
     });
     if (data) {
-        res.json({
-            "User updated:": body
+        res.status(200).json({
+            "User" : "Updated",
+            "lossy": img_lossy,
+            "lossless": img_lossless,
         });
     } 
 });
@@ -320,7 +350,7 @@ router.put(`/update_username`, async function (req, res, next) {
         let body = { ...req.body };
         // transac create username, if true, then change and delete old username, else no go
 
-        let pubData = await userQuery.queryPUB(body);
+        let pubData = await userQuery.queryPUB(body.user_id);
         if (pubData.Item) { // get old username
             body.old_username = pubData.Item.alphanumeric;
             let transac = await dynaUser.usernameTransaction(body);
@@ -366,18 +396,25 @@ router.put(`/update_username`, async function (req, res, next) {
 /**
  * API 1.1
  * Update user location
- * ONLY supports postal code for now
+ * supports postal code for now
  */
 router.put(`/update_user_location`, async function (req, res, next) {
+    body = {...req.body}
     try {
-        let body = { ...req.body };
-
         if (body.home){
+            if(body.home.latlon) {
+                body.home.geohashing = geohash.latlon_to_geo(body.home.latlon);
+                body.home.geohashing52 = geohash.latlon_to_geo52(body.home.latlon);
+            }
             await dynaUser.updateUserHome(body);
             await dynaUser.updateUserHomeGeohash(body);
             await dynaUser.updateUserHomeGeohash52(body);
         } 
         if (body.office){
+            if(body.office.latlon) {
+                body.office.geohashing = geohash.latlon_to_geo(body.office.latlon);
+                body.office.geohashing52 = geohash.latlon_to_geo52(body.office.latlon);
+            }
             await dynaUser.updateUserOffice(body);
             await dynaUser.updateUserOfficeGeohash(body);
             await dynaUser.updateUserOfficeGeohash52(body);
@@ -389,6 +426,25 @@ router.put(`/update_user_location`, async function (req, res, next) {
     }
 });
 
+router.put(`/user_location`, async function (req, res, next) {
+    try {
+        switch(req.body.event){
+            case "genesis":
+                payload = await carto.Graph.Edge().loc_genesis(req.body.user_id, req.body).catch(err => {
+                    res.status = 400;
+                    next(err);});
+                break;
+            case "update":
+                payload = await carto.Graph.Edge().loc_update(req.body.user_id, req.body).catch(err => {
+                    res.status = 400;
+                    next(err);});
+                break;
+        }
+        if(payload) res.json({ "User Location Updated:": payload.Attributes.geohash});
+    }catch (err) {
+        err.status = 400;
+        next(err)
+    }});
 /**
  * API 0.2
  * Accept orb
@@ -411,11 +467,11 @@ router.post(`/accept`, async function (req, res, next) {
                 err.status = 400;
                 next(err);
             } else {
-                teleMessaging.exchangeContact(body).then(
+                teleMessaging.exchangeContact(body.init_id,body.user_id,body.username,body.title).then(
                     function(value){
                         res.status(200).json({
                             "ORB accepted by": body.user_id,
-                            "USER ID": body.orb_uuid
+                            "orb_uuid": body.orb_uuid
                     });
                 });
             }
@@ -433,9 +489,7 @@ router.post(`/accept`, async function (req, res, next) {
  router.post(`/chatWithTelegram`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-
-        
-        teleMessaging.exchangeContact(body).then(
+        teleMessaging.exchangeContact(body.init_id,body.user_id,body.username,body.title).then(
             function(value){
                 res.status(200).json({
                     "User_id": body.user_id,
@@ -532,6 +586,34 @@ router.put(`/complete_orb_acceptor`, async function (req, res, next) {
         };
 });
 
+/*
+ * Completing accept cycle through dictatorial means
+ */
+router.put(`/complete_orb_dictator`, async function (req, res, next) {
+    let body = { ...req.body };
+    // from user_id to accept_id security middleware shift
+    let clock = moment().unix();
+    const accepted = await dynaOrb.forceaccept(body).catch(err => {
+            err.status = 400;
+            next(err);
+    })
+    const buddied = await dynaUser.buddy(body.acpt_id,body.user_id,clock).catch(err=> {
+        err.status = 400;
+        next(err);
+    })
+    const buddys = await dynaUser.buddy(body.user_id,body.acpt_id,clock).catch(err=> {
+        err.status = 400;
+        next(err);
+    })
+    if (accepted && buddied && buddys) {
+            res.status(200).json({
+                "ORB completed for Acceptor": body.orb_uuid,
+                "user_id": body.acpt_id
+            });
+        };
+});
+
+
 /**
  * API 1.2
  * Complete orb (as an initiator)
@@ -595,26 +677,38 @@ router.put(`/pending_orb_acceptor`, async function (req, res, next) {
 });
 
 router.put(`/delete_orb`, async function (req, res, next) {
-    let body = { ...req.body};
-    const orbData = await dynaOrb.retrieve(body).catch(err => {
-        err.status = 404;
-        err.message = "ORB not found";
-    });
-    // shift to orbland security will fail (state machine capture)
-    security.checkActor(req.verification, orbData.payload.user_id);
-    body.expiry_dt = orbData.expiry_dt;
-    body.geohash = orbData.geohash;
-    body.payload = orbData.payload;
-    body.payload.available = false;
-    const deletion = await dynaOrb.delete(body).catch(err => {
-        err.status = 500;
-        next(err);
-    });
-    if (deletion == true) {
-        res.status(201).json({
-            "Orb deleted": body.orb_uuid
+    try{
+        let body = { ...req.body};
+        const orbData = await dynaOrb.retrieve(body).catch(err => {
+            err.status = 404;
+            err.message = "ORB not found";
         });
-    }
-});
+        // shift to orbland security will fail (state machine capture)
+        if(orbData.payload){
+            if(req.verification.user_id === orbData.payload.user_id){
+                body.expiry_dt = orbData.expiry_dt;
+                body.geohash = orbData.geohash;
+                body.payload = orbData.payload;
+                body.payload.available = false;
+                var deletion = await dynaOrb.delete(body).catch(err => {
+                    err.status = 500;
+                    next(err);
+                });
+            }
+            if (deletion == true) {
+                res.status(201).json({
+                    "Orb deleted": body.orb_uuid
+                });
+            }
+        }
+        else{
+            res.status(404).json({
+                "Orb": "Not Found"
+            })
+
+        }
+    }catch(err) {
+        next(err);
+    }});
 
 module.exports = router;

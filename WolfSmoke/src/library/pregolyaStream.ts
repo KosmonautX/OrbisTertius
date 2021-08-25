@@ -59,6 +59,7 @@ export class DynaStream extends EventEmitter {
 				debug('lastShardId: %s', lastShardId)
 				params.ExclusiveStartShardId = lastShardId
 			}
+      try{
 			const { StreamDescription } = await this._ddbStreams.describeStream(params)
 
 			const shards = StreamDescription.Shards
@@ -76,6 +77,18 @@ export class DynaStream extends EventEmitter {
 					newShardIds.push(newShardEntry.ShardId)
 				}
 			}
+      }catch (error) {
+				this._emitError(error)
+				switch (error.name) {
+					case 'ThrottlingException':
+						const { attempts, totalRetryDelay } = error.$metadata
+						debug('describeStream command throttled - attempts: %d, totalRetryDelay: %d', attempts, totalRetryDelay)
+						lastShardId = null // break out of loop; leave any remaining new shards for next call
+						break
+					default:
+						throw error
+        }
+      }
 		} while (lastShardId)
 
 	if (newShardIds.length > 0) {
@@ -155,35 +168,46 @@ export class DynaStream extends EventEmitter {
 
   async  _getShardIterator(shardData: any) {
     try{
-	  debug('_getShardIterator')
-	  debug(shardData)
+	    debug('_getShardIterator')
+	    debug(shardData)
 
-	  // no need to get an iterator if this shard already has NextShardIterator
-	  if (shardData.nextShardIterator) {
-	    debug('shard %s already has an iterator, skipping', shardData.shardId)
-	    return
-	  }
-    if(shardData.shardId){
-	  const params = {
-	    ShardId: shardData.shardId,
-	    ShardIteratorType: 'LATEST',
-	    StreamArn: this._streamArn
-	  }
+	    // no need to get an iterator if this shard already has NextShardIterator
+	    if (shardData.nextShardIterator) {
+	      debug('shard %s already has an iterator, skipping', shardData.shardId)
+	      return
+	    }
+      if(shardData.shardId){
+	      const params = {
+	        ShardId: shardData.shardId,
+	        ShardIteratorType: 'LATEST',
+	        StreamArn: this._streamArn
+	      }
 
-	  const { ShardIterator } = await this._ddbStreams.getShardIterator(params).catch((error:any)=>{
-                console.log("Error emitting Records" , error)
-            })
-	    shardData.nextShardIterator = ShardIterator}
-    }catch(e){
-      if (e.name === 'ResourceNotFoundException') {
-				debug('shard %s no longer exists, skipping', shardData.shardId)
+	      const { ShardIterator } = await this._ddbStreams.getShardIterator(params).catch((error:any)=>{
+          console.log("Error emitting Records" , error)
+        })
+	      shardData.nextShardIterator = ShardIterator
       }
-      else console.log(e);
+    }catch(e){
+			switch (e.name) {
+				case 'ResourceNotFoundException':
+					debug('shard %s no longer exists, skipping', shardData.shardId)
+          shardData.nextShardIterator = null
+					break
+				case 'ThrottlingException':
+					const { attempts, totalRetryDelay } = e.$metadata
+					debug('getShardIterator command throttled for shard %s - attempts: %d, totalRetryDelay: %d', shardData.shardId, attempts, totalRetryDelay)
+					shardData.nextShardIterator = undefined // skip for now, but don't prune it
+					break
+				default:
+          this._emitError(e)
+					throw e
+      }
     }
   }
 
   async _getRecords() : Promise<any> {
-	debug('_getRecords')
+	  debug('_getRecords')
 
 	//const results = await this.parallelomap(this._shards.values(), this._getShardRecords, 10)
   //const results = await this._getShardRecords(this._shards.values())
@@ -207,13 +231,30 @@ export class DynaStream extends EventEmitter {
 
 	    return Records
 	  } catch (e) {
-	    if (e.name === 'ExpiredIteratorException') {
-		    debug('_getShardRecords expired iterator', shardData)
-		    shardData.nextShardIterator = null
-	    } else {
-		    throw e
+      switch (e.name) {
+				case 'ExpiredIteratorException':
+					debug('_getShardRecords expired iterator', shardData)
+					shardData.nextShardIterator = null
+					break
+				case 'ResourceNotFoundException':
+					debug('_getShardRecords shard %s no longer exists', shardData)
+					shardData.nextShardIterator = null
+					break
+        case 'TrimmedDataAccessException':
+          debug('_getShardRecords shard %s is past the oldest stream record in the shard', shardData)
+          shardData.nextShardIterator = null
+          break
+				case 'ThrottlingException':
+					const { attempts, totalRetryDelay } = e.$metadata
+					debug('getRecords command throttled for shard %s - attempts: %d, totalRetryDelay: %d', shardData.shardId, attempts, totalRetryDelay)
+					shardData.nextShardIterator = undefined // skip for now, but don't prune it
+					break
+				default:
+					this._emitError(e)
+          throw e
 	    }
-	  }
+      return []
+    }
   }
 
   _trimShards() {
@@ -247,33 +288,76 @@ export class DynaStream extends EventEmitter {
   async _emitRecordEvents(events: any) {
 	debug('_emitRecordEvents')
 
-	for (const event of events) {
-	  const keys = this._transformRecord(event.dynamodb.Keys)
-	  const newRecord = this._transformRecord(event.dynamodb.NewImage)
-	  const oldRecord = this._transformRecord(event.dynamodb.OldImage)
-    // seperation of concerns between emission control and listener
-	  switch (event.eventName) {
-		case 'INSERT':
-		  this.emit('GENESIS', newRecord, keys)
-		  break
+	  for (const event of events) {
+	    const keys = this._transformRecord(event.dynamodb.Keys)
+	    const newRecord = this._transformRecord(event.dynamodb.NewImage)
+	    const oldRecord = this._transformRecord(event.dynamodb.OldImage)
+      // seperation of concerns between emission control and listener
+	    switch (event.eventName) {
+		    case 'INSERT':
+          switch(keys.PK.substr(0,3)){
+            case 'ORB':
+              switch(keys.SK.substr(0,3)){
+                case 'ORB':
+                  this.emit('ORB_GENESIS', newRecord)
+                  break;
+                case 'USR':
+                  this.emit('ORB_USR_GENESIS', newRecord)
+                  break;
+              }
+            case 'USR':
+              switch(keys.SK.substr(0,3)){
+                case 'USR':
+                  this.emit('USR_GENESIS', newRecord)
+                  break;
+              }
+              //case 'LOC': break;
+          }
 
-		case 'MODIFY':
-        this.emit('FLUX', newRecord, oldRecord, keys)
-        break
+		      break;
 
-		case 'REMOVE':
-		  this.emit('TERMINUS', oldRecord, keys)
-		  break
+		    case 'MODIFY':
+          switch(keys.PK.substr(0,3)){
+            //case 'ORB':break;
+            case 'USR':
+              switch(keys.SK.substr(0,3)){
+                case 'USR':
+                  this.emit('USR_FLUX', newRecord, oldRecord)
+                  break;
+              }
+              break;
+            //case 'LOC': break;
+          }
+          break
 
-		default:
-		  throw new Error(`unknown dynamodb event ${event.eventName}`)
+		    case 'REMOVE':
+          switch(keys.PK.substr(0,3)){
+            //case 'ORB':break;
+            //case 'USR': break;
+            case 'LOC':
+              switch(keys.SK.substr(11,3)){
+                case 'ORB':
+                  this.emit('ORB_EXTINGUISH', oldRecord)
+                  break;
+                //case 'USR': break;
+              }
+              break;
+          }
+		      break
+
+		    default:
+		      throw new Error(`unknown dynamodb event ${event.eventName}`)
+	    }
 	  }
-	}
   }
 
   _emitRemoveShardsEvent(shardIds: string) {
 	this.emit('remove shards', shardIds)
   }
+
+  _emitError(error:any) {
+		this.emit('error', error)
+	}
 
 
   _emitNewShardsEvent(shardIds: string) {

@@ -18,7 +18,7 @@ router.post('/serveronfyr' , async (req,res, next) => {
       payload.username = "AttilaHun"
       payload.role = "barb"
     } else if (req.body.user_id === res.user_id && req.body.device_id) {
-      var user = land.Entity;
+      var user = land.Entity();
       user.spawn("USR", req.body.user_id,"pte");
       payloadz= await user.exist().catch(err => {
         err.status = 400;
@@ -60,7 +60,7 @@ router.post('/serveronfyr' , async (req,res, next) => {
 
 router.get('/flameon', async (req, res, next) => {
   // device id addition to login path and check on uuid existence
-  fyrUser = land.Entity
+  fyrUser = land.Entity()
   payload= await fyrUser.fyrgen(res.user_id,req.query.device_id).catch(err => {
     res.status = 400;
     next(err);

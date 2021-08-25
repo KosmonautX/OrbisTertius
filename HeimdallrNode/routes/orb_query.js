@@ -43,7 +43,80 @@ router.get(`/get`, async function (req, res, next) {
         }
     });
 });
-
+/**
+ * API 1
+ * Get specific orb (all info) by ORB:uuid
+ */
+router.get(`/get_orbs/:orb_uuids`, async function (req, res, next) {
+    try{
+        const n = 5 // limit to 5
+        const orbs = req.params.orb_uuids.split(',').slice(0,n)
+        const getter = async orb_uuid => {
+            let params = {
+                TableName: ddb_config.tableNames.orb_table,
+                Key: {
+                    PK: "ORB#" + orb_uuid,
+                    SK: "ORB#" + orb_uuid
+                }}
+            return docClient.get(params).promise()
+        };
+        Promise.all(orbs.map(orb_uuid => getter(orb_uuid))).then(response => {
+            daos = response.map(async(data) => {
+                var dao = {}
+                if(data.Item){
+                    dao.expiry_dt = data.Item.time;
+                    dao.orb_uuid = data.Item.PK.slice(4);
+                    dao.payload = data.Item.payload
+                    if(data.Item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'1920x1080');
+                    dao.geohash = parseInt(data.Item.alphanumeric.slice(4));
+                    dao.geohash52 = data.Item.geohash;
+                }
+                return dao
+            })
+            Promise.all(daos).then(sandwich => {
+                res.status(201).json(sandwich);
+            })
+        }).catch(error => {
+            throw new Error("Recall ORB failed")
+        });
+    }catch(err){
+        if (err.message == "Recall ORB failed") err.status = 401;
+        next(err);
+    }
+});
+/**
+ * API 1
+ * Get specific users (all info)
+ */
+router.get(`/get_users/:user_ids`, async function (req, res, next) {
+    try{
+        const n = 5
+        const users = req.params.user_ids.split(',').slice(0,n)
+        Promise.all(users.map(user_id => userQuery.queryPUB(user_id))).then(response => {
+            daos = response.map(async(data) => {
+                var dao = {}
+                if(data.Item){
+                    if (data.Item.payload) {
+                        dao.user_id = data.Item.PK.slice(4);
+                        dao.payload = data.Item.payload
+                        if(data.Item.payload.media) dao.media_asset = await serve3.preSign('getObject','USR',dao.user_id,'150x150')}
+                    dao.username = data.Item.alphanumeric;
+                    dao.home_geohash = data.Item.numeric;
+                    dao.office_geohash = data.Item.geohash;
+                }
+                return dao
+            })
+            Promise.all(daos).then(sandwich => {
+                res.status(201).json(sandwich);
+            })
+        }).catch(error => {
+            throw new Error("Recall User failed")
+        });
+    }catch(err){
+        if (err.message == "Recall User failed") err.status = 401;
+        next(err);
+    }
+});
 /**
  * API 1 
  * Get specific user (all info) 
@@ -53,7 +126,7 @@ router.get(`/get_user`, async function (req, res, next) {
     //     err.status = 400;
     //     next(err);
     // });
-    let pubData = await userQuery.queryPUB(req.query).catch(err => {
+    let pubData = await userQuery.queryPUB(req.query.user_id).catch(err => {
         err.status = 400;
         next(err);
     });
@@ -63,7 +136,9 @@ router.get(`/get_user`, async function (req, res, next) {
         if (pubData.Item.payload) {
             dao.bio = pubData.Item.payload.bio;
             dao.profile_pic = pubData.Item.payload.profile_pic;
-            dao.verified = pubData.Item.payload.verified;
+            dao.media = pubData.Item.payload.media
+            if(pubData.Item.payload.media) dao.media_asset = await serve3.preSign('getObject','USR',req.query.user_id,'1920x1080')
+            //dao.verified = pubData.Item.payload.verified;
             // dao.country_code = pteData.Item.payload.country_code;
         }
         // if (pteData.Item.payload){
@@ -290,8 +365,8 @@ router.get(`/orbs_in_loc_fresh_page`, async function (req, res, next) {
     let geohashing;
     if (req.query.lat && req.query.lon) {
         let latlon = {};
-        latlon.LATITUDE = req.query.lat;
-        latlon.LONGITUDE = req.query.lon;
+        latlon.lat = req.query.lat;
+        latlon.lon = req.query.lon;
         geohashing = geohash.latlon_to_geo(latlon);
     } else if (req.query.postal_code) {
         let postal = req.query.postal_code;
@@ -361,8 +436,8 @@ router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
         let geohashing;
         if (req.query.lat && req.query.lon) {
             let latlon = {};
-            latlon.LATITUDE = req.query.lat;
-            latlon.LONGITUDE = req.query.lon;
+            latlon.lat = req.query.lat;
+            latlon.lon = req.query.lon;
             geohashing = geohash.latlon_to_geo(latlon);
         } else if (req.query.postal_code) {
             let postal = req.query.postal_code;
@@ -380,11 +455,14 @@ router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
                     dao.orb_uuid = item.SK.slice(15);
                     // dao.geohash = parseInt(item.PK.slice(4));
                     // dao.geohash52 = item.geohash;
-                    dao.nature = parseInt(item.inverse.slice(4));
+                    //dao.nature = parseInt(item.inverse.slice(4));
                     dao.expiry_dt = parseInt(item.SK.substr(0, 10));
                     if (item.payload){
                         dao.payload = item.payload
-                        if(item.payload.media) item.payload.media = await serve3.preSign('getObject','ORB',dao.orb_uuid,'150x150')
+                        if(item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'150x150')
+                        if(item.payload.init){
+                            dao.payload.init = item.payload.init;
+                            if(item.payload.init.media) dao.payload.init.media_asset = await serve3.preSign('getObject','USR',item.payload.user_id,'150x150')}
                     }
                     page.push(dao);
                 }
@@ -413,7 +491,7 @@ router.get(`/buddy`, async function (req, res, next) {
         KeyConditionExpression: "PK = :pk and begins_with(SK, :buddy)",
         ExpressionAttributeValues: {
             ":pk": "USR#" + req.query.user_id + "#REL",
-            ":buddy": "BUD#",
+            ":buddy": req.query.relation + "#",
         },
         Limit: 8,
         ScanIndexForward: req.query.ascending,
@@ -421,7 +499,7 @@ router.get(`/buddy`, async function (req, res, next) {
     if (req.query.start) {
         params.ExclusiveStartKey = {
             "PK": "USR#" + req.query.user_id,
-            "SK": "BUD#" + req.query.start
+            "SK": req.query.relation +"#" + req.query.start
         }
     };
     docClient.query(params, function(err, data) {

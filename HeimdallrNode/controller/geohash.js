@@ -4,7 +4,7 @@ const geohash = require('ngeohash');
 // const onemap = JSON.parse(rawdata);
 const onemap = require('../resources/onemap3.json');
 
-function postal_to_geo(postal) {
+function postal_to_geo(postal, radius=30) {
     if (postal == null || postal == "") {
         return null;
     }
@@ -19,7 +19,7 @@ function postal_to_geo(postal) {
     if (latlon == "undefined" || latlon == null) {
         throw new Error("Postal code does not exist!");
     }
-    return latlon_to_geo(latlon);
+    return latlon_to_geo(latlon, radius);
 };
 
 function postal_to_geo52(postal) {
@@ -39,18 +39,18 @@ function postal_to_geo52(postal) {
     return latlon_to_geo52(latlon);
 }
 
-function latlon_to_geo(latlon) {
-    let geohashing = geohash.encode_int(parseFloat(latlon.LATITUDE), parseFloat(latlon.LONGITUDE), 30);
+function latlon_to_geo(latlon, radius=30) {
+    let geohashing = geohash.encode_int(parseFloat(latlon.lat), parseFloat(latlon.lon), radius);
     return geohashing;
 };
 
 function latlon_to_geo52(latlon) {
-    let geohashing = geohash.encode_int(parseFloat(latlon.LATITUDE), parseFloat(latlon.LONGITUDE), 52);
+    let geohashing = geohash.encode_int(parseFloat(latlon.lat), parseFloat(latlon.lon), 52);
     return geohashing;
 }
 
-function get_geo_array(geohashing) {
-    let arr = geohash.neighbors_int(geohashing, 30); // array
+function get_geo_array(geohashing, radius=30) {
+    let arr = geohash.neighbors_int(geohashing, radius); // array
     arr.unshift(geohashing);
     return arr;
 }

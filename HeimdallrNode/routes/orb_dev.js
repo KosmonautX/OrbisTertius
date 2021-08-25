@@ -7,6 +7,7 @@ const AWS = require('aws-sdk');
 AWS.config.update({
     region: ddb_config.region
 })
+const telemessage = require('../controller/teleAngareion').exchangeContact
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
 const geohash = require('ngeohash');
 const jwt = require(`jsonwebtoken`);
@@ -40,6 +41,9 @@ router.get(`/query`, async function (req, res, next) {
         }
     });
 });
+/**
+ * FYR TOKEN CUSTOM GEN
+ */
 
 router.get(`/fyr`, async function (req, res, next) {
     token = admin.auth().createCustomToken(req.query.id)
@@ -65,6 +69,25 @@ router.get(`/fyr`, async function (req, res, next) {
                      console.log('Error creating custom token:', error);
                  });
 });
+
+/**
+ * FYR TOKEN CUSTOM GEN
+ */
+
+router.get(`/telechan`, async function (req, res, next) {
+    telemessage(req.query.init_id,req.query.user_id,req.query.username,req.query.title).then(response => {
+        res.status(201).json({
+            "chat_id": req.query.init_id,
+            "text": req.query.title
+        })})
+         .catch(error => {
+             console.log(error);
+             error = new Error("Telechan failed");
+             error.status = 500;
+             next(error);
+         });;
+})
+
 
 /**
  * API 1.2 UNRELEASED

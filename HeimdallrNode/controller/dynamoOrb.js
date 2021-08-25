@@ -180,57 +180,34 @@ const orbSpace = {
 
 const dynaOrb = {
     
-    async create(body) {
+    async create(body, gen) {
+        orb_uuid= await gen
         const params = {
             RequestItems: {
                 [ddb_config.tableNames.orb_table]: [
                     {
                         PutRequest: {
                             Item: {
-                                PK: "ORB#" + body.orb_uuid,
-                                SK: "ORB#" + body.orb_uuid, 
-                                numeric: body.nature,
-                                time: body.expiry_dt,
-                                geohash : body.geohashing52,
-                                alphanumeric: "LOC#" + body.geohashing,
-                                payload: {
-                                    title: body.title, // title might have to go to the alphanumeric
-                                    info: body.info,
-                                    where: body.where,
-                                    when: body.when,
-                                    tip: body.tip,
-                                    media: body.media,
-                                    photo: body.photo,
-                                    user_id: body.user_id,
-                                    username: body.username,
-                                    created_dt: body.created_dt,
-                                    expires_in: body.expires_in,
-                                    tags: body.tags,
-                                    postal_code: body.postal_code,
-                                    available: true,
-                                }
-                            }
-                        }
-                   },
-                    {
-                        PutRequest: {
-                            Item: {
                                 PK: "LOC#" + body.geohashing,
-                                SK: body.expiry_dt.toString() + "#ORB#" + body.orb_uuid,
-                                inverse: "TAX#" + body.nature,
+                                SK: body.expiry_dt.toString() + "#ORB#" + orb_uuid,
                                 geohash : body.geohashing52,
+                                extinguish: body.expiry_dt,
                                 payload: {
+                                    orb_nature: body.orb_nature,
                                     title: body.title,
                                     info: body.info,
                                     where: body.where,
                                     when: body.when,
                                     media: body.media,
+                                    init: {
+                                        media :body.init.media,
+                                        profile_pic :body.init.profile_pic,
+                                        username: body.init.username
+                                    },
                                     tip: body.tip,
                                     photo: body.photo,
                                     user_id: body.user_id,
-                                    username: body.username,
                                     created_dt: body.created_dt,
-                                    expires_in: body.expires_in,
                                     tags: body.tags
                                 }
                             }
@@ -239,7 +216,7 @@ const dynaOrb = {
                     {
                         PutRequest: {
                             Item: {
-                                PK: "ORB#" + body.orb_uuid,
+                                PK: "ORB#" + orb_uuid,
                                 SK: "USR#" + body.user_id,
                                 inverse: "600#INIT",
                                 time: body.created_dt,
@@ -301,23 +278,57 @@ const dynaOrb = {
         const data = await docClient.update(params).promise();
         return data;
     },
+    async forceaccept(body){
+        const  params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Key: {
+                PK: "ORB#" + body.orb_uuid,
+                SK: "USR#" + body.acpt_id
+            },
+            UpdateExpression: "set inverse = :status",
+            ExpressionAttributeValues: {
+                ":status": "800#FULFILLED"
+            }
+        };
+        const data = await docClient.update(params).promise();
+        return data;
+    },
     async gen(body){
         try{
-            let orb_uuid = uuidv4();
+            body.orb_uuid = uuidv4();
             const  params = {
-                TableName: ddb_config.tableNames.orb_table,        
+                TableName: ddb_config.tableNames.orb_table,
                 Item: {
-                    PK: "ORB#" + orb_uuid,
-                    SK: "ORB#" + orb_uuid,
-                    alphanumeric: body.user_id,
+                    PK: "ORB#" + body.orb_uuid,
+                    SK: "ORB#" + body.orb_uuid,
+                    time: body.expiry_dt,
+                    geohash : body.geohashing52,
+                    alphanumeric: "LOC#" + body.geohashing,
+                    payload: {
+                        title: body.title, // title might have to go to the alphanumeric
+                        orb_nature: body.orb_nature,
+                        info: body.info,
+                        where: body.where,
+                        when: body.when,
+                        tip: body.tip,
+                        media: body.media,
+                        photo: body.photo,
+                        user_id: body.user_id,
+                        username: body.init.username,
+                        created_dt: body.created_dt,
+                        expires_in: body.expires_in,
+                        tags: body.tags,
+                        postal_code: body.postal_code,
+                        available: true,
+                    }
                 },
                 ConditionExpression: "attribute_not_exists(PK)"
             };
             const data = await docClient.put(params).promise();
-            return orb_uuid;
+            return body.orb_uuid;
         } catch (err){
             if (err.code == 'ConditionalCheckFailedException'){
-                return dynaOrb.gen();
+                return dynaOrb.gen(body);
             }
             else{
                 return err;

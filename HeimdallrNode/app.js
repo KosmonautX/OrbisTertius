@@ -30,8 +30,8 @@ if (!fs.existsSync(log)){
 app.use(logger('common', {
 	  stream: fs.createWriteStream(log + '/access.log' , {flags: 'a'}, {mode: 0o755 })
 }));
-app.use(bodyParser.json({ limit: `500mb` }));
-app.use(bodyParser.urlencoded({ limit: `500mb`, extended: true, parameterLimit: 50000 }));
+app.use(bodyParser.json({ limit: `8mb` }));
+app.use(bodyParser.urlencoded({ limit: `888kb`, extended: true, parameterLimit: 50000 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -52,8 +52,8 @@ if(process.env.NODE_ENV == "dev"){
             payload.role = "barb"
         } else {
             payload.user_id = req.body.user_id;
-            payload.username = "ChongaldXrump";
-            payload.role = "pleb";
+            payload.username = "Sulla";
+            payload.role = "boni";
         }
         const iss = 'Princeton';
         const sub = 'ScratchBac';

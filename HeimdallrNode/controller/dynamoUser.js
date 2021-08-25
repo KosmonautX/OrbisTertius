@@ -90,6 +90,18 @@ const dynaUser = {
         const data = await docClient.put(params).promise();
         return data;
     },
+    async bully(alpha,beta,endshiptime) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Item: {
+                PK: "USR#" + alpha + "#REL",
+                SK: "BUL#" + beta,
+                time: endshiptime,
+            },
+        };
+        const data = await docClient.put(params).promise();
+        return data;
+    },
     async updatePayload(body) {
         const params = {
             TableName: ddb_config.tableNames.orb_table,        
@@ -102,8 +114,9 @@ const dynaUser = {
             ExpressionAttributeValues: {
                 ":payload": {
                     bio: body.bio,
+                    birthday: body.birthday,
                     profile_pic: body.profile_pic,
-                    verified: body.verified,
+                    media: body.media
                 }
             },
         };
@@ -140,7 +153,7 @@ const dynaUser = {
                 "#n": "numeric"
             },
             ExpressionAttributeValues: {
-                ":home": geohash.postal_to_geo(body.home)
+                ":home": body.home.geohashing ||geohash.postal_to_geo(body.home)
             }
         };
         const data = await docClient.update(params).promise();
@@ -158,7 +171,7 @@ const dynaUser = {
                 "#n": "numeric2"
             },
             ExpressionAttributeValues: {
-                ":home": geohash.postal_to_geo52(body.home)
+                ":home": body.home.geohashing52 ||geohash.postal_to_geo52(body.home)
             }
         };
         const data = await docClient.update(params).promise();
@@ -179,6 +192,18 @@ const dynaUser = {
         const data = await docClient.update(params).promise();
         return data;
     },
+    async blockUser(body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Item: {
+                PK: "USR#" + body.user_id + "#REL",
+                SK: "BUL#" + body.block_id,
+                time: moment().unix(),
+            },
+        };
+        const data = await docClient.put(params).promise();
+        return data;
+    },
     async updateUserOfficeGeohash(body) {
         const params = {
             TableName: ddb_config.tableNames.orb_table,        
@@ -188,7 +213,7 @@ const dynaUser = {
             },
             UpdateExpression: "set geohash = :office",
             ExpressionAttributeValues: {
-                ":office": geohash.postal_to_geo(body.office),
+                ":office": body.office.geohashing || geohash.postal_to_geo(body.office),
             }
         };
         const data = await docClient.update(params).promise();
@@ -203,7 +228,7 @@ const dynaUser = {
             },
             UpdateExpression: "set geohash2 = :office",
             ExpressionAttributeValues: {
-                ":office": geohash.postal_to_geo52(body.office),
+                ":office": body.office.geohashing52 || geohash.postal_to_geo52(body.office),
             }
         };
         const data = await docClient.update(params).promise();
@@ -219,7 +244,8 @@ const dynaUser = {
                         Item: {
                             PK: "username#" + body.username,
                             SK: "username#" + body.username,
-                            alphanumeric: body.user_id
+                            alphanumeric: body.user_id,
+                            time: moment().unix()
                         }
                     }
                 },
@@ -271,12 +297,12 @@ const userQuery = {
         const data = await docClient.get(params).promise();
         return data;
     },
-    async queryPUB(body) {
+    async queryPUB(user_id) {
         const params = {
             TableName: ddb_config.tableNames.orb_table,        
             Key: {
-                PK: "USR#" + body.user_id,
-                SK: "USR#" + body.user_id + "#pub"
+                PK: "USR#" + user_id,
+                SK: "USR#" + user_id + "#pub"
             }
         };
         const data = await docClient.get(params).promise();
