@@ -68,8 +68,7 @@ router.get('/flameon', async (req, res, next) => {
   if(payload.Attributes){
     res.status(201).json({
       "Returning User": res.user_id,
-      "Home Postal": payload.Attributes.numeric,
-      "Office Postal": payload.Attributes.geohash,
+      "Geolocation": payload.Attributes.geohash,
       "Last Login": payload.Attributes.time
     })
   }

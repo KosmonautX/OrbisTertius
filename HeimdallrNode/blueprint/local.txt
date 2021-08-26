@@ -60,11 +60,10 @@ PUT :ipAddress/api/orb/user_location
 {
     "user_id": ":ryan",
     "event": "genesis",
-    "home": {"latlon":{
+    "rob": {"latlon":{
     "lat":1.3522,
     "lon":103.8198
-    }},
-    "office": {"postal": 670110}
+    }}
 }
 
 #
