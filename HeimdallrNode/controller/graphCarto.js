@@ -6,7 +6,8 @@ AWS.config.update({
 });
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint:ddb_config.dyna});
 const geohash = require('./geohash')
-const MAX_TERRITORIES = 3
+const MAX_TERRITORIES = 3 //
+const COOLDOWN = 86400 * 7 // unix time for 7 days
 var Graph = {} // maps
 Graph.Edge = (function () {
   `use strict`

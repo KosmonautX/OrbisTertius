@@ -101,8 +101,7 @@ router.get(`/get_users/:user_ids`, async function (req, res, next) {
                         dao.payload = data.Item.payload
                         if(data.Item.payload.media) dao.media_asset = await serve3.preSign('getObject','USR',dao.user_id,'150x150')}
                     dao.username = data.Item.alphanumeric;
-                    dao.home_geohash = data.Item.numeric;
-                    dao.office_geohash = data.Item.geohash;
+                    dao.geolocation = data.Item.geohash;
                 }
                 return dao
             })
@@ -147,12 +146,7 @@ router.get(`/get_user`, async function (req, res, next) {
         // }
         dao.user_id = req.query.user_id;
         dao.username = pubData.Item.alphanumeric;
-        // dao.home = pteData.Item.numeric;
-        // dao.office = pteData.Item.geohash;
-        dao.home_geohash = pubData.Item.numeric;
-        dao.office_geohash = pubData.Item.geohash;
-        dao.home_geohash52 = pubData.Item.numeric2;
-        dao.office_geohash52 = pubData.Item.geohash2;
+        dao.geolocation = pubData.Item.geohash;
         // dao.join_dt = pteData.Item.join_dt;
         res.json(dao);
     } else {

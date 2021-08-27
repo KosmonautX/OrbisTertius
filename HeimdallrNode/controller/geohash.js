@@ -67,6 +67,9 @@ function check_postal(postal) {
     }
 }
 
+function transcode_geohash(geohash, fineGrain, coarseGrain){
+    return geohash.encode_int(geohash.decode_int(geohash, fineGrain), coarseGrain) //fine grained and coarse grained
+}
 function decode_hash(hash, bit){
     return geohash.decode_int(hash, bit);
 }
@@ -78,4 +81,5 @@ module.exports = {
     get_geo_array: get_geo_array,
     check_postal: check_postal,
     decode_hash: decode_hash,
+    transcode_geohash: transcode_geohash
 }

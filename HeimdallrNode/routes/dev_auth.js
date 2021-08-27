@@ -43,8 +43,7 @@ router.get('/tele', async (req, res, next) =>
           if(payload.Attributes){
           res.status(201).json({
             "Returning User": req.query.id,
-            "Home Postal": payload.Attributes.numeric,
-            "Office Postal": payload.Attributes.geohash,
+            "Geolocation": payload.Attributes.geohash,
             "Last Login": payload.Attributes.time
           })
           }
@@ -103,8 +102,7 @@ router.get('/mailin', async (req, res ,next ) =>
           if(payload.Attributes){
             res.status(201).json({
             "Returning User": user_id,
-            "Home Postal": payload.Attributes.numeric,
-            "Office Postal": payload.Attributes.geohash,
+            "Geolocation": payload.Attributes.geohash,
             "Last Login": payload.Attributes.time
           })
           }
