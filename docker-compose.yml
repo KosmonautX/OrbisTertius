@@ -4,8 +4,6 @@ services:
     build: ./HeimdallrNode/
     ports:
       - "80:5000"
-    links:
-      - "mercury:flask"
     env_file:
       - .env
     restart: always
