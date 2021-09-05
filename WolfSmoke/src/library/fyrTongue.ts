@@ -104,7 +104,10 @@ export async function territory_subscriber(neoTerritory: TerritoryPub, identifie
     try {
         if(retroTerritory){
         Object.entries(neoTerritory).forEach(([geoName, address]) =>{
-            if(address.hash !== retroTerritory[geoName].hash){
+            if(!retroTerritory[geoName]){
+                switchsubscribe("LOC",identifier,client, address.hash)
+            }
+            else if(address.hash !== retroTerritory[geoName].hash){
                 switchsubscribe("LOC", identifier, client, address.hash, retroTerritory[geoName].hash)}
         })}
         else{

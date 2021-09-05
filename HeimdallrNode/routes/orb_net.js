@@ -151,60 +151,6 @@ router.post(`/upload_profile_pic`, async function (req, res, next) {
 });
 
 /**
- * API 0.1
- * Create user
- */
-router.post(`/create_user`, async function (req, res, next) {
-    try {
-        let body = { ...req.body };
-        if (body.latlon) {
-            body.geohashing = {
-                home: geohash.latlon_to_geo(body.latlon.home),
-                office: geohash.latlon_to_geo(body.latlon.office)
-            };
-            body.loc = {
-                home: body.latlon.home,
-                office: body.latlon.office
-            };
-        } else if (body.home || body.office) {
-            // if only 1 is given (either home or office postal codes)
-            body.geohashing = {
-                home: geohash.postal_to_geo(body.home),
-                office: geohash.postal_to_geo(body.office)
-            };
-            body.geohashing52 = {
-                home: geohash.postal_to_geo52(body.home),
-                office: geohash.postal_to_geo52(body.office)
-            };
-            body.loc = {
-                home: body.home,
-                office: body.office
-            };
-        }
-        if (body.profile_pic == null) body.profile_pic = "null";
-        if ((typeof body.loc.home) == "string") body.loc.home = parseInt(body.loc.home);
-        if ((typeof body.loc.office) == "string") body.loc.office = parseInt(body.loc.office);
-        body.join_dt = moment().unix();
-        let transacSuccess = await dynaUser.transacCreate(body).catch(err => {
-            err.status = 409;
-            throw err;
-        });
-        if (transacSuccess == true) {
-            await dynaUser.bulkCreate(body).catch(err => {
-                err.status = 400
-                throw err;
-            })
-            res.status(201).json({
-                "User Created": body.user_id
-            });
-        }
-    } catch (err) {
-        if (err.message == 'Postal code does not exist!') err.status = 404;
-        next(err)
-    }
-});
-
-/**
  * API POST 3
  * User personal interactions with orb: SAVE | HIDE
  */
@@ -398,34 +344,6 @@ router.put(`/update_username`, async function (req, res, next) {
  * Update user location
  * supports postal code for now
  */
-router.put(`/update_user_location`, async function (req, res, next) {
-    body = {...req.body}
-    try {
-        if (body.home){
-            if(body.home.latlon) {
-                body.home.geohashing = geohash.latlon_to_geo(body.home.latlon);
-                body.home.geohashing52 = geohash.latlon_to_geo52(body.home.latlon);
-            }
-            await dynaUser.updateUserHome(body);
-            await dynaUser.updateUserHomeGeohash(body);
-            await dynaUser.updateUserHomeGeohash52(body);
-        } 
-        if (body.office){
-            if(body.office.latlon) {
-                body.office.geohashing = geohash.latlon_to_geo(body.office.latlon);
-                body.office.geohashing52 = geohash.latlon_to_geo52(body.office.latlon);
-            }
-            await dynaUser.updateUserOffice(body);
-            await dynaUser.updateUserOfficeGeohash(body);
-            await dynaUser.updateUserOfficeGeohash52(body);
-        }
-        res.json({ "User updated:": body });
-    } catch (err) {
-        err.status = 400;
-        next(err)
-    }
-});
-
 router.put(`/user_location`, async function (req, res, next) {
     try {
         switch(req.body.event){

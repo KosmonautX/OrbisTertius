@@ -19,10 +19,6 @@ const dynaUser = {
                             PK: "USR#" + body.user_id, 
                             SK: "USR#" + body.user_id + "#pub",
                             alphanumeric: body.username,
-                            numeric: body.geohashing.home,
-                            geohash: body.geohashing.office, 
-                            numeric2: body.geohashing52.home,
-                            geohash2: body.geohashing52.office,
                             time: body.join_dt,
                             payload: {
                                 bio: body.bio,
@@ -123,75 +119,6 @@ const dynaUser = {
         const data = await docClient.update(params).promise();
         return data;
     },
-    async updateUserHome(body) {
-        const params = {
-            TableName: ddb_config.tableNames.orb_table,        
-            Key: {
-                PK: "USR#" + body.user_id,
-                SK: "USR#" + body.user_id + "#pte"
-            },
-            UpdateExpression: "set #n = :home",
-            ExpressionAttributeNames:{
-                "#n": "numeric"
-            },
-            ExpressionAttributeValues: {
-                ":home": body.home
-            }
-        };
-        const data = await docClient.update(params).promise();
-        return data;
-    },
-    async updateUserHomeGeohash(body) {
-        const params = {
-            TableName: ddb_config.tableNames.orb_table,        
-            Key: {
-                PK: "USR#" + body.user_id,
-                SK: "USR#" + body.user_id + "#pub"
-            },
-            UpdateExpression: "set #n = :home",
-            ExpressionAttributeNames:{
-                "#n": "numeric"
-            },
-            ExpressionAttributeValues: {
-                ":home": body.home.geohashing ||geohash.postal_to_geo(body.home)
-            }
-        };
-        const data = await docClient.update(params).promise();
-        return data;
-    },
-    async updateUserHomeGeohash52(body) {
-        const params = {
-            TableName: ddb_config.tableNames.orb_table,        
-            Key: {
-                PK: "USR#" + body.user_id,
-                SK: "USR#" + body.user_id + "#pub"
-            },
-            UpdateExpression: "set #n = :home",
-            ExpressionAttributeNames:{
-                "#n": "numeric2"
-            },
-            ExpressionAttributeValues: {
-                ":home": body.home.geohashing52 ||geohash.postal_to_geo52(body.home)
-            }
-        };
-        const data = await docClient.update(params).promise();
-        return data;
-    },
-    async updateUserOffice(body) {
-        const params = {
-            TableName: ddb_config.tableNames.orb_table,        
-            Key: {
-                PK: "USR#" + body.user_id,
-                SK: "USR#" + body.user_id + "#pte"
-            },
-            UpdateExpression: "set geohash = :office",
-            ExpressionAttributeValues: {
-                ":office": body.office,
-            }
-        };
-        const data = await docClient.update(params).promise();
-        return data;
-    },
     async blockUser(body) {
         const params = {
             TableName: ddb_config.tableNames.orb_table,
@@ -202,36 +129,6 @@ const dynaUser = {
             },
         };
         const data = await docClient.put(params).promise();
-        return data;
-    },
-    async updateUserOfficeGeohash(body) {
-        const params = {
-            TableName: ddb_config.tableNames.orb_table,        
-            Key: {
-                PK: "USR#" + body.user_id,
-                SK: "USR#" + body.user_id + "#pub"
-            },
-            UpdateExpression: "set geohash = :office",
-            ExpressionAttributeValues: {
-                ":office": body.office.geohashing || geohash.postal_to_geo(body.office),
-            }
-        };
-        const data = await docClient.update(params).promise();
-        return data;
-    },
-    async updateUserOfficeGeohash52(body) {
-        const params = {
-            TableName: ddb_config.tableNames.orb_table,        
-            Key: {
-                PK: "USR#" + body.user_id,
-                SK: "USR#" + body.user_id + "#pub"
-            },
-            UpdateExpression: "set geohash2 = :office",
-            ExpressionAttributeValues: {
-                ":office": body.office.geohashing52 || geohash.postal_to_geo52(body.office),
-            }
-        };
-        const data = await docClient.update(params).promise();
         return data;
     },
     async usernameTransaction(body) {
@@ -266,22 +163,7 @@ const dynaUser = {
             return true;
         }
         return data;
-    },
-    // async uploadProfilePic(body) {
-    //     const params = {
-    //         TableName: ddb_config.tableNames.orb_table,        
-    //         Key: {
-    //             PK: "USR#" + body.user_id, 
-    //             SK: "USR#" + body.user_id + "pub",
-    //         },
-    //         UpdateExpression: "set payload.profile_pic = :pic",
-    //         ExpressionAttributeValues: {
-    //             ":pic": body.upload
-    //         }
-    //     };
-    //     const data = await docClient.update(params).promise();
-    //     return data;
-    // }
+    }
 }
 
 const userQuery = {
