@@ -179,7 +179,6 @@ const orbSpace = {
 }
 
 const dynaOrb = {
-    
     async create(body, gen) {
         orb_uuid= await gen
         const params = {
@@ -188,46 +187,47 @@ const dynaOrb = {
                     {
                         PutRequest: {
                             Item: {
-                                PK: "LOC#" + body.geohashing,
-                                SK: body.expiry_dt.toString() + "#ORB#" + orb_uuid,
-                                geohash : body.geohashing52,
-                                extinguish: body.expiry_dt,
-                                payload: {
-                                    orb_nature: body.orb_nature,
-                                    title: body.title,
-                                    info: body.info,
-                                    where: body.where,
-                                    when: body.when,
-                                    media: body.media,
-                                    init: {
-                                        media :body.init.media,
-                                        profile_pic :body.init.profile_pic,
-                                        username: body.init.username
-                                    },
-                                    tip: body.tip,
-                                    photo: body.photo,
-                                    user_id: body.user_id,
-                                    created_dt: body.created_dt,
-                                    tags: body.tags
-                                }
-                            }
-                        }
-                    },
-                    {
-                        PutRequest: {
-                            Item: {
                                 PK: "ORB#" + orb_uuid,
                                 SK: "USR#" + body.user_id,
                                 inverse: "600#INIT",
                                 time: body.created_dt,
-                                geohash: body.geohashing52,
-                                numeric: body.nature,
+                                geohash: body.geolocation,
+                                payload: {
+                                    orb_nature: body.orb_nature,
+                                    title: body.title,
+                                    media: body.media
+                                }
                             }
                         }
                     }
                 ]
             }
         };
+        for(hashes of body.geolocation.hashes){
+            params.RequestItems[ddb_config.tableNames.orb_table].push({
+                        PutRequest: {
+                            Item: {
+                                PK: "LOC#" + hashes +"#" + body.geolocation.radius,
+                                SK: body.created_dt.toString() + "#ORB#" + orb_uuid,
+                                geohash : body.geolocation,
+                                extinguish: body.expiry_dt,
+                                payload: {
+                                    orb_nature: body.orb_nature,
+                                    title: body.title,
+                                    media: body.media,
+                                    init: {
+                                        media :body.init.media,
+                                        profile_pic :body.init.profile_pic,
+                                        username: body.init.username
+                                    },
+                                    photo: body.photo,
+                                    user_id: body.user_id,
+                                    creationtime: body.created_dt,
+                                }
+                            }
+                        }
+            })
+        }
         const data = await docClient.batchWrite(params).promise();
         return data;
     },
@@ -302,8 +302,8 @@ const dynaOrb = {
                     PK: "ORB#" + body.orb_uuid,
                     SK: "ORB#" + body.orb_uuid,
                     time: body.expiry_dt,
-                    geohash : body.geohashing52,
-                    alphanumeric: "LOC#" + body.geohashing,
+                    geohash : body.geolocation,
+                    alphanumeric: "LOC#" + body.geolocation.hash+ body.geolocation.radius,
                     payload: {
                         title: body.title, // title might have to go to the alphanumeric
                         orb_nature: body.orb_nature,
@@ -315,7 +315,7 @@ const dynaOrb = {
                         photo: body.photo,
                         user_id: body.user_id,
                         username: body.init.username,
-                        created_dt: body.created_dt,
+                        creationtime: body.created_dt,
                         expires_in: body.expires_in,
                         tags: body.tags,
                         postal_code: body.postal_code,

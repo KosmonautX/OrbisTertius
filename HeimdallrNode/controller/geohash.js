@@ -50,8 +50,8 @@ function latlon_to_geo52(latlon) {
 }
 
 function get_geo_array(geohashing, radius=30) {
-    let arr = geohash.neighbors_int(geohashing, radius); // array
-    arr.unshift(geohashing);
+    let arr = [geohashing]
+    arr.push(...geohash.neighbors_int(geohashing, radius)); // array
     return arr;
 }
 
