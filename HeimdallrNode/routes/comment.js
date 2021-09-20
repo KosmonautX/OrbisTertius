@@ -73,7 +73,7 @@ router.post(`/post`, async function (req, res, next) {
     }
 });
 
-router.post(`/postReply`, async function (req, res, next) {
+router.post(`/reply`, async function (req, res, next) {
     try {
         let body = { ...req.body };
         body.comment_id = uuidv4();

@@ -16,7 +16,7 @@ const serve3 = require ('../controller/orbjectStore').serve3
  * API 1 
  * Get specific orb (all info) by ORB:uuid
  */
-router.get(`/get`, async function (req, res, next) {
+router.get(`/get_orb`, async function (req, res, next) {
     let params = {
         TableName: ddb_config.tableNames.orb_table,        
         Key: {
@@ -49,7 +49,7 @@ router.get(`/get`, async function (req, res, next) {
  */
 router.get(`/get_orbs/:orb_uuids`, async function (req, res, next) {
     try{
-        const n = 5 // limit to 5
+        const n = 8 // limit to 8
         const orbs = req.params.orb_uuids.split(',').slice(0,n)
         const getter = async orb_uuid => {
             let params = {
@@ -68,8 +68,7 @@ router.get(`/get_orbs/:orb_uuids`, async function (req, res, next) {
                     dao.orb_uuid = data.Item.PK.slice(4);
                     dao.payload = data.Item.payload
                     if(data.Item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'1920x1080');
-                    dao.geohash = parseInt(data.Item.alphanumeric.slice(4));
-                    dao.geohash52 = data.Item.geohash;
+                    dao.geolocation = data.Item.geohash;
                 }
                 return dao
             })
@@ -99,9 +98,10 @@ router.get(`/get_users/:user_ids`, async function (req, res, next) {
                     if (data.Item.payload) {
                         dao.user_id = data.Item.PK.slice(4);
                         dao.payload = data.Item.payload
-                        if(data.Item.payload.media) dao.media_asset = await serve3.preSign('getObject','USR',dao.user_id,'150x150')}
-                    dao.username = data.Item.alphanumeric;
-                    dao.geolocation = data.Item.geohash;
+                        if(data.Item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','USR',dao.user_id,'150x150')}
+                    if(data.Item.alphanumeric) dao.payload.username = data.Item.alphanumeric;
+                    if(data.Item.geohash)dao.geolocation = data.Item.geohash;
+                    dao.creationtime= data.Item.time
                 }
                 return dao
             })
@@ -202,7 +202,7 @@ router.get(`/user_profile`, async function (req, res, next) {
             "PK": "ORB#" + req.query.start
         }
     };
-    docClient.query(params, function(err, data) {
+    docClient.query(params, async function(err, data) {
         if (err) {
             err.status = 400;
             next(err);
@@ -210,19 +210,19 @@ router.get(`/user_profile`, async function (req, res, next) {
             if (data.Items.length == 0) {
                 res.status(204).send();
             } else {
-                let data_arr = [];
-                data.Items.forEach(function(item) {
+                let result = {
+                    "Requested": req.query.keyword,
+                    "Data" : await Promise.all(data.Items.map(async function(item){
                     let dao = {};
                     dao.user_id = item.SK.slice(4);
                     dao.orb_uuid = item.PK.slice(4);
-                    dao.created_dt = item.time;
+                    dao.creationtime = item.time;
+                    dao.payload = item.payload;
+                    if(item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'150x150')
                     dao.geohash = item.geohash;
-                    dao.info = item.inverse.slice(4);
-                    data_arr.push(dao);
-                })
-                let result = {
-                    "Requested": req.query.keyword,
-                    "Data" : data_arr,
+                    dao.action = item.inverse.slice(4);
+                        return dao
+                    })),
                 }
                 if (data.LastEvaluatedKey) result.LastEvaluatedKey = data.LastEvaluatedKey.PK.slice(4)
                 res.json(result);
@@ -281,7 +281,7 @@ router.get(`/user_pref`, async function (req, res, next) {
                     let dao = {};
                     dao.user_id = item.SK.slice(4).slice(0,-5);
                     dao.orb_uuid = item.PK.slice(4);
-                    dao.created_dt = item.inverse;
+                    dao.creationtime = item.inverse;
                     data_arr.push(dao);
                 })
                 let result = {
@@ -336,7 +336,7 @@ router.get(`/orb_acceptance`, async function (req, res, next) {
                     let dao = {};
                     dao.user_id = item.SK.slice(4);
                     dao.orb_uuid = item.PK.slice(4);
-                    dao.created_dt = item.time;
+                    dao.creationtime = item.time;
                     dao.geohash = item.geohash;
                     dao.info = item.inverse.slice(4);
                     data_arr.push(dao);
@@ -447,7 +447,7 @@ router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
                 for (let item of result) {
                     let dao = {};
                     dao.orb_uuid = item.SK.slice(15);
-                    // dao.geohash = parseInt(item.PK.slice(4));
+                    dao.geolocation = item.geolocation
                     // dao.geohash52 = item.geohash;
                     //dao.nature = parseInt(item.inverse.slice(4));
                     dao.expiry_dt = parseInt(item.SK.substr(0, 10));

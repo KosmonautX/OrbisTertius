@@ -197,7 +197,6 @@ Land.Entity = (function () {
 
     interface_dao.spawn = function (archetype, id,access,deviceID=false){
         entity_init("UPDATE",archetype, id, access);
-
     }
 
     // update event and identifiers(login) edge/field later
@@ -218,7 +217,7 @@ Land.Entity = (function () {
     // conditional update check device id identical (signup)
 
     interface_dao.exist = async() =>{
-        projection(['PK','identifier']);
+        projection(['PK','identifier','geohash']);
         return await recall();
 
     };

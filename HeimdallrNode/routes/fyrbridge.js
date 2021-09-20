@@ -13,21 +13,32 @@ router.post('/serveronfyr' , async (req,res, next) => {
   // device id check and integration for exists
   try{
     let payload = {};
-    if (!req.body.user_id){
+    if (!req.body.user_id){ // guest user firebase
       payload.device_id = req.body.device_id
       payload.username = "AttilaHun"
       payload.role = "barb"
     } else if (req.body.user_id === res.user_id && req.body.device_id) {
       var user = land.Entity();
       user.spawn("USR", req.body.user_id,"pte");
-      payloadz= await user.exist().catch(err => {
+      existing_attr= await user.exist().catch(err => {
         err.status = 400;
         next(err);
       });
-      if(payloadz.Item && payloadz.Item.identifier === req.body.device_id){
+      if(existing_attr.Item && existing_attr.Item.identifier === req.body.device_id){
         payload.user_id = req.body.user_id;
         payload.username = "ChongaldXrump";
         payload.role = "pleb";
+        /*
+         * territory is not the most granular as this might compromise user security
+         * .. without encryption for claims
+         */
+        if (existing_attr.Item.geohash) {
+          territory = {}
+          Object.entries(existing_attr.Item.geohash).forEach(([name, address]) =>{
+            territory[name] = address.geohashing
+          })
+          payload.territory = territory
+        }
       }
       else{
         await fyr.auth()

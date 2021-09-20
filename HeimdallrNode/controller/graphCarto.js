@@ -76,7 +76,9 @@ Graph.Edge = (function () {
     Object.entries(locmap).slice(0,MAX_TERRITORIES).forEach(([name, address]) =>{
       address = geohasher(address, radius)
       map.set(name, address)
-      territory[name] = {hash: address.geohashing, granularity: radius}
+      territory[name] = {}
+      territory[name].geohashing = address.geohashing
+      territory[name].chronolock = moment().unix();
     })
     return territory
   };
@@ -86,7 +88,9 @@ Graph.Edge = (function () {
     Object.entries(locmap).slice(0,MAX_TERRITORIES).forEach(([name, address]) =>{
       addressed = geohasher(address, radius)
       locmap[name] = addressed
-      territory[name] = {hash: addressed.geohashing, granularity: radius}
+      territory[name]= {}
+      territory[name].geohashing = addressed.geohashing
+      territory[name].chronolock = moment().unix();
     })
     map.rebirth(locmap)
     return territory
@@ -104,6 +108,7 @@ Graph.Edge = (function () {
         ExpressionAttributeNames:{
           "#geo": "geohash"
         },
+        ConditionExpression: "attribute_not_exists(geohash)",
         ExpressionAttributeValues: {
           ":ter": data
         }
@@ -115,7 +120,7 @@ Graph.Edge = (function () {
     })
   }
 
-  var reterritorialisation = async(agent, territory) => {
+  var reterritorialization = async(agent, territory) => {
     territory.then((data)=>{
       let params = {
         TableName: ddb_config.tableNames.orb_table,
@@ -127,6 +132,11 @@ Graph.Edge = (function () {
         ExpressionAttributeValues: {}
       }
       Object.entries(data).slice(0,MAX_TERRITORIES).forEach(([geoName, address]) => {
+        if(geoName !== "live"){
+          if(params.ConditionExpression) params.ConditionExpression += `AND (attributes_not_exists(#geoloc.#${geoName}.chronolock) OR #geoloc.#${geoName}.chronolock < :cooldown)`
+          else params.ConditionExpression = `(attribute_not_exists(#geoloc.#${geoName}.chronolock) OR #geoloc.#${geoName}.chronolock < :cooldown)`
+          params.ExpressionAttributeValues[":cooldown"] = address.chronolock - COOLDOWN
+        }
         if(params.UpdateExpression) params.UpdateExpression += `, #geoloc.#${geoName} = :${geoName}`;
         else {params.UpdateExpression = `SET #geoloc.#${geoName} = :${geoName}`;}
         params.ExpressionAttributeNames["#geoloc"]= "geohash"
@@ -140,12 +150,12 @@ Graph.Edge = (function () {
   }
   var geohasher = function (address, radius){
     if(address.latlon){
-      address.geohashing = geohash.latlon_to_geo(address.latlon, radius);
+      address.geohashing = {hash: geohash.latlon_to_geo(address.latlon, radius), radius};
       address.geohashing52 = geohash.latlon_to_geo52(address.latlon); //curry 52 in the future
     }
     else if(address.postal)
     {
-      address.geohashing = geohash.postal_to_geo(address.postal, radius)
+      address.geohashing = {hash: geohash.postal_to_geo(address.postal, radius), radius};
       address.geohashing52 = geohash.postal_to_geo52(address.postal)
     }
     return address
@@ -170,7 +180,7 @@ Graph.Edge = (function () {
       entity_init("USR",userID,"pte")
       const {user_id,event  , ...locmap } = request;
       territory = map_editor(locmap)
-      reterritorialisation(userID, territory)
+      reterritorialization(userID, territory)
       return await wish()
     } catch(err){
       console.log(err)

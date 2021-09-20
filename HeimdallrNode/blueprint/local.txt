@@ -13,7 +13,8 @@ User-Agent: Emacs27
 :prince = 175181189
 :evange = 188681901
 :bala = 98667304
-:ryan = SxD23ctxrIUDPi1lXkAOq5BKm1l1
+#:ryan = SxD23ctxrIUDPi1lXkAOq5BKm1l1
+:ryan = H83jZdG4I0SbTrfjb9BjqmnBF7s1
 :admin = "90565482"
 :applefcm = c6ZkucGHnEuXqjdqATVDbc:APA91bHo0lPVfD4KPIiZUBH8zIthAgvItRtxlNSKF0Noxrn479Az9j-Rbcjep3TW5KqWBKhClaew2kG3XTWdNJDDvDrzz3Hsia-x4yLwQV-OApJKdypUqSa8-T9KOnYeFU0R8gBP5r
 :printonemail = "niceprinceton@gmail.com"
@@ -46,6 +47,38 @@ POST :ipAddress/api/devland/fyr/serveronfyr
 }
 #
 ##
+## POST ORB
+POST :ipAddress/api/nomadology/post_orb
+:my-headers
+{
+    "user_id": ":ryan",
+    "title": "finder of lost children",
+    "info": "blessed is he",
+    "where": "my house",
+    "when": "now",
+    "tip": "foc",
+    "media": false,
+    "geolocation": {"home": {"latlon":{
+    "lat":1.3568,
+    "lon":103.7487
+    },"target":42,"geolock": true}},
+    "orb_nature": 10021000000,
+    "postal_code": 650301,
+    "expires_in": 30
+}
+#
+##
+## FRESH ORB FETCH
+POST :ipAddress/api/nomadology/freshorbstream
+:my-headers
+{
+"geolocation": {"home": {"latlon":{
+    "lat":1.3568,
+    "lon":103.7487
+    },"target":42}}
+}
+#
+##
 ## FCM Token Generator
 PUT :ipAddress/api/orb/tokenonfyr
 :my-headers
@@ -60,9 +93,9 @@ PUT :ipAddress/api/orb/user_location
 {
     "user_id": ":ryan",
     "event": "genesis",
-    "rob": {"latlon":{
-    "lat":1.3522,
-    "lon":103.8198
+    "home": {"latlon":{
+    "lat":1.3568,
+    "lon":103.7487
     }}
 }
 
@@ -130,7 +163,7 @@ PUT :ipAddress/api/mercury/delete_orb
     "orb_uuid": "0319dfcf-9c0e-4e2d-af10-3304193c5859"
 }
 ## 2. Get all fresh orbs
-GET :ipAddress/api/query/orbs_in_loc_fresh_batch?postal_code=650301
+GET :ipAddress/api/query/orbs_in_loc_fresh_batch?postal=650301
 :my-headers
 ## FOR USER GENSIS PIPELINE
 #
@@ -151,23 +184,6 @@ POST :ipAddress/api/orb/gen_uuid
 {   
    "user_id": ":ryan",
    "media": true
-}
-#
-## POST ORB
-POST :ipAddress/api/orb/post_orb
-:my-headers
-{
-    "user_id": ":ryan",
-    "title": "brothers keeper",
-    "info": "nil",
-    "where": "my house",
-    "when": "now",
-    "tip": "foc",
-    "tags": ["free", "christmas"],
-    "media": false,
-    "orb_nature": 10021000000,
-    "postal_code": 650301,
-    "expires_in": 30
 }
 #
 ## 1. Register user
@@ -261,7 +277,7 @@ POST :ipAddress/api/orb/chatWithTelegram
 GET :ipAddress/api/query/get?orb_uuid=c04615d4-7dad-4438-bd4f-da57b0f605bf
 :my-headers
 ## 1. fetch orbs
-GET :ipAddress/api/query/get_orbs/c04615d4-7dad-4438-bd4f-da57b0f605bf,79696fdc-a605-4d02-b5e9-bb7468517e4c
+GET :ipAddress/api/query/orbs/c04615d4-7dad-4438-bd4f-da57b0f605bf,79696fdc-a605-4d02-b5e9-bb7468517e4c
 :my-headers
 ## 1. fetch users
 GET :ipAddress/api/query/get_orbs/2
@@ -275,14 +291,15 @@ GET :ipAddress/api/query/orbs_in_loc_fresh_page?postal_code=457399&page=0
 ## 3. Get user's ORB profile
 # fulfilled: acceptor fulfills another person's orb </br>
 # completed: initiator completes his own orb
-GET :ipAddress/api/query/user_profile?user_id=188681901&keyword=INIT
-
+GET :ipAddress/api/query/user_profile?user_id=:ryan&keyword=INIT
+:my-headers
 ## 4. Retrieve user
-GET :ipAddress/api/query/get_user?user_id=:ryan
+GET :ipAddress/api/query/get_users/:ryan
 :my-headers
 
 ## 4b. Check username
 GET :ipAddress/api/query/check_username?username=evange
+:my-headers
 
 ## 5. Get ORB acceptance
 GET :ipAddress/api/query/orb_acceptance?orb_uuid=300c8c13-4da3-4ae8-9a26-d69f3f09aea2
@@ -424,15 +441,19 @@ PUT :ipAddress/api/orb/not_interested_acceptor
     "user_id": 1234,
     "orb_uuid": "903dab61-9cde-46c4-960e-078fd22fee8a"
 }
-
-
+##
+GET :ipAddress/api/query/buddy?user_id=:ryan&relation=BUL
+:my-headers
+##
+#
 ## comments
 ### check comment
 # check if an orb has comments
-GET localhost:5000/api/comment/check?orb_uuid=1234abcdef
+GET :ipaddress/api/comment/check?orb_uuid=b13842fa-7504-42e2-ad07-5425a34cb5e8
+:my-headers
 ### query comment
 # check if a comment has children
-GET localhost:5000/api/comment/query?comment_id=0ea7d4a8-6ce4-4f90-b9ee-72a88d373821
+GET http://localhost:5000/api/comment/query?comment_id=f71a1bf2-2897-4134-8fb7-91635d4b81d6
 ### get comment
 # get a specific comment. </br>
 # If the comment is a parent comment, then both parent_id and comment_id shall be the same. </br>
@@ -440,19 +461,21 @@ GET localhost:5000/api/comment/query?comment_id=0ea7d4a8-6ce4-4f90-b9ee-72a88d37
 GET localhost:5000/api/comment/query?parent_id=0ea7d4a8-6ce4-4f90-b9ee-72a88d373821&comment_id=0ea7d4a8-6ce4-4f90-b9ee-72a88d373821
 ### post commenteyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4
 # post a PARENT comment
-POST localhost:5000/api/comment/post
+POST :ipAddress/api/comment/post
+:my-headers
 {
-    "orb_uuid": "1234",
-    "user_id": 12345,
-    "comment": "hello there"
+    "orb_uuid": "b13842fa-7504-42e2-ad07-5425a34cb5e8",
+    "user_id": ":ryan",
+    "comment": "anankin i have the high ground"
 }
 ### post comment reply
 # Post a child comment
-POST localhost:5000/api/comment/postReply
+POST :ipAddress/api/comment/reply
+:my-headers
 {
-    "parent_id": "4be3759f-e91f-4aab-ba39-7ca2fefc5e25",
-    "user_id": 123456,
-    "comment": "Thank you!"
+    "parent_id": "8b2fce49-edf2-4903-ac13-71e601a14e41",
+    "user_id": ":ryan",
+    "comment": "No you anankin you were the chosen one"
 }
 ### delete comment
 # this is a soft delete, so comment will still be available in database.
