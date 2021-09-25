@@ -138,30 +138,37 @@ router.get('/notokens',(req, res ,next ) =>
 
 
   }
-          );
+);
 router.post('/server' , async (req,res, next) => {
   // integrate handshake (AES128 ECDH-ES)
   // device id check and integration for exists
   try{
     let payload = {};
     if (!req.body.user_id){
-            payload.device_id = req.body.device_id
-            payload.username = "AttilaHun"
-            payload.role = "barb"
+      payload.device_id = req.body.device_id
+      payload.username = "AttilaHun"
+      payload.role = "barb"
     } else if (req.body.user_id && req.body.device_id) {
       var user = land.Entity();
-          user.spawn("USR", req.body.user_id,"pte");
-          payloadz= await user.exist().catch(err => {
-            err.status = 400;
-            next(err);
-          });
-          if(payloadz.Item && payloadz.Item.identifier === req.body.device_id){
-            payload.user_id = req.body.user_id;
-            payload.username = "ChongaldXrump";
-            payload.role = "pleb";
-          }
-          else{
-            throw new Error("Unauthenticated")
+      user.spawn("USR", req.body.user_id,"pte");
+      payloadz= await user.exist().catch(err => {
+        err.status = 400;
+        next(err);
+      });
+      if(payloadz.Item && payloadz.Item.identifier === req.body.device_id){
+        payload.user_id = req.body.user_id;
+        payload.username = "ChongaldXrump";
+        payload.role = "pleb";
+        if (payloadz.Item.geohash) {
+          territory = {}
+          Object.entries(payloadz.Item.geohash).forEach(([name, address]) =>{
+            territory[name] = address.geohashing
+          })
+          payload.territory = territory
+        }
+      }
+      else{
+        throw new Error("Unauthenticated")
           }
         }
         const iss = 'Princeton';

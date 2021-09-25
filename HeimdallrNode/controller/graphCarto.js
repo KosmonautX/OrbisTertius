@@ -104,13 +104,15 @@ Graph.Edge = (function () {
           PK: "USR#" + agent,
           SK: "USR#" + agent + "#pub"
         },
-        UpdateExpression: "set #geo = :ter",
+        UpdateExpression: "set #geo = :ter, #birthtime = :genesis",
         ExpressionAttributeNames:{
-          "#geo": "geohash"
+          "#geo": "geohash",
+          "#birthtime": "time"
         },
         ConditionExpression: "attribute_not_exists(geohash)",
         ExpressionAttributeValues: {
-          ":ter": data
+          ":ter": data,
+          ":genesis": moment().unix()
         }
       };
       docClient.update(params, function(err, data) {

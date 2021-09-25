@@ -14,7 +14,7 @@ User-Agent: Emacs27
 :evange = 188681901
 :bala = 98667304
 #:ryan = SxD23ctxrIUDPi1lXkAOq5BKm1l1
-:ryan = H83jZdG4I0SbTrfjb9BjqmnBF7s1
+:ryan = R3Vsjq9CARfprwOJps44kbVczFQ2
 :admin = "90565482"
 :applefcm = c6ZkucGHnEuXqjdqATVDbc:APA91bHo0lPVfD4KPIiZUBH8zIthAgvItRtxlNSKF0Noxrn479Az9j-Rbcjep3TW5KqWBKhClaew2kG3XTWdNJDDvDrzz3Hsia-x4yLwQV-OApJKdypUqSa8-T9KOnYeFU0R8gBP5r
 :printonemail = "niceprinceton@gmail.com"
@@ -64,7 +64,7 @@ POST :ipAddress/api/nomadology/post_orb
     },"target":42,"geolock": true}},
     "orb_nature": 10021000000,
     "postal_code": 650301,
-    "expires_in": 30
+    "expires_in": 10000
 }
 #
 ##
@@ -119,7 +119,7 @@ Content-Type: application/json
     "device_id": ":id"
 }
 #
-## LOCAL auth_server
+## LOCAL auth_server when no internet add SK #pte and identifier keys
 POST :ipAddress/api/devland/auth/server
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 Content-Type: application/json
@@ -280,7 +280,7 @@ GET :ipAddress/api/query/get?orb_uuid=c04615d4-7dad-4438-bd4f-da57b0f605bf
 GET :ipAddress/api/query/orbs/c04615d4-7dad-4438-bd4f-da57b0f605bf,79696fdc-a605-4d02-b5e9-bb7468517e4c
 :my-headers
 ## 1. fetch users
-GET :ipAddress/api/query/get_orbs/2
+GET :ipAddress/api/query/get_orbs/:orb
 :my-headers
 ## 2. FRESHORBS
 GET :ipAddress/api/query/orbs_in_loc_fresh_batch?postal_code=650301

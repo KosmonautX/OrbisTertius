@@ -96,7 +96,7 @@ router.post(`/post_orb`, async function (req, res, next) {
             body.init.username = pubData.Item.alphanumeric
             if(pubData.Item.payload){
                 if(pubData.Item.payload.media) body.init.media = true;
-                if(pubData.Item.payload.profile_pic)body.init.profile_pic= pubData.Item.payload.profile_pic;
+                if(pubData.Item.payload.profile_pic) body.init.profile_pic= pubData.Item.payload.profile_pic;
             }
             orb_uuid = await dynaOrb.create(body,dynaOrb.gen(body)).catch(err => {
                 err.status = 400;
