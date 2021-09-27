@@ -209,14 +209,6 @@ POST :ipAddress/api/orb/create_user
 }
 
 
-## 1b. Upload Profile Pic
-POST :ipAddress/api/orb/upload_profile_pic
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjM0LCJuYW1lIjoibG9naW4gYm9pIiwicm9sZSI6Im5vcm1pZSIsImlhdCI6MTYxNDM0MjM2NSwiZXhwIjoxNjE0NDI4NzY1LCJpc3MiOiJQcmluY2V0b24iLCJzdWIiOiJTY3JhdGNoQmFjIn0.wmsWZgsogNOqiZbCbv79LCWQsTQnTxzMbS4TeaoaiBQ
-{   
-   "user_id": 1234,
-   "media": "<---image--->"
-}
-
 ## 2. Accept ORB
 # keyword: ACCEPT | BOOKMARK | DELETE | HIDE | REPORT</br>
 # allows for latlon instead of postal code </br>

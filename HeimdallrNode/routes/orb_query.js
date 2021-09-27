@@ -58,7 +58,7 @@ router.get(`/get_orbs/:orb_uuids`, async function (req, res, next) {
  */
 router.get(`/get_users/:user_ids`, async function (req, res, next) {
     try{
-        const n = 5
+        const n = 8
         const users = req.params.user_ids.split(',').slice(0,n)
         Promise.all(users.map(user_id => userQuery.queryPUB(user_id))).then(response => {
             daos = response.map(async(data) => {
