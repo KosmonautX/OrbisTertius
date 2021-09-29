@@ -8,16 +8,16 @@ switch(process.env.NODE_ENV)
 }
 
 const serve3 = {
-  async preSign(action,entity, uuid, form) {
+  async preSign(action,entity, uuid, form, retry=5) {
     try{
-    var retry = 5
     var sign = s3.getSignedUrl(action, {
       Bucket: ddb_config.sthreebucket,
       Key: entity+ '/' +uuid + '/' + form, Expires: 300
     });
     if(sign.length < 50 && retry > 0){
       retry --
-      sign = serve3.preSign(action,entity,uuid,form);}
+      console.log(sign)
+      sign = serve3.preSign(action,entity,uuid,form, retry);}
 
       return sign;}
     catch(error){

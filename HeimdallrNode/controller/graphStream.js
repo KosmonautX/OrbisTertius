@@ -24,8 +24,9 @@ Stream.Channel = (function () {
             // last evaluated key , scan direction
         },
         nowstream: function(){
-            if(state.KeyConditionExpression) state.KeyConditionExpression += ` and SK <= :now`;
-            state.ExpressionAttributeValues[":now"] = moment().unix().toString()
+            //if(state.KeyConditionExpression) state.KeyConditionExpression += ` and SK <= :now`;
+            //state.ExpressionAttributeValues[":now"] = moment().unix().toString()
+
             state["ScanIndexForward"] = false
         }
         ,

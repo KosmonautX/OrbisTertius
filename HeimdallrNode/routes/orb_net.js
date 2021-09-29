@@ -130,28 +130,6 @@ function slider_time(dt){
     return expiry_dt;
 }
 
-// upload profile pic, not sure if it works, bala made it
-router.post(`/upload_profile_pic`, async function (req, res, next) {
-    try {
-        let body = { ...req.body };
-
-        if (body.media===true){
-            var img_lossy = await serve3.preSign('putObject','USR',body.user_id,'150x150');
-            var img_lossless = await serve3.preSign('putObject','USR',body.user_id,'1920x1080');
-            res.status(200).json({
-                "lossy": img_lossy,
-                "lossless": img_lossless,
-            });
-        } else {
-            res.status(400).json({
-                "Error": "No media"
-            });
-        }
-    } catch (err) {
-        next(err);
-    }
-});
-
 /**
  * API POST 3
  * User personal interactions with orb: SAVE | HIDE

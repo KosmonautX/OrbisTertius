@@ -76,7 +76,8 @@ router.post(`/post`, async function (req, res, next) {
 router.post(`/reply`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        body.comment_id = uuidv4();
+        body.comment_id = moment().unix();
+        await dynaOrb.childPresent(body)
         await dynaOrb.postChildComment(body);
         res.status(201).send({comment_id: body.comment_id});
     } catch (err) {

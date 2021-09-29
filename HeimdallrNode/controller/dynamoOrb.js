@@ -17,7 +17,6 @@ const comment = {
                 SK: "COM#" + body.comment_id,
                 time: moment().unix(),
                 inverse: "USR#" + body.user_id,
-                available: 1,
                 payload: {
                     comment: body.comment,
                     orb_uuid: body.orb_uuid
@@ -35,13 +34,29 @@ const comment = {
                 SK: "COM#" + body.comment_id,
                 time: moment().unix(),
                 inverse: "USR#" + body.user_id,
-                available: 1,
+                available: 0,
                 payload: {
                     comment: body.comment
                 },
             },
         };
         const data = await docClient.put(params).promise();
+        return data;
+    },
+    async childPresent(body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Key: {
+                PK: "ORB#" + body.orb_uuid,
+                SK: "COM#" + body.parent_id,
+            },
+            UpdateExpression: "set available = :present",
+            ConditionExpression: "attribute_exists(SK)",
+            ExpressionAttributeValues: {
+                ":present": 1
+            }
+        };
+        const data = await docClient.update(params).promise();
         return data;
     },
     async postChildComment(body) {
@@ -52,7 +67,6 @@ const comment = {
                 SK: "COM#" + body.comment_id,
                 time: moment().unix(),
                 inverse: "USR#" + body.user_id,
-                available: 1,
                 payload: {
                     comment: body.comment
                 },
@@ -189,7 +203,7 @@ const dynaOrb = {
                             Item: {
                                 PK: "ORB#" + orb_uuid,
                                 SK: "USR#" + body.user_id,
-                                inverse: "600#INIT",
+                                inverse: "600#INIT#"+ body.created_dt, //in action space action is king lexiological sort (dictionary)
                                 time: body.created_dt,
                                 geohash: body.geolocation,
                                 payload: {
@@ -208,7 +222,7 @@ const dynaOrb = {
                         PutRequest: {
                             Item: {
                                 PK: "LOC#" + hashes +"#" + body.geolocation.radius,
-                                SK: body.created_dt.toString() + "#ORB#" + orb_uuid,
+                                SK: body.created_dt + "#ORB#" + orb_uuid, // in stream time is king
                                 geohash : body.geolocation,
                                 extinguish: body.expiry_dt,
                                 payload: {
@@ -314,7 +328,7 @@ const dynaOrb = {
                         media: body.media,
                         photo: body.photo,
                         user_id: body.user_id,
-                        username: body.init.username,
+                        init: {username: body.init.username},
                         creationtime: body.created_dt,
                         expires_in: body.expires_in,
                         tags: body.tags,

@@ -13,39 +13,8 @@ const userQuery = require('../controller/dynamoUser').userQuery;
 const serve3 = require ('../controller/orbjectStore').serve3
 
 /**
- * API 1 
- * Get specific orb (all info) by ORB:uuid
- */
-router.get(`/get_orb`, async function (req, res, next) {
-    let params = {
-        TableName: ddb_config.tableNames.orb_table,        
-        Key: {
-            PK: "ORB#" + req.query.orb_uuid,
-            SK: "ORB#" + req.query.orb_uuid
-        }
-    };
-    docClient.get(params, function(err, data) {
-        if (err) {
-            res.status(400).send({ Error: err.message });
-        } else {
-            if (data.Item){
-                let dao = {};
-                dao.expiry_dt = data.Item.time;
-                dao.nature = data.Item.numeric;
-                dao.orb_uuid = data.Item.PK.slice(4);
-                dao.geohash = parseInt(data.Item.alphanumeric.slice(4));
-                dao.geohash52 = data.Item.geohash;
-                dao.payload = data.Item.payload
-                res.json(dao);
-            } else {
-                res.status(404).json("ORB not found");
-            }
-        }
-    });
-});
-/**
  * API 1
- * Get specific orb (all info) by ORB:uuid
+ * Get specific orbs (all info) by ORB:uuid
  */
 router.get(`/get_orbs/:orb_uuids`, async function (req, res, next) {
     try{
@@ -89,14 +58,14 @@ router.get(`/get_orbs/:orb_uuids`, async function (req, res, next) {
  */
 router.get(`/get_users/:user_ids`, async function (req, res, next) {
     try{
-        const n = 5
+        const n = 8
         const users = req.params.user_ids.split(',').slice(0,n)
         Promise.all(users.map(user_id => userQuery.queryPUB(user_id))).then(response => {
             daos = response.map(async(data) => {
                 var dao = {}
                 if(data.Item){
+                    dao.user_id = data.Item.PK.slice(4);
                     if (data.Item.payload) {
-                        dao.user_id = data.Item.PK.slice(4);
                         dao.payload = data.Item.payload
                         if(data.Item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','USR',dao.user_id,'150x150')}
                     if(data.Item.alphanumeric) dao.payload.username = data.Item.alphanumeric;
@@ -114,43 +83,6 @@ router.get(`/get_users/:user_ids`, async function (req, res, next) {
     }catch(err){
         if (err.message == "Recall User failed") err.status = 401;
         next(err);
-    }
-});
-/**
- * API 1 
- * Get specific user (all info) 
- */
-router.get(`/get_user`, async function (req, res, next) {
-    // let pteData = await userQuery.queryPTE(req).catch(err => {
-    //     err.status = 400;
-    //     next(err);
-    // });
-    let pubData = await userQuery.queryPUB(req.query.user_id).catch(err => {
-        err.status = 400;
-        next(err);
-    });
-
-    if (pubData.Item) {
-        let dao = {};
-        if (pubData.Item.payload) {
-            dao.bio = pubData.Item.payload.bio;
-            dao.profile_pic = pubData.Item.payload.profile_pic;
-            dao.media = pubData.Item.payload.media
-            if(pubData.Item.payload.media) dao.media_asset = await serve3.preSign('getObject','USR',req.query.user_id,'1920x1080')
-            //dao.verified = pubData.Item.payload.verified;
-            // dao.country_code = pteData.Item.payload.country_code;
-        }
-        // if (pteData.Item.payload){
-        //     dao.gender = pteData.Item.payload.gender;
-        //     dao.birthday = pteData.Item.payload.birthday;
-        // }
-        dao.user_id = req.query.user_id;
-        dao.username = pubData.Item.alphanumeric;
-        dao.geolocation = pubData.Item.geohash;
-        // dao.join_dt = pteData.Item.join_dt;
-        res.json(dao);
-    } else {
-        res.status(404).json("User not found");
     }
 });
 
@@ -187,19 +119,19 @@ router.get(`/user_profile`, async function (req, res, next) {
     let params = {
         TableName: ddb_config.tableNames.orb_table,
         IndexName: "Chronicle",
-        KeyConditionExpression: "SK = :user and inverse = :sort",
+        KeyConditionExpression: "SK = :user and begins_with(inverse, :sort)",
         ExpressionAttributeValues: {
             ":user": "USR#" + req.query.user_id,
             ":sort": keyword_to_code(req.query.keyword)
         },
         Limit: 8,
-        ScanIndexForward: req.query.ascending,
+        ScanIndexForward: false,
     };
-    if (req.query.start) {
+    if (req.query.startkey) {
         params.ExclusiveStartKey = {
             "SK": "USR#" + req.query.user_id,
-            "inverse": keyword_to_code(req.query.keyword),
-            "PK": "ORB#" + req.query.start
+            "inverse": keyword_to_code(req.query.keyword)+ "#" + req.query.starttime,
+            "PK": "ORB#" + req.query.startkey
         }
     };
     docClient.query(params, async function(err, data) {
@@ -224,7 +156,9 @@ router.get(`/user_profile`, async function (req, res, next) {
                         return dao
                     })),
                 }
-                if (data.LastEvaluatedKey) result.LastEvaluatedKey = data.LastEvaluatedKey.PK.slice(4)
+                if (data.LastEvaluatedKey) {
+                    result.LastEvaluatedTime = data.LastEvaluatedKey.inverse.slice(-10)
+                    result.LastEvaluatedKey = data.LastEvaluatedKey.PK.slice(4)}
                 res.json(result);
             }
         }
