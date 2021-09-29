@@ -130,7 +130,7 @@ router.get(`/user_profile`, async function (req, res, next) {
     if (req.query.startkey) {
         params.ExclusiveStartKey = {
             "SK": "USR#" + req.query.user_id,
-            "inverse": keyword_to_code(req.query.keyword) + req.query.starttime,
+            "inverse": keyword_to_code(req.query.keyword)+ "#" + req.query.starttime,
             "PK": "ORB#" + req.query.startkey
         }
     };
