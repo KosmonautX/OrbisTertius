@@ -12,7 +12,7 @@ const serve3 = {
     try{
     var sign = s3.getSignedUrl(action, {
       Bucket: ddb_config.sthreebucket,
-      Key: entity+ '/' +uuid + '/' + form, Expires: 300
+      Key: entity+ '/' +uuid + '/' + form, Expires: ddb_config.sthreelinkexpiry
     });
     if(sign.length < 50 && retry > 0){
       retry --
