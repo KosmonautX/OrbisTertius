@@ -1,6 +1,6 @@
 HeimdallrNode/node_modules
 WolfSmoke/node_modules
-WolfSmoke/shard/shardState.json
+**/WolfSmoke/shard/shardState.json
 .DS_Store
 .vscode
 *.pyc

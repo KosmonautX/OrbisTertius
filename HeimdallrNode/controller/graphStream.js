@@ -26,6 +26,7 @@ Stream.Channel = (function () {
         nowstream: function(){
             //if(state.KeyConditionExpression) state.KeyConditionExpression += ` and SK <= :now`;
             //state.ExpressionAttributeValues[":now"] = moment().unix().toString()
+
             state["ScanIndexForward"] = false
         }
         ,

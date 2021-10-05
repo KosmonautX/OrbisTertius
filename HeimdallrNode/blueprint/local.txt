@@ -14,7 +14,7 @@ User-Agent: Emacs27
 :evange = 188681901
 :bala = 98667304
 #:ryan = SxD23ctxrIUDPi1lXkAOq5BKm1l1
-:ryan = R3Vsjq9CARfprwOJps44kbVczFQ2
+:ryan = R3Vsjq9CARfprwOJps44kbVczFQ
 :admin = "90565482"
 :applefcm = c6ZkucGHnEuXqjdqATVDbc:APA91bHo0lPVfD4KPIiZUBH8zIthAgvItRtxlNSKF0Noxrn479Az9j-Rbcjep3TW5KqWBKhClaew2kG3XTWdNJDDvDrzz3Hsia-x4yLwQV-OApJKdypUqSa8-T9KOnYeFU0R8gBP5r
 :printonemail = "niceprinceton@gmail.com"
@@ -455,7 +455,7 @@ GET localhost:5000/api/comment/query?parent_id=0ea7d4a8-6ce4-4f90-b9ee-72a88d373
 # post a PARENT comment
 POST :ipAddress/api/comment/post
 :my-headers
-{
+
     "orb_uuid": "c62cc326-6e67-4f1b-ab0d-c343d5859829",
     "user_id": ":ryan",
     "comment": "anankin i have the high ground"
