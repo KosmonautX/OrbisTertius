@@ -6,12 +6,26 @@ interface Message{
     data?:Object
     topic?: string
 }
+
 interface GeoHash{
     hash: number
-    granularity: number
+    radius: number
 }
+interface Location{
+    geohashing: GeoHash
+
+}
+
+// interface PubOrbGeoHash{
+//     hashes: Array<number>
+//     radius: number
+//     geolock: boolean
+//     geofence: Array<number>
+//     hash: number
+
+// }
 interface TerritoryPub{
-    [index: string]: GeoHash
+    [index: string]: Location
 }
 
 //type Message =  Map<string, Map<string, string|number>|string>
@@ -48,7 +62,7 @@ async function sendsubscribers(message: Message ,topic: string, client: any): Pr
 async function messenger(newRecord: Mutation, Element: KeyElement, client:any): Promise<void>{
     if(Element.archetype === "ORB"){
         let message = {notification:  {
-            "title": `An ${newRecord.numeric} ORB just rose in the horizon`,
+            "title": `An ORB just rose in the horizon`,
             "body": `${newRecord.payload.title}...`
         },
                        data:{
@@ -56,12 +70,19 @@ async function messenger(newRecord: Mutation, Element: KeyElement, client:any): 
                            "id": Element.id,
                            "state": "INIT",
                            "time": String(newRecord.time)
+                       }}
+        var count = 0, hash_len = newRecord.geohash.hashes.length
+        while( count < hash_len) {
+            let loc_topic = "LOC."+ newRecord.geohash.hashes[count] + "." + newRecord.geohash.radius
+            sendsubscribers(message, loc_topic, client).then((response) => {console.log("Message Sent", response)})
+                .catch((error)=>{
+                    console.log("Error sending Message" , error)
+                })
+            count ++
         }}
-        sendsubscribers(message, newRecord.alphanumeric!.replace('#',"."), client).then((response) => {console.log("Message Sent", response)})
-            .catch((error)=>{
-                console.log("Error sending Message" , error)
-            })
-    }}
+
+}
+
 
 // async function diffObj(): Promise,
 
@@ -105,14 +126,14 @@ export async function territory_subscriber(neoTerritory: TerritoryPub, identifie
         if(retroTerritory){
         Object.entries(neoTerritory).forEach(([geoName, address]) =>{
             if(!retroTerritory[geoName]){
-                switchsubscribe("LOC",identifier,client, address.hash)
+                switchsubscribe("LOC",identifier,client, address.geohashing.hash + "." + address.geohashing.radius)
             }
-            else if(address.hash !== retroTerritory[geoName].hash){
-                switchsubscribe("LOC", identifier, client, address.hash, retroTerritory[geoName].hash)}
+            else if(address.geohashing.hash !== retroTerritory[geoName].geohashing.hash){
+                switchsubscribe("LOC", identifier, client, address.geohashing.hash + "." + address.geohashing.radius, retroTerritory[geoName].geohashing.hash + "." + retroTerritory[geoName].geohashing.radius)}
         })}
         else{
             Object.entries(neoTerritory).forEach(([geoName, address]) =>{
-                switchsubscribe("LOC",identifier,client, address.hash)
+                switchsubscribe("LOC",identifier,client, address.geohashing.hash + "." + address.geohashing.radius)
             })
         }
     } catch (e) {
