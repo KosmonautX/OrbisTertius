@@ -317,7 +317,7 @@ const dynaOrb = {
                     SK: "ORB#" + body.orb_uuid,
                     time: body.expiry_dt,
                     geohash : body.geolocation,
-                    alphanumeric: "LOC#" + body.geolocation.hash+ body.geolocation.radius,
+                    alphanumeric: "LOC#" + body.geolocation.hash+ "#" +body.geolocation.radius,
                     payload: {
                         title: body.title, // title might have to go to the alphanumeric
                         orb_nature: body.orb_nature,

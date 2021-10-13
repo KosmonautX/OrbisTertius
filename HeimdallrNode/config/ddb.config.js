@@ -1,7 +1,7 @@
 module.exports = {
     dyna: process.env.DYNA,
     sthree: "http://localstack:3000",
-    sthreelinkexpiry: 60,
+    sthreelinkexpiry: 1200,
     sthreebucket: process.env.BUCKET || "orbistertius" ,
     region: process.env.AWS_DEFAULT_REGION,
     tableNames: {
