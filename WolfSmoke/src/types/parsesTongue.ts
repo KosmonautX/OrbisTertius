@@ -8,6 +8,7 @@ export interface Mutation {
     numeric?: number
     alphanumeric?: string
     payload?: any
+    beacon?: Array<string>
 }
 // extend KeyElementto Relations and Time
 export interface KeyElement{

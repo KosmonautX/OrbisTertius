@@ -76,7 +76,7 @@ async function sendone(message: Message ,token: string, client: any): Promise<vo
 async function messenger(newRecord: Mutation, Element: KeyElement, client:any): Promise<void>{
     if(Element.archetype === "ORB"){
         let message = {notification:  {
-            "title": `An ORB just rose in the horizon`,
+            "title": `A new ORB arose nearby...`,
             "body": `${newRecord.payload.title}...`
         },
                        data:{
@@ -139,15 +139,18 @@ export async function triggerBeacon(newRecord: Mutation, client: any, oldRecord?
     try {
         // generalise into KeyElementRElations later
         if(newRecord.identifier){
-            if(newRecord.alphanumeric !== oldRecord?.alphanumeric){
+            if(newRecord.beacon && newRecord.beacon !== oldRecord?.beacon){
                 if(newRecord.payload) var title = newRecord.payload.title
+                let [username , user_id ] =  newRecord.beacon
+
                 let message = {notification:  {
-                    "title": `A message from ${newRecord.alphanumeric} awaits...`,
-                    "body": `${title || newRecord.alphanumeric}...`},
+                    "title": `A message from ${username} awaits...`,
+                    "body": `${title || username}...`},
                                data:{
                                    "archetype": "ORB",
                                    "id": newRecord.PK.slice(4),
-                                   "state": "BECN"
+                                   "state": "BECN",
+                                   "messenger_id": user_id
                                }}
                 sendone(message,newRecord.identifier,client)
             }}
