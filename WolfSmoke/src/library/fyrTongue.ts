@@ -5,6 +5,7 @@ interface Message{
     notification:Object
     data?:Object
     topic?: string
+    token?: string
 }
 
 interface GeoHash{
@@ -48,6 +49,19 @@ async function unsubscribe(token:string, topic:string, client:any): Promise<void
 
 async function sendsubscribers(message: Message ,topic: string, client: any): Promise<void>{
     message["topic"]= "/topics/" +topic
+    client.send(message)
+        .then((response:any) => {
+            // Response is a message ID string.
+            console.log('Successfully sent message:', response);
+        })
+        .catch((error: any) => {
+            console.log('Error sending message:', error);
+        });
+
+}
+
+async function sendone(message: Message ,token: string, client: any): Promise<void>{
+    message["token"]= token
     client.send(message)
         .then((response:any) => {
             // Response is a message ID string.
@@ -121,6 +135,27 @@ export async function triggerNotif(newRecord: Mutation, client: any): Promise<vo
         }
 }
 
+export async function triggerBeacon(newRecord: Mutation, client: any, oldRecord?: Mutation): Promise<void>{
+    try {
+        // generalise into KeyElementRElations later
+        if(newRecord.identifier){
+            if(newRecord.alphanumeric !== oldRecord?.alphanumeric){
+                if(newRecord.payload) var title = newRecord.payload.title
+                let message = {notification:  {
+                    "title": `A message from ${newRecord.alphanumeric} awaits...`,
+                    "body": `${title || newRecord.alphanumeric}...`},
+                               data:{
+                                   "archetype": "ORB",
+                                   "id": newRecord.PK.slice(4),
+                                   "state": "BECN"
+                               }}
+                sendone(message,newRecord.identifier,client)
+            }}
+    } catch (e) {
+        console.log(e)
+    }
+}
+
 export async function territory_subscriber(neoTerritory: TerritoryPub, identifier: string, client: any, retroTerritory?: TerritoryPub): Promise<void>{
     try {
         if(retroTerritory){
@@ -141,7 +176,7 @@ export async function territory_subscriber(neoTerritory: TerritoryPub, identifie
         }
 }
 
-export async function mutateSubscription(newRecord: Mutation, client: any,  oldRecord?: Mutation): Promise<void>{
+export async function mutateTerritorySubscription(newRecord: Mutation, client: any,  oldRecord?: Mutation): Promise<void>{
     try {
         if(newRecord.identifier){
             var Element = KeyParser(newRecord.PK, newRecord.SK);
@@ -156,6 +191,24 @@ export async function mutateSubscription(newRecord: Mutation, client: any,  oldR
                 }
             }
 
+
+        }   } catch (e) {
+            console.log(e)
+        }
+}
+
+export async function mutateActorSubscription(newRecord: Mutation, client: any,  oldRecord?: Mutation): Promise<void>{
+    try {
+        //send through KeyElement later
+        if(newRecord.identifier && newRecord.inverse){
+            switch(newRecord.inverse.slice(0,8)){
+                    case '600#INIT':
+                    switchsubscribe("ORB",newRecord.identifier,client, newRecord.PK.slice(4) + "." + newRecord.inverse.slice(4,8))
+                    break;
+                    case '500#ACPT':
+                    switchsubscribe("ORB",newRecord.identifier,client, newRecord.PK.slice(4) + "." + newRecord.inverse.slice(4,8))
+                    break;
+            }
 
         }   } catch (e) {
             console.log(e)

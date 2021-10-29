@@ -318,7 +318,16 @@ export class DynaStream extends EventEmitter {
 
 		    case 'MODIFY':
           switch(keys.PK.substr(0,3)){
-            //case 'ORB':break;
+            case 'ORB':
+              switch(keys.SK.substr(0,3)){
+                case 'ORB':
+                  this.emit('ORB_FLUX', newRecord)
+                  break;
+                case 'USR':
+                  this.emit('ORB_USR_FLUX', newRecord)
+                  break;
+              }
+              break;
             case 'USR':
               switch(keys.SK.substr(0,3)){
                 case 'USR':

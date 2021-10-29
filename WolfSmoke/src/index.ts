@@ -4,7 +4,7 @@ import * as fyr from 'firebase-admin';
 import {DynaStream} from "./library/pregolyaStream"
 import { unmarshall } from "@aws-sdk/util-dynamodb"
 import { DynamoDBStreams, ListStreamsCommandOutput } from "@aws-sdk/client-dynamodb-streams";
-import { triggerNotif, mutateSubscription} from "./library/fyrTongue";
+import { triggerNotif, triggerBeacon, mutateTerritorySubscription, mutateActorSubscription} from "./library/fyrTongue";
 import {telePostOrb, teleExtinguishOrb} from "./library/teleriaTongue"
 const fs = require('fs').promises
 const FILE = './shard/shardState.json'
@@ -47,16 +47,24 @@ async function main(stream: DynamoDBStreams, stream_arn:string) {
     await triggerNotif(rise,fyr.messaging())
   });
 
+  DynaRipples.on('ORB_USR_GENESIS', async function ActorGenesisListener(rise){
+    await mutateActorSubscription(rise,fyr.messaging())
+  });
+
+  DynaRipples.on('ORB_USR_FLUX', async function ActorFluxListener(present, past){
+    await triggerBeacon(present,fyr.messaging(),past)
+  });
+
   DynaRipples.on('ORB_EXTINGUISH', async function TerminusListener(fall) {
     await teleExtinguishOrb(fall)
   });
 
   DynaRipples.on('USR_FLUX', async function FluxListener(present, past) {
-    await mutateSubscription(present,fyr.messaging(),past)
+    await mutateTerritorySubscription(present,fyr.messaging(),past)
   });
 
   DynaRipples.on('USR_GENESIS', async function GenesisListener(present) {
-    await mutateSubscription(present,fyr.messaging())
+    await mutateTerritorySubscription(present,fyr.messaging())
   });
 
 
