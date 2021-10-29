@@ -412,10 +412,10 @@ router.post(`/message_beacon`, async function (req, res, next) {
                 PK: "ORB#" + body.orb_uuid,
                 SK: "USR#" + body.messenger_id.toString(),
             },
-            UpdateExpression: "set alphanumeric = :present",
+            UpdateExpression: "set beacon = :beaconer",
             ConditionExpression: "attribute_exists(SK)",
             ExpressionAttributeValues: {
-                ":present": req.verification.username
+                ":beaconer": [req.verification.username, body.user_id]
             }
         };}
         else if(body.beacon_switch === 'off') {
@@ -425,7 +425,7 @@ router.post(`/message_beacon`, async function (req, res, next) {
                 PK: "ORB#" + body.orb_uuid,
                 SK: "USR#" + body.user_id.toString(),
             },
-            UpdateExpression: "remove alphanumeric",
+            UpdateExpression: "remove beacon",
             ConditionExpression: "attribute_exists(SK)",
         };
                                        }
