@@ -26,7 +26,6 @@ router.post('/serveronfyr' , async (req,res, next) => {
       });
       if(existing_attr.Item && existing_attr.Item.identifier === req.body.device_id){
         payload.user_id = req.body.user_id;
-        payload.username = "ChongaldXrump";
         payload.role = "pleb";
         /*
          * territory is not the most granular as this might compromise user security
@@ -38,6 +37,10 @@ router.post('/serveronfyr' , async (req,res, next) => {
             territory[name] = address.geohashing
           })
           payload.territory = territory
+        }
+
+        if(existing_attr.Item.alphanumeric){
+          payload.username = existing_attr.Item.alphanumeric
         }
       }
       else{

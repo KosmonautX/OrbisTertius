@@ -206,6 +206,7 @@ const dynaOrb = {
                                 inverse: "600#INIT#"+ body.created_dt, //in action space action is king lexiological sort (dictionary)
                                 time: body.created_dt,
                                 geohash: body.geolocation,
+                                identifier: body.beacon,
                                 payload: {
                                     orb_nature: body.orb_nature,
                                     title: body.title,
@@ -286,7 +287,7 @@ const dynaOrb = {
             },
             UpdateExpression: "set inverse = :status",
             ExpressionAttributeValues: {
-                ":status": "800#FULFILLED"
+                ":status": "800#FULF"
             }
         };
         const data = await docClient.update(params).promise();
@@ -301,7 +302,7 @@ const dynaOrb = {
             },
             UpdateExpression: "set inverse = :status",
             ExpressionAttributeValues: {
-                ":status": "800#FULFILLED"
+                ":status": "800#FULF"
             }
         };
         const data = await docClient.update(params).promise();
@@ -386,7 +387,7 @@ const dynaOrb = {
                         },
                         UpdateExpression: "set inverse = :status",
                         ExpressionAttributeValues: {
-                            ":status": "801#COMPLETED" 
+                            ":status": "801#CMPL"
                         }
                     }
                 },

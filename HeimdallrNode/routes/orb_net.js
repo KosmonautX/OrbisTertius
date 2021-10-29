@@ -275,33 +275,54 @@ router.put(`/update_username`, async function (req, res, next) {
     try {
         let body = { ...req.body };
         // transac create username, if true, then change and delete old username, else no go
+        // need to have mirror of username in pte for authorisation
 
         let pubData = await userQuery.queryPUB(body.user_id);
         if (pubData.Item) { // get old username
             body.old_username = pubData.Item.alphanumeric;
             let transac = await dynaUser.usernameTransaction(body);
             if (transac == true) {
-                let params = {
-                    TableName: ddb_config.tableNames.orb_table,      
+                let pte_update = {
+                    TableName: ddb_config.tableNames.orb_table,
                     Key: {
-                        PK: "USR#" + body.user_id, 
-                        SK: "USR#" + body.user_id + "#pub",
+                        PK: "USR#" + body.user_id,
+                        SK: "USR#" + body.user_id + "#pte",
                     },
                     UpdateExpression: "set alphanumeric = :username",
                     ExpressionAttributeValues: {
                         ":username": body.username,
                     }
                 };
-                docClient.update(params, function(err, data) {
+
+                docClient.update(pte_update, function(err, data) {
                     if (err) {
                         err.status = 400;
                         next(err);
                     } else {
-                        res.status(201).json({
-                            "User updated:": body
+                        let params = {
+                            TableName: ddb_config.tableNames.orb_table,
+                            Key: {
+                                PK: "USR#" + body.user_id,
+                                SK: "USR#" + body.user_id + "#pub",
+                            },
+                            UpdateExpression: "set alphanumeric = :username",
+                            ExpressionAttributeValues: {
+                                ":username": body.username,
+                            }
+                        };
+                        docClient.update(params, function(err, data) {
+                            if (err) {
+                                err.status = 400;
+                                next(err);
+                            } else {
+                                res.status(201).json({
+                                    "User updated:": body
+                                });
+                            }
                         });
                     }
                 });
+
             } else {
                 let err = new Error("Username taken");
                 err.status = 409;
@@ -313,7 +334,7 @@ router.put(`/update_username`, async function (req, res, next) {
             err.status = 404;
             throw err;
         }
-   
+
     } catch (err) {
         next(err);
     }
@@ -356,8 +377,9 @@ router.post(`/accept`, async function (req, res, next) {
             Item: {
                 PK: "ORB#" + body.orb_uuid,
                 SK: "USR#" + body.user_id.toString(),
-                inverse : "500#ACCEPT",
+                inverse : "500#ACPT",
                 time: moment().unix(),
+                identifier: body.beacon
             },
         };
         docClient.put(params, function(err, data) {
@@ -374,6 +396,52 @@ router.post(`/accept`, async function (req, res, next) {
                 });
             }
           });
+    } catch (err) {
+        err.status = 400;
+        next(err);
+    }
+});
+
+router.post(`/message_beacon`, async function (req, res, next) {
+    try {
+        let body = { ...req.body };
+        if(body.beacon_switch === 'on') {
+            var params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Key: {
+                PK: "ORB#" + body.orb_uuid,
+                SK: "USR#" + body.messenger_id.toString(),
+            },
+            UpdateExpression: "set alphanumeric = :present",
+            ConditionExpression: "attribute_exists(SK)",
+            ExpressionAttributeValues: {
+                ":present": req.verification.username
+            }
+        };}
+        else if(body.beacon_switch === 'off') {
+            var params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Key: {
+                PK: "ORB#" + body.orb_uuid,
+                SK: "USR#" + body.user_id.toString(),
+            },
+            UpdateExpression: "remove alphanumeric",
+            ConditionExpression: "attribute_exists(SK)",
+        };
+                                       }
+
+        const data = await docClient.update(params, function(err, data) {
+            if (err) {
+                err.status = 400;
+                next(err);
+            } else {
+                res.status(200).json({
+                    "Message Beacon of ": req.verification.username,
+                    "switched to": body.beacon_switch
+                });
+            }
+        });
+
     } catch (err) {
         err.status = 400;
         next(err);
@@ -556,7 +624,7 @@ router.put(`/pending_orb_acceptor`, async function (req, res, next) {
             },
             UpdateExpression: "set inverse = :status",
             ExpressionAttributeValues: {
-                ":status": "550#PENDING"
+                ":status": "550#PEND"
             }
         };
         docClient.update(params, function(err, data) {

@@ -217,7 +217,7 @@ Land.Entity = (function () {
     // conditional update check device id identical (signup)
 
     interface_dao.exist = async() =>{
-        projection(['PK','identifier','geohash']);
+        projection(['PK','identifier','geohash', 'alphanumeric']);
         return await recall();
 
     };

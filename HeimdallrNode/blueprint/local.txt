@@ -16,8 +16,7 @@ User-Agent: Emacs27
 #:ryan = SxD23ctxrIUDPi1lXkAOq5BKm1l1
 :ryan = R3Vsjq9CARfprwOJps44kbVczFQ2
 :admin = "90565482"
-:applefcm = APA91bF9d_cbRH94pHWPKoaUlilV5YKvNcyv4xTdPnymQDZY7cdsJqwTN3mzNfZeyl3KKS1Gptrmofzya7ZdllS3wtX-MejZ9Q_9DMrU6CSaT6pXEDVsRulfKUP_PkZw9i3lvvSvCpFh
-
+:applefcm = e-OCuEw8TRSXqUL4UWhR5A:APA91bF6piShOFhcdfpUID--zffBvAHwaxOxVCH2GU7bqdhWQ_ad15jIsw3GezNgU4_ZzJLcLkh8Rzll_tPr-PqYThvf581qpwX82gvNU4RbkUyfJ2QccKzMfTyqLBebAU__dgFuQ4no
 :printonemail = "niceprinceton@gmail.com"
 :ryanemail = luckuveryx@gmail.com
 :myemail = avivekbala@gmail.com
@@ -59,13 +58,14 @@ POST :ipAddress/api/nomadology/post_orb
     "when": "now",
     "tip": "foc",
     "media": false,
-    "geolocation": {"home": {"latlon":{
+    "geolocation": {"live": {"latlon":{
     "lat":1.3568,
     "lon":103.7487
     },"target":42,"geolock": true}},
     "orb_nature": 10,
     "postal_code": 650301,
-    "expires_in": 10000
+    "expires_in": 10000,
+    "beacon": ":applefcm"
 }
 #
 ##
@@ -73,7 +73,7 @@ POST :ipAddress/api/nomadology/post_orb
 POST :ipAddress/api/nomadology/freshorbstream
 :my-headers
 {
-"geolocation": {"home": {"latlon":{
+"geolocation": {"live": {"latlon":{
     "lat":1.3568,
     "lon":103.7487
     },"target":42}}
@@ -93,11 +93,21 @@ PUT :ipAddress/api/orb/user_location
 :my-headers
 {
     "user_id": ":ryan",
-    "event": "update",
+    "event": "genesis",
     "live": {"latlon":{
-    "lat":1.3168,
+    "lat":1.3568,
     "lon":103.7487
     }}
+}
+##
+#
+POST :ipAddress/api/orb/message_beacon
+:my-headers
+{
+    "user_id": ":ryan",
+    "messenger_id": ":ryan",
+    "orb_uuid": "5d77c999-4213-4ffc-ae8b-8037a4b6a901",
+    "beacon_switch": "on"
 }
 
 #
@@ -224,7 +234,8 @@ POST :ipAddress/api/orb/accept
 :my-headers
 {
     "user_id": ":ryan",
-    "orb_uuid": "c04615d4-7dad-4438-bd4f-da57b0f605bf"
+    "orb_uuid": "c04615d4-7dad-4438-bd4f-da57b0f605bf",
+    "beacon": ":applefcm"
 }
 
 ## 3. user personal interaction with ORB
@@ -362,7 +373,7 @@ PUT :ipAddress/api/orb/update_username
 :my-headers
 {
     "user_id": ":ryan",
-    "username": "yipyip"
+    "username": "yipyips"
 }
 
 
