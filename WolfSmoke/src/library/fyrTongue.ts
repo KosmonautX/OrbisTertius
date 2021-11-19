@@ -135,20 +135,25 @@ export async function triggerNotif(newRecord: Mutation, client: any): Promise<vo
         }
 }
 
-export async function triggerBeacon(newRecord: Mutation, client: any, oldRecord?: Mutation): Promise<void>{
+export async function triggerBeacon(newRecord: Mutation, client: any, oldRecord: Mutation): Promise<void>{
     try {
         // generalise into KeyElementRElations later
         if(newRecord.identifier){
-            if(newRecord.beacon && newRecord.beacon !== oldRecord?.beacon){
-                if(newRecord.payload) var title = newRecord.payload.title
-                let [username , user_id ] =  newRecord.beacon
+            if(newRecord.beacon && ((oldRecord.beacon == undefined || oldRecord.beacon.size < newRecord.beacon.size))){
+                function getLastValue(set: Set<string>): string{
+                    let value;
+                    for(value of set);
+                    if(value) return value;
+                    else return ""
+                }
+                let [orb_uuid , user_id, username] =  getLastValue(newRecord.beacon).split("#")
 
                 let message = {notification:  {
                     "title": `A message from ${username} awaits...`,
-                    "body": `${title || username}...`},
+                    "body": `${username}...`},
                                data:{
                                    "archetype": "ORB",
-                                   "id": newRecord.PK.slice(4),
+                                   "id": orb_uuid,
                                    "state": "BECN",
                                    "messenger_id": user_id
                                }}

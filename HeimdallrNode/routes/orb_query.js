@@ -62,7 +62,7 @@ router.get(`/get_users/:user_ids`, async function (req, res, next) {
         const users = req.params.user_ids.split(',').slice(0,n)
         Promise.all(users.map(user_id => userQuery.queryPUB(user_id))).then(response => {
             daos = response.map(async(data) => {
-                var dao = {}
+                var dao = {payload:{}}
                 if(data.Item){
                     dao.user_id = data.Item.PK.slice(4);
                     if (data.Item.payload) {
@@ -71,6 +71,7 @@ router.get(`/get_users/:user_ids`, async function (req, res, next) {
                     if(data.Item.alphanumeric) dao.payload.username = data.Item.alphanumeric;
                     if(data.Item.geohash)dao.geolocation = data.Item.geohash;
                     dao.creationtime= data.Item.time
+                    if(dao.user_id == req.verification.user_id)dao.beacon = data.Item.beacon
                 }
                 return dao
             })

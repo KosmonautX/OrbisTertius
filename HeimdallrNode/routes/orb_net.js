@@ -409,24 +409,27 @@ router.post(`/message_beacon`, async function (req, res, next) {
             var params = {
             TableName: ddb_config.tableNames.orb_table,
             Key: {
-                PK: "ORB#" + body.orb_uuid,
-                SK: "USR#" + body.messenger_id.toString(),
+                PK: "USR#" + body.messenger_id,
+                SK: "USR#" + body.messenger_id.toString() + "#pub",
             },
-            UpdateExpression: "set beacon = :beaconer",
+                UpdateExpression: "add beacon :beaconer",
             ConditionExpression: "attribute_exists(SK)",
             ExpressionAttributeValues: {
-                ":beaconer": [req.verification.username, body.user_id]
+                ":beaconer": docClient.createSet([body.orb_uuid+"#"+body.user_id+"#"+req.verification.username])
             }
         };}
         else if(body.beacon_switch === 'off') {
             var params = {
             TableName: ddb_config.tableNames.orb_table,
             Key: {
-                PK: "ORB#" + body.orb_uuid,
-                SK: "USR#" + body.user_id.toString(),
+                PK: "USR#" + body.user_id,
+                SK: "USR#" + body.user_id.toString()+ "#pub",
             },
-            UpdateExpression: "remove beacon",
+            UpdateExpression: "delete beacon :beaconer",
             ConditionExpression: "attribute_exists(SK)",
+            ExpressionAttributeValues: {
+                ":beaconer": docClient.createSet([body.message_sig])
+            }
         };
                                        }
 

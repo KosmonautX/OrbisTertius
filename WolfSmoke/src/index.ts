@@ -52,7 +52,6 @@ async function main(stream: DynamoDBStreams, stream_arn:string) {
   });
 
   DynaRipples.on('ORB_USR_FLUX', async function ActorFluxListener(present, past){
-    await triggerBeacon(present,fyr.messaging(),past)
   });
 
   DynaRipples.on('ORB_EXTINGUISH', async function TerminusListener(fall) {
@@ -61,6 +60,7 @@ async function main(stream: DynamoDBStreams, stream_arn:string) {
 
   DynaRipples.on('USR_FLUX', async function FluxListener(present, past) {
     await mutateTerritorySubscription(present,fyr.messaging(),past)
+    await triggerBeacon(present,fyr.messaging(),past)
   });
 
   DynaRipples.on('USR_GENESIS', async function GenesisListener(present) {
