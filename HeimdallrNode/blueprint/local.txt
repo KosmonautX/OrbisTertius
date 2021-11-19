@@ -64,8 +64,7 @@ POST :ipAddress/api/nomadology/post_orb
     },"target":42,"geolock": true}},
     "orb_nature": 10,
     "postal_code": 650301,
-    "expires_in": 10000,
-    "beacon": ":applefcm"
+    "expires_in": 10000
 }
 #
 ##
@@ -106,8 +105,9 @@ POST :ipAddress/api/orb/message_beacon
 {
     "user_id": ":ryan",
     "messenger_id": ":ryan",
-    "orb_uuid": "5d77c999-4213-4ffc-ae8b-8037a4b6a901",
-    "beacon_switch": "on"
+    "message_sig": "4244c620-e433-45c7-91ba-c34ab2368ea8#R3Vsjq9CARfprwOJps44kbVczFQ2#yipyipss",
+    "orb_uuid": "4244c620-e433-45c7-91ba-c34ab2368ea8",
+    "beacon_switch": "off"
 }
 
 #
@@ -295,7 +295,7 @@ GET :ipAddress/api/query/orbs_in_loc_fresh_page?postal_code=457399&page=0
 ## 3. Get user's ORB profile
 # fulfilled: acceptor fulfills another person's orb </br>
 # completed: initiator completes his own orb
-GET :ipAddress/api/query/user_profile?user_id=:ryan&keyword=INIT&starttime=1632538151&startkey=826107ed-65e2-41fc-90fb-2b679db9e460
+GET :ipAddress/api/query/user_profile?user_id=:ryan&keyword=INIT
 :my-headers
 ## 4. Retrieve user
 GET :ipAddress/api/query/get_users/:ryan
@@ -373,7 +373,7 @@ PUT :ipAddress/api/orb/update_username
 :my-headers
 {
     "user_id": ":ryan",
-    "username": "yipyips"
+    "username": "yipyipss"
 }
 
 
