@@ -156,6 +156,10 @@ router.get(`/user_profile`, async function (req, res, next) {
                         dao.payload = item.payload;
                         if(item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'150x150')
                         dao.available = item.time > now
+                        if(item.payload){
+                            dao.payload = item.payload;
+                            if(item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'150x150')
+                        }
                         dao.geohash = item.geohash;
                         dao.action = item.inverse.slice(4);
                         return dao
