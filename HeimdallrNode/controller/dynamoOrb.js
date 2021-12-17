@@ -204,13 +204,14 @@ const dynaOrb = {
                                 PK: "ORB#" + orb_uuid,
                                 SK: "USR#" + body.user_id,
                                 inverse: "600#INIT#"+ body.created_dt, //in action space action is king lexiological sort (dictionary)
-                                time: body.created_dt,
+                                time: body.expiry_dt, // some init will be deactivated need fulfillment cycle
                                 geohash: body.geolocation,
                                 identifier: body.beacon,
                                 payload: {
                                     orb_nature: body.orb_nature,
                                     title: body.title,
-                                    media: body.media
+                                    media: body.media,
+                                    creationtime: body.created_dt
                                 }
                             }
                         }
@@ -273,7 +274,7 @@ const dynaOrb = {
             dao.geohash = parseInt(data.Item.alphanumeric.slice(4));
             dao.geohash52 = data.Item.geohash;
             dao.postal_code = data.Item.payload.postal_code;
-            dao.available = data.Item.payload.available;
+            dao.available = date.Item.time > moment().unix()
             dao.payload = data.Item.payload;
         } 
         return dao;
@@ -334,7 +335,6 @@ const dynaOrb = {
                         expires_in: body.expires_in,
                         tags: body.tags,
                         postal_code: body.postal_code,
-                        available: true,
                     }
                 },
                 ConditionExpression: "attribute_not_exists(PK)"
@@ -399,7 +399,7 @@ const dynaOrb = {
         }
         return data;
     },
-    async delete(body) { // return true if success
+    async deactivate(body) { // return true if success
         const params = {
             "TransactItems": [
                 {
@@ -418,13 +418,12 @@ const dynaOrb = {
                             PK: "ORB#" + body.orb_uuid,
                             SK: "ORB#" + body.orb_uuid, 
                         },
-                        UpdateExpression: "set #t = :time, payload = :payload",
+                        UpdateExpression: "set #t = :time",
                         ExpressionAttributeNames:{
                             "#t": "time"
                         },
                         ExpressionAttributeValues: {
                             ":time": moment().subtract(1, "minutes").unix(),
-                            ":payload": body.payload
                         }
                     }
                 },
@@ -437,11 +436,50 @@ const dynaOrb = {
                         },
                         UpdateExpression: "set inverse = :status",
                         ExpressionAttributeValues: {
-                            ":status": "300#DELETE" 
+                            ":status": "300#DEAC"
                         }
                     }
                 },
             ] 
+        };
+        const data = await docClient.transactWrite(params).promise();
+        if (!data || !data.Item) {
+            return true;
+        }
+        return data;
+    },
+
+    async destroy(body) { // return true if success
+        const params = {
+            "TransactItems": [
+                {
+                    Delete: {
+                        TableName: ddb_config.tableNames.orb_table,
+                        Key: {
+                            PK: "LOC#" + body.geohash,
+                            SK: body.expiry_dt + "#ORB#" + body.orb_uuid
+                        }
+                    }
+                },
+                {
+                    Delete: {
+                        TableName: ddb_config.tableNames.orb_table,
+                        Key: {
+                            PK: "ORB#" + body.orb_uuid,
+                            SK: "ORB#" + body.orb_uuid,
+                        },
+                    }
+                },
+                {
+                    Delete: {
+                        TableName: ddb_config.tableNames.orb_table,
+                        Key: {
+                            PK: "ORB#" + body.orb_uuid,
+                            SK: "USR#" + body.user_id,
+                        }
+                    }
+                },
+            ]
         };
         const data = await docClient.transactWrite(params).promise();
         if (!data || !data.Item) {

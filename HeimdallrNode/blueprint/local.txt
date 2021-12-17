@@ -283,6 +283,8 @@ GET :ipAddress/api/query/get?orb_uuid=c04615d4-7dad-4438-bd4f-da57b0f605bf
 ## 1. fetch orbs
 GET :ipAddress/api/query/orbs/c04615d4-7dad-4438-bd4f-da57b0f605bf,79696fdc-a605-4d02-b5e9-bb7468517e4c
 :my-headers
+##
+:orb = 96ce2fba-a326-47cc-9194-8b2a31e29f66,d6ed9a0a-f1fb-4409-85e9-b52115ba0dbb
 ## 1. fetch users
 GET :ipAddress/api/query/get_orbs/:orb
 :my-headers
