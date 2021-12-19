@@ -64,7 +64,8 @@ POST :ipAddress/api/nomadology/post_orb
     },"target":42,"geolock": true}},
     "orb_nature": 10,
     "postal_code": 650301,
-    "expires_in": 10000
+    "expires_in": 10000,
+    "beacon": "samplebeacon"
 }
 #
 ##
@@ -107,7 +108,7 @@ POST :ipAddress/api/orb/message_beacon
     "messenger_id": ":ryan",
     "message_sig": "4244c620-e433-45c7-91ba-c34ab2368ea8#R3Vsjq9CARfprwOJps44kbVczFQ2#yipyipss",
     "orb_uuid": "4244c620-e433-45c7-91ba-c34ab2368ea8",
-    "beacon_switch": "off"
+    "beacon_switch": "on"
 }
 
 #
@@ -284,7 +285,7 @@ GET :ipAddress/api/query/get?orb_uuid=c04615d4-7dad-4438-bd4f-da57b0f605bf
 GET :ipAddress/api/query/orbs/c04615d4-7dad-4438-bd4f-da57b0f605bf,79696fdc-a605-4d02-b5e9-bb7468517e4c
 :my-headers
 ##
-:orb = 96ce2fba-a326-47cc-9194-8b2a31e29f66,d6ed9a0a-f1fb-4409-85e9-b52115ba0dbb
+:orb = d6ed9a0a-f1fb-4409-85e9-b52115ba0dbb
 ## 1. fetch users
 GET :ipAddress/api/query/get_orbs/:orb
 :my-headers

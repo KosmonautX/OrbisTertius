@@ -19,8 +19,9 @@ const comment = {
                 inverse: "USR#" + body.user_id,
                 payload: {
                     comment: body.comment,
-                    orb_uuid: body.orb_uuid
+                    orb_uuid: body.orb_uuid,
                 },
+                identifier: body.beacon
             },
         };
         const data = await docClient.put(params).promise();
@@ -34,7 +35,7 @@ const comment = {
                 SK: "COM#" + body.comment_id,
                 time: moment().unix(),
                 inverse: "USR#" + body.user_id,
-                available: 0,
+                available: false,
                 payload: {
                     comment: body.comment
                 },
@@ -44,20 +45,20 @@ const comment = {
         return data;
     },
     async childPresent(body) {
-        const params = {
-            TableName: ddb_config.tableNames.orb_table,
-            Key: {
-                PK: "ORB#" + body.orb_uuid,
-                SK: "COM#" + body.parent_id,
-            },
-            UpdateExpression: "set available = :present",
-            ConditionExpression: "attribute_exists(SK)",
-            ExpressionAttributeValues: {
-                ":present": 1
-            }
-        };
-        const data = await docClient.update(params).promise();
-        return data;
+            const params = {
+                TableName: ddb_config.tableNames.orb_table,
+                Key: {
+                    PK: "ORB#" + body.orb_uuid,
+                    SK: "COM#" + body.parent_id,
+                },
+                UpdateExpression: "set available = :present",
+                ConditionExpression: "attribute_exists(SK)",
+                ExpressionAttributeValues: {
+                    ":present": true
+                }
+            };
+            const data = await docClient.update(params).promise();
+            return data;
     },
     async postChildComment(body) {
         const params = {
@@ -70,6 +71,7 @@ const comment = {
                 payload: {
                     comment: body.comment
                 },
+                identifier: body.beacon
             },
         };
         const data = await docClient.put(params).promise();
@@ -121,7 +123,7 @@ const comment = {
             },
             UpdateExpression: "set available = :delete",
             ExpressionAttributeValues: {
-                ":delete": 0
+                ":delete": false
             }
         };
         const data = await docClient.update(params).promise();
@@ -136,7 +138,7 @@ const comment = {
             },
             UpdateExpression: "set available = :delete",
             ExpressionAttributeValues: {
-                ":delete": 0
+                ":delete": false
             }
         };
         const data = await docClient.update(params).promise();
