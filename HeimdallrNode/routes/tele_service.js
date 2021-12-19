@@ -107,9 +107,8 @@ router.put(`/delete_orb`, async function (req, res, next) {
       if(req.body.user_id === orbData.payload.user_id){
         body.expiry_dt = orbData.expiry_dt;
         body.geohash = orbData.geohash;
-        body.payload = orbData.payload;
-        body.payload.available = false;
-        deletion = await dynaOrb.delete(body).catch(err => {
+        // body.payload = orbData.payload;
+        deletion = await dynaOrb.deactivate(body).catch(err => {
           err.status = 500;
           next(err);
         });

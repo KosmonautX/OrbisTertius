@@ -30,6 +30,7 @@ router.get(`/check`, async function (req, res, next) {
             res.status(204).send();
         }
     } catch (err) {
+        err.status = 404;
         next(err);
     }
 });
@@ -57,6 +58,7 @@ router.get(`/query`, async function (req, res, next) {
             res.status(204).send();
         }
     } catch (err) {
+        err.status = 400;
         next(err);
     }
 });
@@ -65,10 +67,17 @@ router.post(`/post`, async function (req, res, next) {
     try {
         let body = { ...req.body };
         body.comment_id = uuidv4();
-        await dynaOrb.postComment(body);
+        await dynaOrb.postComment(body).catch((err)=>{
+            if (err.code == 'ConditionalCheckFailedException'){
+                err.status = 404
+                err.message = "ORBs no existe"
+            }
+            next(err)
+        });
         await dynaOrb.postCommentRel(body);
         res.status(201).json({comment_id: body.comment_id});
     } catch (err) {
+        err.status = 400;
         next(err);
     }
 });
@@ -77,10 +86,18 @@ router.post(`/reply`, async function (req, res, next) {
     try {
         let body = { ...req.body };
         body.comment_id = moment().unix();
-        await dynaOrb.childPresent(body)
-        await dynaOrb.postChildComment(body);
-        res.status(201).send({comment_id: body.comment_id});
-    } catch (err) {
+        present = await dynaOrb.childPresent(body).catch((err)=>{
+            if (err.code == 'ConditionalCheckFailedException'){
+                err.status = 404
+                err.message = "Comments no existe"
+            }
+            next(err)
+        })
+        if(present){
+            await dynaOrb.postChildComment(body);
+            res.status(201).send({comment_id: body.comment_id});}
+    }catch (err) {
+        err.status = 400;
         next(err);
     }
 });
@@ -98,6 +115,7 @@ router.delete(`/delete`, async function (req, res, next) {
         }
         res.status(200).send();
     } catch (err) {
+        err.status = 400;
         next(err);
     }
 });

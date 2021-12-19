@@ -29,11 +29,13 @@ router.get(`/get_orbs/:orb_uuids`, async function (req, res, next) {
                 }}
             return docClient.get(params).promise()
         };
+        let now = moment().unix()
         Promise.all(orbs.map(orb_uuid => getter(orb_uuid))).then(response => {
             daos = response.map(async(data) => {
                 var dao = {}
                 if(data.Item){
                     dao.expiry_dt = data.Item.time;
+                    dao.available = data.Item.time > now
                     dao.orb_uuid = data.Item.PK.slice(4);
                     dao.payload = data.Item.payload
                     if(data.Item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'1920x1080');
@@ -135,6 +137,7 @@ router.get(`/user_profile`, async function (req, res, next) {
             "PK": "ORB#" + req.query.startkey
         }
     };
+    now = moment().unix()
     docClient.query(params, async function(err, data) {
         if (err) {
             err.status = 400;
@@ -146,16 +149,19 @@ router.get(`/user_profile`, async function (req, res, next) {
                 let result = {
                     "Requested": req.query.keyword,
                     "Data" : await Promise.all(data.Items.map(async function(item){
-                    let dao = {};
-                    dao.user_id = item.SK.slice(4);
-                    dao.orb_uuid = item.PK.slice(4);
-                    dao.creationtime = item.time;
-                    if(item.payload){
+                        let dao = {};
+                        dao.user_id = item.SK.slice(4);
+                        dao.orb_uuid = item.PK.slice(4);
+                        dao.creationtime = item.payload.creationtime;
                         dao.payload = item.payload;
                         if(item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'150x150')
-                    }
-                    dao.geohash = item.geohash;
-                    dao.action = item.inverse.slice(4);
+                        dao.available = item.time > now
+                        if(item.payload){
+                            dao.payload = item.payload;
+                            if(item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'150x150')
+                        }
+                        dao.geohash = item.geohash;
+                        dao.action = item.inverse.slice(4);
                         return dao
                     })),
                 }

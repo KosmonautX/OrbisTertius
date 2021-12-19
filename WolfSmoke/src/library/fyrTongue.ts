@@ -33,7 +33,7 @@ interface TerritoryPub{
 
 async function subscribe(token:string, topic:string, client:any): Promise<void>{
     const topic_new = "/topics/" + topic;
-    client.subscribeToTopic(token, topic_new).then((response:any) => {console.log("Message Sent", response)})
+    client.subscribeToTopic(token, topic_new)
             .catch((error:any)=>{
                 console.log("Error sending Message" , error)
             });
@@ -50,10 +50,6 @@ async function unsubscribe(token:string, topic:string, client:any): Promise<void
 async function sendsubscribers(message: Message ,topic: string, client: any): Promise<void>{
     message["topic"]= "/topics/" +topic
     client.send(message)
-        .then((response:any) => {
-            // Response is a message ID string.
-            console.log('Successfully sent message:', response);
-        })
         .catch((error: any) => {
             console.log('Error sending message:', error);
         });
@@ -63,10 +59,6 @@ async function sendsubscribers(message: Message ,topic: string, client: any): Pr
 async function sendone(message: Message ,token: string, client: any): Promise<void>{
     message["token"]= token
     client.send(message)
-        .then((response:any) => {
-            // Response is a message ID string.
-            console.log('Successfully sent message:', response);
-        })
         .catch((error: any) => {
             console.log('Error sending message:', error);
         });
@@ -75,16 +67,17 @@ async function sendone(message: Message ,token: string, client: any): Promise<vo
 
 async function messenger(newRecord: Mutation, Element: KeyElement, client:any): Promise<void>{
     if(Element.archetype === "ORB"){
-        let message = {notification:  {
-            "title": `A new ORB arose nearby...`,
-            "body": `${newRecord.payload.title}...`
-        },
-                       data:{
-                           "archetype": Element.archetype,
-                           "id": Element.id,
-                           "state": "INIT",
-                           "time": String(newRecord.time)
-                       }}
+        let message = {
+            notification:  {
+                "title": `A new ORB arose nearby...`,
+                "body": `${newRecord.payload.title}...`
+            },
+            data:{
+                "archetype": Element.archetype,
+                "id": Element.id,
+                "state": "INIT",
+                "time": String(newRecord.time)
+            }}
         var count = 0, hash_len = newRecord.geohash.hashes.length
         while( count < hash_len) {
             let loc_topic = "LOC."+ newRecord.geohash.hashes[count] + "." + newRecord.geohash.radius
@@ -104,16 +97,12 @@ async function messenger(newRecord: Mutation, Element: KeyElement, client:any): 
 // switch to archetype based constructor
 async function switchsubscribe(archetype:string,token : string, client: any, newtopic?: string | number,  oldtopic?: string| number,): Promise<void>{
     try{
-        if(newtopic) subscribe(token,archetype+ "." +String(newtopic),client).then((response) => {
-            console.log('Successfully subscribed to topic:', response);
-        })
+        if(newtopic) subscribe(token,archetype+ "." +String(newtopic),client)
             .catch((error) => {
                 console.log('Error subscribing to topic:', error);
             });
         ;
-        if(oldtopic) unsubscribe(token,archetype+ "." +String(oldtopic),client).then((response) => {
-            console.log('Successfully unsubscribed from topic:', response);
-        })
+        if(oldtopic) unsubscribe(token,archetype+ "." +String(oldtopic),client)
             .catch((error) => {
                 console.log('Error unsubscribing from topic:', error);
             });
@@ -148,15 +137,16 @@ export async function triggerBeacon(newRecord: Mutation, client: any, oldRecord:
                 }
                 let [orb_uuid , user_id, username] =  getLastValue(newRecord.beacon).split("#")
 
-                let message = {notification:  {
-                    "title": `A message from ${username} awaits...`,
-                    "body": `${username}...`},
-                               data:{
-                                   "archetype": "ORB",
-                                   "id": orb_uuid,
-                                   "state": "BECN",
-                                   "messenger_id": user_id
-                               }}
+                let message = {
+                    notification:  {
+                        "title": `A message from ${username} awaits...`,
+                        "body": `${username}...`},
+                    data:{
+                        "archetype": "ORB",
+                        "id": orb_uuid,
+                        "state": "BECN",
+                        "messenger_id": user_id
+                    }}
                 sendone(message,newRecord.identifier,client)
             }}
     } catch (e) {
@@ -205,16 +195,68 @@ export async function mutateTerritorySubscription(newRecord: Mutation, client: a
         }
 }
 
+export async function beckonComment(newRecord: Mutation, client: any): Promise<void>{
+    try{
+        if(newRecord.identifier){
+            var Element = KeyParser(newRecord.PK, newRecord.SK)
+            switch(Element.archetype){
+                case 'COM':
+                    switchsubscribe("COM",newRecord.identifier,client, Element.id)
+                    let orb_message = {
+                        notification:{
+                            "title": `A comment from a fellow neighbour on your ORB`,
+                            "body": `${newRecord.payload.comment}...`},
+                        data:{
+                            "archetype": Element.archetype,
+                            "id": Element.id,
+                            "orb_uuid": newRecord.payload.orb_uuid,
+                            "time": String(newRecord.time)
+                        }}
+                    sendsubscribers(orb_message, "ORB." + newRecord.payload.orb_uuid , client)
+                            .catch((error)=>{
+                                console.log("Error sending Message" , error)
+                            })
+                    // send message to ORB
+                    break;
+                case 'COMCOM':
+                    switchsubscribe("COM",newRecord.identifier,client, Element.relation)
+                    let com_message = {
+                        notification:{
+                            "title": `A comment from a fellow neighbour on your ORB`,
+                            "body": `${newRecord.payload.comment}...`},
+                        data:{
+                            "archetype": Element.archetype,
+                            "id": String(Element.id),
+                            "parent": Element.relation,
+                            "time": String(newRecord.time)
+                        }}
+                    sendsubscribers(com_message, "COM." +  Element.relation, client).catch((error)=>{
+                        console.log("Error sending Message" , error)
+                    })
+                    // switchsubscribe("ORB",newRecord.identifier,client, newRecord.PK.slice(4) + "." + newRecord.inverse.slice(4,8))
+                    break;
+            }
+
+        }
+
+    } catch(e){
+        console.log(e)
+    }
+
+
+}
+
 export async function mutateActorSubscription(newRecord: Mutation, client: any,  oldRecord?: Mutation): Promise<void>{
     try {
         //send through KeyElement later
         if(newRecord.identifier && newRecord.inverse){
             switch(newRecord.inverse.slice(0,8)){
                     case '600#INIT':
-                    switchsubscribe("ORB",newRecord.identifier,client, newRecord.PK.slice(4) + "." + newRecord.inverse.slice(4,8))
+                    switchsubscribe("ORB",newRecord.identifier,client, newRecord.PK.slice(4))
                     break;
                     case '500#ACPT':
-                    switchsubscribe("ORB",newRecord.identifier,client, newRecord.PK.slice(4) + "." + newRecord.inverse.slice(4,8))
+                    switchsubscribe("ORB",newRecord.identifier,client, newRecord.PK.slice(4))
+                    // switchsubscribe("ORB",newRecord.identifier,client, newRecord.PK.slice(4) + "." + newRecord.inverse.slice(4,8))
                     break;
             }
 

@@ -16,5 +16,5 @@ export interface KeyElement{
     id: string
     access?: string
     bridge?: string
-    relationid?: string
+    relation?: string
 }

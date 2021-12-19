@@ -4,7 +4,7 @@ import * as fyr from 'firebase-admin';
 import {DynaStream} from "./library/pregolyaStream"
 import { unmarshall } from "@aws-sdk/util-dynamodb"
 import { DynamoDBStreams, ListStreamsCommandOutput } from "@aws-sdk/client-dynamodb-streams";
-import { triggerNotif, triggerBeacon, mutateTerritorySubscription, mutateActorSubscription} from "./library/fyrTongue";
+import { triggerNotif, triggerBeacon, mutateTerritorySubscription, mutateActorSubscription, beckonComment} from "./library/fyrTongue";
 import {telePostOrb, teleExtinguishOrb} from "./library/teleriaTongue"
 const fs = require('fs').promises
 const FILE = './shard/shardState.json'
@@ -66,6 +66,11 @@ async function main(stream: DynamoDBStreams, stream_arn:string) {
   DynaRipples.on('USR_GENESIS', async function GenesisListener(present) {
     await mutateTerritorySubscription(present,fyr.messaging())
   });
+
+  DynaRipples.on('COM_GENESIS', async function GenesisListener(present) {
+    await beckonComment(present,fyr.messaging()) // transplant to elixir
+  });
+
 
 
 	fetchStreamState().catch(err => {

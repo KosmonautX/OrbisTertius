@@ -1,4 +1,4 @@
-const debug = require('debug')('DynaStream')
+var debug = require('debug')('DynaStream')
 import { DescribeStreamInput} from "@aws-sdk/client-dynamodb-streams";
 import { EventEmitter } from "events"
 
@@ -311,7 +311,10 @@ export class DynaStream extends EventEmitter {
                   this.emit('USR_GENESIS', newRecord)
                   break;
               }
-              //case 'LOC': break;
+            case 'COM':
+              this.emit('COM_GENESIS', newRecord)
+              break;
+            //case 'LOC': break;
           }
 
 		      break;
