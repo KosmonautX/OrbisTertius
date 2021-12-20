@@ -9,7 +9,6 @@ AWS.config.update({
 })
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint:ddb_config.dyna});
 const geohash = require('../controller/geohash');
-const teleMessaging = require('../controller/teleAngareion');
 const security = require('../controller/security');
 const serve3 = require ('../controller/orbjectStore').serve3
 const orbSpace = require('../controller/dynamoOrb').orbSpace;
@@ -387,13 +386,9 @@ router.post(`/accept`, async function (req, res, next) {
                 err.status = 400;
                 next(err);
             } else {
-                teleMessaging.exchangeContact(body.init_id,body.user_id,body.username,body.title).then(
-                    function(value){
-                        res.status(200).json({
+                res.status(200).json({
                             "ORB accepted by": body.user_id,
-                            "orb_uuid": body.orb_uuid
-                    });
-                });
+                            "orb_uuid": body.orb_uuid});
             }
           });
     } catch (err) {
@@ -445,26 +440,6 @@ router.post(`/message_beacon`, async function (req, res, next) {
             }
         });
 
-    } catch (err) {
-        err.status = 400;
-        next(err);
-    }
-});
-
-/**
- * API 0.2
- * Chat with user on telegram
- */
- router.post(`/chatWithTelegram`, async function (req, res, next) {
-    try {
-        let body = { ...req.body };
-        teleMessaging.exchangeContact(body.init_id,body.user_id,body.username,body.title).then(
-            function(value){
-                res.status(200).json({
-                    "User_id": body.user_id,
-                    "Chatting with this init_id": body.init_id
-            });
-        });
     } catch (err) {
         err.status = 400;
         next(err);
@@ -596,10 +571,9 @@ router.put(`/complete_orb`, async function (req, res, next) {
         err.message = "ORB not found"
     });
     let completion = false;
-    if (orbData) {
-        body.expiry_dt = orbData.expiry_dt;
-        body.geohash = orbData.geohash;
-        completion = await dynaOrb.update(body).catch(err => {
+    // complete delete for all locations to implement
+    if (orbData && req.verification.user_id === orbData.user_id) {
+        completion = await dynaOrb.update(orbData).catch(err => {
             err.status = 500;
             next(err);
         });
@@ -645,7 +619,7 @@ router.put(`/pending_orb_acceptor`, async function (req, res, next) {
     }
 });
 
-router.put(`/delete_orb`, async function (req, res, next) {
+router.put(`/deactivate_orb`, async function (req, res, next) {
     try{
         let body = { ...req.body};
         const orbData = await dynaOrb.retrieve(body).catch(err => {
@@ -653,26 +627,28 @@ router.put(`/delete_orb`, async function (req, res, next) {
             err.message = "ORB not found";
         });
         // shift to orbland security will fail (state machine capture)
-        if(orbData.payload){
+        if(orbData.payload && orbData.active){
             if(req.verification.user_id === orbData.payload.user_id){
-                body.expiry_dt = orbData.expiry_dt;
-                body.geohash = orbData.geohash;
-                body.payload = orbData.payload;
-                body.payload.available = false;
-                var deletion = await dynaOrb.delete(body).catch(err => {
+                var deactivation = await dynaOrb.deactivate(orbData).catch(err => {
                     err.status = 500;
                     next(err);
                 });
             }
-            if (deletion == true) {
+            if (deactivation) {
                 res.status(201).json({
-                    "Orb deleted": body.orb_uuid
+                    "Orb deactivated": body.orb_uuid
                 });
+            }
+            else{
+
+                res.status(400).json({
+                    "Orb": "Deactivation Failed"
+                })
             }
         }
         else{
             res.status(404).json({
-                "Orb": "Not Found"
+                "Orb": "Not Active"
             })
 
         }

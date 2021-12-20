@@ -222,7 +222,7 @@ export async function beckonComment(newRecord: Mutation, client: any): Promise<v
                     switchsubscribe("COM",newRecord.identifier,client, Element.relation)
                     let com_message = {
                         notification:{
-                            "title": `A comment from a fellow neighbour on your ORB`,
+                            "title": `A reply from a fellow neighbour on your comment`,
                             "body": `${newRecord.payload.comment}...`},
                         data:{
                             "archetype": Element.archetype,

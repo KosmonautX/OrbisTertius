@@ -45,20 +45,20 @@ const comment = {
         return data;
     },
     async childPresent(body) {
-            const params = {
-                TableName: ddb_config.tableNames.orb_table,
-                Key: {
-                    PK: "ORB#" + body.orb_uuid,
-                    SK: "COM#" + body.parent_id,
-                },
-                UpdateExpression: "set available = :present",
-                ConditionExpression: "attribute_exists(SK)",
-                ExpressionAttributeValues: {
-                    ":present": true
-                }
-            };
-            const data = await docClient.update(params).promise();
-            return data;
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Key: {
+                PK: "ORB#" + body.orb_uuid,
+                SK: "COM#" + body.parent_id,
+            },
+            UpdateExpression: "set available = :present",
+            ConditionExpression: "attribute_exists(SK)",
+            ExpressionAttributeValues: {
+                ":present": true
+            }
+        };
+        const data = await docClient.update(params).promise();
+        return data;
     },
     async postChildComment(body) {
         const params = {
@@ -195,7 +195,7 @@ const orbSpace = {
 }
 
 const dynaOrb = {
-    async create(body, gen) {
+    async create(body, gen){
         orb_uuid= await gen
         const params = {
             RequestItems: {
@@ -223,27 +223,27 @@ const dynaOrb = {
         };
         for(hashes of body.geolocation.hashes){
             params.RequestItems[ddb_config.tableNames.orb_table].push({
-                        PutRequest: {
-                            Item: {
-                                PK: "LOC#" + hashes +"#" + body.geolocation.radius,
-                                SK: body.created_dt + "#ORB#" + orb_uuid, // in stream time is king
-                                geohash : body.geolocation,
-                                extinguish: body.expiry_dt,
-                                payload: {
-                                    orb_nature: body.orb_nature,
-                                    title: body.title,
-                                    media: body.media,
-                                    init: {
-                                        media :body.init.media,
-                                        profile_pic :body.init.profile_pic,
-                                        username: body.init.username
-                                    },
-                                    photo: body.photo,
-                                    user_id: body.user_id,
-                                    creationtime: body.created_dt,
-                                }
-                            }
+                PutRequest: {
+                    Item: {
+                        PK: "LOC#" + hashes +"#" + body.geolocation.radius,
+                        SK: body.created_dt + "#ORB#" + orb_uuid, // in stream time is king
+                        geohash : body.geolocation,
+                        extinguish: body.expiry_dt,
+                        payload: {
+                            orb_nature: body.orb_nature,
+                            title: body.title,
+                            media: body.media,
+                            init: {
+                                media :body.init.media,
+                                profile_pic :body.init.profile_pic,
+                                username: body.init.username
+                            },
+                            photo: body.photo,
+                            user_id: body.user_id,
+                            creationtime: body.created_dt,
                         }
+                    }
+                }
             })
         }
         const data = await docClient.batchWrite(params).promise();
@@ -260,24 +260,15 @@ const dynaOrb = {
         const data = await docClient.get(params).promise();
         let dao = {};
         if (data.Item){
-            dao.title = data.Item.payload.title;
-            dao.info = data.Item.payload.info;
-            dao.where = data.Item.payload.where;
-            dao.when = data.Item.payload.when;
-            dao.tip = data.Item.payload.tip;
-            dao.user_id = data.Item.payload.user_id;
-            dao.username = data.Item.payload.username;
-            dao.photo = data.Item.payload.photo;
-            dao.tags = data.Item.payload.tags;
-            dao.expiry_dt = data.Item.time;
-            dao.created_dt = data.Item.payload.created_dt;
-            dao.nature = data.Item.numeric;
+            //dao.expiry_dt = data.Item.time;
+            dao.alphanumeric = data.Item.alphanumeric;
             dao.orb_uuid = data.Item.PK.slice(4);
-            dao.geohash = parseInt(data.Item.alphanumeric.slice(4));
-            dao.geohash52 = data.Item.geohash;
-            dao.postal_code = data.Item.payload.postal_code;
-            dao.available = date.Item.time > moment().unix()
-            dao.payload = data.Item.payload;
+            dao.geolocation = data.Item.geohash;
+            dao.active = data.Item.time > moment().unix()
+            if(data.Item.payload){
+                dao.payload = data.Item.payload;
+                dao.user_id = data.Item.payload.user_id
+                dao.created_dt  = data.Item.payload.creationtime}
         } 
         return dao;
     },
@@ -402,53 +393,71 @@ const dynaOrb = {
         return data;
     },
     async deactivate(body) { // return true if success
+        now = moment().unix()
         const params = {
-            "TransactItems": [
-                {
-                    Delete: {
-                        TableName: ddb_config.tableNames.orb_table,
-                        Key: {
-                            PK: "LOC#" + body.geohash,
-                            SK: body.expiry_dt + "#ORB#" + body.orb_uuid
+            RequestItems: {
+                [ddb_config.tableNames.orb_table]: [
+                    {
+                        PutRequest: {
+                            Item: {
+                                PK: "ORB#" + body.orb_uuid,
+                                SK: "USR#" + body.user_id,
+                                inverse: "600#INIT#"+ body.created_dt , //in action space action is king lexiological sort (dictionary)
+                                time: now, // some init will be deactivated need fulfillment cycle
+                                geohash: body.geolocation,
+                                identifier: body.beacon,
+                                payload: {
+                                    orb_nature: body.orb_nature,
+                                    title: body.payload.title,
+                                    media: body.payload.media,
+                                    creationtime: body.created_dt
+                                }
+                            }
+                        }
+                    },
+
+                    {
+                        PutRequest: {
+                            Item: {
+                                PK: "ORB#" + body.orb_uuid,
+                                SK: "ORB#" + body.orb_uuid,
+                                time: now,
+                                geohash : body.geolocation,
+                                alphanumeric: body.alphanumeric,
+                                payload: body.payload
+                            }
                         }
                     }
-                },
-                {
-                    Update: {
-                        TableName: ddb_config.tableNames.orb_table,
-                        Key: {
-                            PK: "ORB#" + body.orb_uuid,
-                            SK: "ORB#" + body.orb_uuid, 
-                        },
-                        UpdateExpression: "set #t = :time",
-                        ExpressionAttributeNames:{
-                            "#t": "time"
-                        },
-                        ExpressionAttributeValues: {
-                            ":time": moment().subtract(1, "minutes").unix(),
-                        }
-                    }
-                },
-                {
-                    Update: {
-                        TableName: ddb_config.tableNames.orb_table,
-                        Key: {
-                            PK: "ORB#" + body.orb_uuid,
-                            SK: "USR#" + body.user_id,
-                        },
-                        UpdateExpression: "set inverse = :status",
-                        ExpressionAttributeValues: {
-                            ":status": "300#DEAC"
-                        }
-                    }
-                },
-            ] 
+                ]
+            }
         };
-        const data = await docClient.transactWrite(params).promise();
-        if (!data || !data.Item) {
-            return true;
+        for(hashes of body.geolocation.hashes){
+            params.RequestItems[ddb_config.tableNames.orb_table].push({
+                DeleteRequest: {
+                    TableName: ddb_config.tableNames.orb_table,
+                    Key: {
+                        PK: "LOC#" + hashes +"#" + body.geolocation.radius,
+                        SK: body.created_dt + "#ORB#" + body.orb_uuid
+                    }
+                }
+            })
         }
-        return data;
+        // abstract batchprocessing exp backoff
+        var  count = 0
+        var processed = false
+        do{
+            processBatch = await docClient.batchWrite(params).promise();
+            if (processBatch && Object.keys(processBatch.UnprocessedItems).length>0) {
+                params = {RequestItems: batchWriteResp.UnprocessedItems}
+                // delay a random time and fixed increase exponentially
+                const delay = Math.floor(Math.random() * count * 500 + 10**count)
+                await new Promise(resolve => setTimeout(resolve, delay));
+            } else {
+                processed = true
+                break
+            }
+        } while(count< 5)
+        return processed;
     },
 
     async destroy(body) { // return true if success
