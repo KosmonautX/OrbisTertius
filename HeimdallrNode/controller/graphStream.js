@@ -62,8 +62,9 @@ Stream.Channel = (function () {
     }
 
     var filter = function(){
-        state.FilterExpression = "extinguish > :nowish"
+        state.FilterExpression = "#chrono > :nowish"
         state.ExpressionAttributeValues[":nowish"] = moment().unix()
+        state.ExpressionAttributeNames = {"#chrono": "time"}
         // filter extinguish
     }
 
@@ -95,7 +96,7 @@ Stream.Channel = (function () {
         entity_init(archetype, id, distributary)
         pagination(8)
         arrowoftime.upstream(time)
-        filter()
+        //filter() NO Filter to disambiguate between to deactivation events that change "TIME" attribute that signal deactivation time
         return await swim()
     }
 

@@ -228,6 +228,7 @@ const dynaOrb = {
                         PK: "LOC#" + hashes +"#" + body.geolocation.radius,
                         SK: body.created_dt + "#ORB#" + orb_uuid, // in stream time is king
                         geohash : body.geolocation,
+                        time: body.expiry_dt,
                         extinguish: body.expiry_dt,
                         payload: {
                             orb_nature: body.orb_nature,
@@ -325,7 +326,7 @@ const dynaOrb = {
                         user_id: body.user_id,
                         init: {username: body.init.username},
                         creationtime: body.created_dt,
-                        expires_in: body.expires_in,
+                        extinguishtime: body.expiry_dt,
                         tags: body.tags,
                         postal_code: body.postal_code,
                     }
@@ -433,31 +434,17 @@ const dynaOrb = {
         };
         for(hashes of body.geolocation.hashes){
             params.RequestItems[ddb_config.tableNames.orb_table].push({
-                DeleteRequest: {
-                    TableName: ddb_config.tableNames.orb_table,
-                    Key: {
+                PutRequest: {
+                    Item: {
                         PK: "LOC#" + hashes +"#" + body.geolocation.radius,
-                        SK: body.created_dt + "#ORB#" + body.orb_uuid
-                    }
-                }
-            })
+                        SK: now + "#ORB#" + body.orb_uuid,
+                        extinguish: body.payload.extinguishtime,
+                        time: now,
+                        payload: body.payload,
+                        geohash: body.geolocation
+                    }}})
         }
-        // abstract batchprocessing exp backoff
-        var  count = 0
-        var processed = false
-        do{
-            processBatch = await docClient.batchWrite(params).promise();
-            if (processBatch && Object.keys(processBatch.UnprocessedItems).length>0) {
-                params = {RequestItems: batchWriteResp.UnprocessedItems}
-                // delay a random time and fixed increase exponentially
-                const delay = Math.floor(Math.random() * count * 500 + 10**count)
-                await new Promise(resolve => setTimeout(resolve, delay));
-            } else {
-                processed = true
-                break
-            }
-        } while(count< 5)
-        return processed;
+        return batchWriteProcessor(params);
     },
 
     async destroy(body) { // return true if success
@@ -499,6 +486,26 @@ const dynaOrb = {
         return data;
     },
 };
+
+
+async function batchWriteProcessor(params){
+    var  count = 0
+        var processed = false
+        do{
+            processBatch = await docClient.batchWrite(params).promise();
+            if (processBatch && Object.keys(processBatch.UnprocessedItems).length>0) {
+                params = {RequestItems: batchWriteResp.UnprocessedItems}
+                // delay a random time and fixed increase exponentially
+                const delay = Math.floor(Math.random() * count * 500 + 10**count)
+                await new Promise(resolve => setTimeout(resolve, delay));
+            } else {
+                processed = true
+                break
+            }
+        } while(count< 5)
+
+    return processed
+}
 
 
 module.exports = {
