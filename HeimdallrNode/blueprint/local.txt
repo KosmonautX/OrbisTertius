@@ -20,6 +20,7 @@ User-Agent: Emacs27
 :printonemail = "niceprinceton@gmail.com"
 :ryanemail = luckuveryx@gmail.com
 :myemail = avivekbala@gmail.com
+:orb = d4b7ca1d-8052-46da-a072-d55e9b3b1c4f
 :my-headers = <<
 Authorization: :token
 Content-Type: application/json
@@ -50,6 +51,7 @@ POST :ipAddress/api/devland/fyr/serveronfyr
 ## POST ORB
 POST :ipAddress/api/nomadology/post_orb
 :my-headers
+-> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (json-read))))
 {
     "user_id": ":ryan",
     "title": "finder of lost children",
@@ -76,7 +78,8 @@ POST :ipAddress/api/nomadology/freshorbstream
 "geolocation": {"live": {"latlon":{
     "lat":1.3568,
     "lon":103.7487
-    },"target":42}}
+    },"target":42}},
+    "upstream": 1640259800
 }
 #
 ##
@@ -131,7 +134,7 @@ Content-Type: application/json
     "device_id": ":id"
 }
 #
-## LOCAL auth_server when no internet add SK #pte and identifier keys
+## LOCAL offline auth_server when no internet add SK #pte and identifier keys
 POST :ipAddress/api/devland/auth/server
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 Content-Type: application/json
@@ -166,13 +169,6 @@ POST :ipAddress/api/mercury/gen_orb
     "media": false,
     "orb_nature": 10021000000,
     "postal_code": 650301
-}
-##DELETE ORB
-PUT :ipAddress/api/mercury/delete_orb
-:my-headers
-{
-    "user_id": "2",
-    "orb_uuid": "0319dfcf-9c0e-4e2d-af10-3304193c5859"
 }
 ## 2. Get all fresh orbs
 GET :ipAddress/api/query/orbs_in_loc_fresh_batch?postal=650301
@@ -235,7 +231,7 @@ POST :ipAddress/api/orb/accept
 :my-headers
 {
     "user_id": ":ryan",
-    "orb_uuid": "c04615d4-7dad-4438-bd4f-da57b0f605bf",
+    "orb_uuid": ":orb",
     "beacon": ":applefcm"
 }
 
@@ -285,7 +281,7 @@ GET :ipAddress/api/query/get?orb_uuid=c04615d4-7dad-4438-bd4f-da57b0f605bf
 GET :ipAddress/api/query/orbs/c04615d4-7dad-4438-bd4f-da57b0f605bf,79696fdc-a605-4d02-b5e9-bb7468517e4c
 :my-headers
 ##
-:orb = d6ed9a0a-f1fb-4409-85e9-b52115ba0dbb
+
 ## 1. fetch users
 GET :ipAddress/api/query/get_orbs/:orb
 :my-headers
@@ -298,7 +294,7 @@ GET :ipAddress/api/query/orbs_in_loc_fresh_page?postal_code=457399&page=0
 ## 3. Get user's ORB profile
 # fulfilled: acceptor fulfills another person's orb </br>
 # completed: initiator completes his own orb
-GET :ipAddress/api/query/user_profile?user_id=:ryan&keyword=INIT
+GET :ipAddress/api/query/user_profile?user_id=:ryan&keyword=accept
 :my-headers
 ## 4. Retrieve user
 GET :ipAddress/api/query/get_users/:ryan
@@ -349,9 +345,10 @@ GET :ipAddress/api/query/postal_check?code=65992
 #     "geohash": int</br>
 #     "geohash52": int</br>
 PUT :ipAddress/api/orb/complete_orb
+:my-headers
 {   
-    "user_id": 1234,
-    "orb_uuid": "05f86450-c21e-411d-92f1-5017bd33afe3"
+    "user_id": ":ryan",
+    "orb_uuid": ":orb"
 }
 
 ## 1. Update user
@@ -368,7 +365,7 @@ PUT :ipAddress/api/orb/update_user
 {
     "user_id": ":ryan",
     "bio": "hello there",
-    "media": true
+    "media": false
 }
 
 ## 2. UPDATE USERNAME
@@ -427,11 +424,12 @@ PUT :ipAddress/api/orb/delete_acceptance
     "orb_uuid": "05f86450-c21e-411d-92f1-5017bd33afe3"
 }
 
-## 6. Delete ORB
-PUT :ipAddress/api/orb/delete_orb
+## 6. Deactivate ORB
+PUT :ipAddress/api/orb/deactivate_orb
+:my-headers
 {   
-    "user_id": 1236,
-    "orb_uuid": "c2fe14ac-a808-4207-b091-9e350455cace"
+    "user_id": ":ryan",
+    "orb_uuid": ":orb"
 }
 
 ## 7a. Not interested (initiator)
@@ -455,8 +453,8 @@ GET :ipAddress/api/query/buddy?user_id=:ryan&relation=BUL
 #
 ## comments
 ### check comment
-# check if an orb has comments
-GET http://localhost:5000/api/comment/check?orb_uuid=c62cc326-6e67-4f1b-ab0d-c343d5859829
+# check if an orb has commentsG
+ET http://localhost:5000/api/comment/check?orb_uuid=c62cc326-6e67-4f1b-ab0d-c343d5859829
 :my-headers
 ### query comment
 # check if a comment has children
@@ -470,20 +468,22 @@ GET localhost:5000/api/comment/query?parent_id=0ea7d4a8-6ce4-4f90-b9ee-72a88d373
 # post a PARENT comment
 POST :ipAddress/api/comment/post
 :my-headers
-
-    "orb_uuid": "c62cc326-6e67-4f1b-ab0d-c343d5859829",
+{
+    "orb_uuid": ":orb",
     "user_id": ":ryan",
-    "comment": "anankin i have the high ground"
+    "comment": "anankin i have the high ground",
+    "beacon": "COMBEACON"
 }
 ### post comment reply
 # Post a child comment
 POST :ipAddress/api/comment/reply
 :my-headers
 {
-"orb_uuid":"c62cc326-6e67-4f1b-ab0d-c343d5859829",
-    "parent_id": "b4839cfa-4237-4dee-8e06-41898d8ab53c",
+"orb_uuid":":orb",
+    "parent_id": "df59f04b-9183-4561-b5e7-a0d49eb5363b",
     "user_id": ":ryan",
-    "comment": "No you anankin you were the chosen one"
+    "comment": "No you anankin you were the chosen one",
+    "beacon": "SUBCOMBEACON"
 }
 ### delete comment
 # this is a soft delete, so comment will still be available in database.

@@ -7,7 +7,6 @@ const AWS = require('aws-sdk');
 AWS.config.update({
     region: ddb_config.region
 })
-const telemessage = require('../controller/teleAngareion').exchangeContact
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
 const geohash = require('ngeohash');
 const jwt = require(`jsonwebtoken`);

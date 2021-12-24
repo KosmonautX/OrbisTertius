@@ -23,6 +23,7 @@ router.use(function(req,res,next){
 router.post(`/freshorbstream`, async function (req, res, next) {
     try{
         var payload;
+        let now = moment().unix()
         if(req.body.downstream){
             payload = await query.Stream.Channel().downstream("LOC", req.geolocation.hash, req.geolocation.radius,req.body.downstream).catch(err => {
                 res.status = 400;
@@ -46,7 +47,8 @@ router.post(`/freshorbstream`, async function (req, res, next) {
             for( let item of payload.Items){
                 let dao = {};
                 dao.orb_uuid = item.SK.slice(15);
-                dao.expiry_dt = item.extinguish
+                dao.expiry_dt = item.time
+                dao.active = item.time > now
                 dao.geolocation = item.geohash
                 if (item.payload){
                     dao.payload = item.payload

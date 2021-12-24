@@ -35,7 +35,7 @@ router.get(`/get_orbs/:orb_uuids`, async function (req, res, next) {
                 var dao = {}
                 if(data.Item){
                     dao.expiry_dt = data.Item.time;
-                    dao.available = data.Item.time > now
+                    dao.active = data.Item.time > now
                     dao.orb_uuid = data.Item.PK.slice(4);
                     dao.payload = data.Item.payload
                     if(data.Item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'1920x1080');
@@ -152,12 +152,10 @@ router.get(`/user_profile`, async function (req, res, next) {
                         let dao = {};
                         dao.user_id = item.SK.slice(4);
                         dao.orb_uuid = item.PK.slice(4);
-                        dao.creationtime = item.payload.creationtime;
-                        dao.payload = item.payload;
-                        if(item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'150x150')
-                        dao.available = item.time > now
+                        dao.actiontime = item.time
                         if(item.payload){
                             dao.payload = item.payload;
+                            dao.creationtime = item.payload.creationtime;
                             if(item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'150x150')
                         }
                         dao.geohash = item.geohash;
