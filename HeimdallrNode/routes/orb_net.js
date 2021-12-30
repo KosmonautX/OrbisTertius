@@ -627,7 +627,7 @@ router.put(`/deactivate_orb`, async function (req, res, next) {
             err.message = "ORB not found";
         });
         // shift to orbland security will fail (state machine capture)
-        if(orbData.payload && orbData.active){
+        if(orbData.payload && orbData.active && orbData.available){
             if(req.verification.user_id === orbData.payload.user_id){
                 var deactivation = await dynaOrb.deactivate(orbData).catch(err => {
                     err.status = 500;
@@ -649,6 +649,43 @@ router.put(`/deactivate_orb`, async function (req, res, next) {
         else{
             res.status(404).json({
                 "Orb": "Not Active"
+            })
+
+        }
+    }catch(err) {
+        next(err);
+    }});
+
+router.put(`/destroy_orb`, async function (req, res, next) {
+    try{
+        let body = { ...req.body};
+        const orbData = await dynaOrb.retrieve(body).catch(err => {
+            err.status = 404;
+            err.message = "ORB not found";
+        });
+        // shift to orbland security will fail (state machine capture)
+        if(orbData.payload && orbData.available){
+            if(req.verification.user_id === orbData.payload.user_id){
+                var deactivation = await dynaOrb.destroy(orbData).catch(err => {
+                    err.status = 500;
+                    next(err);
+                });
+            }
+            if (deactivation) {
+                res.status(201).json({
+                    "Orb destroyed": body.orb_uuid
+                });
+            }
+            else{
+
+                res.status(400).json({
+                    "Orb": "Destruction Failed"
+                })
+            }
+        }
+        else{
+            res.status(404).json({
+                "Orb": "already go bye bye"
             })
 
         }

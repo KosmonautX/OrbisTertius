@@ -20,7 +20,7 @@ User-Agent: Emacs27
 :printonemail = "niceprinceton@gmail.com"
 :ryanemail = luckuveryx@gmail.com
 :myemail = avivekbala@gmail.com
-:orb = d4b7ca1d-8052-46da-a072-d55e9b3b1c4f
+:orb = 41a9a9eb-3e06-42ac-8831-b1407c2132b0
 :my-headers = <<
 Authorization: :token
 Content-Type: application/json
@@ -431,6 +431,15 @@ PUT :ipAddress/api/orb/deactivate_orb
     "user_id": ":ryan",
     "orb_uuid": ":orb"
 }
+
+## 7. Destroy ORB
+PUT :ipAddress/api/orb/destroy_orb
+:my-headers
+{
+    "user_id": ":ryan",
+    "orb_uuid": ":orb"
+}
+
 
 ## 7a. Not interested (initiator)
 PUT :ipAddress/api/orb/not_interested
