@@ -50,6 +50,7 @@ router.post(`/freshorbstream`, async function (req, res, next) {
                 dao.expiry_dt = item.time
                 dao.active = item.time > now
                 dao.geolocation = item.geohash
+                dao.available = item.available
                 if (item.payload){
                     dao.payload = item.payload
                     if(item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'150x150')

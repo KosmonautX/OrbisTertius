@@ -230,6 +230,7 @@ const dynaOrb = {
                         geohash : body.geolocation,
                         time: body.expiry_dt,
                         extinguish: body.expiry_dt,
+                        available: true,
                         payload: {
                             orb_nature: body.orb_nature,
                             title: body.title,
@@ -266,6 +267,7 @@ const dynaOrb = {
             dao.orb_uuid = data.Item.PK.slice(4);
             dao.geolocation = data.Item.geohash;
             dao.active = data.Item.time > moment().unix()
+            dao.available = data.Item.available
             if(data.Item.payload){
                 dao.payload = data.Item.payload;
                 dao.user_id = data.Item.payload.user_id
@@ -313,6 +315,7 @@ const dynaOrb = {
                     SK: "ORB#" + body.orb_uuid,
                     time: body.expiry_dt,
                     geohash : body.geolocation,
+                    available: true,
                     alphanumeric: "LOC#" + body.geolocation.hash+ "#" +body.geolocation.radius,
                     payload: {
                         title: body.title, // title might have to go to the alphanumeric
@@ -440,6 +443,7 @@ const dynaOrb = {
                         SK: now + "#ORB#" + body.orb_uuid,
                         extinguish: body.payload.extinguishtime,
                         time: now,
+                        available: true,
                         payload: body.payload,
                         geohash: body.geolocation
                     }}})
@@ -448,42 +452,59 @@ const dynaOrb = {
     },
 
     async destroy(body) { // return true if success
+        now = moment().unix()
         const params = {
-            "TransactItems": [
-                {
-                    Delete: {
-                        TableName: ddb_config.tableNames.orb_table,
-                        Key: {
-                            PK: "LOC#" + body.geohash,
-                            SK: body.expiry_dt + "#ORB#" + body.orb_uuid
+            RequestItems: {
+                [ddb_config.tableNames.orb_table]: [
+                    {
+                        PutRequest: {
+                            Item: {
+                                PK: "ORB#" + body.orb_uuid,
+                                SK: "USR#" + body.user_id,
+                                inverse: "100#DSTY#"+ body.created_dt , //in action space action is king lexiological sort (dictionary)
+                                time: now, // some init will be deactivated need fulfillment cycle
+                                geohash: body.geolocation,
+                                payload: {
+                                    orb_nature: body.orb_nature,
+                                    title: body.payload.title,
+                                    media: body.payload.media,
+                                    creationtime: body.created_dt
+                                }
+                            }
+                        }
+                    },
+
+                    {
+                        PutRequest: {
+                            Item: {
+                                PK: "ORB#" + body.orb_uuid,
+                                SK: "ORB#" + body.orb_uuid,
+                                time: now,
+                                geohash : body.geolocation,
+                                alphanumeric: body.alphanumeric,
+                                payload: body.payload,
+                                available: false
+                            }
                         }
                     }
-                },
-                {
-                    Delete: {
-                        TableName: ddb_config.tableNames.orb_table,
-                        Key: {
-                            PK: "ORB#" + body.orb_uuid,
-                            SK: "ORB#" + body.orb_uuid,
-                        },
-                    }
-                },
-                {
-                    Delete: {
-                        TableName: ddb_config.tableNames.orb_table,
-                        Key: {
-                            PK: "ORB#" + body.orb_uuid,
-                            SK: "USR#" + body.user_id,
-                        }
-                    }
-                },
-            ]
+                ]
+            }
         };
-        const data = await docClient.transactWrite(params).promise();
-        if (!data || !data.Item) {
-            return true;
+        for(hashes of body.geolocation.hashes){
+            params.RequestItems[ddb_config.tableNames.orb_table].push({
+                PutRequest: {
+                    Item: {
+                        PK: "LOC#" + hashes +"#" + body.geolocation.radius,
+                        SK: now + "#ORB#" + body.orb_uuid,
+                        extinguish: body.payload.extinguishtime,
+                        time: now,
+                        payload: body.payload,
+                        geohash: body.geolocation,
+                        available: false
+                    }}})
         }
-        return data;
+        return batchWriteProcessor(params);
+
     },
 };
 

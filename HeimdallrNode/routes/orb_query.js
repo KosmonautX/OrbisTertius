@@ -36,6 +36,7 @@ router.get(`/get_orbs/:orb_uuids`, async function (req, res, next) {
                 if(data.Item){
                     dao.expiry_dt = data.Item.time;
                     dao.active = data.Item.time > now
+                    dao.available = data.Item.available
                     dao.orb_uuid = data.Item.PK.slice(4);
                     dao.payload = data.Item.payload
                     if(data.Item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'1920x1080');
