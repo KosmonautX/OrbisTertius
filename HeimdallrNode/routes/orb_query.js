@@ -176,9 +176,9 @@ router.get(`/user_profile`, async function (req, res, next) {
 function keyword_to_code(keyword) {
     let code = "error"
     if (keyword.toUpperCase() == "INIT") code = "600#INIT";
-    else if (keyword.toUpperCase() == "FULFILLED") code = "800#FULF";
+   //  else if (keyword.toUpperCase() == "FULFILLED") code = "801#FULF";
     else if (keyword.toUpperCase() == "ACCEPT") code = "500#ACPT";
-    else if (keyword.toUpperCase() == "COMPLETED") code = "801#CMPL";
+    else if (keyword.toUpperCase() == "COMPLETED") code = "800#CMPL";
     else if (keyword.toUpperCase() == "PENDING") code = "550#PEND";
     return code;
 }
