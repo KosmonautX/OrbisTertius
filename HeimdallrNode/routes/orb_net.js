@@ -22,8 +22,8 @@ const carto = require('../controller/graphCarto');
 router.use(function (req, res, next){
     security.checkUser(req, next);
     next()
-}
-          )
+})
+
 // fcm token
 router.put('/tokenonfyr', async (req,res,next) => {
     try{
@@ -557,33 +557,6 @@ router.put(`/complete_orb_dictator`, async function (req, res, next) {
         };
 });
 
-
-/**
- * API 1.2
- * Complete orb (as an initiator)
- * deletes the location-time entry, update orb completion time and orb-usr status as completed
- */
-router.put(`/complete_orb`, async function (req, res, next) {
-    let body = { ...req.body };
-
-    const orbData = await dynaOrb.retrieve(body).catch(err => {
-        err.status = 404;
-        err.message = "ORB not found"
-    });
-    let completion = false;
-    // complete delete for all locations to implement
-    if (orbData && req.verification.user_id === orbData.user_id) {
-        completion = await dynaOrb.update(orbData).catch(err => {
-            err.status = 500;
-            next(err);
-        });
-    }
-    if (completion == true) {
-        res.status(201).json({
-            "Orb completed": body.orb_uuid
-        })
-    }
-});
 
 /**
  * API 1.2

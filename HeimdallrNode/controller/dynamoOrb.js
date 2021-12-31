@@ -347,55 +347,6 @@ const dynaOrb = {
             }
         }
     },
-    async update(body) { // return true if success
-        const params = {
-            "TransactItems": [
-                {
-                    Delete: {
-                        TableName: ddb_config.tableNames.orb_table,
-                        Key: {
-                            PK: "LOC#" + body.geohash,
-                            SK: body.expiry_dt + "#ORB#" + body.orb_uuid
-                        }
-                    }
-                },
-                {
-                    Update: {
-                        TableName: ddb_config.tableNames.orb_table,
-                        Key: {
-                            PK: "ORB#" + body.orb_uuid,
-                            SK: "ORB#" + body.orb_uuid, 
-                        },
-                        UpdateExpression: "set #t = :time",
-                        ExpressionAttributeNames:{
-                            "#t": "time"
-                        },
-                        ExpressionAttributeValues: {
-                            ":time": moment().subtract(1, "minutes").unix(),
-                        }
-                    }
-                },
-                {
-                    Update: {
-                        TableName: ddb_config.tableNames.orb_table,
-                        Key: {
-                            PK: "ORB#" + body.orb_uuid,
-                            SK: "USR#" + body.user_id,
-                        },
-                        UpdateExpression: "set inverse = :status",
-                        ExpressionAttributeValues: {
-                            ":status": "801#CMPL"
-                        }
-                    }
-                },
-            ] 
-        };
-        const data = await docClient.transactWrite(params).promise();
-        if (!data || !data.Item) {
-            return true;
-        }
-        return data;
-    },
     async deactivate(body) { // return true if success
         now = moment().unix()
         const params = {
@@ -428,7 +379,8 @@ const dynaOrb = {
                                 time: now,
                                 geohash : body.geolocation,
                                 alphanumeric: body.alphanumeric,
-                                payload: body.payload
+                                payload: body.payload,
+                                available: true
                             }
                         }
                     }
@@ -440,7 +392,7 @@ const dynaOrb = {
                 PutRequest: {
                     Item: {
                         PK: "LOC#" + hashes +"#" + body.geolocation.radius,
-                        SK: now + "#ORB#" + body.orb_uuid,
+                        SK: now + "#ORB#" + body.orb_uuid, // links with filter function in stream
                         extinguish: body.payload.extinguishtime,
                         time: now,
                         available: true,

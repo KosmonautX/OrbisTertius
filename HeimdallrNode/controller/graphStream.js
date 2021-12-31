@@ -64,7 +64,7 @@ Stream.Channel = (function () {
     var filter = function(){
         state.FilterExpression = "#chrono > :nowish"
         state.ExpressionAttributeValues[":nowish"] = moment().unix()
-        state.ExpressionAttributeNames = {"#chrono": "time"}
+        state.ExpressionAttributeNames = {"#chrono": "extinguish"} // filter for clean extinguish
         // filter extinguish
     }
 
