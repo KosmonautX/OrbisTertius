@@ -112,7 +112,18 @@ const comment = {
             }
         };
         const data = await docClient.get(params).promise();
-        return data;
+        let dao = {};
+        if (data.Item){
+            dao.parent_id = data.Item.PK.slice(4);
+            dao.comment_id = data.Item.SK.slice(4)
+            if(data.Item.payload){
+                dao.comment = data.Item.payload.comment;
+                dao.orb_uuid = data.Item.payload.orb_uuid
+            }
+            dao.user_id = data.Item.inverse.substring(4)
+            dao.creationtime = data.Item.time
+        }
+        return dao;
     },
     async deleteComment (body) {
         const params = {
@@ -121,9 +132,11 @@ const comment = {
                 PK: "COM#" + body.parent_id, 
                 SK: "COM#" + body.comment_id,
             },
-            UpdateExpression: "set available = :delete",
+            UpdateExpression: "set extinguish = :delete",
+            ConditionExpression:"attribute_exists(PK) and inverse = :user",
             ExpressionAttributeValues: {
-                ":delete": false
+                ":delete": moment().unix() + 86400*14,
+                ":user": "USR#" + body.user_id
             }
         };
         const data = await docClient.update(params).promise();
@@ -136,9 +149,9 @@ const comment = {
                 PK: "ORB#" + body.orb_uuid, 
                 SK: "COM#" + body.comment_id,
             },
-            UpdateExpression: "set available = :delete",
+            UpdateExpression: "set extinguish = :delete",
             ExpressionAttributeValues: {
-                ":delete": false
+                ":delete": moment().unix() + 86400*14
             }
         };
         const data = await docClient.update(params).promise();

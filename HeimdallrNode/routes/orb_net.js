@@ -204,7 +204,7 @@ router.post(`/undo_user_action`, async function (req, res, next) {
     }
 });
 
-// user reports a post 
+// user reports a orb or a user through a orb
 router.post(`/report`, async function (req, res, next) {
     try {
         let clock = moment().unix()
