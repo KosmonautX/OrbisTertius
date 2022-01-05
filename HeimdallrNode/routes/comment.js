@@ -126,7 +126,7 @@ router.post(`/delete`, async function (req, res, next) {
             throw err
             next(err)
         });
-        if (deleted) {
+        if (deleted && body.parent_id == body.comment_id) {
             await dynaOrb.deleteCommentRel(body);
         }
         res.status(200).json({comment_deleted: body.comment_id || body.parent_id})
