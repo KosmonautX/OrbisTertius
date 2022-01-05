@@ -20,7 +20,6 @@ User-Agent: Emacs27
 :printonemail = "niceprinceton@gmail.com"
 :ryanemail = luckuveryx@gmail.com
 :myemail = avivekbala@gmail.com
-:orb = d01f78f6-005f-4b46-9f7b-8dae2044dcfd
 :my-headers = <<
 Authorization: :token
 Content-Type: application/json
@@ -463,18 +462,19 @@ GET :ipAddress/api/query/buddy?user_id=:ryan&relation=BUL
 ## comments
 ### check comment
 # check if an orb has commentsG
-GET http://localhost:5000/api/comment/check?orb_uuid=c62cc326-6e67-4f1b-ab0d-c343d5859829
+GET http://localhost:5000/api/comment/check?orb_uuid=:orb
 :my-headers
 ### query comment
 # check if a comment has children
 GET http://localhost:5000/api/comment/query?comment_id=f71a1bf2-2897-4134-8fb7-91635d4b81d6
+:my-headers
 ### get comment
 # get a specific comment. </br>
 # If the comment is a parent comment, then both parent_id and comment_id shall be the same. </br>
 # If comment is a child comment, then parent_id of the parent comment is required.
 GET localhost:5000/api/comment/query?parent_id=0ea7d4a8-6ce4-4f90-b9ee-72a88d373821&comment_id=0ea7d4a8-6ce4-4f90-b9ee-72a88d373821
 ### post commenteyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkF0dGlsYUh1biIsInJvbGUiOiJiYXJiIiwiaWF0IjoxNjIwNzkxMjAwLCJleHAiOjE2MjA3OTI0MDAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ._CpkWJ5S4GaEz3IrcmwoGSPkSL2jyEsVCdUsmdWYED4
-# post a PARENT comment
+## post a PARENT comment
 POST :ipAddress/api/comment/post
 :my-headers
 {
@@ -496,10 +496,12 @@ POST :ipAddress/api/comment/reply
 }
 ### delete comment
 # this is a soft delete, so comment will still be available in database.
-DELETE localhost:5000/api/comment/delete
+POST :ipAddress/api/comment/delete
+:my-headers
 {
-    "parent_id": "0ea7d4a8-6ce4-4f90-b9ee-72a88d373821",
-    "comment_id": "0ea7d4a8-6ce4-4f90-b9ee-72a88d373821"
+    "comment_id": "0b78ea7e-d4a3-4ca2-9a0d-6ba7b6abcb82",
+    "parent_id": "0b78ea7e-d4a3-4ca2-9a0d-6ba7b6abcb82",
+    "orb_uuid": ":orb"
 }
 
 ## DEV

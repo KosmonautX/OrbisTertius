@@ -10,6 +10,6 @@ module.exports = (app, verifyToken,fyrwalk) => {
     // shift security into middleware verifyToken too coarse
     app.use('/api/nomadology',verifyToken,  require(`../routes/orb_nomad`));
 	app.use(`/api/query`,verifyToken, require(`../routes/orb_query`));
-	app.use(`/api/comment`, require(`../routes/comment`));
+	app.use(`/api/comment`, verifyToken, require(`../routes/comment`));
   	app.use(`/api/query/user`, verifyToken, require(`../routes/personal_profile`));
 };

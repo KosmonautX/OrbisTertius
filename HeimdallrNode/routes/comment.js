@@ -9,6 +9,13 @@ AWS.config.update({
 });
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
 const dynaOrb = require('../controller/dynamoOrb').comment;
+const security = require('../controller/security')
+
+router.use(function (req, res, next){
+    req.body.user_id = req.verification.user_id
+    security.checkUser(req, next);
+    next()
+})
 
 router.get(`/check`, async function (req, res, next) {
     try {
@@ -22,7 +29,8 @@ router.get(`/check`, async function (req, res, next) {
                 dao.orb_uuid = item.PK.slice(4);
                 dao.created_dt = item.time;
                 dao.comment = item.payload.comment;
-                dao.available = item.available;
+                dao.child = item.available;
+                dao.available = (item.extinguish)? false: true
                 result.push(dao);
             }
             res.json(result);
@@ -50,7 +58,8 @@ router.get(`/query`, async function (req, res, next) {
                 }
                 dao.created_dt = item.time;
                 dao.comment = item.payload.comment;
-                dao.available = item.available;
+                dao.child = item.available;
+                dao.available = (item.extinguish)? false: true
                 result.push(dao);
             }
             res.json(result);
@@ -72,6 +81,7 @@ router.post(`/post`, async function (req, res, next) {
                 err.status = 404
                 err.message = "ORBs no existe"
             }
+            throw err
             next(err)
         });
         await dynaOrb.postCommentRel(body);
@@ -91,6 +101,7 @@ router.post(`/reply`, async function (req, res, next) {
                 err.status = 404
                 err.message = "Comments no existe"
             }
+            throw err
             next(err)
         })
         if(present){
@@ -104,16 +115,21 @@ router.post(`/reply`, async function (req, res, next) {
 
 // admin function for now?
 // consequences to child comment if parent comment is deleted 
-router.delete(`/delete`, async function (req, res, next) {
+router.post(`/delete`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        await dynaOrb.deleteComment(body);
-        if (body.parent_id == body.comment_id) {
-            let comment = await dynaOrb.getComment(body);
-            body.orb_uuid = comment.Item.payload.orb_uuid;
+        deleted= await dynaOrb.deleteComment(body).catch((err)=>{
+            if (err.code == 'ConditionalCheckFailedException'){
+                err.status = 404
+                err.message = "Comments no existe"
+            }
+            throw err
+            next(err)
+        });
+        if (deleted) {
             await dynaOrb.deleteCommentRel(body);
         }
-        res.status(200).send();
+        res.status(200).json({comment_deleted: body.comment_id || body.parent_id})
     } catch (err) {
         err.status = 400;
         next(err);
@@ -133,7 +149,8 @@ router.get(`/get`, async function (req, res, next) {
             }
             dao.created_dt = item.time;
             dao.comment = item.payload.comment;
-            dao.available = item.available;     
+            dao.child = item.available;
+            dao.available = (item.extinguish)? false: true
             res.json(dao);
         } else {
             res.status(204).send();
