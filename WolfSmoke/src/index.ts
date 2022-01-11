@@ -51,11 +51,11 @@ async function main(stream: DynamoDBStreams, stream_arn:string) {
     await mutateActorSubscription(rise,fyr.messaging())
   });
 
-  DynaRipples.on('ORB_USR_FLUX', async function ActorFluxListener(present, past){
+  DynaRipples.on('ORB_USR_FLUX', async function ActorFluxListener(_present, _past){
   });
 
-  DynaRipples.on('ORB_EXTINGUISH', async function TerminusListener(fall) {
-    await teleExtinguishOrb(fall)
+  DynaRipples.on('ORB_FLUX', async function FluxListener(present,_past) {
+    await teleExtinguishOrb(present)
   });
 
   DynaRipples.on('USR_FLUX', async function FluxListener(present, past) {

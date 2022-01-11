@@ -26,16 +26,18 @@ export async function telePostOrb(newRecord: Mutation) : Promise<void>{
 
 }
 
-export async function teleExtinguishOrb(oldRecord: Mutation) : Promise<void>{
+export async function teleExtinguishOrb(newRecord: Mutation) : Promise<void>{
     try{
+        if(!newRecord.available){
         const url = `https://api.telegram.org/bot${process.env.NEIB}/sendMessage`
         const data = new URLSearchParams();
         data.append('chat_id', CHANNEL_ID);
-        var payload: TelegramORBPost = {orb_uuid: oldRecord.SK.substr(15)}
+        var payload: TelegramORBPost = {orb_uuid: newRecord.SK.substr(4)}
         var queryString = Object.keys(payload).map(key => key + '=' + payload[key]).join('&');
         let message =  "https://angora.delete/?" + encodeURI(queryString)
         data.append('text', message);
         return await axios.post(url, data)
+        }
     }catch(e){
         console.log(e)
     }

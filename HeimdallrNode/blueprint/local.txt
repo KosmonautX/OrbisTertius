@@ -25,10 +25,6 @@ Authorization: :token
 Content-Type: application/json
 User-Agent: Emacs27
 ###
-#
-GET :ipAddress/api/dev/telechan?init_id=-1001239569373&user_id=:prince&username=printon&title=uninstallingwindows
-#
-###
 ### Generate Client-side like firetoken
 GET :ipAddress/api/dev/fyr?id=:ryan
 -> run-hook (restclient-set-var ":fyrtoken" (cdr (assq 'payload (json-read))))
@@ -47,6 +43,15 @@ POST :ipAddress/api/devland/fyr/serveronfyr
 }
 #
 ##
+POST :ipAddress/api/orb/admintalk
+:my-headers
+
+{
+    "user_id": ":ryan",
+    "message": "Hello to completed"
+}
+##
+#
 ## POST ORB
 POST :ipAddress/api/nomadology/post_orb
 :my-headers
