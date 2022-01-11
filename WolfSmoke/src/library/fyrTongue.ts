@@ -204,8 +204,8 @@ export async function beckonComment(newRecord: Mutation, client: any): Promise<v
                     switchsubscribe("COM",newRecord.identifier,client, Element.id)
                     let orb_message = {
                         notification:{
-                            "title": `A comment from a fellow neighbour on your ORB`,
-                            "body": `${newRecord.payload.comment}...`},
+                            "title": `Someone commented on your post...`,
+                            "body": `${newRecord.payload.comment}`},
                         data:{
                             "archetype": Element.archetype,
                             "id": Element.id,
@@ -222,8 +222,8 @@ export async function beckonComment(newRecord: Mutation, client: any): Promise<v
                     switchsubscribe("COM",newRecord.identifier,client, Element.relation)
                     let com_message = {
                         notification:{
-                            "title": `A reply from a fellow neighbour on your comment`,
-                            "body": `${newRecord.payload.comment}...`},
+                            "title": `Someone replied to your comment...`,
+                            "body": `${newRecord.payload.comment}`},
                         data:{
                             "archetype": Element.archetype,
                             "id": String(Element.id),

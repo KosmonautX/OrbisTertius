@@ -343,19 +343,7 @@ export class DynaStream extends EventEmitter {
           break
 
 		    case 'REMOVE':
-          switch(keys.PK.substr(0,3)){
-            //case 'ORB':break;
-            //case 'USR': break;
-            case 'LOC':
-              switch(keys.SK.substr(11,3)){
-                case 'ORB':
-                  this.emit('ORB_EXTINGUISH', oldRecord)
-                  break;
-                //case 'USR': break;
-              }
               break;
-          }
-		      break
 
 		    default:
 		      throw new Error(`unknown dynamodb event ${event.eventName}`)

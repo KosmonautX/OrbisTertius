@@ -69,24 +69,6 @@ router.get(`/fyr`, async function (req, res, next) {
                  });
 });
 
-/**
- * FYR TOKEN CUSTOM GEN
- */
-
-router.get(`/telechan`, async function (req, res, next) {
-    telemessage(req.query.init_id,req.query.user_id,req.query.username,req.query.title).then(response => {
-        res.status(201).json({
-            "chat_id": req.query.init_id,
-            "text": req.query.title
-        })})
-         .catch(error => {
-             console.log(error);
-             error = new Error("Telechan failed");
-             error.status = 500;
-             next(error);
-         });;
-})
-
 
 /**
  * API 1.2 UNRELEASED

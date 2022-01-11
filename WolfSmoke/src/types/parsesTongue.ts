@@ -7,6 +7,7 @@ export interface Mutation {
     identifier?: string
     numeric?: number
     alphanumeric?: string
+    available?: boolean
     payload?: any
     beacon?: Set<string>
 }

@@ -18,6 +18,7 @@ const userQuery = require('../controller/dynamoUser').userQuery;
 const graph = require('../controller/graphLand');
 const dynamoOrb = require('../controller/dynamoOrb');
 const carto = require('../controller/graphCarto');
+const teleria = require('../controller/teleria').teleChannelPipeline
 
 router.use(function (req, res, next){
     security.checkUser(req, next);
@@ -38,6 +39,24 @@ router.put('/tokenonfyr', async (req,res,next) => {
     }}catch(err){
         next(err);
     }})
+
+router.post('/admintalk' ,async (req,res,next) => {
+    try{
+        let body = { ...req.body };
+
+        payload= await teleria(body,req.verification,"lonely").then(response => {
+            res.status(201).json({
+                "Admin": "Messaged"
+            })}).catch(err => {
+                res.status = 400;
+                next(err)
+                ;});
+
+    }catch(err){
+        next(err);
+    }})
+
+
 // generate uuid and a presigned buffer for image in s3 bucket
 router.post(`/gen_uuid`, async function (req, res, next) {
     try {
