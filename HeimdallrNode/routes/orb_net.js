@@ -44,7 +44,7 @@ router.post('/admintalk' ,async (req,res,next) => {
     try{
         let body = { ...req.body };
 
-        payload= await teleria(body,req.verification,"lonely").then(response => {
+        payload= await teleria(req.verification,"lonely").then(response => {
             res.status(201).json({
                 "Admin": "Messaged"
             })}).catch(err => {
@@ -228,34 +228,43 @@ router.post(`/report`, async function (req, res, next) {
     try {
         let clock = moment().unix()
         let body = { ...req.body };
-        const bullied = await dynaUser.bully(body.acpt_id,body.user_id,clock).catch(err=> {
-            err.status = 400;
-            next(err);
-        })
-        const bullyd = await dynaUser.bully(body.user_id,body.acpt_id,clock).catch(err=> {
-            err.status = 400;
-            next(err);
-        })
-        let params = {
-            TableName: ddb_config.tableNames.orb_table,
-            Item: {
-                PK: "ORB#" + body.orb_uuid,
-                SK: "REPORT#" + body.user_id,
-                inverse: moment().unix().toString(),
-                payload: body.reason,
-            },
-        };
-        docClient.put(params, function(err, data) {
-            if (err) {
-                err.status = 400;
-                next(err);
-            } else {
-                res.status(200).json({
-                    "ORB Reported": body.orb_uuid,
-                    "user_id": body.user_id
-                });
-            }
-          });
+        body.reasons = Object.keys(body.reason).filter(k => body.reason[k])
+
+        if(body.reasons.length < 5){
+            payload= await teleria(req.verification,"report", body).catch(err => {
+                res.status = 400;
+                next(err)
+                ;});
+            // const bullied = await dynaUser.bully(body.acpt_id,body.user_id,clock).catch(err=> {
+            //     err.status = 400;
+            //     next(err);
+            // })
+            // const bullyd = await dynaUser.bully(body.user_id,body.acpt_id,clock).catch(err=> {
+            //     err.status = 400;
+            //     next(err);
+            // })
+            let params = {
+                TableName: ddb_config.tableNames.orb_table,
+                Item: {
+                    PK: "ORB#" + body.orb_uuid,
+                    SK: "REPORT#" + body.user_id,
+                    inverse: moment().unix().toString(),
+                    payload: body.reason,
+                },
+                ConditionExpression: "attribute_exists(SK)",
+            };
+            docClient.put(params, function(err, data) {
+                if (err) {
+                    err.status = 400;
+                    next(err);
+                } else {
+                    res.status(200).json({
+                        "ORB Reported": body.orb_uuid,
+                        "user_id": body.user_id
+                    });
+                }
+            });
+        }
     } catch (err) {
         err.status = 400;
         next(err);

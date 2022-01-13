@@ -89,8 +89,8 @@ var checkActor = function(auth, actor_id){
 function checkAdmin(req, next) {
     try{
     if (req.verification.role !== "boni") {
-        throw new Error("You ain't serving");}
-    }catch(err){
+        throw new Error("You ain't serving the good men");}
+}catch(err){
         err.status = 401
         next(err);
     }

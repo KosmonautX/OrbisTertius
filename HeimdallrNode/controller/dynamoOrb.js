@@ -142,6 +142,22 @@ const comment = {
         const data = await docClient.update(params).promise();
         return data;
     },
+    async deleteAdminComment (body) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Key: {
+                PK: "COM#" + body.parent_id,
+                SK: "COM#" + body.comment_id,
+            },
+            UpdateExpression: "set extinguish = :delete",
+            ConditionExpression:"attribute_exists(PK)",
+            ExpressionAttributeValues: {
+                ":delete": moment().unix() + 86400*14
+            }
+        };
+        const data = await docClient.update(params).promise();
+        return data;
+    },
     async deleteCommentRel (body) {
         const params = {
             TableName: ddb_config.tableNames.orb_table,        
