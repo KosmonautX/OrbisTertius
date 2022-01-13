@@ -114,18 +114,29 @@ router.post(`/reply`, async function (req, res, next) {
 });
 
 // admin function for now?
-// consequences to child comment if parent comment is deleted 
+// consequences to child comment if parent comment is deleted
 router.post(`/delete`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        deleted= await dynaOrb.deleteComment(body).catch((err)=>{
-            if (err.code == 'ConditionalCheckFailedException'){
-                err.status = 404
-                err.message = "Comments no existe"
-            }
-            throw err
-            next(err)
-        });
+        if(body.user_id == "OpCaNTXKWaVsj7814yTzwul9PAU2"){
+            deleted= await dynaOrb.deleteAdminComment(body).catch((err)=>{
+                if (err.code == 'ConditionalCheckFailedException'){
+                    err.status = 404
+                    err.message = "Comments no existe"
+                }
+                throw err
+                next(err)
+            });
+        } else{
+            deleted= await dynaOrb.deleteComment(body).catch((err)=>{
+                if (err.code == 'ConditionalCheckFailedException'){
+                    err.status = 404
+                    err.message = "Comments no existe"
+                }
+                throw err
+                next(err)
+            });
+        }
         if (deleted && body.parent_id == body.comment_id) {
             await dynaOrb.deleteCommentRel(body);
         }
