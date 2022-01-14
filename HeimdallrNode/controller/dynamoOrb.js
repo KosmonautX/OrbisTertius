@@ -20,6 +20,7 @@ const comment = {
                 payload: {
                     comment: body.comment,
                     orb_uuid: body.orb_uuid,
+                    username: body.username
                 },
                 identifier: body.beacon
             },
@@ -37,7 +38,8 @@ const comment = {
                 inverse: "USR#" + body.user_id,
                 available: false,
                 payload: {
-                    comment: body.comment
+                    comment: body.comment,
+                    username: body.username
                 },
             },
         };
@@ -69,7 +71,9 @@ const comment = {
                 time: moment().unix(),
                 inverse: "USR#" + body.user_id,
                 payload: {
-                    comment: body.comment
+                    comment: body.comment,
+                    orb_uuid: body.orb_uuid,
+                    username: body.username
                 },
                 identifier: body.beacon
             },

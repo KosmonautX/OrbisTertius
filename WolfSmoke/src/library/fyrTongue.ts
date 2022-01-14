@@ -139,7 +139,7 @@ export async function triggerBeacon(newRecord: Mutation, client: any, oldRecord:
 
                 let message = {
                     notification:  {
-                        "title": `A message from ${username} awaits...`,
+                        "title": `${username} messaged`,
                         "body": `${username}...`},
                     data:{
                         "archetype": "ORB",
@@ -204,7 +204,7 @@ export async function beckonComment(newRecord: Mutation, client: any): Promise<v
                     switchsubscribe("COM",newRecord.identifier,client, Element.id)
                     let orb_message = {
                         notification:{
-                            "title": `Someone commented on your post...`,
+                            "title": `${newRecord.payload.username} commented on your post...`, // username
                             "body": `${newRecord.payload.comment}`},
                         data:{
                             "archetype": Element.archetype,
@@ -222,12 +222,13 @@ export async function beckonComment(newRecord: Mutation, client: any): Promise<v
                     switchsubscribe("COM",newRecord.identifier,client, Element.relation)
                     let com_message = {
                         notification:{
-                            "title": `Someone replied to your comment...`,
+                            "title": `${newRecord.payload.username} replied to your comment...`, // username
                             "body": `${newRecord.payload.comment}`},
                         data:{
                             "archetype": Element.archetype,
                             "id": String(Element.id),
                             "parent": Element.relation,
+                            "orb_uuid": newRecord.payload.orb_uuid,
                             "time": String(newRecord.time)
                         }}
                     sendsubscribers(com_message, "COM." +  Element.relation, client).catch((error)=>{
