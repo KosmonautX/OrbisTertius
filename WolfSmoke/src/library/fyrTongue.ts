@@ -69,7 +69,7 @@ async function messenger(newRecord: Mutation, Element: KeyElement, client:any): 
     if(Element.archetype === "ORB"){
         let message = {
             notification:  {
-                "title": `A new ORB arose nearby...`,
+                "title": `New Post`,
                 "body": `${newRecord.payload.title}...`
             },
             data:{
