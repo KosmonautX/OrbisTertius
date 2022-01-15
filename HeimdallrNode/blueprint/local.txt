@@ -457,7 +457,7 @@ PUT :web/api/tele/destroy_orb
 }
 ##
 #
-POST :web/tele/post_orb
+POST :web/api/tele/post_orb
 :my-headers
 -> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (json-read))))
 {

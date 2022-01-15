@@ -13,6 +13,7 @@ const security = require('../controller/security')
 
 router.use(function (req, res, next){
     req.body.user_id = req.verification.user_id
+    req.body.username = req.verification.username
     security.checkUser(req, next);
     next()
 })
