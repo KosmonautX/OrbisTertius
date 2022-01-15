@@ -3,7 +3,6 @@
 # ScratchbacV4.7 (local env)
 #
 :ipAddress = http://localhost:5000
-# :ipAddress = https://norbandy.scratchbac.org
 :id = 01234567-89ABCDEF-01234567-89ABCDEF
 :googleAuth = <<
 Authorization: :fyrtoken
@@ -13,6 +12,7 @@ User-Agent: Emacs27
 :prince = 175181189
 :evange = 188681901
 :bala = 98667304
+:web = https://norbandy.scratchbac.org
 #:ryan = SxD23ctxrIUDPi1lXkAOq5BKm1l1
 :ryan = R3Vsjq9CARfprwOJps44kbVczFQ2
 :admin = "90565482"
@@ -449,13 +449,33 @@ PUT :ipAddress/api/orb/destroy_orb
 }
 
 ## 7. Destroy ORB
-PUT :ipAddress/api/tele/destroy_orb
+PUT :web/api/tele/destroy_orb
 :my-headers
 {
     "user_id": ":ryan",
     "orb_uuid": ":orb"
 }
-
+##
+#
+POST :web/api/tele/post_orb
+:my-headers
+-> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (json-read))))
+{
+    "user_id": ":ryan",
+    "title": "finder of lost children",
+    "info": "blessed is he",
+    "where": "my house",
+    "when": "now",
+    "tip": "foc",
+    "media": false,
+    "geolocation": {"live": {"latlon":{
+    "lat":1.3568,
+    "lon":103.7487
+    },"target":42,"geolock": true}},
+    "orb_nature": 10,
+    "expires_in": 10000,
+    "beacon": "samplebeacon"
+}
 
 ## 7a. Not interested (initiator)
 PUT :ipAddress/api/orb/not_interested
