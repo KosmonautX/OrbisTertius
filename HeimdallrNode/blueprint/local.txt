@@ -25,6 +25,11 @@ Authorization: :token
 Content-Type: application/json
 User-Agent: Emacs27
 ###
+:boni-headers = <<
+Authorization: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoicGVuZ3Vpbk1hbiIsInJvbGUiOiJib25pIiwiaXNzIjoiUHJpbmNldG9uIiwic3ViIjoiU2NyYXRjaEJhYyIsImV4cCI6MTY0MjI2NjA5MiwiaWF0IjoxNjQyMjY1MDkyLCJtZXNzYWdlIjoiSGVsbG8gUHJpbmNldG9uIn0._6KYerYh2bWxPa0F9SmzEY4DzSavfdlS7-jlZoscsj8
+Content-Type: application/json
+User-Agent: Emacs27
+###
 ### Generate Client-side like firetoken
 GET :ipAddress/api/dev/fyr?id=:ryan
 -> run-hook (restclient-set-var ":fyrtoken" (cdr (assq 'payload (json-read))))
@@ -450,10 +455,10 @@ PUT :ipAddress/api/orb/destroy_orb
 
 ## 7. Destroy ORB
 PUT :web/api/tele/destroy_orb
-:my-headers
+:boni-headers
 {
-    "user_id": ":ryan",
-    "orb_uuid": ":orb"
+    "user_id": "5qUkUlLSb9YatxmJa9ohG9BHrO62",
+    "orb_uuid": "2cca99d4-d3f8-49ad-a289-00b9bc702e45"
 }
 ##
 #

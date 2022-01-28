@@ -95,6 +95,25 @@ async function messenger(newRecord: Mutation, Element: KeyElement, client:any): 
 
 
 // switch to archetype based constructor
+async function switchtoken(archetype:string,topic : string | number, client: any, newtoken: string,  oldtoken: string): Promise<void>{
+    try{
+        if(newtoken) subscribe(newtoken,archetype+ "." +String(topic),client)
+            .catch((error) => {
+                console.log('Error subscribing to topic:', error);
+            });
+        ;
+        if(oldtoken) unsubscribe(oldtoken,archetype+ "." +String(topic),client)
+            .catch((error) => {
+                console.log('Error unsubscribing from topic:', error);
+            });
+        ;
+    }
+    catch(e){
+        console.log(e)
+    }
+}
+
+// switch fcm token on identifier
 async function switchsubscribe(archetype:string,token : string, client: any, newtopic?: string | number,  oldtopic?: string| number,): Promise<void>{
     try{
         if(newtopic) subscribe(token,archetype+ "." +String(newtopic),client)
@@ -124,10 +143,15 @@ export async function triggerNotif(newRecord: Mutation, client: any): Promise<vo
         }
 }
 
+// beacon under rework to subscriber token centered system
 export async function triggerBeacon(newRecord: Mutation, client: any, oldRecord: Mutation): Promise<void>{
     try {
         // generalise into KeyElementRElations later
         if(newRecord.identifier){
+            if(oldRecord.identifier  && newRecord.identifier !== oldRecord.identifier){
+                var Element = KeyParser(newRecord.PK, newRecord.SK)
+                switchtoken("USR", Element.id, client,  newRecord.identifier, oldRecord.identifier  )
+            }
             if(newRecord.beacon && ((oldRecord.beacon == undefined || oldRecord.beacon.size < newRecord.beacon.size))){
                 function getLastValue(set: Set<string>): string{
                     let value;
