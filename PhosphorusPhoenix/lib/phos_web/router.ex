@@ -17,9 +17,9 @@ defmodule PhosWeb.Router do
   scope "/", PhosWeb do
     pipe_through :browser
 
-    #get "/agent", AgentController, :show
-
-    resources "/agent", AgentController, only: [:show]
+    get "/archetype", ArchetypeController, :show do
+      resources "/archetype/usr", UserController, only: [:show]
+    end
 
     get "/", PageController, :index
   end

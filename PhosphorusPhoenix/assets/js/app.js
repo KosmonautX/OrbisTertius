@@ -54,10 +54,14 @@ let topic = phase.substring(1)
 let data = {}
 let channel = socket.channel(topic, data); // connect to chat "room"
 
+channel.join().receive("ok", resp => { console.log("Joined successfully", resp) })
+       .receive("error", resp => { console.log("Unable to join", resp)
+                                  socket.disconnect()});
+
 channel.on('shout', function (payload) { // listen to the 'shout' event
   console.log(payload)
   let li = document.createElement("li"); // create new list item DOM element
-  let name = payload.from || 'guest';    // get name from payload or set default
+  let name = payload.source || 'guest';    // get name from payload or set default
   current_date = date.format(payload.time)
   if(typeof present_date === "undefined"){
     li.innerHTML = '<b>' + name + '</b>: ' + payload.message + '<i style="float:right;color: gray;"> '+ time.format(payload.time)+ '</i>'; // set li contents
@@ -86,25 +90,24 @@ channel.on('reverie', function (payload) { // listen to the 'reverie' event
     if(typeof date_state !== "undefined") li.innerHTML = '<div style="width: 100%; height: 25px;  border-bottom: 1px solid gold; text-align: center"><span style="color:#192756; padding: 0 10px; font-style: oblique;">'+ date_state +'</span></div>'
     date_state = past_date
   }
-  let name = payload.from || 'guest';    // get name from payload or set default
+  let name = payload.source || 'guest';    // get name from payload or set default
   li.innerHTML += '<b>' + name  + '</b>: ' + payload.message + '<i style="float:right;color: gray;"> '+ time.format(payload.time)+ '</i>'; // set li contents
   ul.append(li);                    // append to list
 });
 
-channel.join().receive("ok", resp => { console.log("Joined successfully", resp) })
-       .receive("error", resp => { console.log("Unable to join", resp)
-                                  socket.disconnect()});
 let ul = document.getElementById('msg-list');
-let message = document.getElementById('msg');            // message input field
-let archetype = "USR#USR"
+let message = document.getElementById('msg'); // message input field
+let destination = document.getElementById('name') //only you can access your own channel so destination field necessary
 // "listen" for the [Enter] keypress event to send a message:
 msg.addEventListener('keypress', function (event) {
   if (event.keyCode == 13 && msg.value.length > 0) { // don't sent empty msg.
     channel.push('shout', { // send the message to the server on "shout" channel
       message: message.value,    // get message text (value) from msg input field.
-      archetype: archetype,
+      destination: destination.value,
+      destination_archetype: "USR",
       time: Date.now(),
-      orb: topic  // replace with variable lobby name
+      subject_archetype: "ORB",
+      subject: "1"
     });
     msg.value = '';         // reset the message input field for next message.
   }

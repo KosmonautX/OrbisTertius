@@ -8,7 +8,7 @@ defmodule PhosWeb.UserSocket do
 
   ## Channels
 
-  channel "agent:*", PhosWeb.AgentChannel
+  channel "archetype:usr:*", PhosWeb.UserChannel
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After

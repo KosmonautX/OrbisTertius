@@ -1,11 +1,11 @@
-defmodule PhosWeb.AgentChannelTest do
+defmodule PhosWeb.ArchetypeChannelTest do
   use PhosWeb.ChannelCase
 
   setup do
     {:ok, _, socket} =
       PhosWeb.UserSocket
       |> socket("user_id", %{some: :assign})
-      |> subscribe_and_join(PhosWeb.AgentChannel, "agent:lobby")
+      |> subscribe_and_join(PhosWeb.ArchetypeChannel, "archetype:1")
 
     %{socket: socket}
   end

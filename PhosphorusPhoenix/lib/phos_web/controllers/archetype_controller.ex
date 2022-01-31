@@ -1,4 +1,4 @@
-defmodule PhosWeb.AgentController do
+defmodule PhosWeb.ArchetypeController do
   use PhosWeb, :controller
 
   def show(conn, %{"id" => agent} = _params) do
@@ -6,7 +6,7 @@ defmodule PhosWeb.AgentController do
   end
 
   def show(conn, _params) do
-    render(conn, "show.html", agent: "Root" )
+    render(conn, "show.html", archetype: "Root" )
   end
 
 

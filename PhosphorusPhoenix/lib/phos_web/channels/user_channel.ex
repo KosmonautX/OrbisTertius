@@ -1,10 +1,12 @@
-defmodule PhosWeb.AgentChannel do
+defmodule PhosWeb.UserChannel do
   use PhosWeb, :channel
 
   @impl true
-  def join("agent:" <> id , payload, socket) do
+  def join("archetype:usr:" <> id , payload, socket) do
+    IO.inspect(id)
     if authorized?(payload) do
-      {:ok, socket |> assign(:archetype_id, id)}
+      send(self(), :initiation)
+      {:ok, socket |> assign(:user_channel_id, id)}
     else
       {:error, %{reason: "unauthorized"}}
     end
@@ -23,19 +25,21 @@ defmodule PhosWeb.AgentChannel do
   def handle_in("shout", payload, socket) do
     payload = payload
     #|> Map.put("name", socket.assigns.user_agent["username"])
-    |> Map.put("from", "1")
+    |> Map.put("source", "1")
+    |> Map.put("source_archetype", "USR")
     Phos.Echo.changeset(%Phos.Echo{}, payload) |> Phos.Repo.insert
-    broadcast socket, "shout", payload
+    broadcast socket, "shout", payload #broadcast to both channels from and to
     {:noreply, socket}
   end
 
     @impl true
-  def handle_info(:after_join,  socket) do
-    Phos.Echo.agent_call("1")
+  def handle_info(:initiation,  socket) do
+    Phos.Echo.usr_call(socket.assigns.user_channel_id) # from user_id
     |> Enum.each(fn echoes -> push(socket, "reverie", %{
-                                         from: echoes.from,
-                                         to: echoes.to,
-                                         archetype: echoes.type,
+                                         source: echoes.source,
+                                         destination: echoes.destination,
+                                         source_archetype: echoes.source_archetype,
+                                         destination_archetype: echoes.destination_archetype,
                                          message: echoes.message,
                                          time: DateTime.from_naive!(echoes.inserted_at,"Etc/UTC") |> DateTime.to_unix()
                                  }) end)
