@@ -90,6 +90,30 @@ router.get(`/get_users/:user_ids`, async function (req, res, next) {
     }
 });
 
+
+/**
+ * API 1
+ * Fetch App Version
+ */
+router.get(`/version/:version`, async function (req, res, next) {
+    try{
+        const orbs = req.params.version
+        if (req.params.version === "1.0.0") {
+            res.status(200).send({
+                "version": "in being"
+            });
+        } else {
+            res.status(409).send({
+                "version": "rip",
+            });
+        }
+
+    }catch(err){
+        if (err.message == "Recall Version failed") err.status = 401;
+        next(err);
+    }
+});
+
 router.get(`/check_username`, async function (req, res, next) {
     try {
         let username = await userQuery.checkUsername(req.query.username);

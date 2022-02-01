@@ -28,7 +28,9 @@ defmodule PhosWeb.UserChannel do
     |> Map.put("source", "1")
     |> Map.put("source_archetype", "USR")
     Phos.Echo.changeset(%Phos.Echo{}, payload) |> Phos.Repo.insert
-    broadcast socket, "shout", payload #broadcast to both channels from and to
+    IO.inspect payload
+    broadcast socket, "shout", payload #broadcast to both channels from and to, first the source
+    PhosWeb.Endpoint.broadcast_from!(self(), "archetype:usr:" <> payload["destination"] , "shout", payload) #then  broadcast to destination as well
     {:noreply, socket}
   end
 
