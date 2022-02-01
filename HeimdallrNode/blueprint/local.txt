@@ -298,6 +298,10 @@ GET :ipAddress/api/query/orbs/c04615d4-7dad-4438-bd4f-da57b0f605bf,79696fdc-a605
 ## 1. fetch users
 GET :ipAddress/api/query/get_orbs/:orb
 :my-headers
+
+## 1. version check
+GET :ipAddress/api/query/version/1.0.0
+:my-headers
 ## 2. FRESHORBS
 GET :ipAddress/api/query/orbs_in_loc_fresh_batch?postal_code=650301
 :my-headers

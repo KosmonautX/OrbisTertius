@@ -14,6 +14,11 @@ config :phos, PhosWeb.Endpoint, cache_static_manifest: "priv/static/cache_manife
 # Do not print debug messages in production
 config :logger, level: :info
 
+config :joken, menshenSB: [
+   signer_alg: "HS256",
+   key_octet: System.get_env("SECRET_TUNNEL")
+]
+
 # ## SSL Support
 #
 # To get SSL working, you will need to add the `https` key

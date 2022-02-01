@@ -1,10 +1,11 @@
 defmodule PhosWeb.UserChannel do
   use PhosWeb, :channel
+  alias PhosWeb.Menshen.Auth
 
   @impl true
-  def join("archetype:usr:" <> id , payload, socket) do
+  def join("archetype:usr:" <> id , _payload, socket) do
     IO.inspect(id)
-    if authorized?(payload) do
+    if authorized?(socket, id) do
       send(self(), :initiation)
       {:ok, socket |> assign(:user_channel_id, id)}
     else
@@ -25,7 +26,7 @@ defmodule PhosWeb.UserChannel do
   def handle_in("shout", payload, socket) do
     payload = payload
     #|> Map.put("name", socket.assigns.user_agent["username"])
-    |> Map.put("source", "1")
+    |> Map.put("source", socket.assigns.user_agent["user_id"])
     |> Map.put("source_archetype", "USR")
     Phos.Echo.changeset(%Phos.Echo{}, payload) |> Phos.Repo.insert
     IO.inspect payload
@@ -49,7 +50,17 @@ defmodule PhosWeb.UserChannel do
   end
 
   # Add authorization logic here as required.
-  defp authorized?(_payload) do
-    true
+  defp authorized?(socket, id) do
+    IO.inspect socket
+    case Auth.validate(socket.assigns.session_token) do
+      {:ok , claims} ->
+        if claims["user_id"] == socket.assigns.user_agent["user_id"] and claims["user_id"] == id do
+          true
+        else
+          false
+        end
+      { :error, _error } ->
+        {:error,  :authentication_required}
+     end
   end
 end

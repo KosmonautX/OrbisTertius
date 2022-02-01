@@ -51,7 +51,11 @@ config :phos, PhosWeb.Endpoint,
 # If desired, both `http:` and `https:` keys can be
 # configured to run both http and https servers on
 # different ports.
-
+# Joken Signer Config
+config :joken, menshenSB: [
+   signer_alg: "HS256",
+   key_octet: "BALA"
+]
 # Watch static and templates for browser reloading.
 config :phos, PhosWeb.Endpoint,
   live_reload: [
