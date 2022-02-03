@@ -22,13 +22,13 @@ unless Config.config_env() == :prod do
     key_octet: "BALA"
   ]
 
-  # FCM
-  config :phos, Phos.Fyr.Message,
-    adapter: Pigeon.FCM,
-    project_id: System.get_env("FYR_PROJ"),
-    service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"firebase-adminsdk-b1dh2@#{System.get_env("FYR_PROJ")}.iam.gserviceaccount.com\"\n}\n"
-
 end
+
+# FCM
+config :phos, Phos.Fyr.Message,
+  adapter: Pigeon.FCM,
+  project_id: System.get_env("FYR_PROJ"),
+  service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"firebase-adminsdk-b1dh2@#{System.get_env("FYR_PROJ")}.iam.gserviceaccount.com\"\n}\n"
 
 if config_env() == :prod do
   database_url =
@@ -58,7 +58,7 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  host = System.get_env("PHX_HOST") || "example.com"
+  host = System.get_env("PHX_HOST") || "phos.scrb.ac"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
   config :phos, PhosWeb.Endpoint,
