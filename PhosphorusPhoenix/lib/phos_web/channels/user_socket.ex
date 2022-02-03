@@ -34,8 +34,8 @@ defmodule PhosWeb.UserSocket do
         {:ok, socket |> assign(:user_agent, claims) |> assign(:session_token, token)
 
         }
-      {:error, _reason} ->
-        :error
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 

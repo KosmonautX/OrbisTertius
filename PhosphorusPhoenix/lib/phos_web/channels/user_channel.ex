@@ -4,7 +4,6 @@ defmodule PhosWeb.UserChannel do
 
   @impl true
   def join("archetype:usr:" <> id , _payload, socket) do
-    IO.inspect(id)
     if authorized?(socket, id) do
       send(self(), :initiation)
       {:ok, socket |> assign(:user_channel_id, id)}
@@ -29,7 +28,6 @@ defmodule PhosWeb.UserChannel do
     |> Map.put("source", socket.assigns.user_agent["user_id"])
     |> Map.put("source_archetype", "USR")
     Phos.Echo.changeset(%Phos.Echo{}, payload) |> Phos.Repo.insert
-    IO.inspect payload
     broadcast socket, "shout", payload #broadcast to both channels from and to, first the source
     PhosWeb.Endpoint.broadcast_from!(self(), "archetype:usr:" <> payload["destination"] , "shout", payload) #then  broadcast to destination as well
     {:noreply, socket}
@@ -51,7 +49,6 @@ defmodule PhosWeb.UserChannel do
 
   # Add authorization logic here as required.
   defp authorized?(socket, id) do
-    IO.inspect socket
     case Auth.validate(socket.assigns.session_token) do
       {:ok , claims} ->
         if claims["user_id"] == socket.assigns.user_agent["user_id"] and claims["user_id"] == id do

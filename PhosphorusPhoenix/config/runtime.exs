@@ -12,6 +12,24 @@ if System.get_env("PHX_SERVER") && System.get_env("RELEASE_NAME") do
   config :phos, PhosWeb.Endpoint, server: true
 end
 
+unless Config.config_env() == :prod do
+  #dotenv Parsing .env file
+  DotenvParser.load_file('../.env')
+
+  # Joken Signer Config
+  config :joken, menshenSB: [
+    signer_alg: "HS256",
+    key_octet: "BALA"
+  ]
+
+  # FCM
+  config :phos, Phos.Fyr.Message,
+    adapter: Pigeon.FCM,
+    project_id: System.get_env("FYR_PROJ"),
+    service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"firebase-adminsdk-b1dh2@#{System.get_env("FYR_PROJ")}.iam.gserviceaccount.com\"\n}\n"
+
+end
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||

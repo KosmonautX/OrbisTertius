@@ -19,6 +19,11 @@ config :joken, menshenSB: [
    key_octet: System.get_env("SECRET_TUNNEL")
 ]
 
+config :phos, Phos.Fyr.Message,
+  adapter: Pigeon.FCM,
+  project_id: System.get_env("FYR_PROJ"),
+  service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \""<> System.get_env("FYR_PROJ") <>"\",\n  \"private_key\": \""<> System.get_env("FYR_KEY") <> "\",\n  \"client_email\": \"firebase-adminsdk-b1dh2@" <> System.get_env("FYR_PROJ") <>".iam.gserviceaccount.com\"\n}\n"
+
 # ## SSL Support
 #
 # To get SSL working, you will need to add the `https` key
