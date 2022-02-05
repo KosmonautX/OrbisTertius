@@ -26,7 +26,7 @@ router.post('/serveronfyr' , async (req,res, next) => {
       });
       if(existing_attr.Item && existing_attr.Item.identifier === req.body.device_id){
         payload.user_id = req.body.user_id;
-        payload.role = "boni";
+        payload.role = "pleb";
         /*
          * territory is not the most granular as this might compromise user security
          * .. without encryption for claims
