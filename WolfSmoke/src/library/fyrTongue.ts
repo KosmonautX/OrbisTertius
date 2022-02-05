@@ -95,7 +95,7 @@ async function messenger(newRecord: Mutation, Element: KeyElement, client:any): 
 
 
 // switch to archetype based constructor
-async function switchtoken(archetype:string,topic : string | number, client: any, newtoken: string,  oldtoken: string): Promise<void>{
+async function switchtoken(archetype:string,topic : string | number, client: any, newtoken: string,  oldtoken?: string): Promise<void>{
     try{
         if(newtoken) subscribe(newtoken,archetype+ "." +String(topic),client)
             .catch((error) => {
@@ -148,9 +148,15 @@ export async function triggerBeacon(newRecord: Mutation, client: any, oldRecord:
     try {
         // generalise into KeyElementRElations later
         if(newRecord.identifier){
-            if(oldRecord.identifier  && newRecord.identifier !== oldRecord.identifier){
-                var Element = KeyParser(newRecord.PK, newRecord.SK)
-                switchtoken("USR", Element.id, client,  newRecord.identifier, oldRecord.identifier  )
+            var Element:KeyElement
+            if(oldRecord.identifier){
+                if(newRecord.identifier !== oldRecord.identifier){
+                    Element = KeyParser(newRecord.PK, newRecord.SK)
+                    switchtoken("USR", Element.id, client,  newRecord.identifier, oldRecord.identifier)
+                }}
+            else{
+                Element = KeyParser(newRecord.PK, newRecord.SK)
+                switchtoken("USR", Element.id, client,  newRecord.identifier, oldRecord.identifier)
             }
             if(newRecord.beacon && ((oldRecord.beacon == undefined || oldRecord.beacon.size < newRecord.beacon.size))){
                 function getLastValue(set: Set<string>): string{

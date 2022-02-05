@@ -30,20 +30,27 @@ defmodule PhosWeb.UserChannel do
     Phos.Echo.changeset(%Phos.Echo{}, payload) |> Phos.Repo.insert
     broadcast socket, "shout", payload #broadcast to both channels from and to, first the source
     PhosWeb.Endpoint.broadcast_from!(self(), "archetype:usr:" <> payload["destination"] , "shout", payload) #then  broadcast to destination as well
+    #Construct Notification for Destination
+    case Phos.Fyr.Message.push(Pigeon.FCM.Notification.new({:topic, "USR." <> payload["destination"]},
+          %{"title" => "Message from #{socket.assigns.user_agent["username"]}", "body" => payload["message"]},
+          payload)) do
+      {:ok, body} -> IO.puts("Success: #{body}")
+      {:error, reason} -> IO.puts("Error: #{reason}")
+    end
     {:noreply, socket}
   end
 
-    @impl true
+  @impl true
   def handle_info(:initiation,  socket) do
     Phos.Echo.usr_call(socket.assigns.user_channel_id) # from user_id
     |> Enum.each(fn echoes -> push(socket, "reverie", %{
-                                         source: echoes.source,
-                                         destination: echoes.destination,
-                                         source_archetype: echoes.source_archetype,
-                                         destination_archetype: echoes.destination_archetype,
-                                         message: echoes.message,
-                                         time: DateTime.from_naive!(echoes.inserted_at,"Etc/UTC") |> DateTime.to_unix()
-                                 }) end)
+                                           source: echoes.source,
+                                           destination: echoes.destination,
+                                           source_archetype: echoes.source_archetype,
+                                           destination_archetype: echoes.destination_archetype,
+                                           message: echoes.message,
+                                           time: DateTime.from_naive!(echoes.inserted_at,"Etc/UTC") |> DateTime.to_unix()
+                                   }) end)
     {:noreply,socket}
   end
 
@@ -58,6 +65,6 @@ defmodule PhosWeb.UserChannel do
         end
       { :error, _error } ->
         {:error,  :authentication_required}
-     end
+    end
   end
 end
