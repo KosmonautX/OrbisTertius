@@ -335,7 +335,7 @@ router.get(`/orbs_in_loc_fresh_page`, async function (req, res, next) {
         throw new Error('Please give either postal_code or latlon')
     }
     if (req.query.page) {
-        let geohash_arr = geohash.get_geo_array(geohashing);
+        let geohash_arr = geohash.neighbour(geohashing);
         geohashing = geohash_arr[req.query.page]
     }
     let params = {
@@ -405,7 +405,7 @@ router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
         } else {
             throw new Error('Please give either postal_code or latlon');
         }
-        let geohash_arr = geohash.get_geo_array(geohashing);
+        let geohash_arr = geohash.neighbour(geohashing);
         let page = [];
         for (let g of geohash_arr) {
             let result = await batch_query_location(g);

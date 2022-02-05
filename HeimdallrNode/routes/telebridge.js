@@ -5,7 +5,7 @@ const security = require('../controller/security');
 const dynaOrb = require('../controller/dynamoOrb').dynaOrb;
 const geohash = require('../controller/geohash')
 const territory_markers = [30,31,32]
-const geofencer = require('ngeohash').decode
+const geofencer = require('ngeohash').decode_int
 
 router.use(function (req, res, next){
     security.checkAdmin(req, next);
@@ -29,7 +29,7 @@ router.post(`/post_orb`, async function (req, res, next) {
         })
         //body.geolocation.radii = territory_markers.filter(function(x){ return x>=req.geolocation.radius})
         // when listener frequencies become adaptable not now
-        if(body.geolocation.radius === territory_markers[0]) body.geolocation.hashes = geoneighbour(body.geolocation.hash,body.geolocation.radius)
+        if(body.geolocation.radius === territory_markers[0]) body.geolocation.hashes = geohash.neighbour(body.geolocation.hash,body.geolocation.radius)
         else body.geolocation.hashes = [body.geolocation.hash]
 
         if(body.geolocation.geolock === true) body.geolocation.geofence = geofencer(body.geolocation.hash,body.geolocation.radius)

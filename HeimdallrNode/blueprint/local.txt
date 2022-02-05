@@ -72,7 +72,7 @@ POST :ipAddress/api/nomadology/post_orb
     "geolocation": {"live": {"latlon":{
     "lat":1.3568,
     "lon":103.7487
-    },"target":42,"geolock": true}},
+    },"target":31,"geolock": true}},
     "orb_nature": 10,
     "expires_in": 10000,
     "beacon": "samplebeacon"
@@ -152,15 +152,15 @@ POST :ipAddress/api/tele/post_orb
 -> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (json-read))))
 {
     "user_id": ":ryan",
-    "username": "ryan"
+    "username": "ryan",
     "title": "finder of lost children",
     "info": "blessed is he",
     "where": "my house",
     "when": "now",
     "tip": "foc",
-    "geolocation": {"live": {"postal": "650301","target":42,"geolock": true}},
+    "geolocation": {"live": {"postal": "650301","target":30,"geolock": true}},
     "orb_nature": 10,
-    "expires_in": 10000,
+    "expires_in": 10000
 }
 #
 ## LOCAL offline auth_server when no internet add SK #pte and identifier keys
