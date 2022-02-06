@@ -73,6 +73,11 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  config :joken, menshenSB: [
+   signer_alg: "HS256",
+   key_octet: System.get_env("SECRET_TUNNEL")
+]
+
   # ## Using releases
   #
   # If you are doing OTP releases, you need to instruct Phoenix

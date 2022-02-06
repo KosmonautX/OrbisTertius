@@ -20,13 +20,6 @@ config :phos, PhosWeb.Endpoint, url: [host: "example.com", port: 80],
 # Do not print debug messages in production
 config :logger, level: :info
 
-config :joken, menshenSB: [
-   signer_alg: "HS256",
-   key_octet: System.get_env("SECRET_TUNNEL")
-]
-
-
-
 # ## SSL Support
 #
 # To get SSL working, you will need to add the `https` key

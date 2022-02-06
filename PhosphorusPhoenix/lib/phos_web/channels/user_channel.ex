@@ -27,16 +27,27 @@ defmodule PhosWeb.UserChannel do
     #|> Map.put("name", socket.assigns.user_agent["username"])
     |> Map.put("source", socket.assigns.user_agent["user_id"])
     |> Map.put("source_archetype", "USR")
-    Phos.Echo.changeset(%Phos.Echo{}, payload) |> Phos.Repo.insert
-    broadcast socket, "shout", payload #broadcast to both channels from and to, first the source
-    PhosWeb.Endpoint.broadcast_from!(self(), "archetype:usr:" <> payload["destination"] , "shout", payload) #then  broadcast to destination as well
-    #Construct Notification for Destination
-    case Phos.Fyr.Message.push(Pigeon.FCM.Notification.new({:topic, "USR." <> payload["destination"]},
-          %{"title" => "Message from #{socket.assigns.user_agent["username"]}", "body" => payload["message"]},
-          payload)) do
-      {:ok, body} -> IO.puts("Success: #{body}")
-      {:error, reason} -> IO.puts("Error: #{reason}")
+    case Phos.Echo.changeset(%Phos.Echo{}, payload) |> Phos.Repo.insert do
+      {:ok, struct} ->
+        echo = Map.take(struct, [:destination,:source, :source_archetype, :destination_archetype, :message, :inserted_at])
+        |> Map.update!(:inserted_at, &(&1 |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix() |> to_string()))
+        broadcast socket, "shout", echo #broadcast to both channels from and to, first the source
+        PhosWeb.Endpoint.broadcast_from!(self(), "archetype:usr:" <> echo.destination,"shout", echo) #then  broadcast to destination as well
+        try do
+          #Construct Notification for Destination
+	        case Phos.Fyr.Message.push(Pigeon.FCM.Notification.new({:topic, "/topics/" <> "USR." <> echo.destination},
+                    %{"title" => "Message from #{socket.assigns.user_agent["username"]}", "body" => echo.message},
+                    echo)) do
+            %{response: :success } -> :ok
+            %{error: reason} -> IO.puts("Error: #{reason}")
+          end
+        rescue
+          e in RuntimeError -> IO.puts e
+        end
+      {:error, changeset} ->
+        IO.puts changeset
     end
+
     {:noreply, socket}
   end
 
@@ -48,6 +59,8 @@ defmodule PhosWeb.UserChannel do
                                            destination: echoes.destination,
                                            source_archetype: echoes.source_archetype,
                                            destination_archetype: echoes.destination_archetype,
+                                           subject_archetype: echoes.subject_archetype,
+                                           subject: echoes.subject,
                                            message: echoes.message,
                                            time: DateTime.from_naive!(echoes.inserted_at,"Etc/UTC") |> DateTime.to_unix()
                                    }) end)
