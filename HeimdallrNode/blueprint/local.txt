@@ -60,7 +60,7 @@ POST :ipAddress/api/orb/admintalk
 ## POST ORB
 POST :ipAddress/api/nomadology/post_orb
 :my-headers
--> run-hook (restclient-set-var ":orb" (cdr (as sq 'orb_uuid (json-read))))
+-> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (json-read))))
 {
     "user_id": ":ryan",
     "title": "finder of lost children",
