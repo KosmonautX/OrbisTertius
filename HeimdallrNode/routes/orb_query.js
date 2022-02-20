@@ -98,13 +98,14 @@ router.get(`/get_users/:user_ids`, async function (req, res, next) {
 router.get(`/version/:version`, async function (req, res, next) {
     try{
         const orbs = req.params.version
-        if (req.params.version === "1.0.0") {
-            res.status(200).send({
-                "version": "in being"
-            });
-        } else {
+        const minimum_version = "1.0.0"
+        if (req.params.version.localeCompare(minimum_version, undefined, { numeric: true, sensitivity: 'base' }) == -1) {
             res.status(409).send({
                 "version": "rip",
+            });
+        } else {
+            res.status(200).send({
+                "version": "in being"
             });
         }
 
