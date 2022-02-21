@@ -62,6 +62,56 @@ router.post(`/post_orb`, async function (req, res, next) {
     }
 });
 
+router.post(`/freshorbstream`, async function (req, res, next) {
+    try{
+        var payload;
+        let now = moment().unix()
+        if(req.body.downstream){
+            payload = await query.Stream.Channel().downstream("LOC", req.geolocation.hash, req.geolocation.radius,req.body.downstream).catch(err => {
+                res.status = 400;
+                next(err);
+            });
+        }
+        else if(req.body.upstream){
+            payload = await query.Stream.Channel().upstream("LOC", req.geolocation.hash, req.geolocation.radius,req.body.upstream).catch(err => {
+                res.status = 400;
+                next(err);
+            });
+        }
+        else{
+            payload = await query.Stream.Channel().start("LOC", req.geolocation.hash, req.geolocation.radius).catch(err => {
+                res.status = 400;
+                next(err);
+            });
+        }
+        if(payload.Items){
+            let page = [];
+            for( let item of payload.Items){
+                let dao = {};
+                dao.orb_uuid = item.SK.slice(15);
+                dao.expiry_dt = item.time
+                dao.active = item.time > now
+                dao.geolocation = item.geohash
+                dao.available = item.available
+                if (item.payload){
+                    dao.payload = item.payload
+                    if(item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'150x150')
+                    if(item.payload.init){
+                        dao.payload.init = item.payload.init;
+                        if(item.payload.init.media) dao.payload.init.media_asset = await serve3.preSign('getObject','USR',item.payload.user_id,'150x150')}
+                }
+                page.push(dao);
+            }
+            if (page.length > 0) {
+                res.json(page)
+            } else {
+                res.status(204).json("nothing burger")
+            }
+        }
+    }catch(err){
+        next(err);}
+});
+
 router.put(`/destroy_orb`, async function (req, res, next) {
     try{
         let body = { ...req.body};
