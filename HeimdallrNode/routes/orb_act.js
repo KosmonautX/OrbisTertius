@@ -12,7 +12,7 @@ router.use(function (req, res, next){
 router.put(`/will`, async function (req, res, next) {
     let body = { ...req.body };
     Promise.resolve(navigate.Action.orb(body.user_id, body.orb_uuid, body.action, body.actor_id)).then(response => {
-        res.status(201).json({"Complete" : body.action});
+        res.status(201).json({"Action_Complete" : body.action});
         }).catch(error => {
             if(error.code === "ConditionalCheckFailedException") res.status(error.statusCode).json({"Will to Action Condition Guards": "failed"})
             else res.status(error.statusCode).json(error.code)

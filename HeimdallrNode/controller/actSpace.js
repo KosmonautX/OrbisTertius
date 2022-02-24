@@ -20,11 +20,11 @@ action_space = {
     },
     "INIT_PND":{
         start: "500#ACPT",
-        end: "540#IPND",
+        end: "541#IPND",
         initator: true
     },
     "SUSP_INIT_PND":{
-        start: "540#IPND",
+        start: "541#IPND",
         end: "500#ACPT",
         initator: true
     },
@@ -44,7 +44,7 @@ action_space = {
         initator: true
     },
     "ACPT_COMPLETE":{
-        start: "550#IPND",
+        start: "541#IPND",
         end: "800#CMPL",
         acceptor: true
     }

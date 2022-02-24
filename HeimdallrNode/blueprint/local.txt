@@ -69,7 +69,7 @@ POST :ipAddress/api/nomadology/post_orb
 :my-headers
 -> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (json-read))))
 {
-    "user_id": ":prince",
+    "user_id": ":ryan",
     "title": "finder of lost children",
     "info": "blessed is he",
     "where": "my house",
@@ -129,7 +129,7 @@ PUT :ipAddress/api/orb/user_location
 POST :ipAddress/api/orb/accept
 :my-headers
 {
-    "user_id": ":ryan",
+    "user_id": ":prince",
     "orb_uuid": ":orb",
     "beacon": ":applefcm"
 }
@@ -140,8 +140,8 @@ PUT :ipAddress/api/orbland/action/will
 :my-headers
 
 {
-    "user_id": ":prince",
-    "actor_id": ":ryan",
+    "user_id": ":ryan",
+    "actor_id": ":prince",
     "orb_uuid": ":orb",
     "action": "INIT_COMPLETE"
 }
