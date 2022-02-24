@@ -9,12 +9,12 @@ Authorization: :fyrtoken
 Content-Type: application/json
 User-Agent: Emacs27
 ##
-:prince = 175181189
 :evange = 188681901
 :bala = 98667304
 :web = https://norbandy.scratchbac.org
 #:ryan = SxD23ctxrIUDPi1lXkAOq5BKm1l1
 :ryan = R3Vsjq9CARfprwOJps44kbVczFQ2
+:prince = MQTT323
 :admin = "90565482"
 :applefcm = fhjXNl9vSwGpu99ABSPe9k:APA91bEC6e6zxBE10wVSiUrtFCsjsb-RrQ2lRCZFmY31afbRrP8S3g7q5klX0hE-v0sIu_hks6lNoOUrD1dN6cYX4ZIo-2BQ4gwrN0lD79nX-ZQknpn5bvp0tGc_Er8VqZ7X1hLDnIkB
 :printonemail = "niceprinceton@gmail.com"
@@ -34,10 +34,15 @@ User-Agent: Emacs27
 GET :ipAddress/api/dev/fyr?id=:ryan
 -> run-hook (restclient-set-var ":fyrtoken" (cdr (assq 'payload (json-read))))
 ###
+### Generate Client-side like firetoken
+GET :ipAddress/api/dev/fyr?id=:prince
+-> run-hook (restclient-set-var ":fyrtoken" (cdr (assq 'payload (json-read))))
+###
 ## Initialise user
 GET :ipAddress/api/devland/fyr/flameon?device_id=:id
 :googleAuth
 ##
+#
 POST :ipAddress/api/devland/fyr/serveronfyr
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 :googleAuth
@@ -47,22 +52,24 @@ POST :ipAddress/api/devland/fyr/serveronfyr
     "device_id": ":id"
 }
 #
-##
-POST :ipAddress/api/orb/admintalk
-:my-headers
+#
+POST :ipAddress/api/devland/fyr/serveronfyr
+-> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
+:googleAuth
 
 {
-    "user_id": ":ryan",
-    "message": "Hello to completed"
+    "user_id": ":prince",
+    "device_id": ":id"
 }
-##
 #
+#
+##
 ## POST ORB
 POST :ipAddress/api/nomadology/post_orb
 :my-headers
 -> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (json-read))))
 {
-    "user_id": ":ryan",
+    "user_id": ":prince",
     "title": "finder of lost children",
     "info": "blessed is he",
     "where": "my house",
@@ -87,11 +94,12 @@ GET :ipAddress/api/tele/decode_geohash?hash=3857146046453&radius=42
 POST :ipAddress/api/nomadology/freshorbstream
 :my-headers
 {
-"geolocation": {"live": {"latlon":{
+    "user_id": ":prince",
+    "geolocation": {"live": {"latlon":{
     "lat":1.3568,
     "lon":103.7487
-    },"target":42}},
-    "downstream": 1640259800
+    },"target":31}},
+    "upstream": 1640259800
 }
 #
 ##
@@ -107,7 +115,7 @@ PUT :ipAddress/api/orb/tokenonfyr
 PUT :ipAddress/api/orb/user_location
 :my-headers
 {
-    "user_id": ":ryan",
+    "user_id": ":prince",
     "event": "genesis",
     "live": {"latlon":{
     "lat":1.3568,
@@ -116,6 +124,37 @@ PUT :ipAddress/api/orb/user_location
 }
 ##
 #
+###
+###
+POST :ipAddress/api/orb/accept
+:my-headers
+{
+    "user_id": ":ryan",
+    "orb_uuid": ":orb",
+    "beacon": ":applefcm"
+}
+##
+##
+#ACPT_PND (PENDING)
+PUT :ipAddress/api/orbland/action/will
+:my-headers
+
+{
+    "user_id": ":prince",
+    "actor_id": ":ryan",
+    "orb_uuid": ":orb",
+    "action": "INIT_COMPLETE"
+}
+##
+##
+POST :ipAddress/api/orb/admintalk
+:my-headers
+
+{
+    "user_id": ":ryan",
+    "message": "Hello to completed"
+}
+##
 POST :ipAddress/api/orb/message_beacon
 :my-headers
 {
@@ -255,14 +294,7 @@ POST :ipAddress/api/orb/create_user
 # &nbsp;&nbsp;    "LONGITUDE": </br> 
 # }</br>
 # user id:</br>
-# orb uuid:</br>
-POST :ipAddress/api/orb/accept
-:my-headers
-{
-    "user_id": ":ryan",
-    "orb_uuid": ":orb",
-    "beacon": ":applefcm"
-}
+
 
 ## 3. user personal interaction with ORB
 # action: save | hide

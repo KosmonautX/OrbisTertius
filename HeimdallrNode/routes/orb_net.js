@@ -30,15 +30,15 @@ router.put('/tokenonfyr', async (req,res,next) => {
     try{
         fyrUser = graph.Land.Entity();
         payload= await fyrUser.fcmtoken(req.body.user_id,req.body.token).catch(err => {
-      res.status = 400;
-      next(err);});
-    if(payload.Attributes){
-      res.status(201).json({
-        "FCM Token": "Updated"
-      })
-    }}catch(err){
-        next(err);
-    }})
+            res.status = 400;
+            next(err);});
+        if(payload.Attributes){
+            res.status(201).json({
+                "FCM Token": "Updated"
+            })
+        }}catch(err){
+            next(err);
+        }})
 
 router.post('/admintalk' ,async (req,res,next) => {
     try{
@@ -216,7 +216,7 @@ router.post(`/undo_user_action`, async function (req, res, next) {
                     "USER ID": body.user_id
                 });
             }
-          });
+        });
     } catch (err) {
         err.status = 400;
         next(err);
@@ -278,8 +278,8 @@ router.post(`/report`, async function (req, res, next) {
 router.put(`/update_user`, async function (req, res, next) {
     let body = { ...req.body };
     if (body.media===true){
-            var img_lossy = await serve3.preSign('putObject','USR',body.user_id,'150x150');
-            var img_lossless = await serve3.preSign('putObject','USR',body.user_id,'1920x1080');
+        var img_lossy = await serve3.preSign('putObject','USR',body.user_id,'150x150');
+        var img_lossless = await serve3.preSign('putObject','USR',body.user_id,'1920x1080');
     }
     let data = await dynaUser.updatePayload(body).catch(err => {
         err.status = 400;
@@ -398,27 +398,56 @@ router.put(`/user_location`, async function (req, res, next) {
 router.post(`/accept`, async function (req, res, next) {
     try {
         let body = { ...req.body };
+        let clock = moment().unix()
 
-        let params = {
-            TableName: ddb_config.tableNames.orb_table,
-            Item: {
-                PK: "ORB#" + body.orb_uuid,
-                SK: "USR#" + body.user_id.toString(),
-                inverse : "500#ACPT",
-                time: moment().unix(),
-                identifier: body.beacon
-            },
-        };
-        docClient.put(params, function(err, data) {
-            if (err) {
-                err.status = 400;
-                next(err);
-            } else {
-                res.status(200).json({
+        const orbData = await dynaOrb.retrieve(body).catch(err => {
+            err.status = 404;
+            err.message = "ORB not found";
+        });
+
+
+        // shift to orbland security will fail (state machine capture)
+        if(orbData.payload && orbData.available){
+            if(body.user_id !== orbData.payload.user_id) {
+
+                let params = {
+                    TableName: ddb_config.tableNames.orb_table,
+                    Item: {
+                        PK: "ORB#" + body.orb_uuid,
+                        SK: "USR#" + body.user_id.toString(),
+                        inverse : "500#ACPT#" + clock,
+                        alphanumeric: "USR#" +orbData.payload.user_id,
+                        payload:{
+                            creationtime: orbData.payload.creationtime,
+                            media: orbData.payload.media,
+                            title: orbData.payload.title,
+                            orb_nature: orbData.payload.orb_nature
+                        },
+                        time: clock,
+                        identifier: body.beacon
+                    },
+                };
+                docClient.put(params, function(err, data) {
+                    if (err) {
+                        err.status = 400;
+                        next(err);
+                    } else {
+                        res.status(200).json({
                             "ORB accepted by": body.user_id,
                             "orb_uuid": body.orb_uuid});
-            }
-          });
+                    }
+                });
+            } else{
+                res.status(401).json({
+                    "Ownself": "Accept Ownself"
+                })}
+
+        }else{
+            res.status(404).json({
+                "Orb": "Not Active"
+            })
+
+        }
     } catch (err) {
         err.status = 400;
         next(err);
@@ -430,31 +459,31 @@ router.post(`/message_beacon`, async function (req, res, next) {
         let body = { ...req.body };
         if(body.beacon_switch === 'on') {
             var params = {
-            TableName: ddb_config.tableNames.orb_table,
-            Key: {
-                PK: "USR#" + body.messenger_id,
-                SK: "USR#" + body.messenger_id.toString() + "#pub",
-            },
+                TableName: ddb_config.tableNames.orb_table,
+                Key: {
+                    PK: "USR#" + body.messenger_id,
+                    SK: "USR#" + body.messenger_id.toString() + "#pub",
+                },
                 UpdateExpression: "add beacon :beaconer",
-            ConditionExpression: "attribute_exists(SK)",
-            ExpressionAttributeValues: {
-                ":beaconer": docClient.createSet([body.orb_uuid+"#"+body.user_id+"#"+req.verification.username])
-            }
-        };}
+                ConditionExpression: "attribute_exists(SK)",
+                ExpressionAttributeValues: {
+                    ":beaconer": docClient.createSet([body.orb_uuid+"#"+body.user_id+"#"+req.verification.username])
+                }
+            };}
         else if(body.beacon_switch === 'off') {
             var params = {
-            TableName: ddb_config.tableNames.orb_table,
-            Key: {
-                PK: "USR#" + body.user_id,
-                SK: "USR#" + body.user_id.toString()+ "#pub",
-            },
-            UpdateExpression: "delete beacon :beaconer",
-            ConditionExpression: "attribute_exists(SK)",
-            ExpressionAttributeValues: {
-                ":beaconer": docClient.createSet([body.message_sig])
-            }
-        };
-                                       }
+                TableName: ddb_config.tableNames.orb_table,
+                Key: {
+                    PK: "USR#" + body.user_id,
+                    SK: "USR#" + body.user_id.toString()+ "#pub",
+                },
+                UpdateExpression: "delete beacon :beaconer",
+                ConditionExpression: "attribute_exists(SK)",
+                ExpressionAttributeValues: {
+                    ":beaconer": docClient.createSet([body.message_sig])
+                }
+            };
+        }
 
         const data = await docClient.update(params, function(err, data) {
             if (err) {
@@ -539,8 +568,8 @@ router.put(`/complete_orb_acceptor`, async function (req, res, next) {
     // from user_id to accept_id security middleware shift
     let clock = moment().unix();
     const accepted = await dynaOrb.acceptance(body).catch(err => {
-            err.status = 400;
-            next(err);
+        err.status = 400;
+        next(err);
     })
     const buddied = await dynaUser.buddy(body.init_id,body.user_id,clock).catch(err=> {
         err.status = 400;
@@ -551,11 +580,11 @@ router.put(`/complete_orb_acceptor`, async function (req, res, next) {
         next(err);
     })
     if (accepted && buddied && buddys) {
-            res.status(200).json({
-                "ORB completed for Acceptor": body.orb_uuid,
-                "user_id": body.user_id
-            });
-        };
+        res.status(200).json({
+            "ORB completed for Acceptor": body.orb_uuid,
+            "user_id": body.user_id
+        });
+    };
 });
 
 /*
@@ -566,8 +595,8 @@ router.put(`/complete_orb_dictator`, async function (req, res, next) {
     // from user_id to accept_id security middleware shift
     let clock = moment().unix();
     const accepted = await dynaOrb.forceaccept(body).catch(err => {
-            err.status = 400;
-            next(err);
+        err.status = 400;
+        next(err);
     })
     const buddied = await dynaUser.buddy(body.acpt_id,body.user_id,clock).catch(err=> {
         err.status = 400;
@@ -578,11 +607,11 @@ router.put(`/complete_orb_dictator`, async function (req, res, next) {
         next(err);
     })
     if (accepted && buddied && buddys) {
-            res.status(200).json({
-                "ORB completed for Acceptor": body.orb_uuid,
-                "user_id": body.acpt_id
-            });
-        };
+        res.status(200).json({
+            "ORB completed for Acceptor": body.orb_uuid,
+            "user_id": body.acpt_id
+        });
+    };
 });
 
 

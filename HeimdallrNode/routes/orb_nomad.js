@@ -12,6 +12,7 @@ const geoneighbour = require("../controller/geohash").neighbour
 
 router.use(function(req,res,next){
     security.checkTerritory(req, next);
+    security.checkUser(req, next)
     next()
 })
 
