@@ -32,23 +32,21 @@ interface TerritoryPub{
 //type Message =  Map<string, Map<string, string|number>|string>
 
 async function subscribe(token:string, topic:string, client:any): Promise<void>{
-    const topic_new = "/topics/" + topic;
-    client.subscribeToTopic(token, topic_new)
+    client.subscribeToTopic(token, topic)
             .catch((error:any)=>{
                 console.log("Error sending Message" , error)
             });
 }
 
 async function unsubscribe(token:string, topic:string, client:any): Promise<void>{
-    const topic_old = "/topics/" + topic;
-    client.subscribeToTopic(token, topic_old).then((response:any) => {console.log("Message Sent", response)})
+    client.unsubscribeToTopic(token, topic).then((response:any) => {console.log("Message Sent", response)})
             .catch((error:any)=>{
                 console.log("Error sending Message" , error)
             });
 }
 
 async function sendsubscribers(message: Message ,topic: string, client: any): Promise<void>{
-    message["topic"]= "/topics/" +topic
+    message["topic"]= topic
     client.send(message)
         .catch((error: any) => {
             console.log('Error sending message:', error);
@@ -95,7 +93,7 @@ async function messenger(newRecord: Mutation, Element: KeyElement, client:any): 
 
 
 // switch to archetype based constructor
-async function switchtoken(archetype:string,topic : string | number, client: any, newtoken: string,  oldtoken: string): Promise<void>{
+async function switchtoken(archetype:string,topic : string | number, client: any, newtoken: string,  oldtoken?: string): Promise<void>{
     try{
         if(newtoken) subscribe(newtoken,archetype+ "." +String(topic),client)
             .catch((error) => {
@@ -148,9 +146,15 @@ export async function triggerBeacon(newRecord: Mutation, client: any, oldRecord:
     try {
         // generalise into KeyElementRElations later
         if(newRecord.identifier){
-            if(oldRecord.identifier  && newRecord.identifier !== oldRecord.identifier){
-                var Element = KeyParser(newRecord.PK, newRecord.SK)
-                switchtoken("USR", Element.id, client,  newRecord.identifier, oldRecord.identifier  )
+            var Element:KeyElement
+            if(oldRecord.identifier){
+                if(newRecord.identifier !== oldRecord.identifier){
+                    Element = KeyParser(newRecord.PK, newRecord.SK)
+                    switchtoken("USR", Element.id, client,  newRecord.identifier, oldRecord.identifier)
+                }}
+            else{
+                Element = KeyParser(newRecord.PK, newRecord.SK)
+                switchtoken("USR", Element.id, client,  newRecord.identifier, oldRecord.identifier)
             }
             if(newRecord.beacon && ((oldRecord.beacon == undefined || oldRecord.beacon.size < newRecord.beacon.size))){
                 function getLastValue(set: Set<string>): string{

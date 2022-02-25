@@ -20,7 +20,8 @@ defmodule Phos.Echo do
     echo
     |> cast(attrs, [:source_archetype, :source, :destination_archetype, :destination, :message, :subject_archetype, :subject])
     |> validate_required([:message, :source, :destination, :source_archetype, :destination_archetype])
-    |> validate_length([:source_archetype, :destination_archetype], is: 3)
+    |> validate_length(:source_archetype, is: 3)
+    |> validate_length(:destination_archetype, is: 3)
   end
 
   def recall(limit \\ 8) do
@@ -36,6 +37,6 @@ defmodule Phos.Echo do
   end
 
   def usr_call(id) do
-    ur_call("USR", id)
+    ur_call("USR", id) #user specific call
   end
 end

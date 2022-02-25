@@ -49,7 +49,7 @@ function latlon_to_geo52(latlon) {
     return geohashing;
 }
 
-function get_geo_array(geohashing, radius=30) {
+function neighbour(geohashing, radius=30) {
     let arr = [geohashing]
     arr.push(...geohash.neighbors_int(geohashing, radius)); // array
     return arr;
@@ -78,7 +78,7 @@ module.exports = {
     postal_to_geo52: postal_to_geo52,
     latlon_to_geo: latlon_to_geo,
     latlon_to_geo52: latlon_to_geo52,
-    get_geo_array: get_geo_array,
+    neighbour: neighbour,
     check_postal: check_postal,
     decode_hash: decode_hash,
     transcode_geohash: transcode_geohash

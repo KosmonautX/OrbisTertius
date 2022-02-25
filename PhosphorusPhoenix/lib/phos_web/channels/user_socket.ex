@@ -1,5 +1,6 @@
 defmodule PhosWeb.UserSocket do
   use Phoenix.Socket
+  alias PhosWeb.Menshen.Auth
 
   # A Socket handler
   #
@@ -8,7 +9,10 @@ defmodule PhosWeb.UserSocket do
 
   ## Channels
 
-  channel "agent:*", PhosWeb.AgentChannel
+  channel "archetype:usr:*", PhosWeb.UserChannel
+
+  ## Transports
+  #transport :websocket, Phoenix.Transports.WebSocket, check_origin: ["//localhost",  "//echo.scrb.ac"]
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After
@@ -21,10 +25,24 @@ defmodule PhosWeb.UserSocket do
   #
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
+
   @impl true
-  def connect(_params, socket, _connect_info) do
-    IO.inspect(socket)
-    {:ok, socket}
+  def connect(%{"token" => token} = _params, socket, _connect_info) do
+    # max_age: 1209600 is equivalent to two weeks in seconds
+    case Auth.validate(token) do
+      {:ok, claims} ->
+        {:ok, socket |> assign(:user_agent, claims) |> assign(:session_token, token)
+
+        }
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  @impl true
+  def connect(_params, _socket, _connect_info) do
+    # {:ok, socket}
+    :error
   end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:

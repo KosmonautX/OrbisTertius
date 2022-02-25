@@ -53,7 +53,7 @@ if(process.env.NODE_ENV == "dev"){
         } else {
             payload.user_id = req.body.user_id;
             payload.username = "Sulla";
-            payload.role = "boni";
+            payload.role = "pleb";
         }
         const iss = 'Princeton';
         const sub = 'ScratchBac';

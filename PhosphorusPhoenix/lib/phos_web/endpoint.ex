@@ -13,7 +13,7 @@ defmodule PhosWeb.Endpoint do
   #socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
   socket "/socket", PhosWeb.UserSocket,
-  websocket: true,
+  websocket: [check_origin: ["//localhost",  "//phos.scrb.ac"]],
   longpoll: false
 
   # Serve at "/" the static files from "priv/static" directory.

@@ -6,7 +6,6 @@ defmodule PhosWeb.Menshen.Plug do
 
   @spec call(Plug.Conn.t(), any) :: Plug.Conn.t()
   def call(conn, _opts) do
-    IO.inspect(conn)
     jwt = fetchToken(conn)
     case Auth.validate(jwt) do
       {:ok , claims} ->

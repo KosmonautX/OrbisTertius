@@ -90,6 +90,31 @@ router.get(`/get_users/:user_ids`, async function (req, res, next) {
     }
 });
 
+
+/**
+ * API 1
+ * Fetch App Version
+ */
+router.get(`/version/:version`, async function (req, res, next) {
+    try{
+        const orbs = req.params.version
+        const minimum_version = "1.0.0"
+        if (req.params.version.localeCompare(minimum_version, undefined, { numeric: true, sensitivity: 'base' }) == -1) {
+            res.status(409).send({
+                "version": "rip",
+            });
+        } else {
+            res.status(200).send({
+                "version": "in being"
+            });
+        }
+
+    }catch(err){
+        if (err.message == "Recall Version failed") err.status = 401;
+        next(err);
+    }
+});
+
 router.get(`/check_username`, async function (req, res, next) {
     try {
         let username = await userQuery.checkUsername(req.query.username);
@@ -311,7 +336,7 @@ router.get(`/orbs_in_loc_fresh_page`, async function (req, res, next) {
         throw new Error('Please give either postal_code or latlon')
     }
     if (req.query.page) {
-        let geohash_arr = geohash.get_geo_array(geohashing);
+        let geohash_arr = geohash.neighbour(geohashing);
         geohashing = geohash_arr[req.query.page]
     }
     let params = {
@@ -381,7 +406,7 @@ router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
         } else {
             throw new Error('Please give either postal_code or latlon');
         }
-        let geohash_arr = geohash.get_geo_array(geohashing);
+        let geohash_arr = geohash.neighbour(geohashing);
         let page = [];
         for (let g of geohash_arr) {
             let result = await batch_query_location(g);
