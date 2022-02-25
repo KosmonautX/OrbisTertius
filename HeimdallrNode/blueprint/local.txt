@@ -115,7 +115,7 @@ PUT :ipAddress/api/orb/tokenonfyr
 PUT :ipAddress/api/orb/user_location
 :my-headers
 {
-    "user_id": ":prince",
+    "user_id": ":ryan",
     "event": "genesis",
     "live": {"latlon":{
     "lat":1.3568,
@@ -135,15 +135,15 @@ POST :ipAddress/api/orb/accept
 }
 ##
 ##
-#ACPT_PND (PENDING)
+#ACPT_PND//INIT_PND (PENDING)// INIT_COMPLETE//ACPT_COMPLETE
 PUT :ipAddress/api/orbland/action/will
 :my-headers
 
 {
-    "user_id": ":ryan",
+    "user_id": ":prince",
     "actor_id": ":prince",
     "orb_uuid": ":orb",
-    "action": "INIT_COMPLETE"
+    "action": "ACPT_PND"
 }
 ##
 ##
