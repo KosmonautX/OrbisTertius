@@ -34,6 +34,7 @@ Land.Entity = (function () {
     }
 
     var identity ={
+        // abstracted by fieldweaver
         set : function(deviceID){
             if(state.UpdateExpression) state.UpdateExpression += ', #did = :did';
             else {state.UpdateExpression = 'SET #did = :did';}

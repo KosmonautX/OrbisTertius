@@ -1,8 +1,10 @@
 import {Mutation} from "../types/parsesTongue"
 const CHANNEL_ID = "-1001239569373"
 import axios from 'axios';
+
+
 interface TelegramORBPost{
-     [key: string]: string;
+    [key: string]: any;
 }
 
 
@@ -14,8 +16,9 @@ export async function telePostOrb(newRecord: Mutation) : Promise<void>{
             data.append('chat_id', CHANNEL_ID);
             var payload: TelegramORBPost = {... newRecord.payload}
             payload.orb_uuid = newRecord.PK.slice(4)
-            payload.username = Math.random().toString(36).substr(3,4) + Math.random().toString().substr(2,2)
-            var queryString = Object.keys(payload).filter((key) => !['tags','available','expires_in'].includes(key)).map(key => key + '=' + payload[key]).join('&');
+            var queryString = Object.keys(payload).filter((key) => !['init', 'tags','available','expires_in'].includes(key)).map(key => key + '=' + payload[key]).join('&') + "&"
+                + Object.keys(newRecord.geohash).filter((geokey) => ['hash','radius'].includes(geokey)).map(geokey => geokey + '=' + newRecord.geohash[geokey]).join('&') + "&"
+                + "username=" + payload.init.username;
             let message =  "https://angora.post/?" + encodeURI(queryString)
             data.append('text', message);
             return await axios.post(url, data)
