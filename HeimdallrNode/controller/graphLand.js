@@ -128,27 +128,6 @@ Land.Entity = (function () {
     }
 
 	// A public method to claim about world state
-	interface_dao.usergen = async (source,identifier,deviceID) =>{
-        //user genesis update mail, check unique id create deviceidbridge
-        try{
-        if(source==="email")
-        {
-            user_id = await gen("USR","pte",deviceID)
-            entity_init("UPDATE","MSG",identifier)
-            state.ConditionExpression = new String();
-            state.ExpressionAttributeNames = {};
-            state.ExpressionAttributeValues= {};
-            condition.absence("alphanumeric")
-            condition.timesensitivity(600," AND ")
-            condition.match("identifier", deviceID," AND ")
-            fieldweaver("alphanumeric",user_id)
-            state.ReturnValues="UPDATED_NEW"
-            return await wish()
-        }} catch(err){
-            console.log(err)
-            new Error("User Genesis Failed")
-            }
-         };
     interface_dao.fyrgen = async(userID,deviceID) => {
         try{
             interface_dao.spawn("USR",userID,"pte")

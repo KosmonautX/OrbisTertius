@@ -69,7 +69,7 @@ POST :ipAddress/api/nomadology/post_orb
 :my-headers
 -> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (json-read))))
 {
-    "user_id": ":ryan",
+    "user_id": ":prince",
     "title": "finder of lost children",
     "info": "blessed is he",
     "where": "my house",
@@ -94,7 +94,7 @@ GET :ipAddress/api/tele/decode_geohash?hash=3857146046453&radius=42
 POST :ipAddress/api/nomadology/freshorbstream
 :my-headers
 {
-    "user_id": ":prince",
+    "user_id": ":ryan",
     "geolocation": {"live": {"latlon":{
     "lat":1.3568,
     "lon":103.7487
@@ -115,7 +115,7 @@ PUT :ipAddress/api/orb/tokenonfyr
 PUT :ipAddress/api/orb/user_location
 :my-headers
 {
-    "user_id": ":ryan",
+    "user_id": ":prince",
     "event": "genesis",
     "live": {"latlon":{
     "lat":1.3568,
@@ -129,7 +129,7 @@ PUT :ipAddress/api/orb/user_location
 POST :ipAddress/api/orb/accept
 :my-headers
 {
-    "user_id": ":prince",
+    "user_id": ":ryan",
     "orb_uuid": ":orb",
     "beacon": ":applefcm"
 }
@@ -140,21 +140,13 @@ PUT :ipAddress/api/orbland/action/will
 :my-headers
 
 {
-    "user_id": ":prince",
-    "actor_id": ":prince",
+    "user_id": ":ryan",
+    "actor_id": ":ryan",
     "orb_uuid": ":orb",
     "action": "ACPT_PND"
 }
 ##
-##
-POST :ipAddress/api/orb/admintalk
-:my-headers
 
-{
-    "user_id": ":ryan",
-    "message": "Hello to completed"
-}
-##
 POST :ipAddress/api/orb/message_beacon
 :my-headers
 {
@@ -211,15 +203,7 @@ Content-Type: application/json
     "user_id": ":ryan",
     "device_id": ":id"
 }
-## MERCURY STACK LOCAL auth_server boni
-POST :ipAddress/auth_server
--> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
-Content-Type: application/json
 
-{
-    "user_id": ":ryan",
-    "device_id": ":id"
-}
 ## LOCAL auth_server boni
 POST :ipAddress/api/mercury/gen_user
 :my-headers
@@ -318,7 +302,6 @@ POST :ipAddress/api/orb/report
 :my-headers
 {
     "orb_uuid": ":orb",
-    "acpt_id": "2",
     "user_id": ":ryan",
     "reason": {
     "InappropriateContent": true,

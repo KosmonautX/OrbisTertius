@@ -2,14 +2,15 @@ const express = require('express');
 const router = express.Router();
 const {v4 : uuidv4} = require('uuid');
 const moment = require('moment');
-const ddb_config = require('../config/ddb.config');
 const AWS = require('aws-sdk');
+const { dyna, region, admin_ids } = require('../config/ddb.config');
 AWS.config.update({
-    region: ddb_config.region
+    region: region
 });
-const docClient = new AWS.DynamoDB.DocumentClient({endpoint: ddb_config.dyna});
+const docClient = new AWS.DynamoDB.DocumentClient({endpoint: dyna});
 const dynaOrb = require('../controller/dynamoOrb').comment;
-const security = require('../controller/security')
+const security = require('../controller/security');
+
 
 router.use(function (req, res, next){
     req.body.user_id = req.verification.user_id
@@ -119,7 +120,7 @@ router.post(`/reply`, async function (req, res, next) {
 router.post(`/delete`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        if(body.user_id == "OpCaNTXKWaVsj7814yTzwul9PAU2"){
+        if(admin_ids.has(body.user_id) ){
             deleted= await dynaOrb.deleteAdminComment(body).catch((err)=>{
                 if (err.code == 'ConditionalCheckFailedException'){
                     err.status = 404

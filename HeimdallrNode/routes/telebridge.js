@@ -4,7 +4,7 @@ const moment = require('moment');
 const security = require('../controller/security');
 const dynaOrb = require('../controller/dynamoOrb').dynaOrb;
 const geohash = require('../controller/geohash')
-const territory_markers = [30,31,32]
+const { territory_markers } = require('../config/ddb.config');
 const geofencer = require('ngeohash').decode_int
 
 router.use(function (req, res, next){

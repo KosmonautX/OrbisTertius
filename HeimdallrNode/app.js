@@ -28,7 +28,7 @@ if (!fs.existsSync(log)){
     fs.mkdirSync(log);
 }
 app.use(logger('common', {
-	  stream: fs.createWriteStream(log + '/access.log' , {flags: 'a'}, {mode: 0o755 })
+	stream: fs.createWriteStream(log + '/access.log' , {flags: 'a'}, {mode: 0o755 })
 }));
 app.use(bodyParser.json({ limit: `8mb` }));
 app.use(bodyParser.urlencoded({ limit: `888kb`, extended: true, parameterLimit: 50000 }));
@@ -42,33 +42,6 @@ app.use(cors({ exposedHeaders: `Content-Disposition` }));
 app.get('/', (req, res) => {
     res.json({ message: 'Root Access Successful' });
 });
-
-if(process.env.NODE_ENV == "dev"){
-    app.post('/auth_server' , function (req,res) {
-        let payload = {};
-        if (!req.body.user_id){
-            payload.device_id = req.body.device_id
-            payload.username = "AttilaHun"
-            payload.role = "barb"
-        } else {
-            payload.user_id = req.body.user_id;
-            payload.username = "Sulla";
-            payload.role = "pleb";
-        }
-        const iss = 'Princeton';
-        const sub = 'ScratchBac';
-        const exp = '20min'
-        const signOptions = {
-            issuer: iss,
-            subject: sub,
-            expiresIn: exp,
-            algorithm: 'HS256',
-        };
-        const token = jwt.sign(payload, secret, signOptions);
-        res.send({payload: token});
-    });
-}
-
 
 require(`./route_paths/orb_net`)(app, verifyToken, fyrwalk);
 
@@ -150,7 +123,7 @@ function verifyToken(req, res, next) {
 		};
 		req.token = req.headers["authorization"] || "";
 		req.token = req.token.replace(/BEARER /gi, ``);
-		    // prod!
+		// prod!
         if (req.token) {
 			req.verification = jwt.verify(req.token, secret, verifyOptions);
 			next();
@@ -168,39 +141,39 @@ function verifyToken(req, res, next) {
 
 {
     let proj = process.env.FYR_PROJ
-fyr.initializeApp({
-    credential: fyr.credential.cert({
-        "project_id": proj,
-        "private_key": process.env.FYR_KEY.replace(/\\n/g, '\n'),
-        "client_email": "firebase-adminsdk-b1dh2@"+ proj +".iam.gserviceaccount.com",
-    }),
-    authDomain: proj+".firebaseapp.com"         // Auth with popup/redirect
-    // databaseURL: "https://YOUR_APP.firebaseio.com", // Realtime Database
-  // storageBucket: "YOUR_APP.appspot.com",          // Storage
-  // messagingSenderId: "123456789",                 // Cloud Messaging
-  // measurementId: "G-12345"                        // Analytics
-  });
+    fyr.initializeApp({
+        credential: fyr.credential.cert({
+            "project_id": proj,
+            "private_key": process.env.FYR_KEY.replace(/\\n/g, '\n'),
+            "client_email": "firebase-adminsdk-b1dh2@"+ proj +".iam.gserviceaccount.com",
+        }),
+        authDomain: proj+".firebaseapp.com"         // Auth with popup/redirect
+        // databaseURL: "https://YOUR_APP.firebaseio.com", // Realtime Database
+        // storageBucket: "YOUR_APP.appspot.com",          // Storage
+        // messagingSenderId: "123456789",                 // Cloud Messaging
+        // measurementId: "G-12345"                        // Analytics
+    });
 }
 
 function fyrwalk(req, res, next) {
-  fyr
-    .auth()
-    .verifyIdToken(req.headers["authorization"])
-    .then((decodedToken) => {
-        res.user_id = decodedToken.uid;
-      next();
-    })
-    .catch((error) => {
-        if (error.code == 'auth/id-token-revoked') {
-            let err = new Error(`Signout User`);
-			err.status = 401;
-			next(err);
-    }else{
-        let err = new Error(`Google Token Unauthorised`);
-			err.status = 401;
-		next(err);
-    }
-    });
+    fyr
+        .auth()
+        .verifyIdToken(req.headers["authorization"])
+        .then((decodedToken) => {
+            res.user_id = decodedToken.uid;
+            next();
+        })
+        .catch((error) => {
+            if (error.code == 'auth/id-token-revoked') {
+                let err = new Error(`Signout User`);
+			    err.status = 401;
+			    next(err);
+            }else{
+                let err = new Error(`Google Token Unauthorised`);
+			    err.status = 401;
+		        next(err);
+            }
+        });
 }
 
 module.exports = { app: app };

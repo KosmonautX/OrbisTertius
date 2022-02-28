@@ -40,6 +40,8 @@ router.get(`/query`, async function (req, res, next) {
         }
     });
 });
+
+
 /**
  * FYR TOKEN CUSTOM GEN
  */
@@ -199,8 +201,8 @@ router.delete(`/delete_user`, async function (req, res, next) {
     let param3 = {
         DeleteRequest: {
             Key : {
-                PK: "phone#" + req.query.country_code + req.query.hp_number,
-                SK: "phone#" + req.query.country_code + req.query.hp_number,
+                PK: "username#" + req.username,
+                SK: "username" + req.username
             }
         }
     }
@@ -223,51 +225,78 @@ router.delete(`/delete_user`, async function (req, res, next) {
 });
 
 /**
- * DELETE
- * Delete orb
+ * API 1.1
+ * Update username
  */
-router.delete(`/delete_orb`, async function (req, res, next) {
-    let param1 = {
-        DeleteRequest: {
-            Key : {
-                PK: "ORB#" + req.query.orb_uuid,
-                SK: "ORB#" + req.query.orb_uuid, 
+router.put(`/update_username`, async function (req, res, next) {
+    try {
+        let body = { ...req.body };
+        // transac create username, if true, then change and delete old username, else no go
+        // need to have mirror of username in pte for authorisation
+
+        let pubData = await userQuery.queryPUB(body.user_id);
+        if (pubData.Item) { // get old username
+            body.old_username = pubData.Item.alphanumeric;
+            let transac = await dynaUser.usernameTransaction(body);
+            if (transac == true) {
+                let pte_update = {
+                    TableName: ddb_config.tableNames.orb_table,
+                    Key: {
+                        PK: "USR#" + body.user_id,
+                        SK: "USR#" + body.user_id + "#pte",
+                    },
+                    UpdateExpression: "set alphanumeric = :username",
+                    ExpressionAttributeValues: {
+                        ":username": body.username,
+                    }
+                };
+
+                docClient.update(pte_update, function(err, data) {
+                    if (err) {
+                        err.status = 400;
+                        next(err);
+                    } else {
+                        let params = {
+                            TableName: ddb_config.tableNames.orb_table,
+                            Key: {
+                                PK: "USR#" + body.user_id,
+                                SK: "USR#" + body.user_id + "#pub",
+                            },
+                            UpdateExpression: "set alphanumeric = :username",
+                            ExpressionAttributeValues: {
+                                ":username": body.username,
+                            }
+                        };
+                        docClient.update(params, function(err, data) {
+                            if (err) {
+                                err.status = 400;
+                                next(err);
+                            } else {
+                                res.status(201).json({
+                                    "User updated:": body
+                                });
+                            }
+                        });
+                    }
+                });
+
+            } else {
+                let err = new Error("Username taken");
+                err.status = 409;
+                throw err;
             }
-        }
-    };
-    let param2 = {
-        DeleteRequest: {
-            Key : {
-                PK: "ORB#" + req.query.orb_uuid,
-                SK: "USR#" + req.query.user_id, 
-            }
-        }
-    };
-    let param3 = {
-        DeleteRequest: {
-            Key: {
-                PK: "LOC#" + body.geohash,
-                SK: body.expiry_dt + "#ORB#" + body.orb_uuid
-            }
-        }
-    }
-    let itemsArray = [];
-    itemsArray.push(param1);
-    itemsArray.push(param2);
-    itemsArray.push(param3);
-    let params = {
-        RequestItems: {
-            [ddb_config.tableNames.orb_table]: itemsArray
-        }
-    }
-    docClient.batchWrite(params, function(err, data) {
-        if (err) {
-            res.status(400).send({ Error: err.message });
         } else {
-            res.status(200).json("Orb deleted")
+            // user id invalid
+            let err = new Error("User_id not found");
+            err.status = 404;
+            throw err;
         }
-    });
+
+    } catch (err) {
+        next(err);
+    }
 });
+
 
 router.get(`/decode_geohash`, async function (req, res, next) {
     if (req.query.geohash.length == 16) {

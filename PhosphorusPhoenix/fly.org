@@ -135,6 +135,19 @@ nmcli connection down bridge
 #+END_SRC
 
 #+RESULTS: Wireguard Interface up
-#+RESULTS: Wireguard Interface up
 
+
+#+NAME: SSH UP
+#+BEGIN_SRC shell
+fly ssh establish
+fly ssh issue --agent
+ssh root@phos.internal
+#+END_SRC
+
+#+NAME:
+#+BEGIN_SRC shell
+fly ssh establish
+fly ssh issue --agent
+ssh root@phos.internal
+#+END_SRC
 Then psql to access database
