@@ -15,6 +15,7 @@ const graph = require('../controller/graphLand');
 const carto = require('../controller/graphCarto');
 const teleria = require('../controller/teleria').teleChannelPipeline
 const dynaUser = require('../controller/dynamoUser').dynaUser
+const userQuery = require('../controller/dynamoUser').userQuery
 
 router.use(function (req, res, next){
     security.checkUser(req, next);
