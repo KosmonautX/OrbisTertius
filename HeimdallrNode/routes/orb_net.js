@@ -237,7 +237,7 @@ router.put(`/update_username`, async function (req, res, next) {
             }
         } else {
             // user id invalid
-            let err = new Error("User_id not found");
+            let err = new Error("User_pub_id  not found");
             err.status = 404;
             throw err;
         }

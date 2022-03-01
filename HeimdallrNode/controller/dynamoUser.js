@@ -5,7 +5,6 @@ AWS.config.update({
     region: ddb_config.region
 });
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint:ddb_config.dyna});
-const geohash = require('./geohash');
 
 const dynaUser = {
     async buddy(alpha,beta,friendshiptime) {
