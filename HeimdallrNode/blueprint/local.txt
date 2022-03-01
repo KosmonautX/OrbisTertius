@@ -154,7 +154,7 @@ PUT :ipAddress/api/orb/update_username
 :my-headers
 {
     "user_id": ":ryan",
-    "username": "yipyipss"
+    "username": "yipyip"
 }
 ##
 POST :ipAddress/api/orb/message_beacon

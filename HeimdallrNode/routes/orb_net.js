@@ -187,7 +187,11 @@ router.put(`/update_username`, async function (req, res, next) {
         let pubData = await userQuery.queryPUB(body.user_id);
         if (pubData.Item) { // get old username
             body.old_username = pubData.Item.alphanumeric;
-            let transac = await dynaUser.usernameTransaction(body);
+            let transac = await dynaUser.usernameTransaction(body).catch((error) =>{
+                let err = new Error("Transaction failed");
+                err.status = 409;
+                throw err;
+            })
             if (transac == true) {
                 let pte_update = {
                     TableName: ddb_config.tableNames.orb_table,
