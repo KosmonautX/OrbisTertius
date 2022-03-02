@@ -5,8 +5,8 @@ module.exports = (app, verifyToken,fyrwalk) => {
 	app.use(`/api/orb`, verifyToken, require(`../routes/orb_net`));
     app.use('/api/devland/fyr',fyrwalk, require('../routes/fyrbridge'));
     app.use('/api/tele',verifyToken,  require(`../routes/telebridge`));
+    app.use(`/api/orbland/action`, verifyToken, require(`../routes/orb_act`))
     //app.use(`/api/userland/action`, verifyToken, require(`../routes/user_act`))
-    //app.use(`/api/orbland/action`, verifyToken, require(`../routes/orb_act`))
     //app.use(`/api/orbland/state`,verifyToken, require(`../routes/orb_state`))
     // shift security into middleware verifyToken too coarse
     app.use('/api/nomadology',verifyToken,  require(`../routes/orb_nomad`));

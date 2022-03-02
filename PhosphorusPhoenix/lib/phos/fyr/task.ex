@@ -7,6 +7,13 @@ defmodule Phos.Fyr.Task do
   end
 
   def run(notification) do
-    Message.push(notification)
+    case now = Message.push(notification) do #inspect notif full response body
+    #case Message.push(notification) do
+      %{response: :success} -> :ok
+
+      %{error: nil} -> IO.inspect(now) #some response failure
+
+      %{error: reason} -> IO.inspect(reason)
+   end
   end
 end

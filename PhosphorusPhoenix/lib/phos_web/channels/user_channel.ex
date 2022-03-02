@@ -26,13 +26,12 @@ defmodule PhosWeb.UserChannel do
     #|> Map.put("name", socket.assigns.user_agent["username"])
     |> Map.put("source", socket.assigns.user_agent["user_id"])
     |> Map.put("source_archetype", "USR")
-    #broadcast socket, "shout", payload
     case Phos.Echo.changeset(%Phos.Echo{}, payload) |> Phos.Repo.insert do
       {:ok, struct} ->
-        echo = Map.take(struct, [:destination,:source, :source_archetype, :destination_archetype, :message, :inserted_at])
+        echo = Map.take(struct, [:destination, :source, :source_archetype, :destination_archetype, :message, :inserted_at, :subject, :subject_archetype])
         |> Map.update!(:inserted_at, &(&1 |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix() |> to_string()))
         broadcast socket, "shout", echo #broadcast to both channels from and to, first the source
-        PhosWeb.Endpoint.broadcast_from!(self(), "archetype:usr:" <> echo.destination,"shout", echo) #then  broadcast to destination as well
+        PhosWeb.Endpoint.broadcast_from!(self(), "archetype:usr:" <> echo.destination, "shout", echo) #then  broadcast to destination as well
         # try do
         #   #Construct Notification for Destination
 	      #   case Message.push(Pigeon.FCM.Notification.new({:topic, "USR." <> echo.destination},

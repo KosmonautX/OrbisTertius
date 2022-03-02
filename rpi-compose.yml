@@ -14,8 +14,10 @@ services:
     links:
       - "dynamodb:database"
     command:
-      - npm
-      - start
+      - npx
+      - nodemon
+      - "--inspect-brk=0.0.0.0"
+      - "."
     env_file:
       - .env
 

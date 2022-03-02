@@ -8,17 +8,14 @@ AWS.config.update({
     region: ddb_config.region
 })
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint:ddb_config.dyna});
-const geohash = require('../controller/geohash');
 const security = require('../controller/security');
 const serve3 = require ('../controller/orbjectStore').serve3
-const orbSpace = require('../controller/dynamoOrb').orbSpace;
 const dynaOrb = require('../controller/dynamoOrb').dynaOrb;
-const dynaUser = require('../controller/dynamoUser').dynaUser;
-const userQuery = require('../controller/dynamoUser').userQuery;
 const graph = require('../controller/graphLand');
-const dynamoOrb = require('../controller/dynamoOrb');
 const carto = require('../controller/graphCarto');
 const teleria = require('../controller/teleria').teleChannelPipeline
+const dynaUser = require('../controller/dynamoUser').dynaUser
+const userQuery = require('../controller/dynamoUser').userQuery
 
 router.use(function (req, res, next){
     security.checkUser(req, next);
@@ -30,123 +27,15 @@ router.put('/tokenonfyr', async (req,res,next) => {
     try{
         fyrUser = graph.Land.Entity();
         payload= await fyrUser.fcmtoken(req.body.user_id,req.body.token).catch(err => {
-      res.status = 400;
-      next(err);});
-    if(payload.Attributes){
-      res.status(201).json({
-        "FCM Token": "Updated"
-      })
-    }}catch(err){
-        next(err);
-    }})
-
-router.post('/admintalk' ,async (req,res,next) => {
-    try{
-        let body = { ...req.body };
-
-        payload= await teleria(req.verification,"lonely").then(response => {
+            res.status = 400;
+            next(err);});
+        if(payload.Attributes){
             res.status(201).json({
-                "Admin": "Messaged"
-            })}).catch(err => {
-                res.status = 400;
-                next(err)
-                ;});
-
-    }catch(err){
-        next(err);
-    }})
-
-
-// generate uuid and a presigned buffer for image in s3 bucket
-router.post(`/gen_uuid`, async function (req, res, next) {
-    try {
-        let body = { ...req.body };
-        let promises = new Map();
-        orb_uuid = await dynaOrb.gen(body);
-        promises.set('orb_uuid', orb_uuid);
-        if (body.media){
-            promises.set('lossy', await serve3.preSign('putObject','ORB',orb_uuid,'150x150'));
-            promises.set('lossless', await serve3.preSign('putObject','ORB',orb_uuid,'1920x1080'));
-        };
-        Promise.all(promises).then(response => {
-            //m = new Map(response.map(obj => [obj[0], obj[1]])) jsonObject[key] = value
-            let jsonObject = {};
-            response.map(obj => [jsonObject[obj[0]] = obj[1]])
-            res.status(201).json(jsonObject);
-        });
-        
-    } catch (err) {
-        next(err);
-    }
-});
-
-/**
- * API 0.0
- * Create orb
- * No checking for empty fields yet
- * user_id = telegram_id
- */
-router.post(`/post_orb`, async function (req, res, next) {
-    try {
-        let body = { ...req.body };
-        let promises = new Map();
-        body.expiry_dt = slider_time(body.expires_in);
-        body.created_dt = moment().unix();
-        if(!body.geohashing || !body.geohashing52){
-            if (body.latlon) {
-                body.geohashing = geohash.latlon_to_geo(body.latlon); 
-                body.geohashing52 = geohash.latlon_to_geo52(body.latlon); 
-            } else if (body.postal_code) {
-                body.geohashing = geohash.postal_to_geo(body.postal_code);
-                body.geohashing52 = geohash.postal_to_geo52(body.postal_code);
-            } else{
-                throw new Error('Postal code does not exist!')
-            }
-        };
-        //initators public data
-        let pubData = await userQuery.queryPUB(req.body.user_id).catch(err => {
-            err.status = 400;
+                "FCM Token": "Updated"
+            })
+        }}catch(err){
             next(err);
-        });
-        if (pubData.Item){
-            body.init = {}
-            body.init.username = pubData.Item.alphanumeric
-            if(pubData.Item.payload){
-                if(pubData.Item.payload.media) body.init.media = true;
-                if(pubData.Item.payload.profile_pic)body.init.profile_pic= pubData.Item.payload.profile_pic;
-            }
-            orb_uuid = await dynaOrb.create(body,dynaOrb.gen(body)).catch(err => {
-                err.status = 400;
-                next(err);
-            });
-            promises.set('orb_uuid', body.orb_uuid);
-            promises.set('expiry', body.expiry_dt);
-            promises.set(`creationtime`, body.created_dt)
-            if (body.media){
-                promises.set('lossy', await serve3.preSign('putObject','ORB',body.orb_uuid,'150x150'));
-                promises.set('lossless', await serve3.preSign('putObject','ORB',body.orb_uuid,'1920x1080'));
-            };
-        }
-
-        Promise.all(promises).then(response => {
-            //m = new Map(response.map(obj => [obj[0], obj[1]])) jsonObject[key] = value
-            let jsonObject = {};
-            response.map(obj => [jsonObject[obj[0]] = obj[1]])
-            res.status(201).json(jsonObject);
-        });
-    } catch (err) {
-        if (err.message == 'Postal code does not exist!') err.status = 404;
-        next(err);
-    }
-});
-
-function slider_time(dt){
-    let expiry_dt = moment().add(1, 'days').unix(); // default expire in 1 day
-    if (dt) {
-        expiry_dt = moment().add(parseInt(dt), 'days').unix();
-    }
-    return expiry_dt;
-}
+        }})
 
 /**
  * API POST 3
@@ -216,7 +105,7 @@ router.post(`/undo_user_action`, async function (req, res, next) {
                     "USER ID": body.user_id
                 });
             }
-          });
+        });
     } catch (err) {
         err.status = 400;
         next(err);
@@ -230,28 +119,19 @@ router.post(`/report`, async function (req, res, next) {
         let body = { ...req.body };
         body.reasons = Object.keys(body.reason).filter(k => body.reason[k])
 
-        if(body.reasons.length < 5){
+        if(body.reasons.length < 6){
             payload= await teleria(req.verification,"report", body).catch(err => {
                 res.status = 400;
                 next(err)
                 ;});
-            // const bullied = await dynaUser.bully(body.acpt_id,body.user_id,clock).catch(err=> {
-            //     err.status = 400;
-            //     next(err);
-            // })
-            // const bullyd = await dynaUser.bully(body.user_id,body.acpt_id,clock).catch(err=> {
-            //     err.status = 400;
-            //     next(err);
-            // })
             let params = {
                 TableName: ddb_config.tableNames.orb_table,
                 Item: {
                     PK: "ORB#" + body.orb_uuid,
-                    SK: "REPORT#" + body.user_id,
+                    SK: "RPRT#" + body.user_id,
                     inverse: moment().unix().toString(),
                     payload: body.reason,
-                },
-                ConditionExpression: "attribute_exists(SK)",
+                }
             };
             docClient.put(params, function(err, data) {
                 if (err) {
@@ -265,6 +145,9 @@ router.post(`/report`, async function (req, res, next) {
                 }
             });
         }
+        else {
+            throw Error("Too many reasons")
+        }
     } catch (err) {
         err.status = 400;
         next(err);
@@ -276,23 +159,29 @@ router.post(`/report`, async function (req, res, next) {
  * Update user payload
  */
 router.put(`/update_user`, async function (req, res, next) {
-    let body = { ...req.body };
-    if (body.media===true){
+    try{
+        let body = { ...req.body };
+        if (body.media===true){
             var img_lossy = await serve3.preSign('putObject','USR',body.user_id,'150x150');
             var img_lossless = await serve3.preSign('putObject','USR',body.user_id,'1920x1080');
-    }
-    let data = await dynaUser.updatePayload(body).catch(err => {
+        }
+        let data = await dynaUser.updatePayload(body).catch(err => {
+            err.status = 400;
+            next(err);
+        });
+        if (data) {
+            res.status(200).json({
+                "User" : "Updated",
+                "lossy": img_lossy,
+                "lossless": img_lossless,
+            });
+        }
+    } catch (err) {
         err.status = 400;
         next(err);
-    });
-    if (data) {
-        res.status(200).json({
-            "User" : "Updated",
-            "lossy": img_lossy,
-            "lossless": img_lossless,
-        });
-    } 
-});
+    }
+}
+          );
 
 /**
  * API 1.1
@@ -307,7 +196,11 @@ router.put(`/update_username`, async function (req, res, next) {
         let pubData = await userQuery.queryPUB(body.user_id);
         if (pubData.Item) { // get old username
             body.old_username = pubData.Item.alphanumeric;
-            let transac = await dynaUser.usernameTransaction(body);
+            let transac = await dynaUser.usernameTransaction(body).catch((error) =>{
+                let err = new Error("Transaction failed");
+                err.status = 409;
+                throw err;
+            })
             if (transac == true) {
                 let pte_update = {
                     TableName: ddb_config.tableNames.orb_table,
@@ -357,7 +250,7 @@ router.put(`/update_username`, async function (req, res, next) {
             }
         } else {
             // user id invalid
-            let err = new Error("User_id not found");
+            let err = new Error("User_pub_id  not found");
             err.status = 404;
             throw err;
         }
@@ -366,6 +259,8 @@ router.put(`/update_username`, async function (req, res, next) {
         next(err);
     }
 });
+
+
 
 /**
  * API 1.1
@@ -398,227 +293,66 @@ router.put(`/user_location`, async function (req, res, next) {
 router.post(`/accept`, async function (req, res, next) {
     try {
         let body = { ...req.body };
+        let clock = moment().unix()
 
-        let params = {
-            TableName: ddb_config.tableNames.orb_table,
-            Item: {
-                PK: "ORB#" + body.orb_uuid,
-                SK: "USR#" + body.user_id.toString(),
-                inverse : "500#ACPT",
-                time: moment().unix(),
-                identifier: body.beacon
-            },
-        };
-        docClient.put(params, function(err, data) {
-            if (err) {
-                err.status = 400;
-                next(err);
-            } else {
-                res.status(200).json({
+        const orbData = await dynaOrb.retrieve(body).catch(err => {
+            err.status = 404;
+            err.message = "ORB not found";
+        });
+
+
+        // shift to orbland security will fail (state machine capture)
+        if(orbData.payload && orbData.available){
+            if(body.user_id !== orbData.payload.user_id) {
+
+                let params = {
+                    TableName: ddb_config.tableNames.orb_table,
+                    Item: {
+                        PK: "ORB#" + body.orb_uuid,
+                        SK: "USR#" + body.user_id.toString(),
+                        inverse : "500#ACPT#" + clock,
+                        alphanumeric: "USR#" +orbData.payload.user_id,
+                        payload:{
+                            creationtime: orbData.payload.creationtime,
+                            media: orbData.payload.media,
+                            title: orbData.payload.title,
+                            orb_nature: orbData.payload.orb_nature
+                        },
+                        time: clock,
+                        identifier: body.beacon
+                    },
+                };
+                docClient.put(params, function(err, data) {
+                    if (err) {
+                        err.status = 400;
+                        next(err);
+                    } else {
+                        res.status(200).json({
                             "ORB accepted by": body.user_id,
                             "orb_uuid": body.orb_uuid});
-            }
-          });
-    } catch (err) {
-        err.status = 400;
-        next(err);
-    }
-});
-
-router.post(`/message_beacon`, async function (req, res, next) {
-    try {
-        let body = { ...req.body };
-        if(body.beacon_switch === 'on') {
-            var params = {
-            TableName: ddb_config.tableNames.orb_table,
-            Key: {
-                PK: "USR#" + body.messenger_id,
-                SK: "USR#" + body.messenger_id.toString() + "#pub",
-            },
-                UpdateExpression: "add beacon :beaconer",
-            ConditionExpression: "attribute_exists(SK)",
-            ExpressionAttributeValues: {
-                ":beaconer": docClient.createSet([body.orb_uuid+"#"+body.user_id+"#"+req.verification.username])
-            }
-        };}
-        else if(body.beacon_switch === 'off') {
-            var params = {
-            TableName: ddb_config.tableNames.orb_table,
-            Key: {
-                PK: "USR#" + body.user_id,
-                SK: "USR#" + body.user_id.toString()+ "#pub",
-            },
-            UpdateExpression: "delete beacon :beaconer",
-            ConditionExpression: "attribute_exists(SK)",
-            ExpressionAttributeValues: {
-                ":beaconer": docClient.createSet([body.message_sig])
-            }
-        };
-                                       }
-
-        const data = await docClient.update(params, function(err, data) {
-            if (err) {
-                err.status = 400;
-                next(err);
-            } else {
-                res.status(200).json({
-                    "Message Beacon of ": req.verification.username,
-                    "switched to": body.beacon_switch
+                    }
                 });
-            }
-        });
+            } else{
+                res.status(401).json({
+                    "Ownself": "Accept Ownself"
+                })}
 
+        }else{
+            res.status(404).json({
+                "Orb": "Not Active"
+            })
+
+        }
     } catch (err) {
         err.status = 400;
         next(err);
     }
 });
 
-/**
- * API 0.2
- * Unaccept orb
- */
-router.put(`/delete_acceptance`, async function (req, res, next) {
-    try {
-        let body = { ...req.body };
-
-        await orbSpace.deleteAcceptance(body);
-        res.status(200).json({
-            "ORB interaction removed": body.orb_uuid,
-            "user_id": body.user_id
-        });
-    } catch (err) {
-        next(err);
-    }
-});
 
 /**
- * API 
- * 
+ * Deactivate Orbs out of location feed
  */
-router.put(`/not_interested`, async function (req, res, next) {
-    try {
-        let body = { ...req.body };
-
-        await orbSpace.notInterested_i(body);
-        res.status(200).json({
-            "ORB not interested": body.orb_uuid,
-            "user_id": body.user_id
-        });
-    } catch (err) {
-        err.status = 400;
-        next(err);
-    }
-});
-
-/**
- * API 
- * 
- */
-router.put(`/not_interested_acceptor`, async function (req, res, next) {
-    try {
-        let body = { ...req.body };
-
-        await orbSpace.notInterested_a(body);
-        res.status(200).json({
-            "ORB not interested": body.orb_uuid,
-            "user_id": body.user_id
-        });
-    } catch (err) {
-        err.status = 400;
-        next(err);
-    }
-});
-
-/**
- * API 1.2
- * Complete orb handshake (for an acceptor)
- */
-router.put(`/complete_orb_acceptor`, async function (req, res, next) {
-    let body = { ...req.body };
-    // from user_id to accept_id security middleware shift
-    let clock = moment().unix();
-    const accepted = await dynaOrb.acceptance(body).catch(err => {
-            err.status = 400;
-            next(err);
-    })
-    const buddied = await dynaUser.buddy(body.init_id,body.user_id,clock).catch(err=> {
-        err.status = 400;
-        next(err);
-    })
-    const buddys = await dynaUser.buddy(body.user_id,body.init_id,clock).catch(err=> {
-        err.status = 400;
-        next(err);
-    })
-    if (accepted && buddied && buddys) {
-            res.status(200).json({
-                "ORB completed for Acceptor": body.orb_uuid,
-                "user_id": body.user_id
-            });
-        };
-});
-
-/*
- * Completing accept cycle through dictatorial means
- */
-router.put(`/complete_orb_dictator`, async function (req, res, next) {
-    let body = { ...req.body };
-    // from user_id to accept_id security middleware shift
-    let clock = moment().unix();
-    const accepted = await dynaOrb.forceaccept(body).catch(err => {
-            err.status = 400;
-            next(err);
-    })
-    const buddied = await dynaUser.buddy(body.acpt_id,body.user_id,clock).catch(err=> {
-        err.status = 400;
-        next(err);
-    })
-    const buddys = await dynaUser.buddy(body.user_id,body.acpt_id,clock).catch(err=> {
-        err.status = 400;
-        next(err);
-    })
-    if (accepted && buddied && buddys) {
-            res.status(200).json({
-                "ORB completed for Acceptor": body.orb_uuid,
-                "user_id": body.acpt_id
-            });
-        };
-});
-
-
-/**
- * API 1.2
- * Init acceptance handshake for eventual two way to completed
- */
-router.put(`/pending_orb_acceptor`, async function (req, res, next) {
-    try {
-        let body = { ...req.body };
-
-        let params = {
-            TableName: ddb_config.tableNames.orb_table,        
-            Key: {
-                PK: "ORB#" + body.orb_uuid,
-                SK: "USR#" + body.user_id
-            },
-            UpdateExpression: "set inverse = :status",
-            ExpressionAttributeValues: {
-                ":status": "550#PEND"
-            }
-        };
-        docClient.update(params, function(err, data) {
-            if (err) {
-                res.status(400).send({ Error: err.message });
-            } else {
-                res.status(200).json({
-                    "ORB handshake initialised": body.orb_uuid,
-                    "user_id": body.user_id
-                });
-            }
-        });
-    } catch (err) {
-        res.status(400).json(err.message);
-    }
-});
 
 router.put(`/deactivate_orb`, async function (req, res, next) {
     try{
@@ -656,7 +390,9 @@ router.put(`/deactivate_orb`, async function (req, res, next) {
     }catch(err) {
         next(err);
     }});
-
+/**
+ * Destroy Orbs to unavailable
+ */
 router.put(`/destroy_orb`, async function (req, res, next) {
     try{
         let body = { ...req.body};

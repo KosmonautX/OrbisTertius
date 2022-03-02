@@ -1,5 +1,7 @@
 import {Mutation, KeyElement} from "../types/parsesTongue"
 import {KeyParser} from "./parsesUrTongue"
+import {transcode_int} from "../utils/geohash"
+import { territory_markers } from "../config/config";
 
 interface Message{
     notification:Object
@@ -14,6 +16,7 @@ interface GeoHash{
 }
 interface Location{
     geohashing: GeoHash
+    geohashing52: number
 
 }
 
@@ -33,16 +36,16 @@ interface TerritoryPub{
 
 async function subscribe(token:string, topic:string, client:any): Promise<void>{
     client.subscribeToTopic(token, topic)
-            .catch((error:any)=>{
-                console.log("Error sending Message" , error)
-            });
+        .catch((error:any)=>{
+            console.log("Error sending Message" , error)
+        });
 }
 
 async function unsubscribe(token:string, topic:string, client:any): Promise<void>{
-    client.unsubscribeToTopic(token, topic).then((response:any) => {console.log("Message Sent", response)})
-            .catch((error:any)=>{
-                console.log("Error sending Message" , error)
-            });
+    client.unsubscribeFromTopic(token, topic).then((response:any) => {console.log("Message Sent", response)})
+        .catch((error:any)=>{
+            console.log("Error sending Message" , error)
+        });
 }
 
 async function sendsubscribers(message: Message ,topic: string, client: any): Promise<void>{
@@ -112,7 +115,7 @@ async function switchtoken(archetype:string,topic : string | number, client: any
 }
 
 // switch fcm token on identifier
-async function switchsubscribe(archetype:string,token : string, client: any, newtopic?: string | number,  oldtopic?: string| number,): Promise<void>{
+async function switchsubscribe(archetype:string, token : string, client: any, newtopic?: string | number,  oldtopic?: string| number,): Promise<void>{
     try{
         if(newtopic) subscribe(token,archetype+ "." +String(newtopic),client)
             .catch((error) => {
@@ -137,8 +140,8 @@ export async function triggerNotif(newRecord: Mutation, client: any): Promise<vo
             // shift to Location feed listener
             if (Element) await messenger(newRecord,Element,client);}
     } catch (e) {
-            console.log(e)
-        }
+        console.log(e)
+    }
 }
 
 // beacon under rework to subscriber token centered system
@@ -185,28 +188,53 @@ export async function triggerBeacon(newRecord: Mutation, client: any, oldRecord:
 export async function territory_subscriber(neoTerritory: TerritoryPub, identifier: string, client: any, retroTerritory?: TerritoryPub): Promise<void>{
     try {
         if(retroTerritory){
-        Object.entries(neoTerritory).forEach(([geoName, address]) =>{
-            if(!retroTerritory[geoName]){
-                switchsubscribe("LOC",identifier,client, address.geohashing.hash + "." + address.geohashing.radius)
-            }
-            else if(address.geohashing.hash !== retroTerritory[geoName].geohashing.hash){
-                switchsubscribe("LOC", identifier, client, address.geohashing.hash + "." + address.geohashing.radius, retroTerritory[geoName].geohashing.hash + "." + retroTerritory[geoName].geohashing.radius)}
-        })}
-        else{
             Object.entries(neoTerritory).forEach(([geoName, address]) =>{
+                if(!retroTerritory[geoName]){
+                    switchsubscribe("LOC",identifier,client, address.geohashing.hash + "." + address.geohashing.radius)
+                    if(address.geohashing52) {
+                        for (const radius of territory_markers) {
+                            if(radius != address.geohashing.radius) {
+                                switchsubscribe("LOC",identifier,client, transcode_int(address.geohashing52, 52 , radius) + "." + radius)
+                            }
+                        }
+                    }
+                }
+                else if(address.geohashing.hash !== retroTerritory[geoName].geohashing.hash){
+                    switchsubscribe("LOC", identifier, client, address.geohashing.hash + "." + address.geohashing.radius, retroTerritory[geoName].geohashing.hash + "." + retroTerritory[geoName].geohashing.radius)
+                    if(address.geohashing52) {
+                        for (const radius of territory_markers) {
+                            if(radius != address.geohashing.radius) {
+                                let newTer = transcode_int(address.geohashing52, 52 , radius) + "." + radius
+                                let oldTer = transcode_int(retroTerritory[geoName].geohashing52, 52 , radius) + "." + radius
+                                switchsubscribe("LOC",identifier,client, newTer, oldTer)
+                            }
+                        }
+                    }
+                }
+
+            })}
+        else{
+            Object.entries(neoTerritory).forEach(([_geoName, address]) =>{
                 switchsubscribe("LOC",identifier,client, address.geohashing.hash + "." + address.geohashing.radius)
+                    if(address.geohashing52) {
+                        for (const radius of territory_markers) {
+                            if(radius != address.geohashing.radius) {
+                                switchsubscribe("LOC",identifier,client, transcode_int(address.geohashing52, 52 , radius) + "." + radius)
+                            }
+                        }
+                    }
             })
         }
     } catch (e) {
-            console.log(e)
-        }
+        console.log(e)
+    }
 }
 
 export async function mutateTerritorySubscription(newRecord: Mutation, client: any,  oldRecord?: Mutation): Promise<void>{
     try {
         if(newRecord.identifier){
             var Element = KeyParser(newRecord.PK, newRecord.SK);
-            if (Element?.access==="pub"){
+            if (Element?.access==="pte"){
                 if (oldRecord?.geohash){
                     if (newRecord.geohash!==oldRecord?.geohash){
                         await territory_subscriber(newRecord.geohash, newRecord.identifier, client, oldRecord.geohash)
@@ -280,10 +308,10 @@ export async function mutateActorSubscription(newRecord: Mutation, client: any, 
         //send through KeyElement later
         if(newRecord.identifier && newRecord.inverse){
             switch(newRecord.inverse.slice(0,8)){
-                    case '600#INIT':
+                case '600#INIT':
                     switchsubscribe("ORB",newRecord.identifier,client, newRecord.PK.slice(4))
                     break;
-                    case '500#ACPT':
+                case '500#ACPT':
                     switchsubscribe("ORB",newRecord.identifier,client, newRecord.PK.slice(4))
                     // switchsubscribe("ORB",newRecord.identifier,client, newRecord.PK.slice(4) + "." + newRecord.inverse.slice(4,8))
                     break;

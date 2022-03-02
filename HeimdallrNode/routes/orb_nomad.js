@@ -6,12 +6,13 @@ const query  = require('../controller/graphStream')
 const dynaOrb = require('../controller/dynamoOrb').dynaOrb;
 const moment = require('moment')
 const userQuery = require("../controller/dynamoUser").userQuery
-const territory_markers = [30,31,32]
 const geofencer = require('ngeohash').decode_bbox_int
-const geoneighbour = require("../controller/geohash").neighbour
+const geoneighbour = require("../controller/geohash").neighbour;
+const { territory_markers } = require('../config/ddb.config');
 
 router.use(function(req,res,next){
     security.checkTerritory(req, next);
+    security.checkUser(req, next)
     next()
 })
 

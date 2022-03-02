@@ -4,7 +4,7 @@ const moment = require('moment');
 const security = require('../controller/security');
 const dynaOrb = require('../controller/dynamoOrb').dynaOrb;
 const geohash = require('../controller/geohash')
-const territory_markers = [30,31,32]
+const { territory_markers } = require('../config/ddb.config');
 const geofencer = require('ngeohash').decode_int
 
 router.use(function (req, res, next){
@@ -60,6 +60,56 @@ router.post(`/post_orb`, async function (req, res, next) {
         if (err.message == 'Postal code does not exist!') err.status = 404;
         next(err);
     }
+});
+
+router.post(`/freshorbstream`, async function (req, res, next) {
+    try{
+        var payload;
+        let now = moment().unix()
+        if(req.body.downstream){
+            payload = await query.Stream.Channel().downstream("LOC", req.geolocation.hash, req.geolocation.radius,req.body.downstream).catch(err => {
+                res.status = 400;
+                next(err);
+            });
+        }
+        else if(req.body.upstream){
+            payload = await query.Stream.Channel().upstream("LOC", req.geolocation.hash, req.geolocation.radius,req.body.upstream).catch(err => {
+                res.status = 400;
+                next(err);
+            });
+        }
+        else{
+            payload = await query.Stream.Channel().start("LOC", req.geolocation.hash, req.geolocation.radius).catch(err => {
+                res.status = 400;
+                next(err);
+            });
+        }
+        if(payload.Items){
+            let page = [];
+            for( let item of payload.Items){
+                let dao = {};
+                dao.orb_uuid = item.SK.slice(15);
+                dao.expiry_dt = item.time
+                dao.active = item.time > now
+                dao.geolocation = item.geohash
+                dao.available = item.available
+                if (item.payload){
+                    dao.payload = item.payload
+                    if(item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'150x150')
+                    if(item.payload.init){
+                        dao.payload.init = item.payload.init;
+                        if(item.payload.init.media) dao.payload.init.media_asset = await serve3.preSign('getObject','USR',item.payload.user_id,'150x150')}
+                }
+                page.push(dao);
+            }
+            if (page.length > 0) {
+                res.json(page)
+            } else {
+                res.status(204).json("nothing burger")
+            }
+        }
+    }catch(err){
+        next(err);}
 });
 
 router.put(`/destroy_orb`, async function (req, res, next) {
