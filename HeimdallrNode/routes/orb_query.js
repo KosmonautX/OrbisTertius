@@ -98,7 +98,7 @@ router.get(`/get_users/:user_ids`, async function (req, res, next) {
 router.get(`/version/:version`, async function (req, res, next) {
     try{
         const orbs = req.params.version
-        const minimum_version = "1.0.0"
+        const minimum_version = "1.0.1"
         if (req.params.version.localeCompare(minimum_version, undefined, { numeric: true, sensitivity: 'base' }) == -1) {
             res.status(409).send({
                 "version": "rip",
@@ -262,113 +262,6 @@ router.get(`/user_pref`, async function (req, res, next) {
                     }
                 }
                 res.json(result);
-            }
-        }
-    });
-});
-
-/**
- * API 1.2
- * Query for all ORB to user interactions
- */
-router.get(`/orb_acceptance`, async function (req, res, next) {
-    let params = {
-        TableName: ddb_config.tableNames.orb_table,    
-        KeyConditionExpression: "PK = :pk and begins_with(SK, :user)",
-        FilterExpression: "inverse > :space",
-        ExpressionAttributeValues: {
-            ":pk": "ORB#" + req.query.orb_uuid,
-            ":user": "USR#",
-            ":space": "499#"
-        },
-        Limit: 8,
-        ScanIndexForward: req.query.ascending,
-    };
-    if (req.query.start) {
-        params.ExclusiveStartKey = {
-            "PK": "ORB#" + req.query.orb_uuid,
-            "SK": "USR#" + req.query.start
-        }
-    };
-    docClient.query(params, function(err, data) {
-        if (err) {
-            err.status = 400;
-            next(err);
-        } else {
-            if (data.Items.length == 0) {
-                res.status(204).send()
-            } else {
-                let data_arr = [];
-                data.Items.forEach(function(item) {
-                    let dao = {};
-                    dao.user_id = item.SK.slice(4);
-                    dao.orb_uuid = item.PK.slice(4);
-                    dao.creationtime = item.time;
-                    dao.geohash = item.geohash;
-                    dao.info = item.inverse.slice(4);
-                    data_arr.push(dao);
-                })
-                let result = {
-                    "data" : data_arr
-                }
-                if (data.LastEvaluatedKey) result.LastEvaluatedKey = data.LastEvaluatedKey.SK.slice(4);
-                res.json(result);
-            }
-        }
-    });
-});
-
-/**
- * API 1.5
- * QUERY for all fresh ORBs in a geohash
- */
-router.get(`/orbs_in_loc_fresh_page`, async function (req, res, next) {
-    let geohashing;
-    if (req.query.lat && req.query.lon) {
-        let latlon = {};
-        latlon.lat = req.query.lat;
-        latlon.lon = req.query.lon;
-        geohashing = geohash.latlon_to_geo(latlon);
-    } else if (req.query.postal_code) {
-        let postal = req.query.postal_code;
-        geohashing = geohash.postal_to_geo(postal);
-    } else {
-        throw new Error('Please give either postal_code or latlon')
-    }
-    if (req.query.page) {
-        let geohash_arr = geohash.neighbour(geohashing);
-        geohashing = geohash_arr[req.query.page]
-    }
-    let params = {
-        TableName: ddb_config.tableNames.orb_table,
-        KeyConditionExpression: "PK = :loc and SK BETWEEN :current_time AND :future_time",
-        ExpressionAttributeValues: {
-            ":loc": "LOC#" + geohashing,
-            ":current_time": moment().unix().toString(),
-            ":future_time": "4136173415"
-        },
-        ScanIndexForward: false,
-    };
-    docClient.query(params, function(err, data) {
-        if (err) {
-            err.status = 400;
-            next(err);
-        } else {
-            if (data.Items.length == 0) {
-                res.status(204).send()
-            } else {
-                let data_arr = [];
-                data.Items.forEach(function(item) {
-                    let dao = {};
-                    dao.orb_uuid = item.SK.slice(15);
-                    dao.geohash = parseInt(item.PK.slice(4));
-                    dao.geohash52 = item.geohash;
-                    dao.nature = parseInt(item.inverse);
-                    dao.expiry_dt = parseInt(item.SK.substr(0, 10));
-                    if (item.payload) dao.payload = item.payload;
-                    data_arr.push(dao);
-                })
-                res.json(data_arr);
             }
         }
     });

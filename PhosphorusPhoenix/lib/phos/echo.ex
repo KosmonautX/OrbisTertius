@@ -37,6 +37,6 @@ defmodule Phos.Echo do
   end
 
   def usr_call(id) do
-    ur_call("USR", id) #user specific call
+    ur_call("USR", id) #user-user specific call
   end
 end

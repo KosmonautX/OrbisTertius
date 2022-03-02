@@ -179,54 +179,6 @@ const comment = {
     },
 };
 
-const orbSpace = {
-    async deleteAcceptance(body) {
-        const params = {
-            TableName: ddb_config.tableNames.orb_table,
-            Key: {
-                PK: "ORB#" + body.orb_uuid,
-                SK: "USR#" + body.user_id.toString(),
-            },
-        };
-        const data = await docClient.delete(params).promise();
-        return data;
-    },
-    // initiator
-    async notInterested_i(body) {
-        const params = {
-            TableName: ddb_config.tableNames.orb_table,
-            Item: {
-                PK: "ORB#" + body.orb_uuid,
-                SK: "USR#" + body.acceptor_id.toString(),
-                time: moment().unix(),
-                inverse: "505#DISINIT",
-                payload: {
-                    who: body.user_id.toString()
-                }
-            },
-        };
-        const data = await docClient.put(params).promise();
-        return data;
-    },
-    // acceptor
-    async notInterested_a(body) {
-        const params = {
-            TableName: ddb_config.tableNames.orb_table,
-            Item: {
-                PK: "ORB#" + body.orb_uuid,
-                SK: "USR#" + body.user_id.toString(),
-                time: moment().unix(),
-                inverse: "550#DISACCEPT",
-                payload: {
-                    who: body.user_id.toString()
-                }
-            },
-        };
-        const data = await docClient.put(params).promise();
-        return data;
-    },
-}
-
 const dynaOrb = {
     async create(body, gen){
         orb_uuid= await gen
@@ -307,36 +259,6 @@ const dynaOrb = {
                 dao.created_dt  = data.Item.payload.creationtime}
         } 
         return dao;
-    },
-    async acceptance(body){
-        const  params = {
-            TableName: ddb_config.tableNames.orb_table,        
-            Key: {
-                PK: "ORB#" + body.orb_uuid,
-                SK: "USR#" + body.user_id
-            },
-            UpdateExpression: "set inverse = :status",
-            ExpressionAttributeValues: {
-                ":status": "800#FULF"
-            }
-        };
-        const data = await docClient.update(params).promise();
-        return data;
-    },
-    async forceaccept(body){
-        const  params = {
-            TableName: ddb_config.tableNames.orb_table,
-            Key: {
-                PK: "ORB#" + body.orb_uuid,
-                SK: "USR#" + body.acpt_id
-            },
-            UpdateExpression: "set inverse = :status",
-            ExpressionAttributeValues: {
-                ":status": "800#FULF"
-            }
-        };
-        const data = await docClient.update(params).promise();
-        return data;
     },
     async gen(body){
         try{
@@ -496,19 +418,19 @@ const dynaOrb = {
 
 async function batchWriteProcessor(params){
     var  count = 0
-        var processed = false
-        do{
-            processBatch = await docClient.batchWrite(params).promise();
-            if (processBatch && Object.keys(processBatch.UnprocessedItems).length>0) {
-                params = {RequestItems: batchWriteResp.UnprocessedItems}
-                // delay a random time and fixed increase exponentially
-                const delay = Math.floor(Math.random() * count * 500 + 10**count)
-                await new Promise(resolve => setTimeout(resolve, delay));
-            } else {
-                processed = true
-                break
-            }
-        } while(count< 5)
+    var processed = false
+    do{
+        processBatch = await docClient.batchWrite(params).promise();
+        if (processBatch && Object.keys(processBatch.UnprocessedItems).length>0) {
+            params = {RequestItems: batchWriteResp.UnprocessedItems}
+            // delay a random time and fixed increase exponentially
+            const delay = Math.floor(Math.random() * count * 500 + 10**count)
+            await new Promise(resolve => setTimeout(resolve, delay));
+        } else {
+            processed = true
+            break
+        }
+    } while(count< 5)
 
     return processed
 }
@@ -516,6 +438,5 @@ async function batchWriteProcessor(params){
 
 module.exports = {
     comment: comment,
-    orbSpace: orbSpace,
     dynaOrb: dynaOrb,
 };

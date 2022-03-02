@@ -40,6 +40,8 @@ router.get(`/query`, async function (req, res, next) {
         }
     });
 });
+
+
 /**
  * FYR TOKEN CUSTOM GEN
  */
@@ -199,8 +201,8 @@ router.delete(`/delete_user`, async function (req, res, next) {
     let param3 = {
         DeleteRequest: {
             Key : {
-                PK: "phone#" + req.query.country_code + req.query.hp_number,
-                SK: "phone#" + req.query.country_code + req.query.hp_number,
+                PK: "username#" + req.username,
+                SK: "username" + req.username
             }
         }
     }
@@ -222,52 +224,6 @@ router.delete(`/delete_user`, async function (req, res, next) {
     });
 });
 
-/**
- * DELETE
- * Delete orb
- */
-router.delete(`/delete_orb`, async function (req, res, next) {
-    let param1 = {
-        DeleteRequest: {
-            Key : {
-                PK: "ORB#" + req.query.orb_uuid,
-                SK: "ORB#" + req.query.orb_uuid, 
-            }
-        }
-    };
-    let param2 = {
-        DeleteRequest: {
-            Key : {
-                PK: "ORB#" + req.query.orb_uuid,
-                SK: "USR#" + req.query.user_id, 
-            }
-        }
-    };
-    let param3 = {
-        DeleteRequest: {
-            Key: {
-                PK: "LOC#" + body.geohash,
-                SK: body.expiry_dt + "#ORB#" + body.orb_uuid
-            }
-        }
-    }
-    let itemsArray = [];
-    itemsArray.push(param1);
-    itemsArray.push(param2);
-    itemsArray.push(param3);
-    let params = {
-        RequestItems: {
-            [ddb_config.tableNames.orb_table]: itemsArray
-        }
-    }
-    docClient.batchWrite(params, function(err, data) {
-        if (err) {
-            res.status(400).send({ Error: err.message });
-        } else {
-            res.status(200).json("Orb deleted")
-        }
-    });
-});
 
 router.get(`/decode_geohash`, async function (req, res, next) {
     if (req.query.geohash.length == 16) {

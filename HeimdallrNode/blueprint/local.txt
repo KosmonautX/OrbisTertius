@@ -2,19 +2,21 @@
 #
 # ScratchbacV4.7 (local env)
 #
+:localipAddress = http://localhost:5000
 :ipAddress = http://localhost:5000
+#:ipAddress = https://norbandy.scratchbac.org
 :id = 01234567-89ABCDEF-01234567-89ABCDEF
 :googleAuth = <<
 Authorization: :fyrtoken
 Content-Type: application/json
 User-Agent: Emacs27
 ##
-:prince = 175181189
 :evange = 188681901
 :bala = 98667304
 :web = https://norbandy.scratchbac.org
 #:ryan = SxD23ctxrIUDPi1lXkAOq5BKm1l1
 :ryan = R3Vsjq9CARfprwOJps44kbVczFQ2
+:prince = MQTT323
 :admin = "90565482"
 :applefcm = fhjXNl9vSwGpu99ABSPe9k:APA91bEC6e6zxBE10wVSiUrtFCsjsb-RrQ2lRCZFmY31afbRrP8S3g7q5klX0hE-v0sIu_hks6lNoOUrD1dN6cYX4ZIo-2BQ4gwrN0lD79nX-ZQknpn5bvp0tGc_Er8VqZ7X1hLDnIkB
 :printonemail = "niceprinceton@gmail.com"
@@ -31,13 +33,18 @@ Content-Type: application/json
 User-Agent: Emacs27
 ###
 ### Generate Client-side like firetoken
-GET :ipAddress/api/dev/fyr?id=:ryan
+GET :localipAddress/api/dev/fyr?id=:ryan
+-> run-hook (restclient-set-var ":fyrtoken" (cdr (assq 'payload (json-read))))
+###
+### Generate Client-side like firetoken
+GET :localipAddress/api/dev/fyr?id=:prince
 -> run-hook (restclient-set-var ":fyrtoken" (cdr (assq 'payload (json-read))))
 ###
 ## Initialise user
 GET :ipAddress/api/devland/fyr/flameon?device_id=:id
 :googleAuth
 ##
+#
 POST :ipAddress/api/devland/fyr/serveronfyr
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 :googleAuth
@@ -47,16 +54,18 @@ POST :ipAddress/api/devland/fyr/serveronfyr
     "device_id": ":id"
 }
 #
-##
-POST :ipAddress/api/orb/admintalk
-:my-headers
+#
+POST :ipAddress/api/devland/fyr/serveronfyr
+-> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
+:googleAuth
 
 {
-    "user_id": ":ryan",
-    "message": "Hello to completed"
+    "user_id": ":prince",
+    "device_id": ":id"
 }
-##
 #
+#
+##
 ## POST ORB
 POST :ipAddress/api/nomadology/post_orb
 :my-headers
@@ -87,11 +96,12 @@ GET :ipAddress/api/tele/decode_geohash?hash=3857146046453&radius=42
 POST :ipAddress/api/nomadology/freshorbstream
 :my-headers
 {
-"geolocation": {"live": {"latlon":{
+    "user_id": ":ryan",
+    "geolocation": {"live": {"latlon":{
     "lat":1.3568,
     "lon":103.7487
-    },"target":42}},
-    "downstream": 1640259800
+    },"target":31}},
+    "upstream": 1640259800
 }
 #
 ##
@@ -108,7 +118,7 @@ PUT :ipAddress/api/orb/user_location
 :my-headers
 {
     "user_id": ":ryan",
-    "event": "genesis",
+    "event": "update",
     "live": {"latlon":{
     "lat":1.3568,
     "lon":103.7487
@@ -116,6 +126,37 @@ PUT :ipAddress/api/orb/user_location
 }
 ##
 #
+###
+###
+POST :ipAddress/api/orb/accept
+:my-headers
+{
+    "user_id": ":ryan",
+    "orb_uuid": ":orb",
+    "beacon": ":applefcm"
+}
+##
+##
+#ACPT_PND//INIT_PND (PENDING)// INIT_COMPLETE//ACPT_COMPLETE
+PUT :ipAddress/api/orbland/action/will
+:my-headers
+
+{
+    "user_id": ":ryan",
+    "actor_id": ":ryan",
+    "orb_uuid": ":orb",
+    "action": "ACPT_PND"
+}
+##
+
+## 2. UPDATE USERNAME
+PUT :ipAddress/api/orb/update_username
+:my-headers
+{
+    "user_id": ":ryan",
+    "username": "yipyip"
+}
+##
 POST :ipAddress/api/orb/message_beacon
 :my-headers
 {
@@ -172,33 +213,7 @@ Content-Type: application/json
     "user_id": ":ryan",
     "device_id": ":id"
 }
-## MERCURY STACK LOCAL auth_server boni
-POST :ipAddress/auth_server
--> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
-Content-Type: application/json
 
-{
-    "user_id": ":ryan",
-    "device_id": ":id"
-}
-## LOCAL auth_server boni
-POST :ipAddress/api/mercury/gen_user
-:my-headers
-{
-    "user_id": ":ryan",
-    "username": "ryry"
-}
-#
-## LOCAL auth_server boni
-POST :ipAddress/api/mercury/gen_orb
-:my-headers
-{
-    "user_id": "2",
-    "title": "brothers keeper",
-    "media": false,
-    "orb_nature": 10021000000,
-    "postal_code": 650301
-}
 ## 2. Get all fresh orbs
 GET :ipAddress/api/query/orbs_in_loc_fresh_batch?postal=650301
 :my-headers
@@ -255,14 +270,7 @@ POST :ipAddress/api/orb/create_user
 # &nbsp;&nbsp;    "LONGITUDE": </br> 
 # }</br>
 # user id:</br>
-# orb uuid:</br>
-POST :ipAddress/api/orb/accept
-:my-headers
-{
-    "user_id": ":ryan",
-    "orb_uuid": ":orb",
-    "beacon": ":applefcm"
-}
+
 
 ## 3. user personal interaction with ORB
 # action: save | hide
@@ -286,14 +294,8 @@ POST :ipAddress/api/orb/report
 :my-headers
 {
     "orb_uuid": ":orb",
-    "acpt_id": "2",
     "user_id": ":ryan",
-    "reason": {
-    "InappropriateContent": true,
-    "Spam": true,
-    "MisleadingContent": true,
-    "IllegalContent": false
-    }
+    "reason": "qweoqoiweoqwieoqw"
 }
 
 ## 5. chat with user (through tele)
@@ -406,13 +408,6 @@ PUT :ipAddress/api/orb/update_user
     "media": false
 }
 
-## 2. UPDATE USERNAME
-PUT :ipAddress/api/orb/update_username
-:my-headers
-{
-    "user_id": ":ryan",
-    "username": "yipyipss"
-}
 
 
 ## 3. Complete ORB (for initiator)

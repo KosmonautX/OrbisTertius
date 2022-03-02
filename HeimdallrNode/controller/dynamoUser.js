@@ -5,75 +5,8 @@ AWS.config.update({
     region: ddb_config.region
 });
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint:ddb_config.dyna});
-const geohash = require('./geohash');
 
 const dynaUser = {
-    async transacCreate(body) {
-        const params = {
-            "TransactItems": [
-                {
-                    Put: {
-                        TableName: ddb_config.tableNames.orb_table,
-                        ConditionExpression: "attribute_not_exists(PK)",
-                        Item: {
-                            PK: "USR#" + body.user_id, 
-                            SK: "USR#" + body.user_id + "#pub",
-                            alphanumeric: body.username,
-                            time: body.join_dt,
-                            payload: {
-                                bio: body.bio,
-                                profile_pic: body.profile_pic,
-                                verified: body.verified,
-                                available: true
-                            },
-                        }
-                    }
-                },
-                {
-                    Put: {
-                        TableName: ddb_config.tableNames.orb_table,
-                        ConditionExpression: "attribute_not_exists(PK)",
-                        Item: {
-                            PK: "username#" + body.username,
-                            SK: "username#" + body.username,
-                            alphanumeric: body.user_id
-                        }
-                    }
-                }
-            ] 
-        };
-        const data = await docClient.transactWrite(params).promise();
-        if (!data || !data.Item) {
-            return true;
-        }
-        return data;
-    },
-    async bulkCreate(body) {
-        const params = {
-            RequestItems: {
-                [ddb_config.tableNames.orb_table]: [
-                    {
-                        PutRequest: {
-                            Item: {
-                                PK: "USR#" + body.user_id,
-                                SK: "USR#" + body.user_id + "#pte",
-                                numeric: body.loc.home,
-                                geohash: body.loc.office, 
-                                payload: {
-                                    country_code: body.country_code,
-                                    hp_number: body.hp_number,
-                                    gender: body.gender,
-                                    birthday: body.birthday, //DD-MM-YYYY
-                                },
-                            }
-                        }
-                    },
-                ]
-            }
-        };
-        const data = await docClient.batchWrite(params).promise();
-        return data;
-    },
     async buddy(alpha,beta,friendshiptime) {
         const params = {
             TableName: ddb_config.tableNames.orb_table,
