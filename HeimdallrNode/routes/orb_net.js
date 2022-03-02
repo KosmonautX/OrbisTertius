@@ -119,7 +119,7 @@ router.post(`/report`, async function (req, res, next) {
         let body = { ...req.body };
         body.reasons = Object.keys(body.reason).filter(k => body.reason[k])
 
-        if(body.reasons.length < 5){
+        if(body.reasons.length < 6){
             payload= await teleria(req.verification,"report", body).catch(err => {
                 res.status = 400;
                 next(err)
@@ -145,6 +145,9 @@ router.post(`/report`, async function (req, res, next) {
                 }
             });
         }
+        else {
+            throw Error("Too many reasons")
+        }
     } catch (err) {
         err.status = 400;
         next(err);
@@ -156,23 +159,29 @@ router.post(`/report`, async function (req, res, next) {
  * Update user payload
  */
 router.put(`/update_user`, async function (req, res, next) {
-    let body = { ...req.body };
-    if (body.media===true){
-        var img_lossy = await serve3.preSign('putObject','USR',body.user_id,'150x150');
-        var img_lossless = await serve3.preSign('putObject','USR',body.user_id,'1920x1080');
-    }
-    let data = await dynaUser.updatePayload(body).catch(err => {
+    try{
+        let body = { ...req.body };
+        if (body.media===true){
+            var img_lossy = await serve3.preSign('putObject','USR',body.user_id,'150x150');
+            var img_lossless = await serve3.preSign('putObject','USR',body.user_id,'1920x1080');
+        }
+        let data = await dynaUser.updatePayload(body).catch(err => {
+            err.status = 400;
+            next(err);
+        });
+        if (data) {
+            res.status(200).json({
+                "User" : "Updated",
+                "lossy": img_lossy,
+                "lossless": img_lossless,
+            });
+        }
+    } catch (err) {
         err.status = 400;
         next(err);
-    });
-    if (data) {
-        res.status(200).json({
-            "User" : "Updated",
-            "lossy": img_lossy,
-            "lossless": img_lossless,
-        });
-    } 
-});
+    }
+}
+          );
 
 /**
  * API 1.1

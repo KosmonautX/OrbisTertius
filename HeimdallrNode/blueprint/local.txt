@@ -71,7 +71,7 @@ POST :ipAddress/api/nomadology/post_orb
 :my-headers
 -> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (json-read))))
 {
-    "user_id": ":prince",
+    "user_id": ":ryan",
     "title": "finder of lost children",
     "info": "blessed is he",
     "where": "my house",
@@ -120,7 +120,7 @@ PUT :ipAddress/api/orb/user_location
     "user_id": ":ryan",
     "event": "update",
     "live": {"latlon":{
-    "lat":1.2568,
+    "lat":1.3568,
     "lon":103.7487
     }}
 }
@@ -295,12 +295,7 @@ POST :ipAddress/api/orb/report
 {
     "orb_uuid": ":orb",
     "user_id": ":ryan",
-    "reason": {
-    "InappropriateContent": true,
-    "Spam": true,
-    "MisleadingContent": true,
-    "IllegalContent": false
-    }
+    "reason": "qweoqoiweoqwieoqw"
 }
 
 ## 5. chat with user (through tele)

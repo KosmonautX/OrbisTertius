@@ -2,7 +2,7 @@ import {Direction, LatLonBox, LatLonPoint} from "../types/geohash"
 
 /**
  * * typed geohash library
- * Copyright (c) 2011, Sun Ning. started from ngeohash package
+ * Copyright (c) 2011, Sun Ning. conceived from ngeohash package
  * will need to customise for internal use case in future
  * Obfuscate lat-lon data and posting data into pure hash format
  * front-end client library needed for _int
@@ -143,6 +143,20 @@ var decode_int = function (hash_int: number, bitDepth: number): LatLonPoint {
 };
 
 /**
+ * Transcode Integer
+ *
+ * Transcode a hash number into another hash number makes sense to be a coarser one.
+ * @param {Number} hash_int
+ * @param {Number} input_bitDepth
+ * @param {Number} target_bitDepth
+ * @returns {Number}
+ */
+
+var transcode_int = function(hash_int: number, input_bitDepth: number, target_bitDepth: number): number {
+  return encode_int(decode_int(hash_int, input_bitDepth).latitude, decode_int(hash_int, input_bitDepth).longitude, target_bitDepth)
+}
+
+/**
  * Neighbor Integer
  *
  * Find neighbor of a geohash integer in certain direction. Direction is a two-element array, i.e. [1,0] means north, [-1,-1] means southwest.
@@ -264,13 +278,4 @@ function ensure_valid_lat(lat: number) {
   return lat;
 };
 
-var geohash = {
-  'encode_int': encode_int,
-  'decode_int': decode_int,
-  'decode_bbox_int': decode_bbox_int,
-  'neighbor_int': neighbor_int,
-  'neighbors_int': neighbors_int,
-  'bboxes_int': bboxes_int
-};
-
-module.exports = geohash;
+export { encode_int, decode_int, transcode_int, decode_bbox_int, neighbor_int, neighbors_int, bboxes_int }
