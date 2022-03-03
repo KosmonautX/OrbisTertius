@@ -1,5 +1,5 @@
 export interface LatLonPoint {
-        latitude: number;
+    latitude: number;
     longitude: number;
     error: {
       latitude: number;

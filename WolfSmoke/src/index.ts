@@ -81,7 +81,7 @@ async function main(stream: DynamoDBStreams, stream_arn:string) {
 async function loadShardState() {
 	try {
 		return JSON.parse(await fs.readFile(FILE, 'utf8'))
-	} catch (e) {
+	} catch (e: any) {
 		if (e.code === 'ENOENT') return {}
 		throw e
 	}
