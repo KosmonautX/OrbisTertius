@@ -8,7 +8,7 @@ const hexhash = require('h3-js')
 // const onemap = JSON.parse(rawdata);
 const onemap = require('../resources/onemap3.json');
 
-function postal_to_geo(postal, radius=30) {
+function postal_to_geo(postal, radius=8) {
     if (postal == null || postal == "") {
         return null;
     }
@@ -44,19 +44,19 @@ function postal_to_geo52(postal) {
 }
 
 function latlon_to_geo(latlon, radius=8) {
-  let geohashing = hexhash.hexArea(parseFloat(latlon.lat), parseFloat(latlon.lon), radius);
-    return geohashing;
+    return hexhash.geoToH3(parseFloat(latlon.lat), parseFloat(latlon.lon), radius);
 };
 
 function latlon_to_geo52(latlon) {
-    let geohashing = geohash.encode_int(parseFloat(latlon.lat), parseFloat(latlon.lon), 52);
-    return geohashing;
+    return hexhash.geoToH3(parseFloat(latlon.lat), parseFloat(latlon.lon), 12);
 }
 
-function neighbour(geohashing, radius=30) {
-    let arr = [geohashing]
-    arr.push(...geohash.neighbors_int(geohashing, radius)); // array
-    return arr;
+function neighbour(geohashing, radius=8) {
+    return hexhash.kRing(geohashing, radius);
+}
+
+function boundaries(geohashing, radius=8) {
+    return hexhash.kRing(geohashing, radius);
 }
 
 function check_postal(postal) {
@@ -72,7 +72,11 @@ function check_postal(postal) {
 }
 
 function transcode_geohash(geohash, fineGrain, coarseGrain){
-    return geohash.encode_int(geohash.decode_int(geohash, fineGrain), coarseGrain) //fine grained and coarse grained
+    return hexhash.h3ToParent(h3Index, coarseGrain)
+}
+
+function geohash_to_hexhash(geohash, radius){
+    return hexhash.geoToH3(geohash.decode_int(geohash, radius), coarseGrain) //fine grained and coarse grained
 }
 function decode_hash(hash, bit){
     return geohash.decode_int(hash, bit);

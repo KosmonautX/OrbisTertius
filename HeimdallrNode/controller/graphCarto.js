@@ -5,7 +5,8 @@ AWS.config.update({
   region: ddb_config.region
 });
 const docClient = new AWS.DynamoDB.DocumentClient({endpoint:ddb_config.dyna});
-const geohash = require('./geohash')
+const geohash = require('./geohash');
+const { territory_markers, tableNames } = require('../config/ddb.config');
 const MAX_TERRITORIES = 3 //
 const COOLDOWN = 86400 * 7 // unix time for 7 days
 var Graph = {} // maps
@@ -13,7 +14,7 @@ Graph.Edge = (function () {
   `use strict`
 
   //init state
-  var state = {TableName: ddb_config.tableNames.orb_table};
+  var state = {TableName: tableNames.orb_table};
   var patternStr;
   //add public facing interface
   var interface_dao = {};
@@ -52,7 +53,7 @@ Graph.Edge = (function () {
   }
   //Entity with Geofields that need to be Mapped
   var entity_init  = function(_archetype, _id, _access=false, _bridge=false){
-    state = {TableName: ddb_config.tableNames.orb_table,
+    state = {TableName: tableNames.orb_table,
              ExpressionAttributeNames: {},
              ExpressionAttributeValues: {}
             };
@@ -71,7 +72,7 @@ Graph.Edge = (function () {
       state[patternStr].SK = state[patternStr].PK
     }
   }
-  var map_editor  = async (locmap, radius=30) => {
+  var map_editor  = async (locmap, radius= territory_markers[0]) => {
     territory = {}
     Object.entries(locmap).slice(0,MAX_TERRITORIES).forEach(([name, address]) =>{
       address = geohasher(address, radius)
@@ -83,7 +84,7 @@ Graph.Edge = (function () {
     return territory
   };
 
-  var map_creator  = async (locmap, radius=30) => {
+  var map_creator  = async (locmap, radius=territory_markers[0]) => {
     territory = {}
     Object.entries(locmap).slice(0,MAX_TERRITORIES).forEach(([name, address]) =>{
       addressed = geohasher(address, radius)
@@ -99,7 +100,7 @@ Graph.Edge = (function () {
   var territorialization= async (agent, territory) => {
     territory.then((data) => {
       const params = {
-        TableName: ddb_config.tableNames.orb_table,
+        TableName: tableNames.orb_table,
         Key: {
           PK: "USR#" + agent,
           SK: "USR#" + agent + "#pub"
@@ -125,7 +126,7 @@ Graph.Edge = (function () {
   var reterritorialization = async(agent, territory) => {
     territory.then((data)=>{
       let params = {
-        TableName: ddb_config.tableNames.orb_table,
+        TableName: tableNames.orb_table,
         Key: {
           PK: "USR#" + agent,
           SK: "USR#" + agent + "#pub"

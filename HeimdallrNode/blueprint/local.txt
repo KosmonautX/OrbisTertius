@@ -118,7 +118,7 @@ PUT :ipAddress/api/orb/user_location
 :my-headers
 {
     "user_id": ":ryan",
-    "event": "genesis",
+    "event": "update",
     "live": {"latlon":{
     "lat":1.3568,
     "lon":103.7487
