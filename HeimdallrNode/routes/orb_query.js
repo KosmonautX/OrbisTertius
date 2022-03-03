@@ -91,30 +91,6 @@ router.get(`/get_users/:user_ids`, async function (req, res, next) {
 });
 
 
-/**
- * API 1
- * Fetch App Version
- */
-router.get(`/version/:version`, async function (req, res, next) {
-    try{
-        const orbs = req.params.version
-        const minimum_version = "1.0.1"
-        if (req.params.version.localeCompare(minimum_version, undefined, { numeric: true, sensitivity: 'base' }) == -1) {
-            res.status(409).send({
-                "version": "rip",
-            });
-        } else {
-            res.status(200).send({
-                "version": "in being"
-            });
-        }
-
-    }catch(err){
-        if (err.message == "Recall Version failed") err.status = 401;
-        next(err);
-    }
-});
-
 router.get(`/check_username`, async function (req, res, next) {
     try {
         let username = await userQuery.checkUsername(req.query.username);
@@ -203,8 +179,9 @@ function keyword_to_code(keyword) {
     if (keyword.toUpperCase() == "INIT") code = "600#INIT";
    //  else if (keyword.toUpperCase() == "FULFILLED") code = "801#FULF";
     else if (keyword.toUpperCase() == "ACCEPT") code = "500#ACPT";
+
     else if (keyword.toUpperCase() == "COMPLETED") code = "800#CMPL";
-    else if (keyword.toUpperCase() == "PENDING") code = "550#PEND";
+    else if (keyword.toUpperCase() == "PENDING") code = "540#";
     return code;
 }
 
@@ -282,59 +259,6 @@ router.get(`/decode_geohash`, async function (req, res, next) {
 });
 
 /**
- * API 1.5
- * QUERY for all fresh ORBs in a geohash
- */
-router.get(`/orbs_in_loc_fresh_batch`, async function (req, res, next) {
-    try {
-        let geohashing;
-        if (req.query.lat && req.query.lon) {
-            let latlon = {};
-            latlon.lat = req.query.lat;
-            latlon.lon = req.query.lon;
-            geohashing = geohash.latlon_to_geo(latlon);
-        } else if (req.query.postal_code) {
-            let postal = req.query.postal_code;
-            geohashing = geohash.postal_to_geo(postal);
-        } else {
-            throw new Error('Please give either postal_code or latlon');
-        }
-        let geohash_arr = geohash.neighbour(geohashing);
-        let page = [];
-        for (let g of geohash_arr) {
-            let result = await batch_query_location(g);
-            if (result){
-                for (let item of result) {
-                    let dao = {};
-                    dao.orb_uuid = item.SK.slice(15);
-                    dao.geolocation = item.geolocation
-                    // dao.geohash52 = item.geohash;
-                    //dao.nature = parseInt(item.inverse.slice(4));
-                    dao.expiry_dt = parseInt(item.SK.substr(0, 10));
-                    if (item.payload){
-                        dao.payload = item.payload
-                        if(item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','ORB',dao.orb_uuid,'150x150')
-                        if(item.payload.init){
-                            dao.payload.init = item.payload.init;
-                            if(item.payload.init.media) dao.payload.init.media_asset = await serve3.preSign('getObject','USR',item.payload.user_id,'150x150')}
-                    }
-                    page.push(dao);
-                }
-            }
-        }
-        if (page.length > 0) {
-            res.json(page)
-        } else {
-            res.status(204).json("nothing burger")
-        }
-    } catch (err) {
-        if (err.message == 'Please give either postal_code or latlon') err.status = 400;
-        next(err);
-    }
-    
-});
-
-/**
  * API 4.0
  * Query for all ORB to user interactions
  * Query for all your buddies or baddies(?)
@@ -398,32 +322,6 @@ router.get(`/postal_check`, async function (req, res, next) {
         });
     }
 });
-
-async function batch_query_location(geohashing) {
-    return new Promise((resolve, reject) => {
-        let params = {
-            TableName: ddb_config.tableNames.orb_table,
-            KeyConditionExpression: "PK = :loc and SK BETWEEN :current_time AND :future_time",
-            ExpressionAttributeValues: {
-                ":loc": "LOC#" + geohashing,
-                ":current_time": moment().unix().toString(),
-                ":future_time": "4136173415"
-            },
-            ScanIndexForward: false,
-        };
-        docClient.query(params, function(err, data) {
-            if (err) {
-                reject(err.message);
-            } else {
-                let dao = [];
-                data.Items.forEach(function(item) {
-                    dao.push(item)
-                })
-                resolve(dao);
-            }
-        });
-    })
-}
 
 
 module.exports = router;
