@@ -26,7 +26,7 @@ function postal_to_geo(postal, radius=8) {
     return latlon_to_geo(latlon, radius);
 };
 
-function postal_to_geo52(postal) {
+function postal_to_geotiny(postal) {
     if (postal == null || postal == "") {
         return null;
     }
@@ -40,23 +40,19 @@ function postal_to_geo52(postal) {
     if (latlon == "undefined" || latlon == null) {
         throw new Error("Postal code does not exist!")
     }
-    return latlon_to_geo52(latlon);
+    return latlon_to_geotiny(latlon);
 }
 
 function latlon_to_geo(latlon, radius=8) {
     return hexhash.geoToH3(parseFloat(latlon.lat), parseFloat(latlon.lon), radius);
 };
 
-function latlon_to_geo52(latlon) {
-    return hexhash.geoToH3(parseFloat(latlon.lat), parseFloat(latlon.lon), 12);
+function latlon_to_geotiny(latlon) {
+    return hexhash.geoToH3(parseFloat(latlon.lat), parseFloat(latlon.lon), 11);
 }
 
 function neighbour(geohashing, radius=8) {
-    return hexhash.kRing(geohashing, radius);
-}
-
-function boundaries(geohashing, radius=8) {
-    return hexhash.kRing(geohashing, radius);
+    return hexhash.kRing(geohashing, 1);
 }
 
 function check_postal(postal) {
@@ -72,20 +68,21 @@ function check_postal(postal) {
 }
 
 function transcode_geohash(geohash, fineGrain, coarseGrain){
-    return hexhash.h3ToParent(h3Index, coarseGrain)
+    return hexhash.h3ToParent(h3Index, coarseGrain) //fine grained and coarse grained
 }
 
 function geohash_to_hexhash(geohash, radius){
-    return hexhash.geoToH3(geohash.decode_int(geohash, radius), coarseGrain) //fine grained and coarse grained
+    mapping = {30 : 8 , 31: 9, 32: 10}
+    return hexhash.geoToH3(geohash.decode_int(geohash, radius), mapping[radius])
 }
 function decode_hash(hash, bit){
     return geohash.decode_int(hash, bit);
 }
 module.exports = {
     postal_to_geo: postal_to_geo,
-    postal_to_geo52: postal_to_geo52,
+    postal_to_geotiny: postal_to_geotiny,
     latlon_to_geo: latlon_to_geo,
-    latlon_to_geo52: latlon_to_geo52,
+    latlon_to_geotiny: latlon_to_geotiny,
     neighbour: neighbour,
     check_postal: check_postal,
     decode_hash: decode_hash,

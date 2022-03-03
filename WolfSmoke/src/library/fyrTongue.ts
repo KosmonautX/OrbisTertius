@@ -1,6 +1,6 @@
 import {Mutation, KeyElement} from "../types/parsesTongue"
 import {KeyParser} from "./parsesUrTongue"
-import {transcode_int} from "../utils/geohash"
+import {transcode_hexhash} from "../utils/geohash"
 import { territory_markers } from "../config/config";
 
 interface Message{
@@ -11,12 +11,12 @@ interface Message{
 }
 
 interface GeoHash{
-    hash: number
+    hash: string
     radius: number
 }
 interface Location{
     geohashing: GeoHash
-    geohashing52: number
+    geohashingtiny: string
 
 }
 
@@ -191,21 +191,21 @@ export async function territory_subscriber(neoTerritory: TerritoryPub, identifie
             Object.entries(neoTerritory).forEach(([geoName, address]) =>{
                 if(!retroTerritory[geoName]){
                     switchsubscribe("LOC",identifier,client, address.geohashing.hash + "." + address.geohashing.radius)
-                    if(address.geohashing52) {
+                    if(address.geohashingtiny) {
                         for (const radius of territory_markers) {
                             if(radius != address.geohashing.radius) {
-                                switchsubscribe("LOC",identifier,client, transcode_int(address.geohashing52, 52 , radius) + "." + radius)
+                                switchsubscribe("LOC",identifier,client, transcode_hexhash(address.geohashingtiny, radius) + "." + radius)
                             }
                         }
                     }
                 }
                 else if(address.geohashing.hash !== retroTerritory[geoName].geohashing.hash){
                     switchsubscribe("LOC", identifier, client, address.geohashing.hash + "." + address.geohashing.radius, retroTerritory[geoName].geohashing.hash + "." + retroTerritory[geoName].geohashing.radius)
-                    if(address.geohashing52) {
+                    if(address.geohashingtiny) {
                         for (const radius of territory_markers) {
                             if(radius != address.geohashing.radius) {
-                                let newTer = transcode_int(address.geohashing52, 52 , radius) + "." + radius
-                                let oldTer = transcode_int(retroTerritory[geoName].geohashing52, 52 , radius) + "." + radius
+                                let newTer = transcode_hexhash(address.geohashingtiny, radius) + "." + radius
+                                let oldTer = transcode_hexhash(retroTerritory[geoName].geohashingtiny, radius) + "." + radius
                                 switchsubscribe("LOC",identifier,client, newTer, oldTer)
                             }
                         }
@@ -216,10 +216,10 @@ export async function territory_subscriber(neoTerritory: TerritoryPub, identifie
         else{
             Object.entries(neoTerritory).forEach(([_geoName, address]) =>{
                 switchsubscribe("LOC",identifier,client, address.geohashing.hash + "." + address.geohashing.radius)
-                    if(address.geohashing52) {
+                    if(address.geohashingtiny) {
                         for (const radius of territory_markers) {
                             if(radius != address.geohashing.radius) {
-                                switchsubscribe("LOC",identifier,client, transcode_int(address.geohashing52, 52 , radius) + "." + radius)
+                                switchsubscribe("LOC",identifier,client, transcode_hexhash(address.geohashingtiny, radius) + "." + radius)
                             }
                         }
                     }
@@ -303,7 +303,7 @@ export async function beckonComment(newRecord: Mutation, client: any): Promise<v
 
 }
 
-export async function mutateActorSubscription(newRecord: Mutation, client: any,  oldRecord?: Mutation): Promise<void>{
+export async function mutateActorSubscription(newRecord: Mutation, client: any,   _oldRecord?: Mutation): Promise<void>{
     try {
         //send through KeyElement later
         if(newRecord.identifier && newRecord.inverse){

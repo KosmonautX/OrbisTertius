@@ -154,12 +154,12 @@ Graph.Edge = (function () {
   var geohasher = function (address, radius){
     if(address.latlon){
       address.geohashing = {hash: geohash.latlon_to_geo(address.latlon, radius), radius};
-      address.geohashing52 = geohash.latlon_to_geo52(address.latlon); //curry 52 in the future
+      address.geohashingtiny = geohash.latlon_to_geotiny(address.latlon); //curry 52 in the future
     }
     else if(address.postal)
     {
       address.geohashing = {hash: geohash.postal_to_geo(address.postal, radius), radius};
-      address.geohashing52 = geohash.postal_to_geo52(address.postal)
+      address.geohashingtiny = geohash.postal_to_geotiny(address.postal)
     }
     return address
     // try async promise chaining here
