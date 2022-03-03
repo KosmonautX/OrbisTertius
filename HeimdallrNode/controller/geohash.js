@@ -1,4 +1,8 @@
 const geohash = require('ngeohash');
+const hexhash = require('h3-js')
+// migrate in parts by converting to hexagonal when radius less than 30,
+// support both frameworks and translate into hexhash till you throw error and
+// have retry logic routes are unchanged
 // const fs = require('fs');
 // const rawdata = fs.readFileSync('./HeimdallrNode/resources/onemap3.json', 'utf-8');
 // const onemap = JSON.parse(rawdata);
@@ -39,8 +43,8 @@ function postal_to_geo52(postal) {
     return latlon_to_geo52(latlon);
 }
 
-function latlon_to_geo(latlon, radius=30) {
-    let geohashing = geohash.encode_int(parseFloat(latlon.lat), parseFloat(latlon.lon), radius);
+function latlon_to_geo(latlon, radius=8) {
+  let geohashing = hexhash.hexArea(parseFloat(latlon.lat), parseFloat(latlon.lon), radius);
     return geohashing;
 };
 
