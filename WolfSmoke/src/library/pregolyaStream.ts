@@ -77,7 +77,7 @@ export class DynaStream extends EventEmitter {
 					newShardIds.push(newShardEntry.ShardId)
 				}
 			}
-      }catch (error) {
+      }catch (error: any) {
 				this._emitError(error)
 				switch (error.name) {
 					case 'ThrottlingException':
@@ -109,17 +109,17 @@ export class DynaStream extends EventEmitter {
 	  return
 	}
 
-	await this._getShardIterators().catch((error)=>{
+	await this._getShardIterators().catch((error : any )=>{
                 console.log("Error emitting Records" , error)
             })
-	const records = await this._getRecords().catch((error)=>{
+	const records = await this._getRecords().catch((error :any)=>{
                 console.log("Error emitting Records" , error)
             })
 
 	debug('fetchStreamRecords', records)
 
 	this._trimShards()
-	this._emitRecordEvents(records).catch((error)=>{
+	this._emitRecordEvents(records).catch((error :any)=>{
                 console.log("Error emitting Records" , error)
             })
 
@@ -160,7 +160,7 @@ export class DynaStream extends EventEmitter {
   async _getShardIterators() {
 	debug('_getShardIterators')
 	  // return this.parallelomap(this._shards.values(), this._getShardIterator , 10)
-    return this.parallelomap(this._shards.values(), ((shardData: any) => this._getShardIterator(shardData)), 10).catch((error)=>{
+    return this.parallelomap(this._shards.values(), ((shardData: any) => this._getShardIterator(shardData)), 10).catch((error: any)=>{
                 console.log("Error emitting Records" , error)
             })
     //return this._getShardIterator(this._shards.values())
@@ -188,7 +188,7 @@ export class DynaStream extends EventEmitter {
         })
 	      shardData.nextShardIterator = ShardIterator
       }
-    }catch(e){
+    }catch(e: any){
 			switch (e.name) {
 				case 'ResourceNotFoundException':
 					debug('shard %s no longer exists, skipping', shardData.shardId)
@@ -230,7 +230,7 @@ export class DynaStream extends EventEmitter {
 	    }
 
 	    return Records
-	  } catch (e) {
+	  } catch (e:any) {
       switch (e.name) {
 				case 'ExpiredIteratorException':
 					debug('_getShardRecords expired iterator', shardData)
