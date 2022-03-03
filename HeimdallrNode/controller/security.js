@@ -28,16 +28,23 @@ var checkUser = function (req, next) {
 
 var checkTerritory = function (req, next) {
     try{
-        let agentTargetTerritory = req.query.geolocation || req.body.geolocation
+        let agentTargetTerritory = req.query.geolocation || req.body.geolocation // territory space of action
         req.geolocation = {}
         if(!req.verification.territory || !agentTargetTerritory) throw new Error("Geolocation Unauthorised")
         Object.entries(agentTargetTerritory).slice(0,1).forEach(([geoName, address]) =>{
             if(req.verification.territory[geoName]){
+                if(address.target > 16){
+                    // translate legacy geohash to hexhash ranges temperory
+                    mapping = {30 : 8 , 31: 9, 32: 10}
+                    address.target = mapping[address.target]
+                }
                 if(address.geolock){
                     req.geolocation.geolock = true
                 }
                 if(address.latlon){
-                    /*check moving velocity from authorisation date time*/
+                    /*check moving velocity from authorisation date time later */
+
+                    // convert to gelocation object if target territory space subset of own territory
                     if(geohash.latlon_to_geo(address.latlon,req.verification.territory[geoName].radius) ===req.verification.territory[geoName].hash){
                         req.geolocation.hash= geohash.latlon_to_geo(address.latlon, address.target)
                         req.geolocation.radius = address.target
