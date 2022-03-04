@@ -323,7 +323,7 @@ GET :ipAddress/api/query/get_orbs/:orb
 :my-headers
 
 ## 1. version check
-GET :ipAddress/api/query/version/1.0.0
+GET :ipAddress/api/version/1.0.0
 :my-headers
 ## 2. FRESHORBS
 GET :ipAddress/api/query/orbs_in_loc_fresh_batch?postal_code=650301
