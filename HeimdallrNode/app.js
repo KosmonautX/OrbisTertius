@@ -145,7 +145,7 @@ function verifyToken(req, res, next) {
         credential: fyr.credential.cert({
             "project_id": proj,
             "private_key": process.env.FYR_KEY.replace(/\\n/g, '\n'),
-            "client_email": "firebase-adminsdk-b1dh2@"+ proj +".iam.gserviceaccount.com",
+            "client_email": process.env.FYR_EMAIL,
         }),
         authDomain: proj+".firebaseapp.com"         // Auth with popup/redirect
         // databaseURL: "https://YOUR_APP.firebaseio.com", // Realtime Database
