@@ -26,6 +26,10 @@ router.post(`/post_orb`, async function (req, res, next) {
                 body.geolocation.hash = geohash.postal_to_geo(address.postal,address.target)
                 body.geolocation.radius = address.target
             }
+            if (address.latlon){ // only postal support for tele no territory check
+                body.geolocation.hash = geohash.latlon_to_geo(address.latlon ,address.target)
+                body.geolocation.radius = address.target
+            }
         })
         //body.geolocation.radii = territory_markers.filter(function(x){ return x>=req.geolocation.radius})
         // when listener frequencies become adaptable not now

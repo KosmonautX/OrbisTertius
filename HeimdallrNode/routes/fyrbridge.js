@@ -74,6 +74,7 @@ router.post('/serveronfyr' , async (req,res, next) => {
 
 router.get('/flameon', async (req, res, next) => {
   // device id addition to login path and check on uuid existence
+  // flameon has an partner in api gateway's jwt authoriser depending on fire base project
   fyrUser = land.Entity()
   payload= await fyrUser.fyrgen(res.user_id,req.query.device_id).catch(err => {
     res.status = 400;
