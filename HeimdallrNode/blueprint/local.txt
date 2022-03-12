@@ -33,7 +33,7 @@ Content-Type: application/json
 User-Agent: Emacs27
 ###
 :boni-headers = <<
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiUjNWc2pxOUNBUmZwcndPSnBzNDRrYlZjekZRMiIsInJvbGUiOiJib25pIiwiaWF0IjoxNjQ3MDY4MzAyLCJleHAiOjE2NDcwNjk1MDIsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.AY39glf1VwtUSDbEsWobhfOX0C9GvllNeoEHnaRNDTs
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiUjNWc2pxOUNBUmZwcndPSnBzNDRrYlZjekZRMiIsInJvbGUiOiJib25pIiwiaWF0IjoxNjQ3MDcwNTc0LCJleHAiOjE2NDcwNzE3NzQsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.u9zhsmd5tQ4KvEfeFTh90OLtNuiurAxPCq4o1-yyZjI
 Content-Type: application/json
 User-Agent: Emacs27
 ###
@@ -163,49 +163,78 @@ PUT :ipAddress/api/orb/update_username
 }
 
 ### POST ORB BONI
+#
 POST :ipAddress/api/tele/post_orb
 :boni-headers
 -> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (json-read))))
 [{
 "user_id": ":jerry",
 "username": "JerryNeo",
-"title": "finder of lost children",
+"title": "Bukit Panjang Hawker Center",
 "info": "blessed is he",
 "where": "my house",
 "when": "now",
 "tip": "foc",
-"media": true,
+"media": false,
 "geolocation": {"live": {"latlon":{
-    "lat":1.3568,
-    "lon":103.7487
+    "lat":1.37759845958913,
+    "lon":103.7724164369793
+    },"target":10,"geolock": true}},
+"orb_nature": 10,
+"expires_in": 100000
+},{
+"user_id": ":jerry",
+"username": "JerryNeo",
+"title": "Bukit Panjang Primary School",
+"info": "blessed is he",
+"where": "my house",
+"when": "now",
+"tip": "foc",
+"geolocation": {"live": {"latlon":{
+    "lat":1.372979638717905,
+    "lon":103.76910539472084
+    },"target":10,"geolock": true}},
+"orb_nature": 10,
+"expires_in": 100000
+},{
+"user_id": ":jerry",
+"username": "JerryNeo",
+"title": "Cashew MRT",
+"info": "blessed is he",
+"where": "my house",
+"when": "now",
+"tip": "foc",
+"geolocation": {"live": {"latlon":{
+    "lat":1.3699304864823747,
+    "lon":103.76458364395747
     },"target":10,"geolock": true}},
 "orb_nature": 10,
 "expires_in": 10000
 },{
 "user_id": ":jerry",
 "username": "JerryNeo",
-"title": "finder of lost children",
+"title": "10-Mile Junction",
 "info": "blessed is he",
 "where": "my house",
 "when": "now",
 "tip": "foc",
 "geolocation": {"live": {"latlon":{
-    "lat":1.3568,
-    "lon":103.7487
-    },"target":8,"geolock": true}},
+    "lat":1.3803187746034085,
+    "lon":103.76026477821662
+    },"target":10,"geolock": true}},
 "orb_nature": 10,
-"expires_in": 10000
+"expires_in": 100000
 },{
 "user_id": ":jerry",
 "username": "JerryNeo",
-"title": "finder of lost children",
+"title": "Pang Sua Pond",
 "info": "blessed is he",
 "where": "my house",
 "when": "now",
 "tip": "foc",
 "geolocation": {"live": {"latlon":{
-    "lat":1.3568,
-    "lon":103.7487
+    "lat":1.3814445143565137,
+    "lon":103.76591120312035
     },"target":10,"geolock": true}},
 "orb_nature": 10,
 "expires_in": 10000
