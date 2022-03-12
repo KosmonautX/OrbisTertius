@@ -5,7 +5,7 @@ const security = require('../controller/security');
 const dynaOrb = require('../controller/dynamoOrb').dynaOrb;
 const geohash = require('../controller/geohash')
 const { territory_markers } = require('../config/ddb.config');
-const geofencer = require('ngeohash').decode_int
+const serve3 = require('../controller/orbjectStore').serve3
 
 router.use(function (req, res, next){
     security.checkAdmin(req, next);
@@ -15,7 +15,22 @@ router.use(function (req, res, next){
 router.post(`/post_orb`, async function (req, res, next) {
     try {
         let body = { ...req.body };
-        let promises = new Map();
+        promises = []
+        let delivered
+        for(var element in body ) promises.push(gen_orb(body[element]))
+        await Promise.all(promises).then(response => {
+            delivered = response
+        });
+        res.status(201).json(delivered)
+    }catch (err) {
+        if (err.message == 'Postal code does not exist!') err.status = 404;
+        next(err);
+    }
+});
+
+
+async function gen_orb(body){
+    let promises = new Map();
         body.expiry_dt = slider_time(body.expires_in);
         body.created_dt = moment().unix();
         Object.entries(body.geolocation).slice(0,1).forEach(([geoName, address]) =>{
@@ -35,8 +50,6 @@ router.post(`/post_orb`, async function (req, res, next) {
         // when listener frequencies become adaptable not now
         if(body.geolocation.radius === territory_markers[0]) body.geolocation.hashes = geohash.neighbour(body.geolocation.hash,body.geolocation.radius)
         else body.geolocation.hashes = [body.geolocation.hash]
-
-        if(body.geolocation.geolock === true) body.geolocation.geofence = geofencer(body.geolocation.hash,body.geolocation.radius)
         //initators data from telegram
 
         body.init = {}
@@ -46,25 +59,15 @@ router.post(`/post_orb`, async function (req, res, next) {
             err.status = 400;
             next(err);
         });
-        promises.set('orb_uuid', body.orb_uuid);
-        promises.set('expiry', body.expiry_dt);
-        promises.set(`creationtime`, body.created_dt)
+        promises.orb_uuid =  body.orb_uuid;
+        promises.expiry = body.expiry_dt;
+        promises.creationtime = body.created_dt
         if (body.media){
-            promises.set('lossy', await serve3.preSign('putObject','ORB',body.orb_uuid,'150x150'));
-            promises.set('lossless', await serve3.preSign('putObject','ORB',body.orb_uuid,'1920x1080'));
+            promises.lossy = await serve3.preSign('putObject','ORB',body.orb_uuid,'150x150')
+            promises.lossless = await serve3.preSign('putObject','ORB',body.orb_uuid,'1920x1080');
         };
-
-        Promise.all(promises).then(response => {
-            //m = new Map(response.map(obj => [obj[0], obj[1]])) jsonObject[key] = value
-            let jsonObject = {};
-            response.map(obj => [jsonObject[obj[0]] = obj[1]])
-            res.status(201).json(jsonObject);
-        });
-    }catch (err) {
-        if (err.message == 'Postal code does not exist!') err.status = 404;
-        next(err);
-    }
-});
+    return promises
+}
 
 router.post(`/freshorbstream`, async function (req, res, next) {
     try{
