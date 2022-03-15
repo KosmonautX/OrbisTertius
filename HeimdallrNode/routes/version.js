@@ -9,11 +9,11 @@ router.get(`/:version`, async function (req, res, next) {
         const minimum_version = "1.0.4"
         if (req.params.version.localeCompare(minimum_version, undefined, { numeric: true, sensitivity: 'base' }) == -1) {
             res.status(409).send({
-                "version": "rip",
+                "update": "required",
             });
         } else {
             res.status(200).send({
-                "version": "in being"
+                "update": "unrequired"
             });
         }
 
