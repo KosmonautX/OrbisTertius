@@ -42,6 +42,31 @@ router.get(`/query`, async function (req, res, next) {
 });
 
 
+router.get('/lankaonfyr' , async (req,res, next) => {
+    // integrate handshake (AES128 ECDH-ES)
+    // device id check and integration for exists
+    try{
+        secret = process.env.SECRET_TUNNEL
+        let payload = {};
+        payload.user_id = "Haunman";
+        payload.role = "boni";
+        const iss = 'Princeton';
+        const sub = 'ScratchBac';
+        const exp = '20min'
+        const signOptions = {
+            issuer: iss,
+            subject: sub,
+            expiresIn: exp,
+            algorithm: 'HS256',
+        };
+        const token = jwt.sign(payload, secret, signOptions);
+        res.send({payload: token});
+    }catch(err){
+        if (err.message == "Unauthorised Access") err.status = 401;
+        next(err);
+    }
+});
+
 /**
  * FYR TOKEN CUSTOM GEN
  */

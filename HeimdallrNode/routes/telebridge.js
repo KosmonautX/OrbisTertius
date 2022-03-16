@@ -31,41 +31,42 @@ router.post(`/post_orb`, async function (req, res, next) {
 
 async function gen_orb(body){
     let promises = new Map();
-        body.expiry_dt = slider_time(body.expires_in);
-        body.created_dt = moment().unix();
-        Object.entries(body.geolocation).slice(0,1).forEach(([geoName, address]) =>{
-            if(address.geolock){
-                body.geolocation.geolock = true
-            }
-            if (address.postal){ // only postal support for tele no territory check
-                body.geolocation.hash = geohash.postal_to_geo(address.postal,address.target)
-                body.geolocation.radius = address.target
-            }
-            if (address.latlon){ // only postal support for tele no territory check
-                body.geolocation.hash = geohash.latlon_to_geo(address.latlon ,address.target)
-                body.geolocation.radius = address.target
-            }
-        })
-        //body.geolocation.radii = territory_markers.filter(function(x){ return x>=req.geolocation.radius})
-        // when listener frequencies become adaptable not now
-        if(body.geolocation.radius === territory_markers[0]) body.geolocation.hashes = geohash.neighbour(body.geolocation.hash,body.geolocation.radius)
-        else body.geolocation.hashes = [body.geolocation.hash]
-        //initators data from telegram
+    body.expiry_dt = slider_time(body.expires_in);
+    body.created_dt = moment().unix();
+    Object.entries(body.geolocation).slice(0,1).forEach(([geoName, address]) =>{
+        if(address.geolock){
+            body.geolocation.geolock = true
+        }
+        if (address.postal){ // only postal support for tele no territory check
+            body.geolocation.hash = geohash.postal_to_geo(address.postal,address.target)
+            body.geolocation.radius = address.target
+        }
+        if (address.latlon){ // only postal support for tele no territory check
+            body.geolocation.hash = geohash.latlon_to_geo(address.latlon ,address.target)
+            body.geolocation.radius = address.target
+        }
+    })
+    //body.geolocation.radii = territory_markers.filter(function(x){ return x>=req.geolocation.radius})
+    // when listener frequencies become adaptable not now
+    if(body.geolocation.radius === territory_markers[0]) body.geolocation.hashes = geohash.neighbour(body.geolocation.hash,body.geolocation.radius)
+    else body.geolocation.hashes = [body.geolocation.hash]
+    //initators data from telegram
 
-        body.init = {}
-        body.init.username = body.username
-        body.init.media = false;
-        orb_uuid = await dynaOrb.create(body,dynaOrb.gen(body)).catch(err => {
-            err.status = 400;
-            next(err);
-        });
-        promises.orb_uuid =  body.orb_uuid;
-        promises.expiry = body.expiry_dt;
-        promises.creationtime = body.created_dt
-        if (body.media){
-            promises.lossy = await serve3.preSign('putObject','ORB',body.orb_uuid,'150x150')
-            promises.lossless = await serve3.preSign('putObject','ORB',body.orb_uuid,'1920x1080');
-        };
+    body.init = {}
+    body.init.username = body.username
+    body.init.media = false;
+    orb_uuid = await dynaOrb.create(body,dynaOrb.gen(body)).catch(err => {
+        err.status = 400;
+        next(err);
+    });
+    promises.title = body.title
+    promises.orb_uuid =  body.orb_uuid;
+    promises.expiry = body.expiry_dt;
+    promises.creationtime = body.created_dt
+    if (body.media){
+        promises.lossy = await serve3.preSign('putObject','ORB',body.orb_uuid,'150x150')
+        promises.lossless = await serve3.preSign('putObject','ORB',body.orb_uuid,'1920x1080');
+    };
     return promises
 }
 
@@ -157,7 +158,7 @@ router.put(`/destroy_orb`, async function (req, res, next) {
 function slider_time(dt){
     let expiry_dt = moment().add(1, 'days').unix(); // default expire in 1 day
     if (dt) {
-        expiry_dt = moment().add(parseInt(dt), 'days').unix();
+        expiry_dt = moment().add(parseInt(dt), 'seconds').unix();
     }
     return expiry_dt;
 }

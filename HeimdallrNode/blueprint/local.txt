@@ -33,7 +33,7 @@ Content-Type: application/json
 User-Agent: Emacs27
 ###
 :boni-headers = <<
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiUjNWc2pxOUNBUmZwcndPSnBzNDRrYlZjekZRMiIsInJvbGUiOiJib25pIiwiaWF0IjoxNjQ3MDcwNTc0LCJleHAiOjE2NDcwNzE3NzQsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.u9zhsmd5tQ4KvEfeFTh90OLtNuiurAxPCq4o1-yyZjI
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiUjNWc2pxOUNBUmZwcndPSnBzNDRrYlZjekZRMiIsInJvbGUiOiJib25pIiwiaWF0IjoxNjQ3MDc0MzQ4LCJleHAiOjE2NDcwNzU1NDgsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.dKBSHVsMdEiACtkb4WUk8TCRvJC-Ilux8B_T4-4-Sw8
 Content-Type: application/json
 User-Agent: Emacs27
 ###
@@ -59,15 +59,9 @@ POST :ipAddress/api/devland/fyr/serveronfyr
     "device_id": ":id"
 }
 #
-#
-POST :ipAddress/api/devland/fyr/serveronfyr
+## BONI TOKEN
+GET :ipAddress/api/dev/lankaonfyr
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
-:googleAuth
-
-{
-    "user_id": ":jerry",
-    "device_id": ":id"
-}
 #
 #
 ##
@@ -87,7 +81,7 @@ POST :ipAddress/api/nomadology/post_orb
     "lat":1.3568,
     "lon":103.7487
     },"target":10,"geolock": true}},
-    "orb_nature": 01,
+    "orb_nature": 1,
     "expires_in": 10000,
     "beacon": "samplebeacon"
 }
@@ -105,7 +99,7 @@ POST :ipAddress/api/nomadology/freshorbstream
     "geolocation": {"live": {"latlon":{
     "lat":1.3568,
     "lon":103.7487
-    },"target":9}},
+    },"target":10}},
     "upstream": 1640259800
 }
 #
@@ -165,79 +159,73 @@ PUT :ipAddress/api/orb/update_username
 ### POST ORB BONI
 #
 POST :ipAddress/api/tele/post_orb
-:boni-headers
+:my-headers
 -> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (json-read))))
 [{
 "user_id": ":jerry",
-"username": "JerryNeo",
-"title": "Bukit Panjang Hawker Center",
-"info": "blessed is he",
-"where": "my house",
-"when": "now",
-"tip": "foc",
+"username": "Scratchbac Admin",
+"title": "Clue 1 Nearby",
 "media": false,
 "geolocation": {"live": {"latlon":{
-    "lat":1.37759845958913,
-    "lon":103.7724164369793
-    },"target":10,"geolock": true}},
-"orb_nature": 10,
-"expires_in": 100000
+    "lat": 1.3343504,
+    "lon": 103.7214554
+    },"target":9,"geolock": true}},
+"orb_nature": "10",
+"expires_in": 10
 },{
 "user_id": ":jerry",
-"username": "JerryNeo",
-"title": "Bukit Panjang Primary School",
+"username": "Scratchbac Admin",
+"title": "Clue 2 Nearby",
+"geolocation": {"live": {"latlon":{
+    "lat": 1.3313228,
+    "lon": 103.7257021
+    },"target":9,"geolock": true}},
+"orb_nature": "10",
+"expires_in": 10
+},{
+"user_id": ":jerry",
+"username": "Scratchbac Admin",
+"title": "Clue 3 Nearby",
+"geolocation": {"live": {"latlon":{
+    "lat": 1.332515,
+    "lon": 103.727473
+    },"target":9 ,"geolock": true}},
+"orb_nature": "10",
+"expires_in": 10
+},{
+"user_id": ":jerry",
+"username": "Scratchbac Admin",
+"title": "Clue 4 Nearby",
+"geolocation": {"live": {"latlon":{
+    "lat":1.3379165148662167,
+    "lon":103.72696411887863
+    },"target":9 ,"geolock": true}},
+"orb_nature": "10",
+"expires_in": 10
+},{
+"user_id": ":jerry",
+"username": "Scratchbac Admin",
+"title": "Final Post Nearby",
+"geolocation": {"live": {"latlon":{
+    "lat":1.339222094567798,
+    "lon":103.70867453637975
+    },"target":9,"geolock": true}},
+"orb_nature": "10",
+"expires_in": 10
+},{
+"user_id": ":jerry",
+"username": "Scratchbac Admin",
+"title": "Bonus Post Nearby",
 "info": "blessed is he",
 "where": "my house",
 "when": "now",
 "tip": "foc",
 "geolocation": {"live": {"latlon":{
-    "lat":1.372979638717905,
-    "lon":103.76910539472084
-    },"target":10,"geolock": true}},
-"orb_nature": 10,
-"expires_in": 100000
-},{
-"user_id": ":jerry",
-"username": "JerryNeo",
-"title": "Cashew MRT",
-"info": "blessed is he",
-"where": "my house",
-"when": "now",
-"tip": "foc",
-"geolocation": {"live": {"latlon":{
-    "lat":1.3699304864823747,
-    "lon":103.76458364395747
-    },"target":10,"geolock": true}},
-"orb_nature": 10,
-"expires_in": 10000
-},{
-"user_id": ":jerry",
-"username": "JerryNeo",
-"title": "10-Mile Junction",
-"info": "blessed is he",
-"where": "my house",
-"when": "now",
-"tip": "foc",
-"geolocation": {"live": {"latlon":{
-    "lat":1.3803187746034085,
-    "lon":103.76026477821662
-    },"target":10,"geolock": true}},
-"orb_nature": 10,
-"expires_in": 100000
-},{
-"user_id": ":jerry",
-"username": "JerryNeo",
-"title": "Pang Sua Pond",
-"info": "blessed is he",
-"where": "my house",
-"when": "now",
-"tip": "foc",
-"geolocation": {"live": {"latlon":{
-    "lat":1.3814445143565137,
-    "lon":103.76591120312035
-    },"target":10,"geolock": true}},
-"orb_nature": 10,
-"expires_in": 10000
+    "lat":1.354520,
+    "lon":103.692239
+    },"target":9 ,"geolock": true}},
+"orb_nature": "10",
+"expires_in": 10
 }]
 #
 ## LOCAL offline auth_server when no internet add SK #pte and identifier keys
