@@ -89,7 +89,7 @@ router.post(`/post_orb`, async function (req, res, next) {
         if(body.geolocation.radius === territory_markers[0]) body.geolocation.hashes = geoneighbour(body.geolocation.hash,body.geolocation.radius)
         else body.geolocation.hashes = [body.geolocation.hash]
 
-        if(req.geolocation.geolock === true) body.geolocation.geofence = geofencer(req.geolocation.hash,req.geolocation.radius)
+        //front end library and change to boolean if(req.geolocation.geolock === true) body.geolocation.geofence = geofencer(req.geolocation.hash,req.geolocation.radius)
         //initators public data
         let pubData = await userQuery.queryPUB(req.body.user_id).catch(err => {
             err.status = 400;

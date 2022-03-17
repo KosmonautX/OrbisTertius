@@ -10,7 +10,8 @@ module.exports = (app, verifyToken,fyrwalk) => {
     //app.use(`/api/orbland/state`,verifyToken, require(`../routes/orb_state`))
     // shift security into middleware verifyToken too coarse
     app.use('/api/nomadology',verifyToken,  require(`../routes/orb_nomad`));
-	app.use(`/api/query`,verifyToken, require(`../routes/orb_query`));
+	app.use(`/api/query`, require(`../routes/orb_query`)); // public (guest) till login fiasco ends
+    app.use(`/api/version`, require(`../routes/version`));
 	app.use(`/api/comment`, verifyToken, require(`../routes/comment`));
   	app.use(`/api/query/user`, verifyToken, require(`../routes/personal_profile`));
 };

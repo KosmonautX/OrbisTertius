@@ -1,5 +1,5 @@
 import {Direction, LatLonBox, LatLonPoint} from "../types/geohash"
-
+import {h3ToParent} from "h3-js"
 /**
  * * typed geohash library
  * Copyright (c) 2011, Sun Ning. conceived from ngeohash package
@@ -157,6 +157,19 @@ var transcode_int = function(hash_int: number, input_bitDepth: number, target_bi
 }
 
 /**
+ * Transcode HexHash
+ *
+ * Transcode a hash number into another hash number makes sense to be a coarser one.
+ * @param {String} geohashing
+ * @param {Number} target_bitDepth
+ * @returns {Number}
+ */
+
+var transcode_hexhash = function(geohashing: string, target_bitDepth: number): string {
+  return h3ToParent(geohashing, target_bitDepth)
+}
+
+/**
  * Neighbor Integer
  *
  * Find neighbor of a geohash integer in certain direction. Direction is a two-element array, i.e. [1,0] means north, [-1,-1] means southwest.
@@ -278,4 +291,4 @@ function ensure_valid_lat(lat: number) {
   return lat;
 };
 
-export { encode_int, decode_int, transcode_int, decode_bbox_int, neighbor_int, neighbors_int, bboxes_int }
+export { transcode_hexhash, encode_int, decode_int, transcode_int, decode_bbox_int, neighbor_int, neighbors_int, bboxes_int }
