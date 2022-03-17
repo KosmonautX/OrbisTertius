@@ -3,8 +3,8 @@
 # ScratchbacV4.7 (local env)
 #
 :localipAddress = http://localhost:5000
-:ipAddress = http://localhost:5000
-#:ipAddress = https://norbandy.scratchbac.org
+#:ipAddress = http://localhost:5000
+:ipAddress = https://norbandy.scratchbac.org
 :id = 01234567-89ABCDEF-01234567-89ABCDEF
 :googleAuth = <<
 Authorization: :fyrtoken
@@ -14,9 +14,9 @@ User-Agent: Emacs27
 :evange = 188681901
 :bala = 98667304
 :web = https://norbandy.scratchbac.org
-#:ryan = SxD23ctxrIUDPi1lXkAOq5BKm1l1
+:ryan = scratchbacAdmin
 :jerry = w8IaWCHPjfRMhCeTXAnH7OCvQOo2
-:ryan = R3Vsjq9CARfprwOJps44kbVczFQ2
+#:ryan = R3Vsjq9CARfprwOJps44kbVczFQ2
 :prince = MQTT323
 :admin = "90565482"
 :applefcm = fhjXNl9vSwGpu99ABSPe9k:APA91bEC6e6zxBE10wVSiUrtFCsjsb-RrQ2lRCZFmY31afbRrP8S3g7q5klX0hE-v0sIu_hks6lNoOUrD1dN6cYX4ZIo-2BQ4gwrN0lD79nX-ZQknpn5bvp0tGc_Er8VqZ7X1hLDnIkB
@@ -153,7 +153,7 @@ PUT :ipAddress/api/orb/update_username
 :my-headers
 {
     "user_id": ":ryan",
-    "username": "yipyip"
+    "username": "ScratchbacAdmin"
 }
 
 ### POST ORB BONI
@@ -429,7 +429,8 @@ PUT :ipAddress/api/orb/update_user
 {
     "user_id": ":ryan",
     "bio": "hello there",
-    "media": false
+    "media": false,
+    "birthday": "1998-03-18 00:00:00.000Z"
 }
 
 

@@ -6,7 +6,7 @@ const router = express.Router();
 router.get(`/:version`, async function (req, res, next) {
     try{
         const orbs = req.params.version
-        const minimum_version = "1.0.4"
+        const minimum_version = "1.0.7"
         if (req.params.version.localeCompare(minimum_version, undefined, { numeric: true, sensitivity: 'base' }) == -1) {
             res.status(409).send({
                 "update": "required",
