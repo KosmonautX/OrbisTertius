@@ -237,11 +237,14 @@ const dynaOrb = {
         return data;
     },
     async retrieve(body) {
+        return fish(body.orb_uuid)
+    },
+    async fish(orb) {
         const params = {
-            TableName: ddb_config.tableNames.orb_table,        
+            TableName: ddb_config.tableNames.orb_table,
             Key: {
-                PK: "ORB#" + body.orb_uuid,
-                SK: "ORB#" + body.orb_uuid
+                PK: "ORB#" + orb,
+                SK: "ORB#" + orb
             }
         };
         const data = await docClient.get(params).promise();
@@ -256,9 +259,19 @@ const dynaOrb = {
             if(data.Item.payload){
                 dao.payload = data.Item.payload;
                 dao.user_id = data.Item.payload.user_id
-                dao.created_dt  = data.Item.payload.creationtime}
-        } 
+                dao.created_dt  = data.Item.payload.creationtime
+            }
+        }
         return dao;
+    },
+    async fisher(orb) {
+        let params = {
+            TableName: ddb_config.tableNames.orb_table,
+            Key: {
+                PK: "ORB#" + orb,
+                SK: "ORB#" + orb
+            }}
+        return docClient.get(params).promise()
     },
     async gen(body){
         try{
@@ -413,6 +426,58 @@ const dynaOrb = {
         return batchWriteProcessor(params);
 
     },
+
+    async nirvana(orbs) { // return true if success
+        return Promise.all(orbs.map(orb_uuid => dynaOrb.fisher(orb_uuid))).then(response => {
+            const params = { RequestItems: {[ddb_config.tableNames.orb_table]: []}};
+            response.map(async(data) => {
+                if(data.Item){
+                    orb_uuid = data.Item.PK.slice(4);
+                    creationtime = data.Item.payload.creationtime
+                    geolocation = data.Item.geohash;
+                    user_id = data.Item.payload.user_id
+                    params.RequestItems[ddb_config.tableNames.orb_table].push(
+                        {
+                            DeleteRequest: {
+                                Key: {
+                                    PK: "ORB#" + orb_uuid,
+                                    SK: "USR#" + user_id,
+                                }}},
+                        {
+                            DeleteRequest: {
+                                Key: {
+                                    PK: "ORB#" + orb_uuid,
+                                    SK: "ORB#" + orb_uuid,
+                                }}}
+                    )
+                    for(hash of geolocation.hashes){
+                        params.RequestItems[ddb_config.tableNames.orb_table].push({
+                            DeleteRequest: {
+                                Key: {
+                                    PK: "LOC#" + hash +"#" + geolocation.radius,
+                                    SK: creationtime + "#ORB#" + orb_uuid
+                                }}})
+                    }
+                }
+            })
+            return batchWriteProcessor(params);
+        })
+
+    },
+    async anon(user_id, orbs) { // return true if success
+        const params = { RequestItems: {[ddb_config.tableNames.orb_table]: []}};
+        for(orb of orbs){
+            params.RequestItems[ddb_config.tableNames.orb_table].push({
+                DeleteRequest: {
+                    Key: {
+                        PK: "ORB#" + orb,
+                        SK: "USR#" + user_id,
+                    }}})
+        }
+
+        return batchWriteProcessor(params);
+
+    }
 };
 
 

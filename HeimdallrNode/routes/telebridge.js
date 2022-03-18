@@ -155,6 +155,51 @@ router.put(`/destroy_orb`, async function (req, res, next) {
         next(err);
     }});
 
+
+router.put(`/anon_orb`, async function (req, res, next) {
+    try{
+        let body = { ...req.body};
+            var deactivation = await dynaOrb.anon(body.user_id, body.orbs).catch(err => {
+                err.status = 500;
+                next(err);
+            });
+            if (deactivation) {
+                res.status(201).json({
+                    "Orb Anon'd": body.orbs
+                });
+            }
+            else{
+
+                res.status(400).json({
+                    "Orb": "Anonymity Failed"
+                })
+            }
+    }
+    catch(err) {
+        next(err);
+    }});
+
+router.put(`/nirvana_orb`, async function (req, res, next) {
+    try{
+        let body = { ...req.body};
+        nirvana = await dynaOrb.nirvana(body.orbs).catch(err => {
+            err.status = 500;
+            next(err);
+        });
+        if (nirvana) {
+            res.status(201).json({
+                "Orb achieved Nirvana": body.orbs
+            });
+        }else{
+            res.status(400).json({
+                "Orb": "Nirvana not found"
+            })
+        }
+
+    }catch(err) {
+        next(err);
+    }});
+
 function slider_time(dt){
     let expiry_dt = moment().add(1, 'days').unix(); // default expire in 1 day
     if (dt) {

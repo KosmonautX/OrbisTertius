@@ -3,8 +3,9 @@
 # ScratchbacV4.7 (local env)
 #
 :localipAddress = http://localhost:5000
-#:ipAddress = http://localhost:5000
-:ipAddress = https://norbandy.scratchbac.org
+:ipAddress = http://localhost:5000
+#:ipAddress = https://norbandy.scratchbac.org
+#:ipAddress = https://borbarossa.scratchbac.org
 :id = 01234567-89ABCDEF-01234567-89ABCDEF
 :googleAuth = <<
 Authorization: :fyrtoken
@@ -111,6 +112,18 @@ PUT :ipAddress/api/orb/tokenonfyr
     "user_id": ":ryan",
     "token": ":applefcm"
 }
+
+#
+## USER BIRTHDAY
+PUT :ipAddress/api/orb/update_user
+:my-headers
+{
+    "user_id": ":ryan",
+    "bio": "hello there",
+    "media": false,
+    "birthday": "2022-03-18 00:00:00.000Z"
+}
+
 #
 ## 2. Update user home&office POSTAL // lambda authoriser
 PUT :ipAddress/api/orb/user_location
@@ -153,7 +166,7 @@ PUT :ipAddress/api/orb/update_username
 :my-headers
 {
     "user_id": ":ryan",
-    "username": "ScratchbacAdmin"
+    "username": "ScratchbacGM"
 }
 
 ### POST ORB BONI
@@ -358,7 +371,7 @@ GET :ipAddress/api/query/orbs_in_loc_fresh_page?postal_code=457399&page=0
 ## 3. Get user's ORB profile
 # fulfilled: acceptor fulfills another person's orb </br>
 # completed: initiator completes his own orb
-GET :ipAddress/api/query/user_profile?user_id=:ryan&keyword=accept
+GET :ipAddress/api/query/user_profile?user_id=:ryan&keyword=init&starttime=1647609122&startkey=63a55760-6872-4bc9-a46d-64d42ded69ec
 :my-headers
 ## 4. Retrieve user
 GET :ipAddress/api/query/get_users/:ryan
@@ -414,25 +427,6 @@ PUT :ipAddress/api/orb/complete_orb
     "user_id": ":ryan",
     "orb_uuid": ":orb"
 }
-
-## 1. Update user
-# Things that can be editted: **have to send the original data of the params which will be remain unchanged, coz everything here will be overwritten. </br>
-# bio: string </br>
-# profile pic: string</br>
-# verified: 1 | 0</br>
-# country_code: int (without the +)</br>
-# hp_number: int</br>
-# gender: string</br>
-# birthday: string</br>
-PUT :ipAddress/api/orb/update_user
-:my-headers
-{
-    "user_id": ":ryan",
-    "bio": "hello there",
-    "media": false,
-    "birthday": "1998-03-18 00:00:00.000Z"
-}
-
 
 
 ## 3. Complete ORB (for initiator)
@@ -498,15 +492,22 @@ PUT :ipAddress/api/orb/destroy_orb
     "orb_uuid": ":orb"
 }
 
-## 7. Destroy ORB
-PUT :web/api/tele/destroy_orb
-:boni-headers
+## Anon da ORB
+PUT :ipAddress/api/tele/anon_orb
+:my-headers
 {
-    "user_id": "5qUkUlLSb9YatxmJa9ohG9BHrO62",
-    "orb_uuid": "2cca99d4-d3f8-49ad-a289-00b9bc702e45"
+    "user_id": ":ryan",
+    "orbs": [":orb"]
 }
-##
+
+## ORB achieves nirvana
+PUT :ipAddress/api/tele/nirvana_orb
+:my-headers
+{
+    "orbs": ["6b9075a0-0851-4206-b90b-9167e5386064", "bed723a0-1872-42b9-bfd6-43d6a813c99c"]
+}
 #
+##
 POST :web/api/tele/post_orb
 :my-headers
 -> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (json-read))))
