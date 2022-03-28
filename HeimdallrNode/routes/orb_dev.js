@@ -96,6 +96,47 @@ router.get(`/fyr`, async function (req, res, next) {
                  });
 });
 
+router.post(`/phoneonfyr`, async function (req, res, next){
+    phone = admin.auth()
+                 .updateUser(req.body.user_id, {
+                     providerToLink: {
+                         phoneNumber: req.body.phone,
+                         providerId: req.body.provider_id,
+                         email: req.body.email,
+                         uid: req.body.user_id
+                     },
+                 }).then(response => {
+                         res.status(201).json({
+                             "payload": req.body.phone
+                         })})
+                 .catch((error => {
+                     console.error(`${error}`);
+                     error = new Error(error.message);
+                    error.status = 500;
+                    next(error);
+                 }));
+
+});
+
+router.post(`/phoneonfyrs`, async function (req, res, next){
+    phone = admin.auth()
+                 .createUser(
+                     {
+                         uid: req.body.user_id,
+                         email: req.body.email,
+                         phoneNumber: req.body.phone,
+                     }).then(response => {
+                         res.status(201).json({
+                             "payload": req.body.phone
+                         })})
+                 .catch((error => {
+                     console.error(`${error}`);
+                     error = new Error(error.message);
+                     error.status = 500;
+                     next(error);
+                 }));
+
+});
 
 /**
  * API 1.2 UNRELEASED
