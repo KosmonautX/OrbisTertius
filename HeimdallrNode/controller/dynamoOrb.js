@@ -237,7 +237,7 @@ const dynaOrb = {
         return data;
     },
     async retrieve(body) {
-        return fish(body.orb_uuid)
+        return dynaOrb.fish(body.orb_uuid)
     },
     async fish(orb) {
         const params = {
