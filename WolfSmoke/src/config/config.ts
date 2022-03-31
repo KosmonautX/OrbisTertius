@@ -1,1 +1,1 @@
-export const territory_markers = [30, 31, 32]
+export const territory_markers = [8, 9, 10]

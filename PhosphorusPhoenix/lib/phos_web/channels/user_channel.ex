@@ -23,7 +23,6 @@ defmodule PhosWeb.UserChannel do
   @impl true
   def handle_in("shout", payload, socket) do
     payload = payload
-    #|> Map.put("name", socket.assigns.user_agent["username"])
     |> Map.put("source", socket.assigns.user_agent["user_id"])
     |> Map.put("source_archetype", "USR")
     case Phos.Echo.changeset(%Phos.Echo{}, payload) |> Phos.Repo.insert do
@@ -32,18 +31,6 @@ defmodule PhosWeb.UserChannel do
         |> Map.update!(:inserted_at, &(&1 |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix() |> to_string()))
         broadcast socket, "shout", echo #broadcast to both channels from and to, first the source
         PhosWeb.Endpoint.broadcast_from!(self(), "archetype:usr:" <> echo.destination, "shout", echo) #then  broadcast to destination as well
-        # try do
-        #   #Construct Notification for Destination
-	      #   case Message.push(Pigeon.FCM.Notification.new({:topic, "USR." <> echo.destination},
-        #             %{"title" => "Message from #{socket.assigns.user_agent["username"]}", "body" => echo.message},
-        #             echo)) do
-        #     %{response: :success } -> :ok
-        #     %{error: reason} -> IO.inspect(reason)
-        #   end
-        # rescue
-        #   e in RuntimeError -> IO.puts e
-        # end
-        #
         #fyring and forgetting
         Phos.Fyr.Task.start_link(Pigeon.FCM.Notification.new({:topic, "USR." <> echo.destination}, %{"title" => "Message from #{socket.assigns.user_agent["username"]}", "body" => echo.message},echo))
       {:error, changeset} ->

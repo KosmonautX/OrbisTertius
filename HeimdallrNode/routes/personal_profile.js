@@ -12,32 +12,6 @@ const serve3 = require('../controller/orbjectStore').serve3
 const geohash = require('../controller/geohash');
 const userQuery = require('../controller/dynamoUser').userQuery;
 
-/**
- * API 1 
- * Get specific user (all info) 
- */
- router.get(`/get_postal`, async function (req, res, next) {
-     let pteData = await userQuery.queryPTE(req.query, ['numeric','geohash']).catch(err => {
-        err.status = 400;
-        next(err);
-    });
-    let dao = {};
-    if (req.verification.user_id == req.query.user_id){
-        if (pteData.Item) {
-            dao.user_id = req.query.user_id;
-            dao.home = pteData.Item.numeric;
-            dao.office = pteData.Item.geohash;
-            res.json(dao);
-        }
-        else {
-            res.status(404).json("User not found");
-        }
-    }
-     else {
-         res.status(403).json("Begone robber of geographies");
-     }
-
-});
 
 router.get(`/get_media`, async function (req, res, next) {
     try{
@@ -51,7 +25,6 @@ router.get(`/get_media`, async function (req, res, next) {
             break;
         case "USR":
             getUrl = await serve3.preSign('getObject','USR',req.query.uuid, req.query.form);
-            debugger;
             if(req.query.uuid == req.verification.user_id)
             {res.status(201).json({"User's own": getUrl});}
             else{

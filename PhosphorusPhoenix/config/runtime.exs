@@ -22,13 +22,15 @@ unless Config.config_env() == :prod do
     key_octet: "BALA"
   ]
 
-end
+  # FCM
 
-# FCM
-config :phos, Phos.Fyr.Message,
+  config :phos, Phos.Fyr.Message,
   adapter: Pigeon.FCM,
   project_id: System.get_env("FYR_PROJ"),
-  service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"firebase-adminsdk-b1dh2@#{System.get_env("FYR_PROJ")}.iam.gserviceaccount.com\"\n}\n"
+  service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
+
+end
+
 
 if config_env() == :prod do
   database_url =
@@ -39,6 +41,12 @@ if config_env() == :prod do
       """
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6], else: []
+
+  # FCM Prod
+  config :phos, Phos.Fyr.Message,
+  adapter: Pigeon.FCM,
+  project_id: System.get_env("FYR_PROJ"),
+  service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
 
   config :phos, Phos.Repo,
     # ssl: true,

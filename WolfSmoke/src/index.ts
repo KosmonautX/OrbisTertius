@@ -81,7 +81,7 @@ async function main(stream: DynamoDBStreams, stream_arn:string) {
 async function loadShardState() {
 	try {
 		return JSON.parse(await fs.readFile(FILE, 'utf8'))
-	} catch (e) {
+	} catch (e: any) {
 		if (e.code === 'ENOENT') return {}
 		throw e
 	}
@@ -95,7 +95,7 @@ async function loadShardState() {
 const adminConfig: ServiceAccount = {
   "projectId": process.env.FYR_PROJ,
   "privateKey": process.env.FYR_KEY!.replace(/\\n/g, '\n'),
-  "clientEmail": "firebase-adminsdk-b1dh2@"+process.env.FYR_PROJ+".iam.gserviceaccount.com",
+  "clientEmail": process.env.FYR_EMAIL,
 }
 fyr.initializeApp({
   credential: fyr.credential.cert(adminConfig),
