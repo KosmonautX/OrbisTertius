@@ -19,7 +19,7 @@ User-Agent: Emacs27
 :jerry = w8IaWCHPjfRMhCeTXAnH7OCvQOo2
 #:ryan = R3Vsjq9CARfprwOJps44kbVczFQ2
 :prince = MQTT323
-:admin = "90565482"
+:admin = DAAohgsLMpQPmsbpbvgQ5PEPuy22
 :applefcm = fhjXNl9vSwGpu99ABSPe9k:APA91bEC6e6zxBE10wVSiUrtFCsjsb-RrQ2lRCZFmY31afbRrP8S3g7q5klX0hE-v0sIu_hks6lNoOUrD1dN6cYX4ZIo-2BQ4gwrN0lD79nX-ZQknpn5bvp0tGc_Er8VqZ7X1hLDnIkB
 :printonemail = "niceprinceton@gmail.com"
 :ryanemail = luckuveryx@gmail.com
@@ -58,6 +58,18 @@ POST :ipAddress/api/devland/fyr/serveronfyr
 {
     "user_id": ":ryan",
     "device_id": ":id"
+}
+#
+#
+##
+#
+POST :ipAddress/api/dev/phoneonfyrs
+:googleAuth
+
+{
+    "user_id": ":admin",
+    "provider_id": "google.com",
+    "phone": "+6591111111"
 }
 #
 ## BONI TOKEN
