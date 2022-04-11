@@ -37,12 +37,13 @@ interface TerritoryPub{
 async function subscribe(token:string, topic:string, client:any): Promise<void>{
     client.subscribeToTopic(token, topic)
         .catch((error:any)=>{
-            console.log("Error sending Message" , error)
+            console.log("Error sending Subscribing to Topic")
+            console.dir(error, { depth: null })
         });
 }
 
 async function unsubscribe(token:string, topic:string, client:any): Promise<void>{
-    client.unsubscribeFromTopic(token, topic).then((response:any) => {console.log("Message Sent", response)})
+    client.unsubscribeFromTopic(token, topic)
         .catch((error:any)=>{
             console.log("Error sending Message" , error)
         });
@@ -50,9 +51,10 @@ async function unsubscribe(token:string, topic:string, client:any): Promise<void
 
 async function sendsubscribers(message: Message ,topic: string, client: any): Promise<void>{
     message["topic"]= topic
-    client.send(message)
+    client.send(message).then((response: any) => {console.log("Message Sent", response)})
         .catch((error: any) => {
-            console.log('Error sending message:', error);
+            console.log(`Error sending to Topic: ${topic}`)
+            console.dir(error, { depth: null });
         });
 
 }
@@ -61,7 +63,7 @@ async function sendone(message: Message ,token: string, client: any): Promise<vo
     message["token"]= token
     client.send(message)
         .catch((error: any) => {
-            console.log('Error sending message:', error);
+            console.dir(error, { depth: null });
         });
 
 }
@@ -82,10 +84,7 @@ async function messenger(newRecord: Mutation, Element: KeyElement, client:any): 
         var count = 0, hash_len = newRecord.geohash.hashes.length
         while( count < hash_len) {
             let loc_topic = "LOC."+ newRecord.geohash.hashes[count] + "." + newRecord.geohash.radius
-            sendsubscribers(message, loc_topic, client).then((response) => {console.log("Message Sent", response)})
-                .catch((error)=>{
-                    console.log("Error sending Message" , error)
-                })
+            sendsubscribers(message, loc_topic, client)
             count ++
         }}
 
