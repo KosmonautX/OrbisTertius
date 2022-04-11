@@ -73,7 +73,7 @@ POST :ipAddress/api/dev/phoneonfyrs
 }
 #
 ## BONI TOKEN
-GET :ipAddress/api/dev/lankaonfyr
+GET :localipAddress/api/dev/lankaonfyr
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 #
 #
@@ -93,7 +93,7 @@ POST :ipAddress/api/nomadology/post_orb
     "geolocation": {"live": {"latlon":{
     "lat":1.3568,
     "lon":103.7487
-    },"target":10,"geolock": true}},
+    },"target":8,"geolock": true}},
     "orb_nature": 1,
     "expires_in": 10000,
     "beacon": "samplebeacon"
@@ -505,11 +505,11 @@ PUT :ipAddress/api/orb/destroy_orb
 }
 
 ## Anon da ORB
-PUT :ipAddress/api/tele/anon_orb
+PUT :ipAddress/api/tele/destroy_orb
 :my-headers
 {
     "user_id": ":ryan",
-    "orbs": [":orb"]
+    "orb_uuid": ":orb"
 }
 
 ## ORB achieves nirvana

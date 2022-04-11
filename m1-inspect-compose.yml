@@ -36,15 +36,24 @@ services:
       - TZ=Asia/Singapore
 
   wolfsmoke:
-    build: ./WolfSmoke
+    build:
+      context: ./WolfSmoke
+      dockerfile: Dockerfile
+      target: builder
     volumes:
       - ./WolfSmoke/src:/home/wolf/src/
+      - ./WolfSmoke/nodemon.json:/home/wolf/nodemon.json
       - ./WolfSmoke/shard:/home/wolf/shard:rw
+    ports:
+      - "9222:9222"
     depends_on:
       dynamodb:
         condition: service_healthy
-    restart: always
     links:
       - "dynamodb:database"
+    command:
+      - npx
+      - nodemon
+      - "src/index.ts"
     env_file:
       - .env
