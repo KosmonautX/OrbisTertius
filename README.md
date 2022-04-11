@@ -1,36 +1,59 @@
 # OrbisTertius
-Dockerised Development &amp; Deployment Environment
 
-## Init
+> “Nothing is built on stone; All is built on sand, but we must build as if the sand were stone.”
 
-- run docker service
-- `docker-compose up`
+![System Architecture](./overview.png)
+## Initiation of Core API Services for Development
+Local DynamoDB Service @ localhost:8000
+HeimdallrNode API Service @ localhost:5000
+Node Debug Inspection Port @ 9229 
+WolfSmoke Notification Worker Service 
+Node Debug Inspection Port @ 9222
 
+### On aarch64 (x86, x64)
 
-## Inspecting Node
+``` bash
+docker-compose  -f local-compose.yml up 
+```
+`
+With Inspection
 
-- run docker service
--docker-compose  -f inspect-compose.yml OR docker-compose run -p 5000:5000 -p 9229:9229 heimdallr /bin/sh
-- tag preferred breakpoint with debugger;
-- node --inspect-brk=0.0.0.0 .
-  - c till breakpoint if comfortable with repl and CLI debug tools
-  - OR under chrome://inspect/#devices DEVtools for Node
-  
-
-3 services 
-
-DynamoDB Layer @ localhost:8000/shell
-
-
-Node IO Layer @ localhost:5000
-
-
-Node Debug @ localhost:9229
+``` bash
+docker-compose -f inspect-compose.yml up 
+```
+`
 
 
-Flask Precompute Layer [^1] @ localhost:3000
+### On ARM Devices ( M1/ RPI )
 
+``` bash
+docker-compose  -f m1-compose.yml up 
+```
+`
+With Inspection
 
+``` bash
+docker-compose -f m1-inspect-compose.yml up 
+```
+`
 
+## Initiation of  Phos Phoenix Service
 
-[^1]: Integrating...
+Start Postgres Services Locally
+PGAdmin @ localhost:5050
+``` bash
+docker-compose -f phos-compose.yml up 
+```
+`
+
+To start the Phos Service:
+
+    Enter the PhosphorousPhoenix directory
+    Install dependencies with mix deps.get
+    Create and migrate your database with mix ecto.setup
+    Migrate using mix ecto.migrate to update the repository that maps to Postgres data store
+    Start Phoenix endpoint with mix phx.server OR iex -S mix phx.server
+
+Testing:
+
+    mix test

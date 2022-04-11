@@ -73,7 +73,7 @@ POST :ipAddress/api/dev/phoneonfyrs
 }
 #
 ## BONI TOKEN
-GET :ipAddress/api/dev/lankaonfyr
+GET :localipAddress/api/dev/lankaonfyr
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 #
 #
@@ -505,11 +505,11 @@ PUT :ipAddress/api/orb/destroy_orb
 }
 
 ## Anon da ORB
-PUT :ipAddress/api/tele/anon_orb
+PUT :ipAddress/api/tele/destroy_orb
 :my-headers
 {
     "user_id": ":ryan",
-    "orbs": [":orb"]
+    "orb_uuid": ":orb"
 }
 
 ## ORB achieves nirvana

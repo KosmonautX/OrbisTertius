@@ -48,7 +48,7 @@ router.get('/lankaonfyr' , async (req,res, next) => {
     try{
         secret = process.env.SECRET_TUNNEL
         let payload = {};
-        payload.user_id = "Haunman";
+        payload.user_id = "Hanuman";
         payload.role = "boni";
         const iss = 'Princeton';
         const sub = 'ScratchBac';
