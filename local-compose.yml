@@ -45,14 +45,19 @@ services:
       - TZ=Asia/Singapore
 
   wolfsmoke:
-    build: ./WolfSmoke
+    build:
+      context: ./WolfSmoke
+      dockerfile: Dockerfile
+      target: builder
     volumes:
       - ./WolfSmoke/src:/home/wolf/src/
       - ./WolfSmoke/shard:/home/wolf/shard:rw
     depends_on:
       dynamodb:
         condition: service_healthy
-    restart: always
+    command:
+      - npm
+      - start
     links:
       - "dynamodb:database"
     env_file:

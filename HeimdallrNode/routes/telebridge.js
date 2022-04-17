@@ -210,7 +210,7 @@ function slider_time(dt){
 
 router.get(`/decode_geohash`, async function (req, res, next) {
     try{
-        let latlon = geohash.decode_hash(req.query.hash, req.query.radius);
+        let latlon = geohash.decode_hash(req.query.hash);
         res.send(latlon);
     }catch{
         res.status(400).send("geohash looks sus");
