@@ -101,7 +101,7 @@ POST :ipAddress/api/nomadology/post_orb
 #
 ##
 ### POST ORB
-GET :ipAddress/api/tele/decode_geohash?hash=3857146046453&radius=42
+GET :ipAddress/api/tele/decode_geohash?hash=385746046453ff
 :my-headers
 #
 ## FRESH ORB FETCH
@@ -609,7 +609,8 @@ POST :ipAddress/api/comment/delete
 GET :ipAddress/api/query/user/get_postal?user_id=:prince
 :my-headers
 ### Decode geohash
-GET :ipAddress/api/dev/decode_geohash?geohash=null
+GET :ipAddress/api/dev/decode_geohash?geohash=123213123&radius=8
+:my-headers
 ### Query via PK (DEV)
 GET :ipAddress/api/dev/query?pk=ORB%231
 ### Scan ALL (DEV)
