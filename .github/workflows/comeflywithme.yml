@@ -2,7 +2,7 @@ name: Phoenix in Flight
 
 on:
   pull_request:
-    branches: [ fly/live/kairos ]
+    branches: [ staging/echo ]
 
 jobs:
   test:

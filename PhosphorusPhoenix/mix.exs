@@ -51,7 +51,8 @@ defmodule Phos.MixProject do
       {:jason, "~> 1.2"},
       {:pigeon, "~> 2.0.0-rc.0"},
       {:plug_cowboy, "~> 2.5"},
-      {:joken, "~> 2.0-rc0"}
+      {:joken, "~> 2.0-rc0"},
+      {:libcluster, "~> 3.3"}
     ]
   end
 
