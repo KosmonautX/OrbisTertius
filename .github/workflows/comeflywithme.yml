@@ -61,5 +61,6 @@ jobs:
         env:
           FLY_PROJECT_PATH: PhosphorusPhoenix
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_APP: phos
         with:
           args: "deploy"
