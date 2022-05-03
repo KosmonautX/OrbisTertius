@@ -1,8 +1,8 @@
-name: Phoenix in Flight
+name: Prod in Flight
 
 on:
   pull_request:
-    branches: [ staging/echo ]
+    branches: [ production/phos ]
 
 jobs:
   test:
