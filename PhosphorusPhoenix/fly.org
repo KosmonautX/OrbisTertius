@@ -141,6 +141,7 @@ nmcli connection down bridge
 #+BEGIN_SRC shell
 fly ssh establish
 fly ssh issue --agent
+sed -i '6d' ~/.ssh/known_hosts
 ssh root@phos.internal
 #+END_SRC
 

@@ -3,9 +3,9 @@
 # ScratchbacV4.7 (local env)
 #
 :localipAddress = http://localhost:5000
-:ipAddress = http://localhost:5000
+#:ipAddress = http://localhost:5000
 #:ipAddress = https://norbandy.scratchbac.org
-#:ipAddress = https://borbarossa.scratchbac.org
+:ipAddress = https://borbarossa.scratchbac.org
 :id = 01234567-89ABCDEF-01234567-89ABCDEF
 :googleAuth = <<
 Authorization: :fyrtoken
@@ -15,7 +15,8 @@ User-Agent: Emacs27
 :evange = 188681901
 :bala = 98667304
 :web = https://norbandy.scratchbac.org
-:ryan = scratchbacAdmin
+#:ryan = scratchbacAdmin
+:ryan = DAAohgsLMpQPmsbpbvgQ5PEPuy22
 :jerry = w8IaWCHPjfRMhCeTXAnH7OCvQOo2
 #:ryan = R3Vsjq9CARfprwOJps44kbVczFQ2
 :prince = MQTT323
@@ -94,7 +95,7 @@ POST :ipAddress/api/nomadology/post_orb
     "lat":1.3568,
     "lon":103.7487
     },"target":8,"geolock": true}},
-    "orb_nature": 1,
+    "orb_nature": 10,
     "expires_in": 10000,
     "beacon": "samplebeacon"
 }
@@ -178,7 +179,7 @@ PUT :ipAddress/api/orb/update_username
 :my-headers
 {
     "user_id": ":ryan",
-    "username": "ScratchbacGM"
+    "username": "Administrator 👋"
 }
 
 ### POST ORB BONI

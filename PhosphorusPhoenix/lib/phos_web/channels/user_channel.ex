@@ -20,7 +20,7 @@ defmodule PhosWeb.UserChannel do
   end
 
   # It is also common to receive messages from the client and
-  # broadcast to everyone in the current topic (agent:lobby).
+  # broadcast to everyone in the current topic (archetype:usr).
   @impl true
   def handle_in("shout", payload, socket) do
     # add user to source information
