@@ -75,8 +75,10 @@ function geohash_to_hexhash(geohash, radius){
     mapping = {30 : 8 , 31: 9, 32: 10}
     return hexhash.geoToH3(geohash.decode_int(geohash, radius), mapping[radius])
 }
-function decode_hash(hash, bit){
-    return geohash.decode_int(hash, bit);
+function decode_hash(hash){
+    latlon = hexhash.h3ToGeo(hash)
+    return {lat: latlon[0],
+            lon: latlon[1]};
 }
 module.exports = {
     postal_to_geo: postal_to_geo,
