@@ -86,14 +86,14 @@ POST :ipAddress/api/nomadology/post_orb
     "user_id": ":ryan",
     "title": "finder of lost children",
     "info": "blessed is he",
-    "where": "my house",
+    "where": "my brothers keeper",
     "when": "now",
     "tip": "foc",
     "media": false,
     "geolocation": {"live": {"latlon":{
     "lat":1.3568,
     "lon":103.7487
-    },"target":8,"geolock": true}},
+    },"target":9,"geolock": true}},
     "orb_nature": 1,
     "expires_in": 10000,
     "beacon": "samplebeacon"

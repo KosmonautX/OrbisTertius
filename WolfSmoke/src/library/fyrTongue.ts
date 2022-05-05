@@ -35,7 +35,7 @@ interface TerritoryPub{
 //type Message =  Map<string, Map<string, string|number>|string>
 
 async function subscribe(token:string, topic:string, client:any): Promise<void>{
-    client.subscribeToTopic(token, topic)
+    client.subscribeToTopic(token, topic).then((response: any) => {console.log("Topic Subscribed", "Response", response, "Topic", topic)})
         .catch((error:any)=>{
             console.log("Error sending Subscribing to Topic")
             console.dir(error, { depth: null })
@@ -51,7 +51,7 @@ async function unsubscribe(token:string, topic:string, client:any): Promise<void
 
 async function sendsubscribers(message: Message ,topic: string, client: any): Promise<void>{
     message["topic"]= topic
-    client.send(message).then((response: any) => {console.log("Message Sent", response)})
+    client.send(message).then((response: any) => {console.log("Message Sent", "Response", response, "Topic", topic)})
         .catch((error: any) => {
             console.log(`Error sending to Topic: ${topic}`)
             console.dir(error, { depth: null });
