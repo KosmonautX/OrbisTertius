@@ -35,7 +35,9 @@ interface TerritoryPub{
 //type Message =  Map<string, Map<string, string|number>|string>
 
 async function subscribe(token:string, topic:string, client:any): Promise<void>{
-    client.subscribeToTopic(token, topic).then((response: any) => {console.log("Topic Subscribed", "Response", response, "Topic", topic)})
+    client.subscribeToTopic(token, topic).then((response: any) => {console.log("Topic Subscribed", "Topic", topic)
+                                                                   console.dir(response, { depth: null })
+                                                                  })
         .catch((error:any)=>{
             console.log("Error sending Subscribing to Topic")
             console.dir(error, { depth: null })
@@ -149,36 +151,12 @@ export async function triggerBeacon(newRecord: Mutation, client: any, oldRecord:
         // generalise into KeyElementRElations later
         if(newRecord.identifier){
             var Element:KeyElement
+            Element = KeyParser(newRecord.PK, newRecord.SK)
+            if (Element?.access==="pub"){
             if(oldRecord.identifier){
-                if(newRecord.identifier !== oldRecord.identifier){
-                    Element = KeyParser(newRecord.PK, newRecord.SK)
-                    switchtoken("USR", Element.id, client,  newRecord.identifier, oldRecord.identifier)
-                }}
-            else{
-                Element = KeyParser(newRecord.PK, newRecord.SK)
-                switchtoken("USR", Element.id, client,  newRecord.identifier, oldRecord.identifier)
-            }
-            if(newRecord.beacon && ((oldRecord.beacon == undefined || oldRecord.beacon.size < newRecord.beacon.size))){
-                function getLastValue(set: Set<string>): string{
-                    let value;
-                    for(value of set);
-                    if(value) return value;
-                    else return ""
-                }
-                let [orb_uuid , user_id, username] =  getLastValue(newRecord.beacon).split("#")
-
-                let message = {
-                    notification:  {
-                        "title": `${username} messaged`,
-                        "body": `${username}...`},
-                    data:{
-                        "archetype": "ORB",
-                        "id": orb_uuid,
-                        "state": "BECN",
-                        "messenger_id": user_id
-                    }}
-                sendone(message,newRecord.identifier,client)
-            }}
+                if(newRecord.identifier !== oldRecord.identifier) switchtoken("USR", Element.id, client,  newRecord.identifier, oldRecord.identifier)
+                else switchtoken("USR", Element.id, client,  newRecord.identifier, oldRecord.identifier)
+            }}}
     } catch (e) {
         console.log(e)
     }
@@ -233,7 +211,7 @@ export async function mutateTerritorySubscription(newRecord: Mutation, client: a
     try {
         if(newRecord.identifier){
             var Element = KeyParser(newRecord.PK, newRecord.SK);
-            if (Element?.access==="pte"){
+            if (Element?.access==="pub"){
                 if (oldRecord?.geohash){
                     if (newRecord.geohash!==oldRecord?.geohash){
                         await territory_subscriber(newRecord.geohash, newRecord.identifier, client, oldRecord.geohash)
