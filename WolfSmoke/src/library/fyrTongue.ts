@@ -35,8 +35,7 @@ interface TerritoryPub{
 //type Message =  Map<string, Map<string, string|number>|string>
 
 async function subscribe(token:string, topic:string, client:any): Promise<void>{
-    client.subscribeToTopic(token, topic).then((response: any) => {console.log("Topic Subscribed", "Topic", topic)
-                                                                   console.dir(response, { depth: null })
+    client.subscribeToTopic(token, topic).then((_response: any) => {console.log("Topic Subscribed", "Topic", topic)
                                                                   })
         .catch((error:any)=>{
             console.log("Error sending Subscribing to Topic")
@@ -146,16 +145,19 @@ export async function triggerNotif(newRecord: Mutation, client: any): Promise<vo
 }
 
 // beacon under rework to subscriber token centered system
-export async function triggerBeacon(newRecord: Mutation, client: any, oldRecord: Mutation): Promise<void>{
+export async function triggerBeacon(newRecord: Mutation, client: any, oldRecord?: Mutation): Promise<void>{
     try {
         // generalise into KeyElementRElations later
         if(newRecord.identifier){
             var Element:KeyElement
             Element = KeyParser(newRecord.PK, newRecord.SK)
             if (Element?.access==="pub"){
-            if(oldRecord.identifier){
-                if(newRecord.identifier !== oldRecord.identifier) switchtoken("USR", Element.id, client,  newRecord.identifier, oldRecord.identifier)
-            } else switchtoken("USR", Element.id, client,  newRecord.identifier)}}
+            if(oldRecord && oldRecord.identifier){
+                if(newRecord.identifier !== oldRecord.identifier){
+                    switchtoken("USR", Element.id, client,  newRecord.identifier, oldRecord.identifier)
+                    await mutateTerritorySubscription(newRecord,client)
+                }
+            } else switchtoken("USR", Element.id, client, newRecord.identifier)}}
     } catch (e) {
         console.log(e)
     }
