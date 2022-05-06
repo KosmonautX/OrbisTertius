@@ -109,7 +109,7 @@ async function switchtoken(archetype:string,topic : string | number, client: any
                 console.log('Error unsubscribing from topic:', error);
             });
         ;
-    }
+        }
     catch(e){
         console.log(e)
     }
@@ -155,8 +155,7 @@ export async function triggerBeacon(newRecord: Mutation, client: any, oldRecord:
             if (Element?.access==="pub"){
             if(oldRecord.identifier){
                 if(newRecord.identifier !== oldRecord.identifier) switchtoken("USR", Element.id, client,  newRecord.identifier, oldRecord.identifier)
-                else switchtoken("USR", Element.id, client,  newRecord.identifier, oldRecord.identifier)
-            }}}
+            } else switchtoken("USR", Element.id, client,  newRecord.identifier)}}
     } catch (e) {
         console.log(e)
     }
@@ -208,6 +207,7 @@ export async function territory_subscriber(neoTerritory: TerritoryPub, identifie
 }
 
 export async function mutateTerritorySubscription(newRecord: Mutation, client: any,  oldRecord?: Mutation): Promise<void>{
+    //'topicY' in topics && !('topicX' in topics) support conditions
     try {
         if(newRecord.identifier){
             var Element = KeyParser(newRecord.PK, newRecord.SK);
