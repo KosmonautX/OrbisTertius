@@ -1,5 +1,5 @@
 import {Mutation} from "../types/parsesTongue"
-const CHANNEL_ID = "-1001239569373"
+const CHANNEL_ID = "-1001794234218"
 import axios from 'axios';
 
 
