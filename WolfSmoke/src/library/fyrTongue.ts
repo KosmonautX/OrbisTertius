@@ -8,6 +8,7 @@ interface Message{
     data?:Object
     topic?: string
     token?: string
+    condition?: string
 }
 
 interface GeoHash{
@@ -60,6 +61,16 @@ async function sendsubscribers(message: Message ,topic: string, client: any): Pr
 
 }
 
+async function sendsubscribersnotme(message: Message ,topic: string, client: any, me: string): Promise<void>{
+    //'topicY' in topics && !('topicX' in topics) support conditions
+    message["condition"] = `'${topic}' in topics && !('${me}' in topics)`
+    client.send(message).then((response: any) => {console.log("Message Sent", "Response", response, "Topic", topic)})
+        .catch((error: any) => {
+            console.log(`Error sending to Topic: ${message["condition"]}`)
+            console.dir(error, { depth: null });
+        });
+}
+
 async function sendone(message: Message ,token: string, client: any): Promise<void>{
     message["token"]= token
     client.send(message)
@@ -82,10 +93,11 @@ async function messenger(newRecord: Mutation, Element: KeyElement, client:any): 
                 "state": "INIT",
                 "time": String(newRecord.time)
             }}
+        let initiator_topic = "USR." + newRecord.payload.user_id
         var count = 0, hash_len = newRecord.geohash.hashes.length
         while( count < hash_len) {
             let loc_topic = "LOC."+ newRecord.geohash.hashes[count] + "." + newRecord.geohash.radius
-            sendsubscribers(message, loc_topic, client)
+            sendsubscribersnotme(message, loc_topic, client, initiator_topic)
             count ++
         }}
 
@@ -209,7 +221,6 @@ export async function territory_subscriber(neoTerritory: TerritoryPub, identifie
 }
 
 export async function mutateTerritorySubscription(newRecord: Mutation, client: any,  oldRecord?: Mutation): Promise<void>{
-    //'topicY' in topics && !('topicX' in topics) support conditions
     try {
         if(newRecord.identifier){
             var Element = KeyParser(newRecord.PK, newRecord.SK);
@@ -234,6 +245,7 @@ export async function beckonComment(newRecord: Mutation, client: any): Promise<v
     try{
         if(newRecord.identifier){
             var Element = KeyParser(newRecord.PK, newRecord.SK)
+            let initiator_topic = "USR." + newRecord.inverse?.substring(4)
             switch(Element.archetype){
                 case 'COM':
                     switchsubscribe("COM",newRecord.identifier,client, Element.id)
@@ -247,7 +259,8 @@ export async function beckonComment(newRecord: Mutation, client: any): Promise<v
                             "orb_uuid": newRecord.payload.orb_uuid,
                             "time": String(newRecord.time)
                         }}
-                    sendsubscribers(orb_message, "ORB." + newRecord.payload.orb_uuid , client)
+                    sendsubscribersnotme(orb_message, "ORB." + newRecord.payload.orb_uuid , client,
+                                        initiator_topic)
                             .catch((error)=>{
                                 console.log("Error sending Message" , error)
                             })
@@ -266,7 +279,7 @@ export async function beckonComment(newRecord: Mutation, client: any): Promise<v
                             "orb_uuid": newRecord.payload.orb_uuid,
                             "time": String(newRecord.time)
                         }}
-                    sendsubscribers(com_message, "COM." +  Element.relation, client).catch((error)=>{
+                    sendsubscribersnotme(com_message, "COM." +  Element.relation, client, initiator_topic).catch((error)=>{
                         console.log("Error sending Message" , error)
                     })
                     // switchsubscribe("ORB",newRecord.identifier,client, newRecord.PK.slice(4) + "." + newRecord.inverse.slice(4,8))

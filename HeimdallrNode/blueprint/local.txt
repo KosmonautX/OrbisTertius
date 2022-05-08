@@ -127,7 +127,7 @@ PUT :ipAddress/api/orb/tokenonfyr
 
 #
 ## USER BIRTHDAY
-PUT :ipAddress/api/orb/update_user
+PUT :ipAddress/api/orb/updatestate_user
 :my-headers
 {
     "user_id": ":ryan",
@@ -142,7 +142,7 @@ PUT :ipAddress/api/orb/user_location
 :my-headers
 {
     "user_id": ":ryan",
-    "event": "genesis",
+    "event": "update",
     "live": {"latlon":{
     "lat":1.3568,
     "lon":103.7487
