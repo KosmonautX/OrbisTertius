@@ -189,66 +189,8 @@ POST :ipAddress/api/tele/post_orb
 [{
 "user_id": ":jerry",
 "username": "Scratchbac Admin",
-"title": "Clue 1 Nearby",
-"media": false,
-"geolocation": {"live": {"latlon":{
-    "lat": 1.3343504,
-    "lon": 103.7214554
-    },"target":9,"geolock": true}},
-"orb_nature": "10",
-"expires_in": 10
-},{
-"user_id": ":jerry",
-"username": "Scratchbac Admin",
-"title": "Clue 2 Nearby",
-"geolocation": {"live": {"latlon":{
-    "lat": 1.3313228,
-    "lon": 103.7257021
-    },"target":9,"geolock": true}},
-"orb_nature": "10",
-"expires_in": 10
-},{
-"user_id": ":jerry",
-"username": "Scratchbac Admin",
-"title": "Clue 3 Nearby",
-"geolocation": {"live": {"latlon":{
-    "lat": 1.332515,
-    "lon": 103.727473
-    },"target":9 ,"geolock": true}},
-"orb_nature": "10",
-"expires_in": 10
-},{
-"user_id": ":jerry",
-"username": "Scratchbac Admin",
-"title": "Clue 4 Nearby",
-"geolocation": {"live": {"latlon":{
-    "lat":1.3379165148662167,
-    "lon":103.72696411887863
-    },"target":9 ,"geolock": true}},
-"orb_nature": "10",
-"expires_in": 10
-},{
-"user_id": ":jerry",
-"username": "Scratchbac Admin",
 "title": "Final Post Nearby",
-"geolocation": {"live": {"latlon":{
-    "lat":1.339222094567798,
-    "lon":103.70867453637975
-    },"target":9,"geolock": true}},
-"orb_nature": "10",
-"expires_in": 10
-},{
-"user_id": ":jerry",
-"username": "Scratchbac Admin",
-"title": "Bonus Post Nearby",
-"info": "blessed is he",
-"where": "my house",
-"when": "now",
-"tip": "foc",
-"geolocation": {"live": {"latlon":{
-    "lat":1.354520,
-    "lon":103.692239
-    },"target":9 ,"geolock": true}},
+"geolocation": {"live": {"geohashes": ["896520ca08fffff", "886526aca3fffff", "886526ad95fffff", "886526aca5fffff"],"target":8,"geolock": true}},
 "orb_nature": "10",
 "expires_in": 10
 }]

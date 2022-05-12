@@ -45,11 +45,19 @@ async function gen_orb(body){
             body.geolocation.hash = geohash.latlon_to_geo(address.latlon ,address.target)
             body.geolocation.radius = address.target
         }
+        if (address.geohashes){
+            body.geolocation.hashes = address.geohashes
+            body.geolocation.radius = address.target
+            body.geolocation.hash = address.geohashes[0]
+        }
     })
     //body.geolocation.radii = territory_markers.filter(function(x){ return x>=req.geolocation.radius})
     // when listener frequencies become adaptable not now
-    if(body.geolocation.radius === territory_markers[0]) body.geolocation.hashes = geohash.neighbour(body.geolocation.hash,body.geolocation.radius)
-    else body.geolocation.hashes = [body.geolocation.hash]
+    if(!body.geolocation.hashes){
+        if(body.geolocation.radius === territory_markers[0]) body.geolocation.hashes = geohash.neighbour(body.geolocation.hash,body.geolocation.radius)
+    // posting without neighbours
+         else body.geolocation.hashes = [body.geolocation.hash]
+        }
     //initators data from telegram
 
     body.init = {}
