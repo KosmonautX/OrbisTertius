@@ -46,7 +46,7 @@ async function gen_orb(body){
             body.geolocation.radius = address.target
         }
         if (address.geohashes){
-            body.geolocation.hashes = address.geohashes
+            body.geolocation.hashes = []  // address.geohashes <-- empty because posting not handled by api server
             body.geolocation.radius = address.target
             body.geolocation.hash = address.geohashes[0]
         }
