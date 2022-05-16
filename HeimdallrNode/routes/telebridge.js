@@ -46,7 +46,7 @@ async function gen_orb(body){
             body.geolocation.radius = address.target
         }
         if (address.geohashes){
-            if(address.geohashes.populate) body.geolocation.hashes = []
+            if(address.populate) body.geolocation.hashes = []
             else body.geolocation.hashes= address.geohashes
             body.geolocation.radius = address.target
             body.geolocation.hash = address.geohashes[0]

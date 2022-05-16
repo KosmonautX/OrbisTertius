@@ -125,7 +125,14 @@ PUT :ipAddress/api/orb/tokenonfyr
     "token": ":applefcm"
 }
 
-#
+##
+## 2. UPDATE USERNAME
+PUT :ipAddress/api/orb/update_username
+:my-headers
+{
+    "user_id": ":ryan",
+    "username": "Administrator"
+}
 ## USER BIRTHDAY
 PUT :ipAddress/api/orb/update_user
 :my-headers
@@ -171,15 +178,6 @@ PUT :ipAddress/api/orbland/action/will
     "orb_uuid": ":orb",
     "action": "ACPT_PND"
 }
-##
-
-## 2. UPDATE USERNAME
-PUT :ipAddress/api/orb/update_username
-:my-headers
-{
-    "user_id": ":ryan",
-    "username": "Administrator"
-}
 
 ### POST ORB BONI
 #
@@ -190,7 +188,7 @@ POST :ipAddress/api/tele/post_orb
 "user_id": ":jerry",
 "username": "Scratchbac Admin",
 "title": "Final Post Nearby",
-"geolocation": {"live": {"geohashes": ["896520ca08fffff", "886526aca3fffff", "886526ad95fffff", "886526aca5fffff"],"target":8,"geolock": true}},
+"geolocation": {"live": {"populate": true, "geohashes": ["896520ca08fffff", "886526aca3fffff", "886526ad95fffff", "886526aca5fffff"],"target":8,"geolock": true}},
 "orb_nature": "10",
 "expires_in": 10
 }]
@@ -447,18 +445,18 @@ PUT :ipAddress/api/orb/destroy_orb
 }
 
 ## Anon da ORB
-PUT :ipAddress/api/tele/destroy_orb
+PUT :ipAddress/api/tele/anon_orb
 :my-headers
 {
-    "user_id": ":ryan",
-    "orb_uuid": ":orb"
+    "user_id": ":jerry",
+    "orbs": ["9f4c38c6-19ca-42e3-b15a-ddb5f861d41d"]
 }
 
-## ORB achieves nirvana
+## ORB achieves nirvana no remenants left on database
 PUT :ipAddress/api/tele/nirvana_orb
 :my-headers
 {
-    "orbs": ["6b9075a0-0851-4206-b90b-9167e5386064", "bed723a0-1872-42b9-bfd6-43d6a813c99c"]
+    "orbs": ["9f4c38c6-19ca-42e3-b15a-ddb5f861d41d"]
 }
 #
 ##
