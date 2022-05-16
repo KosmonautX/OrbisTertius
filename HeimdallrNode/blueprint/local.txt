@@ -3,8 +3,8 @@
 # ScratchbacV4.7 (local env)
 #
 :localipAddress = http://localhost:5000
-:ipAddress = http://localhost:5000
-#:ipAddress = https://norbandy.scratchbac.org
+#:ipAddress = http://localhost:5000
+:ipAddress = https://norbandy.scratchbac.org
 #:ipAddress = https://borbarossa.scratchbac.org
 :id = 01234567-89ABCDEF-01234567-89ABCDEF
 :googleAuth = <<
@@ -16,10 +16,10 @@ User-Agent: Emacs27
 :bala = 98667304
 :web = https://norbandy.scratchbac.org
 #:ryan = scratchbacAdmin
+##:ryan = R3Vsjq9CARfprwOJps44kbVczFQ2
 :jerry = w8IaWCHPjfRMhCeTXAnH7OCvQOo2
-:ryan = R3Vsjq9CARfprwOJps44kbVczFQ2
 :prince = MQTT323
-:admin = DAAohgsLMpQPmsbpbvgQ5PEPuy22
+:ryan = DAAohgsLMpQPmsbpbvgQ5PEPuy22
 :applefcm = cTMyiUFzTkSv0TUOgdgSUO:APA91bEWKbHlTe285TNkjMy2QMXnuBaHdHK_QUbevRNEgOz7cmzhXN4GTO7xaFKoScq5Mq9rpZVf2i0OWzF8SFqXm6nIFnwPPbRJf6DMpcYt_5Pw4C4zftRjRZ4bfRLROXYfW_VjivaF
 :printonemail = "niceprinceton@gmail.com"
 :ryanemail = luckuveryx@gmail.com
@@ -127,7 +127,7 @@ PUT :ipAddress/api/orb/tokenonfyr
 
 #
 ## USER BIRTHDAY
-PUT :ipAddress/api/orb/updatestate_user
+PUT :ipAddress/api/orb/update_user
 :my-headers
 {
     "user_id": ":ryan",
@@ -142,7 +142,7 @@ PUT :ipAddress/api/orb/user_location
 :my-headers
 {
     "user_id": ":ryan",
-    "event": "update",
+    "event": "genesis",
     "live": {"latlon":{
     "lat":1.3568,
     "lon":103.7487
@@ -178,7 +178,7 @@ PUT :ipAddress/api/orb/update_username
 :my-headers
 {
     "user_id": ":ryan",
-    "username": "ScratchbacGM"
+    "username": "Administrator"
 }
 
 ### POST ORB BONI
