@@ -31,7 +31,7 @@ app.use(logger('common', {
 	stream: fs.createWriteStream(log + '/access.log' , {flags: 'a'}, {mode: 0o755 })
 }));
 app.use(bodyParser.json({ limit: `8mb` }));
-app.use(bodyParser.urlencoded({ limit: `888kb`, extended: true, parameterLimit: 50000 }));
+app.use(bodyParser.urlencoded({ limit: `8mb`, extended: true, parameterLimit: 50000 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
