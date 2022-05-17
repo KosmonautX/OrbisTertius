@@ -79,6 +79,7 @@ Graph.Edge = (function () {
       map.set(name, address)
       territory[name] = {}
       territory[name].geohashing = address.geohashing
+      territory[name].geohashingtiny = address.geohashingtiny
       territory[name].chronolock = moment().unix();
     })
     return territory
@@ -91,6 +92,7 @@ Graph.Edge = (function () {
       locmap[name] = addressed
       territory[name]= {}
       territory[name].geohashing = addressed.geohashing
+      territory[name].geohashingtiny = addressed.geohashingtiny
       territory[name].chronolock = moment().unix();
     })
     map.rebirth(locmap)

@@ -4,8 +4,8 @@
 #
 :localipAddress = http://localhost:5000
 #:ipAddress = http://localhost:5000
-#:ipAddress = https://norbandy.scratchbac.org
-:ipAddress = https://borbarossa.scratchbac.org
+:ipAddress = https://norbandy.scratchbac.org
+#:ipAddress = https://borbarossa.scratchbac.org
 :id = 01234567-89ABCDEF-01234567-89ABCDEF
 :googleAuth = <<
 Authorization: :fyrtoken
@@ -16,12 +16,11 @@ User-Agent: Emacs27
 :bala = 98667304
 :web = https://norbandy.scratchbac.org
 #:ryan = scratchbacAdmin
-:ryan = DAAohgsLMpQPmsbpbvgQ5PEPuy22
+##:ryan = R3Vsjq9CARfprwOJps44kbVczFQ2
 :jerry = w8IaWCHPjfRMhCeTXAnH7OCvQOo2
-#:ryan = R3Vsjq9CARfprwOJps44kbVczFQ2
 :prince = MQTT323
-:admin = DAAohgsLMpQPmsbpbvgQ5PEPuy22
-:applefcm = fhjXNl9vSwGpu99ABSPe9k:APA91bEC6e6zxBE10wVSiUrtFCsjsb-RrQ2lRCZFmY31afbRrP8S3g7q5klX0hE-v0sIu_hks6lNoOUrD1dN6cYX4ZIo-2BQ4gwrN0lD79nX-ZQknpn5bvp0tGc_Er8VqZ7X1hLDnIkB
+:ryan = DAAohgsLMpQPmsbpbvgQ5PEPuy22
+:applefcm = cTMyiUFzTkSv0TUOgdgSUO:APA91bEWKbHlTe285TNkjMy2QMXnuBaHdHK_QUbevRNEgOz7cmzhXN4GTO7xaFKoScq5Mq9rpZVf2i0OWzF8SFqXm6nIFnwPPbRJf6DMpcYt_5Pw4C4zftRjRZ4bfRLROXYfW_VjivaF
 :printonemail = "niceprinceton@gmail.com"
 :ryanemail = luckuveryx@gmail.com
 :myemail = avivekbala@gmail.com
@@ -87,15 +86,15 @@ POST :ipAddress/api/nomadology/post_orb
     "user_id": ":ryan",
     "title": "finder of lost children",
     "info": "blessed is he",
-    "where": "my house",
+    "where": "my brothers keeper",
     "when": "now",
     "tip": "foc",
     "media": false,
     "geolocation": {"live": {"latlon":{
     "lat":1.3568,
     "lon":103.7487
-    },"target":8,"geolock": true}},
-    "orb_nature": 10,
+    },"target":9,"geolock": true}},
+    "orb_nature": 1,
     "expires_in": 10000,
     "beacon": "samplebeacon"
 }
@@ -126,7 +125,14 @@ PUT :ipAddress/api/orb/tokenonfyr
     "token": ":applefcm"
 }
 
-#
+##
+## 2. UPDATE USERNAME
+PUT :ipAddress/api/orb/update_username
+:my-headers
+{
+    "user_id": ":ryan",
+    "username": "Administrator"
+}
 ## USER BIRTHDAY
 PUT :ipAddress/api/orb/update_user
 :my-headers
@@ -190,66 +196,8 @@ POST :ipAddress/api/tele/post_orb
 [{
 "user_id": ":jerry",
 "username": "Scratchbac Admin",
-"title": "Clue 1 Nearby",
-"media": false,
-"geolocation": {"live": {"latlon":{
-    "lat": 1.3343504,
-    "lon": 103.7214554
-    },"target":9,"geolock": true}},
-"orb_nature": "10",
-"expires_in": 10
-},{
-"user_id": ":jerry",
-"username": "Scratchbac Admin",
-"title": "Clue 2 Nearby",
-"geolocation": {"live": {"latlon":{
-    "lat": 1.3313228,
-    "lon": 103.7257021
-    },"target":9,"geolock": true}},
-"orb_nature": "10",
-"expires_in": 10
-},{
-"user_id": ":jerry",
-"username": "Scratchbac Admin",
-"title": "Clue 3 Nearby",
-"geolocation": {"live": {"latlon":{
-    "lat": 1.332515,
-    "lon": 103.727473
-    },"target":9 ,"geolock": true}},
-"orb_nature": "10",
-"expires_in": 10
-},{
-"user_id": ":jerry",
-"username": "Scratchbac Admin",
-"title": "Clue 4 Nearby",
-"geolocation": {"live": {"latlon":{
-    "lat":1.3379165148662167,
-    "lon":103.72696411887863
-    },"target":9 ,"geolock": true}},
-"orb_nature": "10",
-"expires_in": 10
-},{
-"user_id": ":jerry",
-"username": "Scratchbac Admin",
 "title": "Final Post Nearby",
-"geolocation": {"live": {"latlon":{
-    "lat":1.339222094567798,
-    "lon":103.70867453637975
-    },"target":9,"geolock": true}},
-"orb_nature": "10",
-"expires_in": 10
-},{
-"user_id": ":jerry",
-"username": "Scratchbac Admin",
-"title": "Bonus Post Nearby",
-"info": "blessed is he",
-"where": "my house",
-"when": "now",
-"tip": "foc",
-"geolocation": {"live": {"latlon":{
-    "lat":1.354520,
-    "lon":103.692239
-    },"target":9 ,"geolock": true}},
+"geolocation": {"live": {"populate": true, "geohashes": ["896520ca08fffff", "886526aca3fffff", "886526ad95fffff", "886526aca5fffff"],"target":8,"geolock": true}},
 "orb_nature": "10",
 "expires_in": 10
 }]
@@ -506,18 +454,18 @@ PUT :ipAddress/api/orb/destroy_orb
 }
 
 ## Anon da ORB
-PUT :ipAddress/api/tele/destroy_orb
+PUT :ipAddress/api/tele/anon_orb
 :my-headers
 {
-    "user_id": ":ryan",
-    "orb_uuid": ":orb"
+    "user_id": ":jerry",
+    "orbs": ["9f4c38c6-19ca-42e3-b15a-ddb5f861d41d"]
 }
 
-## ORB achieves nirvana
+## ORB achieves nirvana no remenants left on database
 PUT :ipAddress/api/tele/nirvana_orb
 :my-headers
 {
-    "orbs": ["6b9075a0-0851-4206-b90b-9167e5386064", "bed723a0-1872-42b9-bfd6-43d6a813c99c"]
+    "orbs": ["9f4c38c6-19ca-42e3-b15a-ddb5f861d41d"]
 }
 #
 ##

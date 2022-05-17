@@ -72,7 +72,9 @@ router.get(`/get_users/:user_ids`, async function (req, res, next) {
                         dao.payload = data.Item.payload
                         if(data.Item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','USR',dao.user_id,'150x150')}
                     if(data.Item.alphanumeric) dao.payload.username = data.Item.alphanumeric;
-                    if(data.Item.geohash) dao.geolocation = data.Item.geohash;
+                    if(data.Item.geohash){
+                        Object.values(data.Item.geohash).forEach((loc) => { delete loc.geohashingtiny})
+                        dao.geolocation = data.Item.geohash;}
                     dao.creationtime= data.Item.time
                 }
                 return dao
