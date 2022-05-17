@@ -71,4 +71,55 @@ defmodule PhosWeb.UserChannel do
         {:error,  :authentication_required}
     end
   end
+
+  # =====================
+  # security.js
+#   defp check_user?(socket, user_id) do
+#     case Auth.validate(socket.assigns.session_token) do
+#       {:ok, claims} ->
+#         if claims["role"] == "barb" do
+#           raise "Guest User needs to Login for action"
+#         end
+
+#         if claims["role"] == "pleb" and claims["user_id"] === user_id do
+#           true
+#         else
+#           raise "User does not match"
+#         end
+#         raise "Unknown Role"
+#       {:error, _error }
+#   end
+
+
+
+#   defp check_territory? do
+#     # TODO
+#   end
+
+#   defp is_actor?(socket, actor_id) do
+#     case Auth.validate(socket.assigns.session_token) do
+#       {:ok, claims} ->
+#         if claims["role"] == "barb" do
+#           raise "Guest User needs to Login for action"
+#         end
+#         if claims["role"] == "pleb" and claims["user_id"] !== actor_id
+#           raise "User does not match"
+#         end
+#         true
+#       {:error, _error }
+#     end
+#   end
+
+#   defp is_admin?(socket) do
+#     case Auth.validate(socket.assigns.session_token) do
+#       {:ok, claims} ->
+#         if claims["role"] !== "boni" do
+#           raise "You ain't serving the good men"
+#         else
+#           true
+#         end
+#       {:error, _error }
+#     end
+#   end
+
 end
