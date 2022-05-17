@@ -1,6 +1,7 @@
 defmodule PhosWeb.UserChannel do
   use PhosWeb, :channel
   alias PhosWeb.Menshen.Auth
+  alias Phos.Message
   @impl true
   def join("archetype:usr:" <> id , _payload, socket) do
     if authorized?(socket, id) do
@@ -19,13 +20,15 @@ defmodule PhosWeb.UserChannel do
   end
 
   # It is also common to receive messages from the client and
-  # broadcast to everyone in the current topic (agent:lobby).
+  # broadcast to everyone in the current topic (archetype:usr).
   @impl true
   def handle_in("shout", payload, socket) do
+    # add user to source information
     payload = payload
     |> Map.put("source", socket.assigns.user_agent["user_id"])
     |> Map.put("source_archetype", "USR")
-    case Phos.Echo.changeset(%Phos.Echo{}, payload) |> Phos.Repo.insert do
+    # Create Echo :OK and :ERROR handling
+    case Message.create_echo(payload) do
       {:ok, struct} ->
         echo = Map.take(struct, [:destination, :source, :source_archetype, :destination_archetype, :message, :inserted_at, :subject, :subject_archetype])
         |> Map.update!(:inserted_at, &(&1 |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix() |> to_string()))
@@ -34,14 +37,14 @@ defmodule PhosWeb.UserChannel do
         #fyring and forgetting
         Phos.Fyr.Task.start_link(Pigeon.FCM.Notification.new({:topic, "USR." <> echo.destination}, %{"title" => "Message from #{socket.assigns.user_agent["username"]}", "body" => echo.message},echo))
       {:error, changeset} ->
-        IO.puts changeset
+        IO.inspect "Message Create Echo failed:",  changeset
     end
     {:noreply, socket}
   end
 
   @impl true
   def handle_info(:initiation,  socket) do
-    Phos.Echo.usr_call(socket.assigns.user_channel_id) # from user_id
+    Message.usr_call(socket.assigns.user_channel_id) # from user_id
     |> Enum.each(fn echoes -> push(socket, "reverie", %{
                                            source: echoes.source,
                                            destination: echoes.destination,

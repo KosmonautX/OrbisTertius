@@ -178,6 +178,15 @@ PUT :ipAddress/api/orbland/action/will
     "orb_uuid": ":orb",
     "action": "ACPT_PND"
 }
+##
+
+## 2. UPDATE USERNAME
+PUT :ipAddress/api/orb/update_username
+:my-headers
+{
+    "user_id": ":ryan",
+    "username": "Administrator 👋"
+}
 
 ### POST ORB BONI
 #

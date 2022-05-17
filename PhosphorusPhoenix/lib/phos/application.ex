@@ -7,6 +7,8 @@ defmodule Phos.Application do
 
   @impl true
   def start(_type, _args) do
+    topologies = Application.get_env(:libcluster, :topologies) || []
+
     children = [
       # Start the Ecto repository
       Phos.Repo,
@@ -16,8 +18,11 @@ defmodule Phos.Application do
       {Phoenix.PubSub, name: Phos.PubSub},
       # Start the Endpoint (http/https)
       PhosWeb.Endpoint,
+
+      {Cluster.Supervisor, [topologies, [name: Phos.ClusterSupervisor]]},
       # Start the Firbase Cloud Messaging Dispatcher
       Phos.Fyr.Message
+      #restart: :temporary supervisor strategy?
       # Start a worker by calling: Phos.Worker.start_link(arg)
       # {Phos.Worker, arg}
     ]

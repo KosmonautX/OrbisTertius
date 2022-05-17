@@ -52,7 +52,8 @@ defmodule Phos.MixProject do
       {:pigeon, "~> 2.0.0-rc.0"},
       {:plug_cowboy, "~> 2.5"},
       {:joken, "~> 2.0-rc0"},
-      {:h3, github: "helium/erlang-h3"}
+      {:h3, github: "helium/erlang-h3"},
+      {:libcluster, "~> 3.3"}
     ]
   end
 
