@@ -65,6 +65,7 @@ async function main(stream: DynamoDBStreams, stream_arn:string) {
 
   DynaRipples.on('USR_GENESIS', async function GenesisListener(present) {
     await mutateTerritorySubscription(present,fyr.messaging())
+    await triggerBeacon(present,fyr.messaging())
   });
 
   DynaRipples.on('COM_GENESIS', async function GenesisListener(present) {

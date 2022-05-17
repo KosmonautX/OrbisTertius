@@ -8,6 +8,7 @@ interface Message{
     data?:Object
     topic?: string
     token?: string
+    condition?: string
 }
 
 interface GeoHash{
@@ -35,7 +36,8 @@ interface TerritoryPub{
 //type Message =  Map<string, Map<string, string|number>|string>
 
 async function subscribe(token:string, topic:string, client:any): Promise<void>{
-    client.subscribeToTopic(token, topic)
+    client.subscribeToTopic(token, topic).then((_response: any) => {console.log("Topic Subscribed", "Topic", topic)
+                                                                  })
         .catch((error:any)=>{
             console.log("Error sending Subscribing to Topic")
             console.dir(error, { depth: null })
@@ -51,12 +53,22 @@ async function unsubscribe(token:string, topic:string, client:any): Promise<void
 
 async function sendsubscribers(message: Message ,topic: string, client: any): Promise<void>{
     message["topic"]= topic
-    client.send(message).then((response: any) => {console.log("Message Sent", response)})
+    client.send(message).then((response: any) => {console.log("Message Sent", "Response", response, "Topic", topic)})
         .catch((error: any) => {
             console.log(`Error sending to Topic: ${topic}`)
             console.dir(error, { depth: null });
         });
 
+}
+
+async function sendsubscribersnotme(message: Message ,topic: string, client: any, me: string): Promise<void>{
+    //'topicY' in topics && !('topicX' in topics) support conditions
+    message["condition"] = `'${topic}' in topics && !('${me}' in topics)`
+    client.send(message).then((response: any) => {console.log("Message Sent", "Response", response, "Topic", topic)})
+        .catch((error: any) => {
+            console.log(`Error sending to Topic: ${message["condition"]}`)
+            console.dir(error, { depth: null });
+        });
 }
 
 async function sendone(message: Message ,token: string, client: any): Promise<void>{
@@ -81,10 +93,11 @@ async function messenger(newRecord: Mutation, Element: KeyElement, client:any): 
                 "state": "INIT",
                 "time": String(newRecord.time)
             }}
+        let initiator_topic = "USR." + newRecord.payload.user_id
         var count = 0, hash_len = newRecord.geohash.hashes.length
         while( count < hash_len) {
             let loc_topic = "LOC."+ newRecord.geohash.hashes[count] + "." + newRecord.geohash.radius
-            sendsubscribers(message, loc_topic, client)
+            sendsubscribersnotme(message, loc_topic, client, initiator_topic)
             count ++
         }}
 
@@ -107,7 +120,7 @@ async function switchtoken(archetype:string,topic : string | number, client: any
                 console.log('Error unsubscribing from topic:', error);
             });
         ;
-    }
+        }
     catch(e){
         console.log(e)
     }
@@ -144,41 +157,19 @@ export async function triggerNotif(newRecord: Mutation, client: any): Promise<vo
 }
 
 // beacon under rework to subscriber token centered system
-export async function triggerBeacon(newRecord: Mutation, client: any, oldRecord: Mutation): Promise<void>{
+export async function triggerBeacon(newRecord: Mutation, client: any, oldRecord?: Mutation): Promise<void>{
     try {
         // generalise into KeyElementRElations later
         if(newRecord.identifier){
             var Element:KeyElement
-            if(oldRecord.identifier){
+            Element = KeyParser(newRecord.PK, newRecord.SK)
+            if (Element?.access==="pub"){
+            if(oldRecord && oldRecord.identifier){
                 if(newRecord.identifier !== oldRecord.identifier){
-                    Element = KeyParser(newRecord.PK, newRecord.SK)
                     switchtoken("USR", Element.id, client,  newRecord.identifier, oldRecord.identifier)
-                }}
-            else{
-                Element = KeyParser(newRecord.PK, newRecord.SK)
-                switchtoken("USR", Element.id, client,  newRecord.identifier, oldRecord.identifier)
-            }
-            if(newRecord.beacon && ((oldRecord.beacon == undefined || oldRecord.beacon.size < newRecord.beacon.size))){
-                function getLastValue(set: Set<string>): string{
-                    let value;
-                    for(value of set);
-                    if(value) return value;
-                    else return ""
+                    await mutateTerritorySubscription(newRecord,client)
                 }
-                let [orb_uuid , user_id, username] =  getLastValue(newRecord.beacon).split("#")
-
-                let message = {
-                    notification:  {
-                        "title": `${username} messaged`,
-                        "body": `${username}...`},
-                    data:{
-                        "archetype": "ORB",
-                        "id": orb_uuid,
-                        "state": "BECN",
-                        "messenger_id": user_id
-                    }}
-                sendone(message,newRecord.identifier,client)
-            }}
+            } else switchtoken("USR", Element.id, client, newRecord.identifier)}}
     } catch (e) {
         console.log(e)
     }
@@ -233,7 +224,7 @@ export async function mutateTerritorySubscription(newRecord: Mutation, client: a
     try {
         if(newRecord.identifier){
             var Element = KeyParser(newRecord.PK, newRecord.SK);
-            if (Element?.access==="pte"){
+            if (Element?.access==="pub"){
                 if (oldRecord?.geohash){
                     if (newRecord.geohash!==oldRecord?.geohash){
                         await territory_subscriber(newRecord.geohash, newRecord.identifier, client, oldRecord.geohash)
@@ -254,6 +245,7 @@ export async function beckonComment(newRecord: Mutation, client: any): Promise<v
     try{
         if(newRecord.identifier){
             var Element = KeyParser(newRecord.PK, newRecord.SK)
+            let initiator_topic = "USR." + newRecord.inverse?.substring(4)
             switch(Element.archetype){
                 case 'COM':
                     switchsubscribe("COM",newRecord.identifier,client, Element.id)
@@ -267,7 +259,8 @@ export async function beckonComment(newRecord: Mutation, client: any): Promise<v
                             "orb_uuid": newRecord.payload.orb_uuid,
                             "time": String(newRecord.time)
                         }}
-                    sendsubscribers(orb_message, "ORB." + newRecord.payload.orb_uuid , client)
+                    sendsubscribersnotme(orb_message, "ORB." + newRecord.payload.orb_uuid , client,
+                                        initiator_topic)
                             .catch((error)=>{
                                 console.log("Error sending Message" , error)
                             })
@@ -286,7 +279,7 @@ export async function beckonComment(newRecord: Mutation, client: any): Promise<v
                             "orb_uuid": newRecord.payload.orb_uuid,
                             "time": String(newRecord.time)
                         }}
-                    sendsubscribers(com_message, "COM." +  Element.relation, client).catch((error)=>{
+                    sendsubscribersnotme(com_message, "COM." +  Element.relation, client, initiator_topic).catch((error)=>{
                         console.log("Error sending Message" , error)
                     })
                     // switchsubscribe("ORB",newRecord.identifier,client, newRecord.PK.slice(4) + "." + newRecord.inverse.slice(4,8))
