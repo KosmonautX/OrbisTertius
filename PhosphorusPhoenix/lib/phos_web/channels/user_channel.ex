@@ -23,23 +23,28 @@ defmodule PhosWeb.UserChannel do
   # broadcast to everyone in the current topic (archetype:usr).
   @impl true
   def handle_in("shout", payload, socket) do
-    # add user to source information
-    payload = payload
-    |> Map.put("source", socket.assigns.user_agent["user_id"])
-    |> Map.put("source_archetype", "USR")
-    # Create Echo :OK and :ERROR handling
-    case Message.create_echo(payload) do
-      {:ok, struct} ->
-        echo = Map.take(struct, [:destination, :source, :source_archetype, :destination_archetype, :message, :inserted_at, :subject, :subject_archetype])
-        |> Map.update!(:inserted_at, &(&1 |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix() |> to_string()))
-        broadcast socket, "shout", echo #broadcast to both channels from and to, first the source
-        PhosWeb.Endpoint.broadcast_from!(self(), "archetype:usr:" <> echo.destination, "shout", echo) #then  broadcast to destination as well
-        #fyring and forgetting
-        Phos.Fyr.Task.start_link(Pigeon.FCM.Notification.new({:topic, "USR." <> echo.destination}, %{"title" => "Message from #{socket.assigns.user_agent["username"]}", "body" => echo.message},echo))
-      {:error, changeset} ->
-        IO.inspect "Message Create Echo failed:",  changeset
+    if check_territory?(socket) do
+      # add user to source information
+      payload = payload
+      |> Map.put("source", socket.assigns.user_agent["user_id"])
+      |> Map.put("source_archetype", "USR")
+      # Create Echo :OK and :ERROR handling
+      case Message.create_echo(payload) do
+        {:ok, struct} ->
+          echo = Map.take(struct, [:destination, :source, :source_archetype, :destination_archetype, :message, :inserted_at, :subject, :subject_archetype])
+          |> Map.update!(:inserted_at, &(&1 |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix() |> to_string()))
+          broadcast socket, "shout", echo #broadcast to both channels from and to, first the source
+          PhosWeb.Endpoint.broadcast_from!(self(), "archetype:usr:" <> echo.destination, "shout", echo) #then  broadcast to destination as well
+          #fyring and forgetting
+          Phos.Fyr.Task.start_link(Pigeon.FCM.Notification.new({:topic, "USR." <> echo.destination}, %{"title" => "Message from #{socket.assigns.user_agent["username"]}", "body" => echo.message},echo))
+        {:error, changeset} ->
+          IO.inspect "Message Create Echo failed:",  changeset
+      end
+      {:noreply, socket}
+    else
+      IO.puts("geolocation unauthorized")
+      {:noreply, socket}
     end
-    {:noreply, socket}
   end
 
   @impl true
@@ -72,54 +77,49 @@ defmodule PhosWeb.UserChannel do
     end
   end
 
-  # =====================
-  # security.js
-#   defp check_user?(socket, user_id) do
-#     case Auth.validate(socket.assigns.session_token) do
-#       {:ok, claims} ->
-#         if claims["role"] == "barb" do
-#           raise "Guest User needs to Login for action"
-#         end
+  defp check_territory?(socket) do
+    case Auth.validate(socket.assigns.session_token) do
+      {:ok , claims} ->
+        # import IEx; IEx.pry
 
-#         if claims["role"] == "pleb" and claims["user_id"] === user_id do
-#           true
-#         else
-#           raise "User does not match"
-#         end
-#         raise "Unknown Role"
-#       {:error, _error }
-#   end
+        # ==== test target territories
 
+        # target_territory = %{"geohash" => "8a652634e00ffff", "target" => 10} # not safe within parent
+        target_territory = %{"geohash" => "8a652634e62ffff", "target" => 10} # safe within parent
 
+        # target_territory = %{"latlon" => {1.460991, 103.835827}, "target" => 9} # not safe within parent
+        # target_territory = %{"latlon" => {1.4527860925434901, 103.81559241238618}, "target" => 9} # safe within parent
 
-#   defp check_territory? do
-#     # TODO
-#   end
+        case Map.keys(target_territory) do
+          ["geohash", "target"] ->
+            targeth3index = target_territory["geohash"]
+            |> to_charlist()
+            |> :h3.from_string()
 
-#   defp is_actor?(socket, actor_id) do
-#     case Auth.validate(socket.assigns.session_token) do
-#       {:ok, claims} ->
-#         if claims["role"] == "barb" do
-#           raise "Guest User needs to Login for action"
-#         end
-#         if claims["role"] == "pleb" and claims["user_id"] !== actor_id
-#           raise "User does not match"
-#         end
-#         true
-#       {:error, _error }
-#     end
-#   end
+            check_geoauth?(claims["territory"], targeth3index)
 
-#   defp is_admin?(socket) do
-#     case Auth.validate(socket.assigns.session_token) do
-#       {:ok, claims} ->
-#         if claims["role"] !== "boni" do
-#           raise "You ain't serving the good men"
-#         else
-#           true
-#         end
-#       {:error, _error }
-#     end
-#   end
+          ["latlon", "target"] ->
+            targeth3index = :h3.from_geo(target_territory["latlon"], target_territory["target"])
 
+            check_geoauth?(claims["territory"], targeth3index)
+
+          _ -> false
+        end
+      { :error, _error } ->
+        {:error,  :authentication_required}
+    end
+  end
+
+  defp check_geoauth?(jwt_territories, target_h3index) do
+    jwt_territories
+    |> Map.values()
+    |> Enum.map(fn %{"hash" => jwt_hash, "radius" => jwt_radius} ->
+      if (:h3.parent(target_h3index, jwt_radius) |> :h3.to_string()) == to_charlist(jwt_hash) do
+        true
+      else
+        false
+      end
+    end)
+    |> Enum.member?(true)
+  end
 end
