@@ -63,7 +63,8 @@ async function gen_orb(body){
 
     body.init = {}
     body.init.username = body.username
-    body.init.media = false;
+    if(body.user_media) body.init.media = body.user_media
+    else body.init.media = false
     orb_uuid = await dynaOrb.create(body,dynaOrb.gen(body)).catch(err => {
         err.status = 400;
         next(err);
