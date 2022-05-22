@@ -1,0 +1,45 @@
+<h1>Listing Orbs</h1>
+
+<%= if @live_action in [:new, :edit] do %>
+  <.modal return_to={Routes.orb_index_path(@socket, :index)}>
+    <.live_component
+      module={PhosWeb.OrbLive.FormComponent}
+      id={@orb.id || :new}
+      title={@page_title}
+      action={@live_action}
+      orb={@orb}
+      return_to={Routes.orb_index_path(@socket, :index)}
+    />
+  </.modal>
+<% end %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Active</th>
+      <th>Media</th>
+      <th>Extinguish</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="orbs">
+    <%= for orb <- @orbs do %>
+      <tr id={"orb-#{orb.id}"}>
+        <td><%= orb.title %></td>
+        <td><%= orb.active %></td>
+        <td><%= orb.media %></td>
+        <td><%= orb.extinguish %></td>
+
+        <td>
+          <span><%= live_redirect "Show", to: Routes.orb_show_path(@socket, :show, orb) %></span>
+          <span><%= live_patch "Edit", to: Routes.orb_index_path(@socket, :edit, orb) %></span>
+          <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: orb.id, data: [confirm: "Are you sure?"] %></span>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<span><%= live_patch "New Orb", to: Routes.orb_index_path(@socket, :new) %></span>

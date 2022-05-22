@@ -1,0 +1,41 @@
+<h1>Show Orb</h1>
+
+<%= if @live_action in [:edit] do %>
+  <.modal return_to={Routes.orb_show_path(@socket, :show, @orb)}>
+    <.live_component
+      module={PhosWeb.OrbLive.FormComponent}
+      id={@orb.id}
+      title={@page_title}
+      action={@live_action}
+      orb={@orb}
+      return_to={Routes.orb_show_path(@socket, :show, @orb)}
+    />
+  </.modal>
+<% end %>
+
+<ul>
+
+  <li>
+    <strong>Title:</strong>
+    <%= @orb.title %>
+  </li>
+
+  <li>
+    <strong>Active:</strong>
+    <%= @orb.active %>
+  </li>
+
+  <li>
+    <strong>Media:</strong>
+    <%= @orb.media %>
+  </li>
+
+  <li>
+    <strong>Extinguish:</strong>
+    <%= @orb.extinguish %>
+  </li>
+
+</ul>
+
+<span><%= live_patch "Edit", to: Routes.orb_show_path(@socket, :edit, @orb), class: "button" %></span> |
+<span><%= live_redirect "Back", to: Routes.orb_index_path(@socket, :index) %></span>
