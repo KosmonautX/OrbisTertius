@@ -6,8 +6,11 @@ import {Socket} from "phoenix"
 
 // And connect to the path in "lib/phos_web/endpoint.ex". We pass the
 // token for authentication. Read below how it should be used.
-let long = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiUjNWc2pxOUNBUmZwcndPSnBzNDRrYlZjekZRMiIsInJvbGUiOiJwbGViIiwiaWF0IjoxNjQzNzQzNjAyLCJleHAiOjI4NDM3NDM2MDIsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.hlhvTS37qxxqwrynoGbsHQG4gyjH5XDJfSC-zSrR6N8"
-let socket = new Socket("/socket", {params: {token: long}})
+const params = new Proxy(new URLSearchParams(window.location.search), {
+  get: (searchParams, prop) => searchParams.get(prop),
+});
+
+let socket = new Socket("/socket", {params: {token: params.auth}})
 
 // When you connect, you'll often need to authenticate the client.
 // For example, imagine you have an authentication plug, `MyAuth`,

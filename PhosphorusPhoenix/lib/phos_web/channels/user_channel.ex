@@ -2,6 +2,7 @@ defmodule PhosWeb.UserChannel do
   use PhosWeb, :channel
   alias PhosWeb.Menshen.Auth
   alias Phos.Message
+  alias Phos.Action
   @impl true
   def join("archetype:usr:" <> id , _payload, socket) do
     if authorized?(socket, id) do
@@ -10,6 +11,16 @@ defmodule PhosWeb.UserChannel do
     else
       {:error, %{reason: "unauthorized"}}
     end
+  end
+
+  # maintain subscriber lists
+  def handle_info(:geoinitiation,  socket) do
+    # watch out for backpressure
+    ref = socket_ref(socket)
+    Task.start(fn ->
+      Phoenix.Channel.reply(ref, {:ok, Action.list_orbs()})
+      end)
+    {:noreply,socket}
   end
 
   # Channels can be used in a request/response fashion
