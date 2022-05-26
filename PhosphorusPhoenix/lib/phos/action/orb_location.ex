@@ -1,12 +1,12 @@
 defmodule Phos.Action.Orb_Location do
   use Ecto.Schema
   import Ecto.Changeset
-  alias Phos.Action.{Orb_Emb, Orb_Orb_Location}
+  alias Phos.Action.{Orb, Location}
 
-  @primary_key {:location_id, :string, autogenerate: false}
+  @primary_key false
   schema "orbs_location" do
-
-    many_to_many :orbs_emb, Orb_Emb, join_through: Orb_Orb_Location, join_keys: [location_id: :location_id, orb_id: :orb_id]
+    belongs_to :orbs, Orb, type: Ecto.UUID, references: :orb_id, foreign_key: :orb_id
+    belongs_to :locations, Location, type: :integer, references: :location_id, foreign_key: :location_id
 
     timestamps()
   end
@@ -14,7 +14,11 @@ defmodule Phos.Action.Orb_Location do
   @doc false
   def changeset(orb, attrs) do
     orb
-    |> cast(attrs, [:location_id])
-    # |> validate_required([:initiator, :acceptor])
+    |> cast(attrs, [:orb_id, :location_id])
+    |> validate_required([:orb_id, :location_id])
+    |> unique_constraint([:orb_id, :location_id],
+      name: :orb_id_location_id_unique_index,
+      message: "ALREADY_EXISTS"
+    )
   end
 end

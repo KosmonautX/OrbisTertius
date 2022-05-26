@@ -1,4 +1,4 @@
-defmodule Phos.Action.Orb_Emb_Payload do
+defmodule Phos.Action.Orb_Payload do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -15,6 +15,5 @@ defmodule Phos.Action.Orb_Emb_Payload do
   def changeset(orb, attrs) do
     orb
     |> cast(attrs, [:image, :time, :tip, :info])
-    # |> validate_required([:initiator, :acceptor])
   end
 end
