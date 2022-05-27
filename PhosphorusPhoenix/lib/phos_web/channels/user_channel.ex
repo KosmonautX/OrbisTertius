@@ -10,8 +10,8 @@ defmodule PhosWeb.UserChannel do
       send(self(), :initiation)
       {:ok, socket
       |> assign(:user_channel_id, id)
-      |> assign(:geolocation, %{})}
-      |> assign(:geosubscriptions, [])
+      |> assign(:geolocation, %{})
+      |> assign(:geosubscriptions, [])}
     else
       {:error, %{reason: "unauthorized"}}
     end
@@ -37,7 +37,6 @@ defmodule PhosWeb.UserChannel do
       end
     end)
   end
-end
 
   # Channels can be used in a request/response fashion
   # by sending replies to requests from the client
