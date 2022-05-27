@@ -4,14 +4,16 @@ defmodule PhosWeb.UserChannel do
   alias Phos.Message
   alias Phos.Action
   alias Phos.Pubsub
+  alias Phos.Geographer
+
   @impl true
   def join("archetype:usr:" <> id , _payload, socket) do
     if authorized?(socket, id) do
       send(self(), :initiation)
       {:ok, socket
       |> assign(:user_channel_id, id)
-      |> assign(:geolocation, %{})}
-      |> assign(:geosubscriptions, [])
+      |> assign(:geolocation, %{})
+      |> assign(:geosubscriptions, [])}
     else
       {:error, %{reason: "unauthorized"}}
     end
@@ -37,7 +39,6 @@ defmodule PhosWeb.UserChannel do
       end
     end)
   end
-end
 
   # Channels can be used in a request/response fashion
   # by sending replies to requests from the client
@@ -97,51 +98,5 @@ end
       { :error, _error } ->
         {:error,  :authentication_required}
     end
-  end
-
-  defp check_territory?(socket) do
-    case Auth.validate(socket.assigns.session_token) do
-      {:ok , claims} ->
-        # import IEx; IEx.pry
-
-        # ==== test target territories
-
-        # target_territory = %{"geohash" => "8a652634e00ffff", "target" => 10} # not safe within parent
-        target_territory = %{"geohash" => "8a652634e62ffff", "target" => 10} # safe within parent
-
-        # target_territory = %{"latlon" => {1.460991, 103.835827}, "target" => 9} # not safe within parent
-        # target_territory = %{"latlon" => {1.4527860925434901, 103.81559241238618}, "target" => 9} # safe within parent
-
-        case Map.keys(target_territory) do
-          ["geohash", "target"] ->
-            targeth3index = target_territory["geohash"]
-            |> to_charlist()
-            |> :h3.from_string()
-
-            check_geoauth?(claims["territory"], targeth3index)
-
-          ["latlon", "target"] ->
-            targeth3index = :h3.from_geo(target_territory["latlon"], target_territory["target"])
-
-            check_geoauth?(claims["territory"], targeth3index)
-
-          _ -> false
-        end
-      { :error, _error } ->
-        {:error,  :authentication_required}
-    end
-  end
-
-  defp check_geoauth?(jwt_territories, target_h3index) do
-    jwt_territories
-    |> Map.values()
-    |> Enum.map(fn %{"hash" => jwt_hash, "radius" => jwt_radius} ->
-      if (:h3.parent(target_h3index, jwt_radius) |> :h3.to_string()) == to_charlist(jwt_hash) do
-        true
-      else
-        false
-      end
-    end)
-    |> Enum.member?(true)
   end
 end
