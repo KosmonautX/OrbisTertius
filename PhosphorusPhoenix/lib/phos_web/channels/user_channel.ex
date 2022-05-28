@@ -25,19 +25,18 @@ defmodule PhosWeb.UserChannel do
     ref = socket_ref(socket)
     Task.start(fn ->
       #subscription inside tasks
-      Phoenix.Channel.reply(ref, {:ok, Action.list_orbs()})
+      orbs = Geographer.parse_territories(socket, geolocation)
+      Enum.map(orbs, fn orb ->
+        case orb do
+          {:ok, orb} ->
+            IO.inspect(orb)
+            broadcast socket, "shout", orb
+          {:error, message} ->
+            IO.inspect(message)
+        end
       end)
-
-    {:noreply, socket |> geosubscribing(geolocation)}
-  end
-
-  defp geosubscribing(socket, geolocation) do
-    geolocation
-    |> Enum.map(fn {k,v} ->
-      unless socket[k]["hash"] == v["hash"] do
-        #replace with geosubscriptions
-      end
     end)
+    {:noreply, socket} #|> geosubscribing(geolocation)}
   end
 
   # Channels can be used in a request/response fashion
@@ -98,5 +97,14 @@ defmodule PhosWeb.UserChannel do
       { :error, _error } ->
         {:error,  :authentication_required}
     end
+  end
+
+  defp geosubscribing(socket, geolocation) do
+    geolocation
+    |> Enum.map(fn {k,v} ->
+      unless socket[k]["hash"] == v["hash"] do
+        #replace with geosubscriptions
+      end
+    end)
   end
 end
