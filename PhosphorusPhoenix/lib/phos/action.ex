@@ -19,7 +19,8 @@ defmodule Phos.Action do
   """
   def list_orbs do
     Repo.all(Orb)
-    |> Repo.preload(:locations)
+    #|> Repo.preload(:locations)
+    #|> Repo.preload(:payload)
   end
 
 #   @doc """
@@ -36,6 +37,8 @@ defmodule Phos.Action do
 #       ** (Ecto.NoResultsError)
 
 #   """
+#
+  def get_orb!(id), do: Repo.get!(Orb, id)
   def get_orbs_by_geohash(id) do
     query =
       Orb_Location
@@ -68,9 +71,9 @@ defmodule Phos.Action do
     multi =
       Multi.new()
       |> Multi.insert(:insert_orb, %Orb{} |> Orb.changeset(attrs))
-      |> Multi.insert_all(:insert_locations, Location, parse_locations(attrs), on_conflict: :nothing, conflict_target: :location_id)
+      |> Multi.insert_all(:insert_locations, Location, parse_locations(attrs), on_conflict: :nothing, conflict_target: :id)
       |> Multi.insert_all(:insert_orb_locations, Orb_Location, fn %{insert_orb: orb} ->
-        parse_locations(orb.orb_id, attrs)
+        parse_locations(orb.id, attrs)
       end)
 
     case (Repo.transaction(multi)) do
@@ -114,7 +117,7 @@ defmodule Phos.Action do
         |> NaiveDateTime.truncate(:second)
 
         maps = Enum.map(location_list, &%{
-          location_id: &1,
+          id: &1,
           inserted_at: timestamp,
           updated_at: timestamp
         })

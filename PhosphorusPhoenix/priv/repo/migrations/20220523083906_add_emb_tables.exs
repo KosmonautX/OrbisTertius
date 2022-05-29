@@ -3,7 +3,7 @@ defmodule Phos.Repo.Migrations.AddEmbTables do
 
   def change do
     create table(:orbs, primary_key: false) do
-      add :orb_id, :uuid, primary_key: true
+      add :id, :uuid, primary_key: true
       add :title, :string
       add :active, :boolean, default: false, null: false
       add :media, :boolean, default: false, null: false
@@ -14,14 +14,14 @@ defmodule Phos.Repo.Migrations.AddEmbTables do
     end
 
     create table(:locations, primary_key: false) do
-      add :location_id, :bigint, primary_key: true
+      add :id, :bigint, primary_key: true
 
       timestamps()
     end
 
     create table(:orbs_location, primary_key: false) do
-      add :orb_id, references(:orbs, column: :orb_id, type: :uuid)
-      add :location_id, references(:locations, column: :location_id, type: :bigint)
+      add :orb_id, references(:orbs, column: :id, type: :uuid)
+      add :location_id, references(:locations, column: :id, type: :bigint)
 
       timestamps()
     end
