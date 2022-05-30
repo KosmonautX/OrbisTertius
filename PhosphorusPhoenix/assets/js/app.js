@@ -12,8 +12,22 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 
+let Hooks = {}
+Hooks.InitGps = {
+  mounted() {
+    navigator.geolocation.watchPosition(
+      (pos) => {
+        this.pushEvent("location_update", { latitude: pos.coords.latitude, longitude: pos.coords.longitude })
+        console.log("im mounted: " + pos.coords.latitude + ", " + pos.coords.longitude)
+      },
+      (err) => console.log(err),
+      { maximumAge: 0, enableHighAccuracy: true }
+    )
+  }
+}
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken}})
+let liveSocket = new LiveSocket("/live", Socket, { params: { _csrf_token: csrfToken }, hooks: Hooks })
 
 // Show progress bar on live navigation and form submits
 topbar.config({barColors: {0: "#f8f0e5"}, shadowColor: "rgba(25, 39, 86, .3)"})
@@ -125,4 +139,3 @@ msg.addEventListener('keypress', function (event) {
 //
 //     import "some-package"
 //
-

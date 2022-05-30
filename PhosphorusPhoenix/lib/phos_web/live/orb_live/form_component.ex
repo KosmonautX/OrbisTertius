@@ -10,7 +10,9 @@ defmodule PhosWeb.OrbLive.FormComponent do
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(:changeset, changeset)}
+     |> assign(:changeset, changeset)
+     |> assign(:longitude, "nil")
+     |> assign(:latitude, "nil")}
   end
 
   @impl true
@@ -23,7 +25,13 @@ defmodule PhosWeb.OrbLive.FormComponent do
     {:noreply, assign(socket, :changeset, changeset)}
   end
 
+  @impl true
+  def handle_event("location_update", %{"longitude" => longitude, "latitude" => latitude}, socket) do
+    {:noreply, assign(socket, longitude: longitude, latitude: latitude)}
+  end
+
   def handle_event("save", %{"orb" => orb_params}, socket) do
+    # TODO: Translate latlon to :h3 x7
     save_orb(socket, socket.assigns.action, orb_params)
   end
 
@@ -47,7 +55,6 @@ defmodule PhosWeb.OrbLive.FormComponent do
          socket
          |> put_flash(:info, "Orb created successfully")
          |> push_redirect(to: socket.assigns.return_to)}
-
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, changeset: changeset)}
 

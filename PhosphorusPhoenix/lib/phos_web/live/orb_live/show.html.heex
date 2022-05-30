@@ -35,6 +35,29 @@
     <%= @orb.extinguish %>
   </li>
 
+  <li>
+    <strong>Image:</strong>
+    <%= @orb.payload.image %>
+  </li>
+
+  <li>
+    <strong>Time:</strong>
+    <%= @orb.payload.time %>
+  </li>
+
+  <li>
+    <strong>Tip:</strong>
+    <%= @orb.payload.tip %>
+  </li>
+
+  <li>
+    <strong>Info:</strong>
+    <%= @orb.payload.info %>
+  </li>
+
+
+
+
 </ul>
 
 <span><%= live_patch "Edit", to: Routes.orb_show_path(@socket, :edit, @orb), class: "button" %></span> |

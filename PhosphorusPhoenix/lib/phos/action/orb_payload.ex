@@ -4,7 +4,7 @@ defmodule Phos.Action.Orb_Payload do
 
   embedded_schema do
     field :image, :string
-    field :time, :integer
+    field :time, :string
     field :tip, :string
     field :info, :string
 

@@ -64,7 +64,7 @@ defmodule PhosWeb.UserChannel do
         #fyring and forgetting
         Phos.Fyr.Task.start_link(Pigeon.FCM.Notification.new({:topic, "USR." <> echo.destination}, %{"title" => "Message from #{socket.assigns.user_agent["username"]}", "body" => echo.message},echo))
       {:error, changeset} ->
-        IO.inspect "Message Create Echo failed:",  changeset
+        IO.puts("Message Create Echo failed: #{inspect(changeset)}")
     end
     {:noreply, socket}
   end

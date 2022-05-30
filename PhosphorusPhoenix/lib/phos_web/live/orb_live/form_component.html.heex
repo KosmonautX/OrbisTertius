@@ -1,6 +1,14 @@
 <div>
   <h2><%= @title %></h2>
 
+  <%# <input
+      id="current-position"
+      name="position"
+      type="hidden"
+      phx-update="ignore"
+      phx-hook="InitGps"
+    > %>
+
   <.form
     let={f}
     for={@changeset}
@@ -8,23 +16,43 @@
     phx-target={@myself}
     phx-change="validate"
     phx-submit="save">
-  
+
     <%= label f, :title %>
     <%= text_input f, :title %>
     <%= error_tag f, :title %>
-  
+
     <%= label f, :active %>
     <%= checkbox f, :active %>
     <%= error_tag f, :active %>
-  
+
     <%= label f, :media %>
     <%= checkbox f, :media %>
     <%= error_tag f, :media %>
-  
+
     <%= label f, :extinguish %>
     <%= datetime_select f, :extinguish %>
     <%= error_tag f, :extinguish %>
-  
+
+    <%= hidden_input f, :latlon, id: "gps", "phx-hook": "InitGps" %>
+
+    <%= inputs_for f, :payload, fn ff -> %>
+      <%= label ff, :image %>
+      <%= text_input ff, :image %>
+      <%= error_tag ff, :image %>
+
+      <%= label ff, :time %>
+      <%= text_input ff, :time %>
+      <%= error_tag ff, :time %>
+
+      <%= label ff, :tip %>
+      <%= text_input ff, :tip %>
+      <%= error_tag ff, :tip %>
+
+      <%= label ff, :info %>
+      <%= text_input ff, :info %>
+      <%= error_tag ff, :info %>
+    <% end %>
+
     <div>
       <%= submit "Save", phx_disable_with: "Saving..." %>
     </div>
