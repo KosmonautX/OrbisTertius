@@ -50,6 +50,8 @@ defmodule PhosWeb.OrbLive.FormComponent do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, changeset: changeset)}
+
+    something -> IO.inspect something
     end
   end
 end
