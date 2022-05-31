@@ -1,14 +1,6 @@
 <div>
   <h2><%= @title %></h2>
 
-  <%# <input
-      id="current-position"
-      name="position"
-      type="hidden"
-      phx-update="ignore"
-      phx-hook="InitGps"
-    > %>
-
   <.form
     let={f}
     for={@changeset}
@@ -32,6 +24,14 @@
     <%= label f, :extinguish %>
     <%= datetime_select f, :extinguish %>
     <%= error_tag f, :extinguish %>
+
+    <%= label f, :radius %>
+    <%= text_input f, :radius %>
+    <%= error_tag f, :radius %>
+
+    <%= label f, :initiator %>
+    <%= text_input f, :initiator %>
+    <%= error_tag f, :initiator %>
 
     <%= hidden_input f, :latlon, id: "gps", "phx-hook": "InitGps" %>
 

@@ -6,7 +6,10 @@ defmodule PhosWeb.OrbLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, :orbs, list_orbs())}
+    {:ok, socket
+    |> assign(:orbs, list_orbs())
+    |> assign(:live, %{})
+  }
   end
 
   @impl true
@@ -30,6 +33,11 @@ defmodule PhosWeb.OrbLive.Index do
     socket
     |> assign(:page_title, "Listing Orbs")
     |> assign(:orb, nil)
+  end
+
+  @impl true
+  def handle_event("location_update", %{"longitude" => longitude, "latitude" => latitude}, socket) do
+    {:noreply, assign(socket, :live, %{longitude: longitude, latitude: latitude})}
   end
 
   @impl true

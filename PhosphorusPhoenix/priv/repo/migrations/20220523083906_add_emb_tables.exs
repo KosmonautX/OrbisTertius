@@ -2,6 +2,17 @@ defmodule Phos.Repo.Migrations.AddEmbTables do
   use Ecto.Migration
 
   def change do
+    create table(:users, primary_key: false) do
+      add :id, :uuid, primary_key: true
+      add :username, :string
+      add :fyr_id, :string
+      add :media, :string
+
+      timestamps()
+    end
+
+    create index(:users, :username)
+
     create table(:orbs, primary_key: false) do
       add :id, :uuid, primary_key: true
       add :title, :string
@@ -9,6 +20,7 @@ defmodule Phos.Repo.Migrations.AddEmbTables do
       add :media, :boolean, default: false, null: false
       add :extinguish, :naive_datetime
       add :payload, :jsonb
+      add :initiator, references(:users, column: :id, type: :uuid)
 
       timestamps()
     end

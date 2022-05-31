@@ -10,9 +10,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(:changeset, changeset)
-     |> assign(:longitude, "nil")
-     |> assign(:latitude, "nil")}
+     |> assign(:changeset, changeset)}
   end
 
   @impl true
@@ -21,17 +19,21 @@ defmodule PhosWeb.OrbLive.FormComponent do
       socket.assigns.orb
       |> Action.change_orb(orb_params)
       |> Map.put(:action, :validate)
-
     {:noreply, assign(socket, :changeset, changeset)}
   end
 
-  @impl true
-  def handle_event("location_update", %{"longitude" => longitude, "latitude" => latitude}, socket) do
-    {:noreply, assign(socket, longitude: longitude, latitude: latitude)}
-  end
+  # @impl true
+  # def handle_event("location_update", %{"longitude" => longitude, "latitude" => latitude}, socket) do
+  #   {:noreply, assign(socket, :live, %{longitude: longitude, latitude: latitude})}
+  # end
 
   def handle_event("save", %{"orb" => orb_params}, socket) do
-    # TODO: Translate latlon to :h3 x7
+    # Process latlon value to x7 h3 indexes
+    latlon = {socket.assigns.live.latitude, socket.assigns.live.longitude}
+    |> :h3.from_geo(String.to_integer(orb_params["radius"]))
+    |> :h3.k_ring(1)
+    orb_params = Map.put(orb_params, "geolocation", latlon)
+
     save_orb(socket, socket.assigns.action, orb_params)
   end
 
