@@ -1,0 +1,165 @@
+<!-- livebook:{"autosave_interval_s":30} -->
+
+# Phoenix Socket Realm
+
+```elixir
+Mix.install([
+  {:phoenix_gen_socket_client, "~> 4.0"},
+  {:websocket_client, "~> 1.4"},
+  {:jason, "~> 1.3"}
+])
+```
+
+## Section
+
+```elixir
+defmodule SocketWithCare do
+  alias Phoenix.Channels.GenSocketClient
+  @behaviour GenSocketClient
+  @channel "archetype:usr:R3Vsjq9CARfprwOJps44kbVczFQ2"
+  @token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiUjNWc2pxOUNBUmZwcndPSnBzNDRrYlZjekZRMiIsInJvbGUiOiJwbGViIiwiaWF0IjoxNjQzNzQzNjAyLCJleHAiOjI4NDM3NDM2MDIsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.hlhvTS37qxxqwrynoGbsHQG4gyjH5XDJfSC-zSrR6N8"
+
+  def start_link() do
+    GenSocketClient.start_link(
+      __MODULE__,
+      Phoenix.Channels.GenSocketClient.Transport.WebSocketClient,
+      "ws://localhost:4000/socket/websocket"
+    )
+  end
+
+  def init(url) do
+    {:connect, url, [token: @token], %{first_join: true, ping_ref: 1}}
+  end
+
+  def handle_connected(transport, state) do
+    IO.inspect("connected")
+    GenSocketClient.join(transport, @channel)
+    {:ok, state}
+  end
+
+  def handle_disconnected(reason, state) do
+    IO.puts("disconnected: #{inspect(reason)}")
+    Process.send_after(self(), :connect, :timer.seconds(1))
+    {:ok, state}
+  end
+
+  def handle_joined(topic, _payload, _transport, state) do
+    IO.puts("joined the topic #{topic}")
+
+    if state.first_join do
+      :timer.send_interval(:timer.seconds(20), self(), :ping_server)
+      # :timer.send_interval(:timer.seconds(5), self(), :maybe_stop)
+      {:ok, %{state | first_join: false, ping_ref: 1}}
+    else
+      {:ok, %{state | ping_ref: 1}}
+    end
+  end
+
+  def handle_join_error(topic, payload, _transport, state) do
+    IO.puts("join error on the topic #{topic}: #{inspect(payload)}")
+    {:ok, state}
+  end
+
+  def handle_channel_closed(topic, payload, _transport, state) do
+    IO.puts("disconnected from the topic #{topic}: #{inspect(payload)}")
+    Process.send_after(self(), {:join, topic}, :timer.seconds(1))
+    {:ok, state}
+  end
+
+  def handle_message(topic, event, payload, _transport, state) do
+    IO.puts("Topic #{topic}: about Event => #{event} with Payload #{inspect(payload)}")
+    {:ok, state}
+  end
+
+  def handle_reply("ping", _ref, %{"status" => "ok"} = payload, _transport, state) do
+    IO.puts("server pping ##{payload["response"]["ping_ref"]}")
+    {:ok, state}
+  end
+
+  def handle_reply(topic, _ref, payload, _transport, state) do
+    IO.puts("reply on topic #{topic}: #{inspect(payload)}")
+    {:ok, state}
+  end
+
+  def handle_info(:connect, _transport, state) do
+    IO.puts("connecting")
+    {:connect, state}
+  end
+
+  def handle_info({:join, topic}, transport, state) do
+    IO.puts("joining the topic #{topic}")
+
+    case GenSocketClient.join(transport, topic) do
+      {:error, reason} ->
+        IO.puts("error joining the topic #{topic}: #{inspect(reason)}")
+        Process.send_after(self(), {:join, topic}, :timer.seconds(10))
+
+      {:ok, _ref} ->
+        :ok
+    end
+
+    {:ok, state}
+  end
+
+  def handle_info(:ping_server, transport, state) do
+    IO.puts("sending ping ##{state.ping_ref}")
+    GenSocketClient.push(transport, "ping", "ping", %{ping_ref: state.ping_ref})
+    {:ok, %{state | ping_ref: state.ping_ref + 1}}
+  end
+
+  def handle_info(:maybe_stop, _transport, state) do
+    if :rand.uniform(5) == 1 do
+      IO.puts("stopping the socket client")
+      {:stop, :normal, state}
+    else
+      {:ok, state}
+    end
+  end
+
+  def handle_info(:stop, _transport, state) do
+    IO.puts("sayonara")
+    {:stop, :normal, state}
+  end
+
+  def handle_info(message, _transport, state) do
+    IO.puts("Unhandled message #{inspect(message)}")
+    {:ok, state}
+  end
+
+  def handle_call({:message, message}, _from, transport, state) do
+    IO.puts("message recieved: #{inspect(message)}")
+    GenSocketClient.push(transport, @channel, "shout", message)
+    {:reply, {:ok, :hao}, state}
+  end
+
+  def handle_call({:say, goodbye}, _from, transport, state) do
+    IO.puts("server going bye bye in T-#{inspect(goodbye)}s")
+    :timer.send_interval(:timer.seconds(goodbye), self(), :stop)
+    {:reply, {:ok, :saygoodbye}, state}
+  end
+
+  def handle_call(message, _from, _transport, state) do
+    IO.puts("Did not expect to receive call with message: #{inspect(message)}")
+    {:reply, {:error, :unexpected_message}, state}
+  end
+
+  def terminate(reason, _state) do
+    IO.puts("Terminating and cleaning up state. Reason for termination: #{reason}")
+  end
+end
+```
+
+```elixir
+{:ok, pid} = SocketWithCare.start_link()
+```
+
+```elixir
+message = %{"destination" => "albert", "destination_archetype" => "USR", "message" => "waddup"}
+Phoenix.Channels.GenSocketClient.call(pid, {:message, message})
+```
+
+## Cleaning up
+
+```elixir
+Phoenix.Channels.GenSocketClient.call(pid, {:say, 3})
+```

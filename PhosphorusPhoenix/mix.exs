@@ -39,7 +39,7 @@ defmodule Phos.MixProject do
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 0.17.5"},
+      {:phoenix_live_view, "~> 0.17.10"},
       {:floki, ">= 0.30.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.6"},
       {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
@@ -53,7 +53,11 @@ defmodule Phos.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:joken, "~> 2.0-rc0"},
       {:h3, "~> 3.6"},
-      {:libcluster, "~> 3.3"}
+      {:libcluster, "~> 3.3"},
+      # support aws s3
+      {:ex_aws, "~> 2.0"},
+      {:ex_aws_s3, "~> 2.0"},
+      {:httpoison, "~> 1.8"}
     ]
   end
 
