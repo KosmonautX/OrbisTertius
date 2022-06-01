@@ -3,10 +3,10 @@ defmodule Phos.Action.Orb_Payload do
   import Ecto.Changeset
 
   embedded_schema do
-    field :image, :string
-    field :time, :string
-    field :tip, :string
+    field :when, :string
+    field :where, :string
     field :info, :string
+    field :tip, :string
 
     timestamps()
   end
@@ -14,6 +14,6 @@ defmodule Phos.Action.Orb_Payload do
   @doc false
   def changeset(orb, attrs) do
     orb
-    |> cast(attrs, [:image, :time, :tip, :info])
+    |> cast(attrs, [:when, :where, :info, :tip])
   end
 end

@@ -11,6 +11,7 @@ defmodule Phos.Action.Orb do
     field :media, :boolean, default: false
     field :title, :string
     field :initiator, Ecto.UUID
+    field :orb_nature, :string
 
     many_to_many :locations, Location, join_through: Orb_Location, on_delete: :delete_all#, join_keys: [id: :id, location_id: :location_id]
     embeds_one :payload, Orb_Payload, on_replace: :delete

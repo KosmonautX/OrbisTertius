@@ -25,8 +25,8 @@ defmodule PhosWeb.UserChannel do
     ref = socket_ref(socket)
     Task.start(fn ->
       #subscription inside tasks
-      orbs = Geographer.parse_territories(socket, geolocation)
-      Enum.map(orbs, fn orb ->
+      Geographer.parse_territories(socket, geolocation)
+      |> Enum.map(fn orb ->
         case orb do
           {:ok, orb} ->
             IO.inspect(orb)
