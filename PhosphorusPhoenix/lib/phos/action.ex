@@ -21,6 +21,7 @@ defmodule Phos.Action do
   def list_orbs do
     Repo.all(Orb)
     |> Repo.preload(:locations)
+    |> Repo.preload(:users)
   end
 
 #   @doc """

@@ -77,6 +77,7 @@ config :phoenix, :stacktrace_depth, 20
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
 
+# MINIO Object Store API Domain
 config :ex_aws, :s3,
   scheme: "http://",
   host: "localhost",

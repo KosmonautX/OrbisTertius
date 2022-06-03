@@ -57,7 +57,8 @@ defmodule Phos.MixProject do
       # support aws s3
       {:ex_aws, "~> 2.0"},
       {:ex_aws_s3, "~> 2.0"},
-      {:httpoison, "~> 1.8"}
+      {:httpoison, "~> 1.8"},
+      {:mogrify, "~> 0.9.1"}
     ]
   end
 

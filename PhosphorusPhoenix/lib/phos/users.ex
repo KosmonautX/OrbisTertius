@@ -20,6 +20,7 @@ defmodule Phos.Users do
   """
   def list_users do
     Repo.all(User)
+    |> preload(:fyr)
   end
 
 #   @doc """

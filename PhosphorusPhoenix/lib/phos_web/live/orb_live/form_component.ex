@@ -10,11 +10,13 @@ defmodule PhosWeb.OrbLive.FormComponent do
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(:changeset, changeset)}
+     |> assign(:changeset, changeset)
+     |> allow_upload(:image, accept: ~w(.jpg .jpeg .png), max_entries: 1)}
   end
 
   @impl true
   def handle_event("validate", %{"orb" => orb_params}, socket) do
+    IO.inspect(orb_params)
     changeset =
       socket.assigns.orb
       |> Action.change_orb(orb_params)
@@ -28,14 +30,41 @@ defmodule PhosWeb.OrbLive.FormComponent do
   # end
 
   def handle_event("save", %{"orb" => orb_params}, socket) do
+    generated_orb_id = Ecto.UUID.generate()
     # Process latlon value to x7 h3 indexes
     latlon = {socket.assigns.live.latitude, socket.assigns.live.longitude}
-    |> :h3.from_geo(String.to_integer(orb_params["radius"]))
+    |> :h3.from_geo(String.to_integer(List.first(orb_params["radius"])))
     |> :h3.k_ring(1)
     orb_params = Map.put(orb_params, "geolocation", latlon)
 
-    save_orb(socket, socket.assigns.action, orb_params)
+    # Process image upload
+    orb_params = Map.put(orb_params, "id", generated_orb_id)
+
+    file_uploaded =
+    consume_uploaded_entries(socket, :image, fn %{path: path}, _entry ->
+      for res <- ["150x150", "1920x1080"] do
+        {:ok, dest} = Phos.Orbject.S3.put("ORB", generated_orb_id, res)
+        compressed_image =
+          Mogrify.open(path)
+          |> Mogrify.resize(res)
+          |> Mogrify.save()
+        HTTPoison.put(dest, {:file, compressed_image.path})
+      end
+      {:ok, path}
+    end)
+
+    unless Enum.empty?(file_uploaded) do
+      orb_params = Map.put(orb_params, "media", true)
+      save_orb(socket, socket.assigns.action, orb_params)
+    else
+      save_orb(socket, socket.assigns.action, orb_params)
+    end
+
+
   end
+
+  defp error_to_string(:too_large), do: "Image too large"
+  defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
 
   defp save_orb(socket, :edit, orb_params) do
     case Action.update_orb(socket.assigns.orb, orb_params) do

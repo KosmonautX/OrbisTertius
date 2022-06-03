@@ -5,6 +5,7 @@ defmodule PhosWeb.UserChannel do
   alias Phos.Action
   alias Phos.Pubsub
   alias Phos.Geographer
+  alias Phos.External.ForeignAPI
 
   @impl true
   def join("archetype:usr:" <> id , _payload, socket) do
@@ -82,6 +83,13 @@ defmodule PhosWeb.UserChannel do
                                            message: echoes.message,
                                            time: DateTime.from_naive!(echoes.inserted_at,"Etc/UTC") |> DateTime.to_unix()
                                    }) end)
+
+    if (Phos.Repo.get_by(Phos.Users.User, fyr_id: socket.assigns.user_channel_id) == nil) do
+      # Phos.External.ForeignAPI.get_fyr_id(socket.assigns.user_channel_id)
+      # |> Phos.Repo.
+
+    end
+    # IO.inspect(socket.assigns)
     {:noreply,socket}
    end
 

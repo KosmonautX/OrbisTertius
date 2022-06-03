@@ -28,6 +28,12 @@ defmodule Phos.Orbject.S3 do
     signer(:get, path)
   end
 
+  def get!(archetype, uuid, form) do
+    path = archetype <> "/" <> uuid <> "/" <> form
+    {:ok, url} = signer(:get, path)
+    url
+  end
+
   def put(archetype, uuid, form) do
     path = archetype <> "/" <> uuid <> "/" <> form
     signer(:put, path)
