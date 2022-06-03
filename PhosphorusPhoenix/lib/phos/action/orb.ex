@@ -10,6 +10,8 @@ defmodule Phos.Action.Orb do
     field :extinguish, :naive_datetime
     field :media, :boolean, default: false
     field :title, :string
+    field :initiator, Ecto.UUID
+    field :orb_nature, :string
 
     belongs_to :users, User, references: :id, foreign_key: :initiator, type: Ecto.UUID
     many_to_many :locations, Location, join_through: Orb_Location, on_delete: :delete_all#, join_keys: [id: :id, location_id: :location_id]

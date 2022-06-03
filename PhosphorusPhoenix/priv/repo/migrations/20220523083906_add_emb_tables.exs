@@ -29,6 +29,7 @@ defmodule Phos.Repo.Migrations.AddEmbTables do
       add :media, :boolean, default: false, null: false
       add :extinguish, :naive_datetime
       add :payload, :jsonb
+      add :orb_nature, :string
       add :initiator, references(:users, column: :id, type: :uuid)
 
       timestamps()
