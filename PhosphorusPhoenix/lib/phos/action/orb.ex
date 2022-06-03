@@ -10,7 +10,6 @@ defmodule Phos.Action.Orb do
     field :extinguish, :naive_datetime
     field :media, :boolean, default: false
     field :title, :string
-    field :initiator, Ecto.UUID
     field :orb_nature, :string
 
     belongs_to :users, User, references: :id, foreign_key: :initiator, type: Ecto.UUID
@@ -23,7 +22,7 @@ defmodule Phos.Action.Orb do
   @doc false
   def changeset(%Phos.Action.Orb{} = orb, attrs) do
     orb
-    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :initiator])
+    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :orb_nature, :initiator])
     |> cast_assoc(:locations)
     |> assoc_constraint(:users)
     |> cast_embed(:payload)
