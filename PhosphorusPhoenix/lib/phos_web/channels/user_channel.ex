@@ -22,6 +22,7 @@ defmodule PhosWeb.UserChannel do
 
   # maintain subscriber lists for live home work on socket
   def handle_in("geocenter", geolocation,  socket) do
+    geo_jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiREFBb2hnc0xNcFFQbXNicGJ2Z1E1UEVQdXkyMiIsInJvbGUiOiJwbGViIiwidGVycml0b3J5Ijp7ImhvbWUiOnsicmFkaXVzIjo4LCJoYXNoIjoiODg2NTI2MzYwNWZmZmZmIn0sImxpdmUiOnsicmFkaXVzIjo4LCJoYXNoIjoiODg2NTI2YWMzZGZmZmZmIn0sIndvcmsiOnsicmFkaXVzIjo4LCJoYXNoIjoiODg2NTI2YWMzNWZmZmZmIn19LCJ1c2VybmFtZSI6IkFkbWluaXN0cmF0b3IiLCJpYXQiOjE2NTQyNTgxNjQsImV4cCI6MTY1NDI1OTM2NCwiaXNzIjoiUHJpbmNldG9uIiwic3ViIjoiU2NyYXRjaEJhYyJ9.TVQq94RpT1n6Lb42xQNxrf97Wszj8O_meBp6V8yrcUs"
     # watch out for backpressure genstage here Producer/Consumer
     ref = socket_ref(socket)
     Task.start(fn ->
@@ -84,6 +85,9 @@ defmodule PhosWeb.UserChannel do
                                            time: DateTime.from_naive!(echoes.inserted_at,"Etc/UTC") |> DateTime.to_unix()
                                    }) end)
 
+    # if user that exists on phone, exists on postgres (new models)
+    # do returning user pathway
+    # else migrate user from nodejs(dynamodb) and create model on postgres
     if (Phos.Repo.get_by(Phos.Users.User, fyr_id: socket.assigns.user_channel_id) == nil) do
       # Phos.External.ForeignAPI.get_fyr_id(socket.assigns.user_channel_id)
       # |> Phos.Repo.

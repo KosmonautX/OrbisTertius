@@ -32,10 +32,10 @@ defmodule PhosWeb.OrbLive.FormComponent do
   def handle_event("save", %{"orb" => orb_params}, socket) do
     generated_orb_id = Ecto.UUID.generate()
     # Process latlon value to x7 h3 indexes
-    latlon = {socket.assigns.live.latitude, socket.assigns.live.longitude}
-    |> :h3.from_geo(String.to_integer(List.first(orb_params["radius"])))
+    geohashes = socket.assigns.geolocation[String.to_existing_atom(List.first(orb_params["location"]))][:geohash].hash
+    |> :h3.parent(String.to_integer(List.first(orb_params["radius"])))
     |> :h3.k_ring(1)
-    orb_params = Map.put(orb_params, "geolocation", latlon)
+    orb_params = Map.put(orb_params, "geolocation", geohashes)
 
     # Process image upload
     orb_params = Map.put(orb_params, "id", generated_orb_id)
@@ -57,6 +57,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
       orb_params = Map.put(orb_params, "media", true)
       save_orb(socket, socket.assigns.action, orb_params)
     else
+      orb_params = Map.put(orb_params, "media", false)
       save_orb(socket, socket.assigns.action, orb_params)
     end
 

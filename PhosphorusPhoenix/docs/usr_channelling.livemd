@@ -154,7 +154,7 @@ end
 ```
 
 ```elixir
-message = %{"destination" => "albert", "destination_archetype" => "USR", "message" => "waddup"}
+message = %{"destination" => "albert", "destination_archetype" => "USR", "message" => "hi satrio"}
 Phoenix.Channels.GenSocketClient.call(pid, {:message, message})
 ```
 

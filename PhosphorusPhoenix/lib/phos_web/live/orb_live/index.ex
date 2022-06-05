@@ -8,7 +8,7 @@ defmodule PhosWeb.OrbLive.Index do
   def mount(_params, _session, socket) do
     {:ok, socket
     |> assign(:orbs, list_orbs())
-    |> assign(:live, %{})
+    |> assign(:geolocation, %{live: %{}, work: %{}})
   }
   end
 
@@ -36,8 +36,20 @@ defmodule PhosWeb.OrbLive.Index do
   end
 
   @impl true
-  def handle_event("location_update", %{"longitude" => longitude, "latitude" => latitude}, socket) do
-    {:noreply, assign(socket, :live, %{longitude: longitude, latitude: latitude})}
+  def handle_event("live_location_update", %{"longitude" => longitude, "latitude" => latitude}, socket) do
+    updated_geolocation = get_and_update_in(socket.assigns.geolocation, Enum.map([:live, :geohash], &Access.key(&1, %{})), &{&1, %{hash: :h3.from_geo({latitude, longitude}, 10), radius: 10}})
+    |> case do
+         {past, present} -> unless past == present[:live][:geohash] do
+             put_in(present, [:live, :geosub],
+               Enum.map([8,9,10], fn res -> :h3.parent(present[:live][:geohash].hash,res) end)
+               |> subscriber(present[:live][:geosub])
+               )
+             else
+               present
+             end
+           end
+
+    {:noreply, assign(socket, :geolocation, updated_geolocation)}
   end
 
   @impl true
@@ -51,4 +63,19 @@ defmodule PhosWeb.OrbLive.Index do
   defp list_orbs do
     Action.list_orbs()
   end
-end
+
+  defp subscriber(present, nil) do
+    IO.puts("subscribe #{inspect(present)}")
+    present |>Enum.map(fn new-> Phos.Pubsub.subscribe(loc_topic(new)) end)
+    present
+  end
+
+  defp subscriber(present, past) do
+    IO.puts("subscribe with past#{inspect(present)}")
+    present -- past |> Enum.map(fn old -> old |> loc_topic() |> Phos.Pubsub.unsubscribe() end)
+    past -- present |>Enum.map(fn new-> new |> loc_topic() |> Phos.Pubsub.subscribe() end)
+    present
+  end
+
+  defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"
+ end

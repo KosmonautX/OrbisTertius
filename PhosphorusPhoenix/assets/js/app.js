@@ -17,7 +17,7 @@ Hooks.InitGps = {
   mounted() {
     navigator.geolocation.watchPosition(
       (pos) => {
-        this.pushEvent("location_update", { latitude: pos.coords.latitude, longitude: pos.coords.longitude })
+        this.pushEvent("live_location_update", { latitude: pos.coords.latitude, longitude: pos.coords.longitude })
       },
       (err) => console.log(err),
       { maximumAge: 0, enableHighAccuracy: true }
