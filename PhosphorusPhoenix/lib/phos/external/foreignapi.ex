@@ -1,11 +1,8 @@
 defmodule Phos.External.HeimdallrClient do
   use HTTPoison.Base
 
-  def get_fyr_id(id) do
-    Phos.External.HeimdallrClient.get!("query/get_users/" <> id).body
-    |> process_response_body()
-    |> List.first()
-    |> Map.get("user_id")
+  def get_dyn_user(id) do
+    List.first(Phos.External.HeimdallrClient.get!("query/get_users/" <> id).body)
   end
 
   def process_request_url(url) do

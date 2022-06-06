@@ -7,8 +7,6 @@ defmodule Phos.Action.Orb_Payload do
     field :where, :string
     field :info, :string
     field :tip, :string
-
-    timestamps()
   end
 
   @doc false

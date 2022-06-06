@@ -5,8 +5,6 @@ defmodule Phos.Users.Userprofile do
   embedded_schema do
     field :birthday, :naive_datetime
     field :bio, :string
-
-    timestamps()
   end
 
   @doc false

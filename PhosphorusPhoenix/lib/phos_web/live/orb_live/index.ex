@@ -8,8 +8,11 @@ defmodule PhosWeb.OrbLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     {:ok, socket
-    |> assign(:orbs, list_orbs())
+    |> assign(:orbs_small, [])
+    |> assign(:orbs_medium, [])
+    |> assign(:orbs_large, [])
     |> assign(:geolocation, %{live: %{}, home: %{}})
+    #|> assign(:geolocation, User.get_location_pref())
   }
   end
 
@@ -38,6 +41,7 @@ defmodule PhosWeb.OrbLive.Index do
 
   @impl true
   def handle_event("live_location_update", %{"longitude" => longitude, "latitude" => latitude}, socket) do
+    IO.inspect(socket.assigns.geolocation)
     updated_geolocation = get_and_update_in(socket.assigns.geolocation, Enum.map([:live, :geohash], &Access.key(&1, %{})), &{&1, %{hash: :h3.from_geo({latitude, longitude}, 10), radius: 10}})
     |> case do
          {past, present} -> unless past == present[:live][:geohash] do
@@ -49,8 +53,15 @@ defmodule PhosWeb.OrbLive.Index do
                present
              end
            end
+    IO.inspect(updated_geolocation)
+    # IO.inspect(Phos.Action.get_orbs_by_geohash(Enum.fetch!(Map.get(updated_geolocation, :live) |> Map.get(:geosub), 2)))
+    # {:noreply, assign(socket, :geolocation, updated_geolocation)}
 
-    {:noreply, assign(socket, :geolocation, updated_geolocation)}
+    # Phos.Action.get_orbs_by_geohash(Enum.fetch!(Map.get(assigns, :live) |> Map.get(:geosub), 2)) |> List.first()
+    {:noreply, socket
+      |> assign(:orbs_small, Phos.Action.get_orbs_by_geohash(Enum.fetch!(Map.get(updated_geolocation, :live) |> Map.get(:geosub), 0)))
+      |> assign(:orbs_medium, Phos.Action.get_orbs_by_geohash(Enum.fetch!(Map.get(updated_geolocation, :live) |> Map.get(:geosub), 1)))
+      |> assign(:orbs_large, Phos.Action.get_orbs_by_geohash(Enum.fetch!(Map.get(updated_geolocation, :live) |> Map.get(:geosub), 2)))}
   end
 
   @impl true

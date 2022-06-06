@@ -9,8 +9,6 @@ defmodule Phos.Users.Geohash do
     field :radius, :integer
     field :geohashingtiny, :integer
     field :chronolock, :integer
-
-    timestamps()
   end
 
   @doc false
