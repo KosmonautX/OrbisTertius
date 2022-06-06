@@ -1,15 +1,15 @@
-defmodule Phos.External.ForeignAPI do
+defmodule Phos.External.HeimdallrClient do
   use HTTPoison.Base
 
   def get_fyr_id(id) do
-    HTTPoison.get!("https://borbarossa.scratchbac.org/api/query/get_users/" <> id).body
+    Phos.External.HeimdallrClient.get!("query/get_users/" <> id).body
     |> process_response_body()
     |> List.first()
     |> Map.get("user_id")
   end
 
   def process_request_url(url) do
-    "https://borbarossa.scratchbac.org" <> url
+    "https://borbarossa.scratchbac.org/api/" <> url
   end
 
   def process_response_body(body) do

@@ -3,12 +3,13 @@ defmodule PhosWeb.OrbLive.Index do
 
   alias Phos.Action
   alias Phos.Action.Orb
+  alias Phos.PubSub
 
   @impl true
   def mount(_params, _session, socket) do
     {:ok, socket
     |> assign(:orbs, list_orbs())
-    |> assign(:geolocation, %{live: %{}, work: %{}})
+    |> assign(:geolocation, %{live: %{}, home: %{}})
   }
   end
 
@@ -42,7 +43,7 @@ defmodule PhosWeb.OrbLive.Index do
          {past, present} -> unless past == present[:live][:geohash] do
              put_in(present, [:live, :geosub],
                Enum.map([8,9,10], fn res -> :h3.parent(present[:live][:geohash].hash,res) end)
-               |> subscriber(present[:live][:geosub])
+               |> loc_subscriber(present[:live][:geosub])
                )
              else
                present
@@ -60,20 +61,32 @@ defmodule PhosWeb.OrbLive.Index do
     {:noreply, assign(socket, :orbs, list_orbs())}
   end
 
+  def handle_info({PubSub, {:orb, :genesis}, message}, socket) do
+    IO.puts("genesis #{inspect(message)}")
+  end
+
+  def handle_info({PubSub, {:orb, :mutate}, message}, socket) do
+    IO.puts("mutate #{inspect(message)}")
+  end
+
+  def handle_info({PubSub, {:orb, :deactivate}, message}, socket) do
+    IO.puts("deactivate #{inspect(message)}")
+  end
+
   defp list_orbs do
     Action.list_orbs()
   end
 
-  defp subscriber(present, nil) do
+  defp loc_subscriber(present, nil) do
     IO.puts("subscribe #{inspect(present)}")
-    present |>Enum.map(fn new-> Phos.Pubsub.subscribe(loc_topic(new)) end)
+    present |>Enum.map(fn new-> Phos.PubSub.subscribe(loc_topic(new)) end)
     present
   end
 
-  defp subscriber(present, past) do
+  defp loc_subscriber(present, past) do
     IO.puts("subscribe with past#{inspect(present)}")
-    present -- past |> Enum.map(fn old -> old |> loc_topic() |> Phos.Pubsub.unsubscribe() end)
-    past -- present |>Enum.map(fn new-> new |> loc_topic() |> Phos.Pubsub.subscribe() end)
+    present -- past |> Enum.map(fn old -> old |> loc_topic() |> Phos.PubSub.unsubscribe() end)
+    past -- present |>Enum.map(fn new-> new |> loc_topic() |> Phos.PubSub.subscribe() end)
     present
   end
 

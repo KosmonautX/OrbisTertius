@@ -1,4 +1,4 @@
-defmodule Phos.Pubsub do
+defmodule Phos.PubSub do
   @moduledoc """
     Publish Subscriber Pattern
   """

@@ -3,9 +3,9 @@ defmodule PhosWeb.UserChannel do
   alias PhosWeb.Menshen.Auth
   alias Phos.Message
   alias Phos.Action
-  alias Phos.Pubsub
+  alias Phos.PubSub
   alias Phos.Geographer
-  alias Phos.External.ForeignAPI
+  alias Phos.External.HeimdallrClient
 
   @impl true
   def join("archetype:usr:" <> id , _payload, socket) do
@@ -89,7 +89,7 @@ defmodule PhosWeb.UserChannel do
     # do returning user pathway
     # else migrate user from nodejs(dynamodb) and create model on postgres
     if (Phos.Repo.get_by(Phos.Users.User, fyr_id: socket.assigns.user_channel_id) == nil) do
-      # Phos.External.ForeignAPI.get_fyr_id(socket.assigns.user_channel_id)
+      # Phos.External.HeimdallrClient.get_fyr_id(socket.assigns.user_channel_id)
       # |> Phos.Repo.
 
     end
