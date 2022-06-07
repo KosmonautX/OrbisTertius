@@ -103,16 +103,20 @@ defmodule PhosWeb.OrbLive.Index do
     {:noreply, assign(socket, :orbs, list_orbs())}
   end
 
+  @impl true
   def handle_info({PubSub, {:orb, :genesis}, message}, socket) do
     IO.puts("genesis #{inspect(message)}")
+    {:noreply, socket}
   end
 
-  def handle_info({PubSub, {:orb, :mutate}, message}, socket) do
+  def handle_info({PubSub, {:orb, :mutation}, message}, socket) do
     IO.puts("mutate #{inspect(message)}")
+    {:noreply, socket}
   end
 
-  def handle_info({PubSub, {:orb, :deactivate}, message}, socket) do
+  def handle_info({PubSub, {:orb, :deactivation}, message}, socket) do
     IO.puts("deactivate #{inspect(message)}")
+    {:noreply, socket}
   end
 
   defp list_orbs do
@@ -130,6 +134,12 @@ defmodule PhosWeb.OrbLive.Index do
     present -- past |> Enum.map(fn old -> old |> loc_topic() |> Phos.PubSub.unsubscribe() end)
     past -- present |>Enum.map(fn new-> new |> loc_topic() |> Phos.PubSub.subscribe() end)
     present
+  end
+
+  defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"
+
+  defp orb_loc_publisher(orb, event, to_locations) do
+    to_locations |> Enum.map(fn loc-> Phos.PubSub.publish(orb, {:orb, event}, loc_topic(loc)) end)
   end
 
   defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"

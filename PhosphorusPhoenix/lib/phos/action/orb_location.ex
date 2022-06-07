@@ -20,5 +20,6 @@ defmodule Phos.Action.Orb_Location do
       name: :orb_id_location_id_unique_index,
       message: "ALREADY_EXISTS"
     )
+    |> unique_constraint(:location_overload, name: :same_orb_within_location)
   end
 end
