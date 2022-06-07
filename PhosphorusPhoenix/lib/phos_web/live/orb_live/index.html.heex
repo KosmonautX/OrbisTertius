@@ -71,9 +71,9 @@
       <th></th>
     </tr>
   </thead>
-  <tbody id="orbs">
+  <tbody id="homeorbs">
     <%= for orb <- @home_orbs do %>
-      <tr id={"orb-#{orb.id}"}>
+      <tr id={"homeorb-#{orb.id}"}>
         <td><%= orb.title %></td>
         <td><%= orb.active %></td>
         <td><%= orb.media %></td>
@@ -106,9 +106,9 @@
       <th></th>
     </tr>
   </thead>
-  <tbody id="orbs">
+  <tbody id="workorbs">
     <%= for orb <- @work_orbs do %>
-      <tr id={"orb-#{orb.id}"}>
+      <tr id={"workorb-#{orb.id}"}>
         <td><%= orb.title %></td>
         <td><%= orb.active %></td>
         <td><%= orb.media %></td>

@@ -67,8 +67,6 @@ defmodule PhosWeb.OrbLive.Index do
              end
            end
 
-    # [614268985654902783, 618772585280700415, 623276184907907071]
-
     # Get orbs from geosub live
     live_orbs =
       Phos.Action.get_orbs_by_geohashes((Map.get(updated_geolocation, :live) |> Map.get(:geosub)))
