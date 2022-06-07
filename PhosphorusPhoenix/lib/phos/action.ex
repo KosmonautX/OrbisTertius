@@ -42,6 +42,8 @@ defmodule Phos.Action do
   def get_orb!(id) do
     Repo.get!(Orb, id)
   end
+
+
   def get_orbs_by_geohash(id) do
     query =
       Orb_Location
@@ -50,6 +52,24 @@ defmodule Phos.Action do
 
     Repo.all(query, limit: 32)
   end
+
+  def get_orbs_by_trait(trait) do
+    query =
+      from p in Phos.Action.Orb, where: fragment("? @> ?", p.traits, ^trait)
+
+    Repo.all(query, limit: 8)
+  end
+
+  def get_orb_by_trait_geo(geohash, trait) do
+
+    query = from p in Phos.Action.Orb_Location,
+      where: p.location_id == ^geohash,
+      join: o in assoc(p, :orbs) ,
+      where: fragment("? @> ?", o.traits, ^trait)
+
+    Repo.all(query |> preload(:orbs), limit: 8)
+  end
+
 
 #   @doc """
 #   Creates a orb.
@@ -91,7 +111,7 @@ defmodule Phos.Action do
         IO.inspect changeset.errors
         {:error, changeset}
     end
-  end
+   end
 
   defp parse_locations(orb_id, attrs) do
     case attrs do

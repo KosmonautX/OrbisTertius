@@ -8,40 +8,37 @@ defmodule PhosWeb.UserChannel do
   alias Phos.External.HeimdallrClient
 
   @impl true
+
   def join("archetype:usr:" <> id , _payload, socket) do
     if authorized?(socket, id) do
       send(self(), :initiation)
       {:ok, socket
       |> assign(:user_channel_id, id)
-      |> assign(:geolocation, %{})
-      |> assign(:geosubscriptions, [])}
+      |> assign(:geolocation, %{})}
     else
       {:error, %{reason: "unauthorized"}}
     end
   end
 
-  # maintain subscriber lists for live home work on socket
-  def handle_in("geocenter", geolocation,  socket) do
-    geo_jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiREFBb2hnc0xNcFFQbXNicGJ2Z1E1UEVQdXkyMiIsInJvbGUiOiJwbGViIiwidGVycml0b3J5Ijp7ImhvbWUiOnsicmFkaXVzIjo4LCJoYXNoIjoiODg2NTI2MzYwNWZmZmZmIn0sImxpdmUiOnsicmFkaXVzIjo4LCJoYXNoIjoiODg2NTI2YWMzZGZmZmZmIn0sIndvcmsiOnsicmFkaXVzIjo4LCJoYXNoIjoiODg2NTI2YWMzNWZmZmZmIn19LCJ1c2VybmFtZSI6IkFkbWluaXN0cmF0b3IiLCJpYXQiOjE2NTQyNTgxNjQsImV4cCI6MTY1NDI1OTM2NCwiaXNzIjoiUHJpbmNldG9uIiwic3ViIjoiU2NyYXRjaEJhYyJ9.TVQq94RpT1n6Lb42xQNxrf97Wszj8O_meBp6V8yrcUs"
-    # watch out for backpressure genstage here Producer/Consumer
-    ref = socket_ref(socket)
-    Task.start(fn ->
-      #subscription inside tasks
-      Geographer.parse_territories(socket, geolocation)
-      |> Enum.map(fn orb ->
-        case orb do
-          {:ok, orb} ->
-            IO.inspect(orb)
-            broadcast socket, "shout", orb
-          {:error, message} ->
-            IO.inspect(message)
-        end
-      end)
-    end)
-    {:noreply, socket} #|> geosubscribing(geolocation)}
+  def handle_in("location_update", %{"name"=> name,"geohash"=> hash}, socket) do
+    # check name against jwt using authorized
+    updated_geolocation = get_and_update_in(socket.assigns.geolocation, Enum.map([name, :geohash], &Access.key(&1, %{})), &{&1, %{hash: :h3.parent(hash, 10), radius: 10}})
+    |> case do
+         {past, present} -> unless past == present[name][:geohash] do
+             put_in(present, [name, :geosub],
+               Enum.map([8,9,10], fn res -> :h3.parent(present[name][:geohash].hash,res) end)
+               |> loc_subscriber(present[name][:geosub])
+               |> loc_reverie(present[name][:geosub], socket)
+               )
+             else
+               present
+             end
+           end
+
+    {:noreply, assign(socket, :geolocation, updated_geolocation)}
   end
 
-  # Channels can be used in a request/response fashion
+000  # Channels can be used in a request/response fashion
   # by sending replies to requests from the client
   @impl true
   def handle_in("ping", payload, socket) do
@@ -111,12 +108,29 @@ defmodule PhosWeb.UserChannel do
     end
   end
 
-  defp geosubscribing(socket, geolocation) do
-    geolocation
-    |> Enum.map(fn {k,v} ->
-      unless socket[k]["hash"] == v["hash"] do
-        #replace with geosubscriptions
-      end
-    end)
+  defp loc_subscriber(present, nil) do
+    IO.puts("subscribe #{inspect(present)}")
+    present |>Enum.map(fn new-> Phos.PubSub.subscribe(loc_topic(new)) end)
+    present
   end
+
+  defp loc_subscriber(present, past) do
+    IO.puts("subscribe with past#{inspect(present)}")
+    present -- past |> Enum.map(fn old -> old |> loc_topic() |> Phos.PubSub.unsubscribe() end)
+    past -- present |>Enum.map(fn new-> new |> loc_topic() |> Phos.PubSub.subscribe() end)
+    present
+  end
+
+  defp loc_reverie(present, nil, socket) do
+    present |> Enum.map(fn new-> %{new =>  new |> Action.get_orbs_by_geohash()} end)
+    present
+  end
+
+  defp loc_reverie(present, past, socket) do
+    past -- present |>Enum.map(fn new-> %{new => new |>  Action.get_orbs_by_geohash()} end)
+    present
+  end
+
+  defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"
+
 end

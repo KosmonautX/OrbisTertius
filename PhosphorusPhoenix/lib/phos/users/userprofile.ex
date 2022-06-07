@@ -1,12 +1,10 @@
-defmodule Phos.Users.Userprofile do
+defmodule Phos.Users.Profile do
   use Ecto.Schema
   import Ecto.Changeset
 
   embedded_schema do
     field :birthday, :naive_datetime
     field :bio, :string
-
-    timestamps()
   end
 
   @doc false

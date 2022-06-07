@@ -11,6 +11,7 @@ defmodule Phos.Action.Orb do
     field :media, :boolean, default: false
     field :title, :string
     field :orb_nature, :string
+    field :traits, {:array, :string}
 
     belongs_to :users, User, references: :id, foreign_key: :initiator, type: Ecto.UUID
     many_to_many :locations, Location, join_through: Orb_Location, on_delete: :delete_all#, join_keys: [id: :id, location_id: :location_id]
@@ -22,7 +23,7 @@ defmodule Phos.Action.Orb do
   @doc false
   def changeset(%Phos.Action.Orb{} = orb, attrs) do
     orb
-    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :orb_nature, :initiator])
+    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :orb_nature, :initiator, :traits])
     |> cast_assoc(:locations)
     |> assoc_constraint(:users)
     |> cast_embed(:payload)
