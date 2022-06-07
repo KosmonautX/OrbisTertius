@@ -23,16 +23,16 @@ defmodule Phos.Users do
   end
 
 #   @doc """
-#   Gets a single orb.
+#   Gets a single user.
 
-#   Raises `Ecto.NoResultsError` if the Orb does not exist.
+#   Raises `Ecto.NoResultsError` if the User does not exist.
 
 #   ## Examples
 
-#       iex> get_orb!(123)
-#       %Orb{}
+#       iex> get_user!(123)
+#       %User{}
 
-#       iex> get_orb!(456)
+#       iex> get_user!(456)
 #       ** (Ecto.NoResultsError)
 
 #   """
@@ -44,25 +44,15 @@ defmodule Phos.Users do
     Repo.all(query)
   end
 
-  def get_orb!(id), do: Repo.get!(Orb, id)
-  def get_orbs_by_geohash(id) do
-    query =
-      Orb_Location
-      |> where([e], e.location_id == ^id)
-      |> preload(:orbs)
-
-    Repo.all(query, limit: 32)
-  end
-
 #   @doc """
-#   Creates a orb.
+#   Creates a user.
 
 #   ## Examples
 
-#       iex> create_orb(%{field: value})
-#       {:ok, %Orb{}}
+#       iex> create_user(%{field: value})
+#       {:ok, %User{}}
 
-#       iex> create_orb(%{field: bad_value})
+#       iex> create_user(%{field: bad_value})
 #       {:error, %Ecto.Changeset{}}
 
 #   """
@@ -74,14 +64,14 @@ defmodule Phos.Users do
   end
 
 #   @doc """
-#   Updates a orb.
+#   Updates a user.
 
 #   ## Examples
 
-#       iex> update_orb(orb, %{field: new_value})
-#       {:ok, %Orb{}}
+#       iex> update_user(user, %{field: new_value})
+#       {:ok, %User{}}
 
-#       iex> update_orb(orb, %{field: bad_value})
+#       iex> update_user(user, %{field: bad_value})
 #       {:error, %Ecto.Changeset{}}
 
 #   """
@@ -92,14 +82,14 @@ defmodule Phos.Users do
   end
 
 #   @doc """
-#   Deletes a orb.
+#   Deletes a user.
 
 #   ## Examples
 
-#       iex> delete_orb(orb)
-#       {:ok, %Orb{}}
+#       iex> delete_user(user)
+#       {:ok, %User{}}
 
-#       iex> delete_orb(orb)
+#       iex> delete_user(user)
 #       {:error, %Ecto.Changeset{}}
 
 #   """
@@ -108,12 +98,12 @@ defmodule Phos.Users do
   end
 
 #   @doc """
-#   Returns an `%Ecto.Changeset{}` for tracking orb changes.
+#   Returns an `%Ecto.Changeset{}` for tracking user changes.
 
 #   ## Examples
 
-#       iex> change_orb(orb)
-#       %Ecto.Changeset{data: %Orb{}}
+#       iex> change_user(user)
+#       %Ecto.Changeset{data: %User{}}
 
 #   """
   def change_user(%User{} = user, attrs \\ %{}) do
