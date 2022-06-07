@@ -13,6 +13,14 @@
   </.modal>
 <% end %>
 
+<div id="wrapper" phx-update="ignore">
+<div id="map"
+     phx-hook="FullMap"
+     style="height: 400px"></div>
+</div>
+
+
+<h2>Live Orbs</h2>
 <table>
   <thead>
     <tr>
@@ -31,6 +39,79 @@
         <td><%= orb.active %></td>
         <td><%= orb.media %></td>
         <td><%= orb.extinguish %></td>
+        <td><%= orb.payload.when %></td>
+        <td><%= orb.payload.tip %></td>
+        <td><%= orb.payload.info %></td>
+
+        <td>
+          <span><%= live_redirect "Show", to: Routes.orb_show_path(@socket, :show, orb) %></span>
+          <span><%= live_patch "Edit", to: Routes.orb_index_path(@socket, :edit, orb) %></span>
+          <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: orb.id, data: [confirm: "Are you sure?"] %></span>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<h2>Home Orbs</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Active</th>
+      <th>Media</th>
+      <th>Extinguish</th>
+      <th>Time</th>
+      <th>Tip</th>
+      <th>Info</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="homeorbs">
+    <%= for orb <- @geolocation[:home][:orbs] do %>
+      <tr id={"homeorb-#{orb.id}"}>
+        <td><%= orb.title %></td>
+        <td><%= orb.active %></td>
+        <td><%= orb.media %></td>
+        <td><%= orb.extinguish %></td>
+        <td><%= orb.payload.when %></td>
+        <td><%= orb.payload.tip %></td>
+        <td><%= orb.payload.info %></td>
+
+        <td>
+          <span><%= live_redirect "Show", to: Routes.orb_show_path(@socket, :show, orb) %></span>
+          <span><%= live_patch "Edit", to: Routes.orb_index_path(@socket, :edit, orb) %></span>
+          <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: orb.id, data: [confirm: "Are you sure?"] %></span>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<h2>Work Orbs</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Active</th>
+      <th>Media</th>
+      <th>Extinguish</th>
+      <th>Time</th>
+      <th>Tip</th>
+      <th>Info</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="workorbs">
+    <%= for orb <- @geolocation[:work][:orbs] do %>
+      <tr id={"workorb-#{orb.id}"}>
+        <td><%= orb.title %></td>
+        <td><%= orb.active %></td>
+        <td><%= orb.media %></td>
+        <td><%= orb.extinguish %></td>
+        <td><%= orb.payload.when %></td>
+        <td><%= orb.payload.tip %></td>
+        <td><%= orb.payload.info %></td>
 
         <td>
           <span><%= live_redirect "Show", to: Routes.orb_show_path(@socket, :show, orb) %></span>

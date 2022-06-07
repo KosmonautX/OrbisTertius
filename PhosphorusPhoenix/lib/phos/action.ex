@@ -43,6 +43,25 @@ defmodule Phos.Action do
       |> preload(:orbs)
 
     Repo.all(query, limit: 32)
+    |> Enum.map(fn orb -> orb.orbs end)
+
+  end
+
+  def get_orbs_by_trait(trait) do
+    query =
+      from p in Phos.Action.Orb, where: fragment("? @> ?", p.traits, ^trait)
+
+    Repo.all(query, limit: 8)
+  end
+
+  def get_orb_by_trait_geo(geohash, trait) do
+
+    query = from p in Phos.Action.Orb_Location,
+      where: p.location_id == ^geohash,
+      join: o in assoc(p, :orbs) ,
+      where: fragment("? @> ?", o.traits, ^trait)
+
+    Repo.all(query |> preload(:orbs), limit: 8)
   end
 
 #   @doc """
