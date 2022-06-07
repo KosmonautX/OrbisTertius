@@ -9,8 +9,11 @@ services:
       - "4000:4000"
     volumes:
       - ./PhosphorusPhoenix:/phos
+      - .env:/.env
     env_file:
       - .env
+    networks:
+      - postgres
     depends_on:
       - postgres
 
