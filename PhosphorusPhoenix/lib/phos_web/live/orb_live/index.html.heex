@@ -1,4 +1,4 @@
-<h1>Listing Orbs in Live </h1>
+<h1>Listing Orbs</h1>
 
 <div id="gps"
      phx-hook="InitGps"
@@ -18,7 +18,11 @@
   </.modal>
 <% end %>
 
-<h2>Small Orbs</h2>
+<h3>Set Home Location</h3>
+
+<h3>Set Work Location</h3>
+
+<h2>Live Orbs</h2>
 <table>
   <thead>
     <tr>
@@ -32,9 +36,9 @@
       <th></th>
     </tr>
   </thead>
-  <tbody id="orbs_s">
-    <%= for orb <- @orbs_small do %>
-      <tr id={"orb_small-#{orb.id}"}>
+  <tbody id="orbs">
+    <%= for orb <- @orbs do %>
+      <tr id={"orb-#{orb.id}"}>
         <td><%= orb.title %></td>
         <td><%= orb.active %></td>
         <td><%= orb.media %></td>
@@ -53,7 +57,7 @@
   </tbody>
 </table>
 
-<h2>Medium Orbs</h2>
+<h2>Home Orbs</h2>
 <table>
   <thead>
     <tr>
@@ -67,9 +71,9 @@
       <th></th>
     </tr>
   </thead>
-  <tbody id="orbs_m">
-    <%= for orb <- @orbs_medium do %>
-      <tr id={"orb_medium-#{orb.id}"}>
+  <tbody id="homeorbs">
+    <%= for orb <- @home_orbs do %>
+      <tr id={"homeorb-#{orb.id}"}>
         <td><%= orb.title %></td>
         <td><%= orb.active %></td>
         <td><%= orb.media %></td>
@@ -88,7 +92,7 @@
   </tbody>
 </table>
 
-<h2>Large Orbs</h2>
+<h2>Work Orbs</h2>
 <table>
   <thead>
     <tr>
@@ -102,9 +106,9 @@
       <th></th>
     </tr>
   </thead>
-  <tbody id="orbs_l">
-    <%= for orb <- @orbs_large do %>
-      <tr id={"orb_large-#{orb.id}"}>
+  <tbody id="workorbs">
+    <%= for orb <- @work_orbs do %>
+      <tr id={"workorb-#{orb.id}"}>
         <td><%= orb.title %></td>
         <td><%= orb.active %></td>
         <td><%= orb.media %></td>

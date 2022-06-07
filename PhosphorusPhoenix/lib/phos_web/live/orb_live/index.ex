@@ -8,10 +8,23 @@ defmodule PhosWeb.OrbLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     {:ok, socket
-    |> assign(:orbs_small, [])
-    |> assign(:orbs_medium, [])
-    |> assign(:orbs_large, [])
-    |> assign(:geolocation, %{live: %{}, home: %{}})
+    |> assign(:orbs, [])
+    |> assign(:geolocation, %{live: %{},
+        home: %{
+          geohash: %{hash: 623276184907907071, radius: 10},
+          geosub: []
+        },
+        work: %{
+          geohash: %{hash: 623276216933351423, radius: 10},
+          geosub: []
+        }
+     })
+    |> assign(:home_orbs, [])
+    |> assign(:work_orbs, [])
+    # |> assign(:orbs_home,
+    #   Enum.map([8,9,10], fn res -> :h3.parent(socket.assigns.geolocation[:home][:geohash].hash,res) end)
+    #     |> Phos.Action.get_orbs_by_geohashes()
+    #     |> Enum.sort_by(&Map.fetch(&1, :inserted_at), :desc))
     #|> assign(:geolocation, User.get_location_pref())
   }
   end
@@ -53,16 +66,31 @@ defmodule PhosWeb.OrbLive.Index do
                present
              end
            end
-    IO.inspect(updated_geolocation)
-    # IO.inspect(Phos.Action.get_orbs_by_geohash(Enum.fetch!(Map.get(updated_geolocation, :live) |> Map.get(:geosub), 2)))
-    # {:noreply, assign(socket, :geolocation, updated_geolocation)}
 
-    # Phos.Action.get_orbs_by_geohash(Enum.fetch!(Map.get(assigns, :live) |> Map.get(:geosub), 2)) |> List.first()
+    # Get orbs from geosub live
+    live_orbs =
+      Phos.Action.get_orbs_by_geohashes((Map.get(updated_geolocation, :live) |> Map.get(:geosub)))
+      |> Enum.sort_by(&Map.fetch(&1, :inserted_at), :desc)
+
+    home_orbs =
+      Enum.map([8,9,10], fn res -> :h3.parent(socket.assigns.geolocation[:home][:geohash].hash,res) end)
+        |> Phos.Action.get_orbs_by_geohashes()
+        |> Enum.sort_by(&Map.fetch(&1, :inserted_at), :desc)
+
+    work_orbs =
+      Enum.map([8,9,10], fn res -> :h3.parent(socket.assigns.geolocation[:work][:geohash].hash,res) end)
+      |> IO.inspect()
+        |> Phos.Action.get_orbs_by_geohashes()
+        |> Enum.sort_by(&Map.fetch(&1, :inserted_at), :desc)
+
+
+    # IO.inspect(updated_geolocation)
+
     {:noreply, socket
-     |> assign(:geolocation, updated_geolocation)
-      |> assign(:orbs_small, Phos.Action.get_orbs_by_geohash(Enum.fetch!(Map.get(updated_geolocation, :live) |> Map.get(:geosub), 0)))
-      |> assign(:orbs_medium, Phos.Action.get_orbs_by_geohash(Enum.fetch!(Map.get(updated_geolocation, :live) |> Map.get(:geosub), 1)))
-      |> assign(:orbs_large, Phos.Action.get_orbs_by_geohash(Enum.fetch!(Map.get(updated_geolocation, :live) |> Map.get(:geosub), 2)))}
+      |> assign(:geolocation, updated_geolocation)
+      |> assign(:orbs, live_orbs)
+      |> assign(:home_orbs, home_orbs)
+      |> assign(:work_orbs, work_orbs)}
   end
 
   @impl true
