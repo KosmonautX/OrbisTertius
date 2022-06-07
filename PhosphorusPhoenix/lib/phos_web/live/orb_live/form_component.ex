@@ -32,6 +32,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
   def handle_event("save", %{"orb" => orb_params}, socket) do
     generated_orb_id = Ecto.UUID.generate()
     # Process latlon value to x7 h3 indexes
+    IO.inspect socket.assigns.geolocation
     geohashes = socket.assigns.geolocation[String.to_existing_atom(orb_params["location"])][:geohash].hash
     |> :h3.parent(String.to_integer(orb_params["radius"]))
     |> :h3.k_ring(1)

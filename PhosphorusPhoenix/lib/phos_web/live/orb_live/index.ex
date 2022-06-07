@@ -59,6 +59,7 @@ defmodule PhosWeb.OrbLive.Index do
 
     # Phos.Action.get_orbs_by_geohash(Enum.fetch!(Map.get(assigns, :live) |> Map.get(:geosub), 2)) |> List.first()
     {:noreply, socket
+     |> assign(:geolocation, updated_geolocation)
       |> assign(:orbs_small, Phos.Action.get_orbs_by_geohash(Enum.fetch!(Map.get(updated_geolocation, :live) |> Map.get(:geosub), 0)))
       |> assign(:orbs_medium, Phos.Action.get_orbs_by_geohash(Enum.fetch!(Map.get(updated_geolocation, :live) |> Map.get(:geosub), 1)))
       |> assign(:orbs_large, Phos.Action.get_orbs_by_geohash(Enum.fetch!(Map.get(updated_geolocation, :live) |> Map.get(:geosub), 2)))}
