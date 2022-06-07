@@ -86,8 +86,18 @@ defmodule PhosWeb.UserChannel do
     # do returning user pathway
     # else migrate user from nodejs(dynamodb) and create model on postgres
     if (Phos.Repo.get_by(Phos.Users.User, fyr_id: socket.assigns.user_channel_id) == nil) do
-      # Phos.External.HeimdallrClient.get_fyr_id(socket.assigns.user_channel_id)
-      # |> Phos.Repo.
+
+      # user_payload = Phos.External.HeimdallrClient.get_dyn_user(socket.assigns.user_channel_id)
+      user_payload = Phos.External.HeimdallrClient.get_dyn_user("DAAohgsLMpQPmsbpbvgQ5PEPuy22")
+
+      geo_map = for loc <- Map.keys(user_payload["geolocation"]) do
+        user_payload["geolocation"][loc]
+        |> Map.put("type", loc)
+        |> Map.put("geohash", :h3.from_string(to_charlist(Map.get(user_payload["geolocation"][loc]["geohashing"], "hash"))))
+        |> Map.put("radius", Map.get(user_payload["geolocation"][loc]["geohashing"], "radius"))
+      end
+
+      Phos.Users.create_user(%{"username" => user_payload["payload"]["username"], "fyr_id" => socket.assigns.user_channel_id, "media" => user_payload["payload"]["media"], "userprofile" => %{"birthday" => user_payload["payload"]["birthday"], "bio" => user_payload["payload"]["bio"]}, "profile_pic" => user_payload["payload"]["profile_pic"] , "geohash"=> geo_map})
 
     end
     # IO.inspect(socket.assigns)

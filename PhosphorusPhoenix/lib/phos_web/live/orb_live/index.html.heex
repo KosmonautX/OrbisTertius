@@ -1,4 +1,4 @@
-<h1>Listing Orbs</h1>
+<h1>Listing Orbs in Live </h1>
 
 <div id="gps"
      phx-hook="InitGps"
@@ -18,6 +18,7 @@
   </.modal>
 <% end %>
 
+<h2>Small Orbs</h2>
 <table>
   <thead>
     <tr>
@@ -31,9 +32,79 @@
       <th></th>
     </tr>
   </thead>
-  <tbody id="orbs">
-    <%= for orb <- @orbs do %>
-      <tr id={"orb-#{orb.id}"}>
+  <tbody id="orbs_s">
+    <%= for orb <- @orbs_small do %>
+      <tr id={"orb_small-#{orb.id}"}>
+        <td><%= orb.title %></td>
+        <td><%= orb.active %></td>
+        <td><%= orb.media %></td>
+        <td><%= orb.extinguish %></td>
+        <td><%= orb.payload.when %></td>
+        <td><%= orb.payload.tip %></td>
+        <td><%= orb.payload.info %></td>
+
+        <td>
+          <span><%= live_redirect "Show", to: Routes.orb_show_path(@socket, :show, orb) %></span>
+          <span><%= live_patch "Edit", to: Routes.orb_index_path(@socket, :edit, orb) %></span>
+          <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: orb.id, data: [confirm: "Are you sure?"] %></span>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<h2>Medium Orbs</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Active</th>
+      <th>Media</th>
+      <th>Extinguish</th>
+      <th>Time</th>
+      <th>Tip</th>
+      <th>Info</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="orbs_m">
+    <%= for orb <- @orbs_medium do %>
+      <tr id={"orb_medium-#{orb.id}"}>
+        <td><%= orb.title %></td>
+        <td><%= orb.active %></td>
+        <td><%= orb.media %></td>
+        <td><%= orb.extinguish %></td>
+        <td><%= orb.payload.when %></td>
+        <td><%= orb.payload.tip %></td>
+        <td><%= orb.payload.info %></td>
+
+        <td>
+          <span><%= live_redirect "Show", to: Routes.orb_show_path(@socket, :show, orb) %></span>
+          <span><%= live_patch "Edit", to: Routes.orb_index_path(@socket, :edit, orb) %></span>
+          <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: orb.id, data: [confirm: "Are you sure?"] %></span>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<h2>Large Orbs</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Active</th>
+      <th>Media</th>
+      <th>Extinguish</th>
+      <th>Time</th>
+      <th>Tip</th>
+      <th>Info</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="orbs_l">
+    <%= for orb <- @orbs_large do %>
+      <tr id={"orb_large-#{orb.id}"}>
         <td><%= orb.title %></td>
         <td><%= orb.active %></td>
         <td><%= orb.media %></td>

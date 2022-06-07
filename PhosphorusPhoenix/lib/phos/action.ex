@@ -49,8 +49,14 @@ defmodule Phos.Action do
       Orb_Location
       |> where([e], e.location_id == ^id)
       |> preload(:orbs)
+      |> preload(:locations)
 
-    Repo.all(query, limit: 32)
+    results = Repo.all(query, limit: 32)
+
+    Enum.map(results, fn orb ->
+      orb.orbs
+    end)
+
   end
 
   def get_orbs_by_trait(trait) do

@@ -20,7 +20,6 @@ defmodule Phos.Users do
   """
   def list_users do
     Repo.all(User)
-    |> preload(:fyr)
   end
 
 #   @doc """
@@ -38,6 +37,13 @@ defmodule Phos.Users do
 
 #   """
 #
+  def get_location_pref(id) do
+    query =
+      User
+      |> where([e], e.fyr_id == ^id)
+    Repo.all(query)
+  end
+
   def get_orb!(id), do: Repo.get!(Orb, id)
   def get_orbs_by_geohash(id) do
     query =
