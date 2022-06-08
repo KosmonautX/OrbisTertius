@@ -1,5 +1,9 @@
 <h1>Listing Orbs</h1>
 
+<div id="gps"
+     phx-hook="InitGps"
+     phx-update="ignore"></div>
+
 <%= if @live_action in [:new, :edit] do %>
   <.modal return_to={Routes.orb_index_path(@socket, :index)}>
     <.live_component
@@ -8,6 +12,7 @@
       title={@page_title}
       action={@live_action}
       orb={@orb}
+      geolocation={@geolocation}
       return_to={Routes.orb_index_path(@socket, :index)}
     />
   </.modal>
@@ -19,7 +24,6 @@
      style="height: 400px"></div>
 </div>
 
-
 <h2>Live Orbs</h2>
 <table>
   <thead>
@@ -28,7 +32,9 @@
       <th>Active</th>
       <th>Media</th>
       <th>Extinguish</th>
-
+      <th>Time</th>
+      <th>Tip</th>
+      <th>Info</th>
       <th></th>
     </tr>
   </thead>

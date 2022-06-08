@@ -5,7 +5,8 @@ defmodule Phos.Action do
 
   import Ecto.Query, warn: false
   alias Phos.Repo
-  alias Phos.Action.{Orb, Location, Orb_Location}
+  alias Phos.Action.{Orb, Location, Orb_Payload, Orb_Location}
+
   alias Ecto.Multi
 
   @doc """
@@ -20,6 +21,7 @@ defmodule Phos.Action do
   def list_orbs do
     Repo.all(Orb)
     |> Repo.preload(:locations)
+    |> Repo.preload(:users)
   end
 
 #   @doc """
@@ -36,15 +38,34 @@ defmodule Phos.Action do
 #       ** (Ecto.NoResultsError)
 
 #   """
+#
+  def get_orb!(id) do
+    Repo.get!(Orb, id)
+  end
+
+  # TO DEPRECATE, merge into get_orbs_by_geohashes/1
   def get_orbs_by_geohash(id) do
     query =
       Orb_Location
       |> where([e], e.location_id == ^id)
       |> preload(:orbs)
+      |> preload(:locations)
+
+    results = Repo.all(query, limit: 32)
+
+    Enum.map(results, fn orb -> orb.orbs end)
+
+  end
+
+  def get_orbs_by_geohashes(ids) do
+    query =
+      Orb_Location
+      |> where([e], e.location_id in ^ids)
+      |> preload(:orbs)
+      |> preload(:locations)
 
     Repo.all(query, limit: 32)
     |> Enum.map(fn orb -> orb.orbs end)
-
   end
 
   def get_orbs_by_trait(trait) do
@@ -77,35 +98,34 @@ defmodule Phos.Action do
 
 #   """
 
-  # Phos.Action.create_orb(%{"geolocation" => [614268985908658175, 614268985470353407, 614268985912852479, 614268985900269567, 614268985910755327, 614268985652805631, 614268985466159103], "payload"=> %{"image" => "S3 path", "time" => 1653534012, "tip" => "bbt", "info" => "more more text"}, "title" => "sembawang NICE food", "extinguish" => NaiveDateTime.utc_now()})
-  # Phos.Action.create_orb(%{"geolocation" => [623276184907743231, 623276184907710463, 623276184907579391, 623276184907612159, 623276184908038143, 623276184908988415, 623276184908955647] , "payload"=> %{"image" => "S3 path", "time" => 1653534012, "tip" => "bbt", "info" => "more more text"}, "title" => "sembawang NICE food 2", "extinguish" => NaiveDateTime.utc_now()})
-  # Phos.Action.create_orb(%{"geolocation" => [614269017678413823, 614269017676316671, 614269017682608127, 614269018120912895, 614269017865060351, 614269017873448959, 614269017686802431], "payload"=> %{"image" => "S3 path", "time" => 1653534012, "tip" => "bbt", "info" => "more more text"}, "title" => "simpang NICE food", "extinguish" => NaiveDateTime.utc_now()})
-  # Phos.Action.create_orb(%{"geolocation" => [614269017680510975, 614269017661636607, 614269018104135679, 614269018106232831, 614269017682608127, 614269017676316671, 614269017688899583], "payload"=> %{"image" => "S3 path", "time" => 1653534012, "tip" => "bbt", "info" => "more more text"}, "title" => "sutd NICE food", "extinguish" => NaiveDateTime.utc_now()})
-  # Phos.Action.create_orb(%{"geolocation" => [614268613639012351, 614268613704024063, 614268613643206655, 614268613630623743, 614268613641109503, 614268613718704127, 614268613699829759], "payload"=> %{"image" => "S3 path", "time" => 1653534012, "tip" => "bbt", "info" => "more more text"}, "title" => "bp rock", "extinguish" => NaiveDateTime.utc_now()})
-
   def create_orb(attrs \\ %{}) do
     multi =
       Multi.new()
       |> Multi.insert(:insert_orb, %Orb{} |> Orb.changeset(attrs))
-      |> Multi.insert_all(:insert_locations, Location, parse_locations(attrs), on_conflict: :nothing, conflict_target: :location_id)
+      |> Multi.insert_all(:insert_locations, Location, parse_locations(attrs), on_conflict: :nothing, conflict_target: :id)
       |> Multi.insert_all(:insert_orb_locations, Orb_Location, fn %{insert_orb: orb} ->
-        parse_locations(orb.orb_id, attrs)
+        parse_locations(orb.id, attrs)
       end)
 
     case (Repo.transaction(multi)) do
-      {:ok, _results} ->
+      {:ok, results} ->
+        IO.inspect results
         IO.puts "Ecto Multi Success"
+        {:ok, results.insert_orb}
       {:error, :insert_orb, changeset, _changes} ->
         IO.puts "Orb insert failed"
         IO.inspect changeset.errors
+        {:error, changeset}
       {:error, :insert_locations, changeset, _changes} ->
         IO.puts "Location insert failed"
         IO.inspect changeset.errors
+        {:error, changeset}
       {:error, :insert_orb_locations, changeset, _changes} ->
         IO.puts "Orb_Location insert failed"
         IO.inspect changeset.errors
+        {:error, changeset}
     end
-  end
+   end
 
   defp parse_locations(orb_id, attrs) do
     case attrs do
@@ -119,10 +139,12 @@ defmodule Phos.Action do
           inserted_at: timestamp,
           updated_at: timestamp
         })
+        IO.inspect maps
 
         maps
       %{} ->
         IO.puts "missing geolocation"
+        []
     end
   end
 
@@ -133,14 +155,16 @@ defmodule Phos.Action do
         |> NaiveDateTime.truncate(:second)
 
         maps = Enum.map(location_list, &%{
-          location_id: &1,
+          id: &1,
           inserted_at: timestamp,
           updated_at: timestamp
         })
+        IO.inspect maps
 
         maps
       %{} ->
         IO.puts "missing geolocation"
+        []
     end
   end
 

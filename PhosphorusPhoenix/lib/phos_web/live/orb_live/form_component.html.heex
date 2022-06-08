@@ -1,6 +1,8 @@
 <div>
   <h2><%= @title %></h2>
 
+  <section phx-drop-target={@uploads.image.ref}>
+
   <.form
     let={f}
     for={@changeset}
@@ -8,25 +10,65 @@
     phx-target={@myself}
     phx-change="validate"
     phx-submit="save">
-  
+
     <%= label f, :title %>
     <%= text_input f, :title %>
     <%= error_tag f, :title %>
-  
+
     <%= label f, :active %>
     <%= checkbox f, :active %>
     <%= error_tag f, :active %>
-  
-    <%= label f, :media %>
-    <%= checkbox f, :media %>
-    <%= error_tag f, :media %>
-  
+
     <%= label f, :extinguish %>
     <%= datetime_select f, :extinguish %>
     <%= error_tag f, :extinguish %>
-  
+
+    <%= label f, :radius %>
+    <%= select f, :radius, ["2km": 8, "1km": 9, "500m": 10], selected: 10 %>
+    <%= error_tag f, :radius %>
+
+    <%= label f, :location %>
+    <%= select f, :location, Map.keys(@geolocation), selected: :live %>
+    <%= error_tag f, :location %>
+
+    <%= label f, :initiator %>
+    <%= text_input f, :initiator %>
+    <%= error_tag f, :initiator %>
+
+    <%= label f, :traits %>
+    <%= multiple_select f, :traits, ["Pinned": "pin", "Treasure Hunt": "treasurehunt"]%>
+    <%= error_tag f, :traits %>
+
+    <%= inputs_for f, :payload, fn ff -> %>
+      <%= label ff, :image %>
+      <%= live_file_input @uploads.image %>
+
+      <%= for entry <- @uploads.image.entries do %>
+        <figure>
+          <%= live_img_preview entry %>
+        </figure>
+      <% end %>
+
+      <%= for err <- upload_errors(@uploads.image) do %>
+        <p class="alert alert-danger"><%= error_to_string(err) %></p>
+      <% end %>
+
+      <%= label ff, :time %>
+      <%= text_input ff, :time %>
+      <%= error_tag ff, :time %>
+
+      <%= label ff, :tip %>
+      <%= text_input ff, :tip %>
+      <%= error_tag ff, :tip %>
+
+      <%= label ff, :info %>
+      <%= text_input ff, :info %>
+      <%= error_tag ff, :info %>
+    <% end %>
+
     <div>
       <%= submit "Save", phx_disable_with: "Saving..." %>
     </div>
   </.form>
+  </section>
 </div>

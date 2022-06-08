@@ -3,6 +3,7 @@ defmodule PhosWeb.OrbLive.Index do
 
   alias Phos.Action
   alias Phos.Action.Orb
+  alias Phos.PubSub
 
   @impl true
   def mount(_params, _session, socket) do
@@ -76,9 +77,11 @@ defmodule PhosWeb.OrbLive.Index do
       Phos.Action.get_orbs_by_geohashes((Map.get(updated_geolocation, :live) |> Map.get(:geosub)))
       |> Enum.sort_by(&Map.fetch(&1, :inserted_at), :desc)
 
+
     geo_boundaries =
       :h3.from_geo({latitude, longitude}, 8) |> :h3.to_geo_boundary() |> Enum.map(fn tuple -> Tuple.to_list(tuple) end)
 
+    # IO.inspect(updated_geolocation)
     {:noreply, socket
       |> assign(:geolocation, updated_geolocation)
       |> assign(:orbs, live_orbs)
@@ -95,7 +98,44 @@ defmodule PhosWeb.OrbLive.Index do
     {:noreply, assign(socket, :orbs, list_orbs())}
   end
 
+  @impl true
+  def handle_info({PubSub, {:orb, :genesis}, message}, socket) do
+    IO.puts("genesis #{inspect(message)}")
+    {:noreply, socket}
+  end
+
+  def handle_info({PubSub, {:orb, :mutation}, message}, socket) do
+    IO.puts("mutate #{inspect(message)}")
+    {:noreply, socket}
+  end
+
+  def handle_info({PubSub, {:orb, :deactivation}, message}, socket) do
+    IO.puts("deactivate #{inspect(message)}")
+    {:noreply, socket}
+  end
+
   defp list_orbs do
     Action.list_orbs()
   end
-end
+
+  defp loc_subscriber(present, nil) do
+    IO.puts("subscribe #{inspect(present)}")
+    present |>Enum.map(fn new-> Phos.PubSub.subscribe(loc_topic(new)) end)
+    present
+  end
+
+  defp loc_subscriber(present, past) do
+    IO.puts("subscribe with past#{inspect(present)}")
+    present -- past |> Enum.map(fn old -> old |> loc_topic() |> Phos.PubSub.unsubscribe() end)
+    past -- present |>Enum.map(fn new-> new |> loc_topic() |> Phos.PubSub.subscribe() end)
+    present
+  end
+
+  defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"
+
+  defp orb_loc_publisher(orb, event, to_locations) do
+    to_locations |> Enum.map(fn loc-> Phos.PubSub.publish(orb, {:orb, event}, loc_topic(loc)) end)
+  end
+
+  defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"
+ end

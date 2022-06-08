@@ -72,6 +72,7 @@ async function gen_orb(body){
     promises.orb_uuid =  body.orb_uuid;
     promises.expiry = body.expiry_dt;
     promises.creationtime = body.created_dt
+    promises.where = body.where
     if (body.media){
         promises.lossy = await serve3.preSign('putObject','ORB',body.orb_uuid,'150x150')
         promises.lossless = await serve3.preSign('putObject','ORB',body.orb_uuid,'1920x1080');

@@ -25,15 +25,36 @@
     <%= @orb.active %>
   </li>
 
+  <%= if @orb.media do %>
   <li>
     <strong>Media:</strong>
-    <%= @orb.media %>
+    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "150x150") }>
+    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "1920x1080") }>
   </li>
+  <% end%>
 
   <li>
     <strong>Extinguish:</strong>
     <%= @orb.extinguish %>
   </li>
+
+  <li>
+    <strong>Time:</strong>
+    <%= @orb.payload.when %>
+  </li>
+
+  <li>
+    <strong>Tip:</strong>
+    <%= @orb.payload.tip %>
+  </li>
+
+  <li>
+    <strong>Info:</strong>
+    <%= @orb.payload.info %>
+  </li>
+
+
+
 
 </ul>
 
