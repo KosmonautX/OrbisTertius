@@ -1,5 +1,10 @@
-defmodule Phos.Utility do
+defmodule PhosWeb.Util.Viewer do
 
+  @moduledoc """
+
+  For our Viewer Helper function that moulds data Models into Views
+
+  """
   # Orb Mapper
   def orb_mapper(orbs) do
     Enum.map(orbs, fn orb ->
