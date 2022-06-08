@@ -9,24 +9,7 @@ defmodule PhosWeb.OrbLive.Index do
   def mount(_params, _session, socket) do
     {:ok, socket
     |> assign(:orbs, [])
-    |> assign(:geolocation, %{live: %{},
-        home: %{
-          geohash: %{hash: 623276184907907071, radius: 10},
-          geosub: [],
-          orbs:
-          Enum.map([8,9,10], fn res -> :h3.parent(623276184907907071,res) end)
-            |> Phos.Action.get_orbs_by_geohashes()
-            |> Enum.sort_by(&Map.fetch(&1, :inserted_at), :desc)
-        },
-        work: %{
-          geohash: %{hash: 623276216933351423, radius: 10},
-          geosub: [],
-          orbs:
-            Enum.map([8,9,10], fn res -> :h3.parent(623276216933351423,res) end)
-            |> Phos.Action.get_orbs_by_geohashes()
-            |> Enum.sort_by(&Map.fetch(&1, :inserted_at), :desc)
-        }
-    })
+    |> assign(:geolocation, %{live: %{geohash: %{}, orbs: []}, home: %{orbs: []}})
     # |> assign(:orbs_home,
     #   Enum.map([8,9,10], fn res -> :h3.parent(socket.assigns.geolocation[:home][:geohash].hash,res) end)
     #     |> Phos.Action.get_orbs_by_geohashes()

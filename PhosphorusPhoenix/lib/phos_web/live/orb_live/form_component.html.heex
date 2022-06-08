@@ -27,12 +27,11 @@
     <%= select f, :radius, ["2km": 8, "1km": 9, "500m": 10], selected: 10 %>
     <%= error_tag f, :radius %>
 
-    <% if (@geolocation) do %>
+    <%= unless is_nil(@geolocation) do %>
     <%= label f, :location %>
     <%= select f, :location, Map.keys(@geolocation), selected: :live %>
     <%= error_tag f, :location %>
     <% end %>
-
     <%= label f, :initiator %>
     <%= text_input f, :initiator %>
     <%= error_tag f, :initiator %>
