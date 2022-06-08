@@ -12,7 +12,7 @@ defmodule Phos.Repo.Migrations.AddEmbTables do
       add :id, :uuid, primary_key: true
       add :username, :string
       add :media, :boolean, default: false, null: false
-      add :userprofile, :jsonb
+      add :profile, :jsonb
       add :profile_pic, :integer
       add :geohash, :jsonb
       add :fyr_id, :string

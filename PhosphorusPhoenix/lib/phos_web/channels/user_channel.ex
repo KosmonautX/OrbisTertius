@@ -97,7 +97,7 @@ defmodule PhosWeb.UserChannel do
         |> Map.put("radius", Map.get(user_payload["geolocation"][loc]["geohashing"], "radius"))
       end
 
-      Phos.Users.create_user(%{"username" => user_payload["payload"]["username"], "fyr_id" => socket.assigns.user_channel_id, "media" => user_payload["payload"]["media"], "userprofile" => %{"birthday" => user_payload["payload"]["birthday"], "bio" => user_payload["payload"]["bio"]}, "profile_pic" => user_payload["payload"]["profile_pic"] , "geohash"=> geo_map})
+      Phos.Users.create_user(%{"username" => user_payload["payload"]["username"], "fyr_id" => socket.assigns.user_channel_id, "media" => user_payload["payload"]["media"], "profile" => %{"birthday" => user_payload["payload"]["birthday"], "bio" => user_payload["payload"]["bio"]}, "profile_pic" => user_payload["payload"]["profile_pic"] , "geohash"=> geo_map})
 
     end
     # IO.inspect(socket.assigns)

@@ -1,6 +1,7 @@
 defmodule PhosWeb.OrbLive.FormComponent do
   use PhosWeb, :live_component
 
+  alias Phos.Utility
   alias Phos.Action
 
   @impl true
@@ -16,7 +17,6 @@ defmodule PhosWeb.OrbLive.FormComponent do
 
   @impl true
   def handle_event("validate", %{"orb" => orb_params}, socket) do
-    IO.inspect(orb_params)
     changeset =
       socket.assigns.orb
       |> Action.change_orb(orb_params)
@@ -32,7 +32,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
   def handle_event("save", %{"orb" => orb_params}, socket) do
     generated_orb_id = Ecto.UUID.generate()
     # Process latlon value to x7 h3 indexes
-    IO.inspect socket.assigns.geolocation
+    # IO.inspect socket.assigns.geolocation
     geohashes = socket.assigns.geolocation[String.to_existing_atom(orb_params["location"])][:geohash].hash
     |> :h3.parent(String.to_integer(orb_params["radius"]))
     |> :h3.k_ring(1)
@@ -69,7 +69,8 @@ defmodule PhosWeb.OrbLive.FormComponent do
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
 
   defp save_orb(socket, :edit, orb_params) do
-    case Action.update_orb(socket.assigns.orb, orb_params) do
+    # orb_params |> Utility.update_orb_mapper() |> IO.inspect()
+    case Action.update_orb(socket.assigns.orb, orb_params |> Utility.update_orb_mapper()) do
       {:ok, orb} ->
         orb_loc_publisher(orb, :mutation, orb_params["geolocation"])
         {:noreply,
