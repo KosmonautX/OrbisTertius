@@ -66,7 +66,6 @@ defmodule Phos.Action do
 
     Repo.all(query, limit: 32)
     |> Enum.map(fn orb -> orb.orbs end)
-    |> Enum.filter(fn orb -> orb.active == true end)
   end
 
   def get_orbs_by_trait(trait) do

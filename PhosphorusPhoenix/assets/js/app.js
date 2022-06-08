@@ -24,6 +24,42 @@ Hooks.InitGps = {
     )
   }
 }
+Hooks.FullMap = {
+  mounted() {
+    var centred = false;
+    const mapid = this.el.id;
+    const style = document.createElement("link");
+    style.href = "https://unpkg.com/leaflet@1.8.0/dist/leaflet.css";
+    style.rel = "stylesheet";
+    (document.getElementsByTagName("head")[0] || document.documentElement).appendChild(style);
+
+    const js = document.createElement("script");
+    js.src = "https://unpkg.com/leaflet@1.8.0/dist/leaflet.js";
+    js.type = "text/javascript";
+    var map = L.map(mapid).setView([51.505, -0.09], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+    (document.getElementsByTagName("head")[0] || document.documentElement).appendChild(js);
+
+    this.handleEvent("centre_marker", (latlon) => {
+      L.marker([latlon.latitude, latlon.longitude]).addTo(map)
+
+      // Centres to live latlon
+      if (!centred) {
+        centred = true
+        map.panTo([latlon.latitude, latlon.longitude])
+        map.setZoom(15)
+      }
+    })
+
+    this.handleEvent("add_polygon", (boundaries) => {
+      L.polygon(boundaries.geo_boundaries, {color: 'yellow'}).addTo(map);
+    })
+  }
+}
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, { params: { _csrf_token: csrfToken }, hooks: Hooks })

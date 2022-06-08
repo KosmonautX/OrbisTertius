@@ -18,9 +18,11 @@
   </.modal>
 <% end %>
 
-<h3>Set Home Location</h3>
-
-<h3>Set Work Location</h3>
+<div id="wrapper" phx-update="ignore">
+  <div id="map"
+      phx-hook="FullMap"
+      style="height: 400px; z-index: -1"></div>
+</div>
 
 <h2>Live Orbs</h2>
 <table>
@@ -72,7 +74,7 @@
     </tr>
   </thead>
   <tbody id="homeorbs">
-    <%= for orb <- @home_orbs do %>
+    <%= for orb <- @geolocation[:home][:orbs] do %>
       <tr id={"homeorb-#{orb.id}"}>
         <td><%= orb.title %></td>
         <td><%= orb.active %></td>
@@ -107,7 +109,7 @@
     </tr>
   </thead>
   <tbody id="workorbs">
-    <%= for orb <- @work_orbs do %>
+    <%= for orb <- @geolocation[:work][:orbs] do %>
       <tr id={"workorb-#{orb.id}"}>
         <td><%= orb.title %></td>
         <td><%= orb.active %></td>
