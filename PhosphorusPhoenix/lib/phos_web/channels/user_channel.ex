@@ -84,6 +84,7 @@ defmodule PhosWeb.UserChannel do
 
     # if user that exists on phone, exists on postgres (new models)
     # do returning user pathway
+    # firebase id => fyr_id
     # else migrate user from nodejs(dynamodb) and create model on postgres
     if (Phos.Repo.get_by(Phos.Users.User, fyr_id: socket.assigns.user_channel_id) == nil) do
 

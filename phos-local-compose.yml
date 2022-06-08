@@ -12,6 +12,8 @@ services:
       - .env:/.env
     env_file:
       - .env
+    environment:
+      PGDOMAIN="postgres"
     networks:
       - postgres
     depends_on:
