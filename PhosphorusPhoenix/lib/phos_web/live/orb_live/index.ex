@@ -57,7 +57,7 @@ defmodule PhosWeb.OrbLive.Index do
 
     # Get orbs from geosub live
     live_orbs =
-      Phos.Action.get_orbs_by_geohashes((Map.get(updated_geolocation, :live) |> Map.get(:geosub)))
+      Phos.Action.get_active_orbs_by_geohashes((Map.get(updated_geolocation, :live) |> Map.get(:geosub)))
       |> Enum.sort_by(&Map.fetch(&1, :inserted_at), :desc)
 
 

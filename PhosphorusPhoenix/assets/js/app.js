@@ -56,6 +56,7 @@ Hooks.FullMap = {
     })
 
     this.handleEvent("add_polygon", (boundaries) => {
+
       L.polygon(boundaries.geo_boundaries, {color: 'yellow'}).addTo(map);
     })
   }

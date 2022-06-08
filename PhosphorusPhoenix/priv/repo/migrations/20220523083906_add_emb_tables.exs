@@ -12,15 +12,28 @@ defmodule Phos.Repo.Migrations.AddEmbTables do
       add :id, :uuid, primary_key: true
       add :username, :string
       add :media, :boolean, default: false, null: false
-      add :profile, :jsonb
       add :profile_pic, :integer
-      add :geohash, :jsonb
       add :fyr_id, :string
 
       timestamps()
     end
 
-    create unique_index(:users, [:username])
+    # create unique_index(:users, [:username])
+
+    create table(:public_profile, primary_key: false) do
+      add :user_id, :uuid, primary_key: true
+      add :birthday, :naive_datetime
+      add :bio, :string
+
+      timestamps()
+    end
+
+    create table(:private_profile, primary_key: false) do
+      add :user_id, :uuid, primary_key: true
+      add :geohash, :jsonb
+
+      timestamps()
+    end
 
     create table(:orbs, primary_key: false) do
       add :id, :uuid, primary_key: true
