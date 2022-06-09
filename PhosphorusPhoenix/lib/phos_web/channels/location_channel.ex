@@ -1,6 +1,7 @@
 defmodule PhosWeb.UserLocationChannel do
   use PhosWeb, :channel
   alias PhosWeb.Menshen.Auth
+  alias PhosWeb.Util.Viewer
   alias Phos.Action
   alias Phos.Users
   alias Phos.PubSub
@@ -31,11 +32,15 @@ defmodule PhosWeb.UserLocationChannel do
     |> case do
          {past, present} ->
            unless past == present[name][:geohash] do
-             neosubs = Enum.map([8,9,10], fn res -> :h3.parent(present[name][:geohash].hash,res) end)
+             message = Enum.map([8,9,10], fn res -> :h3.parent(present[name][:geohash].hash,res) end)
              |> loc_subscriber(present[name][:geosub])
-             #IO.puts "nigmas in neochina #{inspect(neosubs)}"
+             |> loc_fetch(present[name][:geosub])
+             |> Map.put("name", name)
+             #IO.puts "nigmas in neochina #{inspect(neosubs)}
 
-             put_in(present, [name, :geosub], neosubs)
+             push(socket, "loc_reverie", message)
+
+             put_in(present, [name, :geosub], message["subscribed"])
            else
              present
            end
@@ -83,14 +88,12 @@ defmodule PhosWeb.UserLocationChannel do
     present
   end
 
-  defp loc_reverie(present, nil, socket) do
-    present |> Action.get_orbs_by_geohashes()
-    present
+  defp loc_fetch(present, nil) do
+    %{"subscribed" => present, "data" => present |> Action.get_orbs_by_geohashes() |> Viewer.fresh_orb_stream_mapper()}
   end
 
-  defp loc_reverie(present, past, socket) do
-    past -- present |>  Action.get_orbs_by_geohash()
-    present
+  defp loc_fetch(present, past) do
+    %{"subscribed" => present, "data" => past -- present |> Action.get_orbs_by_geohashes() |> Viewer.fresh_orb_stream_mapper()}
   end
 
   defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"

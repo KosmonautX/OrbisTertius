@@ -33,9 +33,12 @@ defmodule PhosWeb.OrbLive.FormComponent do
     generated_orb_id = Ecto.UUID.generate()
     # Process latlon value to x7 h3 indexes
     # IO.inspect socket.assigns.geolocation
-    geohashes = socket.assigns.geolocation[String.to_existing_atom(orb_params["location"])][:geohash].hash
+    central_hash = socket.assigns.geolocation[String.to_existing_atom(orb_params["location"])][:geohash].hash
     |> :h3.parent(String.to_integer(orb_params["radius"]))
+
+    geohashes = central_hash
     |> :h3.k_ring(1)
+    orb_params = Map.put(orb_params, "central_geohash", central_hash)
     orb_params = Map.put(orb_params, "geolocation", geohashes)
 
     # Process image upload

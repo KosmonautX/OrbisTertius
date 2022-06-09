@@ -162,7 +162,7 @@ end
 ```elixir
 # message = %{"destination" => "albert", "destination_archetype" => "USR", "message" => "hi satrio"}
 # Phoenix.Channels.GenSocketClient.call(pid, {:message, message})
-message = %{"name" => "work", "geohash" => 623_276_216_933_351_423}
+message = %{"name" => "live", "geohash" => 623_276_216_933_351_423}
 Phoenix.Channels.GenSocketClient.call(pid, {:geocalibrate, message})
 ```
 
