@@ -10,7 +10,7 @@ defmodule PhosWeb.Util.Geographer do
   def parse_territories(socket, map_param) do
     Enum.map(map_param, fn {k, v} ->
       if Auth.check_territory?(socket, v) do
-        {:ok, %{k => v["hash"] |> to_charlist() |> :h3.from_string() |> Action.get_orbs_by_geohash() |> Viewer.orb_mapper()}}
+        {:ok, %{k => v["hash"] |> to_charlist() |> :h3.from_string() |> Action.get_orbs_by_geohashes() |> Viewer.orb_mapper()}}
       else
         {:error, "unauthorized"}
       end

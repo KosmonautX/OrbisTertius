@@ -36,7 +36,7 @@ defmodule Phos.Users do
 #       ** (Ecto.NoResultsError)
 
 #   """
-#
+
   def get_location_pref(type, id) do
     query =
       User
@@ -60,8 +60,6 @@ defmodule Phos.Users do
 #   """
 
   def create_user(attrs \\ %{}) do
-      # attrs
-    # |> Map.put("id", generated_id)
     %User{}
     |> User.changeset(attrs)
     |> Repo.insert()

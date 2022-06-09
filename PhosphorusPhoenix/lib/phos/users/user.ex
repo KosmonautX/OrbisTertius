@@ -24,5 +24,6 @@ defmodule Phos.Users.User do
     |> cast(attrs, [:id, :username, :media, :profile_pic, :fyr_id])
     |> cast_assoc(:public_profile)
     |> cast_assoc(:private_profile)
+    |> unique_constraint(:username_taken, name: :unique_username)
   end
 end

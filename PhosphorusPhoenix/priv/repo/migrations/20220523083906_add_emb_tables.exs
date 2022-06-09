@@ -18,7 +18,8 @@ defmodule Phos.Repo.Migrations.AddEmbTables do
       timestamps()
     end
 
-    # create unique_index(:users, [:username])
+    create unique_index(:users, [:username], name: :unique_username)
+
 
     create table(:public_profile, primary_key: false) do
       add :user_id, :uuid, primary_key: true
@@ -49,7 +50,6 @@ defmodule Phos.Repo.Migrations.AddEmbTables do
       timestamps()
     end
 
-    create index(:orbs, [:traits])
 
     create table(:locations, primary_key: false) do
       add :id, :bigint, primary_key: true
@@ -67,4 +67,5 @@ defmodule Phos.Repo.Migrations.AddEmbTables do
     create unique_index(:orbs_location, [:orb_id, :location_id])
     create unique_index(:orbs_location, [:location_id, :orb_id], name: :same_orb_within_location)
   end
+
 end

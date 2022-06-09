@@ -65,7 +65,7 @@ router.get(`/get_users/:user_ids`, async function (req, res, next) {
         const users = req.params.user_ids.split(',').slice(0,n)
         Promise.all(users.map(user_id => userQuery.queryPUB(user_id))).then(response => {
             daos = response.map(async(data) => {
-                var dao = {payload:{}}
+                var dao = {}
                 if(data.Item){
                     dao.user_id = data.Item.PK.slice(4);
                     if (data.Item.payload) {

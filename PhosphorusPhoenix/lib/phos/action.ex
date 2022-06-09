@@ -39,30 +39,15 @@ defmodule Phos.Action do
 
 #   """
 #
-  def get_orb!(id) do
-    Repo.get!(Orb, id)
-  end
-
-  # TO DEPRECATE, merge into get_orbs_by_geohashes/1
-  def get_orbs_by_geohash(id) do
-    query =
-      Orb_Location
-      |> where([e], e.location_id == ^id)
-      |> preload(orbs: :users)
-      #|> preload(:locations)
-    # return only orbs
-    Repo.all(query, limit: 32)
-      # |> Enum.map(fn orb ->
-      # orb.orbs end)
-  end
-
+  def get_orb!(id), do: Repo.get!(Orb, id)
+  def get_orb_by_fyr(id), do: Repo.get_by(Phos.Users.User, fyr_id: id)
 
   def get_orbs_by_geohashes(ids) do
     query =
       Orb_Location
       |> where([e], e.location_id in ^ids)
-      |> preload(:orbs)
-      # |> preload(:locations)
+      |> preload(orbs: :users)
+      |> order_by(desc: :inserted_at)
 
     Repo.all(query, limit: 32)
     |> Enum.map(fn orb -> orb.orbs end)
@@ -74,6 +59,7 @@ defmodule Phos.Action do
       |> where([e], e.location_id in ^ids)
       |> preload(:orbs)
       |> preload(:locations)
+      |> order_by(desc: :inserted_at)
 
     Repo.all(query, limit: 32)
     |> Enum.map(fn orb -> orb.orbs end)

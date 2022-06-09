@@ -8,7 +8,6 @@ defmodule PhosWeb.OrbLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     {:ok, socket
-    |> assign(:orbs, [])
     |> assign(:geolocation, %{live: %{geohash: %{}, orbs: []}, home: %{orbs: []}})
     # |> assign(:orbs_home,
     #   Enum.map([8,9,10], fn res -> :h3.parent(socket.assigns.geolocation[:home][:geohash].hash,res) end)
@@ -43,34 +42,26 @@ defmodule PhosWeb.OrbLive.Index do
 
   @impl true
   def handle_event("live_location_update", %{"longitude" => longitude, "latitude" => latitude}, socket) do
-    updated_geolocation = get_and_update_in(socket.assigns.geolocation, Enum.map([:live, :geohash], &Access.key(&1, %{})), &{&1, %{hash: :h3.from_geo({latitude, longitude}, 10), radius: 10}})
-    |> case do
-         {past, present} -> unless past == present[:live][:geohash] do
-             put_in(present, [:live, :geosub],
-               Enum.map([8,9,10], fn res -> :h3.parent(present[:live][:geohash].hash,res) end)
+    {updated_geolocation, socket} =
+      get_and_update_in(socket.assigns.geolocation, Enum.map([:live, :geohash], &Access.key(&1, %{})), &{&1, %{hash: :h3.from_geo({latitude, longitude}, 10), radius: 10}})
+      |> case do
+           {past, present} ->
+             unless past == present[:live][:geohash] do
+               # pipe new geosubs into loc subscriber and pass old geosubs
+               neosubs = Enum.map([8,9,10], fn res -> :h3.parent(present[:live][:geohash].hash,res) end)
                |> loc_subscriber(present[:live][:geosub])
-               )
+               orbed_geolocation = put_in(present, [:live, :geosub], neosubs)
+               |> put_in([:live, :orbs], Phos.Action.get_active_orbs_by_geohashes(neosubs))
+          {orbed_geolocation, socket
+          |> push_event("add_polygon", %{geo_boundaries: loc_boundary(latitude, longitude)})}
              else
-               present
+               {present, socket}
              end
-           end
+         end
 
-    # Get orbs from geosub live
-    live_orbs =
-      Phos.Action.get_active_orbs_by_geohashes((Map.get(updated_geolocation, :live) |> Map.get(:geosub)))
-      |> Enum.sort_by(&Map.fetch(&1, :inserted_at), :desc)
-
-
-    geo_boundaries =
-      :h3.from_geo({latitude, longitude}, 8) |> :h3.to_geo_boundary() |> Enum.map(fn tuple -> Tuple.to_list(tuple) end)
-
-    # IO.inspect(updated_geolocation)
     {:noreply, socket
-      |> assign(:geolocation, updated_geolocation)
-      |> assign(:orbs, live_orbs)
-      |> push_event("centre_marker", %{latitude: latitude, longitude: longitude})
-      |> push_event("add_polygon", %{geo_boundaries: geo_boundaries})
-    }
+    |> assign(:geolocation, updated_geolocation)
+    |> push_event("centre_marker", %{latitude: latitude, longitude: longitude})}
   end
 
   @impl true
@@ -91,6 +82,7 @@ defmodule PhosWeb.OrbLive.Index do
     IO.puts("mutate #{inspect(message)}")
     {:noreply, socket}
   end
+
 
   def handle_info({PubSub, {:orb, :deactivation}, message}, socket) do
     IO.puts("deactivate #{inspect(message)}")
@@ -121,4 +113,11 @@ defmodule PhosWeb.OrbLive.Index do
   end
 
   defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"
- end
+
+  defp loc_boundary(lat, lon) do
+    :h3.from_geo({lat, lon}, 8)
+    |> :h3.to_geo_boundary()
+    |> Enum.map(fn tuple -> Tuple.to_list(tuple) end)
+  end
+
+end
