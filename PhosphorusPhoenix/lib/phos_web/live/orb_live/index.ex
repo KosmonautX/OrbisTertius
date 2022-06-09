@@ -1,6 +1,7 @@
 defmodule PhosWeb.OrbLive.Index do
   use PhosWeb, :live_view
 
+  alias Phos.Users
   alias Phos.Action
   alias Phos.Action.Orb
   alias Phos.PubSub

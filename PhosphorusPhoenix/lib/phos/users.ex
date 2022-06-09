@@ -36,15 +36,16 @@ defmodule Phos.Users do
 #       ** (Ecto.NoResultsError)
 
 #   """
+  def get_user_by_fyr(id), do: Repo.get_by(User |> preload(:private_profile) |> preload(:public_profile), fyr_id: id)
 
-  def get_location_pref(type, id) do
-    query =
-      User
-      |> where([e], e.fyr_id == ^id)
-    Repo.all(query)
-    |> Enum.map(fn orb -> orb.geohash end)
+  # def get_location_pref(type, id) do
+  #   query =
+  #     User
+  #     |> where([e], e.fyr_id == ^id)
+  #   Repo.all(query)
+  #   |> Enum.map(fn orb -> orb.geohash end)
     # |> Enum.filter(fn orb -> Map.get()orb.type == type end)
-  end
+  # end
 
 #   @doc """
 #   Creates a user.

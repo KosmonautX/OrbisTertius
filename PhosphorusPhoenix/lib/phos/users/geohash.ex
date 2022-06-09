@@ -1,4 +1,4 @@
-defmodule Phos.Users.Geohash do
+defmodule Phos.Users.Geolocation do
   use Ecto.Schema
   import Ecto.Changeset
 

@@ -31,7 +31,7 @@ defmodule Phos.Repo.Migrations.AddEmbTables do
 
     create table(:private_profile, primary_key: false) do
       add :user_id, :uuid, primary_key: true
-      add :geohash, :jsonb
+      add :geolocation, :jsonb
 
       timestamps()
     end

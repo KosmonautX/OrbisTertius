@@ -3,8 +3,9 @@ defmodule PhosWeb.UserChannel do
   alias PhosWeb.Menshen.Auth
   alias Phos.Message
   alias Phos.Action
+  alias Phos.Users
   alias Phos.PubSub
-  alias Phos.Geographer
+  alias PhosWeb.Util.Geographer
   alias PhosWeb.Util.Migrator
 
   @impl true
@@ -16,27 +17,11 @@ defmodule PhosWeb.UserChannel do
       if (Action.get_orb_by_fyr(id) == nil), do: Migrator.user_profile(id)
       {:ok, socket
       |> assign(:user_id, id)
+      |> assign(:user, Users.get_user_by_fyr(id))
       |> assign(:geolocation, %{})}
     else
       {:error, %{reason: "unauthorized"}}
     end
-  end
-
-  def handle_in("location_update", %{"name"=> name,"geohash"=> hash}, socket) do
-    # check name against jwt using authorized
-    updated_geolocation = get_and_update_in(socket.assigns.geolocation, Enum.map([name, :geohash], &Access.key(&1, %{})), &{&1, %{hash: :h3.parent(hash, 10), radius: 10}})
-    |> case do
-         {past, present} ->
-           unless past == present[name][:geohash] do
-             neosubs = Enum.map([8,9,10], fn res -> :h3.parent(present[name][:geohash].hash,res) end)
-             |> loc_subscriber(present[name][:geosub])
-             put_in(present, [name, :geosub], neosubs)
-           else
-             present
-           end
-       end
-
-    {:noreply, assign(socket, :geolocation, updated_geolocation)}
   end
 
   # Channels can be used in a request/response fashion
@@ -99,29 +84,4 @@ defmodule PhosWeb.UserChannel do
         {:error,  :authentication_required}
     end
   end
-
-  defp loc_subscriber(present, nil) do
-    IO.puts("subscribe #{inspect(present)}")
-    present |>Enum.map(fn new-> Phos.PubSub.subscribe(loc_topic(new)) end)
-  end
-
-  defp loc_subscriber(present, past) do
-    IO.puts("subscribe with past#{inspect(present)}")
-    present -- past |> Enum.map(fn old -> old |> loc_topic() |> Phos.PubSub.unsubscribe() end)
-    past -- present |>Enum.map(fn new-> new |> loc_topic() |> Phos.PubSub.subscribe() end)
-    present
-  end
-
-  defp loc_reverie(present, nil, socket) do
-    present |> Action.get_orbs_by_geohashes()
-    present
-  end
-
-  defp loc_reverie(present, past, socket) do
-    past -- present |>  Action.get_orbs_by_geohash()
-    present
-  end
-
-  defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"
-
 end

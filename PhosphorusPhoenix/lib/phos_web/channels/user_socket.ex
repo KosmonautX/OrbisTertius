@@ -10,6 +10,7 @@ defmodule PhosWeb.UserSocket do
   ## Channels
 
   channel "archetype:usr:*", PhosWeb.UserChannel
+  channel "archetype:loc:*", PhosWeb.LocationChannel
 
   ## Transports
   #transport :websocket, Phoenix.Transports.WebSocket, check_origin: ["//localhost",  "//echo.scrb.ac"]
