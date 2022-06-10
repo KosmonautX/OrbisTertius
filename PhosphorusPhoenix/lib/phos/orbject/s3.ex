@@ -50,7 +50,7 @@ defmodule Phos.Orbject.S3 do
 
     ExAws.Config.new(:s3, config) |>
       ExAws.S3.presigned_url(action, config.bucket, path,
-        [expires_in: 888, virtual_host: true, query_params: [{"ContentType", "application/octet-stream"}]])
+        [expires_in: 888, virtual_host: false, query_params: [{"ContentType", "application/octet-stream"}]])
 
   end
 
