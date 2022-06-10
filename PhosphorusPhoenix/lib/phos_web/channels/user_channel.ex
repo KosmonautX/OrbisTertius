@@ -67,7 +67,6 @@ defmodule PhosWeb.UserChannel do
                                            message: echoes.message,
                                            time: DateTime.from_naive!(echoes.inserted_at,"Etc/UTC") |> DateTime.to_unix()
                                    }) end)
-    # IO.inspect(socket.assigns)
     {:noreply,socket}
    end
 

@@ -33,7 +33,6 @@ defmodule Phos.Action.Orb do
   end
 
   def validate_media(changeset) do
-    IO.inspect(changeset)
     image = get_field(changeset, :image)
 
     if Enum.empty?(image) do
@@ -42,6 +41,5 @@ defmodule Phos.Action.Orb do
       changeset
     end
 
-    IO.inspect(image)
   end
 end

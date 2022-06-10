@@ -57,7 +57,6 @@ defmodule PhosWeb.UserLocationChannel do
   # Channels can be used in a request/response fashion
   # by sending replies to requests from the client
   def handle_in("ping", payload, socket) do
-    IO.inspect(socket)
     {:reply, {:ok, payload}, socket}
   end
 
@@ -83,8 +82,8 @@ defmodule PhosWeb.UserLocationChannel do
 
   defp loc_subscriber(present, past) do
     IO.puts("subscribe with past#{inspect(present)}")
-    present -- past |> Enum.map(fn old -> old |> loc_topic() |> PubSub.unsubscribe() |> IO.inspect() end)
-    past -- present |>Enum.map(fn new-> new |> loc_topic() |> PubSub.subscribe() |> IO.inspect() end)
+    present -- past |> Enum.map(fn old -> old |> loc_topic() |> PubSub.unsubscribe() end)
+    past -- present |>Enum.map(fn new-> new |> loc_topic() |> PubSub.subscribe() end)
     present
   end
 
