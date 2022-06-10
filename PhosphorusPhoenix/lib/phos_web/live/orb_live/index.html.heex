@@ -39,9 +39,9 @@
       <th></th>
     </tr>
   </thead>
-  <tbody id="homeorbs">
+  <tbody id="#{elem(geo,0)}orbs">
     <%= for orb <- elem(geo,1)[:orbs] do %>
-      <tr id={"homeorb-#{orb.id}"}>
+      <tr id={"#{elem(geo,0)}orb-#{orb.id}"}>
         <td><%= orb.title %></td>
         <td><%= orb.active %></td>
         <td><%= orb.media %></td>

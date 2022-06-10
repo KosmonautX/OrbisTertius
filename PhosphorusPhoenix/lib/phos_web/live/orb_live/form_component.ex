@@ -1,7 +1,7 @@
 defmodule PhosWeb.OrbLive.FormComponent do
   use PhosWeb, :live_component
 
-  alias PhosWeb.Helper.Viewer
+  alias PhosWeb.Util.Viewer
   alias Phos.Action
 
   @impl true
@@ -32,14 +32,21 @@ defmodule PhosWeb.OrbLive.FormComponent do
   def handle_event("save", %{"orb" => orb_params}, socket) do
     generated_orb_id = Ecto.UUID.generate()
     # Process latlon value to x7 h3 indexes
-    # IO.inspect socket.assigns.geolocation
-    central_hash = socket.assigns.geolocation[String.to_existing_atom(orb_params["location"])][:geohash].hash
-    |> :h3.parent(String.to_integer(orb_params["radius"]))
+    orb_params = try do
+                     central_hash = socket.assigns.geolocation[String.to_existing_atom(orb_params["location"])][:geohash].hash
+                     |> :h3.parent(String.to_integer(orb_params["radius"]))
+                     geohashes = central_hash
+                     |> :h3.k_ring(1)
+                     orb_params
+                     |> Map.put("central_geohash", central_hash)
+                     |> Map.put("geolocation", geohashes)
+                   rescue
+                     ArgumentError -> orb_params |> Map.put("geolocation", [])
+                   end
 
-    geohashes = central_hash
-    |> :h3.k_ring(1)
-    orb_params = Map.put(orb_params, "central_geohash", central_hash)
-    orb_params = Map.put(orb_params, "geolocation", geohashes)
+
+
+
 
     # Process image upload
     orb_params = Map.put(orb_params, "id", generated_orb_id)
@@ -55,7 +62,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
         HTTPoison.put(dest, {:file, compressed_image.path})
       end
       {:ok, path}
-    end)
+     end)
 
     unless Enum.empty?(file_uploaded) do
       orb_params = Map.put(orb_params, "media", true)
@@ -75,7 +82,8 @@ defmodule PhosWeb.OrbLive.FormComponent do
     # orb_params |> Viewer.update_orb_mapper() |> IO.inspect()
     case Action.update_orb(socket.assigns.orb, orb_params |> Viewer.update_orb_mapper()) do
       {:ok, orb} ->
-        orb_loc_publisher(orb, :mutation, orb_params["geolocation"])
+        IO.inspect orb |> Phos.Repo.preload(:locations)
+        #orb_loc_publisher(orb, :mutation, orb_params["geolocation"])
         {:noreply,
          socket
          |> put_flash(:info, "Orb updated successfully")
