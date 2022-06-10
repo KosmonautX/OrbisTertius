@@ -79,10 +79,8 @@ defmodule PhosWeb.OrbLive.FormComponent do
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
 
   defp save_orb(socket, :edit, orb_params) do
-    # orb_params |> Viewer.update_orb_mapper() |> IO.inspect()
     case Action.update_orb(socket.assigns.orb, orb_params |> Viewer.update_orb_mapper()) do
       {:ok, orb} ->
-        IO.inspect orb |> Phos.Repo.preload(:locations)
         #orb_loc_publisher(orb, :mutation, orb_params["geolocation"])
         {:noreply,
          socket
@@ -106,7 +104,6 @@ defmodule PhosWeb.OrbLive.FormComponent do
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, changeset: changeset)}
 
-    something -> IO.inspect something
     end
   end
 

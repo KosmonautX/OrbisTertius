@@ -24,6 +24,7 @@
       style="height: 400px; z-index: -1"></div>
 </div>
 
+
 <%= for geo <- @geolocation do %>
 <h2><%= String.capitalize(to_string(elem(geo,0))) %> Orbs</h2>
 <table>
@@ -39,7 +40,7 @@
       <th></th>
     </tr>
   </thead>
-  <tbody id="#{elem(geo,0)}orbs">
+  <tbody id={"#{elem(geo,0)}orbs"}>
     <%= for orb <- elem(geo,1)[:orbs] do %>
       <tr id={"#{elem(geo,0)}orb-#{orb.id}"}>
         <td><%= orb.title %></td>
@@ -53,7 +54,7 @@
         <td>
           <span><%= live_redirect "Show", to: Routes.orb_show_path(@socket, :show, orb) %></span>
           <span><%= live_patch "Edit", to: Routes.orb_index_path(@socket, :edit, orb) %></span>
-          <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: orb.id, data: [confirm: "Are you sure?"] %></span>
+          <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: orb.id, phx_value_locname: elem(geo,0), data: [confirm: "Are you sure?"] %></span>
         </td>
       </tr>
     <% end %>
