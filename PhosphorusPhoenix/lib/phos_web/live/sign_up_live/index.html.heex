@@ -1,0 +1,52 @@
+<div id="gps"
+     phx-hook="InitGps"
+     phx-update="ignore" />
+
+<div>
+  <h1>Sign up</h1>
+  <div>
+    <.form let={f} for={@changeset} phx-submit="sign_up">
+      <div>
+        <%= label f, :email %>
+        <%= text_input f, :email, required: true %>
+        <%= error_tag f, :email %>
+      </div>
+
+      <div>
+        <%= label f, :password %>
+        <%= password_input f, :password, required: true %>
+        <%= error_tag f, :password %>
+      </div>
+
+      <%= submit "Sign Up" %>
+    </.form>
+  </div>
+  <div>
+    <div style="display:flex">
+      <a
+        href={Routes.auth_path(@socket, :request, "google")}
+        style="border:1px solid black; cursor:pointer;display:flex; padding: 1rem; border-radius:0.75rem">
+        <img
+          src={Routes.static_path(@socket, "/images/google-logo.png")}
+          alt="google logo"
+          width="32px"
+          height="32px" />
+         <h2 style="margin:0;margin-left:1rem">Sign in with Google
+         </h2>
+      </a>
+    </div>
+    <div style="display:flex; margin-top:20px">
+      <a
+        href={Routes.auth_path(@socket, :request, "apple")}
+        style="border:1px solid black; cursor:pointer;display:flex; padding: 1rem; border-radius:0.75rem">
+        <img
+          src={Routes.static_path(@socket, "/images/apple-logo.png")}
+          alt="google logo"
+          width="32px"
+          height="32px" />
+         <h2 style="margin:0;margin-left:1rem">Sign in with Apple
+         </h2>
+      </a>
+    </div>
+  </div>
+</div>

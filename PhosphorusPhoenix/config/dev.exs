@@ -28,6 +28,10 @@ config :phos, PhosWeb.Endpoint,
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
   ]
 
+config :phos, Phos.Guardian,
+       issuer: "Princeton",
+       secret_key: "vyOyqS5mE2Ap2YV5TKG9RyTOOwivgDicxHf+dXcprRiT3Vgz3cpLuqwbO8qvSRi8"
+
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed

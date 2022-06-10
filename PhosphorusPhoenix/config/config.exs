@@ -53,6 +53,20 @@ config :mogrify, convert_command: [
   args: ["convert"]
 ]
 
+config :ueberauth, Ueberauth,
+  providers: [
+    google: {Ueberauth.Strategy.Google, [default_scope: "email profile openid"]},
+    apple: {Ueberauth.Strategy.Apple, []}
+  ]
+
+config :ueberauth, Ueberauth.Strategy.Google.OAuth,
+  client_id: {System, :get_env, ["GOOGLE_CLIENT_ID"]},
+  client_secret: {System, :get_env, ["GOOGLE_CLIENT_SECRET"]}
+
+config :ueberauth, Ueberauth.Strategy.Apple.OAuth,
+  client_id: {System, :get_env, ["APPLE_CLIENT_ID"]},
+  client_secret: {System, :get_env, ["APPLE_CLIENT_SECRET"]}
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
