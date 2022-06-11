@@ -21,7 +21,7 @@ defmodule Phos.ActionTest do
     end
 
     test "create_orb/1 with valid data creates a orb" do
-      valid_attrs = %{active: true, extinguish: ~N[2022-05-20 12:12:00], media: true, title: "some title"}
+      valid_attrs = %{id: Ecto.UUID.generate(), active: true, extinguish: ~N[2022-05-20 12:12:00], media: true, title: "some title"}
 
       assert {:ok, %Orb{} = orb} = Action.create_orb(valid_attrs)
       assert orb.active == true
@@ -35,7 +35,7 @@ defmodule Phos.ActionTest do
     end
 
     test "update_orb/2 with valid data updates the orb" do
-      orb = orb_fixture()
+      orb = orb_fixture_no_location()
       update_attrs = %{active: false, extinguish: ~N[2022-05-21 12:12:00], media: false, title: "some updated title"}
 
       assert {:ok, %Orb{} = orb} = Action.update_orb(orb, update_attrs)
@@ -46,7 +46,7 @@ defmodule Phos.ActionTest do
     end
 
     test "update_orb/2 with invalid data returns error changeset" do
-      orb = orb_fixture()
+      orb = orb_fixture_no_location()
       assert {:error, %Ecto.Changeset{}} = Action.update_orb(orb, @invalid_attrs)
       assert orb == Action.get_orb!(orb.id)
     end

@@ -16,7 +16,7 @@ Mix.install([
 defmodule SocketWithCare do
   alias Phoenix.Channels.GenSocketClient
   @behaviour GenSocketClient
-  @channel "archetype:usr:R3Vsjq9CARfprwOJps44kbVczFQ2"
+  @channel "archetype:loc:R3Vsjq9CARfprwOJps44kbVczFQ2"
   @token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiUjNWc2pxOUNBUmZwcndPSnBzNDRrYlZjekZRMiIsInJvbGUiOiJwbGViIiwiaWF0IjoxNjQzNzQzNjAyLCJleHAiOjI4NDM3NDM2MDIsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.hlhvTS37qxxqwrynoGbsHQG4gyjH5XDJfSC-zSrR6N8"
 
   def start_link() do
@@ -126,6 +126,12 @@ defmodule SocketWithCare do
     {:ok, state}
   end
 
+  def handle_call({:geocalibrate, message}, _from, transport, state) do
+    IO.puts("message recieved: #{inspect(message)}")
+    GenSocketClient.push(transport, @channel, "location_update", message)
+    {:reply, {:ok, :hao}, state}
+  end
+
   def handle_call({:message, message}, _from, transport, state) do
     IO.puts("message recieved: #{inspect(message)}")
     GenSocketClient.push(transport, @channel, "shout", message)
@@ -154,8 +160,10 @@ end
 ```
 
 ```elixir
-message = %{"destination" => "albert", "destination_archetype" => "USR", "message" => "hi satrio"}
-Phoenix.Channels.GenSocketClient.call(pid, {:message, message})
+# message = %{"destination" => "albert", "destination_archetype" => "USR", "message" => "hi satrio"}
+# Phoenix.Channels.GenSocketClient.call(pid, {:message, message})
+message = %{"name" => "live", "geohash" => 623_276_216_933_351_423}
+Phoenix.Channels.GenSocketClient.call(pid, {:geocalibrate, message})
 ```
 
 ## Cleaning up

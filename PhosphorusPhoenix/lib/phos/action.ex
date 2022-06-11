@@ -20,8 +20,6 @@ defmodule Phos.Action do
   """
   def list_orbs do
     Repo.all(Orb)
-    |> Repo.preload(:locations)
-    |> Repo.preload(:users)
   end
 
 #   @doc """
@@ -39,30 +37,27 @@ defmodule Phos.Action do
 
 #   """
 #
-  def get_orb!(id) do
-    Repo.get!(Orb, id)
-  end
-
-  # TO DEPRECATE, merge into get_orbs_by_geohashes/1
-  def get_orbs_by_geohash(id) do
-    query =
-      Orb_Location
-      |> where([e], e.location_id == ^id)
-      |> preload(:orbs)
-      |> preload(:locations)
-    # return only orbs
-    Repo.all(query, limit: 32) |>
-      Enum.map(fn orb ->
-      orb.orbs end)
-  end
-
+  def get_orb!(id), do: Repo.get!(Orb, id)
+  def get_orb_by_fyr(id), do: Repo.get_by(Phos.Users.User, fyr_id: id)
 
   def get_orbs_by_geohashes(ids) do
     query =
       Orb_Location
       |> where([e], e.location_id in ^ids)
+      |> preload(orbs: :users)
+      |> order_by(desc: :inserted_at)
+
+    Repo.all(query, limit: 32)
+    |> Enum.map(fn orb -> orb.orbs end)
+  end
+
+  def get_active_orbs_by_geohashes(ids) do
+    query =
+      Orb_Location
+      |> where([e], e.location_id in ^ids)
       |> preload(:orbs)
       |> preload(:locations)
+      |> order_by(desc: :inserted_at)
 
     Repo.all(query, limit: 32)
     |> Enum.map(fn orb -> orb.orbs end)
@@ -110,20 +105,16 @@ defmodule Phos.Action do
 
     case (Repo.transaction(multi)) do
       {:ok, results} ->
-        IO.inspect results
         IO.puts "Ecto Multi Success"
         {:ok, results.insert_orb}
       {:error, :insert_orb, changeset, _changes} ->
         IO.puts "Orb insert failed"
-        IO.inspect changeset.errors
         {:error, changeset}
       {:error, :insert_locations, changeset, _changes} ->
         IO.puts "Location insert failed"
-        IO.inspect changeset.errors
         {:error, changeset}
       {:error, :insert_orb_locations, changeset, _changes} ->
         IO.puts "Orb_Location insert failed"
-        IO.inspect changeset.errors
         {:error, changeset}
     end
    end
@@ -140,7 +131,17 @@ defmodule Phos.Action do
           inserted_at: timestamp,
           updated_at: timestamp
         })
-        IO.inspect maps
+
+        %{geolocation: location_list} ->
+          timestamp = NaiveDateTime.utc_now()
+          |> NaiveDateTime.truncate(:second)
+
+          maps = Enum.map(location_list, &%{
+            orb_id: orb_id,
+            location_id: &1,
+            inserted_at: timestamp,
+            updated_at: timestamp
+          })
 
         maps
       %{} ->
@@ -160,7 +161,16 @@ defmodule Phos.Action do
           inserted_at: timestamp,
           updated_at: timestamp
         })
-        IO.inspect maps
+
+        %{geolocation: location_list} ->
+          timestamp = NaiveDateTime.utc_now()
+          |> NaiveDateTime.truncate(:second)
+
+          maps = Enum.map(location_list, &%{
+            id: &1,
+            inserted_at: timestamp,
+            updated_at: timestamp
+          })
 
         maps
       %{} ->

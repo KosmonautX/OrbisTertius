@@ -12,15 +12,29 @@ defmodule Phos.Repo.Migrations.AddEmbTables do
       add :id, :uuid, primary_key: true
       add :username, :string
       add :media, :boolean, default: false, null: false
-      add :userprofile, :jsonb
       add :profile_pic, :integer
-      add :geohash, :jsonb
       add :fyr_id, :string
 
       timestamps()
     end
 
-    create unique_index(:users, [:username])
+    create unique_index(:users, [:username], name: :unique_username)
+
+
+    create table(:public_profile, primary_key: false) do
+      add :user_id, :uuid, primary_key: true
+      add :birthday, :naive_datetime
+      add :bio, :string
+
+      timestamps()
+    end
+
+    create table(:private_profile, primary_key: false) do
+      add :user_id, :uuid, primary_key: true
+      add :geolocation, :jsonb
+
+      timestamps()
+    end
 
     create table(:orbs, primary_key: false) do
       add :id, :uuid, primary_key: true
@@ -30,13 +44,13 @@ defmodule Phos.Repo.Migrations.AddEmbTables do
       add :extinguish, :naive_datetime
       add :payload, :jsonb
       add :orb_nature, :string
+      add :central_geohash, :bigint
       add :initiator, references(:users, column: :id, type: :uuid)
       add :traits, :jsonb
 
       timestamps()
     end
 
-    create index(:orbs, [:traits])
 
     create table(:locations, primary_key: false) do
       add :id, :bigint, primary_key: true
@@ -54,4 +68,5 @@ defmodule Phos.Repo.Migrations.AddEmbTables do
     create unique_index(:orbs_location, [:orb_id, :location_id])
     create unique_index(:orbs_location, [:location_id, :orb_id], name: :same_orb_within_location)
   end
+
 end

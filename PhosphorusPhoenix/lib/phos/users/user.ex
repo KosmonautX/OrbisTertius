@@ -2,7 +2,7 @@ defmodule Phos.Users.User do
   use Ecto.Schema
   import Ecto.Changeset
   alias Phos.Action.{Orb}
-  alias Phos.Users.{Fyr, Geohash, Profile}
+  alias Phos.Users.{Geohash, Public_Profile, Private_Profile}
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "users" do
@@ -16,8 +16,9 @@ defmodule Phos.Users.User do
     field :password_hash, :string
 
     has_many :orbs, Orb
-    embeds_one :userprofile, Profile
-    embeds_many :geohash, Geohash
+    has_one :public_profile, Public_Profile, references: :id, foreign_key: :user_id
+    has_one :private_profile, Private_Profile, references: :id, foreign_key: :user_id
+
 
     timestamps()
   end
@@ -26,10 +27,13 @@ defmodule Phos.Users.User do
   def changeset(%Phos.Users.User{} = user, attrs) do
     user
     |> cast(attrs, [:username, :media, :profile_pic, :fyr_id, :email, :password])
-    |> validate_required(:email)
-    |> cast_embed(:userprofile)
-    |> cast_embed(:geohash)
+    #|> validate_required(:email)
+    |> cast(attrs, [:id, :username, :media, :profile_pic, :fyr_id])
+    |> cast_assoc(:public_profile)
+    |> cast_assoc(:private_profile)
     |> verify_password()
+    |> unique_constraint(:username_taken, name: :unique_username)
+
   end
 
   defp verify_password(%Ecto.Changeset{valid?: true, changes: %{password: password}} = changeset) do

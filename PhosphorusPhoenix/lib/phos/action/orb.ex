@@ -11,6 +11,7 @@ defmodule Phos.Action.Orb do
     field :media, :boolean, default: false
     field :title, :string
     field :orb_nature, :string
+    field :central_geohash, :integer
     field :traits, {:array, :string}
 
     belongs_to :users, User, references: :id, foreign_key: :initiator, type: Ecto.UUID
@@ -23,7 +24,7 @@ defmodule Phos.Action.Orb do
   @doc false
   def changeset(%Phos.Action.Orb{} = orb, attrs) do
     orb
-    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :orb_nature, :initiator, :traits])
+    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :orb_nature, :central_geohash, :initiator, :traits])
     |> cast_assoc(:locations)
     |> assoc_constraint(:users)
     |> cast_embed(:payload)
@@ -32,7 +33,6 @@ defmodule Phos.Action.Orb do
   end
 
   def validate_media(changeset) do
-    IO.inspect(changeset)
     image = get_field(changeset, :image)
 
     if Enum.empty?(image) do
@@ -41,6 +41,5 @@ defmodule Phos.Action.Orb do
       changeset
     end
 
-    IO.inspect(image)
   end
 end

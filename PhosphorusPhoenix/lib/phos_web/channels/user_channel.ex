@@ -3,42 +3,28 @@ defmodule PhosWeb.UserChannel do
   alias PhosWeb.Menshen.Auth
   alias Phos.Message
   alias Phos.Action
+  alias Phos.Users
   alias Phos.PubSub
-  alias Phos.Geographer
-  alias Phos.External.HeimdallrClient
+  alias PhosWeb.Util.Geographer
+  alias PhosWeb.Util.Migrator
 
   @impl true
 
   def join("archetype:usr:" <> id , _payload, socket) do
     if authorized?(socket, id) do
       send(self(), :initiation)
+      # if user not migrated yet from nodejs(dynamodb), create model on postgres through firebase id
+      #if (Action.get_orb_by_fyr(id) == nil), do: Migrator.user_profile(id)
       {:ok, socket
-      |> assign(:user_channel_id, id)
-      |> assign(:geolocation, %{})}
+      |> assign(:user_id, id)
+      #|> assign(:user, Users.get_user_by_fyr(id))
+      }
     else
       {:error, %{reason: "unauthorized"}}
     end
   end
 
-  def handle_in("location_update", %{"name"=> name,"geohash"=> hash}, socket) do
-    # check name against jwt using authorized
-    updated_geolocation = get_and_update_in(socket.assigns.geolocation, Enum.map([name, :geohash], &Access.key(&1, %{})), &{&1, %{hash: :h3.parent(hash, 10), radius: 10}})
-    |> case do
-         {past, present} -> unless past == present[name][:geohash] do
-             put_in(present, [name, :geosub],
-               Enum.map([8,9,10], fn res -> :h3.parent(present[name][:geohash].hash,res) end)
-               |> loc_subscriber(present[name][:geosub])
-               |> loc_reverie(present[name][:geosub], socket)
-               )
-             else
-               present
-             end
-           end
-
-    {:noreply, assign(socket, :geolocation, updated_geolocation)}
-  end
-
-000  # Channels can be used in a request/response fashion
+  # Channels can be used in a request/response fashion
   # by sending replies to requests from the client
   @impl true
   def handle_in("ping", payload, socket) do
@@ -70,7 +56,7 @@ defmodule PhosWeb.UserChannel do
 
   @impl true
   def handle_info(:initiation,  socket) do
-    Message.usr_call(socket.assigns.user_channel_id) # from user_id
+    Message.usr_call(socket.assigns.user_id) # from user_id
     |> Enum.each(fn echoes -> push(socket, "reverie", %{
                                            source: echoes.source,
                                            destination: echoes.destination,
@@ -81,26 +67,6 @@ defmodule PhosWeb.UserChannel do
                                            message: echoes.message,
                                            time: DateTime.from_naive!(echoes.inserted_at,"Etc/UTC") |> DateTime.to_unix()
                                    }) end)
-
-    # if user that exists on phone, exists on postgres (new models)
-    # do returning user pathway
-    # else migrate user from nodejs(dynamodb) and create model on postgres
-    if (Phos.Repo.get_by(Phos.Users.User, fyr_id: socket.assigns.user_channel_id) == nil) do
-
-      # user_payload = Phos.External.HeimdallrClient.get_dyn_user(socket.assigns.user_channel_id)
-      user_payload = Phos.External.HeimdallrClient.get_dyn_user("DAAohgsLMpQPmsbpbvgQ5PEPuy22")
-
-      geo_map = for loc <- Map.keys(user_payload["geolocation"]) do
-        user_payload["geolocation"][loc]
-        |> Map.put("type", loc)
-        |> Map.put("geohash", :h3.from_string(to_charlist(Map.get(user_payload["geolocation"][loc]["geohashing"], "hash"))))
-        |> Map.put("radius", Map.get(user_payload["geolocation"][loc]["geohashing"], "radius"))
-      end
-
-      Phos.Users.create_user(%{"username" => user_payload["payload"]["username"], "fyr_id" => socket.assigns.user_channel_id, "media" => user_payload["payload"]["media"], "userprofile" => %{"birthday" => user_payload["payload"]["birthday"], "bio" => user_payload["payload"]["bio"]}, "profile_pic" => user_payload["payload"]["profile_pic"] , "geohash"=> geo_map})
-
-    end
-    # IO.inspect(socket.assigns)
     {:noreply,socket}
    end
 
@@ -117,30 +83,4 @@ defmodule PhosWeb.UserChannel do
         {:error,  :authentication_required}
     end
   end
-
-  defp loc_subscriber(present, nil) do
-    IO.puts("subscribe #{inspect(present)}")
-    present |>Enum.map(fn new-> Phos.PubSub.subscribe(loc_topic(new)) end)
-    present
-  end
-
-  defp loc_subscriber(present, past) do
-    IO.puts("subscribe with past#{inspect(present)}")
-    present -- past |> Enum.map(fn old -> old |> loc_topic() |> Phos.PubSub.unsubscribe() end)
-    past -- present |>Enum.map(fn new-> new |> loc_topic() |> Phos.PubSub.subscribe() end)
-    present
-  end
-
-  defp loc_reverie(present, nil, socket) do
-    present |> Enum.map(fn new-> %{new =>  new |> Action.get_orbs_by_geohash()} end)
-    present
-  end
-
-  defp loc_reverie(present, past, socket) do
-    past -- present |>Enum.map(fn new-> %{new => new |>  Action.get_orbs_by_geohash()} end)
-    present
-  end
-
-  defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"
-
 end

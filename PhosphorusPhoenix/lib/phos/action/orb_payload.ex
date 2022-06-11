@@ -2,7 +2,7 @@ defmodule Phos.Action.Orb_Payload do
   use Ecto.Schema
   import Ecto.Changeset
 
-
+  @primary_key false
   embedded_schema do
     field :when, :string
     field :where, :string

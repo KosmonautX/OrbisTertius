@@ -4,7 +4,7 @@ import Config
 config :phos, Phos.Repo,
   username: "postgres",
   password: "root",
-  hostname: "postgres", ## domain change to postgres for docker
+  hostname: System.get_env("PGDOMAIN") || "localhost", ## domain change to postgres for docker
   database: "phos_dev",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
@@ -66,7 +66,7 @@ config :phos, PhosWeb.Endpoint,
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/phos_web/(live|views)/.*(ex)$",
+      ~r"lib/phos_web/(live|views|channels)/.*(ex)$",
       ~r"lib/phos_web/templates/.*(eex)$"
     ]
   ]

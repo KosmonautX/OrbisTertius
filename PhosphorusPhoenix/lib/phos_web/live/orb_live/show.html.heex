@@ -8,6 +8,7 @@
       title={@page_title}
       action={@live_action}
       orb={@orb}
+      geolocation={nil}
       return_to={Routes.orb_show_path(@socket, :show, @orb)}
     />
   </.modal>
@@ -39,8 +40,13 @@
   </li>
 
   <li>
-    <strong>Time:</strong>
+    <strong>When:</strong>
     <%= @orb.payload.when %>
+  </li>
+
+  <li>
+    <strong>Where:</strong>
+    <%= @orb.payload.where %>
   </li>
 
   <li>
@@ -53,7 +59,10 @@
     <%= @orb.payload.info %>
   </li>
 
-
+  <li>
+    <strong>Traits:</strong>
+    <%= @orb.traits %>
+  </li>
 
 
 </ul>
