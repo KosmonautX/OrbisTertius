@@ -42,17 +42,21 @@
 
     <%= inputs_for f, :payload, fn ff -> %>
       <%= label ff, :image %>
+      <%= if @orb.media do %>
+    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "1920x1080") }>
+     <% end%>
       <%= live_file_input @uploads.image %>
-
       <%= for entry <- @uploads.image.entries do %>
         <figure>
           <%= live_img_preview entry %>
+        <figcaption><strong>New Image</strong></figcaption>
         </figure>
       <% end %>
 
       <%= for err <- upload_errors(@uploads.image) do %>
         <p class="alert alert-danger"><%= error_to_string(err) %></p>
       <% end %>
+
 
       <%= label ff, :when %>
       <%= text_input ff, :when %>

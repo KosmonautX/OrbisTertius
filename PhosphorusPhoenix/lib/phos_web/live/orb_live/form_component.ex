@@ -12,7 +12,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
      socket
      |> assign(assigns)
      |> assign(:changeset, changeset)
-     |> allow_upload(:image, accept: ~w(.jpg .jpeg .png), max_entries: 1)}
+     |> allow_upload(:image, accept: ~w(.jpg .jpeg .png), max_entries: 1, max_file_size: 8888888)}
   end
 
   @impl true
@@ -30,7 +30,8 @@ defmodule PhosWeb.OrbLive.FormComponent do
   # end
 
   def handle_event("save", %{"orb" => orb_params}, socket) do
-    generated_orb_id = Ecto.UUID.generate()
+
+    orb_id = socket.assigns.orb.id || Ecto.UUID.generate()
     # Process latlon value to x7 h3 indexes
     orb_params = try do
                      central_hash = socket.assigns.geolocation[String.to_existing_atom(orb_params["location"])][:geohash].hash
@@ -49,12 +50,12 @@ defmodule PhosWeb.OrbLive.FormComponent do
 
 
     # Process image upload
-    orb_params = Map.put(orb_params, "id", generated_orb_id)
+    orb_params = Map.put(orb_params, "id", orb_id)
 
     file_uploaded =
     consume_uploaded_entries(socket, :image, fn %{path: path}, _entry ->
       for res <- ["150x150", "1920x1080"] do
-        {:ok, dest} = Phos.Orbject.S3.put("ORB", generated_orb_id, res)
+        {:ok, dest} = Phos.Orbject.S3.put("ORB", orb_id, res)
         compressed_image =
           Mogrify.open(path)
           |> Mogrify.resize(res)

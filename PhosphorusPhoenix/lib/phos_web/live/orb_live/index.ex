@@ -56,11 +56,6 @@ defmodule PhosWeb.OrbLive.Index do
         {loc, updated_geo[loc]}
       end
     end
-    # IO.inspect(updated_geolocation)
-    # Enum.map([8,9,10], fn res -> :h3.parent(socket.assigns.geolocation[:live][:geohash].hash,res) end)
-    #            |> loc_subscriber(socket.assigns.geolocation[:live][:geosub])
-    #            orbed_geolocation = put_in(socket.assigns.geolocation, [:live, :geosub], neosubs)
-    #            |> put_in([:live, :orbs], Phos.Action.get_active_orbs_by_geohashes(neosubs))
     {:noreply, assign(socket, :geolocation, updated_geolocation)}
   end
 
