@@ -9,7 +9,6 @@ processes = []
   release_command = "/app/bin/migrate"
 
 [env]
-  PHX_HOST = "nyx.fly.dev"
   PORT = "8080"
 
 [experimental]
