@@ -1,7 +1,7 @@
 defmodule PhosWeb.OrbLive.FormComponent do
   use PhosWeb, :live_component
 
-  alias PhosWeb.Util.Viewer
+  alias PhosWeb.Util.{Viewer,ImageHandler}
   alias Phos.Action
 
   @impl true
@@ -30,7 +30,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
   # end
 
   def handle_event("save", %{"orb" => orb_params}, socket) do
-
+    
     orb_id = socket.assigns.orb.id || Ecto.UUID.generate()
     # Process latlon value to x7 h3 indexes
     orb_params = try do
@@ -53,14 +53,12 @@ defmodule PhosWeb.OrbLive.FormComponent do
     orb_params = Map.put(orb_params, "id", orb_id)
 
     file_uploaded =
-    consume_uploaded_entries(socket, :image, fn %{path: path}, _entry ->
+    consume_uploaded_entries(socket, :image, fn %{path: path}, entry ->
       for res <- ["150x150", "1920x1080"] do
         {:ok, dest} = Phos.Orbject.S3.put("ORB", orb_id, res)
-        compressed_image =
-          Mogrify.open(path)
-          |> Mogrify.resize(res)
-          |> Mogrify.save()
-        HTTPoison.put(dest, {:file, compressed_image.path})
+        compressed_image_path = ImageHandler.resize_file(path, res, Path.extname(entry.client_name))
+        HTTPoison.put(dest, {:file, compressed_image_path})
+        File.rm(compressed_image_path)
       end
       {:ok, path}
      end)

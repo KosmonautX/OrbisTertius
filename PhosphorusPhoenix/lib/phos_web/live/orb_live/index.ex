@@ -78,9 +78,6 @@ defmodule PhosWeb.OrbLive.Index do
              end
          end
 
-         IO.inspect(updated_geolocation)
-
-
     {:noreply, socket
     |> assign(:geolocation, updated_geolocation)
     |> push_event("centre_marker", %{latitude: latitude, longitude: longitude})}
