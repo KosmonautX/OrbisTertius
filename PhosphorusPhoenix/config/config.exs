@@ -49,7 +49,7 @@ config :phoenix, :json_library, Jason
 
 # Mogrify
 config :mogrify, convert_command: [
-  path: "magick",
+  path: "#{File.cwd!}/assets/vendor/magick",
   args: ["convert"]
 ]
 
