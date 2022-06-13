@@ -53,12 +53,17 @@ defmodule PhosWeb.OrbLive.FormComponent do
     orb_params = Map.put(orb_params, "id", orb_id)
 
     file_uploaded =
-    consume_uploaded_entries(socket, :image, fn %{path: path}, entry ->
+    consume_uploaded_entries(socket, :image, fn %{path: path}, _entry ->
       for res <- ["150x150", "1920x1080"] do
         {:ok, dest} = Phos.Orbject.S3.put("ORB", orb_id, res)
-        compressed_image_path = ImageHandler.resize_file(path, res, Path.extname(entry.client_name))
-        HTTPoison.put(dest, {:file, compressed_image_path})
-        File.rm(compressed_image_path)
+        #compressed_image_path = ImageHandler.resize_file(path, res, Path.extname(entry.client_name))
+        compressed_image =path
+        |> Mogrify.open()
+        #|> Mogrify.gravity("Center")
+        |> Mogrify.resize(res)
+        |> Mogrify.save()
+
+        HTTPoison.put(dest, {:file, compressed_image.path})
       end
       {:ok, path}
      end)
