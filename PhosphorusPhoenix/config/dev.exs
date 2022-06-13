@@ -4,7 +4,7 @@ import Config
 config :phos, Phos.Repo,
   username: "postgres",
   password: "root",
-  hostname: "localhost",
+  hostname: System.get_env("PGDOMAIN") || "localhost", ## domain change to postgres for docker
   database: "phos_dev",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
@@ -18,7 +18,7 @@ config :phos, Phos.Repo,
 config :phos, PhosWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {127, 0, 0, 1}, port: 4000],
+  http: [ip: {0, 0, 0, 0}, port: System.get_env("PORT") || 4000], ## 0,0,0,0 to postgres for docker
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
@@ -62,7 +62,7 @@ config :phos, PhosWeb.Endpoint,
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/phos_web/(live|views)/.*(ex)$",
+      ~r"lib/phos_web/(utility|live|views|channels)/.*(ex)$",
       ~r"lib/phos_web/templates/.*(eex)$"
     ]
   ]
@@ -76,3 +76,9 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
+
+# MINIO Object Store API Domain
+config :ex_aws, :s3,
+  scheme: "http://",
+  host: "localhost",
+  port: 9000

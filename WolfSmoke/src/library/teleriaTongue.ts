@@ -1,5 +1,5 @@
 import {Mutation} from "../types/parsesTongue"
-const CHANNEL_ID = "-1001239569373"
+const CHANNEL_ID = process.env.TELECHANNEL || ""
 import axios from 'axios';
 
 

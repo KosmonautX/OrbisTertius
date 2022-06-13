@@ -12,22 +12,72 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 
+let Hooks = {}
+Hooks.InitGps = {
+  mounted() {
+    navigator.geolocation.watchPosition(
+      (pos) => {
+        this.pushEvent("live_location_update", { latitude: pos.coords.latitude, longitude: pos.coords.longitude })
+      },
+      (err) => console.log(err),
+      { maximumAge: 0, enableHighAccuracy: true }
+    )
+  }
+}
+Hooks.FullMap = {
+  mounted() {
+    var centred = false;
+    const mapid = this.el.id;
+    const style = document.createElement("link");
+    style.href = "https://unpkg.com/leaflet@1.8.0/dist/leaflet.css";
+    style.rel = "stylesheet";
+    (document.getElementsByTagName("head")[0] || document.documentElement).appendChild(style);
+
+    const js = document.createElement("script");
+    js.src = "https://unpkg.com/leaflet@1.8.0/dist/leaflet.js";
+    js.type = "text/javascript";
+    var map = L.map(mapid).setView([51.505, -0.09], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+    (document.getElementsByTagName("head")[0] || document.documentElement).appendChild(js);
+
+    this.handleEvent("centre_marker", (latlon) => {
+      L.marker([latlon.latitude, latlon.longitude]).addTo(map)
+
+      // Centres to live latlon
+      if (!centred) {
+        centred = true
+        map.panTo([latlon.latitude, latlon.longitude])
+        map.setZoom(15)
+      }
+    })
+
+    this.handleEvent("add_polygon", (boundaries) => {
+
+      L.polygon(boundaries.geo_boundaries, {color: 'yellow'}).addTo(map);
+    })
+  }
+}
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken}})
+let liveSocket = new LiveSocket("/live", Socket, { params: { _csrf_token: csrfToken }, hooks: Hooks })
 
 // Show progress bar on live navigation and form submits
-topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
+topbar.config({barColors: {0: "#f8f0e5"}, shadowColor: "rgba(25, 39, 86, .3)"})
 window.addEventListener("phx:page-loading-start", info => topbar.show())
 window.addEventListener("phx:page-loading-stop", info => topbar.hide())
 
 // connect if there are any LiveViews on the page
-//liveSocket.connect()
+liveSocket.connect()
 
 // expose liveSocket on window for web console debug logs and latency simulation:
-// >> liveSocket.enableDebug()
-// >> liveSocket.enableLatencySim(1000)  // enabled for duration of browser session
-// >> liveSocket.disableLatencySim()
-//window.liveSocket = liveSocket
+liveSocket.enableDebug()
+liveSocket.enableLatencySim(1000)  //enabled for duration of browser session
+liveSocket.disableLatencySim()
+window.liveSocket = liveSocket
 
 
 
@@ -125,4 +175,3 @@ msg.addEventListener('keypress', function (event) {
 //
 //     import "some-package"
 //
-

@@ -45,11 +45,20 @@ async function gen_orb(body){
             body.geolocation.hash = geohash.latlon_to_geo(address.latlon ,address.target)
             body.geolocation.radius = address.target
         }
+        if (address.geohashes){
+            if(address.populate) body.geolocation.hashes = []
+            else body.geolocation.hashes= address.geohashes
+            body.geolocation.radius = address.target
+            body.geolocation.hash = address.geohashes[0]
+        }
     })
     //body.geolocation.radii = territory_markers.filter(function(x){ return x>=req.geolocation.radius})
     // when listener frequencies become adaptable not now
-    if(body.geolocation.radius === territory_markers[0]) body.geolocation.hashes = geohash.neighbour(body.geolocation.hash,body.geolocation.radius)
-    else body.geolocation.hashes = [body.geolocation.hash]
+    if(!body.geolocation.hashes){
+        if(body.geolocation.radius === territory_markers[0]) body.geolocation.hashes = geohash.neighbour(body.geolocation.hash,body.geolocation.radius)
+    // posting without neighbours
+         else body.geolocation.hashes = [body.geolocation.hash]
+        }
     //initators data from telegram
 
     body.init = {}
@@ -63,6 +72,7 @@ async function gen_orb(body){
     promises.orb_uuid =  body.orb_uuid;
     promises.expiry = body.expiry_dt;
     promises.creationtime = body.created_dt
+    promises.where = body.where
     if (body.media){
         promises.lossy = await serve3.preSign('putObject','ORB',body.orb_uuid,'150x150')
         promises.lossless = await serve3.preSign('putObject','ORB',body.orb_uuid,'1920x1080');
