@@ -1,7 +1,7 @@
 <h1>Listing Orbs</h1>
 
 <div id="gps"
-     phx-hook="InitGps"
+     phx-hook="InitPosition"
      phx-update="ignore"></div>
 
 <%= if @live_action in [:new, :edit] do %>
@@ -20,7 +20,7 @@
 
 <div id="wrapper" phx-update="ignore">
   <div id="map"
-      phx-hook="FullMap"
+      phx-hook="InitMap"
       style="height: 400px; z-index: -1"></div>
 </div>
 

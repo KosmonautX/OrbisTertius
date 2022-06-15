@@ -59,7 +59,14 @@ defmodule Phos.MixProject do
       {:ex_aws, "~> 2.0"},
       {:ex_aws_s3, "~> 2.0"},
       {:httpoison, "~> 1.8"},
-      {:mogrify, "~> 0.9.1"}
+      {:mogrify, "~> 0.9.1"},
+
+      # oauth strategy
+      {:guardian, "~> 2.0"},
+      {:ueberauth, "~> 0.7"},
+      {:ueberauth_apple, "~> 0.4"},
+      {:ueberauth_google, "~> 0.10"},
+      {:argon2_elixir, "~> 3.0"},
     ]
   end
 

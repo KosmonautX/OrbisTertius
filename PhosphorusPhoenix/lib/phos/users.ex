@@ -5,7 +5,7 @@ defmodule Phos.Users do
 
   import Ecto.Query, warn: false
   alias Phos.Repo
-  alias Phos.Users.{User, Public_Profile, Private_Profile}
+  alias Phos.Users.{User, Public_Profile, Private_Profile, Auth}
 
   alias Ecto.Multi
 
@@ -46,6 +46,24 @@ defmodule Phos.Users do
   #   |> Enum.map(fn orb -> orb.geohash end)
     # |> Enum.filter(fn orb -> Map.get()orb.type == type end)
   # end
+
+  def find_user_by_id(id) when is_bitstring(id) do
+    query = from u in User, where: u.id == ^id, limit: 1
+    case Repo.one(query) do
+      %User{} = user -> {:ok, user}
+      nil -> {:error, "User not found"}
+    end
+  end
+
+  def authenticate(email, password) when is_bitstring(email) and is_bitstring(password) do
+    email = String.downcase(email)
+    query = from u in User, where: u.email == ^email, limit: 1
+    case Repo.one(query) do
+      %User{} = user -> Argon2.check_pass(user, password)
+      _ -> authenticate(nil, nil)
+    end
+  end
+  def authenticate(_, _), do: {:error, "Email or password not match"}
 
 #   @doc """
 #   Creates a user.
@@ -161,5 +179,48 @@ defmodule Phos.Users do
 #   """
   def change_user(%User{} = user, attrs \\ %{}) do
     User.changeset(user, attrs)
+  end
+
+  @doc """
+  Authenticate a user from oauth provider
+  """
+  def from_auth(%Ueberauth.Auth{uid: id, provider: provider} = resp) do
+    case do_query_from_auth(id, provider) do
+      nil -> create_new_user(id, provider, resp)
+      %Auth{} = auth -> {:ok, auth.user}
+      _ -> {:error, "Error occured"}
+    end
+  end
+
+  defp do_query_from_auth(id, provider) when is_atom(provider), do:
+    do_query_from_auth(id, Atom.to_string(provider))
+  defp do_query_from_auth(id, provider) do
+    Repo.one(
+      from a in Auth,
+      preload: [:user],
+      where: a.auth_id == ^id and a.auth_provider == ^provider,
+      limit: 1
+    )
+  end
+
+  defp create_new_user(id, provider, %Ueberauth.Auth{info: info} = auth) do
+    params = %{
+      auth_id: id,
+      auth_provider: Atom.to_string(provider),
+      user: %{
+        email: info.email,
+        userprofile: %{
+          birthday: info.birthday,
+          bio: info.description
+        }
+      }
+    }
+    %Auth{}
+    |> Auth.changeset(params)
+    |> Repo.insert()
+    |> case do
+      {:ok, auth} -> {:ok, auth.user}
+      error -> error
+    end
   end
 end
