@@ -24,6 +24,9 @@ defmodule PhosWeb.Router do
     get "/auth/:provider", AuthController, :request
     get "/auth/:provider/callback", AuthController, :callback
 
+    live "/orb/sethome", OrbLive.Index, :sethome
+    live "/orb/setwork", OrbLive.Index, :setwork
+
     live "/orb", OrbLive.Index, :index
     live "/orb/new", OrbLive.Index, :new
     live "/orb/:id/edit", OrbLive.Index, :edit

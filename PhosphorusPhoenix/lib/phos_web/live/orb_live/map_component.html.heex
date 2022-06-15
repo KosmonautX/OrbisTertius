@@ -1,0 +1,13 @@
+<div>
+  <h2><%= @title %></h2>
+
+  <%# <input type="text" value={"{#{@selectedloc.latitude}, #{@selectedloc.longitude}}"}/> %>
+  <button type="button" phx-click="save_loc" phx-target={@myself} phx-value-lat={@markerloc.latitude} phx-value-lng={@markerloc.longitude}>Confirm</button>
+
+
+  <div id="setlocwrapper" phx-update="ignore">
+    <div id="setlocmap"
+        phx-hook="InitModalMap"
+        style="height: 400px;"></div>
+  </div>
+</div>
