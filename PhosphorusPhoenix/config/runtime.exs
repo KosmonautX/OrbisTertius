@@ -23,11 +23,16 @@ unless config_env() == :prod do
   ]
 
   # FCM
-
   config :phos, Phos.Fyr.Message,
   adapter: Pigeon.FCM,
   project_id: System.get_env("FYR_PROJ"),
   service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
+
+  # AWS
+  config :ex_aws,
+  access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, :instance_role],
+  secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, :instance_role],
+  region: "ap-southeast-1"
 
 end
 
@@ -40,6 +45,13 @@ if config_env() == :prod do
     """
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6], else: []
+
+  # AWS
+  config :ex_aws,
+  access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, :instance_role],
+  secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, :instance_role],
+  region: "ap-southeast-1"
+
 
 
   app_name =

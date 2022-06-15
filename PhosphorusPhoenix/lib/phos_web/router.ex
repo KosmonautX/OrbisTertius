@@ -21,6 +21,18 @@ defmodule PhosWeb.Router do
       resources "/archetype/usr", UserController, only: [:show]
     end
 
+    get "/auth/:provider", AuthController, :request
+    get "/auth/:provider/callback", AuthController, :callback
+
+    live "/orb", OrbLive.Index, :index
+    live "/orb/new", OrbLive.Index, :new
+    live "/orb/:id/edit", OrbLive.Index, :edit
+
+    live "/orb/:id", OrbLive.Show, :show
+    live "/orb/:id/show/edit", OrbLive.Show, :edit
+
+    live "/sign_up", SignUpLive.Index, :index
+
     get "/", PageController, :index
   end
 

@@ -112,7 +112,7 @@ POST :ipAddress/api/nomadology/freshorbstream
     "geolocation": {"live": {"latlon":{
     "lat":1.3568,
     "lon":103.7487
-    },"target":10}},
+    },"target":9}},
     "upstream": 1640259800
 }
 #
