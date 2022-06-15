@@ -45,22 +45,27 @@ defmodule PhosWeb.Util.Viewer do
         available: orb.active,
         orb_uuid: orb.id,
         payload: %{orb_nature: orb.orb_nature,
-          init: %{username: orb.users.username, media: orb.users.media, media_asset: Phos.Orbject.S3.get!("USR", orb.users.fyr_id, "150x150")},
+            init: (if orb.users do %{username: orb.users.username,
+                    media: orb.users.media,
+                    media_asset: (if orb.users.media && orb.users.fyr_id, do: Phos.Orbject.S3.get!("USR", orb.users.fyr_id, "150x150"))
+                    }
+            end),
           extinguishtime: DateTime.from_naive!(orb.extinguish, "Etc/UTC") |> DateTime.to_unix(),
-          user_id: orb.users.fyr_id,
+          user_id: (if orb.users, do: orb.users.fyr_id || orb.users.id),
           where: orb.payload.where,
           creationtime: DateTime.from_naive!(orb.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
           media: orb.media,
           title: orb.title,
           info: orb.payload.info,
-          media_asset: Phos.Orbject.S3.get!("ORB", orb.id, "1920x1080")},
+          media_asset: (if orb.media, do: Phos.Orbject.S3.get!("ORB", orb.id, "1920x1080"))
+          },
         geolocation: %{
           hashes: [],
           radius: 0,
           hash: orb.central_geohash
         }
       }
-    end)
+     end)
   end
 
   # Update Orbs Mapper
@@ -77,4 +82,13 @@ defmodule PhosWeb.Util.Viewer do
   def live_orb_mapper(orbs) do
     Enum.filter(orbs, fn orb -> orb.active == true end)
   end
+
+
+defp nested_put(nest) do
+  if nest do
+    nest
+  else
+    %{}
+  end
+ end
 end

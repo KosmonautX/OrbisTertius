@@ -108,13 +108,10 @@ defmodule Phos.Action do
         IO.puts "Ecto Multi Success"
         {:ok, results.insert_orb}
       {:error, :insert_orb, changeset, _changes} ->
-        IO.puts "Orb insert failed"
         {:error, changeset}
       {:error, :insert_locations, changeset, _changes} ->
-        IO.puts "Location insert failed"
         {:error, changeset}
       {:error, :insert_orb_locations, changeset, _changes} ->
-        IO.puts "Orb_Location insert failed"
         {:error, changeset}
     end
    end

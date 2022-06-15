@@ -14,6 +14,7 @@ defmodule PhosWeb.UserLocationChannel do
     # if exists on the app
     # preload geolocation preferences of user_id
     if authorized?(socket, user_id) do
+      #https://elixirforum.com/t/myapp-endpoint-broadcast-vs-phoenix-pubsub-broadcast-are-they-indentical/32380/2
     {:ok, socket
     |> assign(:user_id, user_id)
     |>assign(:geolocation, %{})}
@@ -27,7 +28,7 @@ defmodule PhosWeb.UserLocationChannel do
 
   def handle_in("location_update", %{"name"=> name,"geohash"=> hash}, socket) when name in ["home", "work", "live"] do
     # check name against jwt using authorized
-    IO.puts " in paris #{inspect(socket.assigns.geolocation)}"
+    #IO.puts " in paris #{inspect(socket.assigns.geolocation)}"
     updated_geolocation = get_and_update_in(socket.assigns.geolocation, Enum.map([name, :geohash], &Access.key(&1, %{})), &{&1, %{hash: :h3.parent(hash, 10), radius: 10}})
     |> case do
          {past, present} ->
@@ -36,7 +37,6 @@ defmodule PhosWeb.UserLocationChannel do
              |> loc_subscriber(present[name][:geosub])
              |> loc_fetch(present[name][:geosub])
              |> Map.put("name", name)
-             #IO.puts "nigmas in neochina #{inspect(neosubs)}
 
              push(socket, "loc_reverie", message)
 
@@ -75,7 +75,7 @@ defmodule PhosWeb.UserLocationChannel do
   end
 
   defp loc_subscriber(present, nil) do
-    IO.puts("subscribe #{inspect(present)}")
+    #IO.puts("subscribe #{inspect(present)}")
     present |>Enum.map(fn new-> Phos.PubSub.subscribe(loc_topic(new)) end)
     present
   end
