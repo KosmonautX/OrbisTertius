@@ -38,6 +38,26 @@ defmodule Phos.Users do
 #   """
   def get_user_by_fyr(id), do: Repo.get_by(User |> preload(:private_profile) |> preload(:public_profile), fyr_id: id)
 
+  def get_pte_profile_by_fyr(id) do
+    query = from u in User, where: u.fyr_id == ^id
+
+    case Repo.one(query) do
+      %User{} = user -> {:ok, user}
+      nil -> {:error, "Location not set"}
+    end
+    Repo.get_by(User |> preload(:private_profile), fyr_id: id)
+  end
+
+  def get_users_by_home(id, locname) do
+    query = from u in User,
+      join: p in assoc(u, :private_profile),
+      where: fragment("? <@ ANY(?)", ~s|{"id": "home"}|, p.geolocation)
+      # select: p.geolocation
+
+    Repo.all(query |> preload(:private_profile))
+  end
+
+  def get_pub_profile_by_fyr(id), do: Repo.get_by(User |> preload(:public_profile), fyr_id: id)
   # def get_location_pref(type, id) do
   #   query =
   #     User

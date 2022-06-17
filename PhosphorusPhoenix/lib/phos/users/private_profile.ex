@@ -15,7 +15,7 @@ defmodule Phos.Users.Private_Profile do
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:user_id])
+    # |> cast(attrs, [:user_id])
     |> cast_embed(:geolocation)
   end
 end

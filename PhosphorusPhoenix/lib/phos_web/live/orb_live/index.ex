@@ -7,9 +7,10 @@ defmodule PhosWeb.OrbLive.Index do
   alias Phos.PubSub
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     send(self(), :geoinitiation)
     {:ok, socket
+    |> assign(:user_id, params["user_id"])
     # |> assign(:geolocation, %{home: %{geohash: %{hash: 623276217027067903}}})
     |> assign(:geolocation, %{})
     |> assign(:orbs, %{home: [], work: [], live: []})
@@ -72,9 +73,30 @@ defmodule PhosWeb.OrbLive.Index do
         |> assign(:orbs, updated_orblist)}
   end
 
-  def handle_info({:locnameupdated, geolocation}, socket) do
+  def handle_info({:static_location_update, %{"locname" => locname, "longitude" => longitude, "latitude" => latitude}}, socket) do
+    {updated_geolocation, socket} =
+      get_and_update_in(socket.assigns.geolocation, Enum.map([locname, :geohash], &Access.key(&1, %{})), &{&1, %{hash: :h3.from_geo({latitude, longitude}, 10), radius: 10}})
+      |> case do
+           {past_geohash, geolocation_present} ->
+             unless past_geohash == geolocation_present[locname][:geohash] do
+               # pipe new geosubs into loc subscriber and pass old geosubs
+               neosubs = Enum.map([8,9,10], fn res -> :h3.parent(geolocation_present[locname][:geohash].hash,res) end)
+               |> loc_subscriber(geolocation_present[locname][:geosub])
+               orbed_geolocation = put_in(geolocation_present, [locname, :geosub], neosubs)
+          {orbed_geolocation, socket}
+             else
+               {geolocation_present, socket}
+             end
+         end
+
+    # Add newly added loc to orblist
+    orblist = updated_geolocation |> Map.get(locname) |> Map.get(:geosub) |> Action.get_active_orbs_by_geohashes()
+    updated_orblist = put_in(socket.assigns.orbs, [locname], orblist)
+
     {:noreply, socket
-      |> assign(:geolocation, geolocation)}
+    |> assign(:geolocation, updated_geolocation)
+    |> assign(:orbs, updated_orblist)
+    |> push_event("centre_marker", %{latitude: latitude, longitude: longitude})}
   end
 
   @impl true
