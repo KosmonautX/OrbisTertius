@@ -17,7 +17,7 @@ defmodule Phos.Users.Auth do
   @doc false
   def changeset(auth, attrs) do
     auth
-    |> cast(attrs, [:auth_id, :auth_provider, :auth_response])
+    |> cast(attrs, [:auth_id, :auth_provider]) #:auth_response
     |> cast_assoc(:user, with: &User.changeset/2)
     |> validate_required([:auth_id, :auth_provider])
   end

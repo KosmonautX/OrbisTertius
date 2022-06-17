@@ -13,6 +13,12 @@
       </div>
 
       <div>
+        <%= label f, :username %>
+        <%= text_input f, :username, required: true %>
+        <%= error_tag f, :username %>
+      </div>
+
+      <div>
         <%= label f, :password %>
         <%= password_input f, :password, required: true %>
         <%= error_tag f, :password %>

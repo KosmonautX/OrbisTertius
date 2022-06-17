@@ -209,10 +209,6 @@ defmodule Phos.Users do
       auth_provider: Atom.to_string(provider),
       user: %{
         email: info.email,
-        userprofile: %{
-          birthday: info.birthday,
-          bio: info.description
-        }
       }
     }
     %Auth{}

@@ -14,32 +14,41 @@ defmodule PhosWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :authentication do
+    plug Ueberauth
+  end
+
+
   scope "/", PhosWeb do
-    pipe_through :browser
+    pipe_through [:browser, :authentication]
 
     get "/archetype", ArchetypeController, :show do
       resources "/archetype/usr", UserController, only: [:show]
     end
 
-    get "/auth/:provider", AuthController, :request
-    get "/auth/:provider/callback", AuthController, :callback
+    live_session :authenticated, on_mount: {PhosWeb.Menshen.Protocols, :pleb} do
+      live "/orb", OrbLive.Index, :index
+      live "/orb/new", OrbLive.Index, :new
+      live "/orb/:id/edit", OrbLive.Index, :edit
 
-    live "/orb", OrbLive.Index, :index
-    live "/orb/new", OrbLive.Index, :new
-    live "/orb/:id/edit", OrbLive.Index, :edit
-
-    live "/orb/:id", OrbLive.Show, :show
-    live "/orb/:id/show/edit", OrbLive.Show, :edit
+      live "/orb/:id", OrbLive.Show, :show
+      live "/orb/:id/show/edit", OrbLive.Show, :edit
+    end
 
     live "/sign_up", SignUpLive.Index, :index
 
     get "/", PageController, :index
   end
 
+
   # Other scopes may use custom stacks.
-  # scope "/api", PhosWeb do
-  #   pipe_through :api
-  # end
+  scope "/auth", PhosWeb do
+    pipe_through :browser
+
+    get "/:provider", AuthController, :request
+    get "/:provider/callback", AuthController, :callback
+    delete "/logout", AuthController, :delete
+  end
 
   # Enables LiveDashboard only for development
   #
@@ -69,4 +78,4 @@ defmodule PhosWeb.Router do
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
   end
-end
+ end
