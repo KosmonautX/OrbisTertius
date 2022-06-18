@@ -1,7 +1,7 @@
 ---
 name: Operation Mapper
 about: Map Operations into Shared Landmarks to Organise by Structure of Problem
-title: "[OPERATION]:"
+title: "[OPERATION]: "
 labels: operation
 assignees: ''
 
@@ -14,11 +14,11 @@ Where we collectively investigate and interrogate the problem space and iterativ
 Breakdown to landmarks that communicate shared context we are working towards through 2-tiered task list, CRUD list elements as development unfolds and interdependencies are clearer 
 
 Strike the scope of code that reveals the most about the problem/solution FIRST not necessarily the easiest or hardest parts
-```
+
 ### Explored
-- [  ] Independent Parent Task
-    - [  ]  Interdependent Children Task
-    - [  ]  Interdependent Children Task
+- [ ] Independent Parent Task
+    - [ ]  Interdependent Children Task
+    - [ ]  Interdependent Children Task
   
 - [ ] Independent Parent Task
     - [ ]  Interdependent Children Task
@@ -28,6 +28,8 @@ Strike the scope of code that reveals the most about the problem/solution FIRST 
 - [ ]  Necessary Parent/Child Tasks
 - [ ]  Plausible Parent/Children Task
 
+
+```
 ```
 ---
 ### Groundwork
@@ -43,8 +45,9 @@ How have others attempted to scale or explore these challenges?
 Who should be notified?
 
 Emphasis on previous or current practice to discover what is ugly, missing, or unnecessary.
+
 ```
-INPUT UR ANSWER HERE
+
 ```
 ---
 ### Reflection
@@ -53,8 +56,8 @@ Where the eternal wheel returns back to practice and what we finally implemented
 
 Emphasis on approaching timeless solutions for well-defined problem space through distillation by decanting that which is un-needed and abstracting that which is essential to approaching the problem space. 
 
-Add any reflections and internal links to future potential and blindsides.
+Add any reflections and internal links to future potential to uncover or blindsides.
 
 ```
-INPUT UR ANSWER HERE
+
 ```
