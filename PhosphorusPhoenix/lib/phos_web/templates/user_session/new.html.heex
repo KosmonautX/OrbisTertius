@@ -1,0 +1,54 @@
+<h1>Log in</h1>
+
+<div style="width:100%; text-align: center;" >
+    <div style="display:inline-block">
+      <a class="button"
+        href={Routes.auth_path(@conn, :request, "google")}>
+        <img
+          src={Routes.static_path(@conn, "/images/google-logo.png")}
+          alt="google logo"
+          width="12px"
+          height="12px" /> Continue with Google
+
+      </a>
+    </div>
+    <div style="display:inline-block">
+      <a class="button"
+        href={Routes.auth_path(@conn, :request, "apple")}>
+        <img
+          src={Routes.static_path(@conn, "/images/apple-logo.png")}
+          alt="apple logo"
+          width="12px"
+          height="12px" />  Continue with Apple
+      </a>
+    </div>
+</div>
+<br>
+<div style="width: 100%; height: 1px; visibility: visible; border-bottom: 1px solid rgba(55, 53, 47, 0.16);"></div>
+<br>
+
+<.form let={f} for={@conn} action={Routes.user_session_path(@conn, :create)} as={:user}>
+  <%= if @error_message do %>
+    <div class="alert alert-danger">
+      <p><%= @error_message %></p>
+    </div>
+  <% end %>
+
+  <%= label f, :email %>
+  <%= email_input f, :email, required: true %>
+
+  <%= label f, :password %>
+  <%= password_input f, :password, required: true %>
+
+  <%= label f, :remember_me, "Keep me logged in for 60 days" %>
+  <%= checkbox f, :remember_me %>
+
+  <div>
+    <%= submit "Log in" %>
+  </div>
+</.form>
+
+<p>
+  <%= link "Register", to: Routes.user_registration_path(@conn, :new) %> |
+  <%= link "Forgot your password?", to: Routes.user_reset_password_path(@conn, :new) %>
+</p>

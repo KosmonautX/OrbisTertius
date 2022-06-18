@@ -19,17 +19,11 @@
     <%= if function_exported?(Routes, :live_dashboard_path, 2) do %>
                                             <li><%= link "LiveDashboard", to: Routes.live_dashboard_path(@conn, :home) %></li>
                                             <% end %>
-    <%= if Plug.Conn.get_session(@conn, "current_user") do %>
-                                     <li><%= link "Logout", to: Routes.auth_path(@conn, :delete), method: "delete", class: "button" %></li>
-                                     <% else %>
-                     <li><%= link "Sign Up", to: Routes.sign_up_index_path(@conn, :index), class: "button" %></li>
-                     <% end %>
     </ul>
+      <%= render "_user_menu.html", assigns %>
     </nav>
-    <a href="./orb" class="phx-logo">
+    <a href="/orb" class="phx-logo">
     <img src={Routes.static_path(@conn, "/images/socrates.png")} alt="Scratchbac Phos"/>
-    </a>
-    <a href={Routes.auth_path(@conn, :request, "google")}>
     </a>
     </section>
     </header>
