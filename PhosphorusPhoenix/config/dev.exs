@@ -2,8 +2,8 @@ import Config
 
 # Configure your database
 config :phos, Phos.Repo,
-  username: "postgres",
-  password: "root",
+  username: System.get_env("PGUSERNAME") || "postgres",
+  password: System.get_env("PGPASSWORD") || "root",
   hostname: System.get_env("PGDOMAIN") || "localhost", ## domain change to postgres for docker
   database: "phos_dev",
   show_sensitive_data_on_connection_error: true,
