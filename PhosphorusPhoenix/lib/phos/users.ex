@@ -96,6 +96,12 @@ defmodule Phos.Users do
     |> Repo.insert()
   end
 
+  def migrate_user(attrs \\ %{}) do
+    %User{}
+    |> User.migration_changeset(attrs)
+    |> Repo.insert()
+  end
+
   # def create_public_profile(attrs \\ %{}) do
   #   %Public_Profile{}
   #   |> Public_Profile.changeset(attrs)

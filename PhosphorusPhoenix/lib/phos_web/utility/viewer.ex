@@ -13,7 +13,7 @@ defmodule PhosWeb.Util.Viewer do
         active: orb.active,
         available: orb.active,
         orb_uuid: orb.id,
-        payload: %{orb_nature: orb.orb_nature,
+        payload: %{source: orb.source,
           init: %{username: orb.users.username, media: orb.users.media, media_asset: Phos.Orbject.S3.get!("USR", orb.users.fyr_id, "150x150")},
           extinguishtime: DateTime.from_naive!(orb.extinguish, "Etc/UTC") |> DateTime.to_unix(),
           user_id: orb.users.fyr_id,
@@ -40,28 +40,27 @@ defmodule PhosWeb.Util.Viewer do
   def fresh_orb_stream_mapper(orbs) do
     Enum.map(orbs, fn orb ->
       %{
-        expiry_dt: DateTime.from_naive!(orb.extinguish, "Etc/UTC") |> DateTime.to_unix(),
+        expiry_time: DateTime.from_naive!(orb.extinguish, "Etc/UTC") |> DateTime.to_unix(),
         active: orb.active,
         available: orb.active,
         orb_uuid: orb.id,
-        payload: %{orb_nature: orb.orb_nature,
-            init: (if orb.users do %{username: orb.users.username,
+        title: orb.title,
+        initiator: (if orb.users do %{username: orb.users.username,
                     media: orb.users.media,
-                    media_asset: (if orb.users.media && orb.users.fyr_id, do: Phos.Orbject.S3.get!("USR", orb.users.fyr_id, "150x150"))
+                    media_asset: (if orb.users.media && orb.users.fyr_id, do: Phos.Orbject.S3.get!("USR", orb.users.fyr_id, "150x150")),
+                    user_id: orb.users.fyr_id || orb.users.id
                     }
             end),
-          extinguishtime: DateTime.from_naive!(orb.extinguish, "Etc/UTC") |> DateTime.to_unix(),
-          user_id: (if orb.users, do: orb.users.fyr_id || orb.users.id),
+        creationtime: DateTime.from_naive!(orb.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
+        source: orb.source,
+        payload: %{
           where: orb.payload.where,
-          creationtime: DateTime.from_naive!(orb.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
-          media: orb.media,
-          title: orb.title,
+          inner_title: orb.payload.inner_title,
           info: orb.payload.info,
+          media: orb.media,
           media_asset: (if orb.media, do: Phos.Orbject.S3.get!("ORB", orb.id, "1920x1080"))
           },
         geolocation: %{
-          hashes: [],
-          radius: 0,
           hash: orb.central_geohash
         }
       }
@@ -105,4 +104,4 @@ defp nested_put(nest) do
     %{}
   end
  end
-end
+ end

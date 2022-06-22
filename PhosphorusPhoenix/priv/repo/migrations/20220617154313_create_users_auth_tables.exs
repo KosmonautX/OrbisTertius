@@ -5,11 +5,12 @@ defmodule Phos.Repo.Migrations.CreateUsersAuthTables do
     execute "CREATE EXTENSION IF NOT EXISTS citext", ""
 
     alter table(:users) do
-      modify :email, :citext, null: false
+      add :email, :citext
       add :hashed_password, :string
-      remove :password_hash
       add :confirmed_at, :naive_datetime
     end
+
+    create index(:users, [:email])
 
     create table(:users_tokens) do
       add :user_id, references(:users, column: :id, type: :uuid,  on_delete: :delete_all), null: false

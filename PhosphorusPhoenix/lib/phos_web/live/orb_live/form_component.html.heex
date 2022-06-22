@@ -25,6 +25,9 @@
     <%= datetime_select f, :extinguish %>
     <%= error_tag f, :extinguish %>
 
+    <%= hidden_input f, :source, value: :web %>
+    <%= error_tag f, :source %>
+
     <%= label f, :radius %>
     <%= select f, :radius, ["2km": 8, "1km": 9, "500m": 10], selected: 10 %>
     <%= error_tag f, :radius %>
@@ -71,6 +74,10 @@
       <%= label ff, :tip %>
       <%= text_input ff, :tip %>
       <%= error_tag ff, :tip %>
+
+      <%= label ff, :inner_title %>
+      <%= text_input ff, :inner_title %>
+      <%= error_tag ff, :inner_title %>
 
       <%= label ff, :info %>
       <%= text_input ff, :info %>

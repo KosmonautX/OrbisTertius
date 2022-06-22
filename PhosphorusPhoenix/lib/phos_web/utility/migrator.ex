@@ -21,9 +21,9 @@ defmodule PhosWeb.Util.Migrator do
           |> Map.put("geohash", :h3.from_string(to_charlist(Map.get(user["geolocation"][loc]["geohashing"], "hash"))))
         end
         Map.put(user_internal, "private_profile", %{"geolocation" => geo_map}) |>
-          Phos.Users.create_user()
+          Phos.Users.migrate_user()
       else
-        Phos.Users.create_user(user_internal)
+        Phos.Users.migrate_user(user_internal)
       end
     end
   end
