@@ -10,7 +10,7 @@ defmodule Phos.Action.Orb do
     field :extinguish, :naive_datetime
     field :media, :boolean, default: false
     field :title, :string
-    field :orb_nature, :string
+    field :source, Ecto.Enum, values: [:web, :tele, :flutter]
     field :central_geohash, :integer
     field :traits, {:array, :string}
 
@@ -24,7 +24,7 @@ defmodule Phos.Action.Orb do
   @doc false
   def changeset(%Phos.Action.Orb{} = orb, attrs) do
     orb
-    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :orb_nature, :central_geohash, :initiator, :traits])
+    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator, :traits])
     |> cast_assoc(:locations)
     |> assoc_constraint(:users)
     |> cast_embed(:payload)
