@@ -1,9 +1,11 @@
 <h1>Listing Orbs</h1>
 
-<div>
-  <%= live_patch "Set Home", to: Routes.orb_index_path(@socket, :sethome) %>
-  <%= live_patch "Set Work", to: Routes.orb_index_path(@socket, :setwork) %>
-</div>
+<%= unless @guest do %>
+  <div>
+    <%= live_patch "Set Home", to: Routes.orb_index_path(@socket, :sethome) %>
+    <%= live_patch "Set Work", to: Routes.orb_index_path(@socket, :setwork) %>
+  </div>
+<% end %>
 
 <div id="gps"
      phx-hook="InitPosition"
@@ -16,7 +18,7 @@
       module={PhosWeb.OrbLive.MapComponent}
       title={@page_title}
       setloc={@setloc}
-      user_id={@user_id}
+      current_user={@current_user}
       geolocation={@geolocation}
       return_to={Routes.orb_index_path(@socket, :index)}
     />
@@ -31,6 +33,7 @@
       title={@page_title}
       action={@live_action}
       orb={@orb}
+      current_user={@current_user}
       geolocation={@geolocation}
       return_to={Routes.orb_index_path(@socket, :index)}
     />
@@ -84,5 +87,6 @@
 <% end %>
 
 
-
+<%= unless @guest do %>
 <span><%= live_patch "New Orb", to: Routes.orb_index_path(@socket, :new) %></span>
+<% end %>

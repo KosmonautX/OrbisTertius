@@ -89,6 +89,8 @@ defmodule PhosWeb.OrbLive.FormComponent do
   defp save_orb(socket, :new, orb_params) do
     case Action.create_orb(orb_params) do
       {:ok, orb} ->
+        IO.inspect("creating...")
+        IO.inspect(orb_params["geolocation"])
         orb_loc_publisher(orb, :genesis, orb_params["geolocation"])
 
         {:noreply,

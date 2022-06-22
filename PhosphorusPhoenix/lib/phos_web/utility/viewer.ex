@@ -78,6 +78,20 @@ defmodule PhosWeb.Util.Viewer do
       }
   end
 
+  # user.private_profile.geolocation -> socket.assigns.geolocation
+  def profile_geolocation_mapper(geolocs) do
+    geo =
+      Enum.map(geolocs, fn loc ->
+        put_in(%{}, [String.to_atom(loc.id)],
+        %{
+          # geosub: Enum.map([8,9,10], fn res -> :h3.parent(loc.geohash,res) end),
+          geohash: %{hash: loc.geohash, radius: 10}
+        })
+      end)
+    List.first(geo)
+  end
+
+
   # Index Live Orbs
   def live_orb_mapper(orbs) do
     Enum.filter(orbs, fn orb -> orb.active == true end)

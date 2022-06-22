@@ -4,6 +4,7 @@ defmodule PhosWeb.OrbLiveTest do
 
   import Phoenix.LiveViewTest
   import Phos.ActionFixtures
+  import Phos.UsersFixtures
 
   @create_attrs %{"title" => "some title", "active" => true, "extinguish" => %{day: 21, hour: 7, minute: 22, month: 5, year: 2022}, "initiator" => "", :location => :home, "radius" => 8, "payload" => %{"info" => "some info", "tip" => "some tip", "when" => "some when", "where" => "some where"}}
   @update_attrs %{"title" => "updated title", "active" => true, "extinguish" => %{day: 21, hour: 7, minute: 22, month: 5, year: 2022}, "initiator" => "", :location => :home, "radius" => 8, "payload" => %{"info" => "updated info", "tip" => "updated tip", "when" => "updated when", "where" => "updated where"}}
@@ -18,8 +19,16 @@ defmodule PhosWeb.OrbLiveTest do
     %{orb: orb}
   end
 
+  defp create_user(_) do
+    # user = user_fixture()
+    user = user_fixture()
+    #  |>Enum.map(fn u -> %{private_profile: %{geolocation: %{id: "home", geohash: 623276216934563839, chronolock: 1653079771, location_description: nil}}} end)
+      # |> put_in([:private_profile], %{geolocation: %{id: "home", geohash: 623276216934563839, chronolock: 1653079771, location_description: nil}})
+    %{user: user}
+  end
+
   describe "Index" do
-    setup [:create_orb]
+    setup [:create_orb, :create_user]
 
     test "lists all orbs", %{conn: conn, orb: orb} do
 
@@ -28,11 +37,18 @@ defmodule PhosWeb.OrbLiveTest do
 
     end
 
-    test "saves new orb", %{conn: conn} do
+    test "saves new orb", %{conn: conn, user: user} do
+      # user = put_in(user, [:private_profile], %{geolocation: %{id: "home", geohash: 623276216934563839, chronolock: 1653079771, location_description: nil}})
+      # IO.inspect(user.private_profile)
       conn = conn
-        |> assign(:geolocation, %{live: %{geohash: %{}, orbs: []}, home: %{geohash: 623276216934563839, orbs: []}})
+        |> log_in_user(user)
+        # |> assign(:guest, false)
+        # |> assign(:current_user, @current_user)
+        # |> assign(:geolocation, %{live: %{geohash: %{}}, home: %{geohash: 623276216934563839}})
       {:ok, index_live, _html} = live(conn, Routes.orb_index_path(conn, :index))
 
+      # send(index_live.pid, :geoinitiation)
+      # send(index_live.pid, {:static_location_update, %{"locname" => "home" , "longitude" => 103.96218306516853, "latitude" => 1.3395765950767413}})
       assert index_live |> element("a", "New Orb") |> render_click() =~
                "New Orb"
 
@@ -48,11 +64,16 @@ defmodule PhosWeb.OrbLiveTest do
       assert render_hook(indexu_liveu, "live_location_update", %{"longitude" => 103.96218306516853, "latitude" => 1.3395765950767413}) =~ "some title"
     end
 
-    test "updates orb in listing", %{conn: conn, orb: orb} do
+    test "updates orb in listing", %{conn: conn, orb: orb, user: user} do
       conn = conn
-        |> assign(:geolocation, %{live: %{geohash: %{}, orbs: []}, home: %{geohash: 623276216934563839, orbs: []}})
+        |> log_in_user(user)
+        # |> assign(:guest, false)
+        # |> assign(:current_user, @current_user)
+        # |> assign(:geolocation, %{live: %{geohash: %{}}, home: %{geohash: 623276216934563839}})
       {:ok, index_live, _html} = live(conn, Routes.orb_index_path(conn, :index))
 
+      # send(index_live.pid, :geoinitiation)
+      # send(index_live.pid, {:static_location_update, %{"locname" => "home" , "longitude" => 103.96218306516853, "latitude" => 1.3395765950767413}})
       assert index_live |> element("#homeorb-#{orb.id} a", "Edit") |> render_click() =~
                "Edit Orb"
 
@@ -71,9 +92,13 @@ defmodule PhosWeb.OrbLiveTest do
 
     test "deletes orb in listing", %{conn: conn, orb: orb} do
       conn = conn
-        |> assign(:geolocation, %{live: %{geohash: %{}, orbs: []}, home: %{geohash: 623276216934563839, orbs: []}})
+        # |> assign(:guest, false)
+        # |> assign(:current_user, @current_user)
+        # |> assign(:geolocation, %{live: %{geohash: %{}}, home: %{geohash: 623276216934563839}})
       {:ok, index_live, _html} = live(conn, Routes.orb_index_path(conn, :index))
 
+      # send(index_live.pid, :geoinitiation)
+      # send(index_live.pid, {:static_location_update, %{"locname" => "home" , "longitude" => 103.96218306516853, "latitude" => 1.3395765950767413}})
       assert index_live |> element("#homeorb-#{orb.id} a", "Delete") |> render_click()
       refute has_element?(index_live, "#homeorb-#{orb.id}")
     end

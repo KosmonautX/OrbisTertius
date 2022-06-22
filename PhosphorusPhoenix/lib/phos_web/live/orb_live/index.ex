@@ -5,24 +5,35 @@ defmodule PhosWeb.OrbLive.Index do
   alias Phos.Action
   alias Phos.Action.Orb
   alias Phos.PubSub
+  alias PhosWeb.Util.Viewer
 
   @impl true
   def mount(params, _session, socket) do
     send(self(), :geoinitiation)
-    {:ok, socket
-    |> assign(:user_id, params["user_id"])
-    # |> assign(:geolocation, %{home: %{geohash: %{hash: 623276217027067903}}})
-    |> assign(:geolocation, %{})
-    |> assign(:orbs, %{home: [], work: [], live: []})
-  }
+    cond do
+      socket.assigns.guest ->
+        {:ok, socket
+          |> assign(:geolocation, %{})
+          |> assign(:orbs, %{home: [], work: [], live: []})}
+      socket.assigns.current_user.private_profile == nil ->
+        {:ok, socket
+          |> assign(:geolocation, %{})
+          |> assign(:orbs, %{home: [], work: [], live: []})}
+      socket.assigns.current_user.private_profile.geolocation ->
+        {:ok, socket
+          |> assign(:geolocation, socket.assigns.current_user.private_profile.geolocation |> Viewer.profile_geolocation_mapper())
+          |> assign(:orbs, %{home: [], work: [], live: []})}
+    end
   end
 
   @impl true
   def handle_params(params, _url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+    {:noreply, socket
+      |> apply_action(socket.assigns.live_action, params)}
   end
 
   defp apply_action(socket, :sethome, _params) do
+    IO.inspect(socket.assigns.current_user)
     socket
     |> assign(:page_title, "Set Home Location")
     |> assign(:setloc, :home)
@@ -51,6 +62,7 @@ defmodule PhosWeb.OrbLive.Index do
     |> assign(:page_title, "Listing Orbs")
   end
 
+  # For each locname in socket.assigns.geolocation, populate geosub list and orblist.
   def handle_info(:geoinitiation, socket) do
     updated_geolocation =
       for loc <- Map.keys(socket.assigns.geolocation), into: %{} do
@@ -97,6 +109,13 @@ defmodule PhosWeb.OrbLive.Index do
     |> assign(:geolocation, updated_geolocation)
     |> assign(:orbs, updated_orblist)
     |> push_event("centre_marker", %{latitude: latitude, longitude: longitude})}
+  end
+
+  def handle_info({:user_profile_loc_update, %{"profile" => profile}}, socket) do
+    updated_user =
+      put_in(socket.assigns.current_user, [:private_profile], profile)
+    {:noreply, socket
+      |> assign(:current_user, updated_user)}
   end
 
   @impl true

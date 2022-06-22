@@ -52,8 +52,6 @@ export const InitModalMap  = {
       if (!latlng.equals(defaultLatLng)) {
         map.setView(latlng, 15);
       }
-
     })
-
   }
 }
