@@ -78,7 +78,7 @@ Stream.Channel = (function () {
 
     interface_dao.start  = async function (archetype, id, distributary){
         entity_init(archetype, id, distributary)
-        pagination(8)
+        pagination(16)
         arrowoftime.nowstream()
         filter()
         return await swim()
@@ -86,7 +86,7 @@ Stream.Channel = (function () {
 
     interface_dao.downstream  = async function (archetype, id, distributary,time){
         entity_init(archetype, id, distributary)
-        pagination(8)
+        pagination(16)
         arrowoftime.downstream(time)
         filter()
         return await swim()
