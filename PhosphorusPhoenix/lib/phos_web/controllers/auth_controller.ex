@@ -1,11 +1,9 @@
 defmodule PhosWeb.AuthController do
   use PhosWeb, :controller
-  plug Ueberauth
 
-  alias Ueberauth.Strategy.Helpers
-
-  def request(conn, _params) do
-    render(conn, "request.html", callback_url: Helpers.callback_url(conn))
+  def request(conn, %{"provider" => provider}) do
+    redirect(conn, external: Phos.OAuthStrategy.request(provider))
+    |> halt()
   end
 
   def delete(conn, _params) do
@@ -15,32 +13,57 @@ defmodule PhosWeb.AuthController do
     |> redirect(to: "/")
   end
 
-  def callback(%{assigns: %{ueberauth_failure: _fails}} = conn, _params) do
-    conn
-    |> put_flash(:error, "Failed to authenticate.")
-    |> redirect(to: "/")
+  def callback(conn, %{"provider" => provider, "format" => "json"} = params) do
+    options = Enum.reject(params, fn {k, _} -> k == "provider" end) |> Enum.into(%{})
+    case Phos.OAuthStrategy.callback(provider, options) do
+      {:ok, %{user: data}} ->
+        data
+        |> Map.put("provider", provider)
+        |> Phos.Users.from_auth()
+        |> case do
+          {:ok, user} -> render(conn, "callback.json", user: Phos.Repo.preload(user, [:private_profile]))
+          {_, reason} ->
+            conn
+            |> put_status(:bad_request)
+            |> render("error.json", reason: reason)
+        end
+      _ ->
+        conn
+        |> put_status(:unauthorized)
+        |> render("unauthorized.json")
+    end
   end
 
-  def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
+  def callback(conn, %{"provider" => provider} = params) do
+    options = Enum.reject(params, fn {k, _} -> k == "provider" end) |> Enum.into(%{})
+    case Phos.OAuthStrategy.callback(provider, options) do
+      {:ok, %{user: user}} ->
+        Map.put(user, "provider", provider)
+        |> do_authenticate(conn)
+      _ ->
+        conn
+        |> put_flash(:error, "Failed authenticate via #{String.capitalize(provider)}.")
+        |> redirect(to: "/")
+    end
+  end
+
+  defp do_authenticate(%{"provider" => provider} = auth, conn) do
     case Phos.Users.from_auth(auth) do
       {:ok, user} ->
-        if user.username do
         conn
-        |> put_flash(:info, "Authenticated via #{String.capitalize(to_string(auth.provider))}")
+        |> put_flash(:info, "Authenticated via #{String.capitalize(provider)}")
         |> put_session(:current_user, user)
         |> configure_session(renew: true)
-        |> redirect(to: "/orb")
-        else
-          conn
-        |> put_flash(:info, "Authenticated via #{String.capitalize(to_string(auth.provider))}")
-        |> put_session(:current_user, user)
-        |> configure_session(renew: true)
-        |> redirect(to: Routes.user_settings_path(conn, :edit))
-        end
-      {_, _, reason} ->
+        |> username_decider(user)
+      {_, reason} ->
         conn
         |> put_flash(:error, reason)
         |> redirect(to: "/sign_up")
-     end
+    end
   end
+
+  defp username_decider(conn, %{username: username}) when username == "" or is_nil(username) do
+    redirect(conn, to: Routes.user_settings_path(conn, :edit))
+  end
+  defp username_decider(conn, _), do: redirect(conn, to: "/orb")
 end

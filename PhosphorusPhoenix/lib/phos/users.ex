@@ -191,7 +191,7 @@ defmodule Phos.Users do
   @doc """
   Authenticate a user from oauth provider
   """
-  def from_auth(%Ueberauth.Auth{uid: id, provider: provider} = resp) do
+  def from_auth(%{"sub" => id, "provider" => provider} = resp) do
     case do_query_from_auth(id, provider) do
       nil -> create_new_user(id, provider, resp)
       %Auth{} = auth -> {:ok, auth.user}
@@ -210,12 +210,12 @@ defmodule Phos.Users do
     )
   end
 
-  defp create_new_user(id, provider, %Ueberauth.Auth{info: info} = auth) do
+  defp create_new_user(id, provider, %{"email" => email}) do
     params = %{
       auth_id: id,
-      auth_provider: Atom.to_string(provider),
+      auth_provider: to_string(provider),
       user: %{
-        email: info.email,
+        email: email,
       }
     }
     %Auth{}

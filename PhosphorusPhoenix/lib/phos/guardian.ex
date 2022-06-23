@@ -9,7 +9,7 @@ defmodule Phos.Guardian do
     # is a poor subject.
     {:ok, "ScratchBac"}
   end
-  def subject_for_token(_, _), do: {:error, :reason_for_error}
+  def subject_for_token(_, _), do: {:error, "Error creating JWT token"}
 
   def resource_from_claims(%{"sub" => id}) do
     # Here we'll look up our resource from the claims, the subject can be

@@ -18,7 +18,6 @@ defmodule PhosWeb.Router do
   end
 
   pipeline :authentication do
-    plug Ueberauth
   end
 
 
@@ -81,7 +80,7 @@ defmodule PhosWeb.Router do
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
   end
- 
+
   ## Authentication routes
 
   scope "/", PhosWeb do

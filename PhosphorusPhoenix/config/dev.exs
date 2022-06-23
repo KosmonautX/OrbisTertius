@@ -30,6 +30,7 @@ config :phos, PhosWeb.Endpoint,
 
 config :phos, Phos.Guardian,
        issuer: "Princeton",
+       allowed_algos: ["HS512", "HS256"],
        secret_key: "vyOyqS5mE2Ap2YV5TKG9RyTOOwivgDicxHf+dXcprRiT3Vgz3cpLuqwbO8qvSRi8"
 
 # ## SSL Support

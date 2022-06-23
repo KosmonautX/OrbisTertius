@@ -9,11 +9,18 @@ defmodule PhosWeb.AuthChannel do
       {:error, %{reason: "unauthorized"}}
     end
   end
-  def join(_, _payload, socket), do: {:error, %{reason: "unauthorized"}}
+  def join("auth:authtenticate:" <> token, _payload, socket) when token != "" do
+    {:ok, assign(socket, :temporary_token, token)}
+  end
+  def join(_, _payload, _socket), do: {:error, %{reason: "unauthorized"}}
 
   def handle_in("authenticate", %{"email" => email, "password" => password}, socket) do
     case Phos.Users.get_user_by_email_and_password(email, password) do
       %Phos.Users.User{} = user ->
+        spawn(fn ->
+          Phos.Users.Email.welcome(user)
+          |> Phos.Mailer.deliver()
+        end)
         Phos.Repo.preload(user, [:private_profile])
         |> load_geolocation(socket)
       _ -> {:reply, {:error, "Email and password combination not match"}, socket}

@@ -20,7 +20,7 @@ defmodule Phos.MixProject do
   def application do
     [
       mod: {Phos.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :inets]
       #extra_applications: [:logger, :runtime_tools, :wx]
     ]
   end
@@ -64,10 +64,13 @@ defmodule Phos.MixProject do
 
       # oauth strategy
       {:guardian, "~> 2.0"},
-      {:ueberauth, "~> 0.7"},
-      {:ueberauth_apple, "~> 0.4"},
-      {:ueberauth_google, "~> 0.10"},
       {:argon2_elixir, "~> 3.0"},
+
+      {:assent, "~> 0.2.0"},
+      {:certifi, "~> 2.4"},
+      {:ssl_verify_fun, "~> 1.1"},
+      {:mint, "~> 1.0"},
+      {:castore, "~> 0.1.0"}
     ]
   end
 
