@@ -2,7 +2,7 @@ export const InitIndexMap = {
   mounted() {
     var centred = false
     const mapid = this.el.id;
-    var map = L.map(mapid).setView([1.3521, 103.8198], 11);
+    var map = L.map(mapid, { zoomControl: false}).setView([1.3521, 103.8198], 11);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,

@@ -9,7 +9,7 @@ defmodule Phos.ActionFixtures do
   """
   def orb_fixture(attrs \\ %{}) do
     {:ok, orb} =
-      %{id: Ecto.UUID.generate, title: "some title", active: true, extinguish: %{day: 21, hour: 7, minute: 22, month: 5, year: 2022},initiator: "", location: :home, radius: 10, geolocation: [623276216934563839], central_geohash: 623276216934563839, payload: %{info: "some info",tip: "some tip", when: "some when", where: "some where"}}
+      %{id: Ecto.UUID.generate, title: "some title", active: true, extinguish: %{day: 21, hour: 7, minute: 22, month: 5, year: 2022}, source: :web, initiator: "", location: :home, radius: 10, geolocation: [623276216934563839], central_geohash: 623276216934563839, payload: %{info: "some info",tip: "some tip", when: "some when", where: "some where"}}
       |> Phos.Action.create_orb()
 
       orb

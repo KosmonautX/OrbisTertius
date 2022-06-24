@@ -13,8 +13,10 @@ defmodule Phos.Action.Orb do
     field :source, Ecto.Enum, values: [:web, :tele, :flutter]
     field :central_geohash, :integer
     field :traits, {:array, :string}
+    field :topic, :string, virtual: true
 
     belongs_to :users, User, references: :id, foreign_key: :initiator, type: Ecto.UUID
+    #belongs_to :users, User, references: :id, foreign_key: :acceptor, type: Ecto.UUID
     many_to_many :locations, Location, join_through: Orb_Location, on_delete: :delete_all#, join_keys: [id: :id, location_id: :location_id]
     embeds_one :payload, Orb_Payload, on_replace: :delete
 

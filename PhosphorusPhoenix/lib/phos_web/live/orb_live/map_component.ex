@@ -7,10 +7,11 @@ defmodule PhosWeb.OrbLive.MapComponent do
 
   @impl true
   def update(assigns, socket) do
-    # If user has old ":home, :work" geolocation, set the lat and lng to :markerloc else, use default
+    # If user has ":home, :work" in addresses, set the lat and lng to :markerloc and send to map.js else use default
     {lat, lng} =
-      if assigns[:geolocation][assigns[:setloc]] do
-        assigns[:geolocation][assigns[:setloc]][:geohash][:hash]
+      if assigns[:addresses][assigns[:setloc]] do
+        # import IEx; IEx.pry()
+        List.last(assigns[:addresses][assigns[:setloc]])
           |> :h3.to_geo()
       else
         {1.3521, 103.8198}
@@ -23,7 +24,6 @@ defmodule PhosWeb.OrbLive.MapComponent do
   end
 
   @impl true
-  @spec handle_event(<<_::64, _::_*56>>, map, map) :: {:noreply, map}
   def handle_event("modalmap_setloc", %{"lng" => longitude, "lat" => latitude}, socket) do
     {:noreply, socket
       |> assign(:markerloc, %{latitude: latitude, longitude: longitude})}

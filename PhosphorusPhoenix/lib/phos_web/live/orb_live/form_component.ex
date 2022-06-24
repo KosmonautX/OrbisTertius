@@ -29,13 +29,14 @@ defmodule PhosWeb.OrbLive.FormComponent do
     orb_id = socket.assigns.orb.id || Ecto.UUID.generate()
     # Process latlon value to x7 h3 indexes
     orb_params = try do
-                     central_hash = socket.assigns.geolocation[String.to_existing_atom(orb_params["location"])][:geohash].hash
+                     central_hash = List.last(socket.assigns.addresses[String.to_atom(orb_params["location"])])
                      |> :h3.parent(String.to_integer(orb_params["radius"]))
                      geohashes = central_hash
                      |> :h3.k_ring(1)
                      orb_params
                      |> Map.put("central_geohash", central_hash)
                      |> Map.put("geolocation", geohashes)
+                     |> Map.put("initiator", socket.assigns.current_user.id)
                    rescue
                      ArgumentError -> orb_params |> Map.put("geolocation", [])
                    end
@@ -89,8 +90,6 @@ defmodule PhosWeb.OrbLive.FormComponent do
   defp save_orb(socket, :new, orb_params) do
     case Action.create_orb(orb_params) do
       {:ok, orb} ->
-        IO.inspect("creating...")
-        IO.inspect(orb_params["geolocation"])
         orb_loc_publisher(orb, :genesis, orb_params["geolocation"])
 
         {:noreply,
@@ -104,7 +103,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
   end
 
   defp orb_loc_publisher(orb, event, to_locations) do
-    to_locations |> Enum.map(fn loc-> Phos.PubSub.publish(orb, {:orb, event}, loc_topic(loc)) end)
+    to_locations |> Enum.map(fn loc-> Phos.PubSub.publish(%{orb | topic: loc}, {:orb, event}, loc_topic(loc)) end)
   end
 
   defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"

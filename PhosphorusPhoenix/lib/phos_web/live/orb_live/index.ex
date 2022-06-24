@@ -10,20 +10,9 @@ defmodule PhosWeb.OrbLive.Index do
   @impl true
   def mount(params, _session, socket) do
     send(self(), :geoinitiation)
-    cond do
-      socket.assigns.guest ->
-        {:ok, socket
-          |> assign(:geolocation, %{})
-          |> assign(:orbs, %{home: [], work: [], live: []})}
-      socket.assigns.current_user.private_profile == nil ->
-        {:ok, socket
-          |> assign(:geolocation, %{})
-          |> assign(:orbs, %{home: [], work: [], live: []})}
-      socket.assigns.current_user.private_profile.geolocation ->
-        {:ok, socket
-          |> assign(:geolocation, socket.assigns.current_user.private_profile.geolocation |> Viewer.profile_geolocation_mapper())
-          |> assign(:orbs, %{home: [], work: [], live: []})}
-    end
+    {:ok, socket
+      |> assign(:geolocation, %{})
+      |> assign(:addresses, %{})}
   end
 
   @impl true
@@ -33,7 +22,7 @@ defmodule PhosWeb.OrbLive.Index do
   end
 
   defp apply_action(socket, :sethome, _params) do
-    IO.inspect(socket.assigns.current_user)
+    IO.inspect(socket.assigns.addresses)
     socket
     |> assign(:page_title, "Set Home Location")
     |> assign(:setloc, :home)
@@ -62,52 +51,53 @@ defmodule PhosWeb.OrbLive.Index do
     |> assign(:page_title, "Listing Orbs")
   end
 
-  # For each locname in socket.assigns.geolocation, populate geosub list and orblist.
   def handle_info(:geoinitiation, socket) do
-    updated_geolocation =
-      for loc <- Map.keys(socket.assigns.geolocation), into: %{} do
-        if Map.has_key?(socket.assigns.geolocation[loc][:geohash], :hash) do
-          neosubs = Enum.map([8,9,10], fn res -> :h3.parent(socket.assigns.geolocation[loc][:geohash].hash, res) end)
-          |> loc_subscriber(socket.assigns.geolocation[loc][:geosub])
-          updated_geo = put_in(socket.assigns.geolocation, [loc, :geosub], neosubs)
-          {loc, updated_geo[loc]}
-        end
+    {geolocation, addresses} =
+      case socket.assigns.current_user do
+        %{private_profile: %{geolocation: _}} ->
+          geos =
+            for geoloc <- socket.assigns.current_user.private_profile.geolocation do
+              Enum.reduce([8,9,10], socket.assigns.geolocation, fn res, acc ->
+                Map.put(acc, :h3.parent(geoloc.geohash, res), Action.get_active_orbs_by_geohashes([:h3.parent(geoloc.geohash, res)]))
+              end)
+            end
+            |> Enum.reduce(fn x, acc ->
+              Map.merge(acc, x)
+            end)
+          address =
+            for loc <- socket.assigns.current_user.private_profile.geolocation, into: %{} do
+              {String.to_atom(loc.id), Enum.map([8,9,10], fn res -> :h3.parent(loc.geohash, res) end)}
+            end
+
+          # loc_subscriber(Map.keys(geos), Map.keys(socket.assigns.geolocation))
+          loc_subscriber(Map.keys(geos), nil)
+
+          {geos, address}
+        %{private_profile: %{geolocation: %{}}} ->
+          {%{geolocation: %{}}, %{}}
+        %{} ->
+          {%{geolocation: %{}}, %{}}
       end
 
-    updated_orblist =
-      Enum.reduce(updated_geolocation, %{}, fn {key,value}, acc ->
-        acc
-        |> Map.put(key, value |> Map.get(:geosub) |> Action.get_active_orbs_by_geohashes())
-      end)
-
     {:noreply, socket
-        |> assign(:geolocation, updated_geolocation)
-        |> assign(:orbs, updated_orblist)}
+      |> assign(:geolocation, geolocation)
+      |> assign(:addresses, addresses)}
   end
 
   def handle_info({:static_location_update, %{"locname" => locname, "longitude" => longitude, "latitude" => latitude}}, socket) do
-    {updated_geolocation, socket} =
-      get_and_update_in(socket.assigns.geolocation, Enum.map([locname, :geohash], &Access.key(&1, %{})), &{&1, %{hash: :h3.from_geo({latitude, longitude}, 10), radius: 10}})
-      |> case do
-           {past_geohash, geolocation_present} ->
-             unless past_geohash == geolocation_present[locname][:geohash] do
-               # pipe new geosubs into loc subscriber and pass old geosubs
-               neosubs = Enum.map([8,9,10], fn res -> :h3.parent(geolocation_present[locname][:geohash].hash,res) end)
-               |> loc_subscriber(geolocation_present[locname][:geosub])
-               orbed_geolocation = put_in(geolocation_present, [locname, :geosub], neosubs)
-          {orbed_geolocation, socket}
-             else
-               {geolocation_present, socket}
-             end
-         end
+    geos =
+      Enum.reduce([8,9,10], socket.assigns.geolocation, fn res, acc ->
+        Map.put(acc, :h3.parent(:h3.from_geo({latitude, longitude}, 10), res), Action.get_active_orbs_by_geohashes([:h3.parent(:h3.from_geo({latitude, longitude}, 10), res)]))
+      end)
+    loc_subscriber(Map.keys(geos), Map.keys(socket.assigns.geolocation))
 
-    # Add newly added loc to orblist
-    orblist = updated_geolocation |> Map.get(locname) |> Map.get(:geosub) |> Action.get_active_orbs_by_geohashes()
-    updated_orblist = put_in(socket.assigns.orbs, [locname], orblist)
+    {_prev_address, updated_addresses} =
+      get_and_update_in(socket.assigns.addresses, Enum.map([locname], &Access.key(&1, %{})), &{&1, Enum.map([8,9,10], fn res -> :h3.parent(:h3.from_geo({latitude, longitude}, 10), res) end)})
+
 
     {:noreply, socket
-    |> assign(:geolocation, updated_geolocation)
-    |> assign(:orbs, updated_orblist)
+    |> assign(:geolocation, geos)
+    |> assign(:addresses, updated_addresses)
     |> push_event("centre_marker", %{latitude: latitude, longitude: longitude})}
   end
 
@@ -120,100 +110,64 @@ defmodule PhosWeb.OrbLive.Index do
 
   @impl true
   def handle_event("live_location_update", %{"longitude" => longitude, "latitude" => latitude}, socket) do
-    {updated_geolocation, socket} =
-      get_and_update_in(socket.assigns.geolocation, Enum.map([:live, :geohash], &Access.key(&1, %{})), &{&1, %{hash: :h3.from_geo({latitude, longitude}, 10), radius: 10}})
-      |> case do
-           {past_geohash, geolocation_present} ->
-             unless past_geohash == geolocation_present[:live][:geohash] do
-               # pipe new geosubs into loc subscriber and pass old geosubs
-               neosubs = Enum.map([8,9,10], fn res -> :h3.parent(geolocation_present[:live][:geohash].hash,res) end)
-               |> loc_subscriber(geolocation_present[:live][:geosub])
-               orbed_geolocation = put_in(geolocation_present, [:live, :geosub], neosubs)
-          {orbed_geolocation, socket
-          |> push_event("add_polygon", %{geo_boundaries: loc_boundary(latitude, longitude)})}
-             else
-               {geolocation_present, socket}
-             end
-         end
+    geos =
+      Enum.reduce([8,9,10], socket.assigns.geolocation, fn res, acc ->
+        Map.put(acc, :h3.parent(:h3.from_geo({latitude, longitude}, 10), res), Action.get_active_orbs_by_geohashes([:h3.parent(:h3.from_geo({latitude, longitude}, 10), res)]))
+      end)
+    loc_subscriber(Map.keys(geos), Map.keys(socket.assigns.geolocation))
 
-    # Add live orbs to orblist
-    orblist = updated_geolocation |> Map.get(:live) |> Map.get(:geosub) |> Action.get_active_orbs_by_geohashes()
-    updated_orblist = put_in(socket.assigns.orbs, [:live], orblist)
+    {_prev_address, updated_addresses} =
+      get_and_update_in(socket.assigns.addresses, Enum.map([:live], &Access.key(&1, %{})), &{&1, Enum.map([8,9,10], fn res -> :h3.parent(:h3.from_geo({latitude, longitude}, 10), res) end)})
 
     {:noreply, socket
-    |> assign(:geolocation, updated_geolocation)
-    |> assign(:orbs, updated_orblist)
+    |> assign(:geolocation, geos)
+    |> assign(:addresses, updated_addresses)
     |> push_event("centre_marker", %{latitude: latitude, longitude: longitude})}
   end
 
   @impl true
-  def handle_event("delete", %{"id" => id, "locname" => name}, socket) do
+  def handle_event("delete", %{"id" => id}, socket) do
     orb = Action.get_orb!(id)
-    {:ok, _} = Action.delete_orb(orb)
+    # orblist = socket.assigns.orbs[String.to_atom(name)] |> Enum.reject(fn orb -> orb.id == id end)
+    # updated_orblist = put_in(socket.assigns.orbs, [String.to_atom(name)], orblist)
 
-    orblist = socket.assigns.orbs[String.to_atom(name)] |> Enum.reject(fn orb -> orb.id == id end)
-    updated_orblist = put_in(socket.assigns.orbs, [String.to_atom(name)], orblist)
+    rejected_orblist = Enum.reject(socket.assigns.geolocation[orb.central_geohash], fn orb -> orb.id == id end)
+    updated_orblist = put_in(socket.assigns.geolocation, [orb.central_geohash], rejected_orblist)
     orb_loc_publisher(orb, :deactivation, orb.central_geohash |> :h3.k_ring(1))
 
-    {:noreply, assign(socket, :orbs, updated_orblist)}
+    {:ok, _} = Action.delete_orb(orb)
+
+    {:noreply, assign(socket, :gelocation, updated_orblist)}
   end
 
   @impl true
   def handle_info({PubSub, {:orb, :genesis}, message}, socket) do
     IO.puts("genesis #{inspect(message)}")
-
-    updated_orblist =
-      for loc <- Map.keys(socket.assigns.geolocation), into: %{} do
-        if :h3.parent(message.central_geohash, 8) in socket.assigns.geolocation[loc][:geosub] do
-          orblist = [message | socket.assigns.orbs[loc]]
-          updated_orb = put_in(socket.assigns.orbs, [loc], orblist)
-          {loc, updated_orb[loc]}
-        else
-          {loc, socket.assigns.orbs[loc]}
-        end
-      end
-
-      # ISSUE: Duplicate posts if home/work same as live.
-
+    updated_orbs =
+      put_in(socket.assigns.geolocation, [message.central_geohash], [message | socket.assigns.geolocation[message.central_geohash]])
     {:noreply, socket
-    |> assign(:orbs, updated_orblist)}
+    |> assign(:geolocation, updated_orbs)}
   end
 
   def handle_info({PubSub, {:orb, :mutation}, message}, socket) do
     IO.puts("mutate #{inspect(message)}")
-
-    updated_orblist =
-      for loc <- Map.keys(socket.assigns.geolocation), into: %{} do
-        if :h3.parent(message.central_geohash, 8) in socket.assigns.geolocation[loc][:geosub] do
-          replace_orb_index = Enum.find_index(socket.assigns.orbs[loc], fn elem -> elem.id == message.id end)
-          updated_orb = List.replace_at(socket.assigns.orbs[loc], replace_orb_index, message)
-          {loc, updated_orb}
-        else
-          {loc, socket.assigns.orbs[loc]}
-        end
-      end
+    replace_orb_index = Enum.find_index(socket.assigns.geolocation[message.central_geohash], fn orb -> orb.id == message.id end)
+    updated_orb = List.replace_at(socket.assigns.geolocation[message.central_geohash], replace_orb_index, message)
+    updated_orblist = put_in(socket.assigns.geolocation, [message.central_geohash], updated_orb)
 
     {:noreply, socket
-      |> assign(:orbs, updated_orblist)}
+      |> assign(:geolocation, updated_orblist)}
   end
 
 
   def handle_info({PubSub, {:orb, :deactivation}, message}, socket) do
     IO.puts("deactivate #{inspect(message)}")
 
-    updated_orblist =
-      for loc <- Map.keys(socket.assigns.geolocation), into: %{} do
-        if :h3.parent(message.central_geohash, 8) in socket.assigns.geolocation[loc][:geosub] do
-          orblist = socket.assigns.orbs[loc] |> Enum.reject(fn orb -> orb.id == message.id end)
-          updated_orb = put_in(socket.assigns.orbs, [loc], orblist)
-          {loc, updated_orb[loc]}
-        else
-          {loc, socket.assigns.orbs[loc]}
-        end
-      end
+    rejected_orblist = Enum.reject(socket.assigns.geolocation[message.central_geohash], fn orb -> orb.id == message.id end)
+    updated_orblist = put_in(socket.assigns.geolocation, [message.central_geohash], rejected_orblist)
 
     {:noreply, socket
-    |> assign(:orbs, updated_orblist)}
+    |> assign(:geolocation, updated_orblist)}
   end
 
   defp list_orbs do
@@ -245,4 +199,7 @@ defmodule PhosWeb.OrbLive.Index do
     |> Enum.map(fn tuple -> Tuple.to_list(tuple) end)
   end
 
+  defp location_fetcher(value, geolocation) do
+    value |> Enum.reduce([], fn hash, _acc -> geolocation[hash] end)
+  end
 end

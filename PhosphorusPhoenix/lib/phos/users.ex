@@ -108,11 +108,11 @@ defmodule Phos.Users do
   #   |> Repo.insert()
   # end
 
-  # def create_private_profile(attrs \\ %{}) do
-  #   %Private_Profile{}
-  #   |> Private_Profile.changeset(attrs)
-  #   |> Repo.insert()
-  # end
+  def create_private_profile(attrs \\ %{}) do
+    %Private_Profile{}
+    |> Private_Profile.changeset(attrs)
+    |> Repo.insert()
+  end
 
   # def create_user(attrs \\ %{}) do
 

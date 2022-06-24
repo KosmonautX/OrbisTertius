@@ -25,6 +25,16 @@ defmodule Phos.UsersFixtures do
     user
   end
 
+  def user_pte_prof_fixture(attrs \\ %{}) do
+    {:ok, user_created} = valid_user_attributes() |> Phos.Users.register_user()
+    {:ok, user} =
+      %Phos.Users.Private_Profile{}
+        |> Phos.Users.Private_Profile.changeset(%{user_id: user_created.id})
+        |> Ecto.Changeset.put_embed(:geolocation, [attrs])
+        |> Phos.Repo.insert()
+    user
+  end
+
   def extract_user_token(fun) do
     {:ok, captured_email} = fun.(&"[TOKEN]#{&1}[TOKEN]")
     [_, token | _] = String.split(captured_email.text_body, "[TOKEN]")

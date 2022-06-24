@@ -79,15 +79,15 @@ defmodule PhosWeb.Util.Viewer do
 
   # user.private_profile.geolocation -> socket.assigns.geolocation
   def profile_geolocation_mapper(geolocs) do
-    geo =
-      Enum.map(geolocs, fn loc ->
-        put_in(%{}, [String.to_atom(loc.id)],
+    Enum.map(geolocs, fn loc ->
+      put_in(%{}, [String.to_atom(loc.id)],
         %{
-          # geosub: Enum.map([8,9,10], fn res -> :h3.parent(loc.geohash,res) end),
           geohash: %{hash: loc.geohash, radius: 10}
         })
+    end)
+    |> Enum.reduce(fn x, y ->
+        Map.merge(x, y, fn _k, v1, v2 -> v2 ++ v1 end)
       end)
-    List.first(geo)
   end
 
 
