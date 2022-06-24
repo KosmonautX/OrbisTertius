@@ -4,7 +4,8 @@
 #
 :localipAddress = http://localhost:5000
 #:ipAddress = http://localhost:5000
-:ipAddress = https://norbandy.scratchbac.org
+#:ipAddress = https://norbandy.scratchbac.org
+:ipAddress = http://localhost:5000
 #:ipAddress = https://borbarossa.scratchbac.org
 :id = 01234567-89ABCDEF-01234567-89ABCDEF
 :googleAuth = <<
@@ -19,6 +20,7 @@ User-Agent: Emacs27
 ##:ryan = R3Vsjq9CARfprwOJps44kbVczFQ2
 :jerry = w8IaWCHPjfRMhCeTXAnH7OCvQOo2
 :prince = MQTT323
+:siyan =  sKZ2S5y7TyQZ391qYBeNnVdwVPA3
 :ryan = DAAohgsLMpQPmsbpbvgQ5PEPuy22
 :applefcm = cTMyiUFzTkSv0TUOgdgSUO:APA91bEWKbHlTe285TNkjMy2QMXnuBaHdHK_QUbevRNEgOz7cmzhXN4GTO7xaFKoScq5Mq9rpZVf2i0OWzF8SFqXm6nIFnwPPbRJf6DMpcYt_5Pw4C4zftRjRZ4bfRLROXYfW_VjivaF
 :printonemail = "niceprinceton@gmail.com"
@@ -63,13 +65,13 @@ POST :ipAddress/api/devland/fyr/serveronfyr
 #
 ##
 #
-POST :ipAddress/api/dev/phoneonfyrs
+POST :ipAddress/api/dev/phoneonfyr
 :googleAuth
 
 {
-    "user_id": ":admin",
+    "user_id": ":ryan",
     "provider_id": "google.com",
-    "phone": "+6591111111"
+    "email": "scratchbac@gmail.com"
 }
 #
 ## BONI TOKEN
@@ -324,6 +326,9 @@ GET :ipAddress/api/query/orbs_in_loc_fresh_page?postal_code=457399&page=0
 # fulfilled: acceptor fulfills another person's orb </br>
 # completed: initiator completes his own orb
 GET :ipAddress/api/query/user_profile?user_id=:ryan&keyword=init&starttime=1647609122&startkey=63a55760-6872-4bc9-a46d-64d42ded69ec
+:my-headers
+## 4. Retrieve user
+GET :ipAddress/api/tele/get_users/:ryan
 :my-headers
 ## 4. Retrieve user
 GET :ipAddress/api/query/get_users/:ryan
