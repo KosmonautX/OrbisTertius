@@ -221,7 +221,8 @@ router.get(`/get_users/:user_ids`, async function (req, res, next) {
                 var dao = {payload:{}}
                 if(data.Item){
                     dao.user_id = data.Item.PK.slice(4);
-                    dao.provider = await fyrMigrator.fetch(data.Item.PK.slice(4))
+                    dao.provider = await fyrMigrator.fetch(data.Item.PK.slice(4)).then(response => {
+                        dao = {providerData: response.providerData}})
                     if (data.Item.payload) {
                         dao.payload = data.Item.payload
                         if(data.Item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','USR',dao.user_id,'150x150')}
