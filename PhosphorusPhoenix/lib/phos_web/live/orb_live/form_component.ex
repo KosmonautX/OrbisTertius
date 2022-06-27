@@ -24,17 +24,12 @@ defmodule PhosWeb.OrbLive.FormComponent do
     {:noreply, assign(socket, :changeset, changeset)}
   end
 
-  # @impl true
-  # def handle_event("location_update", %{"longitude" => longitude, "latitude" => latitude}, socket) do
-  #   {:noreply, assign(socket, :live, %{longitude: longitude, latitude: latitude})}
-  # end
-
   def handle_event("save", %{"orb" => orb_params}, socket) do
-    
+
     orb_id = socket.assigns.orb.id || Ecto.UUID.generate()
     # Process latlon value to x7 h3 indexes
     orb_params = try do
-                     central_hash = socket.assigns.geolocation[String.to_existing_atom(orb_params["location"])][:geohash].hash
+                     central_hash = List.last(socket.assigns.addresses[String.to_atom(orb_params["location"])])
                      |> :h3.parent(String.to_integer(orb_params["radius"]))
                      geohashes = central_hash
                      |> :h3.k_ring(1)
@@ -44,10 +39,6 @@ defmodule PhosWeb.OrbLive.FormComponent do
                    rescue
                      ArgumentError -> orb_params |> Map.put("geolocation", [])
                    end
-
-
-
-
 
     # Process image upload
     orb_params = Map.put(orb_params, "id", orb_id)
@@ -68,11 +59,10 @@ defmodule PhosWeb.OrbLive.FormComponent do
       {:ok, path}
      end)
 
-    unless Enum.empty?(file_uploaded) do
-      orb_params = Map.put(orb_params, "media", true)
+    if Enum.empty?(file_uploaded) and orb_params["media"] == "false" do
       save_orb(socket, socket.assigns.action, orb_params)
     else
-      orb_params = Map.put(orb_params, "media", false)
+      orb_params = Map.replace(orb_params, "media", true)
       save_orb(socket, socket.assigns.action, orb_params)
     end
 
@@ -83,9 +73,11 @@ defmodule PhosWeb.OrbLive.FormComponent do
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
 
   defp save_orb(socket, :edit, orb_params) do
-    case Action.update_orb(socket.assigns.orb, orb_params |> Viewer.update_orb_mapper()) do
+    case Action.update_orb(socket.assigns.orb, orb_params) do
       {:ok, orb} ->
-        #orb_loc_publisher(orb, :mutation, orb_params["geolocation"])
+        orb = orb |> Phos.Repo.preload([:initiator, :locations])
+        location_list = orb.locations |> Enum.map(fn loc -> loc.id end)
+        orb_loc_publisher(orb, :mutation, location_list)
         {:noreply,
          socket
          |> put_flash(:info, "Orb updated successfully")
@@ -99,20 +91,25 @@ defmodule PhosWeb.OrbLive.FormComponent do
   defp save_orb(socket, :new, orb_params) do
     case Action.create_orb(orb_params) do
       {:ok, orb} ->
-        orb_loc_publisher(orb, :genesis, orb_params["geolocation"])
+        IO.puts "orbparam #{inspect(orb_params["geolocation"])}"
+        orb = orb |> Phos.Repo.preload([:initiator, :locations])
+        location_list = orb.locations |> Enum.map(fn loc -> loc.id end)
+        IO.puts "location_list #{inspect(location_list)}"
+        orb_loc_publisher(orb |> Phos.Repo.preload(:initiator), :genesis, location_list)
 
         {:noreply,
          socket
          |> put_flash(:info, "Orb created successfully")
          |> push_redirect(to: socket.assigns.return_to)}
       {:error, %Ecto.Changeset{} = changeset} ->
+        IO.inspect(changeset)
         {:noreply, assign(socket, changeset: changeset)}
 
     end
   end
 
   defp orb_loc_publisher(orb, event, to_locations) do
-    to_locations |> Enum.map(fn loc-> Phos.PubSub.publish(orb, {:orb, event}, loc_topic(loc)) end)
+    to_locations |> Enum.map(fn loc-> Phos.PubSub.publish(%{orb | topic: loc}, {:orb, event}, loc_topic(loc)) end)
   end
 
   defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"

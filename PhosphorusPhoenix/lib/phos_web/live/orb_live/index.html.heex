@@ -1,8 +1,29 @@
 <h1>Listing Orbs</h1>
 
+<%= unless @guest do %>
+  <div>
+    <%= live_patch "Set Home", to: Routes.orb_index_path(@socket, :sethome) %>
+    <%= live_patch "Set Work", to: Routes.orb_index_path(@socket, :setwork) %>
+  </div>
+<% end %>
+
 <div id="gps"
      phx-hook="InitPosition"
      phx-update="ignore"></div>
+
+<%= if @live_action in [:sethome, :setwork] do %>
+  <.modal return_to={Routes.orb_index_path(@socket, :index)}>
+    <.live_component
+      id={:setlocation}
+      module={PhosWeb.OrbLive.MapComponent}
+      title={@page_title}
+      setloc={@setloc}
+      current_user={@current_user}
+      addresses={@addresses}
+      return_to={Routes.orb_index_path(@socket, :index)}
+    />
+  </.modal>
+<% end %>
 
 <%= if @live_action in [:new, :edit] do %>
   <.modal return_to={Routes.orb_index_path(@socket, :index)}>
@@ -12,7 +33,8 @@
       title={@page_title}
       action={@live_action}
       orb={@orb}
-      geolocation={@geolocation}
+      current_user={@current_user}
+      addresses={@addresses}
       return_to={Routes.orb_index_path(@socket, :index)}
     />
   </.modal>
@@ -20,47 +42,52 @@
 
 <div id="wrapper" phx-update="ignore">
   <div id="map"
-      phx-hook="InitMap"
+      phx-hook="InitIndexMap"
       style="height: 400px; z-index: -1"></div>
+      <%# z-index: -1 will disable "map interaction" %>
 </div>
 
-
-<%= for geo <- @geolocation do %>
-<h2><%= String.capitalize(to_string(elem(geo,0))) %> Orbs</h2>
-<table>
-  <thead>
-    <tr>
-      <th>Title</th>
-      <th>Active</th>
-      <th>Media</th>
-      <th>Extinguish</th>
-      <th>Time</th>
-      <th>Tip</th>
-      <th>Info</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody id={"#{elem(geo,0)}orbs"}>
-    <%= for orb <- elem(geo,1)[:orbs] do %>
-      <tr id={"#{elem(geo,0)}orb-#{orb.id}"}>
-        <td><%= orb.title %></td>
-        <td><%= orb.active %></td>
-        <td><%= orb.media %></td>
-        <td><%= orb.extinguish %></td>
-        <td><%= orb.payload.when %></td>
-        <td><%= orb.payload.tip %></td>
-        <td><%= orb.payload.info %></td>
-
-        <td>
-          <span><%= live_redirect "Show", to: Routes.orb_show_path(@socket, :show, orb) %></span>
-          <span><%= live_patch "Edit", to: Routes.orb_index_path(@socket, :edit, orb) %></span>
-          <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: orb.id, phx_value_locname: elem(geo,0), data: [confirm: "Are you sure?"] %></span>
-        </td>
+<%= for {key, value} <- @addresses do %>
+  <h2><%= String.capitalize(to_string(key))%> Orbs</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Active</th>
+        <th>Media</th>
+        <th>Extinguish</th>
+        <th>Time</th>
+        <th>Tip</th>
+        <th>Info</th>
+        <th></th>
       </tr>
-    <% end %>
-  </tbody>
-</table>
+    </thead>
+    <tbody id={"#{key}orbs"}>
+      <%= unless location_fetcher(value, @geolocation) == nil do %>
+      <%= for orb <- location_fetcher(value, @geolocation) do %>
+            <tr id={"#{key}orb-#{orb.id}"}>
+              <td><%= orb.title %></td>
+              <td><%= orb.active %></td>
+              <td><%= orb.media %></td>
+              <td><%= orb.extinguish %></td>
+              <td><%= orb.payload.when %></td>
+              <td><%= orb.payload.tip %></td>
+              <td><%= orb.payload.info %></td>
+
+              <td>
+                <span><%= live_redirect "Show", to: Routes.orb_show_path(@socket, :show, orb) %></span>
+                <span><%= live_patch "Edit", to: Routes.orb_index_path(@socket, :edit, orb) %></span>
+                <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: orb.id, data: [confirm: "Are you sure?"] %></span>
+              </td>
+            </tr>
+
+        <% end %>
+      <% end %>
+    </tbody>
+  </table>
 <% end %>
 
 
+<%= unless @guest do %>
 <span><%= live_patch "New Orb", to: Routes.orb_index_path(@socket, :new) %></span>
+<% end %>

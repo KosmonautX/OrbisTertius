@@ -1,7 +1,8 @@
 import InitPosition from "./position"
-import InitMap from "./map"
+import { InitIndexMap, InitModalMap } from "./map"
 
 export default {
   InitPosition,
-  InitMap
+  InitIndexMap,
+  InitModalMap
 }

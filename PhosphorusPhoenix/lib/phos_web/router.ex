@@ -32,6 +32,9 @@ defmodule PhosWeb.Router do
     live_session :authenticated, on_mount: {PhosWeb.Menshen.Protocols, :pleb} do
       get "/", PageController, :index
 
+      live "/orb/sethome", OrbLive.Index, :sethome
+      live "/orb/setwork", OrbLive.Index, :setwork
+
       live "/orb", OrbLive.Index, :index
       live "/orb/new", OrbLive.Index, :new
       live "/orb/:id/edit", OrbLive.Index, :edit
@@ -81,7 +84,7 @@ defmodule PhosWeb.Router do
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
   end
- 
+
   ## Authentication routes
 
   scope "/", PhosWeb do
