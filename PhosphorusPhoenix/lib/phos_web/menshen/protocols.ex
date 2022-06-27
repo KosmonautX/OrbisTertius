@@ -17,8 +17,7 @@ defmodule PhosWeb.Menshen.Protocols do
   end
 
   def on_mount(:pleb, params, _session, socket) do
-    {:cont, assign(socket, :guest, true) |> assign(:current_user, %{username: Neighbour})
-    }
+    {:cont, assign(socket, :guest, true)}
   end
 
   def on_mount(:admin, _params, _session, socket) do
