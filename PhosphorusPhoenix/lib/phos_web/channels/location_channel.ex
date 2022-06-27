@@ -66,8 +66,6 @@ defmodule PhosWeb.UserLocationChannel do
 
   @impl true
   def handle_info({Phos.PubSub, {:orb, event}, %Action.Orb{} = orb}, socket) do
-    IO.inspect(event)
-    IO.inspect(orb.topic)
     push(socket, "orb_" <> to_string(event), %{"subscribed" => orb.topic, "data" => [orb] |> Viewer.fresh_orb_stream_mapper()})
     {:noreply, socket}
   end

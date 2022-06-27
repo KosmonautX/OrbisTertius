@@ -14,9 +14,9 @@ defmodule PhosWeb.Util.Viewer do
         available: orb.active,
         orb_uuid: orb.id,
         payload: %{source: orb.source,
-          init: %{username: orb.users.username, media: orb.users.media, media_asset: Phos.Orbject.S3.get!("USR", orb.users.fyr_id, "150x150")},
+          init: %{username: orb.initiator.username, media: orb.initiator.media, media_asset: Phos.Orbject.S3.get!("USR", orb.initiator.fyr_id, "150x150")},
           extinguishtime: DateTime.from_naive!(orb.extinguish, "Etc/UTC") |> DateTime.to_unix(),
-          user_id: orb.users.fyr_id,
+          user_id: orb.initiator.fyr_id,
           where: orb.payload.where,
           creationtime: DateTime.from_naive!(orb.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
           media: orb.media,
@@ -45,14 +45,15 @@ defmodule PhosWeb.Util.Viewer do
         available: orb.active,
         orb_uuid: orb.id,
         title: orb.title,
-        initiator: (if orb.users do %{username: orb.users.username,
-                    media: orb.users.media,
-                    media_asset: (if orb.users.media && orb.users.fyr_id, do: Phos.Orbject.S3.get!("USR", orb.users.fyr_id, "150x150")),
-                    user_id: orb.users.fyr_id || orb.users.id
+        initiator: (if orb.initiator do %{username: orb.initiator.username,
+                    media: orb.initiator.media,
+                    media_asset: (if orb.initiator.media && orb.initiator.fyr_id, do: Phos.Orbject.S3.get!("USR", orb.initiator.fyr_id, "150x150")),
+                    user_id: orb.initiator.fyr_id || orb.initiator.id
                     }
             end),
         creationtime: DateTime.from_naive!(orb.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
         source: orb.source,
+        traits: orb.traits,
         payload: %{
           where: orb.payload.where,
           inner_title: orb.payload.inner_title,

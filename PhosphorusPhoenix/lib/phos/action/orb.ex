@@ -12,7 +12,7 @@ defmodule Phos.Action.Orb do
     field :title, :string
     field :source, Ecto.Enum, values: [:web, :tele, :flutter]
     field :central_geohash, :integer
-    field :traits, {:array, :string}
+    field :traits, {:array, :string}, default: []
     field :topic, :string, virtual: true
 
     belongs_to :initiator, User, references: :id, type: Ecto.UUID
@@ -27,14 +27,22 @@ defmodule Phos.Action.Orb do
   def changeset(%Orb{} = orb, attrs) do
     orb
       |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])
-      # |> cast_assoc(:locations)
-      # |> cast_assoc(:initiator)
-      # |> assoc_constraint(:initiator)
       |> cast_embed(:payload)
       |> validate_required([:title, :active, :media, :extinguish])
       # |> validate_media()
-
   end
+
+  @doc """
+  Orb changeset for editing orb.
+
+  Editing orb does not need fields like geolocation.
+  """
+  def changeset_edit(user, attrs) do
+    user
+    |> cast(attrs, [:title, :active, :media, :extinguish, :traits])
+    |> cast_embed(:payload)
+  end
+
   def changeset_update_locations(%Orb{} = orb, locations) do
     orb
     |> cast(%{}, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])

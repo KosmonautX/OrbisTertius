@@ -22,14 +22,12 @@ defmodule PhosWeb.OrbLive.Index do
   end
 
   defp apply_action(socket, :sethome, _params) do
-    IO.inspect(socket.assigns.addresses)
     socket
     |> assign(:page_title, "Set Home Location")
     |> assign(:setloc, :home)
   end
 
   defp apply_action(socket, :setwork, _params) do
-    IO.inspect(socket.assigns.geolocation)
     socket
     |> assign(:page_title, "Set Work Location")
     |> assign(:setloc, :work)
@@ -86,7 +84,6 @@ defmodule PhosWeb.OrbLive.Index do
       Enum.reduce([8,9,10], socket.assigns.geolocation, fn res, acc ->
         Map.put(acc, :h3.parent(:h3.from_geo({latitude, longitude}, 10), res), Action.get_active_orbs_by_geohashes([:h3.parent(:h3.from_geo({latitude, longitude}, 10), res)]))
       end)
-
     loc_subscriber(Map.keys(geos), Map.keys(socket.assigns.geolocation))
 
     {_prev_address, updated_addresses} =
@@ -114,29 +111,26 @@ defmodule PhosWeb.OrbLive.Index do
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     orb = Action.get_orb!(id)
-    rejected_orblist = Enum.reject(socket.assigns.geolocation[orb.central_geohash], fn orb -> orb.id == id end)
-    updated_orblist = put_in(socket.assigns.geolocation, [orb.central_geohash], rejected_orblist)
-    orb_loc_publisher(orb, :deactivation, orb.central_geohash |> :h3.k_ring(1))
-
+    orb_loc_publisher(orb, :deactivation, orb.locations |> Enum.map(fn orb -> orb.id end))
     {:ok, _} = Action.delete_orb(orb)
 
-    {:noreply, assign(socket, :gelocation, updated_orblist)}
+    {:noreply, socket}
   end
 
   @impl true
   def handle_info({PubSub, {:orb, :genesis}, message}, socket) do
     IO.puts("genesis #{inspect(message)}")
     updated_orbs =
-      put_in(socket.assigns.geolocation, [message.central_geohash], [message | socket.assigns.geolocation[message.central_geohash]])
+      put_in(socket.assigns.geolocation, [message.topic], [message | socket.assigns.geolocation[message.topic]])
     {:noreply, socket
     |> assign(:geolocation, updated_orbs)}
   end
 
   def handle_info({PubSub, {:orb, :mutation}, message}, socket) do
     IO.puts("mutate #{inspect(message)}")
-    replace_orb_index = Enum.find_index(socket.assigns.geolocation[message.central_geohash], fn orb -> orb.id == message.id end)
-    updated_orb = List.replace_at(socket.assigns.geolocation[message.central_geohash], replace_orb_index, message)
-    updated_orblist = put_in(socket.assigns.geolocation, [message.central_geohash], updated_orb)
+    replace_orb_index = Enum.find_index(socket.assigns.geolocation[message.topic], fn orb -> orb.id == message.id end)
+    updated_orb = List.replace_at(socket.assigns.geolocation[message.topic], replace_orb_index, message)
+    updated_orblist = put_in(socket.assigns.geolocation, [message.topic], updated_orb)
 
     {:noreply, socket
       |> assign(:geolocation, updated_orblist)}
@@ -145,9 +139,8 @@ defmodule PhosWeb.OrbLive.Index do
 
   def handle_info({PubSub, {:orb, :deactivation}, message}, socket) do
     IO.puts("deactivate #{inspect(message)}")
-
-    rejected_orblist = Enum.reject(socket.assigns.geolocation[message.central_geohash], fn orb -> orb.id == message.id end)
-    updated_orblist = put_in(socket.assigns.geolocation, [message.central_geohash], rejected_orblist)
+    rejected_orblist = Enum.reject(socket.assigns.geolocation[message.topic], fn orb -> orb.id == message.id end)
+    updated_orblist = put_in(socket.assigns.geolocation, [message.topic], rejected_orblist)
 
     {:noreply, socket
     |> assign(:geolocation, updated_orblist)}
@@ -171,7 +164,7 @@ defmodule PhosWeb.OrbLive.Index do
   defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"
 
   defp orb_loc_publisher(orb, event, to_locations) do
-    to_locations |> Enum.map(fn loc-> Phos.PubSub.publish(orb, {:orb, event}, loc_topic(loc)) end)
+    to_locations |> Enum.map(fn loc-> Phos.PubSub.publish(%{orb | topic: loc}, {:orb, event}, loc_topic(loc)) end)
   end
 
   defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"

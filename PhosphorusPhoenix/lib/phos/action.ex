@@ -37,14 +37,14 @@ defmodule Phos.Action do
 
 #   """
 #
-  def get_orb!(id), do: Repo.get!(Orb, id)
+  def get_orb!(id), do: Repo.get!(Orb, id) |> Phos.Repo.preload(:locations)
   def get_orb_by_fyr(id), do: Repo.get_by(Phos.Users.User, fyr_id: id)
 
   def get_orbs_by_geohashes(ids) do
     query =
       Orb_Location
       |> where([e], e.location_id in ^ids)
-      |> preload(orbs: :users)
+      |> preload(orbs: :initiator)
       |> order_by(desc: :inserted_at)
 
     Repo.all(query, limit: 32)
@@ -156,7 +156,7 @@ defmodule Phos.Action do
 
   def update_orb!(%Orb{} = orb, attrs) do
     orb
-    |> Orb.changeset(attrs)
+    |> Orb.changeset_edit(attrs)
     |> Repo.update!()
     |> Repo.preload([:initiator, :locations])
   end
