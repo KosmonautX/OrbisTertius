@@ -100,8 +100,8 @@ defmodule PhosWeb.UserLocationChannel do
 
   defp loc_subscriber(present, past) do
     IO.puts("subscribe with past#{inspect(present)}")
-    present -- past |> Enum.map(fn old -> old |> loc_topic() |> PubSub.unsubscribe() end)
-    past -- present |>Enum.map(fn new-> new |> loc_topic() |> PubSub.subscribe() end)
+    present -- past |> Enum.map(fn new -> new |> loc_topic() |> PubSub.subscribe() end)
+    past -- present |>Enum.map(fn old-> old |> loc_topic() |> PubSub.unsubscribe() end)
     present
   end
 

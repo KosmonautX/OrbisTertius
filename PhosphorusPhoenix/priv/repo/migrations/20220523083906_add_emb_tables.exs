@@ -44,7 +44,7 @@ defmodule Phos.Repo.Migrations.AddEmbTables do
       add :payload, :jsonb
       add :source, :orb_source
       add :central_geohash, :bigint
-      add :initiator, references(:users, column: :id, type: :uuid)
+      add :initiator_id, references(:users, column: :id, type: :uuid)
       add :traits, :jsonb
 
       timestamps()

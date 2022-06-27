@@ -95,59 +95,6 @@ defmodule Phos.Action do
 #   """
 
   def create_orb(attrs \\ %{}) do
-    multi =
-      Multi.new()
-      |> Multi.insert(:insert_orb, %Orb{} |> Orb.changeset(attrs))
-      |> Multi.insert_all(:insert_locations, Location, parse_locations(attrs), on_conflict: :nothing, conflict_target: :id)
-      |> Multi.insert_all(:insert_orb_locations, Orb_Location, fn %{insert_orb: orb} ->
-        parse_locations(orb.id, attrs)
-      end)
-
-    case (Repo.transaction(multi)) do
-      {:ok, results} ->
-        IO.puts "Ecto Multi Success"
-        {:ok, results.insert_orb}
-      {:error, :insert_orb, changeset, _changes} ->
-        {:error, changeset}
-      {:error, :insert_locations, changeset, _changes} ->
-        {:error, changeset}
-      {:error, :insert_orb_locations, changeset, _changes} ->
-        {:error, changeset}
-    end
-   end
-
-  defp parse_locations(orb_id, attrs) do
-    case attrs do
-      %{"geolocation" => location_list} ->
-        timestamp = NaiveDateTime.utc_now()
-        |> NaiveDateTime.truncate(:second)
-
-        maps = Enum.map(location_list, &%{
-          orb_id: orb_id,
-          location_id: &1,
-          inserted_at: timestamp,
-          updated_at: timestamp
-        })
-
-        %{geolocation: location_list} ->
-          timestamp = NaiveDateTime.utc_now()
-          |> NaiveDateTime.truncate(:second)
-
-          maps = Enum.map(location_list, &%{
-            orb_id: orb_id,
-            location_id: &1,
-            inserted_at: timestamp,
-            updated_at: timestamp
-          })
-
-        maps
-      %{} ->
-        IO.puts "missing geolocation"
-        []
-    end
-  end
-
-  defp parse_locations(attrs) do
     case attrs do
       %{"geolocation" => location_list} ->
         timestamp = NaiveDateTime.utc_now()
@@ -159,21 +106,22 @@ defmodule Phos.Action do
           updated_at: timestamp
         })
 
-        %{geolocation: location_list} ->
-          timestamp = NaiveDateTime.utc_now()
-          |> NaiveDateTime.truncate(:second)
-
-          maps = Enum.map(location_list, &%{
-            id: &1,
-            inserted_at: timestamp,
-            updated_at: timestamp
-          })
-
-        maps
-      %{} ->
-        IO.puts "missing geolocation"
-        []
+        Repo.insert_all(Location, maps, on_conflict: :nothing, conflict_target: :id)
+        location_ids = Enum.map(maps, fn loc -> loc.id end)
+        orb_locations_upsert(attrs, location_ids)
     end
+  end
+
+  def orb_locations_upsert(attrs, location_ids) when is_list(location_ids) do
+    locations =
+      Location
+      |> where([location], location.id in ^location_ids)
+      |> Repo.all()
+
+
+    %Orb{} |> Orb.changeset(attrs) |> Repo.insert!() |> Repo.preload(:locations)
+    |> Orb.changeset_update_locations(locations)
+    |> Repo.update()
   end
 
 #   @doc """
@@ -192,6 +140,25 @@ defmodule Phos.Action do
     orb
     |> Orb.changeset(attrs)
     |> Repo.update()
+  end
+
+  #   @doc """
+#   Updates a orb.
+
+#   ## Examples
+
+#       iex> update_orb!(%{field: value})
+#       %Orb{}
+
+#       iex> Need to Catch error state
+
+#   """
+
+  def update_orb!(%Orb{} = orb, attrs) do
+    orb
+    |> Orb.changeset(attrs)
+    |> Repo.update!()
+    |> Repo.preload([:initiator, :locations])
   end
 
 #   @doc """

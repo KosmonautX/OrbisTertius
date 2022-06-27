@@ -29,6 +29,7 @@ defmodule PhosWeb.OrbLive.Index do
   end
 
   defp apply_action(socket, :setwork, _params) do
+    IO.inspect(socket.assigns.geolocation)
     socket
     |> assign(:page_title, "Set Work Location")
     |> assign(:setloc, :work)
@@ -53,8 +54,8 @@ defmodule PhosWeb.OrbLive.Index do
 
   def handle_info(:geoinitiation, socket) do
     {geolocation, addresses} =
-      case socket.assigns.current_user do
-        %{private_profile: %{geolocation: _}} ->
+      case socket.assigns do
+        %{current_user: %{private_profile: %{geolocation: _}}} ->
           geos =
             for geoloc <- socket.assigns.current_user.private_profile.geolocation do
               Enum.reduce([8,9,10], socket.assigns.geolocation, fn res, acc ->
@@ -68,15 +69,11 @@ defmodule PhosWeb.OrbLive.Index do
             for loc <- socket.assigns.current_user.private_profile.geolocation, into: %{} do
               {String.to_atom(loc.id), Enum.map([8,9,10], fn res -> :h3.parent(loc.geohash, res) end)}
             end
-
-          # loc_subscriber(Map.keys(geos), Map.keys(socket.assigns.geolocation))
-          loc_subscriber(Map.keys(geos), nil)
+          loc_subscriber(Map.keys(geos), Map.keys(socket.assigns.geolocation))
 
           {geos, address}
-        %{private_profile: %{geolocation: %{}}} ->
-          {%{geolocation: %{}}, %{}}
-        %{} ->
-          {%{geolocation: %{}}, %{}}
+        _ ->
+          {%{}, %{}}
       end
 
     {:noreply, socket
@@ -89,11 +86,11 @@ defmodule PhosWeb.OrbLive.Index do
       Enum.reduce([8,9,10], socket.assigns.geolocation, fn res, acc ->
         Map.put(acc, :h3.parent(:h3.from_geo({latitude, longitude}, 10), res), Action.get_active_orbs_by_geohashes([:h3.parent(:h3.from_geo({latitude, longitude}, 10), res)]))
       end)
+
     loc_subscriber(Map.keys(geos), Map.keys(socket.assigns.geolocation))
 
     {_prev_address, updated_addresses} =
       get_and_update_in(socket.assigns.addresses, Enum.map([locname], &Access.key(&1, %{})), &{&1, Enum.map([8,9,10], fn res -> :h3.parent(:h3.from_geo({latitude, longitude}, 10), res) end)})
-
 
     {:noreply, socket
     |> assign(:geolocation, geos)
@@ -110,27 +107,13 @@ defmodule PhosWeb.OrbLive.Index do
 
   @impl true
   def handle_event("live_location_update", %{"longitude" => longitude, "latitude" => latitude}, socket) do
-    geos =
-      Enum.reduce([8,9,10], socket.assigns.geolocation, fn res, acc ->
-        Map.put(acc, :h3.parent(:h3.from_geo({latitude, longitude}, 10), res), Action.get_active_orbs_by_geohashes([:h3.parent(:h3.from_geo({latitude, longitude}, 10), res)]))
-      end)
-    loc_subscriber(Map.keys(geos), Map.keys(socket.assigns.geolocation))
-
-    {_prev_address, updated_addresses} =
-      get_and_update_in(socket.assigns.addresses, Enum.map([:live], &Access.key(&1, %{})), &{&1, Enum.map([8,9,10], fn res -> :h3.parent(:h3.from_geo({latitude, longitude}, 10), res) end)})
-
-    {:noreply, socket
-    |> assign(:geolocation, geos)
-    |> assign(:addresses, updated_addresses)
-    |> push_event("centre_marker", %{latitude: latitude, longitude: longitude})}
+    send(self(), {:static_location_update, %{"locname" => :live, "longitude" => longitude, "latitude" => latitude}})
+    {:noreply, socket}
   end
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     orb = Action.get_orb!(id)
-    # orblist = socket.assigns.orbs[String.to_atom(name)] |> Enum.reject(fn orb -> orb.id == id end)
-    # updated_orblist = put_in(socket.assigns.orbs, [String.to_atom(name)], orblist)
-
     rejected_orblist = Enum.reject(socket.assigns.geolocation[orb.central_geohash], fn orb -> orb.id == id end)
     updated_orblist = put_in(socket.assigns.geolocation, [orb.central_geohash], rejected_orblist)
     orb_loc_publisher(orb, :deactivation, orb.central_geohash |> :h3.k_ring(1))
@@ -174,14 +157,14 @@ defmodule PhosWeb.OrbLive.Index do
     Action.list_orbs()
   end
 
-  defp loc_subscriber(present, nil) do
+  defp loc_subscriber(present, []) do
     present |>Enum.map(fn new-> Phos.PubSub.subscribe(loc_topic(new)) end)
     present
   end
 
   defp loc_subscriber(present, past) do
-    present -- past |> Enum.map(fn old -> old |> loc_topic() |> Phos.PubSub.unsubscribe() end)
-    past -- present |>Enum.map(fn new-> new |> loc_topic() |> Phos.PubSub.subscribe() end)
+    present -- past |> Enum.map(fn new -> new |> loc_topic() |> Phos.PubSub.subscribe() end)
+    past -- present |>Enum.map(fn old-> old |> loc_topic() |> Phos.PubSub.unsubscribe() end)
     present
   end
 

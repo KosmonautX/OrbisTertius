@@ -1,7 +1,7 @@
 defmodule Phos.Action.Orb do
   use Ecto.Schema
   import Ecto.Changeset
-  alias Phos.Action.{Location, Orb_Payload, Orb_Location}
+  alias Phos.Action.{Location,Orb, Orb_Payload, Orb_Location}
   alias Phos.Users.{User}
 
   @primary_key {:id, Ecto.UUID, autogenerate: false}
@@ -15,23 +15,30 @@ defmodule Phos.Action.Orb do
     field :traits, {:array, :string}
     field :topic, :string, virtual: true
 
-    belongs_to :users, User, references: :id, foreign_key: :initiator, type: Ecto.UUID
+    belongs_to :initiator, User, references: :id, type: Ecto.UUID
     #belongs_to :users, User, references: :id, foreign_key: :acceptor, type: Ecto.UUID
-    many_to_many :locations, Location, join_through: Orb_Location, on_delete: :delete_all#, join_keys: [id: :id, location_id: :location_id]
+    many_to_many :locations, Location, join_through: Orb_Location, on_replace: :delete, on_delete: :delete_all#, join_keys: [id: :id, location_id: :location_id]
     embeds_one :payload, Orb_Payload, on_replace: :delete
 
     timestamps()
   end
 
   @doc false
-  def changeset(%Phos.Action.Orb{} = orb, attrs) do
+  def changeset(%Orb{} = orb, attrs) do
     orb
-    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator, :traits])
-    |> cast_assoc(:locations)
-    |> assoc_constraint(:users)
-    |> cast_embed(:payload)
-    |> validate_required([:title, :active, :media, :extinguish])
-    # |> validate_media()
+      |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])
+      # |> cast_assoc(:locations)
+      # |> cast_assoc(:initiator)
+      # |> assoc_constraint(:initiator)
+      |> cast_embed(:payload)
+      |> validate_required([:title, :active, :media, :extinguish])
+      # |> validate_media()
+
+  end
+  def changeset_update_locations(%Orb{} = orb, locations) do
+    orb
+    |> cast(%{}, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])
+    |> put_assoc(:locations, locations)
   end
 
   def validate_media(changeset) do

@@ -36,7 +36,6 @@ defmodule PhosWeb.OrbLive.FormComponent do
                      orb_params
                      |> Map.put("central_geohash", central_hash)
                      |> Map.put("geolocation", geohashes)
-                     |> Map.put("initiator", socket.assigns.current_user.id)
                    rescue
                      ArgumentError -> orb_params |> Map.put("geolocation", [])
                    end
@@ -74,14 +73,17 @@ defmodule PhosWeb.OrbLive.FormComponent do
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
 
   defp save_orb(socket, :edit, orb_params) do
-    case Action.update_orb(socket.assigns.orb, orb_params |> Viewer.update_orb_mapper()) do
-      {:ok, orb} ->
-        orb_loc_publisher(orb, :mutation, orb_params["geolocation"])
+    # TODO Changeset for Updating refer to User changesets for inspiration
+    case Action.update_orb!(socket.assigns.orb, orb_params |> Viewer.update_orb_mapper()) do
+      orb ->
+        location_list = orb.locations |> Enum.map(fn loc -> loc.id end)
+        orb_loc_publisher(orb, :mutation, location_list)
         {:noreply,
          socket
          |> put_flash(:info, "Orb updated successfully")
          |> push_redirect(to: socket.assigns.return_to)}
 
+         # TODO error states catch
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :changeset, changeset)}
     end
@@ -97,6 +99,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
          |> put_flash(:info, "Orb created successfully")
          |> push_redirect(to: socket.assigns.return_to)}
       {:error, %Ecto.Changeset{} = changeset} ->
+        IO.inspect(changeset)
         {:noreply, assign(socket, changeset: changeset)}
 
     end
