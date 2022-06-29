@@ -70,9 +70,9 @@ defmodule PhosWeb.OrbLive.MapComponent do
         # Update flow
         true ->
           {loc_updating, loc_no_update} = Enum.split_with(user.private_profile.geolocation, fn u -> u.id == to_string(socket.assigns.setloc) end)
-          # if DateTime.utc_now() |> DateTime.to_unix() < List.first(loc_updating).chronolock do
-          #   {:chronolocked, %{}}
-          # else
+          if DateTime.utc_now() |> DateTime.to_unix() < List.first(loc_updating).chronolock do
+            {:chronolocked, %{}}
+          else
             changeset = Ecto.Changeset.change(user.private_profile)
             geolocation_changeset = Ecto.Changeset.change(List.first(loc_updating), %{id: to_string(socket.assigns.setloc), geohash: :h3.from_geo({String.to_float(latitude), String.to_float(longitude)}, 10), chronolock: DateTime.utc_now() |> DateTime.add(14 * 3600 * 24, :second) |> DateTime.to_unix(), location_description: nil})
             ecto_update =
@@ -86,7 +86,7 @@ defmodule PhosWeb.OrbLive.MapComponent do
               {:error, changeset} ->
                 {:error, changeset}
             end
-          # end
+          end
       end
 
     case record do
