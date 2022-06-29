@@ -2,7 +2,7 @@ defmodule Phos.Users.User do
   use Ecto.Schema
   import Ecto.Changeset
   alias Phos.Action.{Orb}
-  alias Phos.Users.{Geohash, Public_Profile, Private_Profile}
+  alias Phos.Users.{Geohash, Public_Profile, Private_Profile, Auth}
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "users" do
@@ -17,9 +17,10 @@ defmodule Phos.Users.User do
     field :confirmed_at, :naive_datetime
 
     has_many :orbs, Orb, references: :id, foreign_key: :initiator
+    has_many :auths, Auth, references: :id, foreign_key: :user_id
+
     has_one :public_profile, Public_Profile, references: :id, foreign_key: :user_id
     has_one :private_profile, Private_Profile, references: :id, foreign_key: :user_id
-
 
     timestamps()
   end
@@ -27,18 +28,9 @@ defmodule Phos.Users.User do
   @doc false
   def changeset(%Phos.Users.User{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :media, :profile_pic])
+    |> cast(attrs, [:username, :media, :profile_pic, :fyr_id, :email])
     #|> validate_required(:email)
-    |> cast_assoc(:public_profile)
-    |> cast_assoc(:private_profile)
-    |> unique_constraint(:username_taken, name: :unique_username)
-
-  end
-
-  def migration_changeset(%Phos.Users.User{} = user, attrs) do
-    user
-    |> cast(attrs, [:username, :media, :profile_pic, :fyr_id])
-    #|> validate_required(:email)
+    |> cast(attrs, [:id, :username, :media, :profile_pic, :fyr_id])
     |> cast_assoc(:public_profile)
     |> cast_assoc(:private_profile)
     |> unique_constraint(:username_taken, name: :unique_username)

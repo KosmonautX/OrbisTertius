@@ -87,3 +87,8 @@ config :ex_aws, :s3,
   scheme: "http://",
   host: "localhost",
   port: 9000
+
+config :phos, Phos.External.HeimdallrClient,
+  base_url: "https://norbandy.scratchbac.org/api",
+  authorization: {Phos.External.HeimdallrClient, :authorization, []}
+  # authorization: long_lived_bearer_token
