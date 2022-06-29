@@ -37,7 +37,7 @@ defmodule Phos.Action do
 
 #   """
 #
-  def get_orb!(id), do: Repo.get!(Orb, id) |> Phos.Repo.preload(:locations)
+  def get_orb!(id), do: Repo.get!(Orb, id) |> Repo.preload([:locations, :initiator])
   def get_orb_by_fyr(id), do: Repo.get_by(Phos.Users.User, fyr_id: id)
 
   def get_orbs_by_geohashes(ids) do
@@ -109,6 +109,11 @@ defmodule Phos.Action do
         Repo.insert_all(Location, maps, on_conflict: :nothing, conflict_target: :id)
         location_ids = Enum.map(maps, fn loc -> loc.id end)
         orb_locations_upsert(attrs, location_ids)
+
+      _ ->
+         %Orb{}
+         |> Orb.changeset(attrs)
+         |> Repo.insert()
     end
   end
 
