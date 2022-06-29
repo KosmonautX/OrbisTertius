@@ -114,7 +114,7 @@ function verifyToken(req, res, next) {
     try {
 		const iss = "Princeton";
 		const sub = "ScratchBac";
-		const exp = "1d";
+		const exp = "7d";
 		const verifyOptions = {
 			issuer : iss,
 			subject : sub,
