@@ -19,7 +19,8 @@ defmodule Phos.Users do
 
   """
   def list_users do
-    Repo.all(User |> preload(:public_profile) |> preload(:private_profile))
+    query = from u in User, preload: [:public_profile, :private_profile]
+    Repo.all(query)
   end
 
 #   @doc """
