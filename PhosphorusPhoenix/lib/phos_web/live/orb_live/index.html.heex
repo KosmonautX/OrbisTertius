@@ -59,6 +59,7 @@
         <th>Time</th>
         <th>Tip</th>
         <th>Info</th>
+        <th>Comments</th>
         <th></th>
       </tr>
     </thead>
@@ -73,6 +74,7 @@
               <td><%= orb.payload.when %></td>
               <td><%= orb.payload.tip %></td>
               <td><%= orb.payload.info %></td>
+              <td>Count</td>
 
               <td>
                 <span><%= live_redirect "Show", to: Routes.orb_show_path(@socket, :show, orb) %></span>
