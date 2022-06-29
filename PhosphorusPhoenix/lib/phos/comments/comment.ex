@@ -21,7 +21,7 @@ defmodule Phos.Comments.Comment do
   @doc false
   def changeset(%Comment{} = comment, attrs) do
     comment
-      |> cast(attrs, [:body, :path, :orb_id, :initiator_id])
-      |> validate_required([:body, :path])
+      |> cast(attrs, [:id, :body, :path, :orb_id, :initiator_id])
+      |> validate_required([:id, :body, :path, :orb_id, :initiator_id])
   end
 end

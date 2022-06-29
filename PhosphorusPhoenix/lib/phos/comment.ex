@@ -24,6 +24,24 @@ defmodule Phos.Comments do
   end
 
 #   @doc """
+#   Creates a comment.
+
+#   ## Examples
+
+#       iex> create_comment(orb, %{field: new_value})
+#       {:ok, %Orb{}}
+
+#       iex> create_comment(orb, %{field: bad_value})
+#       {:error, %Ecto.Changeset{}}
+
+#   """
+def create_comment(attrs \\ %{}) do
+  %Comment{}
+  |> Comment.changeset(attrs)
+  |> Repo.insert()
+end
+
+#   @doc """
 #   Gets a single orb.
 
 #   Raises `Ecto.NoResultsError` if the Orb does not exist.
@@ -38,7 +56,19 @@ defmodule Phos.Comments do
 
 #   """
 #
-  def get_orb!(id), do: Repo.get!(Orb, id) |> Phos.Repo.preload(:locations)
+
+  def get_comment!(id), do: Repo.get!(Comment, id) |> Repo.preload([:initiator])
+
+  def get_comments_by_orb(id) do
+    query =
+      Comment
+      |> where([e], e.orb_id == ^id)
+      |> preload(:initiator)
+      |> order_by(desc: :inserted_at)
+
+    Repo.all(query)
+  end
+
   def get_orb_by_fyr(id), do: Repo.get_by(Phos.Users.User, fyr_id: id)
 
 #   @doc """

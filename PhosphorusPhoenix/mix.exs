@@ -68,6 +68,9 @@ defmodule Phos.MixProject do
       {:ueberauth_apple, "~> 0.4"},
       {:ueberauth_google, "~> 0.10"},
       {:argon2_elixir, "~> 3.0"},
+
+      # comments
+      {:ecto_ltree, "~> 0.3.0"}
     ]
   end
 

@@ -1,3 +1,7 @@
+<link rel="stylesheet"
+          href=
+"https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+
 <h1>Show Orb</h1>
 
 <%= if @live_action in [:edit] do %>
@@ -78,80 +82,130 @@
 <span><%= live_redirect "Back", to: Routes.orb_index_path(@socket, :index) %></span>
 
 <h2>Comments</h2>
-<form method="POST" class="reply-form d-none" id="comment-root-form">
-    <textarea rows="4"></textarea>
-    <button type="submit">Submit</button>
-    <button type="button" data-toggle="reply-form">Cancel</button>
-</form>
+<div class="ui threaded comments">
+    <.form
+        let={f}
+        for={@changeset}
+        id="comment-form"
+        phx-submit="save">
 
-<div class="comment-thread">
-    <!-- Comment 1 start -->
-    <details open class="comment" id="comment-1">
-        <a href="#comment-1" class="comment-border-link">
-            <span class="sr-only">Jump to comment-1</span>
+        <%= textarea f, :body %>
+        <%= error_tag f, :body %>
+
+        <%= hidden_input f, :initiator_id, value: @current_user.id %>
+        <%= error_tag f, :initiator_id %>
+
+        <%= hidden_input f, :orb_id, value: @orb.id %>
+        <%= error_tag f, :orb_id %>
+
+        <%= submit "Add comment", phx_disable_with: "Saving..." %>
+    </.form>
+
+    <%= for c <- @comments do %>
+    <div class="comment">
+        <a class="avatar">
+            <img src={ Phos.Orbject.S3.get!("USR", c.initiator_id, "150x150") }>
         </a>
-        <summary>
-            <div class="comment-heading">
-                <div class="comment-info">
-                    <a href="#" class="comment-author">someguy14</a>
-                    <p class="m-0">
-                        22 points &bull; 4 days ago
-                    </p>
+        <div class="content">
+            <a class="author"><%= c.initiator.username %></a>
+            <div class="metadata">
+                <span class="date">
+                  <%= c.inserted_at %>
+                </span>
+            </div>
+            <div class="text">
+                <p><%= c.body %></p>
+            </div>
+            <div class="actions">
+                <a class="reply">Reply</a>
+                <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: c.id, data: [confirm: "Are you sure?"] %></span>
+
+            </div>
+        </div>
+    </div>
+    <% end %>
+    <!-- first user's comment -->
+    <div class="comment">
+        <a class="avatar">
+            <img src={ Phos.Orbject.S3.get!("USR", @current_user.id, "150x150") }>
+        </a>
+        <div class="content">
+            <a class="author">John</a>
+            <div class="metadata">
+                <span class="date">
+                  Yesterday at 9:10PM
+                </span>
+            </div>
+            <div class="text">
+                <p>This platform is outstanding.</p>
+            </div>
+            <div class="actions">
+                <a class="reply">Reply</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- second user's comment -->
+    <div class="comment">
+        <a class="avatar">
+            <img src={ Phos.Orbject.S3.get!("USR", @current_user.id, "150x150") }>
+        </a>
+        <div class="content">
+            <a class="author">Peter</a>
+            <div class="metadata">
+                <span class="date">
+                  Today at 12:30AM
+                </span>
+            </div>
+            <div class="text">
+                <p>This platform helped me learn DSA.</p>
+            </div>
+            <div class="actions">
+                <a class="reply">Reply</a>
+            </div>
+        </div>
+
+        <!-- Comment Threaded Variation -->
+        <!-- Reply to second user's comment -->
+        <div class="comments">
+            <div class="comment">
+                <a class="avatar">
+                    <img src={ Phos.Orbject.S3.get!("USR", @current_user.id, "150x150") }>
+                </a>
+                <div class="content">
+                    <a class="author">
+                      Geeks for Geeks
+                    </a>
+                    <div class="metadata">
+                        <span class="date">Just now</span>
+                    </div>
+                    <div class="text">
+                        Thanks Peter xD
+                    </div>
+                    <div class="actions">
+                        <a class="reply">Reply</a>
+                    </div>
                 </div>
             </div>
-        </summary>
-
-        <div class="comment-body">
-            <p>
-                This is really great! I fully agree with what you wrote, and this is sure to help me out in the future. Thank you for posting this.
-            </p>
-            <button type="button" data-toggle="reply-form" data-target="comment-1-reply-form">Reply</button>
-
-            <!-- Reply form start -->
-            <form method="POST" class="reply-form d-none" id="comment-1-reply-form">
-                <textarea placeholder="Reply to comment" rows="4"></textarea>
-                <button type="submit">Submit</button>
-                <button type="button" data-toggle="reply-form" data-target="comment-1-reply-form">Cancel</button>
-            </form>
-            <!-- Reply form end -->
         </div>
+    </div>
 
-        <div class="replies">
-            <!-- Comment 2 start -->
-            <details open class="comment" id="comment-2">
-                <a href="#comment-2" class="comment-border-link">
-                    <span class="sr-only">Jump to comment-2</span>
-                </a>
-                <summary>
-                    <div class="comment-heading">
-                        <div class="comment-info">
-                            <a href="#" class="comment-author">randomperson81</a>
-                            <p class="m-0">
-                                4 points &bull; 3 days ago
-                            </p>
-                        </div>
-                    </div>
-                </summary>
-
-                <div class="comment-body">
-                    <p>
-                        Took the words right out of my mouth!
-                    </p>
-                    <button type="button" data-toggle="reply-form" data-target="comment-2-reply-form">Reply</button>
-
-                    <!-- Reply form start -->
-                    <form method="POST" class="reply-form d-none" id="comment-2-reply-form">
-                        <textarea placeholder="Reply to comment" rows="4"></textarea>
-                        <button type="submit">Submit</button>
-                        <button type="button" data-toggle="reply-form" data-target="comment-2-reply-form">Cancel</button>
-                    </form>
-                    <!-- Reply form end -->
-                </div>
-            </details>
-            <!-- Comment 2 end -->
-
-            <a href="#load-more">Load more replies</a>
+    <!-- Third user's comment -->
+    <div class="comment">
+        <a class="avatar">
+            <img src={ Phos.Orbject.S3.get!("USR", @current_user.id, "150x150") }>
+        </a>
+        <div class="content">
+            <a class="author">Joe</a>
+            <div class="metadata">
+                <span class="date">5 days ago</span>
+            </div>
+            <div class="text">
+                Dude, this is fantastic. Thanks so much 🙂
+            </div>
+            <div class="actions">
+                <a class="reply">Reply</a>
+            </div>
         </div>
-    </details>
-    <!-- Comment 1 end -->
+    </div>
 </div>
