@@ -109,11 +109,25 @@ defmodule Phos.Action do
         Repo.insert_all(Location, maps, on_conflict: :nothing, conflict_target: :id)
         location_ids = Enum.map(maps, fn loc -> loc.id end)
         orb_locations_upsert(attrs, location_ids)
+        
+        _ ->
+        %Orb{}
+        |> Orb.changeset(attrs)
+        |> Repo.insert()
+    end
+  end
 
-      _ ->
-         %Orb{}
-         |> Orb.changeset(attrs)
-         |> Repo.insert()
+  def create_orb_and_publish(attrs \\ %{}) do
+    case create_orb(attrs) do
+      {:ok, orb} ->
+        import IEx; IEx.pry()
+        orb.locations |> Enum.map(fn loc-> Phos.PubSub.publish(%{orb | topic: loc.id}, {:orb, :genesis}, "LOC.#{loc.id}") end)
+        {:ok, orb}
+        
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:error, changeset}
+        
     end
   end
 
@@ -124,7 +138,7 @@ defmodule Phos.Action do
       |> Repo.all()
 
 
-    %Orb{} |> Orb.changeset(attrs) |> Repo.insert!() |> Repo.preload(:locations)
+    %Orb{} |> Orb.changeset(attrs) |> Repo.insert!() |> Repo.preload([:locations, :initiator])
     |> Orb.changeset_update_locations(locations)
     |> Repo.update()
   end

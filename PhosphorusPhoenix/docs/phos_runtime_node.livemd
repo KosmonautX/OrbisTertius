@@ -7,13 +7,28 @@ Phos.Action.get_orbs_by_geohashes([614_269_017_680_510_975])
 |> PhosWeb.Util.Viewer.fresh_orb_stream_mapper()
 ```
 
+```elixir
+defmodule R do
+  def recompile() do
+    Mix.Task.reenable("app.start")
+    Mix.Task.reenable("compile")
+    Mix.Task.reenable("compile.all")
+    compilers = Mix.compilers()
+    Enum.each(compilers, &Mix.Task.reenable("compile.#{&1}"))
+    Mix.Task.run("compile.all")
+  end
+end
+
+R.recompile()
+```
+
 ## Users
 
 ```elixir
 user_id = List.first(Phos.Users.list_users()).id
 
 {:ok, orb} =
-  Phos.Action.create_orb(%{
+  Phos.Action.create_orb_and_publish(%{
     "id" => Ecto.UUID.generate(),
     "active" => true,
     "extinguish" => ~N[2022-05-20 12:12:00],
@@ -24,5 +39,5 @@ user_id = List.first(Phos.Users.list_users()).id
     "payload" => %{"where" => "here"}
   })
 
-orb |> Phos.Repo.preload([:initiator, :locations])
+orb
 ```
