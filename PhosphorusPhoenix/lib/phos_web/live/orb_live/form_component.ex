@@ -90,12 +90,8 @@ defmodule PhosWeb.OrbLive.FormComponent do
 
   defp save_orb(socket, :new, orb_params) do
     ## TODO swap with create orb with publish
-    case Action.create_orb(orb_params) do
-      {:ok, orb} ->
-        orb = orb |> Phos.Repo.preload([:initiator, :locations])
-        location_list = orb.locations |> Enum.map(fn loc -> loc.id end)
-        orb_loc_publisher(orb, :genesis, location_list)
-
+    case Action.create_orb_and_publish(orb_params) do
+      {:ok, _orb} ->
         {:noreply,
          socket
          |> put_flash(:info, "Orb created successfully")

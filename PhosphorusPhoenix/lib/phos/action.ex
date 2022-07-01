@@ -120,11 +120,9 @@ defmodule Phos.Action do
   def create_orb_and_publish(attrs \\ %{}) do
     case create_orb(attrs) do
       {:ok, orb} ->
-        import IEx; IEx.pry()
-        orb.locations |> Enum.map(fn loc-> Phos.PubSub.publish(%{orb | topic: loc.id}, {:orb, :genesis}, "LOC.#{loc.id}") end)
+        orb_loc_publisher(orb, :genesis, orb.locations)
         {:ok, orb}
         
-
       {:error, %Ecto.Changeset{} = changeset} ->
         {:error, changeset}
         
@@ -208,4 +206,10 @@ defmodule Phos.Action do
   def change_orb(%Orb{} = orb, attrs \\ %{}) do
     Orb.changeset(orb, attrs)
   end
+
+  defp orb_loc_publisher(orb, event, to_locations) do
+    to_locations |> Enum.map(fn loc-> Phos.PubSub.publish(%{orb | topic: loc.id}, {:orb, event}, loc_topic(loc.id)) end)
+  end
+
+  defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"
 end
