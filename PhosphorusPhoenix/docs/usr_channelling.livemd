@@ -171,5 +171,5 @@ Phoenix.Channels.GenSocketClient.call(pid, {:geocalibrate, message})
 ## Cleaning up
 
 ```elixir
-Phoenix.Channels.GenSocketClient.call(pid, {:say, 3})
+Phoenix.Channels.GenSocketClient.call(pid, {:say, 1})
 ```
