@@ -41,8 +41,8 @@ defmodule PhosWeb.UserSocket do
 
   @impl true
   def connect(_params, _socket, _connect_info) do
-    {:ok, socket}
-    #:error
+    # {:ok, socket}
+    :error
   end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
