@@ -10,10 +10,10 @@ defmodule PhosWeb.Endpoint do
     signing_salt: "hJeAwFMX"
   ]
 
-  #socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
+  socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
   socket "/socket", PhosWeb.UserSocket,
-  websocket: [check_origin: ["//localhost",  "//phos.scrb.ac", "//echo.scrb.ac"]],
+  websocket: [check_origin: ["//localhost",  "//phos.scrb.ac", "//nyx.scrb.ac"]],
   longpoll: false
 
   # Serve at "/" the static files from "priv/static" directory.

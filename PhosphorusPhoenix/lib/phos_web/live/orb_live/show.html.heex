@@ -1,0 +1,78 @@
+<h1>Show Orb</h1>
+
+<%= if @live_action in [:edit] do %>
+  <.modal return_to={Routes.orb_show_path(@socket, :show, @orb)}>
+    <.live_component
+      module={PhosWeb.OrbLive.FormComponent}
+      id={@orb.id}
+      title={@page_title}
+      action={@live_action}
+      orb={@orb}
+      current_user={@current_user}
+      addresses={nil}
+      geolocation={nil}
+      return_to={Routes.orb_show_path(@socket, :show, @orb)}
+    />
+  </.modal>
+<% end %>
+
+<ul>
+
+  <li>
+    <strong>Title:</strong>
+    <%= @orb.title %>
+  </li>
+
+  <li>
+    <strong>Central Geohash:</strong>
+    <%= @orb.central_geohash %>
+  </li>
+
+  <li>
+    <strong>Active:</strong>
+    <%= @orb.active %>
+  </li>
+
+  <%= if @orb.media do %>
+  <li>
+    <strong>Media:</strong>
+    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "150x150") }>
+    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "1920x1080") }>
+  </li>
+  <% end%>
+
+  <li>
+    <strong>Extinguish:</strong>
+    <%= @orb.extinguish %>
+  </li>
+
+  <li>
+    <strong>When:</strong>
+    <%= @orb.payload.when %>
+  </li>
+
+  <li>
+    <strong>Where:</strong>
+    <%= @orb.payload.where %>
+  </li>
+
+  <li>
+    <strong>Tip:</strong>
+    <%= @orb.payload.tip %>
+  </li>
+
+  <li>
+    <strong>Info:</strong>
+    <%= @orb.payload.info %>
+  </li>
+
+  <li>
+    <strong>Traits:</strong>
+    <%= @orb.traits %>
+  </li>
+
+
+</ul>
+
+<span><%= live_patch "Edit", to: Routes.orb_show_path(@socket, :edit, @orb), class: "button" %></span> |
+<span><%= live_redirect "Back", to: Routes.orb_index_path(@socket, :index) %></span>

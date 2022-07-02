@@ -1,8 +1,8 @@
-name: StageFlight
+name: StageFlight 🎭🪁
 
 on:
   pull_request:
-    branches: [ staging/echo ]
+    branches: [ staging/nyx ]
 
 jobs:
   test:
@@ -61,6 +61,6 @@ jobs:
         env:
           FLY_PROJECT_PATH: PhosphorusPhoenix
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-          FLY_APP: norb
+          FLY_APP: nyx
         with:
           args: "deploy"

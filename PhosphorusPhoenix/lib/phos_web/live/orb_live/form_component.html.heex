@@ -1,0 +1,92 @@
+<div>
+  <h2><%= @title %></h2>
+
+  <section phx-drop-target={@uploads.image.ref}>
+
+  <.form
+    let={f}
+    for={@changeset}
+    id="orb-form"
+    phx-target={@myself}
+    phx-change="validate"
+    phx-submit="save">
+
+    <%= label f, :title %>
+    <%= text_input f, :title %>
+    <%= error_tag f, :title %>
+
+    <%= label f, :active %>
+    <%= checkbox f, :active, value: true %>
+    <%= error_tag f, :active %>
+
+    <%= hidden_input f, :media %>
+
+    <%= label f, :extinguish %>
+    <%= datetime_select f, :extinguish %>
+    <%= error_tag f, :extinguish %>
+
+    <%= hidden_input f, :source, value: :web %>
+    <%= error_tag f, :source %>
+
+    <%= hidden_input f, :initiator_id, value: @current_user.id %>
+    <%= error_tag f, :initiator_id %>
+
+    <%= label f, :radius %>
+    <%= select f, :radius, ["2km": 8, "1km": 9, "500m": 10], selected: 10 %>
+    <%= error_tag f, :radius %>
+
+    <%= unless is_nil(@addresses) do %>
+    <%= label f, :location %>
+    <%= select f, :location, Map.keys(@addresses), selected: :live %>
+    <%= error_tag f, :location %>
+    <% end %>
+
+    <%= label f, :traits %>
+    <%= multiple_select f, :traits, ["Pinned": "pin", "Treasure Hunt": "treasurehunt"]%>
+    <%= error_tag f, :traits %>
+
+    <%= inputs_for f, :payload, fn ff -> %>
+      <%= label ff, :image %>
+      <%= if @orb.media do %>
+    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "1920x1080") }>
+     <% end%>
+      <%= live_file_input @uploads.image %>
+      <%= for entry <- @uploads.image.entries do %>
+        <figure>
+          <%= live_img_preview entry %>
+        <figcaption><strong>New Image</strong></figcaption>
+        </figure>
+      <% end %>
+
+      <%= for err <- upload_errors(@uploads.image) do %>
+        <p class="alert alert-danger"><%= error_to_string(err) %></p>
+      <% end %>
+
+
+      <%= label ff, :when %>
+      <%= text_input ff, :when %>
+      <%= error_tag ff, :when %>
+
+      <%= label ff, :where %>
+      <%= text_input ff, :where %>
+      <%= error_tag ff, :where %>
+
+      <%= label ff, :tip %>
+      <%= text_input ff, :tip %>
+      <%= error_tag ff, :tip %>
+
+      <%= label ff, :inner_title %>
+      <%= text_input ff, :inner_title %>
+      <%= error_tag ff, :inner_title %>
+
+      <%= label ff, :info %>
+      <%= text_input ff, :info %>
+      <%= error_tag ff, :info %>
+    <% end %>
+
+    <div>
+      <%= submit "Save", phx_disable_with: "Saving..." %>
+    </div>
+  </.form>
+  </section>
+</div>

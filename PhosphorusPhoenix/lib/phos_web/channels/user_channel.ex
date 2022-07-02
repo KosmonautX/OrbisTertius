@@ -2,11 +2,23 @@ defmodule PhosWeb.UserChannel do
   use PhosWeb, :channel
   alias PhosWeb.Menshen.Auth
   alias Phos.Message
+  alias Phos.Action
+  alias Phos.Users
+  alias Phos.PubSub
+  alias PhosWeb.Util.Geographer
+  alias PhosWeb.Util.Migrator
+
   @impl true
+
   def join("archetype:usr:" <> id , _payload, socket) do
     if authorized?(socket, id) do
       send(self(), :initiation)
-      {:ok, socket |> assign(:user_channel_id, id)}
+      # if user not migrated yet from nodejs(dynamodb), create model on postgres through firebase id
+      # if (Action.get_orb_by_fyr(id) == nil), do: Migrator.user_profile("DAAohgsLMpQPmsbpbvgQ5PEPuy22")
+      {:ok, socket
+      |> assign(:user_id, id)
+      #|> assign(:user, Users.get_user_by_fyr(id))
+      }
     else
       {:error, %{reason: "unauthorized"}}
     end
@@ -32,19 +44,19 @@ defmodule PhosWeb.UserChannel do
       {:ok, struct} ->
         echo = Map.take(struct, [:destination, :source, :source_archetype, :destination_archetype, :message, :inserted_at, :subject, :subject_archetype])
         |> Map.update!(:inserted_at, &(&1 |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix() |> to_string()))
-        broadcast socket, "shout", echo #broadcast to both channels from and to, first the source
+        broadcast socket, "shout", echo #broadcast to both channels from and to, first the source as shout event
         PhosWeb.Endpoint.broadcast_from!(self(), "archetype:usr:" <> echo.destination, "shout", echo) #then  broadcast to destination as well
         #fyring and forgetting
         Phos.Fyr.Task.start_link(Pigeon.FCM.Notification.new({:topic, "USR." <> echo.destination}, %{"title" => "Message from #{socket.assigns.user_agent["username"]}", "body" => echo.message},echo))
       {:error, changeset} ->
-        IO.inspect "Message Create Echo failed:",  changeset
+        IO.puts("Message Create Echo failed: #{inspect(changeset)}")
     end
     {:noreply, socket}
   end
 
   @impl true
   def handle_info(:initiation,  socket) do
-    Message.usr_call(socket.assigns.user_channel_id) # from user_id
+    Message.usr_call(socket.assigns.user_id) # from user_id
     |> Enum.each(fn echoes -> push(socket, "reverie", %{
                                            source: echoes.source,
                                            destination: echoes.destination,
@@ -56,9 +68,9 @@ defmodule PhosWeb.UserChannel do
                                            time: DateTime.from_naive!(echoes.inserted_at,"Etc/UTC") |> DateTime.to_unix()
                                    }) end)
     {:noreply,socket}
-  end
+   end
 
-  # Add authorization logic here as required.
+  # Add authorization logic here as required. Process send_after for auth channel
   defp authorized?(socket, id) do
     case Auth.validate(socket.assigns.session_token) do
       {:ok , claims} ->
