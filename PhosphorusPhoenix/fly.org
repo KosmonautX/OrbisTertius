@@ -152,3 +152,25 @@ fly ssh issue --agent
 ssh root@phos.internal
 #+END_SRC
 Then psql to access database
+
+
+* Postgres Backup
+** Proxy Connection
+#+NAME: Proxy to 4321
+#+BEGIN_SRC shell
+flyctl proxy 4321:5432 -a nyx-db
+psql postgres://nyx:[secret_tunnel]@localhost:4321
+#+END_SRC
+#+RESULTS: Proxy to 4321
+: Proxying local port 4321 to remote [nyx.internal]:4321
+
+#+NAME: Postgres D
+#+BEGIN_SRC shell
+PGPASSWORD=[secret_tunnel] pg_dump -Fc  -h localhost -p 4321 -U nyx nyx > $( date +'%Y-%m-%d-%k:%M:%S' )
+#+END_SRC
+
+#+NAME: Postgres Restore
+#+BEGIN_SRC shell
+pg_restore -d newdb db.dump
+
+#+END_SRC

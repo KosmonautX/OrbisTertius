@@ -28,9 +28,18 @@ defmodule Phos.Users.User do
   @doc false
   def changeset(%Phos.Users.User{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :media, :profile_pic, :fyr_id, :email])
+    |> cast(attrs, [:username, :media, :profile_pic])
     #|> validate_required(:email)
-    |> cast(attrs, [:id, :username, :media, :profile_pic, :fyr_id])
+    |> cast_assoc(:public_profile)
+    |> cast_assoc(:private_profile)
+    |> unique_constraint(:username_taken, name: :unique_username)
+
+  end
+
+  def migration_changeset(%Phos.Users.User{} = user, attrs) do
+    user
+    |> cast(attrs, [:username, :media, :profile_pic, :fyr_id])
+    #|> validate_required(:email)
     |> cast_assoc(:public_profile)
     |> cast_assoc(:private_profile)
     |> unique_constraint(:username_taken, name: :unique_username)

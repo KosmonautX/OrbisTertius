@@ -15,13 +15,13 @@ Node Debug Inspection Port @ 9222
 ``` bash
 docker-compose  -f local-compose.yml up 
 ```
-`
+
 With Inspection
 
 ``` bash
 docker-compose -f inspect-compose.yml up 
 ```
-`
+
 
 
 ### On ARM Devices ( M1/ RPI )
@@ -35,7 +35,7 @@ With Inspection
 ``` bash
 docker-compose -f m1-inspect-compose.yml up 
 ```
-`
+
 
 ## Initiation of  Phos Phoenix Service
 
@@ -44,7 +44,7 @@ PGAdmin @ localhost:5050
 ``` bash
 docker-compose -f phos-compose.yml up 
 ```
-`
+
 
 To start the Phos Service:
 
