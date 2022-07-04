@@ -33,8 +33,7 @@ defmodule Phos.OAuthStrategy do
   defp default_config(config, provider, format) do
     case Keyword.get(config, :redirect_uri) do
       nil ->
-        uri = PhosWeb.Router.Helpers.auth_url(PhosWeb.Endpoint, :callback, provider, [format: format])
-        |> https_auth()
+        uri = redirect_uri(provider, format)
         Keyword.put(config, :redirect_uri, uri)
       _ -> config
     end
@@ -50,5 +49,14 @@ defmodule Phos.OAuthStrategy do
       true -> url
       _ -> String.replace(url, "http", "https")
     end
+  end
+
+  defp redirect_uri(provider, "json") do
+    PhosWeb.Router.Helpers.auth_url(PhosWeb.Endpoint, :callback, provider, [format: "json"])
+    |> https_auth()
+  end
+  defp redirect_uri(provider, _) do
+    PhosWeb.Router.Helpers.auth_url(PhosWeb.Endpoint, :callback, provider)
+    |> https_auth()
   end
 end
