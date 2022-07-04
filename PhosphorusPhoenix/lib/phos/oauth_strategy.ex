@@ -32,7 +32,10 @@ defmodule Phos.OAuthStrategy do
 
   defp default_config(config, provider, format) do
     case Keyword.get(config, :redirect_uri) do
-      nil -> Keyword.put(config, :redirect_uri, PhosWeb.Router.Helpers.auth_url(PhosWeb.Endpoint, :callback, provider, [format: format]))
+      nil ->
+        uri = PhosWeb.Router.Helpers.auth_url(PhosWeb.Endpoint, :callback, provider, [format: format])
+        |> https_auth()
+        Keyword.put(config, :redirect_uri, uri)
       _ -> config
     end
     |> Enum.map(fn {k, v} -> {k, value_mapper(v)}end)
@@ -41,4 +44,11 @@ defmodule Phos.OAuthStrategy do
   defp value_mapper({module, atom, params}), do: apply(module, atom, params)
   defp value_mapper(type) when is_binary(type) or is_atom(type), do: type
   defp value_mapper(_), do: ""
+
+  defp https_auth(url) do
+    case String.contains?(url, "localhost:4000") do
+      true -> url
+      _ -> String.replace(url, "http", "https")
+    end
+  end
 end
