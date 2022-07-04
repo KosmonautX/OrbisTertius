@@ -1,0 +1,3 @@
+Options is <%= inspect @options %>
+               <br />
+Hitted on line <%= inspect @line %>
