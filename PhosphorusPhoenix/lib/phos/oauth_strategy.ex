@@ -44,11 +44,17 @@ defmodule Phos.OAuthStrategy do
   defp value_mapper(type) when is_binary(type) or is_atom(type), do: type
   defp value_mapper(_), do: ""
 
-  defp https_auth(url) do
-    case String.contains?(url, "localhost:4000") do
-      true -> url
-      _ -> String.replace(url, "http", "https")
+  defp https_auth(url) when is_binary(url) do
+    case URI.new(url) do
+      {:ok, uri} -> https_auth(uri)
+      _ -> ""
     end
+  end
+  defp https_auth(%URI{host: "localhost"} = uri), do: URI.to_string(uri)
+  defp https_auth(%URI{} = uri) do
+    uri
+    |> Map.put(:scheme, "https")
+    |> URI.to_string()
   end
 
   defp redirect_uri(provider, "json") do
