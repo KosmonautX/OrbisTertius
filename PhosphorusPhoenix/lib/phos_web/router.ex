@@ -13,6 +13,14 @@ defmodule PhosWeb.Router do
     plug :fetch_current_user
   end
 
+  pipeline :apple_callback do
+    plug :accepts, ["html", "json"]
+    plug :fetch_session
+    plug :fetch_live_flash
+    plug :put_secure_browser_headers
+    plug :fetch_current_user
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
@@ -52,8 +60,13 @@ defmodule PhosWeb.Router do
 
     get "/:provider", AuthController, :request
     get "/:provider/callback", AuthController, :callback
-    post "/:provider/callback", AuthController, :apple_callback
     delete "/logout", AuthController, :delete
+  end
+
+  scope "/auth", PhosWeb do
+    pipe_through :apple_callback
+
+    post "/:provider/callback", AuthController, :apple_callback
   end
 
   # Enables LiveDashboard only for development
