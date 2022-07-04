@@ -54,12 +54,6 @@ defmodule PhosWeb.AuthController do
         |> put_flash(:info, "Authenticated via #{String.capitalize(to_string(auth.provider))}")
         |> put_session(:current_user, user) #generate session token here instead and assign
         |> configure_session(renew: true)
-        |> redirect(to: "/orb")
-        else
-          conn
-        |> put_flash(:info, "Authenticated via #{String.capitalize(to_string(auth.provider))}")
-        |> put_session(:current_user, user) # change to token
-        |> configure_session(renew: true)
         |> username_decider(user)
       {_, reason} ->
         conn
