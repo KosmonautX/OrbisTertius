@@ -47,14 +47,15 @@ defmodule PhosWeb.AuthController do
     end
   end
 
-  def apple_callback(conn, %{"user" => user, "code" => code} = params) do
+  def apple_callback(conn, %{"user" => user, "code" => code} = _params) do
     user
     |> Map.put("provider", "apple")
     |> Map.put("sub", code)
     |> do_authenticate(conn)
   end
+  def apple_callback(conn, params), do: do_authenticate(params, conn)
 
-  defp do_authenticate(%{"provider" => provider} = auth, conn) do
+  defp do_authenticate(%{"provider" => _provider} = auth, conn) do
     case Phos.Users.from_auth(auth) do
       {:ok, user} ->
         conn
