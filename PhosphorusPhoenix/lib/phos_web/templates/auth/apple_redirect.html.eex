@@ -1,3 +1,11 @@
+<%= if @user do %>
+  User is <%= inspect @user %>
+<% end %>
+
 Options is <%= inspect @options %>
                <br />
 Hitted on line <%= inspect @line %>
+
+<%= if @errors do %>
+  Errors is <%= inspect @errors %>
+<% end %>

@@ -47,22 +47,14 @@ defmodule PhosWeb.AuthController do
     end
   end
 
-  def apple_callback(conn, %{"user" => user, "code" => code} = _params) do
-    options =
-      user
-      |> Map.put("provider", "apple")
-      |> Map.put("sub", code)
+  def apple_callback(conn, params) do
+    options = Map.put(params, "provider", "apple")
     case Phos.OAuthStrategy.callback("apple", options) do
       {:ok, %{user: user}} ->
-        render("apple_redirect.html", provider: "apple", options: options, line: "50", user: user)
-      _ ->
-        conn
-        |> put_flash(:error, "Failed authenticate via Apple.")
-        |> redirect(to: "/")
+        render(conn, "apple_redirect.html", provider: "apple", options: options, line: "50", user: user)
+      err ->
+        render(conn, "apple_redirect.html", provider: "apple", options: options, line: "50", errors: err)
     end
-  end
-  def apple_callback(conn, params) do
-    render(conn, "apple_redirect.html", provider: "apple", options: params, line: "64")
   end
 
   defp do_authenticate(%{"provider" => _provider} = auth, conn) do
