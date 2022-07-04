@@ -52,6 +52,7 @@ defmodule PhosWeb.Router do
 
     get "/:provider", AuthController, :request
     get "/:provider/callback", AuthController, :callback
+    post "/:provider/callback", AuthController, :apple_callback
     delete "/logout", AuthController, :delete
   end
 
