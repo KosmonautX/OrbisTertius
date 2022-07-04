@@ -10,10 +10,20 @@ defmodule Phos.OAuthStrategy do
   end
 
   @spec callback(atom(), map(), map()) :: {:ok, map()} | {:error, term()}
-  def callback(provider, %{"format" => format} = params, session_params \\ %{}) do
+  def callback(provider, params, session_params \\ %{})
+  def callback(provider, %{"format" => "json"} = params, session_params) do
     config =
       provider
-      |> config!(format)
+      |> config!("json")
+      |> Assent.Config.put(:session_params, session_params)
+
+    config[:strategy].callback(config, params)
+  end
+
+  def callback(provider, params, session_params) do
+    config =
+      provider
+      |> config!("html")
       |> Assent.Config.put(:session_params, session_params)
 
     config[:strategy].callback(config, params)
