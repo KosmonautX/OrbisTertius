@@ -51,9 +51,9 @@ defmodule PhosWeb.AuthController do
     options = Map.put(params, "provider", "apple")
     case Phos.OAuthStrategy.callback("apple", options) do
       {:ok, %{user: user}} ->
-        render(conn, "apple_redirect.html", provider: "apple", options: options, line: "50", user: user)
+        render(conn, "apple_redirect.html", provider: "apple", options: options, line: "50", user: user, errors: nil)
       err ->
-        render(conn, "apple_redirect.html", provider: "apple", options: options, line: "50", errors: err)
+        render(conn, "apple_redirect.html", provider: "apple", options: options, line: "50", user: nil, errors: err)
     end
   end
 
