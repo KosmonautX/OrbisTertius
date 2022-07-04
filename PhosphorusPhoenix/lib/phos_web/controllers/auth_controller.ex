@@ -51,7 +51,7 @@ defmodule PhosWeb.AuthController do
     case Phos.Users.from_auth(auth) do
       {:ok, user} ->
         conn
-        |> put_flash(:info, "Authenticated via #{String.capitalize(to_string(auth.provider))}")
+        |> put_flash(:info, "Authenticated via #{String.capitalize(to_string(auth["provider"]))}")
         |> put_session(:current_user, user) #generate session token here instead and assign
         |> configure_session(renew: true)
         |> username_decider(user)
