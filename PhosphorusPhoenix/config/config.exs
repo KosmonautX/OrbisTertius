@@ -57,6 +57,7 @@ config :phos, Phos.OAuthStrategy,
   apple: [
     client_id: {System, :get_env, ["APPLE_CLIENT_ID"]},
     client_secret: {System, :get_env, ["APPLE_CLIENT_SECRET"]},
+    team_id: {System, :get_env, ["APPLE_TEAM_ID"]},
     strategy: Assent.Strategy.Apple,
     http_adapter: Assent.HTTPAdapter.Mint
   ]
