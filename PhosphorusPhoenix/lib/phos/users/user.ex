@@ -28,7 +28,7 @@ defmodule Phos.Users.User do
   @doc false
   def changeset(%Phos.Users.User{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :media, :profile_pic])
+    |> cast(attrs, [:username, :media, :profile_pic, :email])
     #|> validate_required(:email)
     |> cast_assoc(:public_profile)
     |> cast_assoc(:private_profile)

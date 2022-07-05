@@ -191,14 +191,37 @@ defmodule Phos.Users do
     )
   end
 
+  defp create_new_user(id, provider, %{"username" => username}) when provider == "telegram" do
+    %{
+      auth_id: id,
+      auth_provider: to_string(provider),
+      user: %{
+        username: username,
+      }
+    }
+    |> do_create_new_user()
+  end
+
   defp create_new_user(id, provider, %{"email" => email}) do
-    params = %{
+    %{
       auth_id: id,
       auth_provider: to_string(provider),
       user: %{
         email: email,
       }
     }
+    |> do_create_new_user()
+  end
+
+  defp create_new_user(id, provider, _opts) do
+    %{
+      auth_id: id,
+      auth_provider: to_string(provider),
+    }
+    |> do_create_new_user()
+  end
+
+  defp do_create_new_user(params) do
     %Auth{}
     |> Auth.changeset(params)
     |> Repo.insert()

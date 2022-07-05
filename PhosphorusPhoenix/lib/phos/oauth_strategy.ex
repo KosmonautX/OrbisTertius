@@ -20,6 +20,12 @@ defmodule Phos.OAuthStrategy do
     config[:strategy].callback(config, params)
   end
 
+  def callback("telegram", %{"id" => id} = params, session_params) do
+    user = Map.put(params, "sub", id) |> Map.delete("id")
+    {:ok, %{user: user}}
+  end
+  def callback("telegram", params, _session_params), do: {:error, params}
+
   def callback(provider, params, session_params) do
     config =
       provider
@@ -27,6 +33,15 @@ defmodule Phos.OAuthStrategy do
       |> Assent.Config.put(:session_params, session_params)
 
     config[:strategy].callback(config, params)
+  end
+
+  @spec telegram() :: map()
+  def telegram() do
+    conf = config!("telegram", "html")
+    host = Keyword.get(conf, :host)
+    path = Keyword.get(conf, :redirect_uri)
+    Keyword.put(conf, :redirect_uri, host <> path)
+    |> Enum.into(%{})
   end
 
   defp config!(provider, format) when is_binary(provider), do: String.to_existing_atom(provider) |> config!(format)
@@ -71,6 +86,8 @@ defmodule Phos.OAuthStrategy do
     PhosWeb.Router.Helpers.auth_url(PhosWeb.Endpoint, :callback, provider, [format: "json"])
     |> https_auth()
   end
+  defp redirect_uri(:telegram, _), do: PhosWeb.Router.Helpers.auth_path(PhosWeb.Endpoint, :callback, :telegram)
+
   defp redirect_uri(provider, _) do
     PhosWeb.Router.Helpers.auth_url(PhosWeb.Endpoint, :callback, provider)
     |> https_auth()

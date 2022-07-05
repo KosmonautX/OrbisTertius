@@ -7,7 +7,7 @@ defmodule PhosWeb.UserRegistrationController do
 
   def new(conn, _params) do
     changeset = Users.change_user_registration(%User{})
-    render(conn, "new.html", changeset: changeset)
+    render(conn, "new.html", changeset: changeset, telegram: Phos.OAuthStrategy.telegram())
   end
 
   def create(conn, %{"user" => user_params}) do
