@@ -1,5 +1,6 @@
 defmodule PhosWeb.AuthController do
   use PhosWeb, :controller
+  alias Phos.Users
 
   def request(conn, %{"provider" => provider}) do
     redirect(conn, external: Phos.OAuthStrategy.request(provider))
@@ -62,17 +63,26 @@ defmodule PhosWeb.AuthController do
 
   defp do_authenticate(%{"provider" => _provider} = auth, conn) do
     case Phos.Users.from_auth(auth) do
-      {:ok, user} ->
+    {:ok, user} ->
+        token = Users.generate_user_session_token(user)
         conn
         |> put_flash(:info, "Authenticated via #{String.capitalize(to_string(auth["provider"]))}")
-        |> put_session(:current_user, user) #generate session token here instead and assign
-        |> configure_session(renew: true)
+        |> renew_session
+        |> put_session(:user_token, token)
+        |> put_session(:live_socket_id, "users_sessions:#{Base.url_encode64(token)}")
         |> username_decider(user)
       {_, reason} ->
         conn
         |> put_flash(:error, reason)
         |> redirect(to: "/sign_up")
     end
+  end
+
+
+  defp renew_session(conn) do
+    conn
+    |> configure_session(renew: true)
+    |> clear_session()
   end
 
   defp username_decider(conn, %{username: username}) when username == "" or is_nil(username) do

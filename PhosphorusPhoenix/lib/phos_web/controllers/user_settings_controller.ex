@@ -63,7 +63,6 @@ defmodule PhosWeb.UserSettingsController do
       {:ok, user} ->
         conn
         |> put_flash(:info, "Username updated successfully.")
-        |> put_session(:current_user, user)
         |> redirect(to: Routes.orb_index_path(conn, :index))
         # |> put_session(:user_return_to, Routes.orb_index_path(conn, :index))
         # |> UserAuth.log_in_user(user) # remember to implement token for oatuh temporary sol above
