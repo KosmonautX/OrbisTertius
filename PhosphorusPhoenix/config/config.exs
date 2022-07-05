@@ -55,9 +55,11 @@ config :phos, Phos.OAuthStrategy,
     http_adapter: Assent.HTTPAdapter.Mint
   ],
   apple: [
-    client_id: {System, :get_env, ["APPLE_CLIENT_ID"]},
-    client_secret: {System, :get_env, ["APPLE_CLIENT_SECRET"]},
     team_id: {System, :get_env, ["APPLE_TEAM_ID"]},
+    client_id: {System, :get_env, ["APPLE_CLIENT_ID"]},
+    private_key: {System, :get_env, ["APPLE_PRIVATE_KEY"]}, # use either private_key or private_key path
+    private_key_id: {System, :get_env, ["APPLE_PRIVATE_KEY_ID"]},
+    # private_key_path: {System, :get_env, ["APPLE_PRIVATE_KEY_PATH"]}, # Use either private_key or private_key_path
     strategy: Assent.Strategy.Apple,
     http_adapter: Assent.HTTPAdapter.Mint
   ]
