@@ -20,6 +20,12 @@ defmodule Phos.OAuthStrategy do
     config[:strategy].callback(config, params)
   end
 
+  def callback("telegram", %{"id" => id} = params, _session_params) do
+    user = Map.put(params, "sub", id) |> Map.delete("id")
+    {:ok, %{user: user}}
+  end
+  def callback("telegram", params, _session_params), do: {:error, params}
+
   def callback(provider, params, session_params) do
     config =
       provider
@@ -27,6 +33,21 @@ defmodule Phos.OAuthStrategy do
       |> Assent.Config.put(:session_params, session_params)
 
     config[:strategy].callback(config, params)
+  end
+
+  @spec telegram() :: map()
+  def telegram() do
+    conf = config!("telegram", "html")
+    default_host = PhosWeb.Router.Helpers.url(PhosWeb.Endpoint) |> https_auth()
+    host = case Keyword.get(conf, :host) do
+      nil -> default_host
+      "" -> default_host
+      h -> h
+    end
+    path = Keyword.get(conf, :redirect_uri)
+    Keyword.put(conf, :redirect_uri, host <> path)
+    |> Keyword.put(:host, host)
+    |> Enum.into(%{})
   end
 
   defp config!(provider, format) when is_binary(provider), do: String.to_existing_atom(provider) |> config!(format)
@@ -54,8 +75,10 @@ defmodule Phos.OAuthStrategy do
   defp value_mapper(type) when is_binary(type) or is_atom(type), do: type
   defp value_mapper(_), do: ""
 
-  defp https_auth(url) when is_binary(url) do
-    case URI.new(url) do
+  defp https_auth(uri) when is_binary(uri) do
+    uri
+    |> parse_uri()
+    |> case do
       {:ok, uri} -> https_auth(uri)
       _ -> ""
     end
@@ -67,10 +90,22 @@ defmodule Phos.OAuthStrategy do
     |> URI.to_string()
   end
 
+  defp parse_uri(uri) do
+    [major, minor, _patch] = System.version() |> String.split(".")
+    if (major == 1 and minor <= 12) do
+      URI.parse(uri)
+    else
+      URI.new(uri)
+    end
+
+  end
+
   defp redirect_uri(provider, "json") do
     PhosWeb.Router.Helpers.auth_url(PhosWeb.Endpoint, :callback, provider, [format: "json"])
     |> https_auth()
   end
+  defp redirect_uri(:telegram, _), do: PhosWeb.Router.Helpers.auth_path(PhosWeb.Endpoint, :callback, :telegram)
+
   defp redirect_uri(provider, _) do
     PhosWeb.Router.Helpers.auth_url(PhosWeb.Endpoint, :callback, provider)
     |> https_auth()

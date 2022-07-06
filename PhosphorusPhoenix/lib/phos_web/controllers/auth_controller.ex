@@ -54,16 +54,16 @@ defmodule PhosWeb.AuthController do
       {:ok, %{user: user}} ->
         Map.put(user, "provider", "apple")
         |> do_authenticate(conn)
-      err ->
+      _err ->
         conn
         |> put_flash(:error, "Failed authenticate via Apple.")
         |> redirect(to: "/")
     end
   end
 
-  defp do_authenticate(%{"provider" => _provider} = auth, conn) do
+  defp do_authenticate(%{"provider" => provider} = auth, conn) do
     case Phos.Users.from_auth(auth) do
-    {:ok, user} ->
+      {:ok, user} ->
         token = Users.generate_user_session_token(user)
         conn
         |> put_flash(:info, "Authenticated via #{String.capitalize(to_string(auth["provider"]))}")
@@ -71,9 +71,9 @@ defmodule PhosWeb.AuthController do
         |> put_session(:user_token, token)
         |> put_session(:live_socket_id, "users_sessions:#{Base.url_encode64(token)}")
         |> username_decider(user)
-      {_, reason} ->
+      {_, _reason} ->
         conn
-        |> put_flash(:error, reason)
+        |> put_flash(:error, "Error while creating the user from #{ String.capitalize(provider)}")
         |> redirect(to: "/sign_up")
     end
   end

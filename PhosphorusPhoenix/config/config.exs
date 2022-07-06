@@ -62,6 +62,10 @@ config :phos, Phos.OAuthStrategy,
     # private_key_path: {System, :get_env, ["APPLE_PRIVATE_KEY_PATH"]}, # Use either private_key or private_key_path
     strategy: Assent.Strategy.Apple,
     http_adapter: Assent.HTTPAdapter.Mint
+  ],
+  telegram: [
+    host: {System, :get_env, ["TELEGRAM_REDIRECT_HOST"]}, # https://endpoint.com
+    botname: {System, :get_env, ["TELEGRAM_BOT_NAME"]}, # bot_name
   ]
 
 # Import environment specific config. This must remain at the bottom

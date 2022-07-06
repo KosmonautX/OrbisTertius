@@ -28,12 +28,19 @@ defmodule Phos.Users.User do
   @doc false
   def changeset(%Phos.Users.User{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :media, :profile_pic])
+    |> cast(attrs, [:username, :media, :profile_pic, :email])
     #|> validate_required(:email)
     |> cast_assoc(:public_profile)
     |> cast_assoc(:private_profile)
     |> unique_constraint(:username_taken, name: :unique_username)
+  end
 
+  @doc false
+  def telegram_changeset(%__MODULE__{} = user, attrs) do
+    user
+    |> cast(attrs, [:username, :email])
+    |> cast_assoc(:auths, with: &Auth.changeset/2)
+    |> validate_required(:username)
   end
 
   def migration_changeset(%Phos.Users.User{} = user, attrs) do
