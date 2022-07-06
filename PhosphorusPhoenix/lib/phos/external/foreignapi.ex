@@ -6,8 +6,7 @@ defmodule Phos.External.HeimdallrClient do
   end
 
   def authorization do
-    #TODO: how the user can get the long lived jwt token
-    "bearer code implementation"
+    PhosWeb.Menshen.Auth.generate_boni()
   end
 
   def process_request_url(url) do

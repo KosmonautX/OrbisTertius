@@ -30,7 +30,7 @@ defmodule PhosWeb.UserSocket do
   @impl true
   def connect(%{"token" => token} = _params, socket, _connect_info) do
     # Parsing of Authorising JWT vector and assigning to session
-    case Auth.validate(token) do
+    case Auth.validate_user(token) do
       {:ok, claims} ->
         {:ok, socket |> assign(:user_agent, claims) |> assign(:session_token, token)
 

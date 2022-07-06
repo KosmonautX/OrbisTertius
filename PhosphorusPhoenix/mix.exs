@@ -63,7 +63,6 @@ defmodule Phos.MixProject do
       {:mogrify, "~> 0.9.1"},
 
       # oauth strategy
-      {:guardian, "~> 2.0"},
       {:argon2_elixir, "~> 3.0"},
 
       {:assent, "~> 0.2.0"},

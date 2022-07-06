@@ -63,7 +63,7 @@ defmodule Phos.Users do
   def find_user_by_id(id) when is_bitstring(id) do
     query = from u in User, where: u.id == ^id, limit: 1
     case Repo.one(query) do
-      %User{} = user -> {:ok, user}
+      %User{} = user -> {:ok, user |> Repo.preload(:private_profile)}
       nil -> {:error, "User not found"}
     end
   end

@@ -37,7 +37,7 @@ defmodule PhosWeb.Router do
       resources "/archetype/usr", UserController, only: [:show]
     end
 
-    live_session :authenticated, on_mount: {PhosWeb.Menshen.Protocols, :pleb} do
+    live_session :authenticated, on_mount: {PhosWeb.Menshen.Mounter, :pleb} do
       get "/", PageController, :index
 
       live "/orb/sethome", OrbLive.Index, :sethome

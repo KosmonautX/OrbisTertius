@@ -28,11 +28,6 @@ config :phos, PhosWeb.Endpoint,
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
   ]
 
-config :phos, Phos.Guardian,
-       issuer: "Princeton",
-       allowed_algos: ["HS512", "HS256"],
-       secret_key: "vyOyqS5mE2Ap2YV5TKG9RyTOOwivgDicxHf+dXcprRiT3Vgz3cpLuqwbO8qvSRi8"
-
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed
@@ -91,4 +86,3 @@ config :ex_aws, :s3,
 config :phos, Phos.External.HeimdallrClient,
   base_url: "https://norbandy.scratchbac.org/api",
   authorization: {Phos.External.HeimdallrClient, :authorization, []}
-  # authorization: long_lived_bearer_token

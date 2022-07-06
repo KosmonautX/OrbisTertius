@@ -2,9 +2,9 @@ defmodule PhosWeb.AuthView do
   use PhosWeb, :view
 
   def render("callback.json", %{user: %Phos.Users.User{id: id, username: username} = user}) do
-    teritories = parse_teritories(user)
-    opts = %{user_id: id, role: "pleb", username: username, teritory: teritories}
-    case Phos.Guardian.encode_and_sign(user, opts) do
+    #teritories = parse_teritories(user)
+    #opts = %{user_id: id, role: "pleb", username: username, teritory: teritories}
+    case PhosWeb.Menshen.Auth.generate_user(id) do
       {:ok, token, _claims} ->
         %{
           id: id,

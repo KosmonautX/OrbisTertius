@@ -40,7 +40,7 @@ defmodule PhosWeb.AuthChannel do
   end
 
   defp authorized?(%{assigns: %{session_token: token}} = _socket, id) when token != "" do
-    case Phos.Guardian.decode_and_verify(token) do
+    case PhosWeb.Menshen.Auth.validate_user(token) do
       {:ok, %{"user_id" => user_id}} -> user_id == id
       _ -> false
     end
@@ -60,8 +60,8 @@ defmodule PhosWeb.AuthChannel do
     create_user_token(user, opts, socket)
   end
 
-  defp create_user_token(user, opts, socket) do
-    case Phos.Guardian.encode_and_sign(user, opts) do
+  defp create_user_token(user, _opts, socket) do
+    case PhosWeb.Menshen.Auth.generate_user(user.id) do
       {:ok, token} -> {:reply, {:ok, token}, assign(socket, :session_token, token)}
       _ -> {:reply, {:error, "Cannot create token"}, socket}
     end
