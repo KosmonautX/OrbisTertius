@@ -75,8 +75,10 @@ defmodule Phos.OAuthStrategy do
   defp value_mapper(type) when is_binary(type) or is_atom(type), do: type
   defp value_mapper(_), do: ""
 
-  defp https_auth(url) when is_binary(url) do
-    case URI.new(url) do
+  defp https_auth(uri) when is_binary(uri) do
+    uri
+    |> parse_uri()
+    |> case do
       {:ok, uri} -> https_auth(uri)
       _ -> ""
     end
@@ -86,6 +88,16 @@ defmodule Phos.OAuthStrategy do
     uri
     |> Map.put(:scheme, "https")
     |> URI.to_string()
+  end
+
+  defp parse_uri(uri) do
+    [major, minor, _patch] = System.version() |> String.split(".")
+    if (major == 1 and minor <= 12) do
+      URI.parse(uri)
+    else
+      URI.new(uri)
+    end
+
   end
 
   defp redirect_uri(provider, "json") do
