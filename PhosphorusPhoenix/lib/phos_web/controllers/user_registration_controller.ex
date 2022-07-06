@@ -24,7 +24,7 @@ defmodule PhosWeb.UserRegistrationController do
         |> UserAuth.log_in_user(user)
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "new.html", changeset: changeset)
+        render(conn, "new.html", changeset: changeset, telegram: Phos.OAuthStrategy.telegram())
     end
   end
 end

@@ -5,7 +5,10 @@ defmodule PhosWeb.UserRegistrationControllerTest do
 
   describe "GET /users/register" do
     test "renders registration page", %{conn: conn} do
-      conn = get(conn, Routes.user_registration_path(conn, :new))
+      conn =
+        conn
+        |> Plug.Conn.assign(:telegram, Phos.OAuthStrategy.telegram())
+        |> get(Routes.user_registration_path(conn, :new))
       response = html_response(conn, 200)
       assert response =~ "<h1>Register</h1>"
       assert response =~ "Log in</a>"
@@ -43,7 +46,8 @@ defmodule PhosWeb.UserRegistrationControllerTest do
     test "render errors for invalid data", %{conn: conn} do
       conn =
         post(conn, Routes.user_registration_path(conn, :create), %{
-          "user" => %{"email" => "with spaces", "password" => "too short"}
+          "user" => %{"email" => "with spaces", "password" => "too short"},
+          "telegram" => Phos.OAuthStrategy.telegram()
         })
 
       response = html_response(conn, 200)

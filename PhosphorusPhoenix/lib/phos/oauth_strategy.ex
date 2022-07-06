@@ -20,7 +20,7 @@ defmodule Phos.OAuthStrategy do
     config[:strategy].callback(config, params)
   end
 
-  def callback("telegram", %{"id" => id} = params, session_params) do
+  def callback("telegram", %{"id" => id} = params, _session_params) do
     user = Map.put(params, "sub", id) |> Map.delete("id")
     {:ok, %{user: user}}
   end
