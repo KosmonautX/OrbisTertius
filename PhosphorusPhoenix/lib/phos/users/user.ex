@@ -32,7 +32,7 @@ defmodule Phos.Users.User do
     #|> validate_required(:email)
     |> cast_assoc(:public_profile)
     |> cast_assoc(:private_profile)
-    |> unique_constraint(:username_taken, name: :unique_username)
+    |> unique_constraint(:username, name: :unique_username)
   end
 
   @doc false
@@ -49,7 +49,7 @@ defmodule Phos.Users.User do
     #|> validate_required(:email)
     |> cast_assoc(:public_profile)
     |> cast_assoc(:private_profile)
-    |> unique_constraint(:username_taken, name: :unique_username)
+    |> unique_constraint(:username, name: :unique_username)
 
   end
 
@@ -58,7 +58,7 @@ defmodule Phos.Users.User do
     |> cast(attrs, [:username, :media, :profile_pic])
     #|> validate_required(:email)
     |> cast_assoc(:public_profile)
-    |> unique_constraint(:username_taken, name: :unique_username)
+    |> unique_constraint(:username, name: :unique_username)
   end
 
   @doc """
@@ -83,7 +83,7 @@ defmodule Phos.Users.User do
     |> cast(attrs, [:email, :password, :username])
     |> validate_email()
     |> validate_password(opts)
-    |> unique_constraint(:username_taken, name: :unique_username)
+    |> unique_constraint(:username, name: :unique_username)
   end
 
   defp validate_email(changeset) do
