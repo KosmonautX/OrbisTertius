@@ -38,9 +38,15 @@ defmodule Phos.OAuthStrategy do
   @spec telegram() :: map()
   def telegram() do
     conf = config!("telegram", "html")
-    host = Keyword.get(conf, :host)
+    default_host = PhosWeb.Router.Helpers.url(PhosWeb.Endpoint) |> https_auth()
+    host = case Keyword.get(conf, :host) do
+      nil -> default_host
+      "" -> default_host
+      h -> h
+    end
     path = Keyword.get(conf, :redirect_uri)
     Keyword.put(conf, :redirect_uri, host <> path)
+    |> Keyword.put(:host, host)
     |> Enum.into(%{})
   end
 
