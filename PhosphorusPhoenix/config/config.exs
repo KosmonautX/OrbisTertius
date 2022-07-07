@@ -28,7 +28,7 @@ config :phos, PhosWeb.Endpoint,
 config :phos, Phos.Mailer, adapter: Swoosh.Adapters.Local
 
 # Swoosh API client is needed for adapters other than SMTP.
-config :swoosh, :api_client, false
+# config :swoosh, :api_client, false
 
 # Configure esbuild (the version is required)
 config :esbuild,
