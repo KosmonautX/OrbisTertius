@@ -77,7 +77,7 @@ defmodule Phos.OAuthStrategy do
 
   defp https_auth(uri) when is_binary(uri) do
     uri
-    |> URI.new(uri)
+    |> URI.new()
     |> case do
       {:ok, uri} -> https_auth(uri)
       _ -> ""
