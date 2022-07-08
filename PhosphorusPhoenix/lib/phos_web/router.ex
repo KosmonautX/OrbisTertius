@@ -40,6 +40,9 @@ defmodule PhosWeb.Router do
       live "/orb/:id/edit", OrbLive.Index, :edit
 
       live "/orb/:id", OrbLive.Show, :show
+      live "/orb/:id/show/:cid", OrbLive.Show, :show_ancestor
+      live "/orb/:id/reply/:cid", OrbLive.Show, :reply
+      live "/orb/:id/edit/:cid", OrbLive.Show, :edit_comment
       live "/orb/:id/show/edit", OrbLive.Show, :edit
     end
 

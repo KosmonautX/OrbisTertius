@@ -20,6 +20,20 @@
   </.modal>
 <% end %>
 
+<%= if @live_action in [:reply, :edit_comment] do %>
+    <.modal return_to={Routes.orb_show_path(@socket, :show, @orb)}>
+        <.live_component
+        module={PhosWeb.CommentLive.FormComponent}
+        id={@comment.id}
+        action={@live_action}
+        comment={@comment}
+        changeset={@changeset}
+        orb={@orb}
+        current_user={@current_user}
+        />
+    </.modal>
+<% end %>
+
 <ul>
 
   <li>
@@ -81,131 +95,5 @@
 <span><%= live_patch "Edit", to: Routes.orb_show_path(@socket, :edit, @orb), class: "button" %></span> |
 <span><%= live_redirect "Back", to: Routes.orb_index_path(@socket, :index) %></span>
 
-<h2>Comments</h2>
-<div class="ui threaded comments">
-    <.form
-        let={f}
-        for={@changeset}
-        id="comment-form"
-        phx-submit="save">
-
-        <%= textarea f, :body %>
-        <%= error_tag f, :body %>
-
-        <%= hidden_input f, :initiator_id, value: @current_user.id %>
-        <%= error_tag f, :initiator_id %>
-
-        <%= hidden_input f, :orb_id, value: @orb.id %>
-        <%= error_tag f, :orb_id %>
-
-        <%= submit "Add comment", phx_disable_with: "Saving..." %>
-    </.form>
-
-    <%= for c <- @comments do %>
-    <div class="comment">
-        <a class="avatar">
-            <img src={ Phos.Orbject.S3.get!("USR", c.initiator_id, "150x150") }>
-        </a>
-        <div class="content">
-            <a class="author"><%= c.initiator.username %></a>
-            <div class="metadata">
-                <span class="date">
-                  <%= c.inserted_at %>
-                </span>
-            </div>
-            <div class="text">
-                <p><%= c.body %></p>
-            </div>
-            <div class="actions">
-                <a class="reply">Reply</a>
-                <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: c.id, data: [confirm: "Are you sure?"] %></span>
-
-            </div>
-        </div>
-    </div>
-    <% end %>
-    <!-- first user's comment -->
-    <div class="comment">
-        <a class="avatar">
-            <img src={ Phos.Orbject.S3.get!("USR", @current_user.id, "150x150") }>
-        </a>
-        <div class="content">
-            <a class="author">John</a>
-            <div class="metadata">
-                <span class="date">
-                  Yesterday at 9:10PM
-                </span>
-            </div>
-            <div class="text">
-                <p>This platform is outstanding.</p>
-            </div>
-            <div class="actions">
-                <a class="reply">Reply</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- second user's comment -->
-    <div class="comment">
-        <a class="avatar">
-            <img src={ Phos.Orbject.S3.get!("USR", @current_user.id, "150x150") }>
-        </a>
-        <div class="content">
-            <a class="author">Peter</a>
-            <div class="metadata">
-                <span class="date">
-                  Today at 12:30AM
-                </span>
-            </div>
-            <div class="text">
-                <p>This platform helped me learn DSA.</p>
-            </div>
-            <div class="actions">
-                <a class="reply">Reply</a>
-            </div>
-        </div>
-
-        <!-- Comment Threaded Variation -->
-        <!-- Reply to second user's comment -->
-        <div class="comments">
-            <div class="comment">
-                <a class="avatar">
-                    <img src={ Phos.Orbject.S3.get!("USR", @current_user.id, "150x150") }>
-                </a>
-                <div class="content">
-                    <a class="author">
-                      Geeks for Geeks
-                    </a>
-                    <div class="metadata">
-                        <span class="date">Just now</span>
-                    </div>
-                    <div class="text">
-                        Thanks Peter xD
-                    </div>
-                    <div class="actions">
-                        <a class="reply">Reply</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Third user's comment -->
-    <div class="comment">
-        <a class="avatar">
-            <img src={ Phos.Orbject.S3.get!("USR", @current_user.id, "150x150") }>
-        </a>
-        <div class="content">
-            <a class="author">Joe</a>
-            <div class="metadata">
-                <span class="date">5 days ago</span>
-            </div>
-            <div class="text">
-                Dude, this is fantastic. Thanks so much 🙂
-            </div>
-            <div class="actions">
-                <a class="reply">Reply</a>
-            </div>
-        </div>
-    </div>
-</div>
+<%# <PhosWeb.CommentLive.Index.render changeset={@changeset} orb={@orb} comments={@comments} current_user={@current_user} socket={@socket} live_action={@live_action}/> %>
+<.live_component module={PhosWeb.CommentLive.IndexComponent} id="commentindex" changeset={@changeset} orb={@orb} comments={@comments} current_user={@current_user} socket={@socket} live_action={@live_action} />

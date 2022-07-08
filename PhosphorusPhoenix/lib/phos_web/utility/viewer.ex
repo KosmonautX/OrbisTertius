@@ -68,16 +68,6 @@ defmodule PhosWeb.Util.Viewer do
      end)
   end
 
-  # Update Orbs Mapper
-  def update_orb_mapper(orb) do
-      %{
-        "title" => orb["title"],
-        "media" => orb["media"],
-        "payload" => orb["payload"],
-        "traits" => orb["traits"]
-      }
-  end
-
   # user.private_profile.geolocation -> socket.assigns.geolocation
   def profile_geolocation_mapper(geolocs) do
     Enum.map(geolocs, fn loc ->

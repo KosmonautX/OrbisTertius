@@ -1,0 +1,25 @@
+<div>
+  <h3><%=to_string(@action)%>: <%= @comment.body %></h3>
+  <.form
+    let={f}
+    for={@changeset}
+    id={"replyform-#{@comment.id}"}
+    phx-submit="reply">
+
+    <%= textarea f, :body %>
+    <%= error_tag f, :body %>
+
+    <%= hidden_input f, :parent_path, value: to_string(@comment.path) %>
+
+    <%= hidden_input f, :initiator_id, value: @current_user.id %>
+    <%= error_tag f, :initiator_id %>
+
+    <%= hidden_input f, :orb_id, value: @orb.id %>
+    <%= error_tag f, :orb_id %>
+
+    <%= hidden_input f, :parent_id, value: @comment.id %>
+    <%= error_tag f, :parent_id %>
+
+    <%= submit "Reply", phx_disable_with: "Saving..." %>
+  </.form>
+</div>

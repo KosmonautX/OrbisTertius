@@ -74,7 +74,7 @@
               <td><%= orb.payload.when %></td>
               <td><%= orb.payload.tip %></td>
               <td><%= orb.payload.info %></td>
-              <td>Count</td>
+              <td><%= Phos.Comments.get_comment_count_by_orb(orb.id) %></td>
 
               <td>
                 <span><%= live_redirect "Show", to: Routes.orb_show_path(@socket, :show, orb) %></span>

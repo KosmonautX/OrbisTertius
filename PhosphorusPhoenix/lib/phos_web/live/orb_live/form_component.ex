@@ -91,8 +91,10 @@ defmodule PhosWeb.OrbLive.FormComponent do
   defp save_orb(socket, :new, orb_params) do
     case Action.create_orb(orb_params) do
       {:ok, orb} ->
+        IO.puts "orbparam #{inspect(orb_params["geolocation"])}"
         orb = orb |> Phos.Repo.preload([:initiator, :locations])
         location_list = orb.locations |> Enum.map(fn loc -> loc.id end)
+        IO.puts "location_list #{inspect(location_list)}"
         orb_loc_publisher(orb |> Phos.Repo.preload(:initiator), :genesis, location_list)
 
         {:noreply,
@@ -100,6 +102,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
          |> put_flash(:info, "Orb created successfully")
          |> push_redirect(to: socket.assigns.return_to)}
       {:error, %Ecto.Changeset{} = changeset} ->
+        IO.inspect(changeset)
         {:noreply, assign(socket, changeset: changeset)}
 
     end
