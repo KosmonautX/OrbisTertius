@@ -61,6 +61,20 @@ defmodule PhosWeb.AuthController do
     end
   end
 
+  def telegram_callback(conn, params) do
+    provider = "telegram"
+    options = Map.put(params, "provider", provider)
+    case Phos.OAuthStrategy.callback(provider, options) do
+      {:ok, %{user: user}} ->
+        Map.put(user, "provider", provider)
+        |> do_authenticate(conn)
+      _err ->
+        conn
+        |> put_flash(:error, "Failed authenticate via #{String.capitalize(provider)}.")
+        |> redirect(to: "/")
+    end
+  end
+
   defp do_authenticate(%{"provider" => provider} = auth, conn) do
     case Phos.Users.from_auth(auth) do
       {:ok, user} ->

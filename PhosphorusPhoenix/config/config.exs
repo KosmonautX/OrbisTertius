@@ -66,7 +66,7 @@ config :phos, Phos.OAuthStrategy,
   ],
   telegram: [
     host: {System, :get_env, ["TELEGRAM_REDIRECT_HOST"]}, # https://endpoint.com
-    botname: {System, :get_env, ["TELEGRAM_BOT_NAME"]}, # bot_name
+    bot_id: {System, :get_env, ["TELEGRAM_BOT_ID"]}, # bot_name
   ]
 
 # Import environment specific config. This must remain at the bottom

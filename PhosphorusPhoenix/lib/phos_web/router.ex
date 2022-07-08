@@ -67,6 +67,7 @@ defmodule PhosWeb.Router do
   scope "/auth", PhosWeb do
     pipe_through :apple_callback
 
+    post "/telegram/callback", AuthController, :telegram_callback
     post "/:provider/callback", AuthController, :apple_callback
   end
 
