@@ -21,8 +21,23 @@ defmodule Phos.OAuthStrategy do
   end
 
   def callback("telegram", %{"id" => id} = params, _session_params) do
-    user = Map.put(params, "sub", id) |> Map.delete("id")
+    data_check_string = params
+    |> Map.delete("hash")
+    |> Enum.map_join("\n", fn {key, val} -> "#{key}=#{val}" end)
+    hash = :crypto.mac(:hmac,
+      :sha256,
+      :crypto.hash(:sha256, System.get_env("TELEGRAM_BOT_ID")),
+      data_check_string)
+      |> Base.encode16(case: :lower)
+    if hash == params["hash"] && (System.os_time(:second) - 60*5 < params["auth_date"]) do
+      user = params
+      |> Map.put("sub", id)
+      |> Map.put("provider", "telegram")
+      |> Map.delete("id")
     {:ok, %{user: user}}
+    else
+      {:error, params}
+    end
   end
   def callback("telegram", params, _session_params), do: {:error, params}
 

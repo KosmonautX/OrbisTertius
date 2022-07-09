@@ -63,8 +63,8 @@ defmodule PhosWeb.AuthController do
 
   def telegram_callback(conn, params) do
     provider = "telegram"
-    options = Map.put(params, "provider", provider)
-    case Phos.OAuthStrategy.callback(provider, options) do
+    #options = Map.put(params, "provider", provider)
+    case Phos.OAuthStrategy.callback(provider, params) do
       {:ok, %{user: user}} ->
         Map.put(user, "provider", provider)
         |> do_authenticate(conn)

@@ -39,7 +39,7 @@
     <script>
       function telegramLogin() {
         window.Telegram.Login.auth(
-          { bot_id: '<%= @telegram.bot_id %>', request_access: true },
+          { bot_id: '<%= hd(String.split(@telegram.bot_id, ":")) %>', request_access: true },
           (data) => {
             if (!data) {
               // authorization failed

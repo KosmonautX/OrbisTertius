@@ -191,7 +191,7 @@ defmodule Phos.Users do
     )
   end
 
-  defp create_new_user(id, provider, %{"username" => username}) when provider == "telegram" do
+  defp create_new_user(id, provider, %{"first_name" => username}) when provider == "telegram" do
     params = %{
       username: username,
       auths: [%{

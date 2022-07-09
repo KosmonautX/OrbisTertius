@@ -12,7 +12,7 @@ config :phos,
 
 # Configures the endpoint
 config :phos, PhosWeb.Endpoint,
-  url: [host: "localhost"],
+  url: [host: "localhost"], #change to "127.0.0.1" to work on privelleged port 80
   render_errors: [view: PhosWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: Phos.PubSub,
   live_view: [signing_salt: "r193MsgJ"]
@@ -66,7 +66,7 @@ config :phos, Phos.OAuthStrategy,
   ],
   telegram: [
     host: {System, :get_env, ["TELEGRAM_REDIRECT_HOST"]}, # https://endpoint.com
-    bot_id: {System, :get_env, ["TELEGRAM_BOT_ID"]}, # bot_name
+    bot_id: {System, :get_env, ["TELEGRAM_BOT_ID"]},
   ]
 
 # Import environment specific config. This must remain at the bottom
