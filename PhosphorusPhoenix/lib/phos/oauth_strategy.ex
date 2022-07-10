@@ -2,9 +2,9 @@ defmodule Phos.OAuthStrategy do
   @spec request(atom()) :: {:ok, map()} | {:error, term()}
   def request(provider, format \\ "html") do
     config = config!(provider, format)
-
     case config[:strategy].authorize_url(config) do
-      {:ok, %{url: url}} -> url
+      {:ok, %{url: url, session_params: session_params}} ->
+        {url, session_params}
       _ -> :error
     end
   end
@@ -42,12 +42,16 @@ defmodule Phos.OAuthStrategy do
   def callback("telegram", params, _session_params), do: {:error, params}
 
   def callback(provider, params, session_params) do
-    config =
-      provider
-      |> config!("html")
-      |> Assent.Config.put(:session_params, session_params)
+    if params["state"] == session_params[:state] && (System.os_time(:second) - 60*5 < session_params[:time]) do
+      config =
+        provider
+        |> config!("html")
+        |> Assent.Config.put(:session_params, session_params)
 
-    config[:strategy].callback(config, params)
+      config[:strategy].callback(config, params)
+    else
+      {:error, params}
+    end
   end
 
   @spec telegram() :: map()

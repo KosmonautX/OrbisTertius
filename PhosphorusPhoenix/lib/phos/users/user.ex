@@ -40,7 +40,14 @@ defmodule Phos.Users.User do
     user
     |> cast(attrs, [:username, :email])
     |> cast_assoc(:auths, with: &Auth.changeset/2)
+  end
+
+  def post_telegram_changeset(%__MODULE__{} = user, attrs) do
+    user
+    |> cast(attrs, [:username, :email])
+    |> validate_email()
     |> validate_required(:username)
+    |> unique_constraint(:username, name: :unique_username)
   end
 
   def migration_changeset(%Phos.Users.User{} = user, attrs) do
@@ -56,7 +63,6 @@ defmodule Phos.Users.User do
   def pub_profile_changeset(%Phos.Users.User{} = user, attrs) do
     user
     |> cast(attrs, [:username, :media, :profile_pic])
-    #|> validate_required(:email)
     |> cast_assoc(:public_profile)
     |> unique_constraint(:username, name: :unique_username)
   end

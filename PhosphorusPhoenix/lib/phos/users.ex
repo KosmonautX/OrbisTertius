@@ -191,9 +191,8 @@ defmodule Phos.Users do
     )
   end
 
-  defp create_new_user(id, provider, %{"first_name" => username}) when provider == "telegram" do
+  defp create_new_user(id, provider, %{"auth_date" => _date}) when provider == "telegram" do
     params = %{
-      username: username,
       auths: [%{
         auth_id: id,
         auth_provider: to_string(provider)
@@ -336,6 +335,22 @@ defmodule Phos.Users do
   def change_pub_profile(user, attrs \\ %{}) do
     User.pub_profile_changeset(user, attrs)
   end
+
+
+    @doc """
+  Returns an `%Ecto.Changeset{}` for changing telegram login users.
+
+  ## Examples
+
+      iex> change_pub_profile(user)
+      %Ecto.Changeset{data: %User{}}
+
+  """
+  def change_telegram_login(user, attrs \\ %{}) do
+    User.post_telegram_changeset(user, attrs)
+  end
+
+
 
   @doc """
   Emulates that the email will change without actually changing

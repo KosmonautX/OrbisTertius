@@ -2,8 +2,12 @@ defmodule PhosWeb.AuthController do
   use PhosWeb, :controller
   alias Phos.Users
 
+  @spec request(Plug.Conn.t(), map) :: Plug.Conn.t()
   def request(conn, %{"provider" => provider}) do
-    redirect(conn, external: Phos.OAuthStrategy.request(provider))
+    {url, session_params} = Phos.OAuthStrategy.request(provider)
+    conn
+    |> put_session(:oauth_session_params, session_params |> Map.put(:time, System.os_time(:second))) #explore conn.private
+    |> redirect(external: url)
     |> halt()
   end
 
@@ -16,7 +20,7 @@ defmodule PhosWeb.AuthController do
 
   def callback(conn, %{"provider" => provider, "format" => "json"} = params) do
     options = Enum.reject(params, fn {k, _} -> k == "provider" end) |> Enum.into(%{})
-    case Phos.OAuthStrategy.callback(provider, options) do
+    case Phos.OAuthStrategy.callback(provider, options, get_session(conn, "oauth_session_params")) do
       {:ok, %{user: data}} ->
         data
         |> Map.put("provider", provider)
@@ -37,7 +41,7 @@ defmodule PhosWeb.AuthController do
 
   def callback(conn, %{"provider" => provider} = params) do
     options = Enum.reject(params, fn {k, _} -> k == "provider" end) |> Enum.into(%{})
-    case Phos.OAuthStrategy.callback(provider, options) do
+    case Phos.OAuthStrategy.callback(provider, options, get_session(conn, "oauth_session_params")) do
       {:ok, %{user: user}} ->
         Map.put(user, "provider", provider)
         |> do_authenticate(conn)
@@ -50,7 +54,7 @@ defmodule PhosWeb.AuthController do
 
   def apple_callback(conn, params) do
     options = Map.put(params, "provider", "apple")
-    case Phos.OAuthStrategy.callback("apple", options) do
+    case Phos.OAuthStrategy.callback("apple", options, get_session(conn, "oauth_session_params")) do
       {:ok, %{user: user}} ->
         Map.put(user, "provider", "apple")
         |> do_authenticate(conn)

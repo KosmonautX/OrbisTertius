@@ -1,6 +1,6 @@
 <h1>Settings</h1>
 
-<%= unless Plug.Conn.get_session(@conn, :current_user) do %>
+<%= if @conn.assigns.current_user.confirmed_at do %>
 
 <h3>Change email</h3>
 
@@ -65,7 +65,7 @@
     </div>
   <% end %>
 
-  <%= hidden_input f, :action, name: "action", value: "update_username" %>
+  <%= hidden_input f, :action, name: "action", value: "update_public_profile" %>
 
   <%= label f, :username, "Username" %>
   <%= text_input f, :username, required: true %>
