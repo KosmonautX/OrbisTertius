@@ -1,5 +1,8 @@
 import Config
 
+# Only in tests, remove the complexity from the password hashing algorithm
+config :bcrypt_elixir, :log_rounds, 1
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
@@ -28,3 +31,24 @@ config :logger, level: :warn
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
+
+config :phos, Phos.OAuthStrategy,
+  google: [
+    client_id: {System, :get_env, ["GOOGLE_CLIENT_ID"]},
+    client_secret: {System, :get_env, ["GOOGLE_CLIENT_SECRET"]},
+    strategy: Assent.Strategy.Google,
+    http_adapter: Assent.HTTPAdapter.Mint
+  ],
+  apple: [
+    team_id: {System, :get_env, ["APPLE_TEAM_ID"]},
+    client_id: {System, :get_env, ["APPLE_CLIENT_ID"]},
+    private_key: {System, :get_env, ["APPLE_PRIVATE_KEY"]}, # use either private_key or private_key path
+    private_key_id: {System, :get_env, ["APPLE_PRIVATE_KEY_ID"]},
+    # private_key_path: {System, :get_env, ["APPLE_PRIVATE_KEY_PATH"]}, # Use either private_key or private_key_path
+    strategy: Assent.Strategy.Apple,
+    http_adapter: Assent.HTTPAdapter.Mint
+  ],
+  telegram: [
+    host: "http://localhost:4002",
+    botname: "telegram_bot_name"
+  ]

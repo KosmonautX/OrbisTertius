@@ -20,7 +20,7 @@ defmodule Phos.MixProject do
   def application do
     [
       mod: {Phos.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :inets]
       #extra_applications: [:logger, :runtime_tools, :wx]
     ]
   end
@@ -34,6 +34,7 @@ defmodule Phos.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:bcrypt_elixir, "~> 3.0"},
       {:phoenix, "~> 1.6.6"},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.6"},
@@ -46,6 +47,7 @@ defmodule Phos.MixProject do
       {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
       {:dotenv_parser, "~> 2.0", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.3"},
+      {:gen_smtp, "~> 1.2"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.18"},
@@ -62,11 +64,13 @@ defmodule Phos.MixProject do
       {:mogrify, "~> 0.9.1"},
 
       # oauth strategy
-      {:guardian, "~> 2.0"},
-      {:ueberauth, "~> 0.7"},
-      {:ueberauth_apple, "~> 0.4"},
-      {:ueberauth_google, "~> 0.10"},
       {:argon2_elixir, "~> 3.0"},
+
+      {:assent, "~> 0.2.0"},
+      {:certifi, "~> 2.4"},
+      {:ssl_verify_fun, "~> 1.1"},
+      {:mint, "~> 1.0"},
+      {:castore, "~> 0.1.0"}
     ]
   end
 

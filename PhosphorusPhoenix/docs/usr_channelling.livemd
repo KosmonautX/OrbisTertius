@@ -17,10 +17,10 @@ defmodule SocketWithCare do
   alias Phoenix.Channels.GenSocketClient
   @behaviour GenSocketClient
   @channel "archetype:loc:R3Vsjq9CARfprwOJps44kbVczFQ2"
-  # @token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoibGVJN2pRb0hnM2JwWTZwTEFva05GbFphRzVwMiIsInJvbGUiOiJwbGViIiwidGVycml0b3J5Ijp7ImhvbWUiOnsicmFkaXVzIjo4LCJoYXNoIjoiODg2NTI2YWMzNWZmZmZmIn0sImxpdmUiOnsicmFkaXVzIjo4LCJoYXNoIjoiODg2NTI2YWMzNWZmZmZmIn0sIndvcmsiOnsicmFkaXVzIjo4LCJoYXNoIjoiODg2NTIwY2I0N2ZmZmZmIn19LCJ1c2VybmFtZSI6Ik5vckZpdmVGaXZlciIsImlhdCI6MTY1NTE5OTI3NiwiZXhwIjoxNjU1MjAwNDc2LCJpc3MiOiJQcmluY2V0b24iLCJzdWIiOiJTY3JhdGNoQmFjIn0.bNooAYlVKwdd5d5kCf34GlZf6WLXKsVKcd_bJ2SVt8Q"
-  @token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiUjNWc2pxOUNBUmZwcndPSnBzNDRrYlZjekZRMiIsInJvbGUiOiJwbGViIiwiaWF0IjoxNjQzNzQzNjAyLCJleHAiOjI4NDM3NDM2MDIsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.hlhvTS37qxxqwrynoGbsHQG4gyjH5XDJfSC-zSrR6N8"
-  # @domain "wss://nyx.scrb.ac"
-  @domain "ws://localhost:4000"
+  @token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiUjNWc2pxOUNBUmZwcndPSnBzNDRrYlZjekZRMiIsInJvbGUiOiJwbGViIiwidGVycml0b3J5Ijp7ImxpdmUiOnsicmFkaXVzIjo4LCJoYXNoIjoiODg2NTIwY2I1YmZmZmZmIn19LCJ1c2VybmFtZSI6IlJ5YW4iLCJpYXQiOjE2NTY2ODE2NjAsImV4cCI6MTY2ODY4MTY2MCwiaXNzIjoiUHJpbmNldG9uIiwic3ViIjoiU2NyYXRjaEJhYyJ9.gVJ0yrF8df9NfT6KGh4T5TkFPtXB_zM_VqOKydmRuOc"
+  # @token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiUjNWc2pxOUNBUmZwcndPSnBzNDRrYlZjekZRMiIsInJvbGUiOiJwbGViIiwiaWF0IjoxNjQzNzQzNjAyLCJleHAiOjI4NDM3NDM2MDIsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.hlhvTS37qxxqwrynoGbsHQG4gyjH5XDJfSC-zSrR6N8"
+  @domain "wss://nyx.scrb.ac"
+  # @domain "ws://localhost:4000"
   def start_link() do
     GenSocketClient.start_link(
       __MODULE__,
@@ -171,5 +171,5 @@ Phoenix.Channels.GenSocketClient.call(pid, {:geocalibrate, message})
 ## Cleaning up
 
 ```elixir
-Phoenix.Channels.GenSocketClient.call(pid, {:say, 3})
+Phoenix.Channels.GenSocketClient.call(pid, {:say, 1})
 ```

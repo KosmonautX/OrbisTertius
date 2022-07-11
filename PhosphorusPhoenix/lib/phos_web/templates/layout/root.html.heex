@@ -8,24 +8,24 @@
     <%= live_title_tag assigns[:page_title] || "Scratchbac", suffix: " · Phosphorus" %>
     <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn, "/assets/app.css")}/>
     <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/assets/app.js")}></script>
-    <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>
   </head>
-  <body>
+    <body>
     <header>
-      <section class="container">
-        <nav>
-          <ul>
-            <li><a href="https://www.scratchbac.com">Get Started</a></li>
-            <%= if function_exported?(Routes, :live_dashboard_path, 2) do %>
-              <li><%= link "LiveDashboard", to: Routes.live_dashboard_path(@conn, :home) %></li>
-            <% end %>
-          </ul>
-        </nav>
-        <a href="./" class="phx-logo">
-          <img src={Routes.static_path(@conn, "/images/socrates.png")} alt="Scratchbac Phos"/>
-        </a>
-      </section>
+    <section class="container">
+    <nav>
+    <ul>
+    <li><a href="https://www.scratchbac.com">Get Started</a></li>
+    <%= if function_exported?(Routes, :live_dashboard_path, 2) do %>
+                                            <li><%= link "LiveDashboard", to: Routes.live_dashboard_path(@conn, :home) %></li>
+                                            <% end %>
+    </ul>
+      <%= render "_user_menu.html", assigns %>
+    </nav>
+    <a href="/orb" class="phx-logo">
+    <img src={Routes.static_path(@conn, "/images/socrates.png")} alt="Scratchbac Phos"/>
+    </a>
+    </section>
     </header>
     <%= @inner_content %>
-  </body>
-</html>
+    </body>
+    </html>

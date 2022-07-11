@@ -2,11 +2,6 @@ defmodule Phos.Repo.Migrations.AddEmbTables do
   use Ecto.Migration
 
   def change do
-    create table(:tele, primary_key: false) do
-      add :id, :string, primary_key: true
-
-      # timestamps()
-    end
 
     create table(:users, primary_key: false) do
       add :id, :uuid, primary_key: true
@@ -36,6 +31,10 @@ defmodule Phos.Repo.Migrations.AddEmbTables do
       timestamps()
     end
 
+    create_query = "CREATE TYPE orb_source AS ENUM ('web', 'tele', 'flutter')"
+    drop_query = "DROP TYPE orb_source"
+    execute(create_query, drop_query)
+
     create table(:orbs, primary_key: false) do
       add :id, :uuid, primary_key: true
       add :title, :string
@@ -43,9 +42,9 @@ defmodule Phos.Repo.Migrations.AddEmbTables do
       add :media, :boolean, default: false, null: false
       add :extinguish, :naive_datetime
       add :payload, :jsonb
-      add :orb_nature, :string
+      add :source, :orb_source
       add :central_geohash, :bigint
-      add :initiator, references(:users, column: :id, type: :uuid)
+      add :initiator_id, references(:users, column: :id, type: :uuid)
       add :traits, :jsonb
 
       timestamps()

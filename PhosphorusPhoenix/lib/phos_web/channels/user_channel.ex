@@ -14,7 +14,7 @@ defmodule PhosWeb.UserChannel do
     if authorized?(socket, id) do
       send(self(), :initiation)
       # if user not migrated yet from nodejs(dynamodb), create model on postgres through firebase id
-      #if (Action.get_orb_by_fyr(id) == nil), do: Migrator.user_profile(id)
+      # if (Action.get_orb_by_fyr(id) == nil), do: Migrator.user_profile("DAAohgsLMpQPmsbpbvgQ5PEPuy22")
       {:ok, socket
       |> assign(:user_id, id)
       #|> assign(:user, Users.get_user_by_fyr(id))
@@ -72,7 +72,7 @@ defmodule PhosWeb.UserChannel do
 
   # Add authorization logic here as required. Process send_after for auth channel
   defp authorized?(socket, id) do
-    case Auth.validate(socket.assigns.session_token) do
+    case Auth.validate_user(socket.assigns.session_token) do
       {:ok , claims} ->
         if claims["user_id"] == socket.assigns.user_agent["user_id"] and claims["user_id"] == id do
           true

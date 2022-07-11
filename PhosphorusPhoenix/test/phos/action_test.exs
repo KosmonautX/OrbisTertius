@@ -5,14 +5,15 @@ defmodule Phos.ActionTest do
 
   describe "orbs" do
     alias Phos.Action.Orb
-
     import Phos.ActionFixtures
+    import Phos.UsersFixtures
+
 
     @invalid_attrs %{active: nil, extinguish: nil, media: nil, title: nil}
 
     test "list_orbs/0 returns all orbs" do
       orb = orb_fixture()
-      assert Action.list_orbs() == [orb]
+      assert Action.list_orbs() |> Phos.Repo.preload([:locations,:initiator]) == [orb]
     end
 
     test "get_orb!/1 returns the orb with given id" do
@@ -36,7 +37,8 @@ defmodule Phos.ActionTest do
 
     test "update_orb/2 with valid data updates the orb" do
       orb = orb_fixture_no_location()
-      update_attrs = %{active: false, extinguish: ~N[2022-05-21 12:12:00], media: false, title: "some updated title"}
+      %{id: user_id} = user_fixture()
+      update_attrs = %{initiator: user_id, active: false, extinguish: ~N[2022-05-21 12:12:00], media: false, title: "some updated title"}
 
       assert {:ok, %Orb{} = orb} = Action.update_orb(orb, update_attrs)
       assert orb.active == false

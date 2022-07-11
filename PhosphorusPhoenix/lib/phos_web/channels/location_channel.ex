@@ -23,9 +23,7 @@ defmodule PhosWeb.UserLocationChannel do
     end
   end
 
-
   @impl true
-
   def handle_in("location_update", %{"name"=> name,"geohash"=> hash}, socket) when name in ["home", "work", "live"] do
     # check name against jwt using authorized
     #IO.puts " in paris #{inspect(socket.assigns.geolocation)}"
@@ -60,9 +58,27 @@ defmodule PhosWeb.UserLocationChannel do
     {:reply, {:ok, payload}, socket}
   end
 
+  # def handle_info(%{topic: _, event: event, payload: payload}, socket) do
+  #   push(socket, event, payload)
+  #   IO.inspect(event)
+  #   {:noreply, socket}
+  # end
+
+  @impl true
+  def handle_info({Phos.PubSub, {:orb, event}, %Action.Orb{} = orb}, socket) do
+    push(socket, "orb_" <> to_string(event), %{"subscribed" => orb.topic, "data" => [orb] |> Viewer.fresh_orb_stream_mapper()})
+    {:noreply, socket}
+  end
+
+  def handle_info(event, socket) do
+    IO.inspect(event)
+    {:noreply, socket}
+  end
+
+
   # Add authorization logic here as required. Process send_after for auth channel
   defp authorized?(socket, id) do
-    case Auth.validate(socket.assigns.session_token) do
+    case Auth.validate_user(socket.assigns.session_token) do
       {:ok , claims} ->
         if claims["user_id"] == socket.assigns.user_agent["user_id"] and claims["user_id"] == id do
           true
@@ -82,8 +98,8 @@ defmodule PhosWeb.UserLocationChannel do
 
   defp loc_subscriber(present, past) do
     IO.puts("subscribe with past#{inspect(present)}")
-    present -- past |> Enum.map(fn old -> old |> loc_topic() |> PubSub.unsubscribe() end)
-    past -- present |>Enum.map(fn new-> new |> loc_topic() |> PubSub.subscribe() end)
+    present -- past |> Enum.map(fn new -> new |> loc_topic() |> PubSub.subscribe() end)
+    past -- present |>Enum.map(fn old-> old |> loc_topic() |> PubSub.unsubscribe() end)
     present
   end
 
@@ -93,6 +109,10 @@ defmodule PhosWeb.UserLocationChannel do
 
   defp loc_fetch(present, past) do
     %{"subscribed" => present, "data" => past -- present |> Action.get_orbs_by_geohashes() |> Viewer.fresh_orb_stream_mapper()}
+  end
+
+  defp loc_listener(topic, orb) do
+    %{"subscribed" => topic, "data" => orb|> Viewer.fresh_orb_stream_mapper()}
   end
 
   defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"

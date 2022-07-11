@@ -7,7 +7,7 @@ defmodule PhosWeb.Menshen.Plug do
   @spec call(Plug.Conn.t(), any) :: Plug.Conn.t()
   def call(conn, _opts) do
     jwt = fetchToken(conn)
-    case Auth.validate(jwt) do
+    case Auth.validate_user(jwt) do
       {:ok , claims} ->
         conn |> shallPass(claims)
       { :error, _error } ->

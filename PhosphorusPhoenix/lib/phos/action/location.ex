@@ -5,7 +5,7 @@ defmodule Phos.Action.Location do
 
   @primary_key {:id, :integer, autogenerate: false}
   schema "locations" do
-    many_to_many :orbs, Orb, join_through: Orb_Location
+    many_to_many :orbs, Orb, join_through: Orb_Location, on_replace: :delete
 
     timestamps()
   end

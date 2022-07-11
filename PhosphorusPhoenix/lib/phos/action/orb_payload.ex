@@ -8,11 +8,12 @@ defmodule Phos.Action.Orb_Payload do
     field :where, :string
     field :info, :string
     field :tip, :string
+    field :inner_title, :string
   end
 
   @doc false
   def changeset(orb, attrs) do
     orb
-    |> cast(attrs, [:when, :where, :info, :tip])
+    |> cast(attrs, [:when, :where, :info, :tip, :inner_title])
   end
 end
