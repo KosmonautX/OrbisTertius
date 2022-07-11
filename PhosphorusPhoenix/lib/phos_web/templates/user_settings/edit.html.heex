@@ -1,6 +1,8 @@
 <h1>Settings</h1>
 
-<%= if @conn.assigns.current_user.confirmed_at do %>
+<% %>
+
+<%= if @current_user |> Phos.Repo.preload([:auths]) |> Map.get(:auths) == [] do %>
 
 <h3>Change email</h3>
 

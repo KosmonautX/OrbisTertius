@@ -60,7 +60,7 @@ defmodule PhosWeb.UserSettingsController do
     # Setting Public Profile IMage etc
 
     case Users.update_pub_user(user, %{username: username}) do
-      {:ok, user} ->
+      {:ok, _user} ->
         conn
         |> put_flash(:info, "Username updated successfully.")
         |> redirect(to: Routes.user_settings_path(conn, :edit))

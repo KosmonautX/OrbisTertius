@@ -130,8 +130,7 @@ defmodule PhosWeb.UserAuth do
   def require_authenticated_user(conn, _opts) do
 
     cond do
-      conn.assigns[:current_user] -> conn #for user email login
-      Plug.Conn.get_session(conn, :current_user) -> conn #for oauth
+      conn.assigns[:current_user] -> conn
       true ->
         conn
       |> put_flash(:error, "You must log in to access this page.")
