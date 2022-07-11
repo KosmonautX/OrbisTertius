@@ -166,7 +166,7 @@ psql postgres://nyx:[secret_tunnel]@localhost:4321
 
 #+NAME: Postgres D
 #+BEGIN_SRC shell
-PGPASSWORD=[secret_tunnel] pg_dump -Fc  -h localhost -p 4321 -U nyx nyx > $( date +'%Y-%m-%d-%k:%M:%S' )
+PGPASSWORD=[secret_tunnel] pg_dump -Fc  -h localhost -p 4321 -U nyx-[user] nyx > $(date +%Y-%m-%d-%H:%M:%S)
 #+END_SRC
 
 #+NAME: Postgres Restore

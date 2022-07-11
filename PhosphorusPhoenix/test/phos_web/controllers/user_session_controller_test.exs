@@ -42,7 +42,9 @@ defmodule PhosWeb.UserSessionControllerTest do
 
     test "logs the user in with remember me", %{conn: conn, user: user} do
       conn =
-        post(conn, Routes.user_session_path(conn, :create), %{
+        conn
+        |> Plug.Conn.assign(:telegram, Phos.OAuthStrategy.telegram())
+        |> post(Routes.user_session_path(conn, :create), %{
           "user" => %{
             "email" => user.email,
             "password" => valid_user_password(),
@@ -70,7 +72,9 @@ defmodule PhosWeb.UserSessionControllerTest do
 
     test "emits error message with invalid credentials", %{conn: conn, user: user} do
       conn =
-        post(conn, Routes.user_session_path(conn, :create), %{
+        conn
+        |> Plug.Conn.assign(:telegram, Phos.OAuthStrategy.telegram())
+        |> post(Routes.user_session_path(conn, :create), %{
           "user" => %{"email" => user.email, "password" => "invalid_password"}
         })
 

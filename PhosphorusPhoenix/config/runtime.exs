@@ -128,6 +128,11 @@ if config_env() == :prod do
   # Also, you may need to configure the Swoosh API client of your choice if you
   # are not using SMTP. Here is an example of the configuration:
   #
+  config :phos, Phos.Mailer,
+  adapter: Swoosh.Adapters.AmazonSES,
+  region: "ap-southeast-1",
+  access_key: System.get_env("SES_ACCESS_KEY_ID"),
+  secret: System.get_env("SES_SECRET_ACCESS_KEY")
   #     config :phos, Phos.Mailer,
   #       adapter: Swoosh.Adapters.Mailgun,
   #       api_key: System.get_env("MAILGUN_API_KEY"),

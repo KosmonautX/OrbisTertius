@@ -5,7 +5,7 @@ defmodule PhosWeb.UserSessionController do
   alias PhosWeb.UserAuth
 
   def new(conn, _params) do
-    render(conn, "new.html", error_message: nil)
+    render(conn, "new.html", error_message: nil, telegram: Phos.OAuthStrategy.telegram())
   end
 
   def create(conn, %{"user" => user_params}) do
@@ -15,7 +15,7 @@ defmodule PhosWeb.UserSessionController do
       UserAuth.log_in_user(conn, user, user_params)
     else
       # In order to prevent user enumeration attacks, don't disclose whether the email is registered.
-      render(conn, "new.html", error_message: "Invalid email or password")
+      render(conn, "new.html", error_message: "Invalid email or password", telegram: Phos.OAuthStrategy.telegram())
     end
   end
 

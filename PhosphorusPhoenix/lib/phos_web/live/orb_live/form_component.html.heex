@@ -30,7 +30,7 @@
 
     <%= hidden_input f, :initiator_id, value: @current_user.id %>
     <%= error_tag f, :initiator_id %>
-
+    
     <%= label f, :radius %>
     <%= select f, :radius, ["2km": 8, "1km": 9, "500m": 10], selected: 10 %>
     <%= error_tag f, :radius %>

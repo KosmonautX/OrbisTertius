@@ -19,7 +19,8 @@ defmodule Phos.Users do
 
   """
   def list_users do
-    Repo.all(User |> preload(:public_profile) |> preload(:private_profile))
+    query = from u in User, preload: [:public_profile, :private_profile]
+    Repo.all(query)
   end
 
 #   @doc """
@@ -62,7 +63,7 @@ defmodule Phos.Users do
   def find_user_by_id(id) when is_bitstring(id) do
     query = from u in User, where: u.id == ^id, limit: 1
     case Repo.one(query) do
-      %User{} = user -> {:ok, user}
+      %User{} = user -> {:ok, user |> Repo.preload(:private_profile)}
       nil -> {:error, "User not found"}
     end
   end
@@ -171,7 +172,7 @@ defmodule Phos.Users do
   @doc """
   Authenticate a user from oauth provider
   """
-  def from_auth(%Ueberauth.Auth{uid: id, provider: provider} = resp) do
+  def from_auth(%{"sub" => id, "provider" => provider} = resp) do
     case do_query_from_auth(id, provider) do
       nil -> create_new_user(id, provider, resp)
       %Auth{} = auth -> {:ok, auth.user}
@@ -190,14 +191,27 @@ defmodule Phos.Users do
     )
   end
 
-  defp create_new_user(id, provider, %Ueberauth.Auth{info: info} = auth) do
+  defp create_new_user(id, provider, %{"auth_date" => _date}) when provider == "telegram" do
+    params = %{
+      auths: [%{
+        auth_id: id,
+        auth_provider: to_string(provider)
+      }]
+    }
+    %User{}
+    |> User.telegram_changeset(params)
+    |> Repo.insert()
+  end
+
+  defp create_new_user(id, provider, %{"email" => email}) do
     params = %{
       auth_id: id,
-      auth_provider: Atom.to_string(provider),
+      auth_provider: to_string(provider),
       user: %{
-        email: info.email,
+        email: email,
       }
     }
+
     %Auth{}
     |> Auth.changeset(params)
     |> Repo.insert()
@@ -321,6 +335,22 @@ defmodule Phos.Users do
   def change_pub_profile(user, attrs \\ %{}) do
     User.pub_profile_changeset(user, attrs)
   end
+
+
+    @doc """
+  Returns an `%Ecto.Changeset{}` for changing telegram login users.
+
+  ## Examples
+
+      iex> change_pub_profile(user)
+      %Ecto.Changeset{data: %User{}}
+
+  """
+  def change_telegram_login(user, attrs \\ %{}) do
+    User.post_telegram_changeset(user, attrs)
+  end
+
+
 
   @doc """
   Emulates that the email will change without actually changing
