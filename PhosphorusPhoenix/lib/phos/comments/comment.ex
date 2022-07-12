@@ -25,10 +25,11 @@ defmodule Phos.Comments.Comment do
     comment
       |> cast(attrs, [:id, :body, :path, :active, :orb_id, :initiator_id, :parent_id])
       |> validate_required([:id, :body, :path, :orb_id, :initiator_id])
-      # |> update_has_child_boolean()
   end
 
-  # def update_has_child_boolean() do
-  #   !Enum.empty?(get_child_comments_by_orb(orb_id, to_string(c.path)))
-  # end
+  def changeset_edit(comment, attrs) do
+    comment
+    |> cast(attrs, [:id, :body, :path, :active])
+  end
+
 end

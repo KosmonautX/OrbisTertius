@@ -12,24 +12,32 @@ defmodule PhosWeb.OrbLive.Show do
 
   @impl true
   def handle_params(%{"id" => id} = params, _, socket) do
+    comments =
+      case socket.assigns do
+        %{comments: [_ | _]} ->
+          socket.assigns.comments
+        %{} ->
+          Comments.get_root_comments_by_orb(id)
+      end
+
     {:noreply,
      socket
     |> assign(:changeset, Comments.change_comment(%Comments.Comment{}))
+    |> assign(:comments, comments)
     |> assign(:orb, Action.get_orb!(id))
-    |> assign(:comments, Comments.get_root_comments_by_orb(id))
     |> apply_action(socket.assigns.live_action, params)}
     #  |> assign(:image, {:ok, Phos.Orbject.S3.get("ORB", id, "150x150")})
   end
 
-  defp apply_action(socket, :reply, %{"cid" => cid} = _params) do
+  defp apply_action(socket, :reply, %{"id" => id, "cid" => cid} = _params) do
     socket
     |> assign(:comment, Comments.get_comment!(cid))
     |> assign(:page_title, "Reply")
+
   end
 
   defp apply_action(socket, :show_ancestor, %{"id" => id, "cid" => cid} = _params) do
     comment = Comments.get_comment!(cid)
-    IO.inspect(Comments.get_ancestor_comments_by_orb(id, to_string(comment.path)))
     socket
     |> assign(:comments, Comments.get_ancestor_comments_by_orb(id, to_string(comment.path)))
     |> assign(:page_title, "Show Ancestors")
@@ -41,7 +49,7 @@ defmodule PhosWeb.OrbLive.Show do
     |> assign(:page_title, "Edit")
   end
 
-  defp apply_action(socket, :show, _params) do
+  defp apply_action(socket, :show, %{"id" => id} = _params) do
     socket
     |> assign(:page_title, "Show")
   end
@@ -51,7 +59,7 @@ defmodule PhosWeb.OrbLive.Show do
     |> assign(:page_title, "Edit")
   end
 
-
+  # Save comment flow
   @impl true
   def handle_event("save", %{"comment" => comment_params}, socket) do
     comment_id = Ecto.UUID.generate()
@@ -65,19 +73,21 @@ defmodule PhosWeb.OrbLive.Show do
         comment = comment |> Phos.Repo.preload([:initiator, :orb])
         # updated_comments =
         #   put_in(socket.assigns.comments, [String.split(to_string(comment.path), ".") |> List.to_tuple()], comment)
-        comment = Map.put(comment, :has_child, !Enum.empty?(Comments.get_child_comments_by_orb(comment.orb_id, to_string(comment.path))))
+        # comment = Map.put(comment, :has_child, !Enum.empty?(Comments.get_child_comments_by_orb(comment.orb_id, to_string(comment.path))))
         updated_comments =
           [{String.split(to_string(comment.path), ".") |> List.to_tuple(), comment} | socket.assigns.comments]
         {:noreply,
         socket
         |> assign(:comments, updated_comments)
-        |> put_flash(:info, "Comment added successfully")}
+        |> put_flash(:info, "Comment added successfully")
+        |> push_patch(to: Routes.orb_show_path(socket, :show, comment.orb))}
       {:error, %Ecto.Changeset{} = changeset} ->
         IO.inspect(changeset)
         {:noreply, assign(socket, changeset: changeset)}
     end
   end
 
+  # Reply comment flow
   @impl true
   def handle_event("reply", %{"comment" => comment_params}, socket) do
     comment_id = Ecto.UUID.generate()
@@ -86,37 +96,56 @@ defmodule PhosWeb.OrbLive.Show do
       |> Map.put("id", comment_id)
       |> Map.put("path", comment_params["parent_path"] <> "." <> hd(String.split(comment_id, "-")))
 
+    IO.inspect(socket.assigns)
+    # save_comment(socket, :reply, comment_params)
+    save_comment(socket, socket.assigns.live_action, comment_params)
+  end
+
+  defp save_comment(socket, :reply, comment_params) do
     case Comments.create_comment(comment_params) do
       {:ok, comment} ->
         comment = comment |> Phos.Repo.preload([:initiator, :orb])
 
-        comment = Map.put(comment, :has_child, !Enum.empty?(Comments.get_child_comments_by_orb(comment.orb_id, to_string(comment.path))))
+        # comment = Map.put(comment, :has_child, !Enum.empty?(Comments.get_child_comments_by_orb(comment.orb_id, to_string(comment.path))))
         updated_comments =
           [{String.split(to_string(comment.path), ".") |> List.to_tuple(), comment} | socket.assigns.comments]
+
         {:noreply,
         socket
         |> assign(:comments, updated_comments)
-        |> put_flash(:info, "Reply added successfully")}
+        |> put_flash(:info, "Reply added successfully")
+        |> push_patch(to: Routes.orb_show_path(socket, :show, comment.orb))}
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, changeset: changeset)}
     end
   end
 
+  defp save_comment(socket, :edit_comment, comment_params) do
+    case Comments.update_comment(socket.assigns.comment, %{body: comment_params["body"]}) do
+      {:ok, comment} ->
+        comment = comment |> Phos.Repo.preload([:initiator, :orb])
+        updated_comment_index = Enum.find_index(socket.assigns.comments, fn c -> elem(c, 1).id == socket.assigns.comment.id end)
+        updated_comments = List.replace_at(socket.assigns.comments, updated_comment_index, {String.split(to_string(comment.path), ".") |> List.to_tuple(), comment})
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Comment updated successfully")
+         |> push_patch(to: Routes.orb_show_path(socket, :show, comment.orb))
+         |> assign(:comments, updated_comments)}
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, :changeset, changeset)}
+    end
+  end
+
+
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     comment = Comments.get_comment!(id)
-    # updated_comments = Enum.reject(socket.assigns.comments, &elem(&1, 1).id == id)
-    # updated_comments = Map.delete(socket.assigns.comments, String.split(to_string(comment.path), ".") |> List.to_tuple())
-
-    # Instead of deleting comment, set comment active: false
-    # {:ok, _} = Comments.delete_comment(comment)
-
     {:ok, comment} = Comments.update_comment(comment, %{active: false})
-    # Instead of deleting comment, set comment active: false
-    comment = Map.put(comment, :has_child, !Enum.empty?(Comments.get_child_comments_by_orb(comment.orb_id, to_string(comment.path))))
+    # comment = Map.put(comment, :has_child, !Enum.empty?(Comments.get_child_comments_by_orb(comment.orb_id, to_string(comment.path))))
     updated_comment_index = Enum.find_index(socket.assigns.comments, fn c -> elem(c, 1).id == id end)
     updated_comments = List.replace_at(socket.assigns.comments, updated_comment_index, {String.split(to_string(comment.path), ".") |> List.to_tuple(), comment})
-
+    # TODO: To populate child_count
     {:noreply, socket
     |> assign(:comments, updated_comments)}
   end
@@ -125,6 +154,7 @@ defmodule PhosWeb.OrbLive.Show do
   def handle_event("view_more", %{"orb" => orb_id, "path" => path}, socket) do
     comments = Comments.get_child_comments_by_orb(orb_id,path)
 
+    # TODO: Disable viewmore button JS for omnipotency
     updated_comments =
       comments ++ socket.assigns.comments
 

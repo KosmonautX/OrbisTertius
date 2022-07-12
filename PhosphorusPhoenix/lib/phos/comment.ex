@@ -95,11 +95,8 @@ end
       ),
       select_merge: %{child_count: sc.count}
 
-    comments = Repo.all(query)
+    Repo.all(query) |> convert_to_comment_structure()
 
-    for c <- comments, into: [] do
-      {String.split(to_string(c.path), ".") |> List.to_tuple(), c}
-    end
   end
 
   # Gets child comments 1 level down only
@@ -119,27 +116,27 @@ end
         ),
         select_merge: %{child_count: sc.count}
 
-    comments = Repo.all(query)
-
-    for c <- comments, into: [] do
-      {String.split(to_string(c.path), ".") |> List.to_tuple(), c}
-    end
+    Repo.all(query) |> convert_to_comment_structure()
   end
 
-    # Gets ancestors down up all levels only
-    def get_ancestor_comments_by_orb(orb_id, path) do
-      query =
-        Comment
-        |> where([e], e.orb_id == ^orb_id)
-        |> where([e], fragment("? @> ?", e.path, ^path))
-        |> preload(:initiator)
-      comments = Repo.all(query)
+  # Gets ancestors down up all levels only
+  # TODO: Get root comments together
+  def get_ancestor_comments_by_orb(orb_id, path) do
+    query =
+      from c in Comment,
+        as: :c,
+        where: c.orb_id == ^orb_id,
+        where: fragment("? @> ?", c.path, ^path),
+        preload: [:initiator],
+        inner_lateral_join: sc in subquery(
+          from sc in Comment,
+            where: sc.parent_id == parent_as(:c).id,
+            select: %{count: count()}
+        ),
+        select_merge: %{child_count: sc.count}
 
-      for c <- comments, into: [] do
-        c = Map.put(c, :has_child, !Enum.empty?(get_child_comments_by_orb(orb_id, to_string(c.path))))
-        {String.split(to_string(c.path), ".") |> List.to_tuple(), c}
-      end
-    end
+    Repo.all(query) |> convert_to_comment_structure()
+  end
 
 #   @doc """
 #   Updates a comment.
@@ -155,7 +152,7 @@ end
 #   """
   def update_comment(%Comment{} = comment, attrs) do
     comment
-    |> Comment.changeset(attrs)
+    |> Comment.changeset_edit(attrs)
     |> Repo.update()
   end
 
@@ -205,6 +202,13 @@ end
 #   """
   def change_comment(%Comment{} = comment, attrs \\ %{}) do
     Comment.changeset(comment, attrs)
+  end
+
+
+  def convert_to_comment_structure(comments) do
+    for c <- comments, into: [] do
+      {String.split(to_string(c.path), ".") |> List.to_tuple(), c}
+    end
   end
 
 end

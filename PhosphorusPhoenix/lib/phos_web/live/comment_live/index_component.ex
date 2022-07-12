@@ -43,7 +43,7 @@ defmodule PhosWeb.CommentLive.IndexComponent do
               </span>
           </div>
           <div class="text">
-              <p><%= elem(@comment, 1).id%> </p>
+              <p>CID: <%= elem(@comment, 1).id%> </p>
               <%= if elem(@comment, 1).active do %>
                 <p><%= elem(@comment, 1).body %></p>
               <% else %>

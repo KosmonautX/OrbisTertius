@@ -20,6 +20,6 @@
     <%= hidden_input f, :parent_id, value: @comment.id %>
     <%= error_tag f, :parent_id %>
 
-    <%= submit "Reply", phx_disable_with: "Saving..." %>
+    <%= submit to_string(@action), phx_disable_with: "Saving..." %>
   </.form>
 </div>

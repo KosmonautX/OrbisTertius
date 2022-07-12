@@ -23,13 +23,14 @@
 <%= if @live_action in [:reply, :edit_comment] do %>
     <.modal return_to={Routes.orb_show_path(@socket, :show, @orb)}>
         <.live_component
-        module={PhosWeb.CommentLive.FormComponent}
-        id={@comment.id}
-        action={@live_action}
-        comment={@comment}
-        changeset={@changeset}
-        orb={@orb}
-        current_user={@current_user}
+          module={PhosWeb.CommentLive.FormComponent}
+          id={@comment.id}
+          action={@live_action}
+          comment={@comment}
+          changeset={@changeset}
+          orb={@orb}
+          current_user={@current_user}
+          return_to={Routes.orb_show_path(@socket, :show, @orb)}
         />
     </.modal>
 <% end %>
@@ -96,4 +97,4 @@
 <span><%= live_redirect "Back", to: Routes.orb_index_path(@socket, :index) %></span>
 
 <%# <PhosWeb.CommentLive.Index.render changeset={@changeset} orb={@orb} comments={@comments} current_user={@current_user} socket={@socket} live_action={@live_action}/> %>
-<.live_component module={PhosWeb.CommentLive.IndexComponent} id="commentindex" changeset={@changeset} orb={@orb} comments={@comments} current_user={@current_user} socket={@socket} live_action={@live_action} />
+<.live_component module={PhosWeb.CommentLive.IndexComponent} id="commentindex" changeset={@changeset} action="new" orb={@orb} comments={@comments} current_user={@current_user} socket={@socket} live_action={@live_action} />
