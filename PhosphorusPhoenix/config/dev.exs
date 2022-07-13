@@ -7,7 +7,8 @@ config :phos, Phos.Repo,
   hostname: System.get_env("PGDOMAIN") || "localhost", ## domain change to postgres for docker
   database: "phos_dev",
   show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+  pool_size: 10,
+  types: Phos.PostgresTypes
 
 # For development, we disable any cache and enable
 # debugging and code reloading.

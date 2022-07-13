@@ -49,11 +49,17 @@ defmodule PhosWeb.Router do
 
       live "/orb/:id", OrbLive.Show, :show
       live "/orb/:id/show/edit", OrbLive.Show, :edit
+      live "/orb/:id/show/:cid", OrbLive.Show, :show_ancestor
+      live "/orb/:id/reply/:cid", OrbLive.Show, :reply
+      live "/orb/:id/edit/:cid", OrbLive.Show, :edit_comment
     end
-
-
   end
 
+  scope "/api", PhosWeb.API do
+    pipe_through [:api]
+
+    resources "/comments", CommentController, except: [:new, :edit]
+  end
 
   # Other scopes may use custom stacks.
   scope "/auth", PhosWeb do
