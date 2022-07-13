@@ -11,6 +11,7 @@ defmodule PhosWeb.CommentLiveTest do
 
   @create_attrs %{body: "some body"}
   @update_attrs %{body: "some updated body"}
+  @invalid_attrs %{body: nil}
   @reply_attrs %{body: "some reply body"}
 
   defp create_comment(_) do
@@ -47,6 +48,18 @@ defmodule PhosWeb.CommentLiveTest do
 
       assert view =~ "Comment added successfully"
       assert view =~ "some body"
+    end
+
+    test "create invalid comment", %{conn: conn, orb: orb} do
+
+      {:ok, index_live, _html} = live(conn, Routes.orb_show_path(conn, :show, orb))
+
+      view =
+        index_live
+        |> form("#comment-form", comment: @invalid_attrs)
+        |> render_submit()
+
+      assert view =~ "can&#39;t be blank"
     end
 
     test "edit comment", %{conn: conn, orb: orb, user: user} do
