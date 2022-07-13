@@ -8,7 +8,7 @@ defmodule Phos.Users.UserNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"Phos", "contact@example.com"})
+      |> from({"Scratchbac", "hello@scratchbac.com"})
       |> subject(subject)
       |> text_body(body)
 
@@ -25,7 +25,7 @@ defmodule Phos.Users.UserNotifier do
 
     ==============================
 
-    Hi #{user.email},
+    Hi #{user.username},
 
     You can confirm your account by visiting the URL below:
 

@@ -5,26 +5,104 @@ defmodule PhosWeb.Util.Migrator do
 
   """
 
+  alias Phos.Users
+  alias Ecto.Multi
+
   def user_profile(id) do
-    unless map_size(user = Phos.External.HeimdallrClient.get_dyn_user(id)) == 0  do
-      user_internal = %{"username" => user["payload"]["username"],
-                      "fyr_id" => user["user_id"],
-                      "media" => user["payload"]["media"],
-                      "public_profile" =>
-                        %{"birthday" => user["payload"]["birthday"],
-                          "bio" => user["payload"]["bio"]},
-                      "profile_pic" => user["payload"]["profile_pic"]}
-      if(user["geolocation"]) do
-        geo_map = for loc <- Map.keys(user["geolocation"]) do
-          user["geolocation"][loc]
-          |> Map.put("id", loc)
-          |> Map.put("geohash", :h3.from_string(to_charlist(Map.get(user["geolocation"][loc]["geohashing"], "hash"))))
-        end
-        Map.put(user_internal, "private_profile", %{"geolocation" => geo_map}) |>
-          Phos.Users.migrate_user()
-      else
-        Phos.Users.migrate_user(user_internal)
-      end
+  
+    with {:ok, response} <- Phos.External.HeimdallrClient.get("/tele/get_users/" <> id),
+         true <- response.status_code >= 200 and response.status_code < 300,
+         {:ok, users} <- user_migration(response.body, id) do
+      users
+    else
+      {:error, err} -> err
     end
   end
+
+  defp user_migration(response, id) when is_list(response) do
+    Enum.map(response, &user_migration(&1, id))
+    |> Task.await_many()
+    |> Enum.map(&(&1.user))
+    |> Enum.map(&Phos.Repo.preload(&1, [:auths]))
+  end
+  defp user_migration(response, id) when is_map(response) do
+    Task.async(fn ->
+      insert_or_update_user(response, id)
+    end)
+  end
+
+  defp insert_or_update_user(data, id) do
+    Multi.new()
+    |> Multi.run(:providers, fn _repo, _ -> {:ok, Map.get(data, "providerData")} end)
+    |> Multi.run(:geolocation, fn _repo, _ -> {:ok, Map.get(data, "geolocation")} end)
+    |> Multi.run(:payload, fn _repo, %{geolocation: locations, providers: providers} ->
+      {:ok,
+        Map.get(data, "payload")
+        |> Map.put("fyr_id", id)
+        |> Map.put("email", email_provider(providers))
+        |> Map.put("public_profile", %{
+          "birthday" => get_in(data, ["payload", "birthday"]),
+          "bio" => get_in(data, ["payload", "bio"])
+        })
+        |> Map.put("private_profile", %{
+          "geolocation" => parse_geolocation(locations)
+        })
+      }
+    end)
+    |> Multi.run(:user, fn _repo, %{payload: payload} ->
+      case Users.get_user_by_fyr(id) do
+        %Users.User{} = user -> {:ok, user}
+        nil -> Users.create_user(payload)
+      end
+    end)
+    |> Multi.insert_all(:registered_providers, Users.Auth, &insert_with_provider/1, on_conflict: :replace_all, conflict_target: [:auth_id, :user_id, :auth_provider])
+    |> Phos.Repo.transaction()
+    |> case do
+      {:ok, data} -> data
+      {:error, err} -> err
+      {:error, name, fields, required} -> %{name: name, fields: fields, required: required}
+    end
+  end
+
+  defp email_provider(providers) when length(providers) > 0 do
+    providers
+    |> List.first()
+    |> Map.get("email", "")
+  end
+  defp email_provider(_), do: ""
+
+  defp parse_geolocation(locations) when map_size(locations) > 0 do
+    locations
+    |> Enum.reduce([], fn {k, v}, acc -> [ Map.put(v, "id", k) | acc] end)
+    |> Enum.map(&get_location_from_h3/1)
+  end
+  defp parse_geolocation(_), do: []
+
+  defp get_location_from_h3(%{"geohashing" => %{"hash" => hash}} = data) do
+    geo =
+      hash
+      |> to_charlist()
+      |> :h3.from_string()
+
+    Map.put(data, "geohash", geo)
+  end
+  defp get_location_from_h3(data), do: data
+
+  defp insert_with_provider(%{providers: providers, user: user}) when length(providers) > 0 do
+    time = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    providers
+    |> Enum.map(fn provider ->
+      %{
+        auth_id: get_in(provider, ["uid"]),
+        user_id: user.id,
+        auth_provider: Map.get(provider, "providerId", "") |> String.split(".") |> List.first(),
+        inserted_at: time,
+        updated_at: time
+      }
+    end)
+    |> Enum.reject(fn %{auth_provider: prov, auth_id: id} ->
+      is_nil(id) or prov == "password"
+    end)
+  end
+  defp insert_with_provider(_), do: []
 end

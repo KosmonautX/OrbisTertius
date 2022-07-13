@@ -13,12 +13,20 @@ defmodule PhosWeb.Router do
     plug :fetch_current_user
   end
 
+  pipeline :apple_callback do
+    plug :accepts, ["html", "json"]
+    plug :fetch_session
+    plug :fetch_live_flash
+    plug :put_root_layout, {PhosWeb.LayoutView, :root}
+    plug :put_secure_browser_headers
+    plug :fetch_current_user
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
 
   pipeline :authentication do
-    plug Ueberauth
   end
 
 
@@ -29,7 +37,7 @@ defmodule PhosWeb.Router do
       resources "/archetype/usr", UserController, only: [:show]
     end
 
-    live_session :authenticated, on_mount: {PhosWeb.Menshen.Protocols, :pleb} do
+    live_session :authenticated, on_mount: {PhosWeb.Menshen.Mounter, :pleb} do
       get "/", PageController, :index
 
       live "/orb/sethome", OrbLive.Index, :sethome
@@ -60,6 +68,13 @@ defmodule PhosWeb.Router do
     get "/:provider", AuthController, :request
     get "/:provider/callback", AuthController, :callback
     delete "/logout", AuthController, :delete
+  end
+
+  scope "/auth", PhosWeb do
+    pipe_through :apple_callback
+
+    post "/telegram/callback", AuthController, :telegram_callback
+    post "/:provider/callback", AuthController, :apple_callback
   end
 
   # Enables LiveDashboard only for development

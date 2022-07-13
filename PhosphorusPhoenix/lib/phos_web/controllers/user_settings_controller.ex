@@ -50,9 +50,9 @@ defmodule PhosWeb.UserSettingsController do
     end
   end
 
-  def update(conn, %{"action" => "update_username"} = params) do
+  def update(conn, %{"action" => "update_public_profile"} = params) do
     %{"user" => %{"username" => username}} = params
-    user = Plug.Conn.get_session(conn, :current_user) || conn.assigns.current_user
+    user = conn.assigns.current_user
 
 
     # Setting Page to Integrate Oauth with alternate Logins
@@ -60,11 +60,10 @@ defmodule PhosWeb.UserSettingsController do
     # Setting Public Profile IMage etc
 
     case Users.update_pub_user(user, %{username: username}) do
-      {:ok, user} ->
+      {:ok, _user} ->
         conn
         |> put_flash(:info, "Username updated successfully.")
-        |> put_session(:current_user, user)
-        |> redirect(to: Routes.orb_index_path(conn, :index))
+        |> redirect(to: Routes.user_settings_path(conn, :edit))
         # |> put_session(:user_return_to, Routes.orb_index_path(conn, :index))
         # |> UserAuth.log_in_user(user) # remember to implement token for oatuh temporary sol above
 
@@ -88,11 +87,12 @@ defmodule PhosWeb.UserSettingsController do
   end
 
   defp assign_email_and_profile_and_password_changesets(conn, _opts) do
-    user = Plug.Conn.get_session(conn, :current_user) || conn.assigns.current_user
+    user = conn.assigns.current_user
 
     conn
     |> assign(:email_changeset, Users.change_user_email(user))
     |> assign(:password_changeset, Users.change_user_password(user))
     |> assign(:pub_profile_changeset, Users.change_pub_profile(user))
+    |> assign(:telegram_changeset, Users.change_telegram_login(user))
   end
 end

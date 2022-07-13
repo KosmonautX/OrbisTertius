@@ -2,8 +2,8 @@ import Config
 
 # Configure your database
 config :phos, Phos.Repo,
-  username: "postgres",
-  password: "root",
+  username: System.get_env("PGUSERNAME") || "postgres",
+  password: System.get_env("PGPASSWORD") || "root",
   hostname: System.get_env("PGDOMAIN") || "localhost", ## domain change to postgres for docker
   database: "phos_dev",
   show_sensitive_data_on_connection_error: true,
@@ -28,10 +28,6 @@ config :phos, PhosWeb.Endpoint,
     # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
   ]
-
-config :phos, Phos.Guardian,
-       issuer: "Princeton",
-       secret_key: "vyOyqS5mE2Ap2YV5TKG9RyTOOwivgDicxHf+dXcprRiT3Vgz3cpLuqwbO8qvSRi8"
 
 # ## SSL Support
 #
@@ -87,3 +83,7 @@ config :ex_aws, :s3,
   scheme: "http://",
   host: "localhost",
   port: 9000
+
+config :phos, Phos.External.HeimdallrClient,
+  base_url: "https://norbandy.scratchbac.org/api",
+  authorization: {Phos.External.HeimdallrClient, :authorization, []}

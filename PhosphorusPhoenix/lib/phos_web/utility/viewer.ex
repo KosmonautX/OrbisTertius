@@ -54,13 +54,14 @@ defmodule PhosWeb.Util.Viewer do
         creationtime: DateTime.from_naive!(orb.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
         source: orb.source,
         traits: orb.traits,
-        payload: %{
+        payload: (if orb.payload do %{
           where: orb.payload.where,
           inner_title: orb.payload.inner_title,
           info: orb.payload.info,
           media: orb.media,
           media_asset: (if orb.media, do: Phos.Orbject.S3.get!("ORB", orb.id, "1920x1080"))
-          },
+          }
+          end),
         geolocation: %{
           hash: orb.central_geohash
         }
