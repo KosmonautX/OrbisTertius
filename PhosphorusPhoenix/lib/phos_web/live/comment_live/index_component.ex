@@ -31,7 +31,7 @@ defmodule PhosWeb.CommentLive.IndexComponent do
 
   def card(assigns) do
     ~H"""
-    <div class="comment">
+    <div class="comment" id={"comment-#{elem(@comment, 1).id}"}>
       <a class="avatar">
           <img src={ Phos.Orbject.S3.get!("USR", elem(@comment, 1).initiator_id, "150x150") }>
       </a>
@@ -48,14 +48,20 @@ defmodule PhosWeb.CommentLive.IndexComponent do
                 <p><%= elem(@comment, 1).body %></p>
               <% else %>
                 <p><i>-- Comment deleted --</i></p>
+                <details>
+                  <summary>view deleted comment</summary>
+                  <%= elem(@comment, 1).body %>
+                </details>
               <% end %>
           </div>
           <div class="actions">
               <%= live_patch "Reply", to: Routes.orb_show_path(@socket, :reply, @orb.id, elem(@comment,1)) %>
 
-              <%= live_patch "Edit", to: Routes.orb_show_path(@socket, :edit_comment, @orb.id, elem(@comment,1)) %>
+              <%= if elem(@comment, 1).active do %>
+                <%= live_patch "Edit", to: Routes.orb_show_path(@socket, :edit_comment, @orb.id, elem(@comment,1)) %>
 
-              <%= link "Delete", to: "#", phx_click: "delete", phx_value_id: elem(@comment, 1).id, data: [confirm: "Are you sure?"] %>
+                <%= link "Delete", to: "#", phx_click: "delete", phx_value_id: elem(@comment, 1).id, data: [confirm: "Are you sure?"] %>
+              <% end %>
 
                 <%= if elem(@comment, 1).child_count > 0 do %>
                   <%# TODO: Hides link after clicking %>

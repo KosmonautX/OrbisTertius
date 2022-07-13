@@ -21,10 +21,7 @@ defmodule Phos.Comments do
 
   """
   def list_comments do
-    comments = Repo.all(Comment)
-    for c <- comments, into: [] do
-      {String.split(to_string(c.path), ".") |> List.to_tuple(), c}
-    end
+    Repo.all(Comment)
   end
 
 #   @doc """
@@ -95,7 +92,7 @@ end
       ),
       select_merge: %{child_count: sc.count}
 
-    Repo.all(query) |> convert_to_comment_structure()
+    Repo.all(query)
 
   end
 
@@ -116,7 +113,7 @@ end
         ),
         select_merge: %{child_count: sc.count}
 
-    Repo.all(query) |> convert_to_comment_structure()
+    Repo.all(query)
   end
 
   # Gets ancestors down up all levels only
@@ -135,7 +132,7 @@ end
         ),
         select_merge: %{child_count: sc.count}
 
-    Repo.all(query) |> convert_to_comment_structure()
+    Repo.all(query)
   end
 
 #   @doc """
@@ -202,13 +199,6 @@ end
 #   """
   def change_comment(%Comment{} = comment, attrs \\ %{}) do
     Comment.changeset(comment, attrs)
-  end
-
-
-  def convert_to_comment_structure(comments) do
-    for c <- comments, into: [] do
-      {String.split(to_string(c.path), ".") |> List.to_tuple(), c}
-    end
   end
 
 end

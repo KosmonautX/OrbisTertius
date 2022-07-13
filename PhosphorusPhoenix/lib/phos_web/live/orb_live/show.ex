@@ -4,6 +4,7 @@ defmodule PhosWeb.OrbLive.Show do
   alias Phoenix.LiveView.JS
   alias Phos.Action
   alias Phos.Comments
+  alias PhosWeb.Utility.Encoder
 
   @impl true
   def mount(_params, _session, socket) do
@@ -11,35 +12,35 @@ defmodule PhosWeb.OrbLive.Show do
   end
 
   @impl true
-  def handle_params(%{"id" => id} = params, _, socket) do
+  def handle_params(%{"id" => orb_id} = params, _, socket) do
     comments =
       case socket.assigns do
         %{comments: [_ | _]} ->
           socket.assigns.comments
         %{} ->
-          Comments.get_root_comments_by_orb(id)
+          Comments.get_root_comments_by_orb(orb_id) |> decode_to_comment_tuple_structure()
       end
 
     {:noreply,
      socket
     |> assign(:changeset, Comments.change_comment(%Comments.Comment{}))
     |> assign(:comments, comments)
-    |> assign(:orb, Action.get_orb!(id))
+    |> assign(:orb, Action.get_orb!(orb_id))
     |> apply_action(socket.assigns.live_action, params)}
     #  |> assign(:image, {:ok, Phos.Orbject.S3.get("ORB", id, "150x150")})
   end
 
-  defp apply_action(socket, :reply, %{"id" => id, "cid" => cid} = _params) do
+  defp apply_action(socket, :reply, %{"id" => orb_id, "cid" => cid} = _params) do
     socket
     |> assign(:comment, Comments.get_comment!(cid))
     |> assign(:page_title, "Reply")
 
   end
 
-  defp apply_action(socket, :show_ancestor, %{"id" => id, "cid" => cid} = _params) do
+  defp apply_action(socket, :show_ancestor, %{"id" => orb_id, "cid" => cid} = _params) do
     comment = Comments.get_comment!(cid)
     socket
-    |> assign(:comments, Comments.get_ancestor_comments_by_orb(id, to_string(comment.path)))
+    |> assign(:comments, Comments.get_ancestor_comments_by_orb(orb_id, to_string(comment.path)) |> decode_to_comment_tuple_structure())
     |> assign(:page_title, "Show Ancestors")
   end
 
@@ -66,7 +67,7 @@ defmodule PhosWeb.OrbLive.Show do
     comment_params =
       comment_params
       |> Map.put("id", comment_id)
-      |> Map.put("path", hd(String.split(comment_id, "-")))
+      |> Map.put("path", Encoder.encode_lpath(comment_id))
 
     case Comments.create_comment(comment_params) do
       {:ok, comment} ->
@@ -82,7 +83,6 @@ defmodule PhosWeb.OrbLive.Show do
         |> put_flash(:info, "Comment added successfully")
         |> push_patch(to: Routes.orb_show_path(socket, :show, comment.orb))}
       {:error, %Ecto.Changeset{} = changeset} ->
-        IO.inspect(changeset)
         {:noreply, assign(socket, changeset: changeset)}
     end
   end
@@ -94,9 +94,8 @@ defmodule PhosWeb.OrbLive.Show do
     comment_params =
       comment_params
       |> Map.put("id", comment_id)
-      |> Map.put("path", comment_params["parent_path"] <> "." <> hd(String.split(comment_id, "-")))
+      |> Map.put("path", Encoder.encode_lpath(comment_id, comment_params["parent_path"]))
 
-    IO.inspect(socket.assigns)
     # save_comment(socket, :reply, comment_params)
     save_comment(socket, socket.assigns.live_action, comment_params)
   end
@@ -152,7 +151,7 @@ defmodule PhosWeb.OrbLive.Show do
 
   @impl true
   def handle_event("view_more", %{"orb" => orb_id, "path" => path}, socket) do
-    comments = Comments.get_child_comments_by_orb(orb_id,path)
+    comments = Comments.get_child_comments_by_orb(orb_id,path) |> decode_to_comment_tuple_structure()
 
     # TODO: Disable viewmore button JS for omnipotency
     updated_comments =
@@ -161,4 +160,12 @@ defmodule PhosWeb.OrbLive.Show do
     {:noreply, socket
     |> assign(:comments, updated_comments)}
   end
+
+  def decode_to_comment_tuple_structure(comments) do
+    for c <- comments, into: [] do
+      {String.split(to_string(c.path), ".") |> List.to_tuple(), c}
+    end
+  end
+
+
 end

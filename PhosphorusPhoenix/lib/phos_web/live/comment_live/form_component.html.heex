@@ -3,10 +3,15 @@
   <.form
     let={f}
     for={@changeset}
-    id={"replyform-#{@comment.id}"}
+    id={"comment-replyedit-form"}
     phx-submit="reply">
 
-    <%= textarea f, :body %>
+    <%= if @action == :reply do %>
+      <%= textarea f, :body %>
+    <% else %>
+      <%= textarea f, :body, value: @comment.body %>
+    <% end %>
+
     <%= error_tag f, :body %>
 
     <%= hidden_input f, :parent_path, value: to_string(@comment.path) %>
