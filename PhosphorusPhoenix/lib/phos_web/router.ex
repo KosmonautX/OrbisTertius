@@ -47,6 +47,11 @@ defmodule PhosWeb.Router do
     end
   end
 
+  scope "/api", PhosWeb.API do
+    pipe_through [:api]
+
+    resources "/comments", CommentController, except: [:new, :edit]
+  end
 
   # Other scopes may use custom stacks.
   scope "/auth", PhosWeb do

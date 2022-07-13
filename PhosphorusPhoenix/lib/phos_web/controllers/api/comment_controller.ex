@@ -13,6 +13,7 @@ defmodule PhosWeb.API.CommentController do
   # curl -H "Content-Type: application/json" -X GET http://localhost:4000/api/comments
 
   def create(conn, %{"comment" => comment_params}) do
+    IO.inspect(comment_params)
     with {:ok, %Comment{} = comment} <- Comments.create_comment(comment_params) do
       conn
       |> put_status(:created)
