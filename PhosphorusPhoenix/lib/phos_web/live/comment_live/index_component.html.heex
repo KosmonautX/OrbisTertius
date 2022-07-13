@@ -1,0 +1,27 @@
+<div>
+    <h2>Comments</h2>
+
+    <div class="ui threaded comments">
+        <.form
+            let={f}
+            for={@changeset}
+            id="comment-form"
+            phx-submit="save">
+
+            <%= textarea f, :body %>
+            <%= error_tag f, :body %>
+
+            <%= hidden_input f, :initiator_id, value: @current_user.id %>
+            <%= error_tag f, :initiator_id %>
+
+            <%= hidden_input f, :orb_id, value: @orb.id %>
+            <%= error_tag f, :orb_id %>
+
+            <%= submit "Add comment", phx_disable_with: "Saving..." %>
+        </.form>
+
+        <%= for comment <- filter_root_comments_chrono(@comments) do %>
+          <.card comment={comment} comments={@comments} changeset={@changeset} orb={@orb} current_user={@current_user} socket={@socket} live_action={@live_action}/>
+        <% end %>
+    </div>
+</div>
