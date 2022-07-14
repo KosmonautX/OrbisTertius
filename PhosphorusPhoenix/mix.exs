@@ -69,7 +69,7 @@ defmodule Phos.MixProject do
       {:certifi, "~> 2.4"},
       {:ssl_verify_fun, "~> 1.1"},
       {:mint, "~> 1.0"},
-      {:castore, "~> 0.1.0"}
+      {:castore, "~> 0.1.0"},
       # comments
       {:ecto_ltree, "~> 0.3.0"}
     ]

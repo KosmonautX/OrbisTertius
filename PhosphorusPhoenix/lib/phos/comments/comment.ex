@@ -30,6 +30,7 @@ defmodule Phos.Comments.Comment do
   def changeset_edit(comment, attrs) do
     comment
     |> cast(attrs, [:id, :body, :path, :active])
+    |> validate_required([:id, :body, :path, :orb_id, :initiator_id])
   end
 
 end
