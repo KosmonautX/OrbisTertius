@@ -3,6 +3,7 @@ defmodule PhosWeb.API.CommentController do
 
   alias Phos.Comments
   alias Phos.Comments.Comment
+  alias PhosWeb.Utility.Encoder
 
   action_fallback PhosWeb.API.FallbackController
 
@@ -12,12 +13,40 @@ defmodule PhosWeb.API.CommentController do
   end
   # curl -H "Content-Type: application/json" -X GET http://localhost:4000/api/comments
 
+
   def create(conn, %{"comment" => comment_params}) do
-    with {:ok, %Comment{} = comment} <- Comments.create_comment(comment_params) do
-      conn
-      |> put_status(:created)
-      |> put_resp_header("location", Routes.comment_path(conn, :show, comment))
-      |> render("show.json", comment: comment)
+    case comment_params do
+      # Create root comment flow
+      %{"orb_id" => orb_id} ->
+        comment_id = Ecto.UUID.generate()
+        comment_params =
+          comment_params
+          |> Map.put("id", comment_id)
+          |> Map.put("orb_id", orb_id)
+          |> Map.put("path", Encoder.encode_lpath(comment_id))
+
+        with {:ok, %Comment{} = comment} <- Comments.create_comment(comment_params) do
+          conn
+          |> put_status(:created)
+          |> put_resp_header("location", Routes.comment_path(conn, :show, comment))
+          |> render("show.json", comment: comment)
+        end
+      # Create child comment flow
+      %{"parent_id" => parent_id} ->
+        parent_comment = Comments.get_comment!(parent_id)
+        comment_id = Ecto.UUID.generate()
+        comment_params =
+          comment_params
+          |> Map.put("id", comment_id)
+          |> Map.put("orb_id", parent_comment.orb_id)
+          |> Map.put("path", Encoder.encode_lpath(comment_id, to_string(parent_comment.path)))
+
+        with {:ok, %Comment{} = comment} <- Comments.create_comment(comment_params) do
+          conn
+          |> put_status(:created)
+          |> put_resp_header("location", Routes.comment_path(conn, :show, comment))
+          |> render("show.json", comment: comment)
+        end
     end
   end
   # curl -H "Content-Type: application/json" -X POST -d '{"comment": {"id": "51f7a029-2023-4da1-8ff8-7981ac81b7a8", "body": "Hi comment", "path": "51f7a029", "active": "true", "orb_id": "a003b89a-74a5-448a-9b7a-94a4e2324cb3", "initiator_id": "d9476604-f725-4068-9852-1be66a046efd"}}' http://localhost:4000/api/comments

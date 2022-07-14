@@ -58,10 +58,8 @@ defmodule PhosWeb.CommentControllerTest do
     setup [:create_orb, :register_and_log_in_user]
     test "renders comment when data is valid", %{conn: conn, orb: orb, user: user} do
       comment = %{
-        id: "21e8d7c8-840e-4230-bf28-336464249493",
         body: "some root",
         orb_id: orb.id,
-        path: "21e8d7c8",
         initiator_id: user.id,
       }
 
@@ -92,10 +90,7 @@ defmodule PhosWeb.CommentControllerTest do
       %{id: parent_comment_id} = comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
 
       child_comment = %{
-        id: "21e8d7c8-840e-4230-bf28-336464249493",
         body: "some child",
-        orb_id: orb.id,
-        path: "21e8d7c8",
         initiator_id: user.id,
         parent_id: parent_comment_id
       }
@@ -117,10 +112,7 @@ defmodule PhosWeb.CommentControllerTest do
       %{id: parent_comment_id} = comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
 
       child_comment = %{
-        id: "21e8d7c8-840e-4230-bf28-336464249493",
         body: "",
-        orb_id: orb.id,
-        path: "21e8d7c8",
         initiator_id: user.id,
         parent_id: parent_comment_id
       }
