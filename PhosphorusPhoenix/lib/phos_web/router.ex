@@ -59,6 +59,8 @@ defmodule PhosWeb.Router do
     pipe_through [:api]
 
     resources "/comments", CommentController, except: [:new, :edit]
+    get "/comments/showroot/:id", CommentController, :show_root
+    get "/comments/:id/showancestor/:cid", CommentController, :show_ancestor
   end
 
   # Other scopes may use custom stacks.

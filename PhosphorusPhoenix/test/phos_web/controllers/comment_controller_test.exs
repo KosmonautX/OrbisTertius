@@ -7,10 +7,8 @@ defmodule PhosWeb.CommentControllerTest do
   alias Phos.Comments.Comment
 
   @create_root_attrs %{
-    id: "21e8d7c8-840e-4230-bf28-336464249493",
     body: "some root",
     orb_id: "6304af82-088c-4383-ae23-e70ca7d9460d",
-    path: "21e8d7c8",
     initiator_id: "a45bbc2c-22b8-42ca-9c11-77bf609e2d86",
   }
 
@@ -51,6 +49,35 @@ defmodule PhosWeb.CommentControllerTest do
         "active" => true,
         "body" => "some body",
       }] = json_response(conn, 200)["data"]
+    end
+
+    test "lists root comments of orb", %{conn: conn, orb: orb, user: user} do
+      root_comment = comment_fixture(%{orb_id: orb.id, body: "root_comment", initiator_id: user.id})
+      root_comment2 = comment_fixture(%{orb_id: orb.id, body: "root_comment_2", initiator_id: user.id})
+
+      conn = get(conn, Routes.comment_path(conn, :show_root, orb))
+
+      assert [%{
+        "body" => "root_comment",
+        }, %{
+        "body" => "root_comment_2",
+      }] = json_response(conn, 200)["data"]
+    end
+
+    test "lists ancestors of comment", %{conn: conn, orb: orb, user: user} do
+      root_comment = comment_fixture(%{orb_id: orb.id, body: "root_comment", initiator_id: user.id})
+      second_level_comment = comment_fixture(%{orb_id: orb.id, body: "second_level_comment", initiator_id: user.id, parent_id: root_comment.id, parent_path: to_string(root_comment.path)})
+      third_level_comment = comment_fixture(%{orb_id: orb.id, body: "third_level_comment", initiator_id: user.id, parent_id: second_level_comment.id, parent_path: to_string(second_level_comment.path)})
+
+      conn = get(conn, Routes.comment_path(conn, :show_ancestor, orb, third_level_comment))
+
+      assert [%{
+        "body" => "root_comment",
+        }, %{
+        "body" => "second_level_comment",
+        }, %{
+          "body" => "third_level_comment",
+        }] = json_response(conn, 200)["data"]
     end
   end
 

@@ -63,6 +63,12 @@ defmodule PhosWeb.API.CommentController do
   end
   # curl -H "Content-Type: application/json" -X GET http://localhost:4000/api/orbs/aa3609f6-a988-44c2-b9fa-67d8729639f7/root
 
+  def show_ancestor(conn, %{"id" => orb_id, "cid" => cid}) do
+    comment = Comments.get_comment!(cid)
+    comments = Comments.get_ancestor_comments_by_orb(orb_id, to_string(comment.path))
+    render(conn, "index.json", comments: comments)
+  end
+
   def update(conn, %{"id" => id, "comment" => comment_params}) do
     comment = Comments.get_comment!(id)
 
