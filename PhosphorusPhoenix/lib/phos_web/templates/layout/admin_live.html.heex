@@ -1,0 +1,41 @@
+<main class="w-full relative">
+  <div class="alert">
+    <%= if live_flash(@flash, :info) do %>
+      <div class="bg-green-100 border border-green-400 text-red-700 px-4 py-3 rounded relative"
+        role="alert" phx-click="lv:clear-flash" phx-value-key="info">
+        <div class="flex px-4">
+          <p class="block sm:inline"><%= live_flash(@flash, :info) %></p>
+        </div>
+      </div>
+    <% end %>
+
+    <%= if live_flash(@flash, :error) do %>
+      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+        role="alert" phx-click="lv:clear-flash" phx-value-key="error">
+        <div class="flex px-4">
+          <p class="block sm:inline"><%= live_flash(@flash, :error) %></p>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="flex absolute top-0  w-full">
+    <nav class="md:left-0 md:block md:fixed md:top-0 md:bottom-0 md:overflow-y-auto md:flex-row md:flex-nowrap md:overflow-hidden shadow-xl bg-white flex flex-wrap items-center justify-between relative md:w-64 z-10 py-4 px-6">
+      <div class="md:flex-col md:items-stretch md:min-h-full md:flex-nowrap px-0 flex flex-wrap items-center w-full mx-auto">
+        <%= live_patch "ScratchBac Admin", to: Routes.admin_dashboard_path(@socket, :index), class: "md:block text-left md:pb-2 text-blueGray-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0" %>
+        <div>
+          <hr class="my-4 md:min-w-full">
+          <h6 class="md:min-w-full text-blueGray-500 text-xs uppercase font-bold block pt-1 pb-4 no-underline">Feature</h6>
+          <ul class="md:flex-col md:min-w-full flex flex-col list-none" id="navbar">
+            <.live_component module={PhosWeb.Components.AdminSidebar} id="dashboard" to={Routes.admin_dashboard_path(@socket, :index)} icon="fa-tv" title="Dashboard"/>
+            <.live_component module={PhosWeb.Components.AdminSidebar} id="orb" to={Routes.admin_orb_index_path(@socket, :index)} icon="fa-location" title="Orbs"/>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="md:ml-72 md:mt-16 md:mr-8 w-full">
+      <%= @inner_content %>
+    </div>
+  </div>
+</main>

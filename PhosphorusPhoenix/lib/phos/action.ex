@@ -37,8 +37,23 @@ defmodule Phos.Action do
 
 #   """
 #
+
+  def get_orb(id) when is_binary(id) do
+    query = from o in Orb, preload: [:locations, :initiator], where: o.id == ^id, limit: 1
+    case Repo.one(query) do
+      %Orb{} = orb -> {:ok, orb}
+      _ -> {:error, "Record not found"}
+    end
+  end
   def get_orb!(id), do: Repo.get!(Orb, id) |> Repo.preload([:locations, :initiator])
   def get_orb_by_fyr(id), do: Repo.get_by(Phos.Users.User, fyr_id: id)
+
+  def list_all_active_orbs(options \\ []) do
+    page = Keyword.get(options, :page, 1)
+    offset = Keyword.get(options, :offset, 20)
+    query = from o in Orb, where: o.active == true, preload: [:initiator], order_by: [desc: :inserted_at], limit: ^offset, offset: ^((page - 1) * offset)
+    Repo.all(query)
+  end
 
   def get_orbs_by_geohashes(ids) do
     query =
@@ -109,7 +124,7 @@ defmodule Phos.Action do
         Repo.insert_all(Location, maps, on_conflict: :nothing, conflict_target: :id)
         location_ids = Enum.map(maps, fn loc -> loc.id end)
         orb_locations_upsert(attrs, location_ids)
-        
+
         _ ->
         %Orb{}
         |> Orb.changeset(attrs)
@@ -122,10 +137,10 @@ defmodule Phos.Action do
       {:ok, orb} ->
         orb_loc_publisher(orb, :genesis, orb.locations)
         {:ok, orb}
-        
+
       {:error, %Ecto.Changeset{} = changeset} ->
         {:error, changeset}
-        
+
     end
   end
 

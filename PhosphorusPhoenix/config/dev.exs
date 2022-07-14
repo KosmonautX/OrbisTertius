@@ -25,7 +25,8 @@ config :phos, PhosWeb.Endpoint,
   secret_key_base: "Kg0QgtaLpp2OQJIfeNPfCoiFsIyL3gTKA8KMUXaNyD0xYw5+wFlelPexSf1m9k8m",
   watchers: [
     # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
-    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
+    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
   ]
 
 # ## SSL Support
@@ -62,7 +63,7 @@ config :phos, PhosWeb.Endpoint,
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/phos_web/(utility|live|views|channels)/.*(ex)$",
+      ~r"lib/phos_web/(utility|live|views|channels|components)/.*(ex)$",
       ~r"lib/phos_web/templates/.*(eex)$"
     ]
   ]
@@ -86,3 +87,7 @@ config :ex_aws, :s3,
 config :phos, Phos.External.HeimdallrClient,
   base_url: "https://norbandy.scratchbac.org/api",
   authorization: {Phos.External.HeimdallrClient, :authorization, []}
+
+config :phos, Phos.Admin,
+  password: "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
+  algorithm: :sha256

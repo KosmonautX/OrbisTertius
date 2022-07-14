@@ -35,7 +35,7 @@ config :esbuild,
   version: "0.14.0",
   default: [
     args:
-      ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
+      ~w(js/app.js js/admin.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
@@ -67,6 +67,15 @@ config :phos, Phos.OAuthStrategy,
   telegram: [
     host: {System, :get_env, ["TELEGRAM_REDIRECT_HOST"]}, # https://endpoint.com
     bot_id: {System, :get_env, ["TELEGRAM_BOT_ID"]},
+  ]
+
+config :tailwind, version: "3.1.5", default: [
+  args: ~w(
+    --config=tailwind.config.js
+    --input=css/admin.css
+    --output=../priv/static/assets/admin.css
+  ),
+  cd: Path.expand("../assets", __DIR__)
   ]
 
 # Import environment specific config. This must remain at the bottom

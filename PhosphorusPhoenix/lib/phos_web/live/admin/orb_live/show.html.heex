@@ -1,0 +1,29 @@
+<div class="w-full p-2">
+  <.live_component module={PhosWeb.Components.Card} title="Detail orbs" id="detail_orb">
+    <.live_component module={PhosWeb.Components.List} name="ID" value={@orb.id} id="orb_id_#{orb.id}"/>
+    <.live_component module={PhosWeb.Components.List} name="Title" editable={true} data={@orb} value={@orb.title} id="orb_title_#{orb.id}"/>
+    <.live_component module={PhosWeb.Components.List} name="Extinguish" value={Timex.format!(@orb.extinguish, "{D} {Mshort} {YY} {h24}:{m}")} id="orb_extinguish_#{orb.id}" />
+    <.live_component module={PhosWeb.Components.List} name="Source" value={@orb.source} id="orb_source_#{orb.id}"/>
+    <.live_component module={PhosWeb.Components.List} name="Status" id="orb_status_#{orb.id}">
+      <div class="flex items-center">
+        <%= if (@orb.active) do %>
+          <span class="h-2 w-2 flex rounded-full bg-green-500 mr-2" />
+          Active
+        <% else %>
+          <span class="h-2 w-2 flex rounded-full bg-red-500 mr-2" />
+          Inactive
+        <% end %>
+      </div>
+    </.live_component>
+    <.live_component module={PhosWeb.Components.List} name="Last update" value={Timex.format!(@orb.updated_at, "{D} {Mshort} {YY} {h24}:{m}")} id="orb_updated_at_#{orb.id}" />
+    <.live_component module={PhosWeb.Components.List} name="Created at" value={Timex.format!(@orb.inserted_at, "{D} {Mshort} {YY} {h24}:{m}")} id="orb_inserted_at_#{orb.id}" />
+  </.live_component>
+</div>
+
+<div class="w-full p-2 mt-4">
+  <.live_component module={PhosWeb.Components.Card} title="Detail Initiator" id="detail_initiator">
+    <.live_component module={PhosWeb.Components.List} name="ID" value={@orb.initiator.id} id="initiator_id_#{orb.id}"/>
+    <.live_component module={PhosWeb.Components.List} name="Username" value={@orb.initiator.username} id="initiator_username_#{orb.id}"/>
+    <.live_component module={PhosWeb.Components.List} name="Email" value={@orb.initiator.email} id="initiator_email_#{orb.id}"/>
+  </.live_component>
+</div>
