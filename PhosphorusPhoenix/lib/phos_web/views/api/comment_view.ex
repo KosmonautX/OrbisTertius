@@ -16,7 +16,8 @@ defmodule PhosWeb.API.CommentView do
       active: comment.active,
       body: comment.body,
       path: to_string(comment.path),
-      parent_id: comment.parent_id
+      parent_id: comment.parent_id,
+      orb_id: comment.orb_id
     }
   end
 end

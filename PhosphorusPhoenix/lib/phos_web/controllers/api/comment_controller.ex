@@ -9,6 +9,7 @@ defmodule PhosWeb.API.CommentController do
 
   def index(conn, _params) do
     comments = Comments.list_comments()
+    #IO.inspect
     render(conn, "index.json", comments: comments)
   end
   # curl -H "Content-Type: application/json" -X GET http://localhost:4000/api/comments
@@ -19,11 +20,11 @@ defmodule PhosWeb.API.CommentController do
       # Create root comment flow
       %{"orb_id" => orb_id} ->
         comment_id = Ecto.UUID.generate()
-        comment_params =
-          comment_params
-          |> Map.put("id", comment_id)
-          |> Map.put("orb_id", orb_id)
-          |> Map.put("path", Encoder.encode_lpath(comment_id))
+        comment_params = %{"id" => comment_id,
+                           "orb_id" => orb_id,
+                           "initiator_id" => conn.assigns.current_user["user_id"],
+                           "path" => Encoder.encode_lpath(comment_id),
+                           "body" => comment_params["body"]}
 
         with {:ok, %Comment{} = comment} <- Comments.create_comment(comment_params) do
           conn
@@ -31,15 +32,16 @@ defmodule PhosWeb.API.CommentController do
           |> put_resp_header("location", Routes.comment_path(conn, :show, comment))
           |> render("show.json", comment: comment)
         end
-      # Create child comment flow
-      %{"parent_id" => parent_id} ->
+        # Create child comment flow
+        %{"parent_id" => parent_id} ->
         parent_comment = Comments.get_comment!(parent_id)
         comment_id = Ecto.UUID.generate()
-        comment_params =
-          comment_params
-          |> Map.put("id", comment_id)
-          |> Map.put("orb_id", parent_comment.orb_id)
-          |> Map.put("path", Encoder.encode_lpath(comment_id, to_string(parent_comment.path)))
+        comment_params = %{"id" => comment_id,
+                           "orb_id" => parent_comment.orb_id,
+                           "parent_id" => parent_comment.id,
+                           "initiator_id" => conn.assigns.current_user["user_id"],
+                           "path" => Encoder.encode_lpath(comment_id, to_string(parent_comment.path)),
+                           "body" => comment_params["body"]}
 
         with {:ok, %Comment{} = comment} <- Comments.create_comment(comment_params) do
           conn
@@ -69,7 +71,7 @@ defmodule PhosWeb.API.CommentController do
     render(conn, "index.json", comments: comments)
   end
 
-  def update(conn, %{"id" => id, "comment" => comment_params}) do
+  def update(conn, %{"id" => id} = comment_params) do
     comment = Comments.get_comment!(id)
 
     with {:ok, %Comment{} = comment} <- Comments.update_comment(comment, comment_params) do

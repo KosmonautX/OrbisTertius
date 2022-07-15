@@ -32,11 +32,12 @@ defmodule PhosWeb.CommentControllerTest do
   end
 
   setup %{conn: conn} do
-    {:ok, conn: put_req_header(conn, "accept", "application/json")}
+    {:ok, conn: conn
+    |> put_req_header("accept", "application/json")}
   end
 
   describe "index" do
-    setup [:create_orb, :register_and_log_in_user]
+    setup [:create_orb, :inject_user_token]
 
     test "lists all comments", %{conn: conn, orb: orb, user: user} do
       comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
@@ -82,7 +83,7 @@ defmodule PhosWeb.CommentControllerTest do
   end
 
   describe "create comment" do
-    setup [:create_orb, :register_and_log_in_user]
+    setup [:create_orb, :inject_user_token]
     test "renders comment when data is valid", %{conn: conn, orb: orb, user: user} do
       comment = %{
         body: "some root",
@@ -90,7 +91,7 @@ defmodule PhosWeb.CommentControllerTest do
         initiator_id: user.id,
       }
 
-      conn = post(conn, Routes.comment_path(conn, :create), comment: comment)
+      conn = post(conn, Routes.comment_path(conn, :create), comment)
       assert %{"id" => id} = json_response(conn, 201)["data"]
 
       conn = get(conn, Routes.comment_path(conn, :show, id))
@@ -103,7 +104,7 @@ defmodule PhosWeb.CommentControllerTest do
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
-      conn = post(conn, Routes.comment_path(conn, :create), comment: @invalid_attrs)
+      conn = post(conn, Routes.comment_path(conn, :create), @invalid_attrs)
 
       assert %{
         "body" => ["can't be blank"],
@@ -112,7 +113,7 @@ defmodule PhosWeb.CommentControllerTest do
   end
 
   describe "create child comment" do
-    setup [:create_orb, :register_and_log_in_user]
+    setup [:create_orb, :inject_user_token]
     test "renders comment when data is valid", %{conn: conn, orb: orb, user: user} do
       %{id: parent_comment_id} = comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
 
@@ -122,7 +123,7 @@ defmodule PhosWeb.CommentControllerTest do
         parent_id: parent_comment_id
       }
 
-      conn = post(conn, Routes.comment_path(conn, :create), comment: child_comment)
+      conn = post(conn, Routes.comment_path(conn, :create), child_comment)
       assert %{"id" => id} = json_response(conn, 201)["data"]
 
       conn = get(conn, Routes.comment_path(conn, :show, id))
@@ -144,7 +145,7 @@ defmodule PhosWeb.CommentControllerTest do
         parent_id: parent_comment_id
       }
 
-      conn = post(conn, Routes.comment_path(conn, :create), comment: child_comment)
+      conn = post(conn, Routes.comment_path(conn, :create), child_comment)
 
       assert %{
         "body" => ["can't be blank"],
@@ -153,11 +154,11 @@ defmodule PhosWeb.CommentControllerTest do
   end
 
   describe "update comment" do
-    setup [:create_orb, :register_and_log_in_user]
+    setup [:create_orb, :inject_user_token]
 
     test "renders comment when data is valid", %{conn: conn, orb: orb, user: user} do
       comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
-      conn = put(conn, Routes.comment_path(conn, :update, comment), comment: @update_attrs)
+      conn = put(conn, Routes.comment_path(conn, :update, comment), @update_attrs)
       assert %{"id" => id} = json_response(conn, 200)["data"]
 
       conn = get(conn, Routes.comment_path(conn, :show, id))
@@ -171,7 +172,7 @@ defmodule PhosWeb.CommentControllerTest do
 
     test "renders errors when data is invalid", %{conn: conn, orb: orb, user: user} do
       comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
-      conn = put(conn, Routes.comment_path(conn, :update, comment), comment: @invalid_attrs)
+      conn = put(conn, Routes.comment_path(conn, :update, comment), @invalid_attrs)
 
       assert %{
         "body" => ["can't be blank"],
@@ -180,13 +181,13 @@ defmodule PhosWeb.CommentControllerTest do
   end
 
   describe "update child comment" do
-    setup [:create_orb, :register_and_log_in_user]
+    setup [:create_orb, :inject_user_token]
 
     test "renders comment when data is valid", %{conn: conn, orb: orb, user: user} do
       root_comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
       second_level_comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id, parent_id: root_comment.id})
 
-      conn = put(conn, Routes.comment_path(conn, :update, second_level_comment), comment: @update_attrs)
+      conn = put(conn, Routes.comment_path(conn, :update, second_level_comment), @update_attrs)
       assert %{"id" => id} = json_response(conn, 200)["data"]
 
       conn = get(conn, Routes.comment_path(conn, :show, id))
@@ -202,7 +203,7 @@ defmodule PhosWeb.CommentControllerTest do
       root_comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
       second_level_comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id, parent_id: root_comment.id})
 
-      conn = put(conn, Routes.comment_path(conn, :update, second_level_comment), comment: @invalid_attrs)
+      conn = put(conn, Routes.comment_path(conn, :update, second_level_comment), @invalid_attrs)
 
       assert %{
         "body" => ["can't be blank"],
@@ -211,7 +212,7 @@ defmodule PhosWeb.CommentControllerTest do
   end
 
   describe "delete comment" do
-    setup [:create_orb, :register_and_log_in_user]
+    setup [:create_orb, :inject_user_token]
 
     test "deletes chosen comment", %{conn: conn, orb: orb, user: user} do
       comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
