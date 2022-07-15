@@ -45,7 +45,7 @@ defmodule Phos.Action do
       Orb_Location
       |> where([e], e.location_id in ^ids)
       |> preload(orbs: :initiator)
-      |> order_by(desc: :inserted_at)
+      |> order_by(desc: :updated_at)
 
     Repo.all(query, limit: 32)
     |> Enum.map(fn orb -> orb.orbs end)
