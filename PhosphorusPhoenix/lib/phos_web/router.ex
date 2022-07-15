@@ -59,6 +59,8 @@ defmodule PhosWeb.Router do
     resources "/comments", CommentController, except: [:new, :edit]
     get "/comments/showroot/:id", CommentController, :show_root
     get "/comments/:id/showancestor/:cid", CommentController, :show_ancestor
+
+    get "/users/:id/showusermedia", UserController, :show_user_media
   end
 
   # Other scopes may use custom stacks.
