@@ -22,7 +22,9 @@ defmodule PhosWeb.Menshen.Plug do
 
   defp shallNotPass(conn) do
     conn
-    |> halt
+    |> put_status(:unauthorized)
+    |> resp(401, "Begone Heathen")
+    |> halt()
   end
 
 end
