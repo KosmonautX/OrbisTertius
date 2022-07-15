@@ -5,6 +5,7 @@ defmodule Phos.Action.Orb_Location do
 
   @primary_key false
   schema "orbs_location" do
+    field :comment_count, :integer, default: 0, virtual: true
     belongs_to :orbs, Orb, type: Ecto.UUID, references: :id, foreign_key: :orb_id
     belongs_to :locations, Location, type: :integer, references: :id, foreign_key: :location_id
 
