@@ -4,10 +4,10 @@ defmodule PhosWeb.Menshen.Plug do
 
   def init(opts), do: opts
 
-  @spec call(Plug.Conn.t(), any) :: Plug.Conn.t()
-  def call(conn, _opts) do
-    jwt = fetchToken(conn)
-    case Auth.validate_user(jwt) do
+  @spec fetch_authorised_user_claims(Plug.Conn.t(), any) :: Plug.Conn.t()
+  def fetch_authorised_user_claims(conn, _opts) do
+    jwt = get_req_header(conn, "authorization")
+    case Auth.validate_user(List.first(jwt)) do
       {:ok , claims} ->
         conn |> shallPass(claims)
       { :error, _error } ->
@@ -17,17 +17,12 @@ defmodule PhosWeb.Menshen.Plug do
 
   defp shallPass(conn, claims) do
     conn
-    |> assign(:claim, claims )
+    |> assign(:current_user, claims)
   end
 
   defp shallNotPass(conn) do
     conn
-    |> put_status(:unauthorized)
     |> halt
   end
-
-  defp fetchToken(%{"session_token" => jwt}= _conn), do: jwt
-
-
 
 end

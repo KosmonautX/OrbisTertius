@@ -1,0 +1,37 @@
+# -*- restclient -*-
+# Phos API Endpoint Documentation
+
+:ipAddress = http://localhost:4000/api
+:lky=58fd1656-495e-4ab0-bd12-425aa31791c7
+:auth-headers = <<
+Authorization: :token
+Content-Type: application/json
+User-Agent: Emacs27
+
+
+## Generate Client-side JWT
+## Initialise user
+GET :ipAddress/devland/flameon?user_id=:lky
+-> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
+##
+#
+### Comments API
+## List Comments
+GET :ipAddress/comments/
+:auth-headers
+## Read Comment
+GET :ipAddress/comments/82cbda35-c8a1-4d5e-840e-ebbb3c039a3b
+:auth-headers
+## Create Comment
+POST :ipAddress/comments/
+:auth-headers
+
+{
+"parent_id": "8621d340-2009-43df-b109-779aa689ee47",
+"body": "Hi comment",
+"active": true
+
+}
+## Delete Comment
+DELETE :ipAddress/comments/b6918e73-e142-4cdc-a10b-40fd8d9005a8
+:auth-headers

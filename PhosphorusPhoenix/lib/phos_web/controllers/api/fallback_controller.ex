@@ -21,4 +21,11 @@ defmodule PhosWeb.API.FallbackController do
     |> render(:"404")
   end
 
+  def call(conn, {:error, :unauthorized}) do
+    conn
+    |> put_status(:unauthorized)
+    |> put_view(PhosWeb.ErrorView)
+    |> render(:"403")
+  end
+
 end

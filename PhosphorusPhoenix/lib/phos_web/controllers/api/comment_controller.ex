@@ -14,7 +14,7 @@ defmodule PhosWeb.API.CommentController do
   # curl -H "Content-Type: application/json" -X GET http://localhost:4000/api/comments
 
 
-  def create(conn, %{"comment" => comment_params}) do
+  def create(conn, comment_params) do
     case comment_params do
       # Create root comment flow
       %{"orb_id" => orb_id} ->
