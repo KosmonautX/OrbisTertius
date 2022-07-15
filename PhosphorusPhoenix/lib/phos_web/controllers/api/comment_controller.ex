@@ -7,6 +7,8 @@ defmodule PhosWeb.API.CommentController do
 
   action_fallback PhosWeb.API.FallbackController
 
+  # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X GET 'http://localhost:4000/api/comments'
+
   def index(conn, _params) do
     comments = Comments.list_comments()
     #IO.inspect
