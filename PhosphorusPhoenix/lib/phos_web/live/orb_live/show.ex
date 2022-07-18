@@ -150,16 +150,30 @@ defmodule PhosWeb.OrbLive.Show do
   end
 
   @impl true
-  def handle_event("view_more", %{"orb" => orb_id, "path" => path}, socket) do
+  def handle_event("toggle_more_replies", %{"orb" => orb_id, "path" => path}, socket) do
     comments = Comments.get_child_comments_by_orb(orb_id,path) |> decode_to_comment_tuple_structure()
 
-    # TODO: Disable viewmore button JS for omnipotency
+    # import IEx; IEx.pry()
     updated_comments =
-      comments ++ socket.assigns.comments
-
+      if comments in socket.assigns.comments do
+        socket.assigns.comments -- comments
+      else
+        comments ++ socket.assigns.comments
+      end
     {:noreply, socket
     |> assign(:comments, updated_comments)}
   end
+
+  # @impl true
+  # def handle_event("hide_more", %{"orb" => orb_id, "path" => path}, socket) do
+  #   comments = Comments.get_child_comments_by_orb(orb_id,path) |> decode_to_comment_tuple_structure()
+
+  #   updated_comments =
+
+
+  #   {:noreply, socket
+  #   |> assign(:comments, updated_comments)}
+  # end
 
   def decode_to_comment_tuple_structure(comments) do
     for c <- comments, into: [] do
