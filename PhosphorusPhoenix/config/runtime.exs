@@ -104,7 +104,8 @@ if config_env() == :prod do
     # ssl: true,
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
-    socket_options: maybe_ipv6
+    socket_options: maybe_ipv6,
+    types: Phos.PostgresTypes
 
   # Prometheus
   config :phos, Phos.PromEx,
