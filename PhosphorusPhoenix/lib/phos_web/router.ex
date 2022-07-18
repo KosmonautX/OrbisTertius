@@ -2,6 +2,7 @@ defmodule PhosWeb.Router do
   use PhosWeb, :router
 
   import PhosWeb.UserAuth
+  import PhosWeb.Menshen.Plug
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -26,12 +27,9 @@ defmodule PhosWeb.Router do
     plug :accepts, ["json"]
   end
 
-  pipeline :authentication do
-  end
-
 
   scope "/", PhosWeb do
-    pipe_through [:browser, :authentication]
+    pipe_through [:browser]
 
     get "/archetype", ArchetypeController, :show do
       resources "/archetype/usr", UserController, only: [:show]
@@ -56,9 +54,13 @@ defmodule PhosWeb.Router do
   end
 
   scope "/api", PhosWeb.API do
-    pipe_through [:api]
+    pipe_through [:api, :fetch_authorised_user_claims]
 
     resources "/comments", CommentController, except: [:new, :edit]
+    get "/comments/showroot/:id", CommentController, :show_root
+    get "/comments/:id/showancestor/:cid", CommentController, :show_ancestor
+
+    get "/users/:id/showusermedia", UserController, :show_user_media
   end
 
   # Other scopes may use custom stacks.
@@ -103,6 +105,12 @@ defmodule PhosWeb.Router do
       pipe_through :browser
 
       forward "/mailbox", Plug.Swoosh.MailboxPreview
+    end
+
+    scope "/api/devland", PhosWeb.API do
+      pipe_through :api
+
+      get "/flameon", DevLandController, :new
     end
   end
 

@@ -2,6 +2,7 @@ defmodule PhosWeb.Menshen.Auth do
   import Joken.Config
 
   alias PhosWeb.Menshen.Role
+  alias Phos.Users.{Private_Profile}
 
   def validate_user(token) do
     Role.Pleb.verify_and_validate(token)
@@ -25,9 +26,9 @@ defmodule PhosWeb.Menshen.Auth do
   end
 
   # geo utilities?
-  defp parse_territories(%{private_profile: %Phos.Users.Private_Profile{geolocation: geolocations}}) do
-    Enum.reduce(geolocations, %{}, fn %{chronolock: chronolock, geohash: hash, location_description: desc}, acc ->
-      Map.put(acc, String.downcase(desc), %{radius: chronolock, hash: :h3.to_string(hash)})
+  defp parse_territories(%{private_profile: %Private_Profile{geolocation: geolocations}}) do
+    Enum.reduce(geolocations, %{}, fn %{id: name, chronolock: chronolock, geohash: hash}, acc ->
+      Map.put(acc, String.downcase(name), %{radius: chronolock, hash: hash})
     end)
   end
 

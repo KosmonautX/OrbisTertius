@@ -63,8 +63,9 @@ config :phos, PhosWeb.Endpoint,
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/phos_web/(utility|live|views|channels)/.*(ex)$",
-      ~r"lib/phos_web/templates/.*(eex)$"
+      ~r"lib/phos_web/(utility|live|views|controllers|channels)/.*(ex)$",
+      ~r"lib/phos_web/templates/.*(eex)$",
+      ~r"lib/phos_web/(views|controllers)/api/.*(ex)$"
     ]
   ]
 
