@@ -9,3 +9,7 @@
 .active {
   @apply text-blue-500;
 }
+
+.button-sm {
+  @apply bg-blue-400 text-white active:bg-blue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none ease-linear transition-all duration-150;
+}
