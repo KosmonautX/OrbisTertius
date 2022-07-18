@@ -64,7 +64,6 @@ defmodule PhosWeb.CommentLive.IndexComponent do
               <% end %>
 
                 <%= if elem(@comment, 1).child_count > 0 do %>
-                  <%# TODO: Hides link after clicking %>
                   <div id={"viewreply-#{elem(@comment, 1).id}"}>
                     <%#= link "View replies [#{elem(@comment, 1).child_count}]", to: "#", phx_click: "view_more", phx_value_orb: @orb.id, phx_value_path: to_string(elem(@comment, 1).path) %>
 

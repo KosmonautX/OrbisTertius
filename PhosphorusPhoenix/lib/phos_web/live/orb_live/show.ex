@@ -153,9 +153,9 @@ defmodule PhosWeb.OrbLive.Show do
   def handle_event("toggle_more_replies", %{"orb" => orb_id, "path" => path}, socket) do
     comments = Comments.get_child_comments_by_orb(orb_id,path) |> decode_to_comment_tuple_structure()
 
-    # import IEx; IEx.pry()
+    # Change state of hide/show with JS
     updated_comments =
-      if comments in socket.assigns.comments do
+      if hd(comments) in socket.assigns.comments do
         socket.assigns.comments -- comments
       else
         comments ++ socket.assigns.comments
@@ -163,17 +163,6 @@ defmodule PhosWeb.OrbLive.Show do
     {:noreply, socket
     |> assign(:comments, updated_comments)}
   end
-
-  # @impl true
-  # def handle_event("hide_more", %{"orb" => orb_id, "path" => path}, socket) do
-  #   comments = Comments.get_child_comments_by_orb(orb_id,path) |> decode_to_comment_tuple_structure()
-
-  #   updated_comments =
-
-
-  #   {:noreply, socket
-  #   |> assign(:comments, updated_comments)}
-  # end
 
   def decode_to_comment_tuple_structure(comments) do
     for c <- comments, into: [] do
