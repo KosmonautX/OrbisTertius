@@ -8,11 +8,11 @@ defmodule PhosWeb.Menshen.Mounter do
 
   def on_mount(:pleb, _params, %{"user_token" => token}, socket) do
     user =  Map.from_struct(Phos.Users.get_user_by_session_token(token))
-    {:cont, assign(socket, :guest, false) |>assign(:current_user, user)}
+    {:cont, assign(socket, :guest, false) |> assign(:current_user, user)}
   end
 
   def on_mount(:pleb, _params, _session, socket) do
-    {:cont, assign(socket, :guest, true)}
+    {:cont, socket |> assign(:guest, true) |> assign(:current_user, nil)}
   end
 
   def on_mount(:admin, _params, _session, socket) do
