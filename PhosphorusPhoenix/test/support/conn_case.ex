@@ -47,7 +47,17 @@ defmodule PhosWeb.ConnCase do
   """
   def register_and_log_in_user(%{conn: conn}) do
     user = Phos.UsersFixtures.user_fixture()
+
     %{conn: log_in_user(conn, user), user: user}
+  end
+
+  def inject_user_token(%{conn: conn}) do
+    user = Phos.UsersFixtures.user_fixture()
+    {:ok, token, _claims}= PhosWeb.Menshen.Auth.generate_user(user.id)
+    %{conn: conn
+    |> Phoenix.ConnTest.init_test_session(%{})
+    |> Plug.Conn.put_req_header("authorization",
+      token), user: user}
   end
 
   @doc """

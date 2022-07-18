@@ -118,7 +118,7 @@ defmodule PhosWeb.OrbLiveTest do
       {:ok, show_live, _html} = live(conn, Routes.orb_show_path(conn, :show, orb))
 
       assert show_live |> element("a", "Edit") |> render_click() =~
-               "Edit Orb"
+               "Edit"
 
       assert_patch(show_live, Routes.orb_show_path(conn, :edit, orb))
 

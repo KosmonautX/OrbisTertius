@@ -72,7 +72,9 @@ defmodule Phos.MixProject do
       {:castore, "~> 0.1.0"},
       {:tailwind, "~> 0.1", runtime: Mix.env() == :dev},
       {:timex, "~> 3.7"},
-      {:prom_ex, "~> 1.7"}
+      {:prom_ex, "~> 1.7"},
+      # comments
+      {:ecto_ltree, "~> 0.3.0"}
     ]
   end
 

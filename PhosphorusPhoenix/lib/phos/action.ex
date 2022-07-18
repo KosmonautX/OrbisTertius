@@ -66,16 +66,35 @@ defmodule Phos.Action do
     |> Enum.map(fn orb -> orb.orbs end)
   end
 
+  # def get_active_orbs_by_geohashes(ids) do
+  #   query =
+  #     Orb_Location
+  #     |> where([e], e.location_id in ^ids)
+  #     |> preload(:orbs)
+  #     |> preload(:locations)
+  #     |> order_by(desc: :inserted_at)
+
+  #   Repo.all(query, limit: 32)
+  #   |> Enum.map(fn orb -> orb.orbs end)
+  #   |> Enum.filter(fn orb -> orb.active == true end)
+  # end
+
   def get_active_orbs_by_geohashes(ids) do
     query =
-      Orb_Location
-      |> where([e], e.location_id in ^ids)
-      |> preload(:orbs)
-      |> preload(:locations)
-      |> order_by(desc: :inserted_at)
+      from l in Orb_Location,
+        as: :l,
+        where: l.location_id in ^ids,
+        preload: [:orbs, :locations],
+        inner_lateral_join: c in subquery(
+          from c in Phos.Comments.Comment,
+          where: c.orb_id == parent_as(:l).orb_id,
+          select: %{count: count()}
+        ),
+        select_merge: %{comment_count: c.count}
 
     Repo.all(query, limit: 32)
-    |> Enum.map(fn orb -> orb.orbs end)
+    |> Enum.map(fn orbloc -> Map.put(orbloc.orbs, :comment_count, orbloc.comment_count) end)
+    # |> Enum.map(fn orb -> orb.orbs end)
     |> Enum.filter(fn orb -> orb.active == true end)
   end
 
