@@ -34,6 +34,28 @@ unless config_env() == :prod do
   secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, :instance_role],
   region: "ap-southeast-1"
 
+  # Prometheus
+  config :phos, Phos.PromEx,
+  disabled: false,
+  manual_metrics_start_delay: :no_delay,
+  drop_metrics_groups: [],
+  grafana: [
+      host: System.get_env("GRAFANA_HOST") || raise("GRAFANA_HOST is required"),
+      auth_token: System.get_env("GRAFANA_TOKEN") || raise("GRAFANA_TOKEN is required"),
+      upload_dashboards_on_start: true,
+      folder_name: (System.get_env("FLY_APP_NAME") || "Phos") <> "Dashboard",
+      annotate_app_lifecycle: true
+    ],
+  metrics_server: [
+      port: 3927,
+      path: "/metrics", # This is an optional setting and will default to `"/metrics"`
+      protocol: :http, # This is an optional setting and will default to `:http`
+      pool_size: 9, # This is an optional setting and will default to `5`
+      cowboy_opts: [], # This is an optional setting and will default to `[]`
+      auth_strategy: :none # This is an optional and will default to `:none`
+    ]
+
+
 end
 
 if config_env() == :prod do

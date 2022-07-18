@@ -1,0 +1,40 @@
+app = "odin"
+
+[env]
+GF_INSTALL_PLUGINS = "grafana-worldmap-panel,grafana-clock-panel"
+GF_SERVER_DOMAIN   = "grafana.miao.dev"
+GF_SERVER_PROTOCAL = "https"
+GF_SERVER_ROOT_URL = "https://grafana.miao.dev/"
+
+[build]
+image = "grafana/grafana"
+
+[mount]
+source      = "grafana"
+destination = "/var/lib/grafana"
+
+[[services]]
+internal_port = 3000
+protocol      = "tcp"
+
+[services.concurrency]
+hard_limit = 100
+soft_limit = 80
+type       = "connections"
+
+[[services.ports]]
+handlers = ["tls", "http"]
+port     = 443
+
+[[services.ports]]
+handlers = ["http"]
+port     = 80
+
+[[services.http_checks]]
+path            = "/api/health"
+method          = "get"
+timeout         = "2000"
+interval        = "10000"
+protocol        = "http"
+grace_period    = "5s"
+tls_skip_verify = false

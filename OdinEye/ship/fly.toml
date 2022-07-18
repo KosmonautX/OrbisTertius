@@ -1,0 +1,8 @@
+app = "log-shipper"
+
+[build]
+  image = "flyio/log-shipper"
+
+[metrics]
+  port = 9598
+  path = "/metrics"

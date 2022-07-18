@@ -71,6 +71,24 @@ services:
       timeout: 20s
       retries: 3
 
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - TERM=linux
+      - GF_LOG_LEVEL=debug
+      - GF_DATAPROXY_LOGGING=true
+      - GF_DEFAULT_APP_MODE=development
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+            - ./OdinEye/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+
 networks:
   postgres:
     driver: bridge
