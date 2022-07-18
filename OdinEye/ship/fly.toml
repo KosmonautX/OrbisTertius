@@ -1,8 +1,10 @@
-app = "log-shipper"
+# fly.toml file generated for theseus on 2022-07-18T23:03:54+08:00
+
+app = "theseus"
 
 [build]
   image = "flyio/log-shipper"
 
 [metrics]
-  port = 9598
   path = "/metrics"
+  port = 3927
