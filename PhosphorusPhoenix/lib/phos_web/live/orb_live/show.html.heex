@@ -98,3 +98,10 @@
 
 <%# <PhosWeb.CommentLive.Index.render changeset={@changeset} orb={@orb} comments={@comments} current_user={@current_user} socket={@socket} live_action={@live_action}/> %>
 <.live_component module={PhosWeb.CommentLive.IndexComponent} id="commentindex" changeset={@changeset} action="new" orb={@orb} comments={@comments} current_user={@current_user} socket={@socket} live_action={@live_action} />
+
+<script>
+  window.addEventListener("js:set_hide_reply_value", e => {
+    textState = document.getElementById(e.target.id);
+    textState.text = textState.text == "Show replies" ? "Hide replies" : "Show replies";
+  })
+</script>
