@@ -65,10 +65,13 @@ defmodule PhosWeb.CommentLive.IndexComponent do
 
                 <%= if elem(@comment, 1).child_count > 0 do %>
                   <div id={"showreply-#{elem(@comment, 1).id}"} style="display: none">
-                    <a href="#" id={"hidereply-#{elem(@comment, 1).id}"} phx-click={JS.push("toggle_more_replies") |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}") |> JS.dispatch("js:set_hide_reply_value")}, phx-value-initmorecomments="false", phx-value-comment={elem(@comment, 1).id}, phx-value-orb={@orb.id}, phx-value-path={to_string(elem(@comment, 1).path)}>Hide replies</a>
+                    <a href="#" phx-click={JS.push("toggle_more_replies") |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}") |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}") |> JS.toggle(to: "#showreply-#{elem(@comment, 1).id}") |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")}, phx-value-initmorecomments="false", phx-value-orb={@orb.id}, phx-value-path={to_string(elem(@comment, 1).path)}>Show replies</a>
                   </div>
-                  <div id={"morereply-#{elem(@comment, 1).id}"}>
-                    <a href="#" phx-click={JS.push("toggle_more_replies") |> JS.toggle(to: "#morereply-#{elem(@comment, 1).id}") |> JS.toggle(to: "#showreply-#{elem(@comment, 1).id}")}, phx-value-initmorecomments="true", phx-value-comment={elem(@comment, 1).id}, phx-value-orb={@orb.id}, phx-value-path={to_string(elem(@comment, 1).path)}>Show replies</a>
+                  <div id={"hidereply-#{elem(@comment, 1).id}"} style="display: none">
+                    <a href="#" phx-click={JS.push("toggle_more_replies") |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}") |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}") |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}") |> JS.toggle(to: "#showreply-#{elem(@comment, 1).id}")}, phx-value-initmorecomments="false", phx-value-orb={@orb.id}, phx-value-path={to_string(elem(@comment, 1).path)}>Hide replies</a>
+                  </div>
+                  <div id={"initshowreply-#{elem(@comment, 1).id}"} >
+                    <a href="#" phx-click={JS.push("toggle_more_replies") |> JS.toggle(to: "#initshowreply-#{elem(@comment, 1).id}") |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")}, phx-value-initmorecomments="true", phx-value-orb={@orb.id}, phx-value-path={to_string(elem(@comment, 1).path)}>Show replies</a>
                   </div>
                 <% end %>
           </div>

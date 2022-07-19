@@ -150,7 +150,7 @@ defmodule PhosWeb.OrbLive.Show do
   end
 
   @impl true
-  def handle_event("toggle_more_replies", %{"initmorecomments" => initmorecomments, "comment" => comment_id, "orb" => orb_id, "path" => path}, socket) do
+  def handle_event("toggle_more_replies", %{"initmorecomments" => initmorecomments, "orb" => orb_id, "path" => path}, socket) do
 
     updated_comments =
       if initmorecomments == "true" do
