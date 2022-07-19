@@ -10,7 +10,7 @@ alerting:
     timeout: 10s
     api_version: v1
 scrape_configs:
-- job_name: odinseye
+- job_name: prometheus
   honor_timestamps: true
   scrape_interval: 10s
   scrape_timeout: 5s

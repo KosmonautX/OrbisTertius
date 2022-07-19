@@ -77,7 +77,7 @@ defmodule Phos.PromEx do
   @impl true
   def dashboard_assigns do
     [
-      datasource_id: "odinseye",
+      datasource_id: "prometheus",
       default_selected_interval: "30s"
     ]
   end
