@@ -26,9 +26,7 @@ defmodule PhosWeb.UserProfileLive.FormComponent do
   end
 
   def handle_event("save", %{"user" => profile_params}, socket) do
-
     # Process image upload
-
     file_uploaded =
       consume_uploaded_entries(socket, :image, fn %{path: path}, _entry ->
         for res <- ["150x150", "1920x1080"] do

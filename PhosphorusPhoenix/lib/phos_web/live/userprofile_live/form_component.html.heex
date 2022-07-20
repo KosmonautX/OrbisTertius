@@ -12,6 +12,10 @@
     phx-submit="save">
 
     <%= inputs_for f, :public_profile, fn ff -> %>
+      <%= label ff, :pronouns %>
+      <%= select ff, :pronouns, ["Mr", "Ms", "Dr"], selected: "Mr" %>
+      <%= error_tag ff, :pronouns %>
+
       <%= label ff, :bio %>
       <%= text_input ff, :bio %>
       <%= error_tag ff, :bio %>

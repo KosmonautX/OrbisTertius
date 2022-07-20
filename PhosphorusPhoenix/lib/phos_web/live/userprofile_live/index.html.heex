@@ -95,7 +95,12 @@
     <!-- Sidenav -->
     <div class="sidenav">
         <div class="profile">
-            <img src="https://imdezcode.files.wordpress.com/2020/02/imdezcode-logo.png" alt="" width="100" height="100">
+        <%= if @user.media do %>
+          <img src={ Phos.Orbject.S3.get!("USR", @user.id, "150x150") } alt="" width="100" height="100">
+        <% else %>
+          <img src="https://imdezcode.files.wordpress.com/2020/02/imdezcode-logo.png" alt="" width="100" height="100">
+        <% end %>
+
 
             <div class="name">
               <%= @user.username %>
@@ -111,23 +116,25 @@
     <div class="main">
         <div class="card">
             <div class="card-body">
-                <i class="fa fa-pen fa-xs edit"></i>
                 <table>
-                    <tbody>
-                        <tr>
-                            <td>Email</td>
-                            <td><%= @user.email %></td>
-                        </tr>
-
-                        <tr>
-                            <td>Occupation</td>
-                            <td><%= @user.public_profile.occupation %></td>
-                        </tr>
-                        <tr>
-                            <td>Birthday</td>
-                            <td><%= @user.public_profile.birthday %></td>
-                        </tr>
-                    </tbody>
+                  <tbody>
+                    <tr>
+                      <td>Pronouns</td>
+                      <td><%= @user.public_profile.pronouns %></td>
+                    </tr>
+                    <tr>
+                      <td>Email</td>
+                      <td><%= @user.email %></td>
+                    </tr>
+                    <tr>
+                      <td>Occupation</td>
+                      <td><%= @user.public_profile.occupation %></td>
+                    </tr>
+                    <tr>
+                      <td>Birthday</td>
+                      <td><%= @user.public_profile.birthday %></td>
+                    </tr>
+                  </tbody>
                 </table>
             </div>
         </div>
