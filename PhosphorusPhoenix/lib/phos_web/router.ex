@@ -27,6 +27,13 @@ defmodule PhosWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :authentication do
+  end
+
+  pipeline :admin do
+    plug :put_root_layout, {PhosWeb.LayoutView, :admin_root}
+    plug Phos.Admin.Plug
+  end
 
   scope "/", PhosWeb do
     pipe_through [:browser]
@@ -55,6 +62,14 @@ defmodule PhosWeb.Router do
       live "/user/:username", UserProfileLive.Index, :index
 
     end
+  end
+
+  scope "/admin", PhosWeb.Admin, as: :admin, on_mount: {Phos.Admin.Mounter, :admin} do
+    pipe_through [:browser, :admin]
+
+    live "/", DashboardLive, :index
+    live "/orbs", OrbLive.Index, :index
+    live "/orbs/:id", OrbLive.Show, :show
   end
 
   scope "/api", PhosWeb.API do
@@ -148,6 +163,8 @@ defmodule PhosWeb.Router do
 
   scope "/", PhosWeb do
     pipe_through [:browser]
+
+    resources "/admin/sessions", Admin.SessionController, only: [:new, :create, :index], as: :admin_session
 
     delete "/users/log_out", UserSessionController, :delete
     get "/users/confirm", UserConfirmationController, :new
