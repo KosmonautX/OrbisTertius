@@ -68,6 +68,8 @@ defmodule PhosWeb.Router do
     # get "/users/:id/showusermedia", UserController, :show_user_media
 
     resources "/orbs", OrbController, except: [:new, :edit]
+
+    get "/freshorbstream", OrbController, :fresh_orb_stream
   end
 
   # Other scopes may use custom stacks.
