@@ -2,6 +2,7 @@ defmodule PhosWeb.Router do
   use PhosWeb, :router
 
   import PhosWeb.UserAuth
+  import PhosWeb.Menshen.Plug
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -29,9 +30,13 @@ defmodule PhosWeb.Router do
   pipeline :authentication do
   end
 
+  pipeline :admin do
+    plug :put_root_layout, {PhosWeb.LayoutView, :admin_root}
+    plug Phos.Admin.Plug
+  end
 
   scope "/", PhosWeb do
-    pipe_through [:browser, :authentication]
+    pipe_through [:browser]
 
     get "/archetype", ArchetypeController, :show do
       resources "/archetype/usr", UserController, only: [:show]
@@ -49,11 +54,31 @@ defmodule PhosWeb.Router do
 
       live "/orb/:id", OrbLive.Show, :show
       live "/orb/:id/show/edit", OrbLive.Show, :edit
+      live "/orb/:id/show/:cid", OrbLive.Show, :show_ancestor
+      live "/orb/:id/reply/:cid", OrbLive.Show, :reply
+      live "/orb/:id/edit/:cid", OrbLive.Show, :edit_comment
     end
-
-
   end
 
+  scope "/admin", PhosWeb.Admin, as: :admin, on_mount: {Phos.Admin.Mounter, :admin} do
+    pipe_through [:browser, :admin]
+
+    live "/", DashboardLive, :index
+    live "/orbs", OrbLive.Index, :index
+    live "/orbs/:id", OrbLive.Show, :show
+  end
+
+  scope "/api", PhosWeb.API do
+    pipe_through [:api, :fetch_authorised_user_claims]
+
+    resources "/comments", CommentController, except: [:new, :edit]
+    get "/comments/showroot/:id", CommentController, :show_root
+    get "/comments/:id/showancestor/:cid", CommentController, :show_ancestor
+
+    get "/users/:id/showusermedia", UserController, :show_user_media
+
+    resources "/orbs", OrbController, except: [:new, :edit]
+  end
 
   # Other scopes may use custom stacks.
   scope "/auth", PhosWeb do
@@ -98,6 +123,12 @@ defmodule PhosWeb.Router do
 
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
+
+    scope "/api/devland", PhosWeb.API do
+      pipe_through :api
+
+      get "/flameon", DevLandController, :new
+    end
   end
 
   ## Authentication routes
@@ -125,6 +156,8 @@ defmodule PhosWeb.Router do
 
   scope "/", PhosWeb do
     pipe_through [:browser]
+
+    resources "/admin/sessions", Admin.SessionController, only: [:new, :create, :index], as: :admin_session
 
     delete "/users/log_out", UserSessionController, :delete
     get "/users/confirm", UserConfirmationController, :new

@@ -18,6 +18,7 @@ defmodule PhosWeb.OrbLive.Index do
   @impl true
   def handle_params(params, _url, socket) do
     {:noreply, socket
+      |> assign(:params, params)
       |> apply_action(socket.assigns.live_action, params)}
   end
 

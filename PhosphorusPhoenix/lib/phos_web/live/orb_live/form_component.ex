@@ -89,6 +89,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
   end
 
   defp save_orb(socket, :new, orb_params) do
+
     ## TODO swap with create orb with publish
     case Action.create_orb_and_publish(orb_params) do
       {:ok, _orb} ->
@@ -97,6 +98,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
          |> put_flash(:info, "Orb created successfully")
          |> push_redirect(to: socket.assigns.return_to)}
       {:error, %Ecto.Changeset{} = changeset} ->
+        IO.inspect(changeset)
         {:noreply, assign(socket, changeset: changeset)}
 
     end

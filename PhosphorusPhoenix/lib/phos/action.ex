@@ -20,6 +20,7 @@ defmodule Phos.Action do
   """
   def list_orbs do
     Repo.all(Orb)
+    |> Repo.preload([:locations, :initiator])
   end
 
 #   @doc """
@@ -37,8 +38,23 @@ defmodule Phos.Action do
 
 #   """
 #
+
+  def get_orb(id) when is_binary(id) do
+    query = from o in Orb, preload: [:locations, :initiator], where: o.id == ^id, limit: 1
+    case Repo.one(query) do
+      %Orb{} = orb -> {:ok, orb}
+      _ -> {:error, "Record not found"}
+    end
+  end
   def get_orb!(id), do: Repo.get!(Orb, id) |> Repo.preload([:locations, :initiator])
   def get_orb_by_fyr(id), do: Repo.get_by(Phos.Users.User, fyr_id: id)
+
+  def list_all_active_orbs(options \\ []) do
+    page = Keyword.get(options, :page, 1)
+    offset = Keyword.get(options, :offset, 20)
+    query = from o in Orb, where: o.active == true, preload: [:initiator], order_by: [desc: :inserted_at], limit: ^offset, offset: ^((page - 1) * offset)
+    Repo.all(query)
+  end
 
   def get_orbs_by_geohashes(ids) do
     query =
@@ -51,16 +67,35 @@ defmodule Phos.Action do
     |> Enum.map(fn orb -> orb.orbs end)
   end
 
+  # def get_active_orbs_by_geohashes(ids) do
+  #   query =
+  #     Orb_Location
+  #     |> where([e], e.location_id in ^ids)
+  #     |> preload(:orbs)
+  #     |> preload(:locations)
+  #     |> order_by(desc: :inserted_at)
+
+  #   Repo.all(query, limit: 32)
+  #   |> Enum.map(fn orb -> orb.orbs end)
+  #   |> Enum.filter(fn orb -> orb.active == true end)
+  # end
+
   def get_active_orbs_by_geohashes(ids) do
     query =
-      Orb_Location
-      |> where([e], e.location_id in ^ids)
-      |> preload(:orbs)
-      |> preload(:locations)
-      |> order_by(desc: :inserted_at)
+      from l in Orb_Location,
+        as: :l,
+        where: l.location_id in ^ids,
+        preload: [:orbs, :locations],
+        inner_lateral_join: c in subquery(
+          from c in Phos.Comments.Comment,
+          where: c.orb_id == parent_as(:l).orb_id,
+          select: %{count: count()}
+        ),
+        select_merge: %{comment_count: c.count}
 
     Repo.all(query, limit: 32)
-    |> Enum.map(fn orb -> orb.orbs end)
+    |> Enum.map(fn orbloc -> Map.put(orbloc.orbs, :comment_count, orbloc.comment_count) end)
+    # |> Enum.map(fn orb -> orb.orbs end)
     |> Enum.filter(fn orb -> orb.active == true end)
   end
 
@@ -109,7 +144,7 @@ defmodule Phos.Action do
         Repo.insert_all(Location, maps, on_conflict: :nothing, conflict_target: :id)
         location_ids = Enum.map(maps, fn loc -> loc.id end)
         orb_locations_upsert(attrs, location_ids)
-        
+
         _ ->
         %Orb{}
         |> Orb.changeset(attrs)
@@ -122,10 +157,10 @@ defmodule Phos.Action do
       {:ok, orb} ->
         orb_loc_publisher(orb, :genesis, orb.locations)
         {:ok, orb}
-        
+
       {:error, %Ecto.Changeset{} = changeset} ->
         {:error, changeset}
-        
+
     end
   end
 
