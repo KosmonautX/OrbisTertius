@@ -70,6 +70,9 @@ defmodule Phos.MixProject do
       {:ssl_verify_fun, "~> 1.1"},
       {:mint, "~> 1.0"},
       {:castore, "~> 0.1.0"},
+      {:tailwind, "~> 0.1", runtime: Mix.env() == :dev},
+      {:timex, "~> 3.7"},
+      {:prom_ex, "~> 1.7"},
       # comments
       {:ecto_ltree, "~> 0.3.0"}
     ]
@@ -87,7 +90,7 @@ defmodule Phos.MixProject do
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
-      "assets.deploy": ["esbuild default --minify", "phx.digest"]
+      "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"]
     ]
   end
 end
