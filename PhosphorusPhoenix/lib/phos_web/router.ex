@@ -76,6 +76,8 @@ defmodule PhosWeb.Router do
     get "/comments/:id/showancestor/:cid", CommentController, :show_ancestor
 
     get "/users/:id/showusermedia", UserController, :show_user_media
+
+    resources "/orbs", OrbController, except: [:new, :edit]
   end
 
   # Other scopes may use custom stacks.

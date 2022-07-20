@@ -150,12 +150,15 @@ defmodule PhosWeb.OrbLive.Show do
   end
 
   @impl true
-  def handle_event("view_more", %{"orb" => orb_id, "path" => path}, socket) do
-    comments = Comments.get_child_comments_by_orb(orb_id,path) |> decode_to_comment_tuple_structure()
+  def handle_event("toggle_more_replies", %{"initmorecomments" => initmorecomments, "orb" => orb_id, "path" => path}, socket) do
 
-    # TODO: Disable viewmore button JS for omnipotency
     updated_comments =
-      comments ++ socket.assigns.comments
+      if initmorecomments == "true" do
+        comments = Comments.get_child_comments_by_orb(orb_id,path) |> decode_to_comment_tuple_structure()
+        socket.assigns.comments ++ comments
+      else
+        socket.assigns.comments
+      end
 
     {:noreply, socket
     |> assign(:comments, updated_comments)}
