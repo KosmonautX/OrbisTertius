@@ -84,6 +84,24 @@ defmodule Phos.Action do
     |> Enum.filter(fn orb -> orb.active == true end)
   end
 
+  def get_active_orbs_by_userid(user_id) do
+    query =
+      from o in Orb,
+        as: :o,
+        where: o.initiator_id == ^user_id,
+        preload: [:initiator],
+        inner_lateral_join: c in subquery(
+          from c in Phos.Comments.Comment,
+          where: c.orb_id == parent_as(:o).id,
+          select: %{count: count()}
+        ),
+        select_merge: %{comment_count: c.count}
+
+    Repo.all(query, limit: 32)
+    |> Enum.map(&(Map.put(&1, :comment_count, &1.comment_count)))
+    |> Enum.filter(fn orb -> orb.active == true end)
+  end
+
   def get_orbs_by_trait(trait) do
     query =
       from p in Phos.Action.Orb, where: fragment("? @> ?", p.traits, ^trait)

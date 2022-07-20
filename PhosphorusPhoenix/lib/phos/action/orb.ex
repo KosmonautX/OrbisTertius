@@ -14,6 +14,7 @@ defmodule Phos.Action.Orb do
     field :central_geohash, :integer
     field :traits, {:array, :string}, default: []
     field :topic, :string, virtual: true
+    field :comment_count, :integer, default: 0, virtual: true
 
     belongs_to :initiator, User, references: :id, type: Ecto.UUID
     #belongs_to :users, User, references: :id, foreign_key: :acceptor, type: Ecto.UUID

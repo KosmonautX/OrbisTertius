@@ -5,6 +5,7 @@ defmodule Phos.Users do
 
   import Ecto.Query, warn: false
   alias Phos.Repo
+  alias Phos.Users
   alias Phos.Users.{User, Public_Profile, Private_Profile, Auth}
 
   alias Ecto.Multi
@@ -19,9 +20,14 @@ defmodule Phos.Users do
 
   """
   def list_users do
-    query = from u in User, preload: [:public_profile, :private_profile]
+    query = from u in User
     Repo.all(query)
   end
+
+  # def list_users_pub do
+  #   query = from u in User, preload: [:public_profile]
+  #   Repo.all(query)
+  # end
 
 #   @doc """
 #   Gets a single user.
@@ -37,7 +43,9 @@ defmodule Phos.Users do
 #       ** (Ecto.NoResultsError)
 
 #   """
-  def get_user_by_fyr(id), do: Repo.get_by(User |> preload(:private_profile) |> preload(:public_profile), fyr_id: id)
+  def get_user_by_fyr(id), do: Repo.get_by(User |> preload(:private_profile), fyr_id: id)
+
+  def get_user_by_username(username), do: Repo.get_by(User, username: username)
 
   def get_pte_profile_by_fyr(id) do
     query = from u in User, where: u.fyr_id == ^id
@@ -57,8 +65,6 @@ defmodule Phos.Users do
 
     Repo.all(query |> preload(:private_profile))
   end
-
-  def get_pub_profile_by_fyr(id), do: Repo.get_by(User |> preload(:public_profile), fyr_id: id)
 
   def find_user_by_id(id) when is_bitstring(id) do
     query = from u in User, where: u.id == ^id, limit: 1
@@ -102,12 +108,6 @@ defmodule Phos.Users do
     |> User.migration_changeset(attrs)
     |> Repo.insert()
   end
-
-  # def create_public_profile(attrs \\ %{}) do
-  #   %Public_Profile{}
-  #   |> Public_Profile.changeset(attrs)
-  #   |> Repo.insert()
-  # end
 
   def create_private_profile(attrs \\ %{}) do
     %Private_Profile{}
@@ -475,7 +475,7 @@ defmodule Phos.Users do
   """
   def get_user_by_session_token(token) do
     {:ok, query} = UserToken.verify_session_token_query(token)
-    Repo.one(query) |> Repo.preload([:private_profile, :public_profile])
+    Repo.one(query) |> Repo.preload([:private_profile])
   end
 
   @doc """

@@ -1,0 +1,178 @@
+<style>
+  /* Sidenav */
+.sidenav {
+    background-color: #fff;
+    color: #333;
+    border-bottom-right-radius: 25px;
+    height: 86%;
+    left: 0;
+    overflow-x: hidden;
+    padding-top: 20px;
+    position: absolute;
+    top: 70px;
+    width: 250px;
+}
+
+.profile {
+    margin-bottom: 20px;
+    margin-top: -12px;
+    text-align: center;
+}
+
+.profile img {
+    border-radius: 50%;
+    box-shadow: 0px 0px 5px 1px grey;
+}
+
+.name {
+    font-weight: bold;
+    padding-top: 20px;
+}
+
+.job {
+    font-weight: bold;
+    padding-top: 10px;
+}
+
+.url, hr {
+    text-align: center;
+}
+
+.url hr {
+    margin-left: 20%;
+    width: 60%;
+}
+
+.url a {
+    color: #818181;
+    display: block;
+    margin: 10px 0;
+    padding: 6px 8px;
+    text-decoration: none;
+}
+
+.url a:hover, .url .active {
+    background-color: #e8f5ff;
+    border-radius: 28px;
+    color: #000;
+    margin-left: 14%;
+    width: 65%;
+}
+
+/* End */
+
+/* Main */
+.main {
+    margin-top: 2%;
+    margin-left: 29%;
+    padding: 0 10px;
+    width: 58%;
+}
+</style>
+
+<%= unless @guest do %>
+
+<% end %>
+
+<%= if @live_action in [:edit] do %>
+  <.modal return_to={Routes.user_profile_index_path(@socket, :index, @current_user.username)}>
+    <.live_component
+      module={PhosWeb.UserProfileLive.FormComponent}
+      id={@current_user.id}
+      title={@page_title}
+      action={@live_action}
+      user={@user}
+      current_user={@current_user}
+      return_to={Routes.user_profile_index_path(@socket, :index, @current_user.username)}
+    />
+  </.modal>
+<% end %>
+
+<%= unless @guest do %>
+<span><%= live_patch "Edit Profile", to: Routes.user_profile_index_path(@socket, :edit, @user.username) %></span>
+<% end %>
+
+    <!-- Sidenav -->
+    <div class="sidenav">
+        <div class="profile">
+            <img src="https://imdezcode.files.wordpress.com/2020/02/imdezcode-logo.png" alt="" width="100" height="100">
+
+            <div class="name">
+              <%= @user.username %>
+            </div>
+            <div class="job">
+                <%= @user.public_profile.bio %>
+            </div>
+        </div>
+    </div>
+    <!-- End -->
+
+    <!-- Main -->
+    <div class="main">
+        <div class="card">
+            <div class="card-body">
+                <i class="fa fa-pen fa-xs edit"></i>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>Email</td>
+                            <td><%= @user.email %></td>
+                        </tr>
+
+                        <tr>
+                            <td>Occupation</td>
+                            <td><%= @user.public_profile.occupation %></td>
+                        </tr>
+                        <tr>
+                            <td>Birthday</td>
+                            <td><%= @user.public_profile.birthday %></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <h2><%= @user.username%>'s Orbs</h2>
+        <div class="card">
+            <div class="card-body">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Media</th>
+                      <th>Extinguish</th>
+                      <th>Time</th>
+                      <th>Tip</th>
+                      <th>Info</th>
+                      <th>Comments</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+
+                    <%= for orb <- @orbs do %>
+                          <tr id={"orb-#{orb.id}"}>
+                            <td><%= orb.title %></td>
+                            <td><%= orb.media %></td>
+                            <td><%= orb.extinguish %></td>
+                            <td><%= orb.payload.when %></td>
+                            <td><%= orb.payload.tip %></td>
+                            <td><%= orb.payload.info %></td>
+                            <td><%= orb.comment_count %></td>
+
+                            <td>
+                              <span><%= live_redirect "Show", to: Routes.orb_show_path(@socket, :show, orb) %></span>
+                              <span><%= live_patch "Edit", to: Routes.orb_index_path(@socket, :edit, orb) %></span>
+                              <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: orb.id, data: [confirm: "Are you sure?"] %></span>
+                            </td>
+                          </tr>
+
+                      <% end %>
+
+                  </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+    <!-- End -->

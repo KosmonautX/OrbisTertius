@@ -50,6 +50,10 @@ defmodule PhosWeb.Router do
       live "/orb/:id/show/:cid", OrbLive.Show, :show_ancestor
       live "/orb/:id/reply/:cid", OrbLive.Show, :reply
       live "/orb/:id/edit/:cid", OrbLive.Show, :edit_comment
+
+      live "/user/:username/edit", UserProfileLive.Index, :edit
+      live "/user/:username", UserProfileLive.Index, :index
+
     end
   end
 
@@ -60,7 +64,8 @@ defmodule PhosWeb.Router do
     get "/comments/showroot/:id", CommentController, :show_root
     get "/comments/:id/showancestor/:cid", CommentController, :show_ancestor
 
-    get "/users/:id/showusermedia", UserController, :show_user_media
+    resources "/users", UserProfileController, except: [:new, :edit]
+    # get "/users/:id/showusermedia", UserController, :show_user_media
 
     resources "/orbs", OrbController, except: [:new, :edit]
   end
