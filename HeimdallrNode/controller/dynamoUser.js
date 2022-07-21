@@ -123,6 +123,17 @@ const userQuery = {
         const data = await docClient.get(params).promise();
         return data;
     },
+    async queryALL(user_id) {
+        const params = {
+            TableName: ddb_config.tableNames.orb_table,
+            KeyConditionExpression: 'PK = :user and SK > :user',
+            ExpressionAttributeValues: {
+                ':user': "USR#" + user_id,
+            }
+        };
+        const data = await docClient.query(params).promise();
+        return data;
+    },
     // takes in a (str) USERNAME
     async checkUsername (username) {
         const params = {
