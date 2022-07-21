@@ -2,7 +2,8 @@ defmodule PhosWeb.API.UserProfileController do
   use PhosWeb, :controller
 
   alias Phos.Users
-  alias Phos.Users.{User}
+  alias Phos.Users.{User, User_Public_Profile}
+  alias PhosWeb.Util.Migrator
 
   action_fallback PhosWeb.API.FallbackController
 
@@ -18,50 +19,60 @@ defmodule PhosWeb.API.UserProfileController do
   end
   # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X GET 'http://localhost:4000/api/orbs/a4519fe0-70ec-42e7-86f3-fdab1ef8ca23'
 
-  # def create(conn, comment_params) do
-  #   case comment_params do
-  #     # Create root comment flow
-  #     %{"orb_id" => orb_id} ->
-  #       comment_id = Ecto.UUID.generate()
-  #       comment_params = %{"id" => comment_id,
-  #                          "orb_id" => orb_id,
-  #                          "initiator_id" => conn.assigns.current_user["user_id"],
-  #                          "path" => Encoder.encode_lpath(comment_id),
-  #                          "body" => comment_params["body"]}
+  def update(conn, %{"id" => id} = params) do
+    user = Users.get_user!(id)
+    params = Map.delete(params, "id")
+    params =
+      for {key, val} <- params, into: %{}, do: {String.to_atom(key), val}
 
-  #       with {:ok, %Comment{} = comment} <- Comments.create_comment(comment_params) do
-  #         conn
-  #         |> put_status(:created)
-  #         |> put_resp_header("location", Routes.comment_path(conn, :show, comment))
-  #         |> render("show.json", comment: comment)
+    with {:ok, %User{} = user} <- Users.update_user_profile(user, params) do
+      render(conn, "show.json", user_profile: user)
+    end
+  end
+
+  # Needs to include ALL publicprofile fields for request body
+  # def update(conn, %{"id" => id} = profile_params) do
+  #   case Ecto.UUID.cast(id) do
+  #     {:ok, _} ->
+  #       IO.inspect("im uuid")
+  #       case Users.get_user!(id) do
+
+  #         user = %User{} ->
+  #           IO.inspect("lol12")
+  #           with {:ok, %User{} = user} <- Users.update_pub_user(user, profile_params) do
+  #             render(conn, "show.json", user_profile: user)
+  #           end
+  #         (Ecto.NoResultsError) ->
+  #           IO.inspect("lol")
+  #           {:error, :no_result}
+  #         _ ->
+  #           IO.inspect("lol 2314")
   #       end
-  #       # Create child comment flow
-  #       %{"parent_id" => parent_id} ->
-  #       parent_comment = Comments.get_comment!(parent_id)
-  #       comment_id = Ecto.UUID.generate()
-  #       comment_params = %{"id" => comment_id,
-  #                          "orb_id" => parent_comment.orb_id,
-  #                          "parent_id" => parent_comment.id,
-  #                          "initiator_id" => conn.assigns.current_user["user_id"],
-  #                          "path" => Encoder.encode_lpath(comment_id, to_string(parent_comment.path)),
-  #                          "body" => comment_params["body"]}
 
-  #       with {:ok, %Comment{} = comment} <- Comments.create_comment(comment_params) do
-  #         conn
-  #         |> put_status(:created)
-  #         |> put_resp_header("location", Routes.comment_path(conn, :show, comment))
-  #         |> render("show.json", comment: comment)
+  #     :error ->
+  #       IO.inspect("Im fyr")
+  #       case Users.get_user_by_fyr(id) do
+  #         nil ->
+  #           user = Migrator.user_profile(id) |> List.first()
+  #           with {:ok, %User{} = user} <- Users.update_pub_user(user, profile_params) do
+  #             render(conn, "show.json", user_profile: user)
+  #           end
+
+  #         Ecto.NoResultsError ->
+  #           IO.inspect("lol")
+  #           {:error, :no_result}
+
+  #         user = %User{} ->
+  #           with {:ok, %User{} = user} <- Users.update_pub_user(user, profile_params) do
+  #             render(conn, "show.json", user_profile: user)
+  #           end
+
+  #         _ ->
+  #           IO.inspect("LOL")
   #       end
   #   end
   # end
 
-  def update(conn, %{"id" => id} = profile_params) do
-    user = Users.get_user!(id)
-
-    with {:ok, %User{} = user} <- Users.update_pub_user(user, profile_params) do
-      render(conn, "show.json", user_profile: user)
-    end
-  end
   # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X PUT -d '{"active": "false"}' http://localhost:4000/api/orbs/fe1ac6b5-3db3-49e2-89b2-8aa30fad2578
 
   # def delete(conn, %{"id" => id}) do

@@ -6,7 +6,7 @@ defmodule Phos.Users do
   import Ecto.Query, warn: false
   alias Phos.Repo
   alias Phos.Users
-  alias Phos.Users.{User, Public_Profile, Private_Profile, Auth}
+  alias Phos.Users.{User, User_Public_Profile, Private_Profile, Auth}
 
   alias Ecto.Multi
 
@@ -140,6 +140,14 @@ defmodule Phos.Users do
     |> Repo.update()
   end
 
+  def update_user_profile(%User{} = user, attrs) do
+    changeset = Ecto.Changeset.change(user.public_profile)
+    user_changeset = Ecto.Changeset.change(user)
+    userprofile_changeset = Ecto.Changeset.change(changeset, attrs)
+    Ecto.Changeset.put_embed(user_changeset, :public_profile, userprofile_changeset)
+    |> Phos.Repo.update()
+  end
+
 #   @doc """
 #   Deletes a user.
 
@@ -167,6 +175,10 @@ defmodule Phos.Users do
 #   """
   def change_user(%User{} = user, attrs \\ %{}) do
     User.changeset(user, attrs)
+  end
+
+  def change_user_profile(%Users.User_Public_Profile{} = user_profile, attrs \\ %{}) do
+    User_Public_Profile.changeset(user_profile, attrs)
   end
 
   @doc """

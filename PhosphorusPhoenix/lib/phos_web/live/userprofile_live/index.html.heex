@@ -88,9 +88,9 @@
   </.modal>
 <% end %>
 
-<%= unless @guest do %>
-<span><%= live_patch "Edit Profile", to: Routes.user_profile_index_path(@socket, :edit, @user.username) %></span>
-<% end %>
+    <%= unless @guest do %>
+      <%= live_patch "Edit Profile", to: Routes.user_profile_index_path(@socket, :edit, @user.username) %>
+    <% end %>
 
     <!-- Sidenav -->
     <div class="sidenav">

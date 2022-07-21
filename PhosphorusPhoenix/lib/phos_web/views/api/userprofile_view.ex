@@ -17,6 +17,7 @@ defmodule PhosWeb.API.UserProfileView do
       birthday: user_profile.public_profile.birthday,
       occupation: user_profile.public_profile.occupation,
       profile_pic: user_profile.profile_pic,
+      pronouns: user_profile.public_profile.pronouns,
       media: user_profile.media,
       media_asset: (if user_profile.media, do: Phos.Orbject.S3.get!("USR", user_profile.id, "50x50"))
     }

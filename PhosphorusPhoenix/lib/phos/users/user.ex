@@ -28,7 +28,7 @@ defmodule Phos.Users.User do
   @doc false
   def changeset(%Phos.Users.User{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :media, :profile_pic, :email])
+    |> cast(attrs, [:username, :media, :profile_pic, :email, :fyr_id])
     #|> validate_required(:email)
     |> cast_embed(:public_profile)
     |> cast_assoc(:private_profile)
@@ -63,6 +63,13 @@ defmodule Phos.Users.User do
   def pub_profile_changeset(%Phos.Users.User{} = user, attrs) do
     user
     |> cast(attrs, [:username, :media, :profile_pic])
+    |> cast_embed(:public_profile)
+    |> unique_constraint(:username, name: :unique_username)
+  end
+
+  def user_profile_changeset(%Phos.Users.User{} = user, attrs) do
+    user
+    |> cast(attrs, [:media, :profile_pic])
     |> cast_embed(:public_profile)
     |> unique_constraint(:username, name: :unique_username)
   end

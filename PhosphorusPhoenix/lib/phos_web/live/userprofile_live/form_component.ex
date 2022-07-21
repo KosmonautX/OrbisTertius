@@ -10,10 +10,11 @@ defmodule PhosWeb.UserProfileLive.FormComponent do
     changeset = Users.change_user(user)
 
     {:ok,
-     socket
-     |> assign(assigns)
-     |> assign(:changeset, changeset)
-     |> allow_upload(:image, accept: ~w(.jpg .jpeg .png), max_entries: 1, max_file_size: 8888888)}
+      socket
+      |> assign(assigns)
+      |> assign(:changeset, changeset)
+      |> assign(:traits_form, [])
+      |> allow_upload(:image, accept: ~w(.jpg .jpeg .png), max_entries: 1, max_file_size: 8888888)}
   end
 
   @impl true

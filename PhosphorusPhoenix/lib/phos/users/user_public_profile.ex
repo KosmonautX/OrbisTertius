@@ -9,12 +9,14 @@ defmodule Phos.Users.User_Public_Profile do
     field :bio, :string
     field :occupation, :string
     field :pronouns, :string
+    field :traits, {:array, :string}
 
   end
 
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:birthday, :bio, :occupation, :pronouns])
+    |> cast(attrs, [:birthday, :bio, :occupation, :pronouns, :traits])
+    |> validate_inclusion(:pronouns, ["Mr", "Ms", "Dr"])
   end
 end

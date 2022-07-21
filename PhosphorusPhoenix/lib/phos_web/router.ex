@@ -79,7 +79,7 @@ defmodule PhosWeb.Router do
     get "/comments/showroot/:id", CommentController, :show_root
     get "/comments/:id/showancestor/:cid", CommentController, :show_ancestor
 
-    resources "/users", UserProfileController, except: [:new, :edit]
+    resources "/userprofile", UserProfileController, except: [:new, :edit]
     # get "/users/:id/showusermedia", UserController, :show_user_media
 
     resources "/orbs", OrbController, except: [:new, :edit]
