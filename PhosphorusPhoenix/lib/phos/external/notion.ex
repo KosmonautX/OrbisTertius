@@ -2,12 +2,12 @@ defmodule Phos.External.Notion do
   use HTTPoison.Base
 
   def today_post do
-    today = DateTime.utc_now() |> DateTime.add(60 * 60 * 8) |> DateTime.to_date()
+    # today = DateTime.utc_now() |> DateTime.add(60 * 60 * 8) |> DateTime.to_date()
     date_query = %{
       "filter" => %{
         "property" => "Posting date",
         "date" => %{
-          "equals" => today
+          "equals" => ~D[2022-07-26]
         }
       }
     }

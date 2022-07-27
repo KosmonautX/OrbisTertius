@@ -55,7 +55,7 @@ defmodule Phos.MixProject do
       {:pigeon, "~> 2.0.0-rc.0"},
       {:plug_cowboy, "~> 2.5"},
       {:joken, "~> 2.0-rc0"},
-      {:h3, "~> 3.6"},
+      {:h3, github: "helium/erlang-h3"},
       {:libcluster, "~> 3.3"},
       # support aws s3
       {:ex_aws, "~> 2.0"},
@@ -71,7 +71,10 @@ defmodule Phos.MixProject do
       {:mint, "~> 1.0"},
       {:castore, "~> 0.1.0"},
       {:tailwind, "~> 0.1", runtime: Mix.env() == :dev},
-      {:timex, "~> 3.7"}
+      {:timex, "~> 3.7"},
+      {:earmark, "~>1.4.25"},
+      {:html_sanitize_ex, "~> 1.4"},
+      {:kino, "~> 0.6.2"},
     ]
   end
 

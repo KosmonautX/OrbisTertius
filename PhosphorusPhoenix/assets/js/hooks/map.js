@@ -15,12 +15,11 @@ export const InitIndexMap = {
       // Centres to live latlng
       if (!centred) {
         centred = true
-        map.flyTo([latlng.latitude, latlng.longitude], 15);
+        map.flyTo([latlng.latitude, latlng.longitude], latlng.geolock || 15);
       }
     })
 
     this.handleEvent("add_polygon", (boundaries) => {
-
       L.polygon(boundaries.geo_boundaries, {color: 'teal'}).addTo(map);
     })
   }

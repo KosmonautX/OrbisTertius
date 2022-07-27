@@ -11,5 +11,5 @@
 }
 
 .button-sm {
-  @apply bg-blue-400 text-white active:bg-blue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none ease-linear transition-all duration-150;
+  @apply bg-blue-400 text-white active:bg-blue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none ease-linear transition-all duration-150 hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-blue-100;
 }
