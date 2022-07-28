@@ -98,12 +98,12 @@ defmodule PhosWeb.Admin.OrbLive.Import do
       </div>
       <div id="confirmation" class="w-full flex flex-row-reverse">
         <%= if length(@selected_orbs) == 0 and length(@entries) > 0 do %>
-          <button disabled={true} class="button-sm">
+          <button disabled={true} class="button button-sm">
             Import selected orbs
           </button>
         <% end %>
         <%= if length(@selected_orbs) > 0 and length(@entries) > 0 do %>
-          <button class="button-sm" type="button" phx-click="import-selected-orbs">
+          <button class="button button-sm" type="button" phx-click="import-selected-orbs">
             Import selected orbs
           </button>
         <% end %>
@@ -127,10 +127,10 @@ defmodule PhosWeb.Admin.OrbLive.Import do
           </h4>
         </div>
         <div class="px-2 pb-3">
-          <button class="button-sm" phx-click="detail-orb" phx-value-index={@index}>
+          <button class="button button-xs button-primary" phx-click="detail-orb" phx-value-index={@index}>
             Detail
           </button>
-          <button class="button-sm" phx-click="set-selected-orb" phx-value-selected={@index}>
+          <button class="button button-xs" phx-click="set-selected-orb" phx-value-selected={@index}>
             <%= if selected_orbs?(@index, @selected_orbs), do: "Unselect", else: "select" %>
           </button>
         </div>

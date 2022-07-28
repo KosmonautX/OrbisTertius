@@ -11,7 +11,7 @@
             <span class="h-2 w-2 flex rounded-full bg-green-500 mr-2" />
             Active
           </div>
-          <button phx-click="take-down" type="button" class="ml-6 button-sm">
+          <button phx-click="take-down" type="button" class="ml-6 button button-xs button-danger">
           Take down
           </button>
         <% else %>
@@ -31,7 +31,7 @@
       <%= if length(@traits_form) > 0 do %>
         <.form let={f} for={@changeset} phx-submit="save_trait" phx-change="trait_change" id="traits_form">
           <div>
-           <button type="button" phx-click="trait_management" phx-value-method="add" class="ml-2 button-sm" id="button_add_trait_orb">
+           <button type="button" phx-click="trait_management" phx-value-method="add" class="ml-2 button button-sm" id="button_add_trait_orb">
              <i class="fa-solid fa-plus cursor-pointer mr-1"></i>
              Add more trait(s)
            </button>
@@ -43,11 +43,11 @@
             </div>
           <% end %>
           <div class="mt-4">
-            <%= submit "save trait(s)", class: "button-sm" %>
+            <%= submit "save trait(s)", class: "button button-sm" %>
           </div>
         </.form>
       <% else %>
-        <button type="button" phx-click="trait_management" phx-value-method="init" class="button-sm">
+        <button type="button" phx-click="trait_management" phx-value-method="init" class="button button-sm">
           <i class="fa-solid fa-plus cursor-pointer mr-1"></i>
           Add trait
         </button>

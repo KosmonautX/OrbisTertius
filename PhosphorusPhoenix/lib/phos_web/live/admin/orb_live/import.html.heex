@@ -32,7 +32,7 @@
       <h4 class="text-sm mt-2 font-light">
         <i class="fa-solid fa-lines-leaning mr-2"></i>
         <%= for trait <- show_detail_orb(@show_detail_id, @orbs) |> Map.get(:traits,  []) do %>
-          <button class="px-2 py-1 mr-1 bg-green-400 font-light text-xs rounded text-white"><%= trait %></button>
+          <button class="badge"><%= trait %></button>
         <% end %>
       </h4>
       <h4 class="text-sm mt-2 font-light">
@@ -56,8 +56,8 @@
 
     <:footer>
       <div class="w-full flex flex-row-reverse">
-        <button class="button-sm" phx-click="close-and-select">Close and select</button>
-        <button class="button-sm mr-2" phx-click="close-modal">Cancel</button>
+        <button class="button button-sm" phx-click="close-and-select">Close and select</button>
+        <button class="button button-sm button-outline-danger mr-2" phx-click="close-modal">Cancel</button>
       </div>
     </:footer>
   </.live_component>
