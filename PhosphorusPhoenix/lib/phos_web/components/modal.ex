@@ -18,6 +18,9 @@ defmodule PhosWeb.Components.Modal do
 
   @impl true
   def render(assigns) do
+    assigns = assigns
+              |> assign_new(:footer, fn -> [] end)
+
     ~H"""
     <div class="flex items-center justify-center fixed inset-0 bg-black/50 z-30">
       <div class="relative w-10/12 md:w-8/12 xl:w-1/2">
@@ -26,6 +29,10 @@ defmodule PhosWeb.Components.Modal do
         </div>
         <.live_component module={PhosWeb.Components.Card} title={@title} id={"modal_for_#{@title}"}>
           <%= render_slot(@inner_block) %>
+
+          <div class="border-t rounded-b-lg w-full px-3 py-2">
+            <%= render_slot(@footer) %>
+          </div>
         </.live_component>
       </div>
     </div>

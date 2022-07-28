@@ -19,13 +19,27 @@ defmodule PhosWeb.Admin.OrbLive.Import do
 
   @impl true
   def handle_event("import-selected-orbs", _, %{assigns: %{selected_orbs: selected_orbs, orbs: orbs}} = socket) do
-    initiator_id = 1
+    initiator = Phos.Users.get_admin()
 
     selected_orbs
     |> Enum.map(&String.to_integer/1)
     |> Enum.map(&Enum.at(orbs, &1))
-    |> Enum.map(&map_to_orb_struct(&1, initiator_id))
-    {:noreply, socket}
+    |> Enum.map(&map_to_orb_struct(&1, initiator))
+    |> Phos.Action.create_orb_and_publish()
+    |> case do
+      [] -> {:noreply, socket
+        |> put_flash(:error, "Orb(s) failed to import.")
+        |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+      data ->
+        case contains_error?(data) do
+          true -> {:noreply, socket
+            |> put_flash(:error, "Orb(s) contains error.")
+            |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+          _ -> {:noreply, socket
+            |> put_flash(:info, "Orb(s) successfully imported.")
+            |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+        end
+    end
   end
 
   @impl true
@@ -33,6 +47,11 @@ defmodule PhosWeb.Admin.OrbLive.Import do
     Process.send_after(self(), :marker_update, 500)
     Process.send_after(self(), :boundaries_update, 700)
     {:noreply, assign(socket, :show_detail_id, String.to_integer(index))}
+  end
+
+  @impl true
+  def handle_event("close-and-select", _, %{assigns: %{show_detail_id: id, selected_orbs: selected_orbs}} = socket) do
+    {:noreply, assign(socket, [show_detail_id: nil, selected_orbs: [to_string(id) | selected_orbs]])}
   end
 
   @impl true
@@ -130,31 +149,34 @@ defmodule PhosWeb.Admin.OrbLive.Import do
 
   defp selected_orbs?(index, selected_orbs), do: Enum.member?(selected_orbs, "#{index}")
 
-  defp map_to_orb_struct(%{geolocation: %{live: %{geohashes: hashes}}} = orb, initiator_id) do
+  defp map_to_orb_struct(orb, %{id: id}), do: map_to_orb_struct(orb, id)
+  defp map_to_orb_struct(%{geolocation: %{live: %{geohashes: hashes}}} = orb, initiator_id) when is_binary(initiator_id) do
     title = Map.get(orb, :title, "")
 
     %{
       "id" => Ecto.UUID.generate(),
+      "active" => true,
       "geolocation" => hashes,
       "title" => Map.get(orb, :outer_title, title),
       "initiator_id" => initiator_id,
       "payload" => %{"info" => orb.info, "inner_title" => title},
       "media" => orb.media,
-      "orb_source" => :web,
+      "source" => :web,
       "extinguish" => create_extinguish(orb.expires_in),
       "central_geohash" => List.first(hashes),
       "traits" => Map.get(orb, :traits, [])
     }
   end
-  defp map_to_orb_struct(%{geolocation: %{live: live}} = orb, initiator_id) do
+  defp map_to_orb_struct(%{geolocation: %{live: live}} = orb, initiator_id) when is_binary(initiator_id) do
     %{
       "id" => Ecto.UUID.generate(),
+      "active" => true,
       "geolocation" => get_geolock_target(live),
       "title" => orb.title,
       "initiator_id" => initiator_id,
       "payload" => %{"info" => orb.info},
       "media" => orb.media,
-      "orb_source" => :web,
+      "source" => :web,
       "extinguish" => create_extinguish(orb.expires_in),
       "central_geohash" => get_geohash(live),
       "traits" => Map.get(orb, :traits, [])
@@ -184,4 +206,13 @@ defmodule PhosWeb.Admin.OrbLive.Import do
       _ -> time
     end
   end
+
+  defp contains_error?(data) when  is_list(data) do
+    Enum.filter(data, &filter_error/1)
+    |> Enum.any?
+  end
+  defp contains_error?(_), do: true
+
+  defp filter_error(%Phos.Action.Orb{}), do: false
+  defp filter_error(_), do: true
 end

@@ -15,6 +15,11 @@
   </.live_component>
 
   <.live_component module={PhosWeb.Components.Modal} id="modal" shown={!is_nil(@show_detail_id)} title={show_detail_orb(@show_detail_id, @orbs) |> Map.get(:title)} onClose="close-modal">
+    <%= if selected_orbs?(@show_detail_id, @selected_orbs) do %>
+      <div class={"absolute top-0 right-10 text-white bg-blue-400 rounded-b-md px-2 py-1"}>
+        selected
+      </div>
+    <% end %>
     <div class="px-2 pb-3">
       <h3 class="text-sm mt-2 font-light">
         <i class="fa-solid fa-user mr-2"></i>
@@ -48,5 +53,12 @@
         <div id="map" phx-hook="InitIndexMap" style="height: 400px; z-index: 10"></div>
       </div>
     </div>
+
+    <:footer>
+      <div class="w-full flex flex-row-reverse">
+        <button class="button-sm" phx-click="close-and-select">Close and select</button>
+        <button class="button-sm mr-2" phx-click="close-modal">Cancel</button>
+      </div>
+    </:footer>
   </.live_component>
 </div>
