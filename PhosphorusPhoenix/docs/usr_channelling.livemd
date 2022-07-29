@@ -6,11 +6,144 @@
 Mix.install([
   {:phoenix_gen_socket_client, "~> 4.0"},
   {:websocket_client, "~> 1.4"},
-  {:jason, "~> 1.3"}
+  {:jason, "~> 1.3"},
+  {:slipstream, "~> 1.0"}
 ])
 ```
 
 ## Section
+
+```elixir
+defmodule FloatingDownSockets do
+  use Slipstream,
+    restart: :temporary
+
+  require Logger
+
+  @channel "archetype:loc:R3Vsjq9CARfprwOJps44kbVczFQ2"
+
+  def start_link(args) do
+    Slipstream.start_link(__MODULE__, args, name: __MODULE__)
+  end
+
+  @impl Slipstream
+  def init(config) do
+    case connect(config) do
+      {:ok, socket} ->
+        {:ok, socket}
+
+      {:error, reason} ->
+        Logger.error(
+          "Could not start #{__MODULE__} because of " <>
+            "validation failure: #{inspect(reason)}"
+        )
+
+        :ignore
+    end
+  end
+
+  def handle_connect(socket) do
+    {:ok, join(socket, @channel)}
+  end
+
+  def handle_join(@channel, _join_response, socket) do
+    # an asynchronous push with no reply:
+    ref = push(socket, @channel, "ping", %{"hello" => "there"})
+
+    {:ok, socket}
+  end
+
+  @impl Slipstream
+  def handle_message(@channel, "loc_reverie", message, socket) do
+    Logger.info(
+      # <>
+      "Orbs Remembered in Location"
+    )
+
+    IO.inspect(message)
+
+    {:ok, socket}
+  end
+
+  @impl Slipstream
+  def handle_message(@channel, event, message, socket) do
+    Logger.error(
+      "Was not expecting a push from the server. Heard: " <>
+        inspect({@channel, event, message})
+    )
+
+    {:ok, socket}
+  end
+
+  @impl Slipstream
+  def handle_disconnect(_reason, socket) do
+    :timer.cancel(socket.assigns.ping_timer)
+
+    {:stop, :normal, socket}
+  end
+
+  @impl Slipstream
+  def handle_call({:geocalibrate, message}, _from, socket) do
+    IO.puts("message recieved geocalibrate: #{inspect(message)}")
+    push(socket, @channel, "location_update", message)
+    {:reply, {:ok, :hao}, socket}
+  end
+
+  @impl Slipstream
+  def handle_call({:say, goodbyein}, _from, socket) do
+    IO.puts("server going bye bye in T-#{inspect(goodbyein)}s")
+    :timer.send_interval(:timer.seconds(goodbyein), self(), :stop)
+    {:reply, {:ok, :saygoodbye}, socket}
+  end
+
+  @impl Slipstream
+  def handle_info(:stop, socket) do
+    IO.puts("sayonara mai gud ser")
+    {:stop, :normal, socket}
+  end
+
+  @impl Slipstream
+  def terminate(reason, socket) do
+    Logger.debug("shutting down: " <> inspect(reason))
+
+    disconnect(socket)
+  end
+end
+```
+
+```elixir
+# @token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiUjNWc2pxOUNBUmZwcndPSnBzNDRrYlZjekZRMiIsInJvbGUiOiJwbGViIiwidGVycml0b3J5Ijp7ImxpdmUiOnsicmFkaXVzIjo4LCJoYXNoIjoiODg2NTIwY2I1YmZmZmZmIn19LCJ1c2VybmFtZSI6IlJ5YW4iLCJpYXQiOjE2NTY2ODE2NjAsImV4cCI6MTY2ODY4MTY2MCwiaXNzIjoiUHJpbmNldG9uIiwic3ViIjoiU2NyYXRjaEJhYyJ9.gVJ0yrF8df9NfT6KGh4T5TkFPtXB_zM_VqOKydmRuOc"
+token =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiUjNWc2pxOUNBUmZwcndPSnBzNDRrYlZjekZRMiIsInJvbGUiOiJwbGViIiwiaWF0IjoxNjQzNzQzNjAyLCJleHAiOjI4NDM3NDM2MDIsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.hlhvTS37qxxqwrynoGbsHQG4gyjH5XDJfSC-zSrR6N8"
+
+# @domain "wss://nyx.scrb.ac"
+domain = "ws://localhost:4000"
+
+config = [
+  uri: domain <> "/socket/websocket?token=" <> token,
+  reconnect_after_msec: [200, 500, 1_000, 2_000]
+]
+
+{:ok, pid} = FloatingDownSockets.start_link(config)
+```
+
+```elixir
+message = %{"name" => "home", "geohash" => 623_503_577_503_956_991}
+GenServer.call(pid, {:geocalibrate, message})
+```
+
+```elixir
+# saygoodbye
+GenServer.call(pid, {:say, 1})
+```
+
+```elixir
+# message = %{"destination" => "albert", "destination_archetype" => "USR", "message" => "hi satrio"}
+# Phoenix.Channels.GenSocketClient.call(pid, {:message, message})
+message = %{"name" => "home", "geohash" => 623_276_216_929_026_047}
+# Phoenix.Channels.GenSocketClient.call(pid, {:geocalibrate, message})
+# {:ok, ref} = push(socket, "archetype:loc:R3Vsjq9CARfprwOJps44kbVczFQ2", :geocalibrate, message)
+```
 
 ```elixir
 defmodule SocketWithCare do
