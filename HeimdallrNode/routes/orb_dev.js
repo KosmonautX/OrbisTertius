@@ -107,7 +107,7 @@ router.post(`/phoneonfyr`, async function (req, res, next){
                      },
                  }).then(response => {
                          res.status(201).json({
-                             "payload": req.body.phone
+                             "payload": req.body
                          })})
                  .catch((error => {
                      console.error(`${error}`);
@@ -127,7 +127,7 @@ router.post(`/phoneonfyrs`, async function (req, res, next){
                          phoneNumber: req.body.phone,
                      }).then(response => {
                          res.status(201).json({
-                             "payload": req.body.phone
+                             "payload": req.body
                          })})
                  .catch((error => {
                      console.error(`${error}`);

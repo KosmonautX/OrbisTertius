@@ -6,6 +6,8 @@ const dynaOrb = require('../controller/dynamoOrb').dynaOrb;
 const geohash = require('../controller/geohash')
 const { territory_markers } = require('../config/ddb.config');
 const serve3 = require('../controller/orbjectStore').serve3
+const fyrMigrator = require('../controller/userMigrator').migrator
+const userQuery = require('../controller/dynamoUser').userQuery
 
 router.use(function (req, res, next){
     security.checkAdmin(req, next);
@@ -56,19 +58,26 @@ async function gen_orb(body){
     // when listener frequencies become adaptable not now
     if(!body.geolocation.hashes){
         if(body.geolocation.radius === territory_markers[0]) body.geolocation.hashes = geohash.neighbour(body.geolocation.hash,body.geolocation.radius)
-    // posting without neighbours
-         else body.geolocation.hashes = [body.geolocation.hash]
-        }
+        // posting without neighbours
+        else body.geolocation.hashes = [body.geolocation.hash]
+    }
     //initators data from telegram
 
     body.init = {}
     body.init.username = body.username
     if(body.user_media) body.init.media = body.user_media
     else body.init.media = false
-    orb_uuid = await dynaOrb.create(body,dynaOrb.gen(body)).catch(err => {
-        err.status = 400;
-        next(err);
-    });
+    if(body.force){
+        orb_uuid = await dynaOrb.create(body,dynaOrb.force_gen(body)).catch(err => {
+            err.status = 400;
+            next(err);
+        });
+    }
+    else {
+        orb_uuid = await dynaOrb.create(body,dynaOrb.gen(body)).catch(err => {
+            err.status = 400;
+            next(err);
+        });}
     promises.title = body.title
     promises.orb_uuid =  body.orb_uuid;
     promises.expiry = body.expiry_dt;
@@ -170,21 +179,21 @@ router.put(`/destroy_orb`, async function (req, res, next) {
 router.put(`/anon_orb`, async function (req, res, next) {
     try{
         let body = { ...req.body};
-            var deactivation = await dynaOrb.anon(body.user_id, body.orbs).catch(err => {
-                err.status = 500;
-                next(err);
+        var deactivation = await dynaOrb.anon(body.user_id, body.orbs).catch(err => {
+            err.status = 500;
+            next(err);
+        });
+        if (deactivation) {
+            res.status(201).json({
+                "Orb Anon'd": body.orbs
             });
-            if (deactivation) {
-                res.status(201).json({
-                    "Orb Anon'd": body.orbs
-                });
-            }
-            else{
+        }
+        else{
 
-                res.status(400).json({
-                    "Orb": "Anonymity Failed"
-                })
-            }
+            res.status(400).json({
+                "Orb": "Anonymity Failed"
+            })
+        }
     }
     catch(err) {
         next(err);
@@ -210,6 +219,39 @@ router.put(`/nirvana_orb`, async function (req, res, next) {
     }catch(err) {
         next(err);
     }});
+
+router.get(`/get_users/:user_ids`, async function (req, res, next) {
+    try{
+        const n = 8
+        const users = req.params.user_ids.split(',').slice(0,n)
+        Promise.all(users.map(user_id => userQuery.queryPUB(user_id))).then(response => {
+            daos = response.map(async(data) => {
+                var dao = {payload:{}}
+                if(data.Item){
+                    dao.user_id = data.Item.PK.slice(4);
+                    dao.provider = await fyrMigrator.fetch(data.Item.PK.slice(4)).then(response => {
+                        dao = {providerData: response.providerData}})
+                    if (data.Item.payload) {
+                        dao.payload = data.Item.payload
+                        if(data.Item.payload.media) dao.payload.media_asset = await serve3.preSign('getObject','USR',dao.user_id,'150x150')}
+                    if(data.Item.alphanumeric) dao.payload.username = data.Item.alphanumeric;
+                    if(data.Item.geohash){
+                        dao.geolocation = data.Item.geohash;}
+                    dao.creationtime= data.Item.time
+                }
+                return dao
+            })
+            Promise.all(daos).then(sandwich => {
+                res.status(201).json(sandwich);
+            })
+        }).catch(error => {
+            throw new Error("Recall User failed")
+        });
+    }catch(err){
+        if (err.message == "Recall User failed") err.status = 401;
+        next(err);
+    }
+});
 
 function slider_time(dt){
     let expiry_dt = moment().add(1, 'days').unix(); // default expire in 1 day
