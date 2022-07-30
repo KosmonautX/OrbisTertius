@@ -43,7 +43,7 @@ unless config_env() == :prod do
       host: System.get_env("GRAFANA_HOST") || raise("GRAFANA_HOST is required"),
       auth_token: System.get_env("GRAFANA_TOKEN") || raise("GRAFANA_TOKEN is required"),
       upload_dashboards_on_start: true,
-      folder_name: (System.get_env("FLY_APP_NAME") || "Phos") <> "Dashboard",
+      folder_name: System.get_env("FLY_APP_NAME") <> "Dashboard",
       annotate_app_lifecycle: true
     ],
   metrics_server: [
@@ -116,7 +116,7 @@ if config_env() == :prod do
       host: System.get_env("GRAFANA_HOST") || raise("GRAFANA_HOST is required"),
       auth_token: System.get_env("GRAFANA_TOKEN") || raise("GRAFANA_TOKEN is required"),
       upload_dashboards_on_start: true,
-      folder_name: (System.get_env("FLY_APP_NAME") || "Phos") <> "Dashboard",
+      folder_name: System.get_env("PHX_HOST") <> "Dashboard",
       annotate_app_lifecycle: true
     ],
     metrics_server: [
