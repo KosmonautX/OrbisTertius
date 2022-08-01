@@ -7,7 +7,8 @@ config :phos, Phos.Repo,
   hostname: System.get_env("PGDOMAIN") || "localhost", ## domain change to postgres for docker
   database: "phos_dev",
   show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+  pool_size: 10,
+  types: Phos.PostgresTypes
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
@@ -63,8 +64,9 @@ config :phos, PhosWeb.Endpoint,
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/phos_web/(utility|live|views|channels|components)/.*(ex)$",
-      ~r"lib/phos_web/templates/.*(eex)$"
+      ~r"lib/phos_web/(utility|live|views|controllers|channels)/.*(ex)$",
+      ~r"lib/phos_web/templates/.*(eex)$",
+      ~r"lib/phos_web/(views|controllers)/api/.*(ex)$"
     ]
   ]
 

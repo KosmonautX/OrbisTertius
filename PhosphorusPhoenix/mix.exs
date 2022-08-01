@@ -74,6 +74,9 @@ defmodule Phos.MixProject do
       {:timex, "~> 3.7"},
       {:earmark, "~>1.4.25"},
       {:html_sanitize_ex, "~> 1.4"},
+      {:prom_ex, "~> 1.7"},
+      # comments
+      {:ecto_ltree, "~> 0.3.0"}
     ]
   end
 

@@ -13,7 +13,7 @@ config :phos,
 # Configures the endpoint
 config :phos, PhosWeb.Endpoint,
   url: [host: "localhost"], #change to "127.0.0.1" to work on privelleged port 80
-  render_errors: [view: PhosWeb.ErrorView, accepts: ~w(html json), layout: false],
+render_errors: [view: PhosWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: Phos.PubSub,
   live_view: [signing_salt: "r193MsgJ"]
 
@@ -34,8 +34,7 @@ config :phos, Phos.Mailer, adapter: Swoosh.Adapters.Local
 config :esbuild,
   version: "0.14.0",
   default: [
-    args:
-      ~w(js/app.js js/admin.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
+    args: ~w(js/app.js js/admin.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
@@ -47,6 +46,9 @@ config :logger, :console,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+#config :phoenix, :filter_parameters, ["token"]
+
+
 
 config :phos, Phos.OAuthStrategy,
   google: [
@@ -76,7 +78,7 @@ config :tailwind, version: "3.1.6", default: [
     --output=../priv/static/assets/admin.css
   ),
   cd: Path.expand("../assets", __DIR__)
-  ]
+]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
