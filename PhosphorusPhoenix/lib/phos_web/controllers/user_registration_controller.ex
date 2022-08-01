@@ -11,7 +11,7 @@ defmodule PhosWeb.UserRegistrationController do
   end
 
   def create(conn, %{"user" => user_params}) do
-    user_params = Map.put(user_params, "public_profile", %{bio: "I'm new to Scratchbac!", birthday: nil, occupation: "Scratchbacker", pronouns: nil, traits: []})
+    user_params = Map.put(user_params, "public_profile", %{bio: "I'm new to Scratchbac!", birthday: nil, occupation: "Scratchbacker", honorific: nil, traits: []})
     case Users.register_user(user_params) do
       {:ok, user} ->
         {:ok, _} =
