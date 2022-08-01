@@ -8,6 +8,7 @@ defmodule Phos.Users.User do
   schema "users" do
     field :email, :string
     field :username, :string
+    field :role, :string
     field :media, :boolean, default: false
     field :profile_pic, :integer, default: :rand.uniform(6)
     field :fyr_id, :string

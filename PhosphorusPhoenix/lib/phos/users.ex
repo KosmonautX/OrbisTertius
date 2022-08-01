@@ -39,6 +39,16 @@ defmodule Phos.Users do
 #   """
   def get_user_by_fyr(id), do: Repo.get_by(User |> preload(:private_profile) |> preload(:public_profile), fyr_id: id)
 
+  def get_admin do
+    query = from u in User, where: u.role == "admin"
+    case Repo.all(query) do
+      data when is_list(data) and data != [] -> List.first(data)
+      _ ->
+        query = from u in User, order_by: u.inserted_at, limit: 1
+        Repo.one!(query)
+    end
+  end
+
   def get_pte_profile_by_fyr(id) do
     query = from u in User, where: u.fyr_id == ^id
 
