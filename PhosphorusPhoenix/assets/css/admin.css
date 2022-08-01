@@ -11,6 +11,160 @@
   @apply text-blue-500;
 }
 
+.button {
+  background: theme(colors.blue.400);
+  padding: theme(spacing.3) theme(spacing.6);
+  border-radius: theme(borderRadius.lg);
+  color: theme(colors.white);
+  font-weight: theme(fontWeight.bold);
+  font-size: theme(fontSize.base);
+  box-shadow: theme(boxShadow.md);
+  outline-offset: theme(outlineOffset.0);
+
+  transition-property: all;
+  transition-timing-function: theme(transitionTimingFunction.linear);
+  transition-duration: theme(transitionDuration.150);
+
+  text-transform: uppercase;
+  outline: none;
+}
+
+.button:hover {
+  box-shadow: theme(boxShadow.lg);
+  background: theme(colors.blue.500);
+}
+
+.button:active {
+  background: theme(colors.blue.500);
+}
+
+.button:focus {
+  outline: none;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  background: theme(colors.blue.100);
+}
+
+.button-xs {
+  font-size: theme(fontSize.xs);
+  font-weight: theme(fontWeight.normal);
+  padding: 0.375rem theme(spacing.3);
+  border-radius: theme(borderRadius.md);
+}
+
 .button-sm {
-  @apply bg-blue-400 text-white active:bg-blue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none ease-linear transition-all duration-150;
+  font-size: theme(fontSize.xs);
+  font-weight: theme(fontWeight.semibold);
+  padding: theme(spacing.2) theme(spacing.4);
+  border-radius: theme(borderRadius.md);
+}
+
+.button-lg {
+  font-size: theme(fontSize.lg);
+  padding: theme(spacing.4) theme(spacing.8);
+}
+
+.button-primary {
+  background: theme(colors.green.400);
+}
+
+.button-primary:active,
+.button-primary:hover {
+  background: theme(colors.green.500);
+}
+
+.button-primary:disabled {
+  background: theme(colors.green.100);
+}
+
+.button-danger {
+  background: theme(colors.red.400);
+}
+
+.button-danger:active,
+.button-danger:hover {
+  background: theme(colors.red.500);
+}
+
+.button-danger:disabled {
+  background: theme(colors.red.100);
+}
+
+.button-outline {
+  background: transparent;
+  border: 1px;
+  border-style: solid;
+  color: theme(colors.blue.500);
+  border-color: theme(colors.blue.500);
+}
+
+.button-outline:active,
+.button-outline:hover {
+  border-color: theme(colors.blue.600);
+  color: theme(colors.white);
+  background: theme(colors.blue.600);
+}
+
+.button-outline:disabled {
+  background: transparent;
+  border-color: theme(colors.blue.200);
+}
+
+.button-outline-primary {
+  background: transparent;
+  border: 1px;
+  border-style: solid;
+  color: theme(colors.green.500);
+  border-color: theme(colors.green.500);
+}
+
+.button-outline-primary:active,
+.button-outline-primary:hover {
+  border-color: theme(colors.green.600);
+  color: theme(colors.white);
+  background: theme(colors.green.600);
+}
+
+.button-outline-primary:disabled {
+  background: transparent;
+  border-color: theme(colors.green.200);
+}
+
+.button-outline-danger {
+  background: transparent;
+  border: 1px;
+  border-style: solid;
+  color: theme(colors.red.500);
+  border-color: theme(colors.red.500);
+}
+
+.button-outline-danger:active,
+.button-outline-danger:hover {
+  border-color: theme(colors.red.600);
+  color: theme(colors.white);
+  background: theme(colors.red.600);
+}
+
+.button-outline-danger:disabled {
+  background: transparent;
+  border-color: theme(colors.red.200);
+}
+
+.badge {
+  font-size: theme(fontSize.xs);
+  font-weight: theme(fontWeight.semibold);
+  padding: theme(spacing.1) theme(spacing.2);
+  border-radius: theme(borderRadius.md);
+  color: theme(colors.emerald.600);
+  background: theme(colors.emerald.200);
+  margin-right: theme(spacing.1);
+
+  text-transform: uppercase;
+  cursor: text;
+}
+
+.badge:last-child {
+  margin-right: 0;
 }

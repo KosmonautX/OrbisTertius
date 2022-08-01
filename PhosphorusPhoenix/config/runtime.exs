@@ -26,13 +26,23 @@ unless config_env() == :prod do
   config :phos, Phos.Fyr.Message,
   adapter: Pigeon.FCM,
   project_id: System.get_env("FYR_PROJ"),
-  service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
+  service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
 
   # AWS
   config :ex_aws,
   access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, :instance_role],
   secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, :instance_role],
   region: "ap-southeast-1"
+
+  # Notion Importing / Exporting
+  config :phos, Phos.External.Notion,
+  token: System.get_env("NOTION_TOKEN"),
+  database: System.get_env("NOTION_DATABASE"),
+  version: System.get_env("NOTION_VERSION")
+
+  config :phos, Phos.External.Sector,
+  url: System.get_env("SECTOR_URL")
+
 
 end
 
@@ -76,7 +86,7 @@ if config_env() == :prod do
   config :phos, Phos.Fyr.Message,
     adapter: Pigeon.FCM,
     project_id: System.get_env("FYR_PROJ"),
-    service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
+    service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
 
   config :phos, Phos.Repo,
     # ssl: true,
@@ -111,6 +121,15 @@ if config_env() == :prod do
     signer_alg: "HS256",
     key_octet: System.get_env("SECRET_TUNNEL")
   ]
+
+    # Notion Importing / Exporting
+  config :phos, Phos.External.Notion,
+  token: System.get_env("NOTION_TOKEN"),
+  database: System.get_env("NOTION_DATABASE"),
+  version: System.get_env("NOTION_VERSION")
+
+  config :phos, Phos.External.Sector,
+  url: System.get_env("SECTOR_URL")
 
   # ## Using releases
   #

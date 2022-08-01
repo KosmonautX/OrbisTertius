@@ -61,6 +61,7 @@ defmodule PhosWeb.Router do
 
     live "/", DashboardLive, :index
     live "/orbs", OrbLive.Index, :index
+    live "/orbs/import", OrbLive.Import, :import
     live "/orbs/:id", OrbLive.Show, :show
   end
 

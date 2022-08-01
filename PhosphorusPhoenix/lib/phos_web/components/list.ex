@@ -29,7 +29,7 @@ defmodule PhosWeb.Components.List do
       <div class="w-full flex items-center justify-between px-4 py-2 border-b">
         <div class="w-1/2"><%= @name %></div>
         <div class="w-1/2">
-          <%= render_slot(@inner_block) %>
+          <%= if(Map.get(assigns, :inner_block), do: render_slot(@inner_block), else: "-") %>
         </div>
       </div>
       """

@@ -1,11 +1,6 @@
 # Phos Phoenix Runtime Node
 
-## oRBs
-
-```elixir
-Phos.Action.get_orbs_by_geohashes([614_269_017_680_510_975])
-|> PhosWeb.Util.Viewer.fresh_orb_stream_mapper()
-```
+## Root
 
 ```elixir
 defmodule R do
@@ -21,6 +16,45 @@ end
 
 R.recompile()
 ```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## External APIs
+
+```elixir
+token = "secret_iEEKNgkL0gE0Havl8c840X0rSrUXlQf5xrKEXDzRqxb"
+database = "6651c1b694844da39faa51d019fe6baf"
+
+# headers = [
+#   Authorization: "Bearer #{token}",
+#   "Content-Type": "application/json",
+#   "Notion-Version": "2022-02-22"
+# ]
+
+today = DateTime.utc_now() |> DateTime.add(60 * 60 * 10) |> DateTime.to_date()
+
+date_query = %{
+  "filter" => %{
+    "property" => "Posting date",
+    "date" => %{
+      "equals" => today
+    }
+  }
+}
+
+today_post = Phos.External.Notion.post!("/databases/" <> database <> "/query", date_query, [])
+```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## oRBs
+
+```elixir
+Phos.Action.get_orbs_by_geohashes([614_269_017_680_510_975])
+|> PhosWeb.Util.Viewer.fresh_orb_stream_mapper()
+```
+
+<!-- livebook:{"branch_parent_index":0} -->
 
 ## Users
 
