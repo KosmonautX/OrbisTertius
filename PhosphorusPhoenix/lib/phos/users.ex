@@ -5,7 +5,8 @@ defmodule Phos.Users do
 
   import Ecto.Query, warn: false
   alias Phos.Repo
-  alias Phos.Users.{User, Public_Profile, Private_Profile, Auth}
+  alias Phos.Users
+  alias Phos.Users.{User, User_Public_Profile, Private_Profile, Auth}
 
   alias Ecto.Multi
 
@@ -19,9 +20,14 @@ defmodule Phos.Users do
 
   """
   def list_users do
-    query = from u in User, preload: [:public_profile, :private_profile]
+    query = from u in User
     Repo.all(query)
   end
+
+  # def list_users_pub do
+  #   query = from u in User, preload: [:public_profile]
+  #   Repo.all(query)
+  # end
 
 #   @doc """
 #   Gets a single user.
@@ -37,7 +43,9 @@ defmodule Phos.Users do
 #       ** (Ecto.NoResultsError)
 
 #   """
-  def get_user_by_fyr(id), do: Repo.get_by(User |> preload(:private_profile) |> preload(:public_profile), fyr_id: id)
+  def get_user_by_fyr(id), do: Repo.get_by(User |> preload(:private_profile), fyr_id: id)
+
+  def get_user_by_username(username), do: Repo.get_by(User, username: username)
 
   def get_admin do
     query = from u in User, where: u.role == "admin"
@@ -67,8 +75,6 @@ defmodule Phos.Users do
 
     Repo.all(query |> preload(:private_profile))
   end
-
-  def get_pub_profile_by_fyr(id), do: Repo.get_by(User |> preload(:public_profile), fyr_id: id)
 
   def find_user_by_id(id) when is_bitstring(id) do
     query = from u in User, where: u.id == ^id, limit: 1
@@ -113,12 +119,6 @@ defmodule Phos.Users do
     |> Repo.insert()
   end
 
-  # def create_public_profile(attrs \\ %{}) do
-  #   %Public_Profile{}
-  #   |> Public_Profile.changeset(attrs)
-  #   |> Repo.insert()
-  # end
-
   def create_private_profile(attrs \\ %{}) do
     %Private_Profile{}
     |> Private_Profile.changeset(attrs)
@@ -150,6 +150,14 @@ defmodule Phos.Users do
     |> Repo.update()
   end
 
+  def update_user_profile(%User{} = user, attrs) do
+    changeset = Ecto.Changeset.change(user.public_profile)
+    user_changeset = Ecto.Changeset.change(user)
+    userprofile_changeset = Ecto.Changeset.change(changeset, attrs)
+    Ecto.Changeset.put_embed(user_changeset, :public_profile, userprofile_changeset)
+    |> Phos.Repo.update()
+  end
+
 #   @doc """
 #   Deletes a user.
 
@@ -177,6 +185,10 @@ defmodule Phos.Users do
 #   """
   def change_user(%User{} = user, attrs \\ %{}) do
     User.changeset(user, attrs)
+  end
+
+  def change_user_profile(%Users.User_Public_Profile{} = user_profile, attrs \\ %{}) do
+    User_Public_Profile.changeset(user_profile, attrs)
   end
 
   @doc """
@@ -485,7 +497,7 @@ defmodule Phos.Users do
   """
   def get_user_by_session_token(token) do
     {:ok, query} = UserToken.verify_session_token_query(token)
-    Repo.one(query) |> Repo.preload([:private_profile, :public_profile])
+    Repo.one(query) |> Repo.preload([:private_profile])
   end
 
   @doc """

@@ -9,10 +9,9 @@ defmodule PhosWeb.Util.Migrator do
   alias Ecto.Multi
 
   def user_profile(id) do
-  
     with {:ok, response} <- Phos.External.HeimdallrClient.get("/tele/get_users/" <> id),
          true <- response.status_code >= 200 and response.status_code < 300,
-         {:ok, users} <- user_migration(response.body, id) do
+         users <- user_migration(response.body, id) do
       users
     else
       {:error, err} -> err
@@ -52,7 +51,8 @@ defmodule PhosWeb.Util.Migrator do
     |> Multi.run(:user, fn _repo, %{payload: payload} ->
       case Users.get_user_by_fyr(id) do
         %Users.User{} = user -> {:ok, user}
-        nil -> Users.create_user(payload)
+        nil ->
+          Users.create_user(payload)
       end
     end)
     |> Multi.insert_all(:registered_providers, Users.Auth, &insert_with_provider/1, on_conflict: :replace_all, conflict_target: [:auth_id, :user_id, :auth_provider])
