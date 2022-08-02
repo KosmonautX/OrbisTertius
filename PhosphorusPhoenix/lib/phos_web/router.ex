@@ -2,6 +2,7 @@ defmodule PhosWeb.Router do
   use PhosWeb, :router
 
   import PhosWeb.UserAuth
+  import PhosWeb.Menshen.Plug
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -13,23 +14,35 @@ defmodule PhosWeb.Router do
     plug :fetch_current_user
   end
 
+  pipeline :apple_callback do
+    plug :accepts, ["html", "json"]
+    plug :fetch_session
+    plug :fetch_live_flash
+    plug :put_root_layout, {PhosWeb.LayoutView, :root}
+    plug :put_secure_browser_headers
+    plug :fetch_current_user
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
 
   pipeline :authentication do
-    plug Ueberauth
   end
 
+  pipeline :admin do
+    plug :put_root_layout, {PhosWeb.LayoutView, :admin_root}
+    plug Phos.Admin.Plug
+  end
 
   scope "/", PhosWeb do
-    pipe_through [:browser, :authentication]
+    pipe_through [:browser]
 
     get "/archetype", ArchetypeController, :show do
       resources "/archetype/usr", UserController, only: [:show]
     end
 
-    live_session :authenticated, on_mount: {PhosWeb.Menshen.Protocols, :pleb} do
+    live_session :authenticated, on_mount: {PhosWeb.Menshen.Mounter, :pleb} do
       get "/", PageController, :index
 
       live "/orb/sethome", OrbLive.Index, :sethome
@@ -41,11 +54,39 @@ defmodule PhosWeb.Router do
 
       live "/orb/:id", OrbLive.Show, :show
       live "/orb/:id/show/edit", OrbLive.Show, :edit
+      live "/orb/:id/show/:cid", OrbLive.Show, :show_ancestor
+      live "/orb/:id/reply/:cid", OrbLive.Show, :reply
+      live "/orb/:id/edit/:cid", OrbLive.Show, :edit_comment
+
+      live "/user/:username/edit", UserProfileLive.Index, :edit
+      live "/user/:username", UserProfileLive.Index, :index
+
     end
-
-
   end
 
+  scope "/admin", PhosWeb.Admin, as: :admin, on_mount: {Phos.Admin.Mounter, :admin} do
+    pipe_through [:browser, :admin]
+
+    live "/", DashboardLive, :index
+    live "/orbs", OrbLive.Index, :index
+    live "/orbs/import", OrbLive.Import, :import
+    live "/orbs/:id", OrbLive.Show, :show
+  end
+
+  scope "/api", PhosWeb.API do
+    pipe_through [:api, :fetch_authorised_user_claims]
+
+    resources "/comments", CommentController, except: [:new, :edit]
+    get "/comments/showroot/:id", CommentController, :show_root
+    get "/comments/:id/showancestor/:cid", CommentController, :show_ancestor
+
+    resources "/userprofile", UserProfileController, except: [:new, :edit]
+    # get "/users/:id/showusermedia", UserController, :show_user_media
+
+    resources "/orbs", OrbController, except: [:new, :edit]
+
+    get "/freshorbstream", OrbController, :fresh_orb_stream
+  end
 
   # Other scopes may use custom stacks.
   scope "/auth", PhosWeb do
@@ -54,6 +95,13 @@ defmodule PhosWeb.Router do
     get "/:provider", AuthController, :request
     get "/:provider/callback", AuthController, :callback
     delete "/logout", AuthController, :delete
+  end
+
+  scope "/auth", PhosWeb do
+    pipe_through :apple_callback
+
+    post "/telegram/callback", AuthController, :telegram_callback
+    post "/:provider/callback", AuthController, :apple_callback
   end
 
   # Enables LiveDashboard only for development
@@ -83,6 +131,12 @@ defmodule PhosWeb.Router do
 
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
+
+    scope "/api/devland", PhosWeb.API do
+      pipe_through :api
+
+      get "/flameon", DevLandController, :new
+    end
   end
 
   ## Authentication routes
@@ -110,6 +164,8 @@ defmodule PhosWeb.Router do
 
   scope "/", PhosWeb do
     pipe_through [:browser]
+
+    resources "/admin/sessions", Admin.SessionController, only: [:new, :create, :index], as: :admin_session
 
     delete "/users/log_out", UserSessionController, :delete
     get "/users/confirm", UserConfirmationController, :new

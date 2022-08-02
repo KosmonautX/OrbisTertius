@@ -12,8 +12,8 @@ config :phos,
 
 # Configures the endpoint
 config :phos, PhosWeb.Endpoint,
-  url: [host: "localhost"],
-  render_errors: [view: PhosWeb.ErrorView, accepts: ~w(html json), layout: false],
+  url: [host: "localhost"], #change to "127.0.0.1" to work on privelleged port 80
+render_errors: [view: PhosWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: Phos.PubSub,
   live_view: [signing_salt: "r193MsgJ"]
 
@@ -24,17 +24,17 @@ config :phos, PhosWeb.Endpoint,
 #
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
+
 config :phos, Phos.Mailer, adapter: Swoosh.Adapters.Local
 
 # Swoosh API client is needed for adapters other than SMTP.
-config :swoosh, :api_client, false
+# config :swoosh, :api_client, false
 
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.14.0",
   default: [
-    args:
-      ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
+    args: ~w(js/app.js js/admin.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
@@ -46,20 +46,39 @@ config :logger, :console,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+#config :phoenix, :filter_parameters, ["token"]
 
-config :ueberauth, Ueberauth,
-  providers: [
-    google: {Ueberauth.Strategy.Google, [default_scope: "email profile openid"]},
-    apple: {Ueberauth.Strategy.Apple, []}
+
+
+config :phos, Phos.OAuthStrategy,
+  google: [
+    client_id: {System, :get_env, ["GOOGLE_CLIENT_ID"]},
+    client_secret: {System, :get_env, ["GOOGLE_CLIENT_SECRET"]},
+    strategy: Assent.Strategy.Google,
+    http_adapter: Assent.HTTPAdapter.Mint
+  ],
+  apple: [
+    team_id: {System, :get_env, ["APPLE_TEAM_ID"]},
+    client_id: {System, :get_env, ["APPLE_CLIENT_ID"]},
+    private_key: {System, :get_env, ["APPLE_PRIVATE_KEY"]}, # use either private_key or private_key path
+    private_key_id: {System, :get_env, ["APPLE_PRIVATE_KEY_ID"]},
+    # private_key_path: {System, :get_env, ["APPLE_PRIVATE_KEY_PATH"]}, # Use either private_key or private_key_path
+    strategy: Assent.Strategy.Apple,
+    http_adapter: Assent.HTTPAdapter.Mint
+  ],
+  telegram: [
+    host: {System, :get_env, ["TELEGRAM_REDIRECT_HOST"]}, # https://endpoint.com
+    bot_id: {System, :get_env, ["TELEGRAM_BOT_ID"]},
   ]
 
-config :ueberauth, Ueberauth.Strategy.Google.OAuth,
-  client_id: {System, :get_env, ["GOOGLE_CLIENT_ID"]},
-  client_secret: {System, :get_env, ["GOOGLE_CLIENT_SECRET"]}
-
-config :ueberauth, Ueberauth.Strategy.Apple.OAuth,
-  client_id: {System, :get_env, ["APPLE_CLIENT_ID"]},
-  client_secret: {System, :get_env, ["APPLE_CLIENT_SECRET"]}
+config :tailwind, version: "3.1.6", default: [
+  args: ~w(
+    --config=tailwind.config.js
+    --input=css/admin.css
+    --output=../priv/static/assets/admin.css
+  ),
+  cd: Path.expand("../assets", __DIR__)
+]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

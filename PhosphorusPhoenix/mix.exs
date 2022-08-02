@@ -7,7 +7,7 @@ defmodule Phos.MixProject do
       version: "0.1.0",
       elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:gettext] ++ Mix.compilers(),
+      compilers: [] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -20,7 +20,7 @@ defmodule Phos.MixProject do
   def application do
     [
       mod: {Phos.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :inets]
       #extra_applications: [:logger, :runtime_tools, :wx]
     ]
   end
@@ -47,6 +47,7 @@ defmodule Phos.MixProject do
       {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
       {:dotenv_parser, "~> 2.0", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.3"},
+      {:gen_smtp, "~> 1.2"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.18"},
@@ -54,7 +55,7 @@ defmodule Phos.MixProject do
       {:pigeon, "~> 2.0.0-rc.0"},
       {:plug_cowboy, "~> 2.5"},
       {:joken, "~> 2.0-rc0"},
-      {:h3, "~> 3.6"},
+      {:h3, github: "helium/erlang-h3"},
       {:libcluster, "~> 3.3"},
       # support aws s3
       {:ex_aws, "~> 2.0"},
@@ -63,11 +64,19 @@ defmodule Phos.MixProject do
       {:mogrify, "~> 0.9.1"},
 
       # oauth strategy
-      {:guardian, "~> 2.0"},
-      {:ueberauth, "~> 0.7"},
-      {:ueberauth_apple, "~> 0.4"},
-      {:ueberauth_google, "~> 0.10"},
       {:argon2_elixir, "~> 3.0"},
+      {:assent, "~> 0.2.0"},
+      {:certifi, "~> 2.4"},
+      {:ssl_verify_fun, "~> 1.1"},
+      {:mint, "~> 1.0"},
+      {:castore, "~> 0.1.0"},
+      {:tailwind, "~> 0.1", runtime: Mix.env() == :dev},
+      {:timex, "~> 3.7"},
+      {:earmark, "~>1.4.25"},
+      {:html_sanitize_ex, "~> 1.4"},
+      {:prom_ex, "~> 1.7"},
+      # comments
+      {:ecto_ltree, "~> 0.3.0"}
     ]
   end
 
@@ -83,7 +92,7 @@ defmodule Phos.MixProject do
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
-      "assets.deploy": ["esbuild default --minify", "phx.digest"]
+      "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"]
     ]
   end
 end

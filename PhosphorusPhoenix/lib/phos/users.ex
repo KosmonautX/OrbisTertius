@@ -5,7 +5,8 @@ defmodule Phos.Users do
 
   import Ecto.Query, warn: false
   alias Phos.Repo
-  alias Phos.Users.{User, Public_Profile, Private_Profile, Auth}
+  alias Phos.Users
+  alias Phos.Users.{User, User_Public_Profile, Private_Profile, Auth}
 
   alias Ecto.Multi
 
@@ -19,8 +20,14 @@ defmodule Phos.Users do
 
   """
   def list_users do
-    Repo.all(User |> preload(:public_profile) |> preload(:private_profile))
+    query = from u in User
+    Repo.all(query)
   end
+
+  # def list_users_pub do
+  #   query = from u in User, preload: [:public_profile]
+  #   Repo.all(query)
+  # end
 
 #   @doc """
 #   Gets a single user.
@@ -36,7 +43,19 @@ defmodule Phos.Users do
 #       ** (Ecto.NoResultsError)
 
 #   """
-  def get_user_by_fyr(id), do: Repo.get_by(User |> preload(:private_profile) |> preload(:public_profile), fyr_id: id)
+  def get_user_by_fyr(id), do: Repo.get_by(User |> preload(:private_profile), fyr_id: id)
+
+  def get_user_by_username(username), do: Repo.get_by(User, username: username)
+
+  def get_admin do
+    query = from u in User, where: u.role == "admin"
+    case Repo.all(query) do
+      data when is_list(data) and data != [] -> List.first(data)
+      _ ->
+        query = from u in User, order_by: u.inserted_at, limit: 1
+        Repo.one!(query)
+    end
+  end
 
   def get_pte_profile_by_fyr(id) do
     query = from u in User, where: u.fyr_id == ^id
@@ -57,12 +76,10 @@ defmodule Phos.Users do
     Repo.all(query |> preload(:private_profile))
   end
 
-  def get_pub_profile_by_fyr(id), do: Repo.get_by(User |> preload(:public_profile), fyr_id: id)
-
   def find_user_by_id(id) when is_bitstring(id) do
     query = from u in User, where: u.id == ^id, limit: 1
     case Repo.one(query) do
-      %User{} = user -> {:ok, user}
+      %User{} = user -> {:ok, user |> Repo.preload(:private_profile)}
       nil -> {:error, "User not found"}
     end
   end
@@ -102,12 +119,6 @@ defmodule Phos.Users do
     |> Repo.insert()
   end
 
-  # def create_public_profile(attrs \\ %{}) do
-  #   %Public_Profile{}
-  #   |> Public_Profile.changeset(attrs)
-  #   |> Repo.insert()
-  # end
-
   def create_private_profile(attrs \\ %{}) do
     %Private_Profile{}
     |> Private_Profile.changeset(attrs)
@@ -139,6 +150,14 @@ defmodule Phos.Users do
     |> Repo.update()
   end
 
+  def update_user_profile(%User{} = user, attrs) do
+    changeset = Ecto.Changeset.change(user.public_profile)
+    user_changeset = Ecto.Changeset.change(user)
+    userprofile_changeset = Ecto.Changeset.change(changeset, attrs)
+    Ecto.Changeset.put_embed(user_changeset, :public_profile, userprofile_changeset)
+    |> Phos.Repo.update()
+  end
+
 #   @doc """
 #   Deletes a user.
 
@@ -168,10 +187,14 @@ defmodule Phos.Users do
     User.changeset(user, attrs)
   end
 
+  def change_user_profile(%Users.User_Public_Profile{} = user_profile, attrs \\ %{}) do
+    User_Public_Profile.changeset(user_profile, attrs)
+  end
+
   @doc """
   Authenticate a user from oauth provider
   """
-  def from_auth(%Ueberauth.Auth{uid: id, provider: provider} = resp) do
+  def from_auth(%{"sub" => id, "provider" => provider} = resp) do
     case do_query_from_auth(id, provider) do
       nil -> create_new_user(id, provider, resp)
       %Auth{} = auth -> {:ok, auth.user}
@@ -190,14 +213,27 @@ defmodule Phos.Users do
     )
   end
 
-  defp create_new_user(id, provider, %Ueberauth.Auth{info: info} = auth) do
+  defp create_new_user(id, provider, %{"auth_date" => _date}) when provider == "telegram" do
+    params = %{
+      auths: [%{
+        auth_id: id,
+        auth_provider: to_string(provider)
+      }]
+    }
+    %User{}
+    |> User.telegram_changeset(params)
+    |> Repo.insert()
+  end
+
+  defp create_new_user(id, provider, %{"email" => email}) do
     params = %{
       auth_id: id,
-      auth_provider: Atom.to_string(provider),
+      auth_provider: to_string(provider),
       user: %{
-        email: info.email,
+        email: email,
       }
     }
+
     %Auth{}
     |> Auth.changeset(params)
     |> Repo.insert()
@@ -322,6 +358,22 @@ defmodule Phos.Users do
     User.pub_profile_changeset(user, attrs)
   end
 
+
+    @doc """
+  Returns an `%Ecto.Changeset{}` for changing telegram login users.
+
+  ## Examples
+
+      iex> change_pub_profile(user)
+      %Ecto.Changeset{data: %User{}}
+
+  """
+  def change_telegram_login(user, attrs \\ %{}) do
+    User.post_telegram_changeset(user, attrs)
+  end
+
+
+
   @doc """
   Emulates that the email will change without actually changing
   it in the database.
@@ -445,7 +497,7 @@ defmodule Phos.Users do
   """
   def get_user_by_session_token(token) do
     {:ok, query} = UserToken.verify_session_token_query(token)
-    Repo.one(query) |> Repo.preload([:private_profile, :public_profile])
+    Repo.one(query) |> Repo.preload([:private_profile])
   end
 
   @doc """

@@ -18,10 +18,11 @@ defmodule Phos.Application do
       {Phoenix.PubSub, name: Phos.PubSub},
       # Start the Endpoint (http/https)
       PhosWeb.Endpoint,
+      Phos.PromEx,
 
       {Cluster.Supervisor, [topologies, [name: Phos.ClusterSupervisor]]},
       # Start the Firbase Cloud Messaging Dispatcher
-      #Phos.Fyr.Message
+      Phos.Fyr.Message
       #restart: :temporary supervisor strategy?
       # Start a worker by calling: Phos.Worker.start_link(arg)
       # {Phos.Worker, arg}

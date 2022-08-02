@@ -20,7 +20,7 @@ defmodule PhosWeb.Util.Geographer do
 
   # Returns true if target territory's parent = socket's claim territory
   def check_territory?(socket, target_territory) do
-    case Auth.validate(socket.assigns.session_token) do
+    case Auth.validate_user(socket.assigns.session_token) do
       {:ok , claims} ->
         case Map.keys(target_territory) do
           ["hash", "radius"] ->

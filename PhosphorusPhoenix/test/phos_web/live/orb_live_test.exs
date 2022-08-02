@@ -1,15 +1,12 @@
 defmodule PhosWeb.OrbLiveTest do
   use PhosWeb.ConnCase
-  alias PhosWeb.OrbLive.Index
   alias Phos.Users
   import Phoenix.LiveViewTest
   import Phos.ActionFixtures
-  # import PhosWeb.ConnCase
-  import Phos.UsersFixtures
 
   @create_attrs %{"title" => "some title", "active" => true, "extinguish" => %{day: 21, hour: 7, minute: 22, month: 5, year: 2022}, "source" => :web, "location" => :home, "radius" => 8, "payload" => %{"info" => "some info", "tip" => "some tip", "when" => "some when", "where" => "some where"}}
   @update_attrs %{"title" => "updated title", "active" => true, "extinguish" => %{day: 21, hour: 7, minute: 22, month: 5, year: 2022}, "source" => :web, "location" => :home, "radius" => 8, "payload" => %{"info" => "updated info", "tip" => "updated tip", "when" => "updated when", "where" => "updated where"}}
-  @invalid_attrs %{"active" => true, "extinguish" => %{day: 21, hour: 7, minute: 22, month: 5, year: 2022}, "source" => :web, "location" => :home, "radius" => 8, "payload" => %{"info" => "some info", "tip" => "some tip", "when" => "some when", "where" => "some where"}}
+  #@invalid_attrs %{"active" => true, "extinguish" => %{day: 21, hour: 7, minute: 22, month: 5, year: 2022}, "source" => :web, "location" => :home, "radius" => 8, "payload" => %{"info" => "some info", "tip" => "some tip", "when" => "some when", "where" => "some where"}}
   @no_location_update_attrs %{"title" => "updated title", "active" => true, "extinguish" => %{day: 21, hour: 7, minute: 22, month: 5, year: 2022}, "source" => :web, "radius" => 8, "payload" => %{"info" => "updated info", "tip" => "updated tip", "when" => "updated when", "where" => "updated where"}}
   # @create_attrs %{active: true, extinguish: %{day: 21, hour: 7, minute: 22, month: 5, year: 2022}, media: true, title: "some title"}
   # @update_attrs %{active: false, extinguish: %{day: 22, hour: 7, minute: 22, month: 5, year: 2022}, media: false, title: "some updated title"}
@@ -34,7 +31,7 @@ defmodule PhosWeb.OrbLiveTest do
         |> Users.Private_Profile.changeset(%{user_id: user.id})
         |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623276216934563839, chronolock: 1653079771, location_description: nil}])
         |> Phos.Repo.insert()
-      {:ok, index_live, html} = live(conn, Routes.orb_index_path(conn, :index))
+      {:ok, index_live, _html} = live(conn, Routes.orb_index_path(conn, :index))
 
       send(index_live.pid, {:static_location_update, %{"locname" => :work, "longitude" => 103.96218306516853, "latitude" => 1.3395765950767413}})
       _ = :sys.get_state(index_live.pid)
@@ -50,7 +47,7 @@ defmodule PhosWeb.OrbLiveTest do
     end
 
     test "saves new orb", %{conn: conn, user: user} do
-      {:ok, ecto_insert} =
+      {:ok, _ecto_insert} =
         %Users.Private_Profile{}
         |> Users.Private_Profile.changeset(%{user_id: user.id})
         |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623276216934563839, chronolock: 1653079771, location_description: nil}])
@@ -73,7 +70,7 @@ defmodule PhosWeb.OrbLiveTest do
     end
 
     test "updates orb in listing", %{conn: conn, orb: orb, user: user} do
-      {:ok, ecto_insert} =
+      {:ok, _ecto_insert} =
         %Users.Private_Profile{}
         |> Users.Private_Profile.changeset(%{user_id: user.id})
         |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623276216934563839, chronolock: 1653079771, location_description: nil}])
@@ -96,7 +93,7 @@ defmodule PhosWeb.OrbLiveTest do
     end
 
     test "deletes orb in listing", %{conn: conn, orb: orb, user: user} do
-      {:ok, ecto_insert} =
+      {:ok, _ecto_insert} =
         %Users.Private_Profile{}
         |> Users.Private_Profile.changeset(%{user_id: user.id})
         |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623276216934563839, chronolock: 1653079771, location_description: nil}])
@@ -121,7 +118,7 @@ defmodule PhosWeb.OrbLiveTest do
       {:ok, show_live, _html} = live(conn, Routes.orb_show_path(conn, :show, orb))
 
       assert show_live |> element("a", "Edit") |> render_click() =~
-               "Edit Orb"
+               "Edit"
 
       assert_patch(show_live, Routes.orb_show_path(conn, :edit, orb))
 

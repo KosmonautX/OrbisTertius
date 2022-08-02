@@ -14,7 +14,8 @@ config :phos, Phos.Repo,
   hostname: "localhost",
   database: "phos_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
-  pool_size: 10
+  pool_size: 10,
+  types: Phos.PostgresTypes
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
@@ -31,3 +32,24 @@ config :logger, level: :warn
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
+
+config :phos, Phos.OAuthStrategy,
+  google: [
+    client_id: {System, :get_env, ["GOOGLE_CLIENT_ID"]},
+    client_secret: {System, :get_env, ["GOOGLE_CLIENT_SECRET"]},
+    strategy: Assent.Strategy.Google,
+    http_adapter: Assent.HTTPAdapter.Mint
+  ],
+  apple: [
+    team_id: {System, :get_env, ["APPLE_TEAM_ID"]},
+    client_id: {System, :get_env, ["APPLE_CLIENT_ID"]},
+    private_key: {System, :get_env, ["APPLE_PRIVATE_KEY"]}, # use either private_key or private_key path
+    private_key_id: {System, :get_env, ["APPLE_PRIVATE_KEY_ID"]},
+    # private_key_path: {System, :get_env, ["APPLE_PRIVATE_KEY_PATH"]}, # Use either private_key or private_key_path
+    strategy: Assent.Strategy.Apple,
+    http_adapter: Assent.HTTPAdapter.Mint
+  ],
+  telegram: [
+    host: "http://localhost:4002",
+    botname: "telegram_bot_name"
+  ]

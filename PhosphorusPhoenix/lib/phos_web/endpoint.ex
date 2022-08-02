@@ -13,7 +13,7 @@ defmodule PhosWeb.Endpoint do
   socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
   socket "/socket", PhosWeb.UserSocket,
-  websocket: [check_origin: ["//localhost",  "//phos.scrb.ac", "//nyx.scrb.ac"]],
+  websocket: [check_origin: ["//localhost", "//phos.scrb.ac", "//nyx.scrb.ac"]],
   longpoll: false
 
   # Serve at "/" the static files from "priv/static" directory.
@@ -39,6 +39,8 @@ defmodule PhosWeb.Endpoint do
   plug Phoenix.LiveDashboard.RequestLogger,
     param_key: "request_logger",
     cookie_key: "request_logger"
+
+  plug PromEx.Plug, prom_ex_module: Phos.PromEx
 
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]

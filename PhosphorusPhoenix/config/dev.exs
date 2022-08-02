@@ -2,12 +2,13 @@ import Config
 
 # Configure your database
 config :phos, Phos.Repo,
-  username: "postgres",
-  password: "root",
+  username: System.get_env("PGUSERNAME") || "postgres",
+  password: System.get_env("PGPASSWORD") || "root",
   hostname: System.get_env("PGDOMAIN") || "localhost", ## domain change to postgres for docker
   database: "phos_dev",
   show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+  pool_size: 10,
+  types: Phos.PostgresTypes
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
@@ -25,12 +26,9 @@ config :phos, PhosWeb.Endpoint,
   secret_key_base: "Kg0QgtaLpp2OQJIfeNPfCoiFsIyL3gTKA8KMUXaNyD0xYw5+wFlelPexSf1m9k8m",
   watchers: [
     # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
-    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
+    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
   ]
-
-config :phos, Phos.Guardian,
-       issuer: "Princeton",
-       secret_key: "vyOyqS5mE2Ap2YV5TKG9RyTOOwivgDicxHf+dXcprRiT3Vgz3cpLuqwbO8qvSRi8"
 
 # ## SSL Support
 #
@@ -66,8 +64,9 @@ config :phos, PhosWeb.Endpoint,
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/phos_web/(utility|live|views|channels)/.*(ex)$",
-      ~r"lib/phos_web/templates/.*(eex)$"
+      ~r"lib/phos_web/(utility|live|views|controllers|channels)/.*(ex)$",
+      ~r"lib/phos_web/templates/.*(eex)$",
+      ~r"lib/phos_web/(views|controllers)/api/.*(ex)$"
     ]
   ]
 
@@ -86,3 +85,11 @@ config :ex_aws, :s3,
   scheme: "http://",
   host: "localhost",
   port: 9000
+
+config :phos, Phos.External.HeimdallrClient,
+  base_url: "https://norbandy.scratchbac.org/api",
+  authorization: {Phos.External.HeimdallrClient, :authorization, []}
+
+config :phos, Phos.Admin,
+  password: "791c56ee67aa532df7c080bef3f9a525ee8d385e4f447638a10ca358ff5704db",
+  algorithm: :sha256

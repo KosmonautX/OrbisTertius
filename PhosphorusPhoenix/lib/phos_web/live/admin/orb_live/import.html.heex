@@ -1,0 +1,64 @@
+<div class="w-full p-2">
+  <.live_component module={Card} title="Import Orbs for Today" id="today_orbs">
+    <div class="px-4 py-2">
+      <h1 class="font-bold text-xl">
+        List of today Orbs
+      </h1>
+    </div>
+    <.live_component module={PhosWeb.Components.Loading} loading={@loading} id="loading" text="Fetching today orbs" />
+    <%= if @message != "" do %>
+      <div class="flex justify-center italic text-xl text-gray-500 mt-4 mb-2">
+        <%= @message %>
+      </div>
+    <% end %>
+    <.list_orbs_detail entries={@orbs} selected_orbs={@selected_orbs} />
+  </.live_component>
+
+  <.live_component module={PhosWeb.Components.Modal} id="modal" shown={!is_nil(@show_detail_id)} title={show_detail_orb(@show_detail_id, @orbs) |> Map.get(:title)} onClose="close-modal">
+    <%= if selected_orbs?(@show_detail_id, @selected_orbs) do %>
+      <div class={"absolute top-0 right-10 text-white bg-blue-400 rounded-b-md px-2 py-1"}>
+        selected
+      </div>
+    <% end %>
+    <div class="px-2 pb-3">
+      <h3 class="text-sm mt-2 font-light">
+        <i class="fa-solid fa-user mr-2"></i>
+        <%= show_detail_orb(@show_detail_id, @orbs) |> Map.get(:username) %>
+      </h3>
+      <h4 class="text-sm mt-2 font-light">
+        <i class="fa-solid fa-location-dot mr-2"></i>
+        <%= show_detail_orb(@show_detail_id, @orbs) |> Map.get(:where, "-") %>
+      </h4>
+      <h4 class="text-sm mt-2 font-light">
+        <i class="fa-solid fa-lines-leaning mr-2"></i>
+        <%= for trait <- show_detail_orb(@show_detail_id, @orbs) |> Map.get(:traits,  []) do %>
+          <button class="badge"><%= trait %></button>
+        <% end %>
+      </h4>
+      <h4 class="text-sm mt-2 font-light">
+        <i class="fa-solid fa-clock mr-2"></i>
+        <%= show_detail_orb(@show_detail_id, @orbs) |> Map.get(:expires_in) |> create_extinguish(true) %>
+      </h4>
+      <h4 class="text-sm mt-2 font-light">
+        <i class="fa-solid fa-image mr-2"></i>
+        <%= show_detail_orb(@show_detail_id, @orbs) |> Map.get(:media, "-") %>
+      </h4>
+      <div class="flex text-sm mt-2 font-light items-center">
+        <i class="fa-solid fa-circle-info mr-2"></i>
+        <div>
+          <%= show_detail_orb(@show_detail_id, @orbs) |> Map.get(:info, "-") |> parse_as_html() |> raw() %>
+        </div>
+      </div>
+      <div class="mt-2 p-2" id="wrapper" phx-update="ignore">
+        <div id="map" phx-hook="InitIndexMap" style="height: 400px; z-index: 10"></div>
+      </div>
+    </div>
+
+    <:footer>
+      <div class="w-full flex flex-row-reverse">
+        <button class="button button-sm" phx-click="close-and-select">Close and select</button>
+        <button class="button button-sm button-outline-danger mr-2" phx-click="close-modal">Cancel</button>
+      </div>
+    </:footer>
+  </.live_component>
+</div>

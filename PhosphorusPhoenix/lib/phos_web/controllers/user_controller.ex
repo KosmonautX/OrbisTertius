@@ -9,5 +9,4 @@ defmodule PhosWeb.UserController do
     render(conn, "show.html", archetype: "Root" )
   end
 
-
 end

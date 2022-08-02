@@ -26,13 +26,43 @@ unless config_env() == :prod do
   config :phos, Phos.Fyr.Message,
   adapter: Pigeon.FCM,
   project_id: System.get_env("FYR_PROJ"),
-  service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
+  service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
 
   # AWS
   config :ex_aws,
   access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, :instance_role],
   secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, :instance_role],
   region: "ap-southeast-1"
+
+  # Notion Importing / Exporting
+  config :phos, Phos.External.Notion,
+  token: System.get_env("NOTION_TOKEN"),
+  database: System.get_env("NOTION_DATABASE"),
+  version: System.get_env("NOTION_VERSION")
+
+  config :phos, Phos.External.Sector,
+  url: System.get_env("SECTOR_URL")
+  # Prometheus
+  config :phos, Phos.PromEx,
+  disabled: true,
+  manual_metrics_start_delay: :no_delay,
+  drop_metrics_groups: [],
+  grafana: [
+      host: System.get_env("GRAFANA_HOST") || raise("GRAFANA_HOST is required"),
+      auth_token: System.get_env("GRAFANA_TOKEN") || raise("GRAFANA_TOKEN is required"),
+      upload_dashboards_on_start: true,
+      folder_name: (System.get_env("FLY_APP_NAME") || "phos") <> "Dashboard",
+      annotate_app_lifecycle: true
+    ],
+  metrics_server: [
+      port: 3927,
+      path: "/metrics", # This is an optional setting and will default to `"/metrics"`
+      protocol: :http, # This is an optional setting and will default to `:http`
+      pool_size: 9, # This is an optional setting and will default to `5`
+      cowboy_opts: [], # This is an optional setting and will default to `[]`
+      auth_strategy: :none # This is an optional and will default to `:none`
+    ]
+
 
 end
 
@@ -76,13 +106,35 @@ if config_env() == :prod do
   config :phos, Phos.Fyr.Message,
     adapter: Pigeon.FCM,
     project_id: System.get_env("FYR_PROJ"),
-    service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
+    service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
 
   config :phos, Phos.Repo,
     # ssl: true,
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
-    socket_options: maybe_ipv6
+    socket_options: maybe_ipv6,
+    types: Phos.PostgresTypes
+
+  # Prometheus
+  config :phos, Phos.PromEx,
+    disabled: false,
+    manual_metrics_start_delay: :no_delay,
+    drop_metrics_groups: [],
+    grafana: [
+      host: System.get_env("GRAFANA_HOST") || raise("GRAFANA_HOST is required"),
+      auth_token: System.get_env("GRAFANA_TOKEN") || raise("GRAFANA_TOKEN is required"),
+      upload_dashboards_on_start: true,
+      folder_name: System.get_env("FLY_APP_NAME") <> "Dashboard",
+      annotate_app_lifecycle: true
+    ],
+    metrics_server: [
+      port: 3927,
+      path: "/metrics", # This is an optional setting and will default to `"/metrics"`
+      protocol: :http, # This is an optional setting and will default to `:http`
+      pool_size: 9, # This is an optional setting and will default to `5`
+      cowboy_opts: [], # This is an optional setting and will default to `[]`
+      auth_strategy: :none # This is an optional and will default to `:none`
+    ]
 
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you
@@ -112,6 +164,15 @@ if config_env() == :prod do
     key_octet: System.get_env("SECRET_TUNNEL")
   ]
 
+    # Notion Importing / Exporting
+  config :phos, Phos.External.Notion,
+  token: System.get_env("NOTION_TOKEN"),
+  database: System.get_env("NOTION_DATABASE"),
+  version: System.get_env("NOTION_VERSION")
+
+  config :phos, Phos.External.Sector,
+  url: System.get_env("SECTOR_URL")
+
   # ## Using releases
   #
   # If you are doing OTP releases, you need to instruct Phoenix
@@ -128,6 +189,11 @@ if config_env() == :prod do
   # Also, you may need to configure the Swoosh API client of your choice if you
   # are not using SMTP. Here is an example of the configuration:
   #
+  config :phos, Phos.Mailer,
+  adapter: Swoosh.Adapters.AmazonSES,
+  region: "ap-southeast-1",
+  access_key: System.get_env("SES_ACCESS_KEY_ID"),
+  secret: System.get_env("SES_SECRET_ACCESS_KEY")
   #     config :phos, Phos.Mailer,
   #       adapter: Swoosh.Adapters.Mailgun,
   #       api_key: System.get_env("MAILGUN_API_KEY"),

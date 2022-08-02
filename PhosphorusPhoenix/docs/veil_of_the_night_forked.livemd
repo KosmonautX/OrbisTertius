@@ -1,0 +1,520 @@
+# Veil of the Night Forked
+
+## Root Section
+
+## Notioner
+
+```elixir
+# PhosWeb.Util.Migrator.user_profile("DAAohgsLMpQPmsbpbvgQ5PEPuy22")
+# Ecto.Migrator.run(Repo, :down, all: true)
+defmodule Notion do
+  use HTTPoison.Base
+
+  def process_request_url(url) do
+    "https://api.notion.com/v1" <> url
+  end
+
+  def process_response_body(body) do
+    body
+    |> Jason.decode!()
+  end
+end
+
+defmodule LocalHost do
+  use HTTPoison.Base
+
+  @expected_fields ~w(
+    payload
+  )
+
+  def process_request_url(url) do
+    "http://localhost:5000" <> url
+  end
+
+  def process_response_body(body) do
+    body
+    |> Jason.decode!()
+    |> Map.take(@expected_fields)
+    |> Enum.map(fn {k, v} -> {String.to_atom(k), v} end)
+  end
+end
+
+defmodule LocalHostTest do
+  use HTTPoison.Base
+
+  def process_request_url(url) do
+    "http://localhost:5000" <> url
+  end
+
+  def process_response_body(body) do
+    body
+    |> Jason.decode!()
+  end
+end
+
+defmodule BoniNorbandy do
+  use HTTPoison.Base
+
+  def process_request_url(url) do
+    "https://norbandy.scratchbac.org" <> url
+  end
+
+  def process_response_body(body) do
+    body
+    |> Jason.decode!()
+
+    # |> Map.take(@expected_fields)
+    # |> Enum.map(fn({k, v}) -> {String.to_atom(k), v} end)
+  end
+end
+
+defmodule Borbarossa do
+  use HTTPoison.Base
+
+  def process_request_url(url) do
+    "https://borbarossa.scratchbac.org" <> url
+  end
+
+  def process_response_body(body) do
+    body
+    |> Jason.decode!()
+
+    # |> Map.take(@expected_fields)
+    # |> Enum.map(fn({k, v}) -> {String.to_atom(k), v} end)
+  end
+end
+```
+
+```elixir
+%HTTPoison.Response{body: body} =
+  HTTPoison.get!(
+    "https://gist.githubusercontent.com/KosmonautX/7652f1c8ff126c0274c1c70c5557ea56/raw/09bf2efb07dd05fd5ebdf928f6b56cc8e9819b84/gistfile1.json"
+  )
+
+sectors = body |> Jason.decode!()
+```
+
+## Create Orbs
+
+```elixir
+posts = [
+  %{}
+]
+
+# headers = [Authorization: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiSGFudW1hbiIsInJvbGUiOiJib25pIiwiaWF0IjoxNjU2NzIyNDgwLCJleHAiOjE2NTc5MjI0ODAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.ju7IsxbBJBetVm61MfnMZs4BIlz2j3LBLjK2w6oK_bw", "Content-Type": "application/json"]
+
+# post = Borbarossa.post!("/api/tele/post_orb", Jason.encode!(posts), headers).body
+```
+
+## Update Orbs
+
+```elixir
+# orbed= [Phos.Action.get_orb!("4205da01-3bdd-4c7c-ac62-674469e92f80")] |> PhosWeb.Util.Viewer.fresh_orb_stream_mapper()
+# Phos.Action.update_orb(orbed, %{id: ""})
+```
+
+```elixir
+user_id = List.first(Phos.Users.list_users()).id
+
+# {:ok, orb} =
+#   Phos.Action.create_orb_and_publish(%{
+#     "id" => Ecto.UUID.generate(),
+#     "active" => true,
+#     "extinguish" => ~N[2022-05-20 12:12:00],
+#     "media" => false,
+#     "title" => "some title",
+#     "initiator_id" => user_id,
+#     "geolocation" => [623275812957126655],
+#     "payload" => %{"where" => "here"}
+#   })
+```
+
+```elixir
+aws_headers = ["Content-Type": "application/octet-stream"]
+
+stringify_richtext = fn rt ->
+  Enum.reduce(rt, "", fn x, acc -> acc <> x["plain_text"] end)
+end
+
+for orb <- post do
+  # [_, lookup = %{"Title" => orb["title"]}| _] = csv
+  title = orb["title"]
+
+  orb_info =
+    Enum.find(today_post.body["results"], fn prop ->
+      stringify_richtext.(prop["properties"]["Inside Title"]["rich_text"]) |> String.slice(0..50) ==
+        title |> String.slice(0..50)
+    end)
+
+  %HTTPoison.Response{body: uncompressed_image} =
+    HTTPoison.get!(List.first(orb_info["properties"]["1920_1080 Image"]["files"])["file"]["url"])
+
+  uncompressed_image_path =
+    "/tmp/" <> (:crypto.strong_rand_bytes(30) |> Base.url_encode64()) <> ".png"
+
+  File.write!(uncompressed_image_path, uncompressed_image)
+
+  %HTTPoison.Response{body: compressed_image} =
+    HTTPoison.get!(List.first(orb_info["properties"]["200_150 Image"]["files"])["file"]["url"])
+
+  compressed_image_path =
+    "/tmp/" <> (:crypto.strong_rand_bytes(30) |> Base.url_encode64()) <> ".png"
+
+  File.write!(compressed_image_path, compressed_image)
+
+  # compressed_image =
+  #   Mogrify.open(image_path)
+  #   |> Mogrify.resize("200x150")
+  #   |> Mogrify.save()
+
+  # uncompressed_image =
+  #   Mogrify.open(image_path)
+  #   |> Mogrify.resize("1920x1080")
+  #   |> Mogrify.save()
+
+  HTTPoison.put!(
+    orb["lossy"],
+    {:file, compressed_image_path}
+  )
+
+  HTTPoison.put!(
+    orb["lossless"],
+    {:file, uncompressed_image_path}
+  )
+
+  File.rm(compressed_image_path)
+  File.rm(uncompressed_image_path)
+end
+```
+
+## Notion Fisher of Orbs
+
+```elixir
+token = "secret_iEEKNgkL0gE0Havl8c840X0rSrUXlQf5xrKEXDzRqxb"
+database = "6651c1b694844da39faa51d019fe6baf"
+
+headers = [
+  Authorization: "Bearer #{token}",
+  "Content-Type": "application/json",
+  "Notion-Version": "2022-02-22"
+]
+
+resp = Notion.get!("/databases/" <> database, headers).body
+
+resp["properties"]
+today = DateTime.utc_now() |> DateTime.add(+60 * 60 * 8) |> DateTime.to_date()
+
+date_query =
+  Jason.encode!(%{
+    "filter" => %{
+      "property" => "Posting date",
+      "date" => %{
+        "equals" => today
+      }
+    }
+  })
+
+today_post = Notion.post!("/databases/" <> database <> "/query", date_query, headers)
+```
+
+```elixir
+# List.first(today_post.body["results"])["properties"]["Coordinate"]
+stringify_richtext = fn rt ->
+  unless rt == [] do
+    Enum.reduce(rt, "", fn x, acc -> acc <> x["plain_text"] end)
+  else
+    "[town]"
+  end
+end
+
+# have commonly used username table in the future in NOtion lookup relation 
+user_id = "DAAohgsLMpQPmsbpbvgQ5PEPuy22"
+user_name = "Administrator 👋"
+user_media = true
+deactivation_time = 4 * 7 * 24 * 60 * 60
+media = true
+
+orbs =
+  for %{"properties" => prop} <- today_post.body["results"] do
+    case stringify_richtext.(prop["Type"]["rich_text"]) do
+      # involves populate script straight to database
+      "all_regional" ->
+        Enum.map(sectors, fn {name, hashes} ->
+          %{
+            user_id: user_id,
+            username: user_name,
+            user_media: user_media,
+            expires_in: deactivation_time,
+            title:
+              stringify_richtext.(prop["Title"]["rich_text"]) |> String.replace("[town]", name),
+            info:
+              stringify_richtext.(prop["Info"]["rich_text"]) |> String.replace("[town]", name),
+            geolocation: %{
+              live: %{
+                populate: true,
+                geohashes: hashes,
+                target:
+                  stringify_richtext.(prop["Radius"]["rich_text"])
+                  |> String.trim()
+                  |> String.to_integer(),
+                geolock: true
+              }
+            },
+            orb_nature: "01",
+            media: media
+          }
+        end)
+
+      "some_regional" ->
+        sectors
+        |> Map.take(
+          stringify_richtext.(prop["Regions"]["rich_text"])
+          |> String.split(", ")
+        )
+        |> Enum.map(fn {name, hashes} ->
+          %{
+            user_id: user_id,
+            username: user_name,
+            user_media: user_media,
+            expires_in: deactivation_time,
+            where:
+              stringify_richtext.(prop["Location"]["rich_text"]) |> String.replace("[town]", name),
+            title:
+              stringify_richtext.(prop["Inside Title"]["rich_text"])
+              |> String.replace("[town]", name),
+            outer_title:
+              stringify_richtext.(prop["Outside Title"]["rich_text"])
+              |> String.replace("[town]", name),
+            info:
+              stringify_richtext.(prop["Info"]["rich_text"]) |> String.replace("[town]", name),
+            geolocation: %{
+              live: %{
+                # populate true for no presence on main feed
+                populate: true,
+                geohashes: hashes,
+                target:
+                  stringify_richtext.(prop["Radius"]["rich_text"])
+                  |> String.trim()
+                  |> String.to_integer(),
+                geolock: true
+              }
+            },
+            orb_nature: "01",
+            media: media,
+            traits: Enum.map(prop["Traits"]["multi_select"], fn t -> t["name"] end)
+          }
+        end)
+
+      "local" ->
+        %{
+          user_id: user_id,
+          username: user_name,
+          user_media: user_media,
+          expires_in: deactivation_time,
+          title: stringify_richtext.(prop["Inside Title"]["rich_text"]),
+          info: stringify_richtext.(prop["Info"]["rich_text"]),
+          geolocation: %{
+            live: %{
+              latlon: %{
+                lat:
+                  stringify_richtext.(prop["Coordinate"]["rich_text"])
+                  |> String.split(",")
+                  |> Enum.map(&String.trim/1)
+                  |> Enum.map(&String.to_float/1)
+                  |> Enum.at(0),
+                lon:
+                  stringify_richtext.(prop["Coordinate"]["rich_text"])
+                  |> String.split(",")
+                  |> Enum.map(&String.trim/1)
+                  |> Enum.map(&String.to_float/1)
+                  |> Enum.at(1)
+              },
+              target:
+                stringify_richtext.(prop["Radius"]["rich_text"])
+                |> String.trim()
+                |> String.to_integer(),
+              geolock: true
+            }
+          },
+          orb_nature: "01",
+          media: media,
+          traits: Enum.map(prop["Traits"]["multi_select"], fn t -> t["name"] end)
+        }
+
+      _ ->
+        nil
+    end
+  end
+```
+
+## Populator
+
+```elixir
+# local first
+streamed =
+  for orb <- List.flatten(orbs) do
+    case orb.geolocation.live do
+      %{geohashes: geohashes} ->
+        %{
+          "id" => Ecto.UUID.generate(),
+          "geolocation" => geohashes,
+          "title" => orb.outer_title || orb.title,
+          "initiator_id" => Phos.Action.get_orb_by_fyr(orb.user_id).id,
+          "payload" => %{"info" => orb.info, "inner_title" => orb.title},
+          "media" => orb.media,
+          "orb_source" => :web,
+          "extinguish" => NaiveDateTime.utc_now() |> NaiveDateTime.add(orb.expires_in),
+          "central_geohash" => List.first(geohashes),
+          "traits" => orb.traits
+        }
+
+      %{latlon: latlon} ->
+        %{
+          "id" => Ecto.UUID.generate(),
+          "geolocation" =>
+            unless orb.geolocation.live.target == 8 do
+              :h3.from_geo({latlon.lat, latlon.lon}, orb.geolocation.live.target) |> :h3.k_ring(1)
+            else
+              [:h3.from_geo({latlon.lat, latlon.lon}, orb.geolocation.live.target)]
+            end,
+          "title" => orb.title,
+          "initiator_id" => Phos.Action.get_orb_by_fyr(orb.user_id).id,
+          "payload" => %{"info" => orb.info},
+          "media" => orb.media,
+          "orb_source" => :web,
+          "extinguish" => NaiveDateTime.utc_now() |> NaiveDateTime.add(orb.expires_in),
+          "central_geohash" =>
+            :h3.from_geo(
+              {orb.geolocation.live.latlon.lat, orb.geolocation.live.latlon.lon},
+              orb.geolocation.live.target
+            ),
+          "traits" => orb.traits
+        }
+    end
+    |> Phos.Action.create_orb_and_publish()
+  end
+```
+
+```elixir
+posts =
+  for orb <- List.flatten(orbs) do
+    {:ok, paired_orb} =
+      Enum.find(streamed, fn stream ->
+        {:ok, s} = stream
+        # IO.inspect orb.title
+        orb.title == s.title
+      end)
+
+    orb =
+      orb
+      |> Map.put(:orb_uuid, paired_orb.id)
+      |> Map.put(:force, true)
+
+    case orb.geolocation.live do
+      %{geohashes: geohashes} ->
+        put_in(orb, Enum.map([:geolocation, :live, :geohashes], &Access.key(&1, [])), [
+          to_string(List.first(geohashes) |> :h3.to_string())
+        ])
+
+      %{latlon: _latlon} ->
+        orb
+    end
+  end
+```
+
+```elixir
+{:ok, claims} =
+  Joken.peek_claims(
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiSGFudW1hbiIsInJvbGUiOiJib25pIiwiaWF0IjoxNjU2NzIyNDgwLCJleHAiOjE2NTc5MjI0ODAsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.ju7IsxbBJBetVm61MfnMZs4BIlz2j3LBLjK2w6oK_bw"
+  )
+
+{:ok, auth, claims} =
+  claims
+  |> Map.put("iat", DateTime.utc_now() |> DateTime.to_unix())
+  |> Map.put("exp", DateTime.utc_now() |> DateTime.add(60 * 60) |> DateTime.to_unix())
+  |> Joken.encode_and_sign(:menshenSB)
+
+headers = [Authorization: auth, "Content-Type": "application/json"]
+
+post = BoniNorbandy.post!("/api/tele/post_orb", Jason.encode!(posts), headers).body
+```
+
+```elixir
+aws_headers = ["Content-Type": "application/octet-stream"]
+
+for orb <- post do
+  # [_, lookup = %{"Title" => orb["title"]}| _] = csv
+  title = orb["title"]
+
+  orb_info =
+    Enum.find(today_post.body["results"], fn prop ->
+      String.contains?(
+        title,
+        stringify_richtext.(prop["properties"]["Inside Title"]["rich_text"])
+      )
+    end)
+
+  # orb_info["properties"]["Inside Title"]
+
+  %HTTPoison.Response{body: uncompressed_image} =
+    HTTPoison.get!(List.first(orb_info["properties"]["1920_1080 Image"]["files"])["file"]["url"])
+
+  uncompressed_image_path =
+    "/tmp/" <> (:crypto.strong_rand_bytes(30) |> Base.url_encode64()) <> ".png"
+
+  File.write!(uncompressed_image_path, uncompressed_image)
+
+  content = File.read!(uncompressed_image_path)
+
+  %HTTPoison.Response{body: compressed_image} =
+    HTTPoison.get!(List.first(orb_info["properties"]["200_150 Image"]["files"])["file"]["url"])
+
+  compressed_image_path =
+    "/tmp/" <> (:crypto.strong_rand_bytes(30) |> Base.url_encode64()) <> ".png"
+
+  File.write!(compressed_image_path, compressed_image)
+
+  # # compressed_image =
+  # #   Mogrify.open(image_path)
+  # #   |> Mogrify.resize("200x150")
+  # #   |> Mogrify.save()
+
+  # # uncompressed_image =
+  # #   Mogrify.open(image_path)
+  # #   |> Mogrify.resize("1920x1080")
+  # #   |> Mogrify.save()
+
+  HTTPoison.put!(
+    orb["lossy"],
+    {:file, compressed_image_path}
+  )
+
+  response =
+    HTTPoison.put!(
+      orb["lossless"],
+      {:file, uncompressed_image_path}
+    )
+
+  File.rm(compressed_image_path)
+  File.rm(uncompressed_image_path)
+  response
+end
+```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## Deactivator
+
+```elixir
+import Ecto.Query
+start_date = NaiveDateTime.utc_now() |> NaiveDateTime.add(-60 * 60 * 24 * 0)
+end_date = NaiveDateTime.utc_now() |> NaiveDateTime.add(-60 * 60 * 24 * 100)
+
+query =
+  from(p in Phos.Action.Orb, where: p.inserted_at > ^end_date and p.inserted_at < ^start_date)
+
+Phos.Repo.all(query)
+# |> Enum.map(fn orb ->  Phos.Action.delete_orb(orb) end) #delete
+# |> Enum.map(fn orb ->  orb |> Phos.Repo.preload([:locations]) end)
+# |> length()
+```

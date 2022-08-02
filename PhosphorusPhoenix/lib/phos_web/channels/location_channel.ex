@@ -78,7 +78,7 @@ defmodule PhosWeb.UserLocationChannel do
 
   # Add authorization logic here as required. Process send_after for auth channel
   defp authorized?(socket, id) do
-    case Auth.validate(socket.assigns.session_token) do
+    case Auth.validate_user(socket.assigns.session_token) do
       {:ok , claims} ->
         if claims["user_id"] == socket.assigns.user_agent["user_id"] and claims["user_id"] == id do
           true
@@ -108,7 +108,7 @@ defmodule PhosWeb.UserLocationChannel do
   end
 
   defp loc_fetch(present, past) do
-    %{"subscribed" => present, "data" => past -- present |> Action.get_orbs_by_geohashes() |> Viewer.fresh_orb_stream_mapper()}
+    %{"subscribed" => present, "data" => present -- past |> Action.get_orbs_by_geohashes() |> Viewer.fresh_orb_stream_mapper()}
   end
 
   defp loc_listener(topic, orb) do
