@@ -108,7 +108,7 @@ defmodule PhosWeb.UserLocationChannel do
   end
 
   defp loc_fetch(present, past) do
-    %{"subscribed" => present, "data" => past -- present |> Action.get_orbs_by_geohashes() |> Viewer.fresh_orb_stream_mapper()}
+    %{"subscribed" => present, "data" => present -- past |> Action.get_orbs_by_geohashes() |> Viewer.fresh_orb_stream_mapper()}
   end
 
   defp loc_listener(topic, orb) do

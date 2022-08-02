@@ -298,7 +298,48 @@ const dynaOrb = {
                         init: {username: body.init.username},
                         creationtime: body.created_dt,
                         extinguishtime: body.expiry_dt,
-                        tags: body.tags,
+                        traits: body.traits,
+                        postal_code: body.postal_code,
+                    }
+                },
+                ConditionExpression: "attribute_not_exists(PK)"
+            };
+            const data = await docClient.put(params).promise();
+            return body.orb_uuid;
+        } catch (err){
+            if (err.code == 'ConditionalCheckFailedException'){
+                return dynaOrb.gen(body);
+            }
+            else{
+                return err;
+            }
+        }
+    },
+    async force_gen(body){
+        try{
+            const  params = {
+                TableName: ddb_config.tableNames.orb_table,
+                Item: {
+                    PK: "ORB#" + body.orb_uuid,
+                    SK: "ORB#" + body.orb_uuid,
+                    time: body.expiry_dt,
+                    geohash : body.geolocation,
+                    available: true,
+                    alphanumeric: "LOC#" + body.geolocation.hash+ "#" +body.geolocation.radius,
+                    payload: {
+                        title: body.title, // title might have to go to the alphanumeric
+                        orb_nature: body.orb_nature,
+                        info: body.info,
+                        where: body.where,
+                        when: body.when,
+                        tip: body.tip,
+                        media: body.media,
+                        photo: body.photo,
+                        user_id: body.user_id,
+                        init: {username: body.init.username},
+                        creationtime: body.created_dt,
+                        extinguishtime: body.expiry_dt,
+                        traits: body.traits,
                         postal_code: body.postal_code,
                     }
                 },

@@ -1,5 +1,5 @@
 defmodule Phos.Admin.Plug do
-  import Plug.Conn, only: [get_session: 2, assign: 3]
+  import Plug.Conn, only: [get_session: 2, assign: 3, halt: 1]
   import Phoenix.Controller, only: [put_flash: 3, redirect: 2]
 
   def init(opts), do: opts
@@ -12,6 +12,7 @@ defmodule Phos.Admin.Plug do
         conn
         |> put_flash(:error, "Restricted area")
         |> redirect(to: PhosWeb.Router.Helpers.admin_session_path(conn, :new))
+        |> halt()
     end
   end
 end

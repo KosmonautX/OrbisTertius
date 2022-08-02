@@ -26,7 +26,7 @@ unless config_env() == :prod do
   config :phos, Phos.Fyr.Message,
   adapter: Pigeon.FCM,
   project_id: System.get_env("FYR_PROJ"),
-  service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
+  service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
 
   # AWS
   config :ex_aws,
@@ -34,16 +34,24 @@ unless config_env() == :prod do
   secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, :instance_role],
   region: "ap-southeast-1"
 
+  # Notion Importing / Exporting
+  config :phos, Phos.External.Notion,
+  token: System.get_env("NOTION_TOKEN"),
+  database: System.get_env("NOTION_DATABASE"),
+  version: System.get_env("NOTION_VERSION")
+
+  config :phos, Phos.External.Sector,
+  url: System.get_env("SECTOR_URL")
   # Prometheus
   config :phos, Phos.PromEx,
-  disabled: false,
+  disabled: true,
   manual_metrics_start_delay: :no_delay,
   drop_metrics_groups: [],
   grafana: [
       host: System.get_env("GRAFANA_HOST") || raise("GRAFANA_HOST is required"),
       auth_token: System.get_env("GRAFANA_TOKEN") || raise("GRAFANA_TOKEN is required"),
       upload_dashboards_on_start: true,
-      folder_name: (System.get_env("FLY_APP_NAME") || "Phos") <> "Dashboard",
+      folder_name: (System.get_env("FLY_APP_NAME") || "phos") <> "Dashboard",
       annotate_app_lifecycle: true
     ],
   metrics_server: [
@@ -98,7 +106,7 @@ if config_env() == :prod do
   config :phos, Phos.Fyr.Message,
     adapter: Pigeon.FCM,
     project_id: System.get_env("FYR_PROJ"),
-    service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
+    service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
 
   config :phos, Phos.Repo,
     # ssl: true,
@@ -116,7 +124,7 @@ if config_env() == :prod do
       host: System.get_env("GRAFANA_HOST") || raise("GRAFANA_HOST is required"),
       auth_token: System.get_env("GRAFANA_TOKEN") || raise("GRAFANA_TOKEN is required"),
       upload_dashboards_on_start: true,
-      folder_name: (System.get_env("FLY_APP_NAME") || "Phos") <> "Dashboard",
+      folder_name: System.get_env("FLY_APP_NAME") <> "Dashboard",
       annotate_app_lifecycle: true
     ],
     metrics_server: [
@@ -155,6 +163,15 @@ if config_env() == :prod do
     signer_alg: "HS256",
     key_octet: System.get_env("SECRET_TUNNEL")
   ]
+
+    # Notion Importing / Exporting
+  config :phos, Phos.External.Notion,
+  token: System.get_env("NOTION_TOKEN"),
+  database: System.get_env("NOTION_DATABASE"),
+  version: System.get_env("NOTION_VERSION")
+
+  config :phos, Phos.External.Sector,
+  url: System.get_env("SECTOR_URL")
 
   # ## Using releases
   #

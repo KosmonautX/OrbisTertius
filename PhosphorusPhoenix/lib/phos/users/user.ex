@@ -2,12 +2,13 @@ defmodule Phos.Users.User do
   use Ecto.Schema
   import Ecto.Changeset
   alias Phos.Action.{Orb}
-  alias Phos.Users.{Geohash, Public_Profile, Private_Profile, Auth}
+  alias Phos.Users.{Geohash, User_Public_Profile, Private_Profile, Auth}
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "users" do
     field :email, :string
     field :username, :string
+    field :role, :string
     field :media, :boolean, default: false
     field :profile_pic, :integer, default: :rand.uniform(6)
     field :fyr_id, :string
@@ -19,8 +20,8 @@ defmodule Phos.Users.User do
     has_many :orbs, Orb, references: :id, foreign_key: :initiator
     has_many :auths, Auth, references: :id, foreign_key: :user_id
 
-    has_one :public_profile, Public_Profile, references: :id, foreign_key: :user_id
     has_one :private_profile, Private_Profile, references: :id, foreign_key: :user_id
+    embeds_one :public_profile, User_Public_Profile, on_replace: :delete
 
     timestamps()
   end
@@ -28,9 +29,9 @@ defmodule Phos.Users.User do
   @doc false
   def changeset(%Phos.Users.User{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :media, :profile_pic, :email])
+    |> cast(attrs, [:username, :media, :profile_pic, :email, :fyr_id])
     #|> validate_required(:email)
-    |> cast_assoc(:public_profile)
+    |> cast_embed(:public_profile)
     |> cast_assoc(:private_profile)
     |> unique_constraint(:username, name: :unique_username)
   end
@@ -54,7 +55,7 @@ defmodule Phos.Users.User do
     user
     |> cast(attrs, [:username, :media, :profile_pic, :fyr_id])
     #|> validate_required(:email)
-    |> cast_assoc(:public_profile)
+    |> cast_embed(:public_profile)
     |> cast_assoc(:private_profile)
     |> unique_constraint(:username, name: :unique_username)
 
@@ -63,7 +64,14 @@ defmodule Phos.Users.User do
   def pub_profile_changeset(%Phos.Users.User{} = user, attrs) do
     user
     |> cast(attrs, [:username, :media, :profile_pic])
-    |> cast_assoc(:public_profile)
+    |> cast_embed(:public_profile)
+    |> unique_constraint(:username, name: :unique_username)
+  end
+
+  def user_profile_changeset(%Phos.Users.User{} = user, attrs) do
+    user
+    |> cast(attrs, [:media, :profile_pic])
+    |> cast_embed(:public_profile)
     |> unique_constraint(:username, name: :unique_username)
   end
 
@@ -87,6 +95,7 @@ defmodule Phos.Users.User do
   def registration_changeset(user, attrs, opts \\ []) do
     user
     |> cast(attrs, [:email, :password, :username])
+    |> cast_embed(:public_profile)
     |> validate_email()
     |> validate_password(opts)
     |> unique_constraint(:username, name: :unique_username)
