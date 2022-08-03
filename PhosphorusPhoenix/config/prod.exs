@@ -57,3 +57,6 @@ config :phos, Phos.External.HeimdallrClient,
 #       force_ssl: [hsts: true]
 #
 # Check `Plug.SSL` for all available options in `force_ssl`.
+config :phos, Phos.Admin,
+  password: System.get_env("ADMIN_TUNNEL"),
+  algorithm: :sha256
