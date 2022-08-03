@@ -172,6 +172,10 @@ if config_env() == :prod do
 
   config :phos, Phos.External.Sector,
   url: System.get_env("SECTOR_URL")
+  
+  config :phos, Phos.Admin,
+  password: System.get_env("ADMIN_TUNNEL"),
+  algorithm: :sha256
 
   # ## Using releases
   #
