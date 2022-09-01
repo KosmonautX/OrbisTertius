@@ -16,6 +16,16 @@ defmodule PhosWeb.Menshen.Auth do
     Role.Boni.generate_and_sign()
   end
 
+  def generate_boni!(user_id) do
+    {:ok, jwt, _claims} = Role.Boni.generate_and_sign(%{user_id: user_id})
+    jwt
+  end
+
+  def generate_boni!() do
+     {:ok, jwt, _claims} = Role.Boni.generate_and_sign(%{user_id: "Hanuman"})
+     jwt
+  end
+
   def generate_user(user_id) do
     {:ok, user} = Phos.Users.find_user_by_id(user_id)
     %{user_id: user.fyr_id || user.id,

@@ -76,7 +76,9 @@ defmodule Phos.MixProject do
       {:html_sanitize_ex, "~> 1.4"},
       {:prom_ex, "~> 1.7"},
       # comments
-      {:ecto_ltree, "~> 0.3.0"}
+      {:ecto_ltree, "~> 0.3.0"},
+      #debugging
+      {:rexbug, "~> 1.0"}
     ]
   end
 

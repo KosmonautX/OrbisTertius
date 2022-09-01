@@ -1,8 +1,8 @@
 <div class="w-full p-2">
-  <.live_component module={Card} title="Import Orbs for Today" id="today_orbs">
+  <.live_component module={Card} title="In the Orb Forge ⚡🔨" id="today_orbs">
     <div class="px-4 py-2">
       <h1 class="font-bold text-xl">
-        List of today Orbs
+        Today
       </h1>
     </div>
     <.live_component module={PhosWeb.Components.Loading} loading={@loading} id="loading" text="Fetching today orbs" />
@@ -21,6 +21,9 @@
       </div>
     <% end %>
     <div class="px-2 pb-3">
+      <%= if show_detail_orb(@show_detail_id, @orbs) |> Map.get(:lossy) do %>
+      <img src={show_detail_orb(@show_detail_id, @orbs) |> Map.get(:lossy)} class="max-w-full h-auto mx-auto" alt="image here" />
+      <% end %>
       <h3 class="text-sm mt-2 font-light">
         <i class="fa-solid fa-user mr-2"></i>
         <%= show_detail_orb(@show_detail_id, @orbs) |> Map.get(:username) %>

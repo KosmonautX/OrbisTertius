@@ -48,8 +48,6 @@ config :logger, :console,
 config :phoenix, :json_library, Jason
 #config :phoenix, :filter_parameters, ["token"]
 
-
-
 config :phos, Phos.OAuthStrategy,
   google: [
     client_id: {System, :get_env, ["GOOGLE_CLIENT_ID"]},

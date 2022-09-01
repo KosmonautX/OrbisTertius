@@ -19,7 +19,8 @@ defmodule PhosWeb.Admin.OrbLive.Import do
 
   @impl true
   def handle_event("import-selected-orbs", _, %{assigns: %{selected_orbs: selected_orbs, orbs: orbs}} = socket) do
-    initiator = Phos.Users.get_admin()
+    # allow users to super user the user they login with instead or post on behalf of other users (notion)
+    {:ok, initiator} = Phos.Users.get_admin()
 
     selected_orbs
     |> Enum.map(&String.to_integer/1)
@@ -31,13 +32,25 @@ defmodule PhosWeb.Admin.OrbLive.Import do
         |> put_flash(:error, "Orb(s) failed to import.")
         |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
       data ->
+           IO.puts "Admin Imports #{inspect(data)}" #push to Heimdallr Service
         case contains_error?(data) do
-          true -> {:noreply, socket
+          true ->
+            {:noreply, socket
             |> put_flash(:error, "Orb(s) contains error.")
             |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
-          _ -> {:noreply, socket
-            |> put_flash(:info, "Orb(s) successfully imported.")
-            |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+          _ ->
+            case Phos.External.HeimdallrClient.post_orb(data) do
+              {:ok, response} ->
+                {:noreply, socket
+                |> put_flash(:info, "Orbs have been born 🥳 @" <> (DateTime.now!("Asia/Singapore") |> Calendar.strftime("%y-%m-%d %I:%M:%S %p")))
+                |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+              {:error, message} ->
+                {:noreply, socket
+                |> put_flash(:error, "Take down Orbs 💥, failed to propogate to legacy api service
+                #{inspect(message)}")
+                |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+            end
+
         end
     end
   end
@@ -60,32 +73,41 @@ defmodule PhosWeb.Admin.OrbLive.Import do
   @impl true
   def handle_info(:live_orbs, socket) do
     case Phos.Action.import_today_orb_from_notion() do
-      data when data == [] -> {:noreply, assign(socket, [message: "Today orbs is empty", loading: false])}
-      data when is_list(data) -> {:noreply, assign(socket, [loading: false, orbs: Enum.reject(data,&(&1.done))])}
+      data when data == [] ->
+        {:noreply, assign(socket, [message: "No Orbs scheduled for Today 🔮", loading: false])}
+      data when is_list(data) ->
+        {:noreply, assign(socket, [loading: false, orbs: Enum.reject(data,&(&1.done))])}
       _ -> {:noreply, assign(socket, [message: "Error fetching orbs", loading: false])}
     end
   end
 
   @impl true
   def handle_info(:boundaries_update, %{assigns: %{orbs: orbs, show_detail_id: id}} = socket) do
-    geo_boundaries =
-      show_detail_orb(id, orbs)
-      |> Kernel.get_in([:geolocation, :live, :geohashes])
-      |> Enum.map(&:h3.to_geo_boundary/1)
-      |> Enum.map(fn d -> Enum.map(d, &Tuple.to_list/1) end)
+    geo_boundaries = case orb = show_detail_orb(id, orbs) do
+                       %{geolocation: %{live: %{geohashes: hashes}}} ->
+                         hashes
+                       %{geolocation: %{live: %{latlon: latlon}}} ->
+                         :h3.from_geo({latlon.lat, latlon.lon}, orb.geolocation.live.target)
+                         |> :h3.k_ring(1)
+                     end
+                     |> Enum.map(&:h3.to_geo_boundary/1)
+                     |> Enum.map(fn d -> Enum.map(d, &Tuple.to_list/1) end)
+
     {:noreply, push_event(socket, "add_polygon", %{geo_boundaries: geo_boundaries})}
   end
 
   @impl true
   def handle_info(:marker_update, %{assigns: %{orbs: orbs, show_detail_id: id}} = socket) do
-    [lat, lon] =
-      show_detail_orb(id, orbs)
-      |> Kernel.get_in([:geolocation, :live, :geohashes])
-      |> List.first()
-      |> :h3.to_geo()
-      |> Tuple.to_list()
+    [lat, lon] = case show_detail_orb(id, orbs) do
+                   %{geolocation: %{live: %{geohashes: hashes}}} ->
+                     hashes|> List.first()
+                     |> :h3.to_geo()
+                     |> Tuple.to_list()
+
+                  %{geolocation: %{live: %{latlon: coords}}} -> [coords.lat, coords.lon]
+                  end
     {:noreply, push_event(socket, "centre_marker", %{latitude: lat, longitude: lon, geolock: 13})}
-  end
+    end
 
   #slots
   def list_orbs_detail(assigns) do
@@ -99,12 +121,12 @@ defmodule PhosWeb.Admin.OrbLive.Import do
       <div id="confirmation" class="w-full flex flex-row-reverse">
         <%= if length(@selected_orbs) == 0 and length(@entries) > 0 do %>
           <button disabled={true} class="button button-sm">
-            Import selected orbs
+            Choose your Orbs 😴
           </button>
         <% end %>
         <%= if length(@selected_orbs) > 0 and length(@entries) > 0 do %>
           <button class="button button-sm" type="button" phx-click="import-selected-orbs">
-            Import selected orbs
+            Activate Orb ⚡
           </button>
         <% end %>
       </div>

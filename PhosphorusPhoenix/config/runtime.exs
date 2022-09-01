@@ -12,15 +12,11 @@ if System.get_env("PHX_SERVER") && System.get_env("RELEASE_NAME") do
   config :phos, PhosWeb.Endpoint, server: true
 end
 
+## Shared Configs
+
 unless config_env() == :prod do
   #dotenv Parsing .env file
   DotenvParser.load_file('../.env')
-
-  # Joken Signer Config
-  config :joken, menshenSB: [
-    signer_alg: "HS256",
-    key_octet: "BALA"
-  ]
 
   # FCM
   config :phos, Phos.Fyr.Message,
@@ -34,14 +30,23 @@ unless config_env() == :prod do
   secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, :instance_role],
   region: "ap-southeast-1"
 
+  # Joken JWT Settings
+  config :joken, menshenSB: [
+    signer_alg: "HS256",
+    key_octet: System.get_env("SECRET_TUNNEL")
+  ]
+
+
   # Notion Importing / Exporting
   config :phos, Phos.External.Notion,
   token: System.get_env("NOTION_TOKEN"),
   database: System.get_env("NOTION_DATABASE"),
   version: System.get_env("NOTION_VERSION")
 
+  #Precached town hexagons
   config :phos, Phos.External.Sector,
   url: System.get_env("SECTOR_URL")
+
   # Prometheus
   config :phos, Phos.PromEx,
   disabled: true,
@@ -115,6 +120,23 @@ if config_env() == :prod do
     socket_options: maybe_ipv6,
     types: Phos.PostgresTypes
 
+  # Joken JWT Settings
+  config :joken, menshenSB: [
+    signer_alg: "HS256",
+    key_octet: System.get_env("SECRET_TUNNEL")
+  ]
+
+
+  # Notion Importing / Exporting
+  config :phos, Phos.External.Notion,
+  token: System.get_env("NOTION_TOKEN"),
+  database: System.get_env("NOTION_DATABASE"),
+  version: System.get_env("NOTION_VERSION")
+
+  #Precached town hexagons
+  config :phos, Phos.External.Sector,
+  url: System.get_env("SECTOR_URL")
+
   # Prometheus
   config :phos, Phos.PromEx,
     disabled: false,
@@ -159,20 +181,6 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
-  config :joken, menshenSB: [
-    signer_alg: "HS256",
-    key_octet: System.get_env("SECRET_TUNNEL")
-  ]
-
-    # Notion Importing / Exporting
-  config :phos, Phos.External.Notion,
-  token: System.get_env("NOTION_TOKEN"),
-  database: System.get_env("NOTION_DATABASE"),
-  version: System.get_env("NOTION_VERSION")
-
-  config :phos, Phos.External.Sector,
-  url: System.get_env("SECTOR_URL")
-  
   config :phos, Phos.Admin,
   password: System.get_env("ADMIN_TUNNEL"),
   algorithm: :sha256
