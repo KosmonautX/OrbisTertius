@@ -21,7 +21,7 @@ config :phos, PhosWeb.Endpoint, url: [host: "example.com", port: 80],
 config :logger, level: :info
 
 config :phos, Phos.External.HeimdallrClient,
-  base_url: "https://borbarossa.scratchbac.org/api"
+  base_url: System.get_env("HEIMDALLR_ENDPOINT")
 
 # ## SSL Support
 #

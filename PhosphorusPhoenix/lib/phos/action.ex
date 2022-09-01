@@ -356,15 +356,13 @@ defmodule Phos.Action do
   end
 
   defp default_orb_populator({name, _hashes}, %{"Info" => info, "1920_1080 Image" => lossless, "200_150 Image" => lossy, "Done" => done} = _properties) do
-    expires_in = 4 * 7 * 24 * 60 * 60
+    expires_in = 4 * 7 * 24 * 60 * 60 ## TODO let it be selected in Admin View instead
     %{
-      user_id: "DAAohgsLMpQPmsbpbvgQ5PEPuy22",
+      id: Ecto.UUID.generate(),
       username: "Administrator 👋",
-      user_media: true,
       expires_in: expires_in,
       info: notion_get_values(info) |> String.replace("[town]", name),
       done: notion_get_values(done),
-      orb_nature: "01",
       media: true,
       lossy: notion_get_values(lossy),
       lossless: notion_get_values(lossless),

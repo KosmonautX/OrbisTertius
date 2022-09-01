@@ -21,10 +21,10 @@ defmodule PhosWeb.Admin.OrbLive.Import do
   def handle_event("import-selected-orbs", _, %{assigns: %{selected_orbs: selected_orbs, orbs: orbs}} = socket) do
     # allow users to super user the user they login with instead or post on behalf of other users (notion)
     {:ok, initiator} = Phos.Users.get_admin()
-
     selected_orbs
     |> Enum.map(&String.to_integer/1)
     |> Enum.map(&Enum.at(orbs, &1))
+    |> Enum.map(&PhosWeb.Util.ImageHandler.store_ext_links(&1, "ORB"))
     |> Enum.map(&map_to_orb_struct(&1, initiator))
     |> Phos.Action.create_orb_and_publish()
     |> case do
@@ -32,7 +32,6 @@ defmodule PhosWeb.Admin.OrbLive.Import do
         |> put_flash(:error, "Orb(s) failed to import.")
         |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
       data ->
-           IO.puts "Admin Imports #{inspect(data)}" #push to Heimdallr Service
         case contains_error?(data) do
           true ->
             {:noreply, socket
@@ -40,7 +39,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
             |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
           _ ->
             case Phos.External.HeimdallrClient.post_orb(data) do
-              {:ok, response} ->
+              {:ok, _response} ->
                 {:noreply, socket
                 |> put_flash(:info, "Orbs have been born 🥳 @" <> (DateTime.now!("Asia/Singapore") |> Calendar.strftime("%y-%m-%d %I:%M:%S %p")))
                 |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
@@ -139,6 +138,9 @@ defmodule PhosWeb.Admin.OrbLive.Import do
     <div id={"orb_detail_#{@id}"} class="w-full hover:cursor-pointer" phx-click="set-selected-orb" phx-value-selected={@index}>
       <.live_component module={PhosWeb.Components.Card} title={@data.title} id={@id} name="name" class={define_class(@index, @selected_orbs)}>
         <div class="px-2 pb-3">
+          <%= if Map.get(@data, :lossy) do %>
+            <img src={Map.get(@data, :lossy)} class="max-w-full h-auto mx-auto" alt="image here" />
+          <% end %>
           <h3 class="text-sm mt-2 font-light">
             <i class="fa-solid fa-user mr-2"></i>
             <%= @data.username %>
@@ -176,7 +178,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
     title = Map.get(orb, :title, "")
 
     %{
-      "id" => Ecto.UUID.generate(),
+      "id" => Map.get(orb, :id, nil) || Ecto.UUID.generate(),
       "active" => true,
       "geolocation" => hashes,
       "title" => Map.get(orb, :outer_title, title),
@@ -191,7 +193,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
   end
   defp map_to_orb_struct(%{geolocation: %{live: live}} = orb, initiator_id) when is_binary(initiator_id) do
     %{
-      "id" => Ecto.UUID.generate(),
+      "id" => Map.get(orb, :id, nil) || Ecto.UUID.generate(),
       "active" => true,
       "geolocation" => get_geolock_target(live),
       "title" => orb.title,
