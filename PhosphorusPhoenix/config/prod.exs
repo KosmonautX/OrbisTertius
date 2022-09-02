@@ -21,7 +21,7 @@ config :phos, PhosWeb.Endpoint, url: [host: "example.com", port: 80],
 config :logger, level: :info
 
 config :phos, Phos.External.HeimdallrClient,
-  base_url: System.get_env("HEIMDALLR_ENDPOINT")
+  base_url: {System, :get_env, ["HEIMDALLR_ENDPOINT"]}
 
 # ## SSL Support
 #
@@ -56,6 +56,3 @@ config :phos, Phos.External.HeimdallrClient,
 #       force_ssl: [hsts: true]
 #
 # Check `Plug.SSL` for all available options in `force_ssl`.
-config :phos, Phos.Admin,
-  password: System.get_env("ADMIN_TUNNEL"),
-  algorithm: :sha256

@@ -12,7 +12,8 @@ defmodule Phos.External.HeimdallrClient do
 
   def process_request_url(url) do
     config()
-    |> Keyword.get(:base_url, "https://borbarossa.scratchbac.org/api")
+    |> Keyword.get(:base_url, {System, :get_env, "https://borbarossa.scratchbac.org/api"})
+    |> define_module()
     |> parse_url(url)
   end
 
@@ -44,5 +45,6 @@ defmodule Phos.External.HeimdallrClient do
 
   defp parse_url(base, url), do: parse_url(base, "/" <> url)
   defp post_orb_mapper(orbs), do: PhosWeb.Util.Viewer.post_orb_mapper(orbs)
-  #defp define_module({module, fun, args}), do: apply(module, fun, args)
+
+  defp define_module({module, fun, args}), do: apply(module, fun, args)
  end
