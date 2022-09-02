@@ -1,14 +1,21 @@
 # Phos Phoenix Runtime Node
 
 ## Root
-## oRBs
+
+```elixir
+Phos.Users.update_user(Phos.Users.get_user_by_email("lky@gmail.com"), %{
+  fyr_id: "DAAohgsLMpQPmsbpbvgQ5PEPuy22"
+})
+```
+
+## recompile @ node
 
 ```elixir
 # 614496378250330111 , 618999977876652031, 623503577503956991
 # 614496378250330111 , 618999977876652031, 623503577503793151
 # 614496353074020351, 618999952700342271 , 623503552326795263
 
-Phos.Action.get_orbs_by_geohashes([])
+Phos.Action.active_orbs_by_geohashes([623_276_216_929_910_783])
 |> PhosWeb.Util.Viewer.fresh_orb_stream_mapper()
 ```
 
@@ -26,6 +33,7 @@ end
 
 R.recompile()
 ```
+
 <!-- livebook:{"branch_parent_index":0} -->
 
 ## External APIs
@@ -76,9 +84,9 @@ user_id = List.first(Phos.Users.list_users()).id
     "active" => true,
     "extinguish" => ~N[2022-05-20 12:12:00],
     "media" => true,
-    "title" => "623503577503793151",
+    "title" => "weird",
     "initiator_id" => user_id,
-    "geolocation" => [623_503_577_503_793_151],
+    "geolocation" => [623_276_216_929_910_783],
     "payload" => %{"where" => "here"}
   })
 

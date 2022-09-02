@@ -56,15 +56,15 @@ defmodule Phos.Action do
     Repo.all(query)
   end
 
-  def get_orbs_by_geohashes(ids) do
-    query =
-      Orb_Location
-      |> where([e], e.location_id in ^ids)
-      |> preload(orbs: :initiator)
-      |> order_by(desc: :updated_at)
-
-    Repo.all(query, limit: 32)
-    |> Enum.map(fn orb -> orb.orbs end)
+  def active_orbs_by_geohashes(ids) do
+    from(l in Phos.Action.Orb_Location,
+      where: l.location_id in ^ids,
+      left_join: orbs in assoc(l, :orbs),
+      where: orbs.active == true,
+      preload: [orbs: :initiator],
+      order_by: [desc: orbs.inserted_at])
+      |> Repo.all(limit: 32)
+      |> Enum.map(fn orb -> orb.orbs end)
   end
 
   # def get_active_orbs_by_geohashes(ids) do
@@ -180,6 +180,7 @@ defmodule Phos.Action do
       end
     end)
   end
+
   def create_orb_and_publish(attrs) do
     case create_orb(attrs) do
       {:ok, orb} ->
@@ -285,17 +286,19 @@ defmodule Phos.Action do
     end
   end
 
-  defp notion_importer(data) when is_list(data), do: Enum.map(data, &do_notion_import/1) |> List.flatten()
+  defp notion_importer(data) when is_list(data), do: Enum.map(data, &notion_parse_properties/1) |> List.flatten()
   defp notion_importer(_), do: []
 
   defp notion_get_values(%{"type" => "multi_select", "multi_select" => data}), do: Enum.map(data, fn d -> Map.get(d, "name") end)
+  defp notion_get_values(%{"type" => "files", "files" => files}) when is_list(files) and length(files) > 0, do: List.first(files)["file"]["url"]
   defp notion_get_values(%{"type" => type} = data), do: notion_get_values(Map.get(data, type))
   defp notion_get_values(%{"content" => data}), do: data
   defp notion_get_values(data) when is_boolean(data), do: data
   defp notion_get_values(data) when is_list(data) and length(data) > 0, do: Enum.reduce(data, "", fn val, acc -> Kernel.<>(acc, notion_get_values(val)) end)
-  defp notion_get_values(_), do: "[town]"
+  defp notion_get_values(_), do: "[town]" #TODO this is a terrible default state
 
-  defp do_notion_import(%{"properties" => %{"Type" => type, "Regions" => region} = properties}) do
+
+  defp notion_parse_properties(%{"properties" => %{"Type" => type, "Regions" => region} = properties}) do
     sectors = Phos.External.Sector.get()
     case notion_get_values(type) do
       "all_regional" -> Enum.map(sectors, &orb_imported_detail(&1, properties))
@@ -352,18 +355,17 @@ defmodule Phos.Action do
     })
   end
 
-  defp default_orb_populator({name, _hashes}, %{"Info" => info, "Done" => done} = _properties) do
-    expires_in = 4 * 7 * 24 * 60 * 60
-
+  defp default_orb_populator({name, _hashes}, %{"Info" => info, "1920_1080 Image" => lossless, "200_150 Image" => lossy, "Done" => done} = _properties) do
+    expires_in = 4 * 7 * 24 * 60 * 60 ## TODO let it be selected in Admin View instead
     %{
-      user_id: 1,
-      username: "Administrator",
-      user_media: true,
+      id: Ecto.UUID.generate(),
+      username: "Administrator 👋",
       expires_in: expires_in,
       info: notion_get_values(info) |> String.replace("[town]", name),
       done: notion_get_values(done),
-      orb_nature: "01",
-      media: true
+      media: true,
+      lossy: notion_get_values(lossy),
+      lossless: notion_get_values(lossless),
     }
   end
 

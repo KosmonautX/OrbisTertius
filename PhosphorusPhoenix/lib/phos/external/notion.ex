@@ -1,18 +1,23 @@
 defmodule Phos.External.Notion do
   use HTTPoison.Base
 
-  def today_post do
-    today = DateTime.utc_now() |> DateTime.add(60 * 60 * 8) |> DateTime.to_date()
+  def today_post, do: DateTime.utc_now()
+  |> DateTime.add(60 * 60 * 8) |> DateTime.to_date() |> date_post()
+
+
+  def yesterday_post, do: DateTime.utc_now()
+  |> DateTime.add(-60 * 60 * 16) |> DateTime.to_date() |> date_post()
+
+
+  def date_post(date) do
     date_query = %{
       "filter" => %{
         "property" => "Posting date",
         "date" => %{
-          "equals" => today
+          "equals" => date
         }
       }
     }
-    IO.inspect database()
-
     case post("/databases/#{database()}/query", date_query) do
       {:ok, %HTTPoison.Response{body: body}} -> Map.get(body, "results", [])
       {:error, err} -> HTTPoison.Error.message(err)

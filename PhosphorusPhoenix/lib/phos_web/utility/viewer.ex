@@ -37,6 +37,34 @@ defmodule PhosWeb.Util.Viewer do
     end)
   end
 
+  def post_orb_mapper(orbs) do
+    Enum.map(orbs, fn orb ->
+      %{
+        orb_uuid: orb.id,
+        force: true,
+        user_id: orb.initiator.fyr_id,
+        username: orb.initiator.username,
+        user_media: true,
+        expires_in: DateTime.diff(DateTime.from_naive!(orb.extinguish, "Etc/UTC"), DateTime.now!("Etc/UTC"), :second),
+        title: orb.title,
+        orb_nature: "01",
+        media: orb.media,
+        traits: orb.traits,
+        info: orb.payload.info,
+        where: orb.payload.where,
+        tio: orb.payload.tip,
+        when: orb.payload.when,
+        geolocation:
+          %{live:
+            %{
+              populate: Enum.member?(orb.traits, "pin"),
+              geohashes: Enum.reduce(orb.locations,[],fn o, acc -> [o.id | acc] end),
+              target: :h3.get_resolution(orb.central_geohash),
+              geolock: true
+          }}}
+     end)
+   end
+
   def fresh_orb_stream_mapper(orbs) do
     Enum.map(orbs, fn orb ->
       %{
