@@ -312,10 +312,11 @@ defmodule Phos.Action do
     end
   end
 
-  defp orb_imported_detail({name, hashes} = sector, %{"Title" => title, "Radius" => radius} = properties) do
+  defp orb_imported_detail({name, hashes} = sector, %{"Title" => title, "Radius" => radius, "Location" => location} = properties) do
     traits = Map.get(properties, "Traits", %{}) |> notion_get_values()
     default_orb_populator(sector, properties)
     |> Map.merge(%{
+      where: notion_get_values(location) |> String.replace("[town]", name),
       title: notion_get_values(title) |> String.replace("[town]", name),
       geolocation: %{ live: live_location_populator(hashes, radius) },
       traits: traits
