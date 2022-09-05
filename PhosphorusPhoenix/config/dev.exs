@@ -87,7 +87,7 @@ config :ex_aws, :s3,
   port: 9000
 
 config :phos, Phos.External.HeimdallrClient,
-  base_url: "https://norbandy.scratchbac.org/api"
+  base_url: "http://localhost:5000/api/"
 
 config :phos, Phos.Admin,
   password: "791c56ee67aa532df7c080bef3f9a525ee8d385e4f447638a10ca358ff5704db",

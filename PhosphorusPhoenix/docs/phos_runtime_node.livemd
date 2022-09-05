@@ -3,9 +3,17 @@
 ## Root
 
 ```elixir
-Phos.Users.update_user(Phos.Users.get_user_by_email("lky@gmail.com"), %{
-  fyr_id: "DAAohgsLMpQPmsbpbvgQ5PEPuy22"
-})
+# Phos.Users.update_user(Phos.Users.get_user_by_email("lky@gmail.com"), %{
+#   fyr_id: "DAAohgsLMpQPmsbpbvgQ5PEPuy22"
+# })
+```
+
+```elixir
+Rexbug.start("Phos.External.HeimdallrClient")
+orb = [Phos.Action.list_orbs() |> List.first() |> Map.put(:id, Ecto.UUID.generate())]
+IO.inspect(orb)
+orb |> Phos.External.HeimdallrClient.post_orb()
+# PhosWeb.Menshen.Auth.generate_boni!()
 ```
 
 ## recompile @ node

@@ -52,13 +52,14 @@ defmodule PhosWeb.Util.Viewer do
         traits: orb.traits,
         info: orb.payload.info,
         where: orb.payload.where,
-        tio: orb.payload.tip,
+        tip: orb.payload.tip,
         when: orb.payload.when,
         geolocation:
           %{live:
             %{
               populate: Enum.member?(orb.traits, "pin"),
-              geohashes: Enum.reduce(orb.locations,[],fn o, acc -> [o.id | acc] end),
+              geohashes: Enum.reduce_while(orb.locations,[],fn o, acc ->
+                unless length(acc) > 8, do: {:cont, [o.id | acc]}, else: {:halt, acc} end),
               target: :h3.get_resolution(orb.central_geohash),
               geolock: true
           }}}
