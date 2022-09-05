@@ -57,7 +57,7 @@ defmodule PhosWeb.Util.Viewer do
         geolocation:
           %{live:
             %{
-              populate: Enum.member?(orb.traits, "pin"),
+              populate: !Enum.member?(orb.traits, "pin"),
               geohashes: Enum.reduce_while(orb.locations,[],fn o, acc ->
                 unless length(acc) > 8, do: {:cont, [o.id | acc]}, else: {:halt, acc} end),
               target: :h3.get_resolution(orb.central_geohash),
