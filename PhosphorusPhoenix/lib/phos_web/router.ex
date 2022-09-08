@@ -60,6 +60,7 @@ defmodule PhosWeb.Router do
 
       live "/user/:username/edit", UserProfileLive.Index, :edit
       live "/user/:username", UserProfileLive.Index, :index
+      live "/user/:user_id", UserProfileLive.Index, :indexid
 
     end
   end

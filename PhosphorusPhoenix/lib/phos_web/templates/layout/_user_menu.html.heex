@@ -1,6 +1,8 @@
 <ul>
 <%= if @current_user do %>
-  <li>Welcome <%= link @current_user.username, to: Routes.user_profile_index_path(@conn, :index, @current_user.username) %></li>
+  <%= if @current_user.username do %>
+  <li>Welcome <%= link @current_user.username , to: Routes.user_profile_index_path(@conn, :index, @current_user.username) %></li>
+  <%= end %>
   <li><%= link "Settings", to: Routes.user_settings_path(@conn, :edit) %></li>
   <li><%= link "Log out", to: Routes.user_session_path(@conn, :delete), method: :delete %></li>
 <% else %>
