@@ -7,28 +7,38 @@
 Authorization: :token
 Content-Type: application/json
 User-Agent: Emacs27
+##
+:headers = <<
+Content-Type: application/json
+User-Agent: Emacs27
 
 ## Generate Client-side JWT
-GET :ipAddress/devland/flameon?user_id=:lky
+GET :ipAddress/devland/flameon?user=random
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 ##
-#
+## Translate Firebase Token to Client-side JWT
+PUT :ipAddress/userland/auth/flameon/
+:headers
+{
+"fyr": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjhoN1F3M2dvbWFTVmRTUUVRYjJLTUEiLCJ0eXAiOiJKV1QifQ.eyJleHAiOjE2NjI4OTAwNDksImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS9zY3JhdGNoYmFjLW5vcmJhbmR5Iiwic3ViIjoiREFBb2hnc0xNcFFQbXNicGJ2Z1E1UEVQdXkyMiJ9.j1rYDGi0mPTYETWvpxqRLxjjx0wA4EXiRNgboIl8779MRALrpE_WWmxX5ZOG0LKDS9ejkE-t6VbSWaZ_WpHlz1oW-_kmo0uM7z8q_UlMPTEjnDFKdDIqiWX1oL9TfvgMY7AHhCytPTw4aWrieODNE3wjpVRUP3LB21FHTCM0vskw3w8snh7kFu2sB_FvNThhzPG_DoAtsbYLAydRNXB7ODWKy6OG2zeyfi7Rb-cHFEN4JKQD-zkJcEn2H_Pf_l7xfYnMAcxZMRkVkF0DFiOjyBavl5CiNGzsJdqvcE5W2FLysFrcF5bhSgOgp7NzE2DJQz1RWHL5iC5CAoqtjSx00w"
+}
+##
 ### Comments API
 ## List Comments
-GET :ipAddress/comments/
+GET :ipAddress/orbland/comments/
 :auth-headers
 ## Read Comment
-GET :ipAddress/comments/82cbda35-c8a1-4d5e-840e-ebbb3c039a3b
+GET :ipAddress/orbland/comments/a91170e5-08dd-4ac3-a43f-3e1088e5be4a
 :auth-headers
 ## Create Root Comment
-POST :ipAddress/comments/
+POST :ipAddress/orbland/comments/
 :auth-headers
 {
 "orb_id": "73624fe3-8ac8-4de2-bc2b-0599cf727ad6",
 "body": "alberto roboto"
 }
 ## Create Child Comment
-POST :ipAddress/comments/
+POST :ipAddress/orbland/comments/
 :auth-headers
 -> run-hook (restclient-set-var ":childcommie" (cdr (assq 'id (assq 'data (json-read)))))
 {
@@ -37,7 +47,7 @@ POST :ipAddress/comments/
 }
 
 ## Create DEEP children Comment
-POST :ipAddress/comments/
+POST :ipAddress/orbland/comments/
 :auth-headers
 -> run-hook (restclient-set-var ":childcommie" (cdr (assq 'id (assq 'data (json-read)))))
 {
@@ -45,12 +55,12 @@ POST :ipAddress/comments/
 "body": "I Have a secret comment"
 }
 ## Show Root Comments for ORB
-GET :ipAddress/comments/showroot/73624fe3-8ac8-4de2-bc2b-0599cf727ad6
+GET :ipAddress/orbland/comments/root/73624fe3-8ac8-4de2-bc2b-0599cf727ad6
 :auth-headers
 
 ## Show Ancestors Comment
-GET :ipAddress/comments/73624fe3-8ac8-4de2-bc2b-0599cf727ad6/showancestor/4f0e37a2-abab-46e8-aeb1-d4520255bf21
+GET :ipAddress/orbland/comments/73624fe3-8ac8-4de2-bc2b-0599cf727ad6/ancestor/4f0e37a2-abab-46e8-aeb1-d4520255bf21
 :auth-headers
 ## Delete Comment
-DELETE :ipAddress/comments/4f0e37a2-abab-46e8-aeb1-d4520255bf21
+DELETE :ipAddress/orbland/comments/4f0e37a2-abab-46e8-aeb1-d4520255bf21
 :auth-headers

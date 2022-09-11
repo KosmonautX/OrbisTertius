@@ -75,18 +75,24 @@ defmodule PhosWeb.Router do
   end
 
   scope "/api", PhosWeb.API do
-    pipe_through [:api, :fetch_authorised_user_claims]
+    pipe_through [:api]
 
-    resources "/comments", CommentController, except: [:new, :edit]
-    get "/comments/showroot/:id", CommentController, :show_root
-    get "/comments/:id/showancestor/:cid", CommentController, :show_ancestor
+    put "/userland/auth/flameon", AuthController, :authenticate_user
 
-    resources "/userprofile", UserProfileController, except: [:new, :edit]
+  end
+
+  scope "/api", PhosWeb.API do
+    pipe_through [:api, :authorize_user]
+
+    resources "/userland/users", UserController, except: [:new, :edit]
+    resources "/userland/profile", UserProfileController, except: [:new, :edit]
     # get "/users/:id/showusermedia", UserController, :show_user_media
 
-    resources "/orbs", OrbController, except: [:new, :edit]
+    resources "/orbland/orbs", OrbController, except: [:new, :edit]
+    resources "/orbland/comments", CommentController, except: [:new, :edit]
+    get "/orbland/comments/root/:id", CommentController, :show_root
+    get "/orbland/comments/:id/ancestor/:cid", CommentController, :show_ancestor
 
-    get "/freshorbstream", OrbController, :fresh_orb_stream
   end
 
   # Other scopes may use custom stacks.
@@ -97,6 +103,7 @@ defmodule PhosWeb.Router do
     get "/:provider/callback", AuthController, :callback
     delete "/logout", AuthController, :delete
   end
+
 
   scope "/auth", PhosWeb do
     pipe_through :apple_callback
@@ -174,4 +181,4 @@ defmodule PhosWeb.Router do
     get "/users/confirm/:token", UserConfirmationController, :edit
     post "/users/confirm/:token", UserConfirmationController, :update
   end
-end
+ end

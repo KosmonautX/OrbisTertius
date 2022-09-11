@@ -1,4 +1,5 @@
 defmodule PhosWeb.AuthChannel do
+  ## in the future for authentication using oauth factors and persisting state on process and logout closes state
   use PhosWeb, :channel
 
   def join("auth:usr:" <> id, _payload, socket) when id != "" do
@@ -9,9 +10,11 @@ defmodule PhosWeb.AuthChannel do
       {:error, %{reason: "unauthorized"}}
     end
   end
-  def join("auth:authtenticate:" <> token, _payload, socket) when token != "" do
+
+  def join("auth:authenticate:" <> token, _payload, socket) when token != "" do
     {:ok, assign(socket, :temporary_token, token)}
   end
+
   def join(_, _payload, _socket), do: {:error, %{reason: "unauthorized"}}
 
   def handle_in("authenticate", %{"email" => email, "password" => password}, socket) do

@@ -12,9 +12,9 @@ defmodule PhosWeb.Util.Migrator do
     with {:ok, response} <- Phos.External.HeimdallrClient.get("/tele/get_users/" <> id),
          true <- response.status_code >= 200 and response.status_code < 300,
          users <- user_migration(response.body, id) do
-      users
+      {:ok, users}
     else
-      {:error, err} -> err
+      {:error, err} -> {:error, err}
     end
   end
 

@@ -80,7 +80,7 @@ defmodule PhosWeb.UserLocationChannel do
   defp authorized?(socket, id) do
     case Auth.validate_user(socket.assigns.session_token) do
       {:ok , claims} ->
-        if claims["user_id"] == socket.assigns.user_agent["user_id"] and claims["user_id"] == id do
+        if socket.assigns.user_agent and claims["user_id"] == socket.assigns.user_agent["user_id"] and claims["user_id"] == id do
           true
         else
           false
