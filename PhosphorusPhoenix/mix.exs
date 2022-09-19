@@ -75,6 +75,11 @@ defmodule Phos.MixProject do
       {:earmark, "~>1.4.25"},
       {:html_sanitize_ex, "~> 1.4"},
       {:prom_ex, "~> 1.7"},
+      {:fsmx, "~> 0.2.0"},
+      {:nebulex, "~> 2.4"},
+      {:shards, "~> 1.0"},
+      {:decorator, "~> 1.4"},
+
       # comments
       {:ecto_ltree, "~> 0.3.0"},
       #debugging

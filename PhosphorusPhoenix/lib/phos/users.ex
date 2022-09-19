@@ -3,12 +3,17 @@ defmodule Phos.Users do
   The Action context.
   """
 
+  use Nebulex.Caching
+
   import Ecto.Query, warn: false
   alias Phos.Repo
   alias Phos.Users
   alias Phos.Users.{User, User_Public_Profile, Private_Profile, Auth, Relation}
+  alias Phos.Cache
 
   alias Ecto.Multi
+
+  @ttl :timer.hours(1)
 
   @doc """
   Returns the list of users.
@@ -633,7 +638,8 @@ defmodule Phos.Users do
       [%User{}, %User{}]
 
   """
-  @spec pending_requests(user_id :: Ecto.UUID.t()) :: [Phos.Users.User.t()]
+  @spec pending_requests(user_id :: Ecto.UUID.t() | Phos.Users.User.t()) :: [Phos.Users.User.t()]
+  def pending_requests(%Phos.Users.User{id: id}), do: pending_requests(id)
   def pending_requests(user_id) do
     relations = from r in Relation, where: is_nil(r.accepted_at), where: r.requester_id == ^user_id
     query = from u in User, join: r in ^relations, where: u.id == r.acceptor_id
@@ -654,8 +660,10 @@ defmodule Phos.Users do
       [%User{}, %User{}]
 
   """
-  @spec friend_requests(user_id :: Ecto.UUID.t(), filters :: Keyword.t()) :: [Phos.Users.User.t()] :: Phos.Users.User.t()
-  def friend_requests(user_id, filters \\ []) do
+  @spec friend_requests(user_id :: Ecto.UUID.t() | Phos.Users.User.t(), filters :: Keyword.t()) :: [Phos.Users.User.t()] | Phos.Users.User.t()
+  def friend_requests(user_id, filters \\ [])
+  def friend_requests(%Phos.Users.User{id: id}, filters), do: friend_requests(id, filters)
+  def friend_requests(user_id, filters) do
     default_filters = [acceptor_id: user_id]
     ff = case Keyword.get(filters, :user_id) do
       user_id when is_binary(user_id) -> Keyword.put(default_filters, :requester_id, user_id)
@@ -686,11 +694,15 @@ defmodule Phos.Users do
       [%User{}, %User{}]
 
   """
-  @spec friends(user_id :: Ecto.UUID.t()) :: [Phos.Users.User.t()]
+  @spec friends(user_id :: Ecto.UUID.t() | Phos.Users.User.t()) :: [Phos.Users.User.t()]
+  def friends(%Phos.Users.User{id: id}), do: friends(id)
+
+  @decorate cacheable(cache: Cache, key: {User, :friends, user_id}, opts: [ttl: @ttl])
   def friends(user_id) do
     relations = from r in Relation, where: not is_nil(r.accepted_at), where: r.acceptor_id == ^user_id or r.requester_id == ^user_id
     query = from u in User, join: r in ^relations, where: u.id == r.acceptor_id or u.id == r.requester_id
     Repo.all(query)
+    |> Enum.reject(&Kernel.==(&1.id, user_id))
   end
 
   @doc """
@@ -755,15 +767,55 @@ defmodule Phos.Users do
       {:ok, %Phos.Users.Relation{}}
 
   """
-  @spec accept_friend(actor_id :: Ecto.UUID.t(), requester_id :: Ecto.UUID.t()) :: {:ok, Phos.Users.Relation.t()} | {:error, Ecto.Changeset.t()}
+  @spec accept_friend(actor_id :: Ecto.UUID.t() | Phos.Users.User.t(), requester_id :: Ecto.UUID.t()) :: {:ok, Phos.Users.Relation.t()} | {:error, Ecto.Changeset.t()}
+  def accept_friend(%Phos.Users.User{id: id}, requester_id), do: accept_friend(id, requester_id)
   def accept_friend(actor_id, requester_id) do
-    friend_requests(actor_id, [user_id: requester_id])
+    relation_requests(actor_id, [user_id: requester_id])
     |> case do
       nil -> {:error, "Cannot accept friend requests"}
       relation ->
-        Fsmx.transition_changeset(relation, "ACCEPTED")
+        relation
+        |> Fsmx.transition_changeset("ACCEPTED")
         |> Repo.update()
+        |> case do
+          {:ok, _user} = data ->
+            spawn(fn ->
+              Cache.delete({User, :friends, actor_id})
+              Cache.delete({User, :friends, requester_id})
+              Cache.delete({User, :feeds, actor_id})
+              Cache.delete({User, :feeds, requester_id})
+            end)
+            data
+        end
     end
   end
->>>>>>> Stashed changes
+
+  defp relation_requests(actor_id, filters \\ []) do
+    default_filters = [acceptor_id: actor_id]
+    ff = case Keyword.get(filters, :user_id) do
+      user_id when is_binary(user_id) -> Keyword.put(default_filters, :requester_id, user_id)
+      _ -> default_filters
+    end
+
+    query = from r in Relation, where: is_nil(r.accepted_at), where: ^ff
+
+    case Kernel.length(filters) do
+      0 -> Repo.all(query)
+      _ ->
+        q = from query, limit: 1
+        Repo.one(q)
+    end
+  end
+
+  def feeds(%Phos.Users.User{id: id} = _user), do: feeds(id)
+
+  @decorate cacheable(cache: Cache, key: {User, :feeds, user_id}, opts: [ttl: @ttl])
+  def feeds(user_id) do
+    friends(user_id)
+    |> Enum.map(&(&1.id))
+    |> Kernel.++([user_id])
+    |> do_get_feeds()
+  end
+
+  defp do_get_feeds(friend_ids), do: Phos.Action.list_orbs([initiator_id: friend_ids])
 end

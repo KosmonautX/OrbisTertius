@@ -19,6 +19,7 @@ defmodule Phos.Application do
       # Start the Endpoint (http/https)
       PhosWeb.Endpoint,
       Phos.PromEx,
+      Phos.Cache,
 
       {Cluster.Supervisor, [topologies, [name: Phos.ClusterSupervisor]]},
       # Start the Firbase Cloud Messaging Dispatcher

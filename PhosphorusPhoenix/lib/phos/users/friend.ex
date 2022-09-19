@@ -1,6 +1,6 @@
 defmodule Phos.Users.Relation do
   use Ecto.Schema
-  use Fsmx.Struct, transition: %{
+  use Fsmx.Struct, transitions: %{
     "REQUESTED" => ["HOLD", "ACCEPTED"],
     "HOLD" => "WAITED",
     "WAITED" => ["REQUESTED", "REJECTED"],

@@ -18,9 +18,23 @@ defmodule Phos.Action do
       [%Orb{}, ...]
 
   """
-  def list_orbs do
-    Repo.all(Orb)
-    |> Repo.preload([:locations, :initiator])
+  def list_orbs(filters \\ []) do
+    default_query = from o in Orb, preload: [:locations, :initiator], order_by: [desc: o.inserted_at]
+    query = case Kernel.length(filters) do
+      0 -> default_query
+      _ -> advanced_orb_listing(filters, default_query)
+    end
+
+    Repo.all(query)
+  end
+
+  defp advanced_orb_listing(filters, default_query) do
+    case Keyword.get(filters, :initiator_id) do
+      ids when is_list(ids) ->
+        ff =  Keyword.reject(filters, fn {key, _val} -> key == :initiator_id end)
+        from q in default_query, where: q.initiator_id in ^ids, where: ^ff
+      _ -> from q in default_query, where: ^filters
+    end
   end
 
 #   @doc """
@@ -168,6 +182,20 @@ defmodule Phos.Action do
         |> Orb.changeset(attrs)
         |> Repo.insert()
     end
+    |> case do
+      {:ok, orb} = data ->
+        spawn(fn -> user_feeds_publisher(orb) end)
+        data
+      err -> err
+    end
+  end
+
+  defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
+    Phos.Users.friends(user_id)
+    |> Enum.each(fn user ->
+      spawn(fn -> Phos.Cache.delete({Phos.Users.User, :feeds, user.id}) end)
+      spawn(fn -> PhosWeb.Pubsub.publish(orb, {:feeds, "new"}, "userfeed:#{user.id}") end)
+    end)
   end
 
   def create_orb_and_publish(attrs \\ %{})
