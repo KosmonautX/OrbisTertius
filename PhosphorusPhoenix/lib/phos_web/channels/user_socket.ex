@@ -11,6 +11,7 @@ defmodule PhosWeb.UserSocket do
 
   channel "archetype:usr:*", PhosWeb.UserChannel
   channel "archetype:loc:*", PhosWeb.UserLocationChannel
+  channel "userfeed:*", PhosWeb.UserFeedChannel
 
   ## Transports
   #transport :websocket, Phoenix.Transports.WebSocket, check_origin: ["//localhost",  "//echo.scrb.ac"]
@@ -41,7 +42,8 @@ defmodule PhosWeb.UserSocket do
   end
 
   @impl true
-  def connect(_params, _socket, _connect_info) do
+  def connect(params, _socket, _connect_info) do
+      IO.inspect(params)
     # {:ok, socket}
     :error
   end

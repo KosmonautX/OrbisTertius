@@ -75,21 +75,6 @@ defmodule PhosWeb.UserLocationChannel do
     {:noreply, socket}
   end
 
-
-  # Add authorization logic here as required. Process send_after for auth channel
-  defp authorized?(socket, id) do
-    case Auth.validate_user(socket.assigns.session_token) do
-      {:ok , claims} ->
-        if claims["user_id"] == socket.assigns.user_agent["user_id"] and claims["user_id"] == id do
-          true
-        else
-          false
-        end
-      { :error, _error } ->
-        {:error,  :authentication_required}
-    end
-  end
-
   defp loc_subscriber(present, nil) do
     #IO.puts("subscribe #{inspect(present)}")
     present |>Enum.map(fn new-> Phos.PubSub.subscribe(loc_topic(new)) end)
