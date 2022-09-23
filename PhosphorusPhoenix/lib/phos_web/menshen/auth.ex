@@ -5,7 +5,10 @@ defmodule PhosWeb.Menshen.Auth do
   alias Phos.Users.{Private_Profile}
 
   def validate_user(token) do
-    Role.Pleb.verify_and_validate(token)
+    token
+    |> String.split()
+    |> List.last()
+    |> Role.Pleb.verify_and_validate()
   end
 
   def validate_boni(token) do

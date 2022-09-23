@@ -720,13 +720,19 @@ defmodule Phos.Users do
   @spec add_friend(requester_id :: Ecto.UUID.t(), acceptor_id :: Ecto.UUID.t()) :: {:ok, Phos.Users.Relation.t()} | {:error, Ecto.Changeset.t()}
   def add_friend(requester_id, acceptor_id) when requester_id != acceptor_id do
     params = %{requester_id: requester_id, acceptor_id: acceptor_id}
-    friend_requests(acceptor_id, [user_id: requester_id])
+    existing_relation(requester_id, acceptor_id)
     |> case do
       nil -> do_insert_friends(params)
       _ -> {:error, "Cannot add requested friend"}
     end
   end
   def add_friend(_requester_id, _acceptor_id), do: {:error, "Requester and acceptor must be different"}
+
+  defp existing_relation(requester_id, acceptor_id) do
+    query = from q in Relation, where: q.requester_id in ^[requester_id, acceptor_id] and q.acceptor_id in ^[requester_id, acceptor_id]
+
+    Repo.all(query)
+  end
 
   defp do_insert_friends(params) do
     %Relation{}

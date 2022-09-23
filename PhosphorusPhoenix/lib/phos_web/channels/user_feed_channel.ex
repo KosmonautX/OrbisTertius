@@ -13,4 +13,8 @@ defmodule PhosWeb.UserFeedChannel do
     broadcast(socket, "feed", feed)
     {:noreply, socket}
   end
+
+  def handle_in("ping", _, socket) do
+    {:noreply, socket}
+  end
 end

@@ -87,6 +87,14 @@ defmodule PhosWeb.Router do
     resources "/orbs", OrbController, except: [:new, :edit]
 
     get "/freshorbstream", OrbController, :fresh_orb_stream
+
+    scope "/users" do
+      resources "/friends", FriendController, except: [:new, :edit, :show, :update]
+      post "/friends/reject", FriendController, :reject
+      get "/friends/requests", FriendController, :requests
+      get "/friends/pending", FriendController, :pending
+    end
+
   end
 
   # Other scopes may use custom stacks.
