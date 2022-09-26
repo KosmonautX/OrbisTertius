@@ -49,7 +49,8 @@ defmodule PhosWeb.Menshen.Auth do
     %{user_id: user.id,
       fyr_id: user.fyr_id,
       territory: parse_territories(user),
-      username: user.username}
+      username: user.username,
+    }
     |> Role.Pleb.generate_and_sign!()
   end
 
