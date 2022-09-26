@@ -1,0 +1,81 @@
+# Playing with Fyr
+
+```elixir
+Mix.install([
+  {:jason, "~> 1.4"},
+  {:httpoison, "~> 1.8"},
+  {:fcmex, "~> 0.5.0"},
+  {:flame, github: "jsmestad/flame"},
+  {:jose, "~> 1.11"}
+])
+```
+
+## Section
+
+```elixir
+defmodule GoogleIdentity do
+  use HTTPoison.Base
+
+  def gen_idToken(fyr_id) do
+    # break into with 
+    {:ok, resp = %HTTPoison.Response{}} =
+      post("verifyCustomToken", %{token: create_custom_token(fyr_id)})
+
+    resp.body["idToken"]
+  end
+
+  ## Full API Documentation
+  # https://github.com/googleapis/google-api-go-client/blob/main/identitytoolkit/v3/identitytoolkit-api.json
+  def process_request_url(url) do
+    # <> "?key=#{System.get_env("LOCAL_FYR")}"
+    "https://www.googleapis.com/identitytoolkit/v3/relyingparty/" <>
+      url <> "?key=AIzaSyAUJ47oejOLObNUOynaXQBZmCIdUFdnFsk"
+  end
+
+  def process_response_body(body), do: body |> Jason.decode!()
+
+  def process_request_body(body) when is_map(body), do: Jason.encode!(body)
+
+  defp create_custom_token(uid) when is_binary(uid) do
+    now = Epoch.now()
+    # System.get_env("FYR_EMAIL")
+    email = "firebase-adminsdk-kg7np@scratchbac-norbandy.iam.gserviceaccount.com"
+    # System.get_env("FYR_KEY")
+    fyr_key =
+      "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCimC/9YKhKZJfZ\nu2ffYRFDCFPojUyv1Ct9dd1jtdCOgQR22zPu0Twi5Amav7JPbaUL1f7zbbuA2vTD\nj/5UgBNgydKhLcYYY8eVoFok4J2tzmy6UBXce1vqlVwYpiyYbORhFasxBrRMmfmC\nciTcOOZdI0rbrfeqhcHBYhJ4UO9AnytVjuxos4QnyjWrMqQpz60xr3ihoZDR67Av\nvA/cqdSZYMlR1C9/aKfz9JQlZcUFuBQP65MZ5P753/5ePi2DR9sY6dGm3xjbJEjB\n1F5ulSX7b+gyrMxHfQhrh0SqdJMf9lZDPfd/uwGTdQoXt2anwe86vOvt41k0EE2/\n82l9m66HAgMBAAECggEAMIM7/luyms+8xwg1i97Iabm4X3CZavThLQPX1IJRAdPY\n4yWwLxda3AYyH2wG5dAPKKLm+PbKtT2fPiJefhPgtEZDhDfGHUzYJfq8KriiE1O9\n+TEf9LMRz8JUwj4CnFARLC5s76nSbfCbE6K/AL4xbaS0Fyum88gI8YwzepabbCoX\nz7GA0PIjDcK5yu3Iwq9qlZSNgFKvz+pGpL7DXGq6HGEopTXiRYU8Le2St7aHopU/\n5Y4THAFJ7vUksAqX2zfuQKjXUlX+cTB3KGpS/aAuqtr116tvhfCGHTlbkxZlKONY\n485XA9KwJ8j/RBTDoZlQdcn/Nqqwmx+X9awbdpvfEQKBgQDTQnXV+UZq/1aZCgjs\nYq7TiWsF/ioZqYG44bAWHCwXE3NLsNvHUBPMrHcTwx7afFsvqNxQKW8eGYzbfOkX\nPA63wCct+MVj9m8aDjdiWyMjJq936c9kNv4vAr+zl2SOZQeEyGKkZL7kEe2CNcbP\nDszNKt6YVeO9DgYcZfn6Fk0JywKBgQDFB1L/7/oFIPCRN8c+ik0BfwNJwQacb5Sj\nc13Z7EuyK8k9IgzPnn0UNsnEScCnVYiI07JuTH3dhYFAMM9XS5lEHwljdjTtfMxT\nDzzK9KNCVvFks/4e6jAWXmQ26t7k7Rg3yp970bnlfg7ckskVnaiEp/b6iJqF/9xv\ncW8rV5sGtQKBgQCSPB3/OKcS557VHsogfwrPaP8JTe9shhZCmQ7fry6h5pfXnBv2\nMqsR8YwXxOf1i0E/k161qoi9SChlwmhC6hKyBTPZsatJT8uGOLMDxVxkN6Icml8x\n2pNGjVuPgEtd+fcjZeZKL2anzvUePgVZTMBdgMBGqKWVN0DppXlNMOSw0wKBgCgH\no+pR1EckeRvX7EgdiyWpq35ZlEFGPjmzH7c91ec+FCWyfE3WUm0/8GBL57NXomTC\nNfdI3S2biTYEdKu0tU/syliF1J0HhO+/IcfOSjkZNvQRyah4RgrVZKDvuRdjwE7d\ngOeEJbOll9lijS4yGOHSyk/+Xv6ojB2sOzzgEKQdAoGAYLzqeycJOXG4cI4x+8/+\nE6KBM+QHzkBoxkbgsB7fRzcsO6cjavlOXYzsi9+gF7emz7SZXB/2O31u3bZCmHZH\njzDHlc8W9IzMhExLvKE4REu+OThd8YKME/wVNYwp5S2JcZjTC5nCgxdoXdSaxz9B\non5IzCACRFJ39S3VGWzwgAM=\n-----END PRIVATE KEY-----\n"
+
+    payload = %{
+      "iss" => email,
+      "sub" => email,
+      "aud" =>
+        "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit",
+      "iat" => now,
+      "exp" => now + 888,
+      "uid" => uid,
+      "claims" => %{}
+    }
+
+    fyr_key
+    |> JOSE.JWK.from_pem()
+    |> JOSE.JWT.sign(%{"alg" => "RS256"}, payload)
+    |> JOSE.JWS.compact()
+    |> elem(1)
+  end
+end
+```
+
+```elixir
+# GoogleIdentity.post("getAccountInfo", %{idToken: ""})
+# {:ok, custom_token} = GoogleIdentity.create_custom_token("w8IaWCHPjfRMhCeTXAnH7OCvQOo2")
+id = "BX1BxM9KkwdFmy2J4FNNkFxclpS2"
+fyr_token = Phos.External.GoogleIdentity.gen_idToken(id)
+Phos.External.GoogleIdentity.post("getAccountInfo", %{idToken: fyr_token})
+```
+
+```elixir
+Phos.External.HeimdallrClient.get("/tele/get_users/" <> id)
+```
+
+```elixir
+PhosWeb.Util.Migrator.fyr()
+```

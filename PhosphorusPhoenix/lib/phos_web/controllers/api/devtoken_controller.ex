@@ -7,7 +7,18 @@ defmodule PhosWeb.API.DevLandController do
   def new(conn, %{"user_id" => user_id}) do
     {:ok, token, _claims} = gen_token(user_id)
     json(conn, %{payload: token})
-    end
+  end
+
+  def new(conn, %{"user" => "random"}) do
+    user_id = List.first(Phos.Users.list_users()).id
+    {:ok, token, _claims} = gen_token(user_id)
+    json(conn, %{payload: token})
+  end
+
+  def fyr(conn, %{"fyr_id" => fyr_id}) do
+    token = Phos.External.GoogleIdentity.gen_idToken(fyr_id)
+    json(conn, %{payload: token})
+  end
 
   defp gen_token(user_id), do: Auth.generate_user(user_id)
 end

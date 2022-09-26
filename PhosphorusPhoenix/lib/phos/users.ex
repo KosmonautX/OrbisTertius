@@ -113,6 +113,12 @@ defmodule Phos.Users do
     |> Repo.insert()
   end
 
+  def create_fyr_user(attrs \\ %{}) do
+    %User{}
+    |> User.fyr_registration_changeset(attrs)
+    |> Repo.insert()
+  end
+
   def migrate_user(attrs \\ %{}) do
     %User{}
     |> User.migration_changeset(attrs)

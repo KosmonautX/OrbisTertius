@@ -22,6 +22,14 @@ defmodule PhosWeb.UserProfileLive.Index do
       |> apply_action(socket.assigns.live_action, params)}
   end
 
+  def handle_params(%{"user_id" => user_id} = params, _url, socket) do
+    {:noreply, socket
+      |> assign(:params, params)
+      |> assign(:user, Users.get_user!(user_id))
+      |> assign(:orbs, Action.get_active_orbs_by_userid(user_id))
+      |> apply_action(socket.assigns.live_action, params)}
+  end
+
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "User Profile")
