@@ -11,7 +11,7 @@ Mix.install([
 ])
 ```
 
-## Section
+## Location
 
 ```elixir
 defmodule FloatingDownSockets do

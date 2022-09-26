@@ -4,8 +4,8 @@ defmodule PhosWeb.Menshen.Plug do
 
   def init(opts), do: opts
 
-  @spec fetch_authorised_user_claims(Plug.Conn.t(), any) :: Plug.Conn.t()
-  def fetch_authorised_user_claims(conn, _opts) do
+  @spec authorize_user(Plug.Conn.t(), any) :: Plug.Conn.t()
+  def authorize_user(conn, _opts) do
     jwt = get_req_header(conn, "authorization")
     case Auth.validate_user(List.first(jwt)) do
       {:ok , claims} ->

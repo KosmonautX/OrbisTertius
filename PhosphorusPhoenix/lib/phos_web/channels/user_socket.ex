@@ -33,9 +33,7 @@ defmodule PhosWeb.UserSocket do
     # Parsing of Authorising JWT vector and assigning to session
     case Auth.validate_user(token) do
       {:ok, claims} ->
-        {:ok, socket |> assign(:user_agent, claims) |> assign(:session_token, token)
-
-        }
+        {:ok, socket |> assign(:user_agent, claims) |> assign(:session_token, token)}
       {:error, reason} ->
         {:error, reason}
     end
@@ -44,7 +42,6 @@ defmodule PhosWeb.UserSocket do
   @impl true
   def connect(params, _socket, _connect_info) do
       IO.inspect(params)
-    # {:ok, socket}
     :error
   end
 

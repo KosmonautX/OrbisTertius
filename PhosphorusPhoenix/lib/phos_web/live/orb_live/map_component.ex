@@ -10,7 +10,6 @@ defmodule PhosWeb.OrbLive.MapComponent do
     # If user has ":home, :work" in addresses, set the lat and lng to :markerloc and send to map.js else use default
     {lat, lng} =
       if assigns[:addresses][assigns[:setloc]] do
-        # import IEx; IEx.pry()
         List.last(assigns[:addresses][assigns[:setloc]])
           |> :h3.to_geo()
       else

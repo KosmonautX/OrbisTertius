@@ -3,9 +3,9 @@
 ## Root
 
 ```elixir
-# Phos.Users.update_user(Phos.Users.get_user_by_email("lky@gmail.com"), %{
-#   fyr_id: "DAAohgsLMpQPmsbpbvgQ5PEPuy22"
-# })
+Phos.Users.update_user(Phos.Users.get_user_by_email("lky@gmail.com"), %{
+  fyr_id: "DAAohgsLMpQPmsbpbvgQ5PEPuy22"
+})
 ```
 
 ```elixir

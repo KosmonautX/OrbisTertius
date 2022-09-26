@@ -114,9 +114,4 @@ defmodule PhosWeb.API.OrbController do
       send_resp(conn, :no_content, "")
     end
   end
-
-  def fresh_orb_stream(conn, %{"id" => id}) do
-    orb = Action.get_orb!(id)
-    render(conn, "show.json", orb: orb)
-  end
 end
