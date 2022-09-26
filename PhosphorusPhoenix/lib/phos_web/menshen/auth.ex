@@ -41,7 +41,7 @@ defmodule PhosWeb.Menshen.Auth do
       territory: parse_territories(user),
       username: user.username}
     #|> Role.Boni.generate_claims
-    |> Role.Boni.generate_and_sign()
+    |> Role.Pleb.generate_and_sign()
   end
 
   def generate_user!(user_id) do
@@ -50,7 +50,7 @@ defmodule PhosWeb.Menshen.Auth do
       fyr_id: user.fyr_id,
       territory: parse_territories(user),
       username: user.username}
-    |> Role.Boni.generate_and_sign!()
+    |> Role.Pleb.generate_and_sign!()
   end
 
   # geo utilities?

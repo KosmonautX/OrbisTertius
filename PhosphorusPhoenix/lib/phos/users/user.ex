@@ -58,7 +58,14 @@ defmodule Phos.Users.User do
     |> cast_embed(:public_profile)
     |> cast_assoc(:private_profile)
     |> unique_constraint(:username, name: :unique_username)
+  end
 
+  def fyr_registration_changeset(%Phos.Users.User{} = user, attrs) do
+    user
+    |> cast(attrs, [:username, :fyr_id])
+    |> validate_required(:fyr_id)
+    |> cast_embed(:public_profile)
+    |> unique_constraint(:username, name: :unique_username)
   end
 
   def pub_profile_changeset(%Phos.Users.User{} = user, attrs) do

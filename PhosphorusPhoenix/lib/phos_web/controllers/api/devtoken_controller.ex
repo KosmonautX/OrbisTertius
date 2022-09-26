@@ -15,5 +15,10 @@ defmodule PhosWeb.API.DevLandController do
     json(conn, %{payload: token})
   end
 
+  def fyr(conn, %{"fyr_id" => fyr_id}) do
+    token = Phos.External.GoogleIdentity.gen_idToken(fyr_id)
+    json(conn, %{payload: token})
+  end
+
   defp gen_token(user_id), do: Auth.generate_user(user_id)
 end

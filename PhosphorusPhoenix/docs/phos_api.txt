@@ -8,21 +8,39 @@ Authorization: :token
 Content-Type: application/json
 User-Agent: Emacs27
 ##
+##
 :headers = <<
 Content-Type: application/json
 User-Agent: Emacs27
-
+##
 ## Generate Client-side JWT
 GET :ipAddress/devland/flameon?user=random
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
-##
+
+## Generate Google Identity idToken for Firebase Auth
+GET :ipAddress/devland/lankaonfyr?fyr_id=BX1BxM9KkwdFmy2J4FNNkFxclpS2
+-> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
+## Userland Calls
 ## Translate Firebase Token to Client-side JWT
-PUT :ipAddress/userland/auth/flameon/
+GET :ipAddress/userland/auth/fyr?fyr=:fyr_token
+:headers
+## Genesis (Create User// Returning User // Migrating User)
+POST :ipAddress/userland/auth/fyr/genesis
 :headers
 {
-"fyr": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjhoN1F3M2dvbWFTVmRTUUVRYjJLTUEiLCJ0eXAiOiJKV1QifQ.eyJleHAiOjE2NjI4OTAwNDksImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS9zY3JhdGNoYmFjLW5vcmJhbmR5Iiwic3ViIjoiREFBb2hnc0xNcFFQbXNicGJ2Z1E1UEVQdXkyMiJ9.j1rYDGi0mPTYETWvpxqRLxjjx0wA4EXiRNgboIl8779MRALrpE_WWmxX5ZOG0LKDS9ejkE-t6VbSWaZ_WpHlz1oW-_kmo0uM7z8q_UlMPTEjnDFKdDIqiWX1oL9TfvgMY7AHhCytPTw4aWrieODNE3wjpVRUP3LB21FHTCM0vskw3w8snh7kFu2sB_FvNThhzPG_DoAtsbYLAydRNXB7ODWKy6OG2zeyfi7Rb-cHFEN4JKQD-zkJcEn2H_Pf_l7xfYnMAcxZMRkVkF0DFiOjyBavl5CiNGzsJdqvcE5W2FLysFrcF5bhSgOgp7NzE2DJQz1RWHL5iC5CAoqtjSx00w"
+"fyr": ":fyr_token"
 }
-##
+### ORBs API
+# Read Orbs
+GET :ipAddress/orbland/comments/
+:auth-headers
+# Create Orbs
+POST :ipAddress/orbland/comments/
+:auth-headers
+{
+"orb_id": "73624fe3-8ac8-4de2-bc2b-0599cf727ad6",
+"body": "alberto roboto"
+}
 ### Comments API
 ## List Comments
 GET :ipAddress/orbland/comments/
