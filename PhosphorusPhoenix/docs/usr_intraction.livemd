@@ -105,6 +105,9 @@ defmodule BeluSocket do
   end
 
   @impl Slipstream
+  def handle_info(:request_metrics, socket), do: {:noreply, socket}
+
+  @impl Slipstream
   def terminate(reason, socket) do
     Logger.debug("shutting down: " <> inspect(reason))
 
@@ -121,7 +124,7 @@ end
 
 ```elixir
 token =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXJyaXRvcnkiOnt9LCJ1c2VyX2lkIjoiZGVmMjZkZmEtODA2NC00MDk2LWE5NWUtMGNhYTRjNzQ0NGI1IiwidXNlcm5hbWUiOiJiZWx1Z2EiLCJleHAiOjE2NjM4Mzg1MjQsImlhdCI6MTY2MzgzNzMxMiwiaXNzIjoiUHJpbmNldG9uIiwicm9sZSI6ImJvbmkiLCJzdWIiOiJTY3JhdGNoQmFjIn0.zkIHhT7NP3RnvQDNih3i_Qm2x6D99sVDDjeCpqtqE0Q"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJTY3JhdGNoQmFjIiwidXNlcl9pZCI6ImRlZjI2ZGZhLTgwNjQtNDA5Ni1hOTVlLTBjYWE0Yzc0NDRiNSIsImV4cCI6MTY2NDE4NzcyMCwiaWF0IjoxNjY0MTg2NTA4LCJpc3MiOiJQcmluY2V0b24iLCJyb2xlIjoicGxlYiJ9.SY4FpnGguWIvKqYBvThyEkdir7bhFmjrWyv6Geaa3ws"
 
 domain = "ws://localhost:4000"
 
@@ -130,13 +133,14 @@ config = [
   reconnect_after_msec: [200, 500, 1_000, 2_000]
 ]
 
-{:ok, pid} = BeluSocket.start_link(config)
+# {:ok, pid} = BeluSocket.start_link(config)
+{:error, {:already_started, pid}} = BeluSocket.start_link(config)
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
-{:ok, #PID<0.344.0>}
+{:error, {:already_started, #PID<0.438.0>}}
 ```
 
 ```elixir
@@ -146,7 +150,15 @@ Process.alive?(pid)
 <!-- livebook:{"output":true} -->
 
 ```
-false
+true
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+
+11:51:54.205 [debug] shutting down: :normal
+
 ```
 
 ## Section

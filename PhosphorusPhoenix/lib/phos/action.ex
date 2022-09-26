@@ -138,8 +138,16 @@ defmodule Phos.Action do
     Repo.all(query, limit: 8)
   end
 
-  def get_orb_by_trait_geo(geohash, trait) do
+  def get_orb_by_trait_geo(geohashes, trait) when is_list(geohashes) do
+    query = from p in Phos.Action.Orb_Location,
+      where: p.location_id in ^geohashes,
+      join: o in assoc(p, :orbs) ,
+      where: fragment("? @> ?", o.traits, ^trait)
 
+    Repo.all(query |> preload(:orbs), limit: 8)
+  end
+
+  def get_orb_by_trait_geo(geohash, trait) do
     query = from p in Phos.Action.Orb_Location,
       where: p.location_id == ^geohash,
       join: o in assoc(p, :orbs) ,
@@ -416,4 +424,10 @@ defmodule Phos.Action do
     |> Enum.at(position)
   end
   defp latlong_converter(coordinate, position), do: notion_get_values(coordinate) |> latlong_converter(position)
+
+  def create_personal_orb(attrs \\ %{}) do
+    attrs
+    |> Map.put("traits", ["personal"])
+    |> create_orb()
+  end
 end

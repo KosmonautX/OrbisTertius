@@ -44,5 +44,4 @@ defmodule PhosWeb.Menshen.Plug do
     |> resp(401, "Begone Heathen")
     |> halt()
   end
-
 end
