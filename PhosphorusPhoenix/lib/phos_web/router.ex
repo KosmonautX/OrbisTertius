@@ -58,10 +58,10 @@ defmodule PhosWeb.Router do
       live "/orb/:id/reply/:cid", OrbLive.Show, :reply
       live "/orb/:id/edit/:cid", OrbLive.Show, :edit_comment
 
+      live "/user/feeds", UserFeedLive.Index, :index
+
       live "/user/:username/edit", UserProfileLive.Index, :edit
       live "/user/:username", UserProfileLive.Index, :index
-      live "/user/:user_id", UserProfileLive.Index, :indexid
-
     end
   end
 
@@ -100,6 +100,15 @@ defmodule PhosWeb.Router do
     get "/orbland/comments/root/:id", CommentController, :show_root
     get "/orbland/comments/:id/ancestor/:cid", CommentController, :show_ancestor
 
+
+    get "/freshorbstream", OrbController, :fresh_orb_stream
+
+    scope "/users" do
+      resources "/friends", FriendController, except: [:new, :edit, :show, :update]
+      post "/friends/reject", FriendController, :reject
+      get "/friends/requests", FriendController, :requests
+      get "/friends/pending", FriendController, :pending
+    end
   end
 
   # Other scopes may use custom stacks.

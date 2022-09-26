@@ -18,9 +18,23 @@ defmodule Phos.Action do
       [%Orb{}, ...]
 
   """
-  def list_orbs do
-    Repo.all(Orb)
-    |> Repo.preload([:locations, :initiator])
+  def list_orbs(filters \\ []) do
+    default_query = from o in Orb, preload: [:locations, :initiator], order_by: [desc: o.inserted_at]
+    query = case Kernel.length(filters) do
+      0 -> default_query
+      _ -> advanced_orb_listing(filters, default_query)
+    end
+
+    Repo.all(query)
+  end
+
+  defp advanced_orb_listing(filters, default_query) do
+    case Keyword.get(filters, :initiator_id) do
+      ids when is_list(ids) ->
+        ff =  Keyword.reject(filters, fn {key, _val} -> key == :initiator_id end)
+        from q in default_query, where: q.initiator_id in ^ids, where: ^ff
+      _ -> from q in default_query, where: ^filters
+    end
   end
 
 #   @doc """
@@ -124,8 +138,16 @@ defmodule Phos.Action do
     Repo.all(query, limit: 8)
   end
 
-  def get_orb_by_trait_geo(geohash, trait) do
+  def get_orb_by_trait_geo(geohashes, trait) when is_list(geohashes) do
+    query = from p in Phos.Action.Orb_Location,
+      where: p.location_id in ^geohashes,
+      join: o in assoc(p, :orbs) ,
+      where: fragment("? @> ?", o.traits, ^trait)
 
+    Repo.all(query |> preload(:orbs), limit: 8)
+  end
+
+  def get_orb_by_trait_geo(geohash, trait) do
     query = from p in Phos.Action.Orb_Location,
       where: p.location_id == ^geohash,
       join: o in assoc(p, :orbs) ,
@@ -168,6 +190,20 @@ defmodule Phos.Action do
         |> Orb.changeset(attrs)
         |> Repo.insert()
     end
+    |> case do
+      {:ok, orb} = data ->
+        spawn(fn -> user_feeds_publisher(orb) end)
+        data
+      err -> err
+    end
+  end
+
+  defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
+    Phos.Users.friends(user_id)
+    |> Enum.each(fn user ->
+      spawn(fn -> Phos.Cache.delete({Phos.Users.User, :feeds, user.id}) end)
+      spawn(fn -> Phos.PubSub.publish(orb, {:feeds, "new"}, "userfeed:#{user.id}") end)
+    end)
   end
 
   def create_orb_and_publish(attrs \\ %{})
@@ -388,4 +424,10 @@ defmodule Phos.Action do
     |> Enum.at(position)
   end
   defp latlong_converter(coordinate, position), do: notion_get_values(coordinate) |> latlong_converter(position)
+
+  def create_personal_orb(attrs \\ %{}) do
+    attrs
+    |> Map.put("traits", ["personal"])
+    |> create_orb()
+  end
 end

@@ -1,8 +1,10 @@
 defmodule Phos.Users.User do
   use Ecto.Schema
+
   import Ecto.Changeset
+
   alias Phos.Action.{Orb}
-  alias Phos.Users.{Geohash, User_Public_Profile, Private_Profile, Auth}
+  alias Phos.Users.{User_Public_Profile, Private_Profile, Auth}
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "users" do
@@ -20,6 +22,7 @@ defmodule Phos.Users.User do
     has_many :orbs, Orb, references: :id, foreign_key: :initiator
     has_many :auths, Auth, references: :id, foreign_key: :user_id
 
+    has_one :personal_orb, Orb, references: :id, foreign_key: :initiator_id, where: [traits: ["personal"]]
     has_one :private_profile, Private_Profile, references: :id, foreign_key: :user_id
     embeds_one :public_profile, User_Public_Profile, on_replace: :delete
 
