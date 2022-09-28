@@ -1,6 +1,4 @@
-<!-- livebook:{"persist_outputs":true} -->
-
-# User Interaction
+# Discovery channel
 
 ```elixir
 Mix.install([
@@ -11,13 +9,7 @@ Mix.install([
 ])
 ```
 
-<!-- livebook:{"output":true} -->
-
-```
-:ok
-```
-
-## Socket creation
+## Socket Initiliazation
 
 ```elixir
 defmodule BeluSocket do
@@ -26,7 +18,7 @@ defmodule BeluSocket do
 
   require Logger
 
-  @topic "userfeed:def26dfa-8064-4096-a95e-0caa4c7444b5"
+  @topic "discovery:def26dfa-8064-4096-a95e-0caa4c7444b5"
 
   def start_link(args) do
     Slipstream.start_link(__MODULE__, args, name: __MODULE__)
@@ -36,8 +28,7 @@ defmodule BeluSocket do
   def init(config) do
     case connect(config) do
       {:ok, socket} ->
-        timer = :timer.send_interval(1000, self(), :request_metrics)
-        {:ok, assign(socket, :ping_timer, timer)}
+        {:ok, socket}
 
       {:error, reason} ->
         Logger.error(
@@ -57,16 +48,9 @@ defmodule BeluSocket do
   @impl Slipstream
   def handle_join(@topic, _join_response, socket) do
     # an asynchronous push with no reply:
-    push(socket, @topic, "ping", %{"hello" => "there"})
+    # push(socket, @topic, "ping", %{"hello" => "there"})
 
     {:ok, socket}
-  end
-
-  @impl Slipstream
-  def handle_continue(:start_ping, socket) do
-    timer = :timer.send_interval(1000, self(), :request_metrics)
-
-    {:noreply, assign(socket, :ping_timer, timer)}
   end
 
   @impl Slipstream
@@ -93,8 +77,6 @@ defmodule BeluSocket do
 
   @impl Slipstream
   def handle_disconnect(_reason, socket) do
-    :timer.cancel(socket.assigns.ping_timer)
-
     {:stop, :normal, socket}
   end
 
@@ -116,15 +98,9 @@ defmodule BeluSocket do
 end
 ```
 
-<!-- livebook:{"output":true} -->
-
-```
-{:module, BeluSocket, <<70, 79, 82, 49, 0, 0, 29, ...>>, {:terminate, 2}}
-```
-
 ```elixir
 token =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjQzNDU5MTEsImlhdCI6MTY2NDM0NDY5OSwiaXNzIjoiUHJpbmNldG9uIiwicm9sZSI6InBsZWIiLCJzdWIiOiJTY3JhdGNoQmFjIiwidXNlcl9pZCI6ImRlZjI2ZGZhLTgwNjQtNDA5Ni1hOTVlLTBjYWE0Yzc0NDRiNSJ9.utw-78_NAvEwcO5eRnuQJLplUfqGF10Eck48xFt2-0s"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjQzNTgxODQsImlhdCI6MTY2NDM1Njk3MiwiaXNzIjoiUHJpbmNldG9uIiwicm9sZSI6InBsZWIiLCJzdWIiOiJTY3JhdGNoQmFjIiwidXNlcl9pZCI6ImRlZjI2ZGZhLTgwNjQtNDA5Ni1hOTVlLTBjYWE0Yzc0NDRiNSJ9.qWtUnsPU-RRhRR4LKPhBwD1xGEHYxtlD9njKjmfDS1k"
 
 domain = "ws://localhost:4000"
 
@@ -133,24 +109,10 @@ config = [
   reconnect_after_msec: [200, 500, 1_000, 2_000]
 ]
 
-# {:ok, pid} = BeluSocket.start_link(config)
-{:error, {:already_started, pid}} = BeluSocket.start_link(config)
-```
-
-<!-- livebook:{"output":true} -->
-
-```
-{:error, {:already_started, #PID<0.286.0>}}
+{:ok, pid} = BeluSocket.start_link(config)
+# {:error, {:already_started, pid}} = BeluSocket.start_link(config)
 ```
 
 ```elixir
-Process.alive?(pid)
+Process.exit(pid, :kill)
 ```
-
-<!-- livebook:{"output":true} -->
-
-```
-true
-```
-
-## Section

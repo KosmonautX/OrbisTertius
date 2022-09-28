@@ -729,6 +729,7 @@ defmodule Phos.Users do
     existing_relation(requester_id, acceptor_id)
     |> case do
       nil -> do_insert_friends(params)
+      [] -> do_insert_friends(params)
       _ -> {:error, "Cannot add requested friend"}
     end
   end
