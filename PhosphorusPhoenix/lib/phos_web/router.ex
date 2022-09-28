@@ -60,7 +60,6 @@ defmodule PhosWeb.Router do
 
       live "/user/:username/edit", UserProfileLive.Index, :edit
       live "/user/:username", UserProfileLive.Index, :index
-      live "/user/:user_id", UserProfileLive.Index, :indexid
 
     end
   end
@@ -98,6 +97,7 @@ defmodule PhosWeb.Router do
     resources "/orbland/orbs", OrbController, except: [:new, :edit]
     resources "/orbland/comments", CommentController, except: [:new, :edit]
     get "/orbland/comments/root/:id", CommentController, :show_root
+    get "/orbland/comments/:id/children/:cid", CommentController, :show_children
     get "/orbland/comments/:id/ancestor/:cid", CommentController, :show_ancestor
 
   end

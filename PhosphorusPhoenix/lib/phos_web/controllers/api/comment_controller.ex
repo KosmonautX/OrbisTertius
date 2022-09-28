@@ -53,17 +53,24 @@ defmodule PhosWeb.API.CommentController do
         end
     end
   end
-  # curl -H "Content-Type: application/json" -X POST -d '{"comment": {"id": "51f7a029-2023-4da1-8ff8-7981ac81b7a8", "body": "Hi comment", "path": "51f7a029", "active": "true", "orb_id": "a003b89a-74a5-448a-9b7a-94a4e2324cb3", "initiator_id": "d9476604-f725-4068-9852-1be66a046efd"}}' http://localhost:4000/api/comments
 
   def show(conn, %{"id" => id}) do
     comment = Comments.get_comment!(id)
     render(conn, "show.json", comment: comment)
+
+  end
+
+  # curl -H "Content-Type: application/json" -X POST -d '{"comment": {"id": "51f7a029-2023-4da1-8ff8-7981ac81b7a8", "body": "Hi comment", "path": "51f7a029", "active": "true", "orb_id": "a003b89a-74a5-448a-9b7a-94a4e2324cb3", "initiator_id": "d9476604-f725-4068-9852-1be66a046efd"}}' http://localhost:4000/api/comments
+
+  def show_children(conn, %{"id" => id, "page" => page}) do
+      comments = Comments.get_descendents_comment(id, page)
+      render(conn, "paginated.json", comments: comments)
   end
   # curl -H "Content-Type: application/json" -X GET http://localhost:4000/api/comments/a7bb9551-4561-4bf0-915a-263168bbcc9b
 
-  def show_root(conn, %{"id" => id}) do
-    comments = Comments.get_root_comments_by_orb(id)
-    render(conn, "index.json", comments: comments)
+  def show_root(conn, %{"id" => id, "page" => page}) do
+    comments = Comments.get_root_comments_by_orb(id, page)
+    render(conn, "paginated.json", comments: comments)
   end
   # curl -H "Content-Type: application/json" -X GET http://localhost:4000/api/orbs/aa3609f6-a988-44c2-b9fa-67d8729639f7/root
 

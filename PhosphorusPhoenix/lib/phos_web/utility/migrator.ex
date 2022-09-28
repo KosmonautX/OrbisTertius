@@ -40,6 +40,8 @@ defmodule PhosWeb.Util.Migrator do
     end)
   end
 
+  ## TODO Tie together to Auth
+
   defp insert_or_update_user(%{"kind" => "identitytoolkit#GetAccountInfoResponse", "users" => user_info }) do
     data = List.first(user_info)
     Multi.new()

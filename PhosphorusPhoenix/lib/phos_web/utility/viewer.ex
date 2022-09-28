@@ -5,6 +5,22 @@ defmodule PhosWeb.Util.Viewer do
   For our Viewer Helper function that moulds data Models into Views
 
   """
+
+  # Relationship Mapper
+  def relationship_mapper(orb) do
+    (if orb.initiator && Ecto.assoc_loaded?(orb.initiator) do
+      %{initiator:
+        %{data: %{username: orb.initiator.username,
+                  media: orb.initiator.media,
+                  media_asset: (if orb.initiator.media && orb.initiator.fyr_id, do: Phos.Orbject.S3.get!("USR", orb.initiator.fyr_id, "150x150")),
+                  user_id: orb.initiator.id
+                 },
+          links: %{self: PhosWeb.Router.Helpers.user_profile_path(%URI{}, :show, orb.initiator.id)}
+        }
+      }
+    end)
+  end
+
   # Orb Mapper
   def orb_orb_mapper(orbs) do
     Enum.map(orbs, fn orb ->
@@ -35,7 +51,7 @@ defmodule PhosWeb.Util.Viewer do
         }
       }
     end)
-  end
+   end
 
   def post_orb_mapper(orbs) do
     Enum.map(orbs, fn orb ->

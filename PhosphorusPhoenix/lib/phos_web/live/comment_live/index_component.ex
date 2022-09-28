@@ -2,12 +2,6 @@ defmodule PhosWeb.CommentLive.IndexComponent do
   use PhosWeb, :live_component
 
   alias Phoenix.LiveView.JS
-  alias Phos.Users
-  alias Phos.Action
-  alias Phos.Action.Orb
-  alias Phos.PubSub
-  alias Phos.Comments
-  alias PhosWeb.Util.Viewer
 
   @impl true
   def mount(_params, _session, socket) do
@@ -65,13 +59,13 @@ defmodule PhosWeb.CommentLive.IndexComponent do
 
                 <%= if elem(@comment, 1).child_count > 0 do %>
                   <div id={"showreply-#{elem(@comment, 1).id}"} style="display: none">
-                    <a href="#" phx-click={JS.push("toggle_more_replies") |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}") |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}") |> JS.toggle(to: "#showreply-#{elem(@comment, 1).id}") |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")}, phx-value-initmorecomments="false", phx-value-orb={@orb.id}, phx-value-path={to_string(elem(@comment, 1).path)}>Show replies</a>
+                    <a href="#" phx-click={JS.push("toggle_more_replies") |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}") |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}") |> JS.toggle(to: "#showreply-#{elem(@comment, 1).id}") |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")}, phx-value-initmorecomments="false", phx-value-orb={@orb.id}, phx-value-path={to_string(elem(@comment, 1).path)}>Show replies [<%= elem(@comment, 1).child_count %>]</a>
                   </div>
                   <div id={"hidereply-#{elem(@comment, 1).id}"} style="display: none">
-                    <a href="#" phx-click={JS.push("toggle_more_replies") |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}") |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}") |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}") |> JS.toggle(to: "#showreply-#{elem(@comment, 1).id}")}, phx-value-initmorecomments="false", phx-value-orb={@orb.id}, phx-value-path={to_string(elem(@comment, 1).path)}>Hide replies</a>
+                    <a href="#" phx-click={JS.push("toggle_more_replies") |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}") |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}") |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}") |> JS.toggle(to: "#showreply-#{elem(@comment, 1).id}")}, phx-value-initmorecomments="false", phx-value-orb={@orb.id}, phx-value-path={to_string(elem(@comment, 1).path)}>Hide replies  [<%= elem(@comment, 1).child_count %>]</a>
                   </div>
                   <div id={"initshowreply-#{elem(@comment, 1).id}"} >
-                    <a href="#" phx-click={JS.push("toggle_more_replies") |> JS.toggle(to: "#initshowreply-#{elem(@comment, 1).id}") |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")}, phx-value-initmorecomments="true", phx-value-orb={@orb.id}, phx-value-path={to_string(elem(@comment, 1).path)}>Show replies</a>
+                    <a href="#" phx-click={JS.push("toggle_more_replies") |> JS.toggle(to: "#initshowreply-#{elem(@comment, 1).id}") |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")}, phx-value-initmorecomments="true", phx-value-orb={@orb.id}, phx-value-path={to_string(elem(@comment, 1).path)}>Show replies [<%= elem(@comment, 1).child_count %>]</a>
                   </div>
                 <% end %>
           </div>
