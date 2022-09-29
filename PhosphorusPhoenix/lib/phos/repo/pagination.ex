@@ -34,7 +34,7 @@ defmodule Phos.Repo.Paginated do
       data: dao, # remove last element
       meta: %{
       pagination: %{
-        downstream: true,
+        downstream: false,
         upstream: page > 1,
         current: page,
         start: (page - 1) * limit + 1 ,
