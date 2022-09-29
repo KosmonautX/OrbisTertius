@@ -70,7 +70,7 @@ defmodule PhosWeb.CommentControllerTest do
       second_level_comment = comment_fixture(%{orb_id: orb.id, body: "second_level_comment", initiator_id: user.id, parent_id: root_comment.id, parent_path: to_string(root_comment.path)})
       third_level_comment = comment_fixture(%{orb_id: orb.id, body: "third_level_comment", initiator_id: user.id, parent_id: second_level_comment.id, parent_path: to_string(second_level_comment.path)})
 
-      conn = get(conn, Routes.comment_path(conn, :show_ancestor, orb, third_level_comment))
+      conn = get(conn, Routes.comment_path(conn, :show_ancestor, third_level_comment))
 
       assert [%{
         "body" => "root_comment",
