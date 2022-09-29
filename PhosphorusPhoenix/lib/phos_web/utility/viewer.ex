@@ -15,7 +15,7 @@ defmodule PhosWeb.Util.Viewer do
                   media_asset: (if orb.initiator.media && orb.initiator.fyr_id, do: Phos.Orbject.S3.get!("USR", orb.initiator.fyr_id, "150x150")),
                   user_id: orb.initiator.id
                  },
-          links: %{self: PhosWeb.Router.Helpers.user_profile_path(%URI{}, :show, orb.initiator.id)}
+          links: %{self: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, orb.initiator.id)}
         }
       }
     end)

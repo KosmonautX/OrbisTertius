@@ -109,7 +109,7 @@ defmodule Phos.Comments do
       ),
       select_merge: %{child_count: sc.count}
 
-    Repo.Paginated.all(query, page, limit, sort_attribute)
+    Repo.Paginated.all(query, page, sort_attribute, limit)
   end
 
   def get_root_comments_by_orb(id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
@@ -126,8 +126,7 @@ defmodule Phos.Comments do
       ),
       select_merge: %{child_count: sc.count}
 
-    Repo.Paginated.all(query, page, limit, sort_attribute)
-
+    Repo.Paginated.all(query, page, sort_attribute, limit)
   end
 
 

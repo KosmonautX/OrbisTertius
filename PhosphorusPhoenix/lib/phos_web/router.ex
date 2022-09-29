@@ -91,14 +91,17 @@ defmodule PhosWeb.Router do
   scope "/api", PhosWeb.API do
     pipe_through [:api, :authorize_user]
 
-    resources "/userland/users", UserController, except: [:new, :edit]
-    resources "/userland/profile", UserProfileController, except: [:new, :edit]
+    resources "/userland/private", UserProfileController, except: [:new, :edit]
+    get "/userland/profile", UserProfileController, :show_profile
+
+    #get "/folkland/chronicle", FolkController, :show_history
+    #get "/folkland/constellation", FolkController, :show_connections
 
     resources "/orbland/orbs", OrbController, except: [:new, :edit]
     resources "/orbland/comments", CommentController, except: [:new, :edit]
     get "/orbland/comments/root/:id", CommentController, :show_root
-    get "/orbland/comments/:id/children/:cid", CommentController, :show_children
-    get "/orbland/comments/:id/ancestor/:cid", CommentController, :show_ancestor
+    get "/orbland/comments/children/:id", CommentController, :show_children
+    get "/orbland/comments/ancestor/:id", CommentController, :show_ancestor
 
   end
 

@@ -20,6 +20,7 @@ GET :ipAddress/devland/flameon?user=random
 ## Generate Google Identity idToken for Firebase Auth
 GET :ipAddress/devland/lankaonfyr?fyr_id=BX1BxM9KkwdFmy2J4FNNkFxclpS2
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
+
 ## Userland Calls
 ## Translate Firebase Token to Client-side JWT
 GET :ipAddress/userland/auth/fyr?fyr=:fyr_token
@@ -82,15 +83,15 @@ POST :ipAddress/orbland/comments/
 "body": "I Have a secret comment"
 }
 ## Show Root Comments for ORB
-GET :ipAddress/orbland/comments/root/:orb&page=1
+GET :ipAddress/orbland/comments/root/:orb?page=1
 :auth-headers
 
 ## Show Ancestors Comment
 GET :ipAddress/orbland/comments/:orb/ancestor/:commie
 :auth-headers
 
-## Show Ancestors Comment
-GET :ipAddress/orbland/comments/:orb/children/:commie
+## Show Childrens Comment
+GET :ipAddress/orbland/comments/children/:commie?page=1
 :auth-headers
 ## Delete Comment
 DELETE :ipAddress/orbland/comments/4f0e37a2-abab-46e8-aeb1-d4520255bf21

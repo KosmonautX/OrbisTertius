@@ -66,17 +66,28 @@ defmodule PhosWeb.API.CommentController do
       comments = Comments.get_descendents_comment(id, page)
       render(conn, "paginated.json", comments: comments)
   end
+
+  def show_children(conn, %{"id" => id}) do
+      comments = Comments.get_descendents_comment(id, 1)
+      render(conn, "paginated.json", comments: comments)
+  end
   # curl -H "Content-Type: application/json" -X GET http://localhost:4000/api/comments/a7bb9551-4561-4bf0-915a-263168bbcc9b
 
   def show_root(conn, %{"id" => id, "page" => page}) do
     comments = Comments.get_root_comments_by_orb(id, page)
+    IO.inspect comments
     render(conn, "paginated.json", comments: comments)
+  end
+
+  def show_root(conn, %{"id" => id}) do
+    comments = Comments.get_root_comments_by_orb(id)
+    render(conn, "index.json", comments: comments)
   end
   # curl -H "Content-Type: application/json" -X GET http://localhost:4000/api/orbs/aa3609f6-a988-44c2-b9fa-67d8729639f7/root
 
-  def show_ancestor(conn, %{"id" => orb_id, "cid" => cid}) do
-    comment = Comments.get_comment!(cid)
-    comments = Comments.get_ancestor_comments_by_orb(orb_id, to_string(comment.path))
+  def show_ancestor(conn, %{"id" => id}) do
+    comment = Comments.get_comment!(id)
+    comments = Comments.get_ancestor_comments_by_orb(comment.orb_id, to_string(comment.path))
     render(conn, "index.json", comments: comments)
   end
 
