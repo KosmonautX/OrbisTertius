@@ -138,23 +138,21 @@ defmodule Phos.Action do
     Repo.all(query, limit: 8)
   end
 
-  def get_orb_by_trait_geo(geohashes, trait) when is_list(geohashes) do
+  def get_orb_by_trait_geo(geohashes, traits, options \\ [])
+  def get_orb_by_trait_geo(geohashes, trait, options) when is_list(geohashes) do
+    limit =  Keyword.get(options, :limit, 8)
+    offset = Keyword.get(options, :offset, 0)
     query = from p in Phos.Action.Orb_Location,
+      preload: [:orbs],
       where: p.location_id in ^geohashes,
       join: o in assoc(p, :orbs) ,
-      where: fragment("? @> ?", o.traits, ^trait)
+      where: fragment("? @> ?", o.traits, ^trait),
+      limit: ^limit,
+      offset: ^offset
 
-    Repo.all(query |> preload(:orbs), limit: 8)
+    Repo.all(query)
   end
-
-  def get_orb_by_trait_geo(geohash, trait) do
-    query = from p in Phos.Action.Orb_Location,
-      where: p.location_id == ^geohash,
-      join: o in assoc(p, :orbs) ,
-      where: fragment("? @> ?", o.traits, ^trait)
-
-    Repo.all(query |> preload(:orbs), limit: 8)
-  end
+  def get_orb_by_trait_geo(geohash, trait, options), do: get_orb_by_trait_geo(geohash, [trait], options)
 
 #   @doc """
 #   Creates a orb.

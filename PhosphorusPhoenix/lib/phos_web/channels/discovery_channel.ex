@@ -20,16 +20,28 @@ defmodule PhosWeb.DiscoveryChannel do
     {:noreply, assign(socket, :orbs, orbs)}
   end
 
+  def handle_in("unsubscribe", %{"name" => name, "locations" => locs}, %{assigns: %{locations: locations}} = socket) do
+    case Map.get(locations, name) do
+      nil -> {:noreply, socket}
+      locs ->
+        location_unsubscribe(locs)
+        {:noreply, assign(socket, :locations, Map.delete(locations, name))}
+    end
+  end
+
   def handle_in("location_update", %{"name" => name, "geohash" => hash}, %{assigns: %{locations: locations}} = socket) when name in @location_type do
     geos = Enum.map(@visibility, fn res -> :h3.parent(hash, res) end)
     case Map.get(locations, name) do
-      nil -> assign(socket, :locations, Map.put(locations, name, geos))
-      _ -> assign(socket, :locations, %{locations | name => geos})
+      nil -> {:noreply, assign(socket, :locations, Map.put(locations, name, geos))}
+      locs ->
+        location_unsubscribe(locs)
+        {:noreply, assign(socket, :locations, %{locations | name => geos})}
     end
   end
 
   def handle_info(:geoinitiation, %{assigns: %{current_user: user, locations: locations}} = socket) do
     {discoveries, addresses} = geolocation_decider(user, locations)
+    Enum.each(addresses, fn {_k, vals} -> location_subscribe(vals) end)
     {:noreply, assign(socket, orbs: discoveries, locations: addresses)}
   end
 
@@ -66,4 +78,12 @@ defmodule PhosWeb.DiscoveryChannel do
       {to_string(id), Enum.map(@visibility, fn res -> :h3.parent(geohash, res) end)}
     end
   end
+
+  defp location_unsubscribe(location) when is_number(location), do: Phos.PubSub.unsubscribe(topic(location))
+  defp location_unsubscribe(locations) when is_list(locations), do: Enum.each(locations, &location_unsubscribe/1)
+
+  defp location_subscribe(location) when is_number(location), do: Phos.PubSub.subscribe(topic(location))
+  defp location_subscribe(locations) when is_list(locations), do: Enum.each(locations, &location_subscribe/1)
+
+  defp topic(hash), do: "DISCOVERY.#{hash}"
 end

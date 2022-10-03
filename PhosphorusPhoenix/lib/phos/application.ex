@@ -23,7 +23,8 @@ defmodule Phos.Application do
 
       {Cluster.Supervisor, [topologies, [name: Phos.ClusterSupervisor]]},
       # Start the Firbase Cloud Messaging Dispatcher
-      Phos.Fyr.Message
+      # Phos.Fyr.Message
+      Phos.Notification,
       #restart: :temporary supervisor strategy?
       # Start a worker by calling: Phos.Worker.start_link(arg)
       # {Phos.Worker, arg}
