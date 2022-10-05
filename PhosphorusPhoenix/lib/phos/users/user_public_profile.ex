@@ -1,4 +1,4 @@
-defmodule Phos.Users.User_Public_Profile do
+defmodule Phos.Users.Public_Profile do
   use Ecto.Schema
   import Ecto.Changeset
   alias Phos.Users.{User}
@@ -10,7 +10,6 @@ defmodule Phos.Users.User_Public_Profile do
     field :occupation, :string
     field :honorific, :string
     field :traits, {:array, :string}
-
   end
 
   @doc false

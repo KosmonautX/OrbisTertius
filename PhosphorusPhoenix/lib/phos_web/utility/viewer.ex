@@ -21,6 +21,30 @@ defmodule PhosWeb.Util.Viewer do
     end)
   end
 
+  # User Mapper
+  #
+  def user_profile_mapper(user) do
+    (if user.private_profile && Ecto.assoc_loaded?(user.private_profile) do
+      %{private:
+        %{data: %{geolocation: user.private_profile.geolocation}
+        },
+        public: user_public_mapper(user)
+      }
+    end)
+  end
+
+  def user_public_mapper(user) do
+    (if user.public_profile && Ecto.assoc_loaded?(user.public_profile) do
+        %{data: %{birthday: user.public_profile.birthday,
+                  occupation: user.public_profile.occupation,
+                  traits: user.public_profile.traits,
+                  bio: user.public_profile.bio
+                 },
+          links: %{self: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, user.id)}
+        }
+    end)
+  end
+
   # Orb Mapper
   def orb_orb_mapper(orbs) do
     Enum.map(orbs, fn orb ->

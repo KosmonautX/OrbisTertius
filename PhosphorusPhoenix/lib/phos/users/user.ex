@@ -2,7 +2,7 @@ defmodule Phos.Users.User do
   use Ecto.Schema
   import Ecto.Changeset
   alias Phos.Action.{Orb}
-  alias Phos.Users.{Geohash, User_Public_Profile, Private_Profile, Auth}
+  alias Phos.Users.{Public_Profile, Private_Profile, Auth}
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "users" do
@@ -21,7 +21,7 @@ defmodule Phos.Users.User do
     has_many :auths, Auth, references: :id, foreign_key: :user_id
 
     has_one :private_profile, Private_Profile, references: :id, foreign_key: :user_id
-    embeds_one :public_profile, User_Public_Profile, on_replace: :delete
+    embeds_one :public_profile, Public_Profile, on_replace: :delete
 
     timestamps()
   end
@@ -30,6 +30,15 @@ defmodule Phos.Users.User do
   def changeset(%Phos.Users.User{} = user, attrs) do
     user
     |> cast(attrs, [:username, :media, :profile_pic, :email, :fyr_id])
+    #|> validate_required(:email)
+    |> cast_embed(:public_profile)
+    |> cast_assoc(:private_profile)
+    |> unique_constraint(:username, name: :unique_username)
+  end
+
+  def personal_changeset(%Phos.Users.User{} = user, attrs) do
+    user
+    |> cast(attrs, [:username, :media, :profile_pic])
     #|> validate_required(:email)
     |> cast_embed(:public_profile)
     |> cast_assoc(:private_profile)

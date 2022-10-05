@@ -91,7 +91,8 @@ defmodule PhosWeb.Router do
   scope "/api", PhosWeb.API do
     pipe_through [:api, :authorize_user]
 
-    resources "/userland/private", UserProfileController, except: [:new, :edit]
+    get "/userland/self", UserProfileController, :show_self
+    put "/userland/self", UserProfileController, :update_self
     get "/userland/profile", UserProfileController, :show_profile
 
     #get "/folkland/chronicle", FolkController, :show_history

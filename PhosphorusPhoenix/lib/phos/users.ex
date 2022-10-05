@@ -6,9 +6,8 @@ defmodule Phos.Users do
   import Ecto.Query, warn: false
   alias Phos.Repo
   alias Phos.Users
-  alias Phos.Users.{User, User_Public_Profile, Private_Profile, Auth}
+  alias Phos.Users.{User, Public_Profile, Private_Profile, Auth}
 
-  alias Ecto.Multi
 
   @doc """
   Returns the list of users.
@@ -145,7 +144,7 @@ defmodule Phos.Users do
 #   """
   def update_user(%User{} = user, attrs) do
     user
-    |> User.changeset(attrs)
+    |> User.personal_changeset(attrs)
     |> Repo.update()
   end
 
@@ -193,8 +192,8 @@ defmodule Phos.Users do
     User.changeset(user, attrs)
   end
 
-  def change_user_profile(%Users.User_Public_Profile{} = user_profile, attrs \\ %{}) do
-    User_Public_Profile.changeset(user_profile, attrs)
+  def change_user_profile(%Users.Public_Profile{} = user_profile, attrs \\ %{}) do
+    Public_Profile.changeset(user_profile, attrs)
   end
 
   @doc """
@@ -301,7 +300,7 @@ defmodule Phos.Users do
       ** (Ecto.NoResultsError)
 
   """
-  def get_user!(id), do: Repo.get!(User, id)
+  def get_user!(id), do: Repo.get!(User, id) |> Repo.preload([:private_profile])
 
   ## User registration
 

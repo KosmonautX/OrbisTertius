@@ -23,30 +23,53 @@ defmodule Phos.Orbject.S3 do
   def get(path) do
     signer(:get, path)
   end
+
+
   def get(archetype, uuid, form) do
-    path = archetype <> "/" <> uuid <> "/" <> form
-    signer(:get, path)
+    signer(:get, path_constructor(archetype, uuid, form))
   end
 
   def get!(archetype, uuid, form) do
-    path = archetype <> "/" <> uuid <> "/" <> form
-    {:ok, url} = signer(:get, path)
-    url
+    signer!(:get, path_constructor(archetype, uuid, form))
   end
 
   def put(archetype, uuid, form) do
-    path = archetype <> "/" <> uuid <> "/" <> form
-    signer(:put, path)
+    signer(:put, path_constructor(archetype, uuid, form))
   end
 
   def put!(archetype, uuid, form) do
-    path = archetype <> "/" <> uuid <> "/" <> form
-    {:ok, url} = signer(:put, path)
+    signer!(:put, path_constructor(archetype, uuid, form))
+  end
+
+
+  def get_all(archetype, uuid, form \\ "") do
+    path = path_constructor(archetype, uuid, form)
+    with {:ok, response} <- ExAws.S3.list_objects_v2("orbistertius", prefix: path, encoding_type: "url") |> ExAws.request(),
+         true <- response.status_code >= 200 and response.status_code < 300,
+           addresses <- (for obj <- response.body.contents, into: %{} do
+                                  {path_suffix(obj.key, path), signer!(:get,obj.key)} end) do
+      {:ok, addresses}
+    else
+      {:error, err} -> {:error, err}
+    end
+  end
+
+  def get_all!(archetype, uuid, form \\ "") do
+    with {:ok, address} <- Phos.Orbject.S3.get_all(archetype, uuid, form) do
+      address
+    else
+      {:error, err} -> nil #TODO better error parsing
+    end
+  end
+
+
+  defp signer!(action, path) do
+    {:ok, url} = signer(action, path)
     url
   end
 
-  defp signer(action, path) do
 
+  defp signer(action, path) do
     config = %{
       region: "ap-southeast-1",
       bucket: "orbistertius",
@@ -57,8 +80,16 @@ defmodule Phos.Orbject.S3 do
     ExAws.Config.new(:s3, config) |>
       ExAws.S3.presigned_url(action, config.bucket, path,
         [expires_in: 888, virtual_host: false, query_params: [{"ContentType", "application/octet-stream"}]])
-
   end
 
+  defp path_constructor(archetype, uuid, form) do
+    "#{archetype}/#{uuid}/#{form}"
+  end
 
-end
+  defp path_suffix(full, prefix) do
+    base = byte_size(prefix)
+    <<_::binary-size(base), rest::binary>> = full
+    rest
+  end
+
+ end

@@ -13,5 +13,6 @@ defmodule Phos.Users.Geolocation do
   def changeset(orb, attrs) do
     orb
     |> cast(attrs, [:id, :location_description, :geohash, :chronolock])
+    |> validate_required([:id, :geohash])
   end
 end

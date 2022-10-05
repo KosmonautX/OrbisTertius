@@ -2,6 +2,7 @@
 # Phos API Endpoint Documentation
 
 :ipAddress = http://localhost:4000/api
+:fyr_user=BX1BxM9KkwdFmy2J4FNNkFxclpS2
 :lky=58fd1656-495e-4ab0-bd12-425aa31791c7
 :auth-headers = <<
 Authorization: :token
@@ -18,7 +19,7 @@ GET :ipAddress/devland/flameon?user=random
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
-GET :ipAddress/devland/lankaonfyr?fyr_id=BX1BxM9KkwdFmy2J4FNNkFxclpS2
+GET :ipAddress/devland/lankaonfyr?fyr_id=:fyr_user
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 ## Userland Calls
@@ -32,6 +33,15 @@ POST :ipAddress/userland/auth/fyr/genesis
 :headers
 {
 "fyr": ":fyr_token"
+}
+## Read userdata of self
+GET :ipAddress/userland/self/
+:auth-headers
+## Update userdata of self
+POST :ipAddress/userland/self/
+:auth-headers
+{
+"body": "alberto robotos"
 }
 ### ORBs API
 ## Read Orb
