@@ -9,6 +9,8 @@ defmodule Phos.Users.Private_Profile do
 
     belongs_to :users, User, foreign_key: :user_id, primary_key: true, define_field: false
 
+    field :user_token, :string
+
     timestamps()
   end
 

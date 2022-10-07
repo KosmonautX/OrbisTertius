@@ -1,4 +1,7 @@
-@import "./phoenix.css";
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
 
 /* This file is for your main application CSS */
 
@@ -119,4 +122,5 @@
   0% { opacity: 1; }
   100% { opacity: 0; }
 }
+
 

@@ -1,35 +1,15 @@
-defmodule Phos.Notification.Subcriber do
+defmodule Phos.Notification.Subscriber do
   require Logger
 
   use GenServer, restart: :permanent
 
   def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts, name: {:global, __MODULE__})
+    GenServer.start_link(__MODULE__, opts)
   end
 
   @impl true
   def init(_opts) do
     {:ok, []}
-  end
-
-  def subscribe(token, topic) when is_bitstring(token), do: subscribe([token], topic)
-  def subscribe(tokens, topic) do
-    GenServer.cast({:global, __MODULE__}, {:subscribe, tokens, topic})
-  end
-
-  def unsubscribe(token, topic) when is_bitstring(token), do: unsubscribe([token], topic)
-  def unsubscribe(tokens, topic) when is_list(tokens) do
-    GenServer.cast({:global, __MODULE__}, {:unsubcribe, tokens, topic})
-  end
-
-  def push(token, notification) when is_bitstring(token), do: push([token], notification)
-  def push(tokens, notification) when is_list(tokens) do
-    GenServer.call({:global, __MODULE__}, {:push, tokens, notification})
-  end
-
-  def push(token, notification, data) when is_bitstring(token), do: push([token], notification, data)
-  def push(tokens, notification, data) when is_list(tokens) do
-    GenServer.call({:global, __MODULE__}, {:push, tokens, notification, data})
   end
 
   @impl true
@@ -50,17 +30,38 @@ defmodule Phos.Notification.Subcriber do
 
   @impl true
   def handle_call({:push, tokens, notification}, _from, state) do
-    case Fcmex.push(tokens, notification: notification) do
-      [ok: body] -> {:reply, body, state}
-      [err: err] -> {:reply, {:error, err}, state}
-    end
+    result =
+      Fcmex.push(tokens, notification: notification)
+      |> Enum.reduce(%{succeeded: 0, failed: 0}, fn x, %{succeeded: suc, failed: fail} = acc ->
+        case elem(x, 0) do
+          :ok ->
+            res = elem(x, 1)
+            %{acc | succeeded: suc + Map.get(res, "success", 1), failed: fail + Map.get(res, "failure", 1)}
+          _ -> %{acc | failed: fail + Map.get(elem(x, 1), "failure", 1)}
+        end
+      end)
+
+    {:reply, result, state}
   end
 
   @impl true
   def handle_call({:push, tokens, notification, data}, _from, state) do
-    case Fcmex.push(tokens, notification: notification, data: data) do
-      [ok: body] -> {:reply, body, state}
-      [err: err] -> {:reply, {:error, err}, state}
-    end
+    result =
+      Fcmex.push(tokens, notification: notification, data: data)
+      |> Enum.reduce(%{succeeded: 0, failed: 0}, fn x, %{succeeded: suc, failed: fail} = acc ->
+        case elem(x, 0) do
+          :ok -> %{acc | succeeded: suc + Map.get(x, "success", 1)}
+          _ -> %{acc | failed: fail + Map.get(x, "failure", 1)}
+        end
+      end)
+
+    {:reply, result, state}
+  end
+end
+
+defimpl Jason.Encoder, for: Fcmex.Payload do
+  def encode(value, opts) do
+    Map.take(value, [:notification, :registration_ids])
+    |> Jason.Encode.map(opts)
   end
 end

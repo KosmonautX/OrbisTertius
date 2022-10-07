@@ -428,4 +428,10 @@ defmodule Phos.Action do
     |> Map.put("traits", ["personal"])
     |> create_orb()
   end
+
+  def subscibe_to_orb(%Orb{id: id} = _orb, %Phos.Users.User{} = user) do
+    topic = "ORB.#{id}"
+    token = Map.get(user, :private_profile, %{}) |> Map.get(:user_token)
+    Phos.Notification.subscribe(token, topic)
+  end
 end

@@ -831,4 +831,32 @@ defmodule Phos.Users do
   end
 
   defp do_get_feeds(friend_ids), do: Phos.Action.list_orbs([initiator_id: friend_ids])
+
+  def push_notification(%User{private_profile: %{user_token: token}} = _user, notification), do: push_notification(token, notification)
+  def push_notification(token, notification) when is_bitstring(token) do
+    Phos.Notification.push(token, notification)
+  end
+
+  def push_notification(%User{private_profile: %{user_token: token}} = _user, notification, data), do: push_notification(token, notification, data)
+  def push_notification(token, notification, data) when is_bitstring(token) do
+    Phos.Notification.push(token, notification, data)
+  end
+
+  def subscribe_to_user(%User{private_profile: %{user_token: token}} = _actor, %User{id: id} = _subscriber) do
+    topic = "USR.#{id}"
+    Phos.Notification.subscribe(token, topic)
+  end
+  def unsubscribe_to_user(%User{private_profile: %{user_token: token}} = _actor, %User{id: id} = _subscriber) do
+    topic = "USR.#{id}"
+    Phos.Notification.unsubscribe(token, topic)
+  end
+
+  def subscribe_to_user_friend(%User{private_profile: %{user_token: token}} = _actor, %User{id: id} = _subscriber) do
+    topic = "USR.#{id}.friends"
+    Phos.Notification.subscribe(token, topic)
+  end
+  def unsubscribe_to_user_friend(%User{private_profile: %{user_token: token}} = _actor, %User{id: id} = _subscriber) do
+    topic = "USR.#{id}.friends"
+    Phos.Notification.unsubscribe(token, topic)
+  end
 end
