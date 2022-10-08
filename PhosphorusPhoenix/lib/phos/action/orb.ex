@@ -29,7 +29,7 @@ defmodule Phos.Action.Orb do
     orb
       |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])
       |> cast_embed(:payload)
-      |> validate_required([:title, :active, :media, :extinguish])
+      |> validate_required([:id, :title, :active, :media, :extinguish])
       # |> validate_media()
   end
 
@@ -42,6 +42,14 @@ defmodule Phos.Action.Orb do
     user
     |> cast(attrs, [:title, :active, :media, :extinguish, :traits])
     |> cast_embed(:payload)
+  end
+
+  def personal_changeset(%Orb{} = orb, attrs) do
+    orb
+      |> cast(attrs, [:id, :active, :traits])
+      |> cast_embed(:payload)
+      |> validate_required([:id, :active])
+      |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 
   def territorial_changeset(struct, params \\ %{}) do

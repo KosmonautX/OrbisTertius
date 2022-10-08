@@ -1,6 +1,7 @@
 defmodule Phos.Users.Geolocation do
   use Ecto.Schema
   import Ecto.Changeset
+  @derive Jason.Encoder
 
   @primary_key{:id, :string, autogenerate: false}
   embedded_schema do

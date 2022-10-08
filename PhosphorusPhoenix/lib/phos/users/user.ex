@@ -43,7 +43,7 @@ defmodule Phos.Users.User do
     |> cast(attrs, [:username, :media, :profile_pic])
     #|> validate_required(:email)
     |> cast_embed(:public_profile)
-    |> cast_assoc(:personal_orb) #maybe subchangeset
+    |> cast_assoc(:personal_orb, with: &Orb.personal_changeset/2)
     |> unique_constraint(:username, name: :unique_username)
   end
 

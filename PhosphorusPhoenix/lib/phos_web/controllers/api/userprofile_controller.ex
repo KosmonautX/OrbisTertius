@@ -41,11 +41,11 @@ defmodule PhosWeb.API.UserProfileController do
       "public_profile" => %{"birthday" => params["birthday"] |> DateTime.from_unix!() |> DateTime.to_naive(),
                            "bio" => params["bio"],
                            "public_name" => params["public_name"],
-                           "occupation" => params["occupation"]},
+                           "occupation" => params["occupation"]} |> purge_nil(),
       "personal_orb" => %{"id" => user.id,
                           "initiator_id" => user.id,
-                          "traits" => ["personal" | params["traits"]]}
-    }
+                          "traits" => (if is_list(params["traits"]), do: ["personal" | params["traits"]])}
+    } |> purge_nil()
   end
 
 
@@ -82,5 +82,7 @@ defmodule PhosWeb.API.UserProfileController do
       }
     }
   end
+
+  defp purge_nil(map), do: map |> Enum.reject(fn {_, v} -> is_nil(v) end) |> Map.new()
 
 end

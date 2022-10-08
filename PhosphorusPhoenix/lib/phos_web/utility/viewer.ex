@@ -37,7 +37,6 @@ defmodule PhosWeb.Util.Viewer do
     (if user.public_profile && Ecto.assoc_loaded?(user.public_profile) do
         %{data: %{birthday: user.public_profile.birthday,
                   occupation: user.public_profile.occupation,
-                  traits: user.public_profile.traits,
                   bio: user.public_profile.bio
                  },
           links: %{self: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, user.id)}

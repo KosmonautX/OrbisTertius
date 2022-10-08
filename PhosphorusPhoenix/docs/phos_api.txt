@@ -15,7 +15,7 @@ Content-Type: application/json
 User-Agent: Emacs27
 ##
 ## Generate Client-side JWT
-GET :ipAddress/devland/flameon?user=random
+fpGET :ipAddress/devland/flameon?user=random
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
@@ -43,10 +43,22 @@ PUT :ipAddress/userland/self/
 :auth-headers
 {
 
-    "body": "alberto robotos"
+    "bio": "alberto robotos",
+    "username": "aang",
+    "public_name": "Albert the Robot",
+    "birthday": 16123442423,
+    "traits": ["jesus", "nodejs"],
+    "occupation": "bloatwarengingeer"
 
 }
+## Update territorial data of self
+PUT :ipAddress/userland/self/territory
+:auth-headers
+[
+    %{"id" => "home", "geohash" => 623276216934563839, "location_description" => "ba sing se"},
+    %{"id" => "work", "geohash" => 623276216934563839}
 
+]
 
 ### ! ORBs API
 ## Read Orb
