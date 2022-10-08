@@ -6,13 +6,14 @@ defmodule PhosWeb.Menshen.Plug do
 
   @spec authorize_user(Plug.Conn.t(), any) :: Plug.Conn.t()
   def authorize_user(conn, _opts) do
-    jwt = get_req_header(conn, "authorization")
-    case Auth.validate_user(List.first(jwt)) do
-      {:ok , claims} ->
-        conn |> shallPass(claims)
-      { :error, _error } ->
-        conn |> shallNotPass
+    with [jwt | _tail] <- get_req_header(conn, "authorization"),
+         {:ok , claims} <- Auth.validate_user(jwt) do
+      conn |> shallPass(claims)
+      else
+        _ -> conn |> shallNotPass
     end
+
+    
   end
 
   defp shallPass(conn, %Phos.Users.User{} = user), do: assign(conn, :current_user, user)

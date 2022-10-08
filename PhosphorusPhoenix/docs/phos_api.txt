@@ -40,7 +40,7 @@ GET :ipAddress/userland/self/
 :auth-headers
 ## Update userdata of self
 PUT :ipAddress/userland/self/
-:auth-headers
+:headers
 {
 
     "bio": "alberto robotos",
