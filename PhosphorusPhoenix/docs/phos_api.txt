@@ -38,10 +38,11 @@ POST :ipAddress/userland/auth/fyr/genesis
 GET :ipAddress/userland/self/
 :auth-headers
 ## Update userdata of self
-POST :ipAddress/userland/self/
+PUT :ipAddress/userland/self/
 :auth-headers
 {
-"body": "alberto robotos"
+"username": "printon",
+"public_profile": {"bio": "wow", "traits": ["cabbage"]}
 }
 ### ORBs API
 ## Read Orb

@@ -33,7 +33,7 @@ defmodule PhosWeb.API.OrbController do
 
 # Bulk Insert
 # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -d '{"geohash": [623275816647884799, 623275816649424895, 623275816649293823, 623275816647753727, 623275816647688191, 623275816647819263, 623275816648835071], "title": "toa payoh orb3", "active": "true", "media": "false", "expires_in": "10000"}' -X POST 'http://localhost:4000/api/orbs'
-  def create(conn, orb_params) do
+  def create(conn = %{assigns: %{current_user: %{id: user_id}}}, orb_params) do
     orb_params =
     case orb_params do
       # Normal post, accepts a map containing target and central geohash
@@ -43,7 +43,7 @@ defmodule PhosWeb.API.OrbController do
           "id" => Ecto.UUID.generate(),
           "geolocation" => central_geohash |> :h3.k_ring(1),
           "title" => orb_params["title"],
-          "initiator_id" => conn.assigns.current_user["user_id"],
+          "initiator_id" => user_id,
           "payload" => %{
             "when" => orb_params["when"],
             "where" => orb_params["where"],
@@ -65,7 +65,7 @@ defmodule PhosWeb.API.OrbController do
           "id" => Ecto.UUID.generate(),
           "geolocation" => [head] ++ tail,
           "title" => orb_params["title"],
-          "initiator_id" => conn.assigns.current_user["user_id"],
+          "initiator_id" => user_id,
           "payload" => %{
             "when" => orb_params["when"],
             "where" => orb_params["where"],

@@ -10,7 +10,7 @@ defmodule Phos.Action.Orb do
     field :extinguish, :naive_datetime
     field :media, :boolean, default: false
     field :title, :string
-    field :source, Ecto.Enum, values: [:web, :tele, :flutter]
+    field :source, Ecto.Enum, values: [:web, :tele, :api]
     field :central_geohash, :integer
     field :traits, {:array, :string}, default: []
     field :topic, :string, virtual: true
@@ -42,6 +42,13 @@ defmodule Phos.Action.Orb do
     user
     |> cast(attrs, [:title, :active, :media, :extinguish, :traits])
     |> cast_embed(:payload)
+  end
+
+  def territorial_changeset(struct, params \\ %{}) do
+    struct
+    |> cast(params, [:id, :active])
+    |> cast_assoc(:locations)
+    |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 
   def changeset_update_locations(%Orb{} = orb, locations) do

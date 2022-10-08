@@ -34,11 +34,13 @@ defmodule PhosWeb.Util.Migrator do
     |> Enum.map(&(&1.user))
     |> Enum.map(&Phos.Repo.preload(&1, [:auths]))
   end
+
   defp user_migration(response, id) when is_map(response) do
     Task.async(fn ->
       insert_or_update_user(response, id)
     end)
   end
+
 
   ## TODO Tie together to Auth
 
@@ -64,6 +66,7 @@ defmodule PhosWeb.Util.Migrator do
       {:error, name, fields, required} -> %{name: name, fields: fields, required: required}
     end
   end
+
 
   defp insert_or_update_user(data, id) do
     Multi.new()

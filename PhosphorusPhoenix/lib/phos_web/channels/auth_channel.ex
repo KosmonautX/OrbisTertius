@@ -42,13 +42,6 @@ defmodule PhosWeb.AuthChannel do
     end
   end
 
-  defp authorized?(%{assigns: %{session_token: token}} = _socket, id) when token != "" do
-    case PhosWeb.Menshen.Auth.validate_user(token) do
-      {:ok, %{"user_id" => user_id}} -> user_id == id
-      _ -> false
-    end
-  end
-  defp authorized?(_, _), do: false
 
   defp load_geolocation(%Phos.Users.User{id: id, username: username, private_profile: %Phos.Users.Private_Profile{geolocation: geolocations}} = user, socket) do
     teritories = Enum.reduce(geolocations, %{}, fn %{chronolock: chronolock, geohash: hash, location_description: desc}, acc ->

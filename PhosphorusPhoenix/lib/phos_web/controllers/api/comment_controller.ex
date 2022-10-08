@@ -17,14 +17,14 @@ defmodule PhosWeb.API.CommentController do
   # curl -H "Content-Type: application/json" -X GET http://localhost:4000/api/comments
 
 
-  def create(conn, comment_params) do
+  def create(conn = %{assigns: %{current_user: %{id: user_id}}}, comment_params) do
     case comment_params do
       # Create root comment flow
       %{"orb_id" => orb_id} ->
         comment_id = Ecto.UUID.generate()
         comment_params = %{"id" => comment_id,
                            "orb_id" => orb_id,
-                           "initiator_id" => conn.assigns.current_user["user_id"],
+                           "initiator_id" => user_id,
                            "path" => Encoder.encode_lpath(comment_id),
                            "body" => comment_params["body"]}
 
@@ -41,7 +41,7 @@ defmodule PhosWeb.API.CommentController do
         comment_params = %{"id" => comment_id,
                            "orb_id" => parent_comment.orb_id,
                            "parent_id" => parent_comment.id,
-                           "initiator_id" => conn.assigns.current_user["user_id"],
+                           "initiator_id" => user_id,
                            "path" => Encoder.encode_lpath(comment_id, to_string(parent_comment.path)),
                            "body" => comment_params["body"]}
 

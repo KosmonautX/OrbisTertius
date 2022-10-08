@@ -36,7 +36,7 @@ defmodule PhosWeb.CommentControllerTest do
     |> put_req_header("accept", "application/json")}
   end
 
-  describe "index" do
+  describe "comments index" do
     setup [:create_orb, :inject_user_token]
 
     test "lists all comments", %{conn: conn, orb: orb, user: user} do
@@ -90,6 +90,8 @@ defmodule PhosWeb.CommentControllerTest do
         orb_id: orb.id,
         initiator_id: user.id,
       }
+
+      dbg()
 
       conn = post(conn, Routes.comment_path(conn, :create), comment)
       assert %{"id" => id} = json_response(conn, 201)["data"]

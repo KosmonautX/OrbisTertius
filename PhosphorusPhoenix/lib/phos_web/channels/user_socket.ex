@@ -11,6 +11,8 @@ defmodule PhosWeb.UserSocket do
 
   channel "archetype:usr:*", PhosWeb.UserChannel
   channel "archetype:loc:*", PhosWeb.UserLocationChannel
+  channel "userfeed:*", PhosWeb.UserFeedChannel
+  channel "discovery:*", PhosWeb.DiscoveryChannel
 
   ## Transports
   #transport :websocket, Phoenix.Transports.WebSocket, check_origin: ["//localhost",  "//echo.scrb.ac"]
@@ -31,17 +33,19 @@ defmodule PhosWeb.UserSocket do
   def connect(%{"token" => token} = _params, socket, _connect_info) do
     # Parsing of Authorising JWT vector and assigning to session
     case Auth.validate_user(token) do
-      {:ok, claims} ->
-        {:ok, socket |> assign(:user_agent, claims) |> assign(:session_token, token)}
+      {:ok, %{"user_id" => user} = claims} ->
+        {:ok,
+          socket
+          |> assign(user_agent: claims, session_token: token, current_user: Phos.Users.get_user!(user))
+        }
       {:error, reason} ->
         {:error, reason}
     end
   end
 
   @impl true
-  def connect(_params, _socket, _connect_info) do
-    :error
-  end
+
+  def connect(_params, _socket, _connect_info), do: :error
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
   #

@@ -6,19 +6,43 @@
 alias Phos.Users
 id = Phos.Users.get_user_by_fyr("BX1BxM9KkwdFmy2J4FNNkFxclpS2").id
 user = Users.get_user!(id)
-Phos.Users.update_user(user, %{"username" => "wow", "public_profile" => %{"bio" => "wow"}})
+
+params = %{
+  "private_profile" => %{
+    "user_id" => id,
+    "geolocation" => [%{"id" => "play", "geohash" => 7_534_130_938_142}]
+  },
+  "personal_orb" => %{
+    "id" => Ecto.UUID.generate(),
+    "active" => true,
+    "locations" => [%{"id" => 623_212_828_750_938_111}, %{"id" => 623_212_828_750_970_879}]
+  }
+}
+
+user
+
+Phos.Users.User.territorial_changeset(user, params)
+|> Phos.Repo.update()
+
+# Phos.Users.update_user(user, %{"username" => "cool", "public_profile" => %{"bio" => "wow"}})
+```
+
+```elixir
+[
+  %{"id" => "play", "geohash" => 627_843_156_779_147_263},
+  %{"id" => "play", "geohash" => 627_843_156_779_147_263}
+]
+|> Enum.map(fn loc -> :h3.parent(loc["geohash"], 8) |> :h3.k_ring(1) end)
+|> List.flatten()
+|> Enum.uniq()
+|> Enum.map(fn hash -> %{"id" => hash} end)
+```
+
+```elixir
+past["home"]
 ```
 
 ## recompile @ node
-
-```elixir
-# 614496378250330111 , 618999977876652031, 623503577503956991
-# 614496378250330111 , 618999977876652031, 623503577503793151
-# 614496353074020351, 618999952700342271 , 623503552326795263
-
-Phos.Action.active_orbs_by_geohashes([623_276_216_929_910_783])
-|> PhosWeb.Util.Viewer.fresh_orb_stream_mapper()
-```
 
 ```elixir
 defmodule R do

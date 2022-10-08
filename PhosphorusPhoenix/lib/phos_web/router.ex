@@ -58,9 +58,10 @@ defmodule PhosWeb.Router do
       live "/orb/:id/reply/:cid", OrbLive.Show, :reply
       live "/orb/:id/edit/:cid", OrbLive.Show, :edit_comment
 
+      live "/user/feeds", UserFeedLive.Index, :index
+
       live "/user/:username/edit", UserProfileLive.Index, :edit
       live "/user/:username", UserProfileLive.Index, :index
-
     end
   end
 
@@ -91,18 +92,26 @@ defmodule PhosWeb.Router do
   scope "/api", PhosWeb.API do
     pipe_through [:api, :authorize_user]
 
+
     get "/userland/self", UserProfileController, :show_self
     put "/userland/self", UserProfileController, :update_self
-    get "/userland/profile", UserProfileController, :show_profile
+    put "/userland/self/territory", UserProfileController, :update_territory
+    #get "/userland/chronicle", UserProfileController, :show_history
 
-    #get "/folkland/chronicle", FolkController, :show_history
-    #get "/folkland/constellation", FolkController, :show_connections
+    resources "/userland/users", UserProfileController, only: [:show]
 
     resources "/orbland/orbs", OrbController, except: [:new, :edit]
     resources "/orbland/comments", CommentController, except: [:new, :edit]
     get "/orbland/comments/root/:id", CommentController, :show_root
     get "/orbland/comments/children/:id", CommentController, :show_children
     get "/orbland/comments/ancestor/:id", CommentController, :show_ancestor
+
+    scope "/folkland" do
+      resources "/friends", FriendController, except: [:new, :edit, :show, :update]
+      post "/friends/reject", FriendController, :reject
+      get "/friends/requests", FriendController, :requests
+      get "/friends/pending", FriendController, :pending
+    end
 
   end
 
