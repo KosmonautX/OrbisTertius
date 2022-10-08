@@ -91,8 +91,6 @@ defmodule PhosWeb.CommentControllerTest do
         initiator_id: user.id,
       }
 
-      dbg()
-
       conn = post(conn, Routes.comment_path(conn, :create), comment)
       assert %{"id" => id} = json_response(conn, 201)["data"]
 
