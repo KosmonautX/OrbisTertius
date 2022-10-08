@@ -54,11 +54,11 @@ PUT :ipAddress/userland/self/
 ## Update territorial data of self
 PUT :ipAddress/userland/self/territory
 :auth-headers
-[
-    %{"id" => "home", "geohash" => 623276216934563839, "location_description" => "ba sing se"},
-    %{"id" => "work", "geohash" => 623276216934563839}
+{"territory": [
+    {"id": "home", "geohash": 627843156779147263, "location_description":"ba sing se"},
+    {"id": "work", "geohash": 627843156779147263}
 
-]
+]}
 
 ### ! ORBs API
 ## Read Orb
