@@ -22,7 +22,7 @@ defmodule PhosWeb.API.UserProfileController do
   def update_self(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, params = %{"media" => [_,_] = forms}) do
     user = Users.get_user!(id)
     with {:ok, media} <- Ecto.Changeset.apply_action(Orbject.Structure.usermedia_changeset(forms), :orbject_fetch),
-    {:ok, %User{} = user} <- Users.update_user(user, Map.put(profile_constructor(user, params),"media", true)) do
+         {:ok, %User{} = user} <- Users.update_user(user, Map.put(profile_constructor(user, params),"media", true)) do
       render(conn, "show.json", user_profile: user, media: media)
     end
   end
@@ -39,12 +39,12 @@ defmodule PhosWeb.API.UserProfileController do
     %{
       "username" => params["username"],
       "public_profile" => %{"birthday" => (if params["birthday"], do: params["birthday"]|> DateTime.from_unix!() |> DateTime.to_naive()),
-                           "bio" => params["bio"],
-                           "public_name" => params["public_name"],
-                           "occupation" => params["occupation"]} |> purge_nil(),
-      "personal_orb" => %{"id" => user.id,
+                            "bio" => params["bio"],
+                            "public_name" => params["public_name"],
+                            "occupation" => params["occupation"]} |> purge_nil(),
+      "personal_orb" => %{"id" => (if is_nil(user.personal_orb), do: Ecto.UUID.generate(), else: user.personal_orb.id),
                           "initiator_id" => user.id,
-                          "traits" => (if is_list(params["traits"]), do: ["personal" | params["traits"]])}
+                          "traits" => (if is_list(params["traits"]), do: ["personal" | params["traits"]], else: ["personal"])}
     } |> purge_nil()
   end
 
@@ -52,9 +52,9 @@ defmodule PhosWeb.API.UserProfileController do
 
   def update_territory(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"territory" => territory =[_ | _]}) do
     user = Users.get_user!(id)
-    with [_,_]<- validate_territory(user, territory),
-    payload = %{"private_profile" => _ , "personal_orb" => _} <- parse_territory(user, territory),
-    {:ok, %User{} = user} <- Users.update_territorial_user(user, payload) do
+    with [_ | _]<- validate_territory(user, territory),
+         payload = %{"private_profile" => _ , "personal_orb" => _} <- parse_territory(user, territory),
+         {:ok, %User{} = user} <- Users.update_territorial_user(user, payload) do
       render(conn, "show.json", user_profile: user)
     else
       [] ->
@@ -62,8 +62,6 @@ defmodule PhosWeb.API.UserProfileController do
 
       {:error, changeset} ->
         {:error, changeset}
-
-      _ -> {:error, :unprocessable_entity}
     end
   end
 
@@ -72,18 +70,21 @@ defmodule PhosWeb.API.UserProfileController do
     wished_territory |> Enum.reject(fn wish -> !(!Map.has_key?(past, wish["id"]) or (past[wish["id"]].geohash != wish["geohash"]))   end)
   end
 
-  defp parse_territory(user, wished_territory) when is_list(wished_territory) do
-
-    present_territory = wished_territory |> Enum.map(fn loc -> :h3.parent(loc["geohash"], 11) end)
-    %{"private_profile" => %{"user_id" => user.id, "geolocation" => wished_territory},
-      "personal_orb" => %{
-        "id" => user.id,
-        "active" => true,
-        "locations" => present_territory
-        |> Enum.map(fn hash -> :h3.parent(hash, 8) |> :h3.k_ring(1) end)
-        |>  List.flatten() |> Enum.uniq() |> Enum.map(fn hash -> %{"id" => hash} end)
+  defp parse_territory(user , wished_territory) when is_list(wished_territory) do
+    try do
+      present_territory = wished_territory |> Enum.map(fn loc -> :h3.parent(loc["geohash"], 11) end)
+      %{"private_profile" => %{"user_id" => user.id, "geolocation" => wished_territory},
+        "personal_orb" => %{
+          "id" => (if is_nil(user.personal_orb), do: Ecto.UUID.generate(), else: user.personal_orb.id),
+          "active" => true,
+          "locations" => present_territory
+          |> Enum.map(fn hash -> :h3.parent(hash, 8) |> :h3.k_ring(1) end)
+          |>  List.flatten() |> Enum.uniq() |> Enum.map(fn hash -> %{"id" => hash} end)
+        }
       }
-    }
+    rescue
+      ArgumentError -> {:error, :unprocessable_entity}
+    end
   end
 
   defp purge_nil(map), do: map |> Enum.reject(fn {_, v} -> is_nil(v) end) |> Map.new()

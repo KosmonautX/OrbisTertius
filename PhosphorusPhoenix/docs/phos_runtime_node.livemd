@@ -3,6 +3,13 @@
 ## Root
 
 ```elixir
+Ecto.Changeset.apply_action(
+  Enum.map([%{"entity" => "banner"}], fn x -> Phos.Orbject.Structure.usermedia_changeset(x) end),
+  :orbject_fetch
+)
+```
+
+```elixir
 alias Phos.Users
 id = Phos.Users.get_user_by_fyr("BX1BxM9KkwdFmy2J4FNNkFxclpS2").id
 user = Users.get_user!(id)
@@ -10,7 +17,7 @@ user = Users.get_user!(id)
 params = %{
   "private_profile" => %{
     "user_id" => id,
-    "geolocation" => [%{"id" => "play", "geohash" => 7_534_130_938_142}]
+    "geolocation" => [%{"id" => "home", "geohash" => 7_534_130_938_142}]
   },
   "personal_orb" => %{
     "id" => Ecto.UUID.generate(),
@@ -25,21 +32,6 @@ Phos.Users.User.territorial_changeset(user, params)
 |> Phos.Repo.update()
 
 # Phos.Users.update_user(user, %{"username" => "cool", "public_profile" => %{"bio" => "wow"}})
-```
-
-```elixir
-[
-  %{"id" => "play", "geohash" => 627_843_156_779_147_263},
-  %{"id" => "play", "geohash" => 627_843_156_779_147_263}
-]
-|> Enum.map(fn loc -> :h3.parent(loc["geohash"], 8) |> :h3.k_ring(1) end)
-|> List.flatten()
-|> Enum.uniq()
-|> Enum.map(fn hash -> %{"id" => hash} end)
-```
-
-```elixir
-past["home"]
 ```
 
 ## recompile @ node

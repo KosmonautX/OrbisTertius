@@ -16,7 +16,6 @@ defmodule Phos.Users.Private_Profile do
   def changeset(user, attrs) do
     user
     |> cast(attrs, [:user_id])
-    |> validate_required([:user_id])
     |> cast_embed(:geolocation)
   end
 end

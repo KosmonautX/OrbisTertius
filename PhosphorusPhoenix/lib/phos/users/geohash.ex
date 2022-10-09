@@ -15,7 +15,7 @@ defmodule Phos.Users.Geolocation do
     orb
     |> cast(attrs |> Map.put_new_lazy("chronolock", &__MODULE__.timelock/0), [:id, :location_description, :geohash, :chronolock])
     |> validate_required([:id, :geohash])
-    |> validate_inclusion(:id, ["home", "work", "play"])
+    |> validate_inclusion(:id, ["home", "work", "live"])
     |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 

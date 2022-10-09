@@ -22,7 +22,7 @@ config :phos, PhosWeb.Endpoint,
   http: [ip: {0, 0, 0, 0}, port: System.get_env("PORT") || 4000], ## 0,0,0,0 to postgres for docker
   check_origin: false,
   code_reloader: true,
-  debug_errors: false, # true for error message
+  debug_errors: true, # true for error message
   secret_key_base: "Kg0QgtaLpp2OQJIfeNPfCoiFsIyL3gTKA8KMUXaNyD0xYw5+wFlelPexSf1m9k8m",
   watchers: [
     # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)

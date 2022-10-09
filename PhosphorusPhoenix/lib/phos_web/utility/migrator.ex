@@ -98,7 +98,7 @@ defmodule PhosWeb.Util.Migrator do
     |> case do
       {:ok, data} -> data
       {:error, err} -> err
-      {:error, name, fields, required} -> %{name: name, fields: fields, required: required}
+      {:error, _name, changeset, _required} -> {:error, changeset}
     end
   end
 
@@ -124,6 +124,8 @@ defmodule PhosWeb.Util.Migrator do
 
     Map.put(data, "geohash", geo)
   end
+
+
   defp get_location_from_h3(data), do: data
 
   defp insert_with_provider(%{providers: providers, user: user}) when length(providers) > 0 do
@@ -142,5 +144,7 @@ defmodule PhosWeb.Util.Migrator do
       is_nil(id) or prov == "password"
     end)
   end
+
   defp insert_with_provider(_), do: []
+
 end

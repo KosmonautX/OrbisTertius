@@ -2,6 +2,8 @@
 # Phos API Endpoint Documentation
 
 :ipAddress = http://localhost:4000/api
+# :ipAddress = https://nyx.scrb.ac/api
+:localipAddress = http://localhost:4000/api
 :fyr_user=BX1BxM9KkwdFmy2J4FNNkFxclpS2
 :lky=58fd1656-495e-4ab0-bd12-425aa31791c7
 :auth-headers = <<
@@ -15,11 +17,11 @@ Content-Type: application/json
 User-Agent: Emacs27
 ##
 ## Generate Client-side JWT
-fpGET :ipAddress/devland/flameon?user=random
+GET :localipAddress/devland/flameon?user=random
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
-GET :ipAddress/devland/lankaonfyr?fyr_id=:fyr_user
+GET :localipAddress/devland/lankaonfyr?fyr_id=:fyr_user
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 
@@ -40,7 +42,7 @@ GET :ipAddress/userland/self/
 :auth-headers
 ## Update userdata of self
 PUT :ipAddress/userland/self/
-:headers
+:auth-headers
 {
 
     "bio": "alberto robotos",
@@ -55,8 +57,8 @@ PUT :ipAddress/userland/self/
 PUT :ipAddress/userland/self/territory
 :auth-headers
 {"territory": [
-    {"id": "home", "geohash": 627843156779147263, "location_description":"ba sing se"},
-    {"id": "work", "geohash": 627843156779147263}
+    {"id": "home", "geohash": 627843393045598207, "location_description":"ba sing se"},
+    {"id": "work", "geohash": 627843155476234239}
 
 ]}
 
