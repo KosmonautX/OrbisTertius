@@ -5,6 +5,7 @@ defmodule PhosWeb.Menshen.Auth do
   alias Phos.Users.{Private_Profile}
 
   def validate_user(token) do
+    IO.inspect(token)
     token
     |> String.split()
     |> List.last()

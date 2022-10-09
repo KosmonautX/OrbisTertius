@@ -5,23 +5,32 @@ defmodule Phos.Orbject.Structure do
 
   alias Phos.Orbject
 
+  @primary_key{:id, :binary_id, autogenerate: false}
   embedded_schema do
-  field(:archetype, :string)
-  field(:entity, :binary_id)
-  field(:essence, :string)
-  field(:resolution, :string)
-  field(:height, :integer)
-  field(:width, :integer)
-  field(:mimetype, :string)
-  field(:path, :string)
+    field(:archetype, :string)
+    embeds_many :media, Media do
+      field(:essence, :string)
+      field(:resolution, :string)
+      field(:height, :integer)
+      field(:width, :integer)
+      field(:ext, :string)
+      field(:path, :string)
+    end
   end
 
-  def usermedia_changeset(attrs) do
-    %Orbject.Structure{}
-    |> cast(attrs, [:archetype, :entity, :essence, :resolution, :height, :width, :mimetype])
-    |> validate_inclusion(:archetype, ["USR"])
+  def apply_user_changeset(attrs) do
+    apply_action(
+      %Orbject.Structure{}
+      |> cast(attrs, [:archetype, :id])
+      |> cast_embed(:media, with: &Orbject.Structure.user_media_changeset/2), :user_media)
+  end
+
+
+  def user_media_changeset(structure, attrs) do
+    structure
+    |> cast(attrs, [:essence, :resolution, :height, :width, :ext])
     |> validate_inclusion(:essence, ["banner", "profile"])
-    |> validate_inclusion(:resolution, ["preview", "raw"])
+    |> validate_inclusion(:resolution, ["lossy", "lossless"])
   end
 
 end

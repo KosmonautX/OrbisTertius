@@ -19,6 +19,7 @@ defmodule Phos.Orbject.S3 do
 
 
   """
+  alias Phos.Orbject
 
   def get(path) do
     signer(:get, path)
@@ -43,11 +44,11 @@ defmodule Phos.Orbject.S3 do
 
 
   def get_all(archetype, uuid, form \\ "") do
-    path = path_constructor(archetype, uuid, form)
-    with {:ok, response} <- ExAws.S3.list_objects_v2("orbistertius", prefix: path, encoding_type: "url") |> ExAws.request(),
+    root_path = path_constructor(archetype, uuid, form)
+    with {:ok, response} <- ExAws.S3.list_objects_v2("orbistertius", prefix: root_path, encoding_type: "url") |> ExAws.request(),
          true <- response.status_code >= 200 and response.status_code < 300,
            addresses <- (for obj <- response.body.contents, into: %{} do
-                                  {path_suffix(obj.key, path), signer!(:get,obj.key)} end) do
+                                  {path_suffix(obj.key, root_path), signer!(:get,obj.key)} end) do
       {:ok, addresses}
     else
       {:error, err} -> {:error, err}
@@ -59,6 +60,15 @@ defmodule Phos.Orbject.S3 do
       address
     else
       {:error, err} -> nil #TODO better error parsing
+    end
+  end
+
+
+  def put_all!(orbject = %Orbject.Structure{}) do
+    root_path = path_constructor(orbject.archetype, orbject.id, "")
+    for obj <- orbject.media, into: %{} do
+      path = path_constructor(orbject.archetype, orbject.id, obj)
+      {path_suffix(path, root_path) , signer!(:put, path)}
     end
   end
 
@@ -80,6 +90,13 @@ defmodule Phos.Orbject.S3 do
     ExAws.Config.new(:s3, config) |>
       ExAws.S3.presigned_url(action, config.bucket, path,
         [expires_in: 888, virtual_host: false, query_params: [{"ContentType", "application/octet-stream"}]])
+  end
+
+  defp path_constructor(archetype, uuid, m = %Orbject.Structure.Media{}) do
+    "#{archetype}/#{uuid}/#{m.essence}#{unless is_nil(m.resolution),
+          do: "/#{m.resolution}"}#{unless is_nil(m.height),
+          do: "#{m.height}x#{m.width}"}#{unless is_nil(m.ext),
+          do: ".#{m.ext}"}"
   end
 
   defp path_constructor(archetype, uuid, form) do

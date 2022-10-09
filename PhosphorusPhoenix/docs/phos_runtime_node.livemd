@@ -3,10 +3,33 @@
 ## Root
 
 ```elixir
-Ecto.Changeset.apply_action(
-  Enum.map([%{"entity" => "banner"}], fn x -> Phos.Orbject.Structure.usermedia_changeset(x) end),
-  :orbject_fetch
-)
+# {:ok , media}= %{"media" => [%{"essence" => "banner", "resolution" => "raw"}, %{"essence" => "profile"}]} 
+# |> Phos.Orbject.Structure.apply_user_changeset()
+
+{:ok, orbject} =
+  Phos.Orbject.Structure.apply_user_changeset(
+    %Phos.Orbject.Structure{},
+    %{
+      id: Ecto.UUID.generate(),
+      archetype: "USR",
+      media: [%{"essence" => "banner", "resolution" => "raw"}, %{"essence" => "profile"}]
+    }
+  )
+
+# orbject
+# |> (fn orbject ->
+#       for m <- orbject.media do
+#         "#{m.essence}#{unless is_nil(m.resolution),
+#           do: "/#{m.resolution}"}#{unless is_nil(m.height),
+#           do: "#{m.height}x#{m.width}"}#{unless is_nil(m.ext),
+#           do: ".#{m.ext}"}"
+#       end
+#     end).()
+
+orbject |> Phos.Orbject.S3.put_all!()
+
+# Ecto.Changeset.apply_action(
+#   Enum.map( , fn x -> end), :orbject_fetch)
 ```
 
 ```elixir

@@ -2,7 +2,7 @@
 # Phos API Endpoint Documentation
 
 :ipAddress = http://localhost:4000/api
-# :ipAddress = https://nyx.scrb.ac/api
+#:ipAddress = https://nyx.scrb.ac/api
 :localipAddress = http://localhost:4000/api
 :fyr_user=BX1BxM9KkwdFmy2J4FNNkFxclpS2
 :lky=58fd1656-495e-4ab0-bd12-425aa31791c7
@@ -49,6 +49,10 @@ PUT :ipAddress/userland/self/
     "username": "aang",
     "public_name": "Albert the Robot",
     "birthday": 16123442423,
+    "media": [
+    {"essence": "banner", "resolution": "lossless"},
+    {"essence": "profile", "resolution": "lossy"}
+    ],
     "traits": ["jesus", "nodejs"],
     "occupation": "bloatwarengingeer"
 

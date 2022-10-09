@@ -19,9 +19,9 @@ defmodule PhosWeb.API.UserProfileController do
     render(conn, "show.json", user_profile: user)
   end
 
-  def update_self(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, params = %{"media" => [_,_] = forms}) do
+  def update_self(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"media" => [_|_] = media} = params) do
     user = Users.get_user!(id)
-    with {:ok, media} <- Ecto.Changeset.apply_action(Orbject.Structure.usermedia_changeset(forms), :orbject_fetch),
+    with {:ok, media} <- Orbject.Structure.apply_user_changeset(%{id: id, archetype: "USR", media: media}),
          {:ok, %User{} = user} <- Users.update_user(user, Map.put(profile_constructor(user, params),"media", true)) do
       render(conn, "show.json", user_profile: user, media: media)
     end
