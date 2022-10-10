@@ -18,7 +18,7 @@ defmodule Phos.Users.User do
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
 
-    has_many :orbs, Orb, references: :id, foreign_key: :initiator
+    has_many :orbs, Orb, references: :id, foreign_key: :initiator_id
     has_many :auths, Auth, references: :id, foreign_key: :user_id
 
     has_one :personal_orb, Orb, references: :id, foreign_key: :initiator_id, where: [traits: ["personal"]]

@@ -71,7 +71,6 @@ defmodule PhosWeb.UserLocationChannel do
   end
 
   def handle_info(event, socket) do
-    IO.inspect(event)
     {:noreply, socket}
   end
 

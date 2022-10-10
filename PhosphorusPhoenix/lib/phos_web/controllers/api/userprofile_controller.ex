@@ -51,7 +51,7 @@ defmodule PhosWeb.API.UserProfileController do
 
 
   def update_territory(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"territory" => territory =[_ | _]}) do
-    user = Users.get_user!(id)
+    user = Users.get_territorial_user!(id)
     with [_ | _]<- validate_territory(user, territory),
          payload = %{"private_profile" => _ , "personal_orb" => _} <- parse_territory(user, territory),
          {:ok, %User{} = user} <- Users.update_territorial_user(user, payload) do
