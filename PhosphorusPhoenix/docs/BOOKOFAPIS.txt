@@ -101,7 +101,7 @@ PUT :ipAddress/folkland/friends/ended
     "friend_id": :princeton_id
 }
 ## Began the friendship
-PUT :ipAddress/folkland/friends/began
+PUT :ipAddress/folkland/friends/begun
 :auth-headers
 {
     "friend_id": :satrio_id

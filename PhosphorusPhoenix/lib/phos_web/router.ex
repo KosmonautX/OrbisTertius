@@ -109,7 +109,7 @@ defmodule PhosWeb.Router do
     scope "/folkland" do
       resources "/friends", FriendController, except: [:new, :edit, :show, :update]
       put "/friends/ended", FriendController, :ended
-      put "/friends/began", FriendController, :began
+      put "/friends/begun", FriendController, :begun
       get "/friends/requests", FriendController, :requests
       get "/friends/pending", FriendController, :pending
     end
