@@ -44,27 +44,42 @@ GET :ipAddress/userland/self/
 PUT :ipAddress/userland/self/
 :auth-headers
 {
-
     "bio": "alberto robotos",
     "username": "aang",
     "public_name": "Albert the Robot",
     "birthday": 16123442423,
     "media": [
-    {"essence": "banner", "resolution": "lossless"},
-    {"essence": "profile", "resolution": "lossy"}
+        {
+            "essence": "banner",
+            "resolution": "lossless"
+        },
+        {
+            "essence": "profile",
+            "resolution": "lossy"
+        }
     ],
-    "traits": ["jesus", "nodejs"],
+    "traits": [
+        "jesus",
+        "nodejs"
+    ],
     "occupation": "bloatwarengingeer"
-
 }
 ## Update territorial data of self
 PUT :ipAddress/userland/self/territory
 :auth-headers
-{"territory": [
-    {"id": "home", "geohash": 627843393045598207, "location_description":"ba sing se"},
-    {"id": "work", "geohash": 627843155476234239}
-
-]}
+{
+    "territory": [
+        {
+            "id": "home",
+            "geohash": 627843393045598207,
+            "location_description": "ba sing se"
+        },
+        {
+            "id": "work",
+            "geohash": 627843155476234239
+        }
+    ]
+}
 
 ### ! ORBs API
 ## Read Orb
@@ -79,7 +94,8 @@ POST :ipAddress/orbland/orbs
 :auth-headers
 {
     "geohash": {
-        "target": 8, "central_geohash": 623275816647884799
+        "target": 8,
+        "central_geohash": 623275816647884799
     },
     "title": "yoga fire",
     "active": "true",
