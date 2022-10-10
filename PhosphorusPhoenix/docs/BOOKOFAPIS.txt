@@ -6,8 +6,8 @@
 :localipAddress = http://localhost:4000/api
 :princeton=0b3gd5XUGtNP6lqQean4IAp7ogG3
 :satrio=BX1BxM9KkwdFmy2J4FNNkFxclpS2
-:princeton_id="75baee5b-fca2-4c5d-94b5-8e9afee89254"
-:satrio_id="adc78fb7-1941-47dd-ace4-1682e3a0c7c5"
+:princeton_id="10db31d9-e231-4a69-b1f0-60f495184540"
+:satrio_id="c034e023-31f1-496c-be4a-cd7f8a0a2e24"
 :lky=58fd1656-495e-4ab0-bd12-425aa31791c7
 :auth-headers = <<
 Authorization: :token
@@ -48,7 +48,7 @@ PUT :ipAddress/userland/self/
 :auth-headers
 {
     "bio": "alberto robotos",
-    "username": "aang",
+    "username": "sokka",
     "public_name": "Albert the Robot",
     "birthday": 16123442423,
     "media": [

@@ -6,8 +6,7 @@ defmodule PhosWeb.API.FriendView do
   end
 
   def render("show.json", %{friend: user}) do
-    Map.take(user, [:id, :email, :username])
-    |> Map.put(:public_profile, Map.take(user.public_profile, [:bio, :birthday, :honorific, :occupation, :traits]))
+    PhosWeb.Util.Viewer.user_mapper(user)
   end
 
   def render("relation.json", %{relation: relation}) do

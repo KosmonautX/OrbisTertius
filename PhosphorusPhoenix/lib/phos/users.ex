@@ -744,7 +744,7 @@ defmodule Phos.Users do
       _ -> {:error, "Cannot add requested friend"}
     end
   end
-  def add_friend(_requester_id, _acceptor_id), do: {:error, "API not needed to connect to yourself"}
+  def add_friend(_requester_id, _acceptor_id), do: {:error, "API not needed to connect to your own inner self"}
 
   defp existing_relation(requester_id, acceptor_id) do
     query = from q in Relation, where: q.requester_id in ^[requester_id, acceptor_id] and q.acceptor_id in ^[requester_id, acceptor_id]

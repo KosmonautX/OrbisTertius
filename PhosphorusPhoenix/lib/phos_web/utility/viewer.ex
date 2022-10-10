@@ -5,17 +5,17 @@ defmodule PhosWeb.Util.Viewer do
   For our Viewer Helper function that moulds data Models into Views
 
   """
+  alias Phos.Orbject.S3
 
   # Relationship Mapper
   def relationship_mapper(orb) do
     (if orb.initiator && Ecto.assoc_loaded?(orb.initiator) do
       %{initiator:
         %{data: %{username: orb.initiator.username,
-                  media: orb.initiator.media,
-                  media_asset: (if orb.initiator.media && orb.initiator.fyr_id, do: Phos.Orbject.S3.get!("USR", orb.initiator.fyr_id, "150x150")),
                   user_id: orb.initiator.id
                  },
-          links: %{self: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, orb.initiator.id)}
+          links: %{self: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, orb.initiator.id)},
+          media: (if orb.initiator.media, do: S3.get_all!("USR", orb.initiator.id, "profile"))
         }
       }
     end)
@@ -23,24 +23,47 @@ defmodule PhosWeb.Util.Viewer do
 
   # User Mapper
   #
+  #
+  def user_mapper(user) do
+    %{
+      id: user.id,
+      username: user.username,
+      fyr_id: user.fyr_id,
+      profile_pic: user.profile_pic,
+      profile: user_profile_mapper(user),
+    }
+  end
+
   def user_profile_mapper(user) do
+    %{private: user_private_mapper(user),
+      public: user_public_mapper(user),
+      personal: user_personal_orb_mapper(user)}
+  end
+
+  def user_private_mapper(user) do
     (if user.private_profile && Ecto.assoc_loaded?(user.private_profile) do
-      %{private:
-        %{data: %{geolocation: user.private_profile.geolocation}
-        },
-        public: user_public_mapper(user)
-      }
+      %{data: %{geolocation: user.private_profile.geolocation}}
+    end)
+  end
+
+  def user_personal_orb_mapper(user) do
+    #extend to orb model in future
+    (if user.personal_orb && Ecto.assoc_loaded?(user.personal_orb) do
+      %{traits: user.personal_orb.traits}
     end)
   end
 
   def user_public_mapper(user) do
     (if user.public_profile && Ecto.assoc_loaded?(user.public_profile) do
-        %{data: %{birthday: user.public_profile.birthday,
-                  occupation: user.public_profile.occupation,
-                  bio: user.public_profile.bio
-                 },
-          links: %{self: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, user.id)}
-        }
+      %{data:
+        %{ birthday: user.public_profile.birthday,
+           occupation: user.public_profile.occupation,
+           bio: user.public_profile.bio,
+           public_name: user.public_profile.public_name
+        },
+        links: %{self: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, user.id)},
+        media: (if user.media, do: S3.get_all!("USR", user.id, "profile"))
+      }
     end)
   end
 
@@ -53,15 +76,15 @@ defmodule PhosWeb.Util.Viewer do
         available: orb.active,
         orb_uuid: orb.id,
         payload: %{source: orb.source,
-          init: %{username: orb.initiator.username, media: orb.initiator.media, media_asset: Phos.Orbject.S3.get!("USR", orb.initiator.fyr_id, "150x150")},
-          extinguishtime: DateTime.from_naive!(orb.extinguish, "Etc/UTC") |> DateTime.to_unix(),
-          user_id: orb.initiator.fyr_id,
-          where: orb.payload.where,
-          creationtime: DateTime.from_naive!(orb.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
-          media: orb.media,
-          title: orb.title,
-          info: orb.payload.info,
-          media_asset: Phos.Orbject.S3.get!("ORB", orb.id, "1920x1080")},
+                   init: %{username: orb.initiator.username, media: orb.initiator.media, media_asset: Phos.Orbject.S3.get!("USR", orb.initiator.fyr_id, "150x150")},
+                   extinguishtime: DateTime.from_naive!(orb.extinguish, "Etc/UTC") |> DateTime.to_unix(),
+                   user_id: orb.initiator.fyr_id,
+                   where: orb.payload.where,
+                   creationtime: DateTime.from_naive!(orb.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
+                   media: orb.media,
+                   title: orb.title,
+                   info: orb.payload.info,
+                   media_asset: Phos.Orbject.S3.get!("ORB", orb.id, "1920x1080")},
         geolocation: %{
           hashes: [],
           radius: 0,
@@ -74,7 +97,7 @@ defmodule PhosWeb.Util.Viewer do
         }
       }
     end)
-   end
+  end
 
   def post_orb_mapper(orbs) do
     Enum.map(orbs, fn orb ->

@@ -10,7 +10,7 @@ defmodule PhosWeb.API.UserProfileController do
   # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X GET 'http://localhost:4000/api/userland/self'
 
   def show(%Plug.Conn{assigns: %{current_user: %{"user_id" => _id}}} = conn, %{"id" => user_id}) do
-    user = Users.get_user!(user_id)
+    user = Users.get_public_user!(user_id)
     render(conn, "show.json", user_profile: user)
   end
 

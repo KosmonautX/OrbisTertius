@@ -96,7 +96,6 @@ defmodule PhosWeb.Router do
     get "/userland/self", UserProfileController, :show_self
     put "/userland/self", UserProfileController, :update_self
     put "/userland/self/territory", UserProfileController, :update_territory
-    #get "/userland/chronicle", UserProfileController, :show_history
 
     resources "/userland/users", UserProfileController, only: [:show]
 

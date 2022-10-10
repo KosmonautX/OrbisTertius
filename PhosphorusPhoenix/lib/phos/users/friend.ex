@@ -2,10 +2,10 @@ defmodule Phos.Users.Relation do
   use Ecto.Schema
   use Fsmx.Struct, transitions: %{
     "REQUESTED" => ["HOLD", "ACCEPTED"],
-    "HOLD" => "WAITED",
-    "WAITED" => ["REQUESTED", "REJECTED"],
+    "HOLD" => "GHOSTED",
+    "GHOSTED" => ["REQUESTED", "REJECTED"],
     "ACCEPTED" => "COMPLETED",
-    "REJECTED" => "COMPLETED",
+    "REJECTED" => "REQUESTED",
   }
 
   import Ecto.Changeset
