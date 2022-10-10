@@ -70,6 +70,10 @@ defmodule PhosWeb.API.UserProfileController do
     wished_territory |> Enum.reject(fn wish -> !(!Map.has_key?(past, wish["id"]) or (past[wish["id"]].geohash != wish["geohash"]))   end)
   end
 
+  defp validate_territory(%{private_profile: _}, wished_territory) when is_list(wished_territory) do
+    wished_territory
+  end
+
   defp parse_territory(user , wished_territory) when is_list(wished_territory) do
     try do
       present_territory = wished_territory |> Enum.map(fn loc -> :h3.parent(loc["geohash"], 11) end)

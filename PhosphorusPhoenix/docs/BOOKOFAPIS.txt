@@ -4,6 +4,7 @@
 :ipAddress = http://localhost:4000/api
 #:ipAddress = https://nyx.scrb.ac/api
 :localipAddress = http://localhost:4000/api
+:princeton=0b3gd5XUGtNP6lqQean4IAp7ogG3
 :fyr_user=BX1BxM9KkwdFmy2J4FNNkFxclpS2
 :lky=58fd1656-495e-4ab0-bd12-425aa31791c7
 :auth-headers = <<
@@ -21,7 +22,7 @@ GET :localipAddress/devland/flameon?user=random
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
-GET :localipAddress/devland/lankaonfyr?fyr_id=:fyr_user
+GET :localipAddress/devland/lankaonfyr?fyr_id=:princeton
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 
