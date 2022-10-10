@@ -5,7 +5,9 @@
 #:ipAddress = https://nyx.scrb.ac/api
 :localipAddress = http://localhost:4000/api
 :princeton=0b3gd5XUGtNP6lqQean4IAp7ogG3
-:fyr_user=BX1BxM9KkwdFmy2J4FNNkFxclpS2
+:satrio=BX1BxM9KkwdFmy2J4FNNkFxclpS2
+:princeton_id="75baee5b-fca2-4c5d-94b5-8e9afee89254"
+:satrio_id="adc78fb7-1941-47dd-ace4-1682e3a0c7c5"
 :lky=58fd1656-495e-4ab0-bd12-425aa31791c7
 :auth-headers = <<
 Authorization: :token
@@ -82,7 +84,36 @@ PUT :ipAddress/userland/self/territory
     ]
 }
 
-### ! ORBs API
+## ! Folkland Calls
+## List all current Buddies
+GET :ipAddress/folkland/friends
+:auth-headers
+## Send connection request
+POST :ipAddress/folkland/friends
+:auth-headers
+{
+    "friend_id": :princeton_id
+}
+## Ended the friendship
+PUT :ipAddress/folkland/friends/ended
+:auth-headers
+{
+    "friend_id": :princeton_id
+}
+## Began the friendship
+PUT :ipAddress/folkland/friends/began
+:auth-headers
+{
+    "friend_id": :satrio_id
+}
+## List of requests to you
+GET :ipAddress/folkland/friends/requests
+:auth-headers
+## List of requests from you
+GET :ipAddress/folkland/friends/pending
+:auth-headers
+
+### ! Orbland Calls
 ## Read Orb
 GET :ipAddress/orbland/orbs/9ab5d83a-1142-4bc3-a4e8-61d68af34e4f
 :auth-headers

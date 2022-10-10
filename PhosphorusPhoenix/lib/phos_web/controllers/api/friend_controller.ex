@@ -25,8 +25,15 @@ defmodule PhosWeb.API.FriendController do
     end
   end
 
-  def reject(%{assigns: %{current_user: user}} = conn, %{"friend_id" => user_id}) do
+  def ended(%{assigns: %{current_user: user}} = conn, %{"friend_id" => user_id}) do
     case Phos.Users.reject_friend(user.id, user_id) do
+      {:ok, relation} -> render(conn, "relation.json", relation: relation)
+      {:error, reason} -> render(conn, "relation_error.json", reason: reason)
+    end
+  end
+
+  def began(%{assigns: %{current_user: user}} = conn, %{"friend_id" => user_id}) do
+    case Phos.Users.accept_friend(user.id, user_id) do
       {:ok, relation} -> render(conn, "relation.json", relation: relation)
       {:error, reason} -> render(conn, "relation_error.json", reason: reason)
     end
