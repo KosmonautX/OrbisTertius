@@ -40,9 +40,11 @@ POST :ipAddress/userland/auth/fyr/genesis
 {
     "fyr": ":fyr_token"
 }
+
 ## Read userdata of self
 GET :ipAddress/userland/self/
 :auth-headers
+
 ## Update userdata of self
 PUT :ipAddress/userland/self/
 :auth-headers
@@ -67,6 +69,7 @@ PUT :ipAddress/userland/self/
     ],
     "occupation": "bloatwarengingeer"
 }
+
 ## Update territorial data of self
 PUT :ipAddress/userland/self/territory
 :auth-headers
@@ -74,8 +77,8 @@ PUT :ipAddress/userland/self/territory
     "territory": [
         {
             "id": "home",
-            "geohash": 627843393045598207,
-            "location_description": "ba sing se"
+            "geohash": 623276216935972863,
+            "location_description": "Pending road"
         },
         {
             "id": "work",
@@ -88,38 +91,46 @@ PUT :ipAddress/userland/self/territory
 ## List all current Buddies
 GET :ipAddress/folkland/friends
 :auth-headers
+
 ## Send connection request
 POST :ipAddress/folkland/friends
 :auth-headers
 {
     "friend_id": :princeton_id
 }
+
 ## Ended the friendship
 PUT :ipAddress/folkland/friends/ended
 :auth-headers
 {
     "friend_id": :princeton_id
 }
+
 ## Began the friendship
 PUT :ipAddress/folkland/friends/begun
 :auth-headers
 {
     "friend_id": ":lky"
 }
+
 ## List of requests to you
 GET :ipAddress/folkland/friends/requests
 :auth-headers
+
 ## List of requests from you
 GET :ipAddress/folkland/friends/pending
 :auth-headers
+
 
 ### ! Orbland Calls
 ## Read Orb
 GET :ipAddress/orbland/orbs/9ab5d83a-1142-4bc3-a4e8-61d68af34e4f
 :auth-headers
+
 ## Read all orbs (Paginated Call incoming)
 GET :ipAddress/orbland/orbs
 :auth-headers
+
 ## Create Orbs
 POST :ipAddress/orbland/orbs
 -> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (assq 'data (json-read)))))
@@ -127,7 +138,7 @@ POST :ipAddress/orbland/orbs
 {
     "geohash": {
         "target": 8,
-        "central_geohash": 623275816647884799
+        "central_geohash": 623276216935972863
     },
     "title": "aikido style",
     "info": "ba sing se",
