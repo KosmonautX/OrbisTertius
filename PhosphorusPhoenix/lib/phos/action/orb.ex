@@ -30,7 +30,6 @@ defmodule Phos.Action.Orb do
       |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])
       |> cast_embed(:payload)
       |> validate_required([:id, :title, :active, :media, :extinguish])
-      # |> validate_media()
   end
 
   @doc """

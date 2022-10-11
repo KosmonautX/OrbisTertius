@@ -5,9 +5,10 @@
       <%= live_patch to: Routes.orb_show_path(@socket, :show, feed.id) do %>
         <%= feed.title %>
       <% end %>
+    <%= if feed.initiator.username, do: "by #{feed.initiator.username}"%>
     </h1>
       <div class="flex">
-        <%= feed.payload.info %>
+        <%= if feed.payload, do: feed.payload.info %>
       </div>
     </div>
   <% end %>

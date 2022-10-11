@@ -8,7 +8,7 @@
 :satrio=BX1BxM9KkwdFmy2J4FNNkFxclpS2
 :princeton_id="10db31d9-e231-4a69-b1f0-60f495184540"
 :satrio_id="c034e023-31f1-496c-be4a-cd7f8a0a2e24"
-:lky=58fd1656-495e-4ab0-bd12-425aa31791c7
+:lky=08c21b36-c3ca-4693-8dd3-085da8e81967
 :auth-headers = <<
 Authorization: :token
 Content-Type: application/json
@@ -20,7 +20,7 @@ Content-Type: application/json
 User-Agent: Emacs27
 ##
 ## Generate Client-side JWT
-GET :localipAddress/devland/flameon?user=random
+GET :localipAddress/devland/flameon?user=:lky
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
@@ -104,7 +104,7 @@ PUT :ipAddress/folkland/friends/ended
 PUT :ipAddress/folkland/friends/begun
 :auth-headers
 {
-    "friend_id": :satrio_id
+    "friend_id": ":lky"
 }
 ## List of requests to you
 GET :ipAddress/folkland/friends/requests
@@ -129,7 +129,8 @@ POST :ipAddress/orbland/orbs
         "target": 8,
         "central_geohash": 623275816647884799
     },
-    "title": "yoga fire",
+    "title": "aikido style",
+    "info": "ba sing se",
     "active": "true",
     "media": "false",
     "expires_in": "10000"

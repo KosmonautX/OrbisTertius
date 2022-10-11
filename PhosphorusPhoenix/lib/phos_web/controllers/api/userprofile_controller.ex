@@ -41,7 +41,9 @@ defmodule PhosWeb.API.UserProfileController do
       "public_profile" => %{"birthday" => (if params["birthday"], do: params["birthday"]|> DateTime.from_unix!() |> DateTime.to_naive()),
                             "bio" => params["bio"],
                             "public_name" => params["public_name"],
-                            "occupation" => params["occupation"]} |> purge_nil(),
+                            "occupation" => params["occupation"],
+                            "traits" => (if is_list(params["traits"]), do: ["personal" | params["traits"]], else: [])
+                           } |> purge_nil(),
       "personal_orb" => %{"id" => (if is_nil(user.personal_orb), do: Ecto.UUID.generate(), else: user.personal_orb.id),
                           "initiator_id" => user.id,
                           "traits" => (if is_list(params["traits"]), do: ["personal" | params["traits"]], else: ["personal"])}

@@ -37,7 +37,7 @@ defmodule PhosWeb.Util.Viewer do
   def user_profile_mapper(user) do
     %{private: user_private_mapper(user),
       public: user_public_mapper(user),
-      personal: user_personal_orb_mapper(user)}
+    }
   end
 
   def user_private_mapper(user) do
@@ -59,7 +59,8 @@ defmodule PhosWeb.Util.Viewer do
         %{ birthday: user.public_profile.birthday,
            occupation: user.public_profile.occupation,
            bio: user.public_profile.bio,
-           public_name: user.public_profile.public_name
+           public_name: user.public_profile.public_name,
+           traits: user.public_profile.traits
         },
         links: %{self: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, user.id)},
         media: (if user.media, do: S3.get_all!("USR", user.id, "profile"))
