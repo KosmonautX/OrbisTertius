@@ -75,7 +75,6 @@ defmodule PhosWeb.API.CommentController do
 
   def show_root(conn, %{"id" => id, "page" => page}) do
     comments = Comments.get_root_comments_by_orb(id, page)
-    IO.inspect comments
     render(conn, "paginated.json", comments: comments)
   end
 

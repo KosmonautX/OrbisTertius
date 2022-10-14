@@ -8,29 +8,41 @@ defmodule PhosWeb.Util.Viewer do
   alias Phos.Orbject.S3
 
   # Relationship Mapper
-  def relationship_mapper(orb) do
-    (if orb.initiator && Ecto.assoc_loaded?(orb.initiator) do
+  def relationship_mapper(entity) do
+    case entity do
+      %{initiator: _} ->
+        (if Ecto.assoc_loaded?(entity.initiator) && !is_nil(entity.initiator) do
       %{initiator:
-        %{data: %{username: orb.initiator.username,
-                  user_id: orb.initiator.id
-                 },
-          links: %{self: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, orb.initiator.id)},
-          media: (if orb.initiator.media, do: S3.get_all!("USR", orb.initiator.id, "profile"))
+        %{data: user_mapper(entity.initiator),
+          links: %{self: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, entity.initiator.id)},
+          media: (if entity.initiator.media, do: S3.get_all!("USR", entity.initiator.id, "profile"))
         }
       }
     end)
-  end
+      %{orbs: _} ->
+
+        (if Ecto.assoc_loaded?(entity.orbs) && !is_nil(entity.orbs) do
+      %{orbs:
+        %{data: Enum.map(entity.orbs, fn orb -> orb_mapper(orb) end),
+          links: %{self: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, entity.initiator.id)},
+        }
+      }
+    end)
+
+    end
+
+
+   end
 
   # User Mapper
-  #
-  #
   def user_mapper(user) do
     %{
       id: user.id,
       username: user.username,
       fyr_id: user.fyr_id,
-      profile_pic: user.profile_pic,
       profile: user_profile_mapper(user),
+      creationtime: DateTime.from_naive!(user.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
+      mutationtime: DateTime.from_naive!(user.updated_at, "Etc/UTC") |> DateTime.to_unix(),
     }
   end
 
@@ -46,13 +58,6 @@ defmodule PhosWeb.Util.Viewer do
     end)
   end
 
-  def user_personal_orb_mapper(user) do
-    #extend to orb model in future
-    (if user.personal_orb && Ecto.assoc_loaded?(user.personal_orb) do
-      %{traits: user.personal_orb.traits}
-    end)
-  end
-
   def user_public_mapper(user) do
     (if user.public_profile && Ecto.assoc_loaded?(user.public_profile) do
       %{data:
@@ -60,6 +65,8 @@ defmodule PhosWeb.Util.Viewer do
            occupation: user.public_profile.occupation,
            bio: user.public_profile.bio,
            public_name: user.public_profile.public_name,
+           profile_pic: user.public_profile.profile_pic,
+           banner_pic: user.public_profile.banner_pic,
            traits: user.public_profile.traits
         },
         links: %{self: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, user.id)},
@@ -69,36 +76,38 @@ defmodule PhosWeb.Util.Viewer do
   end
 
   # Orb Mapper
-  def orb_orb_mapper(orbs) do
-    Enum.map(orbs, fn orb ->
-      %{
-        expiry_dt: DateTime.from_naive!(orb.extinguish, "Etc/UTC") |> DateTime.to_unix(),
+  def orb_mapper(orb) do
+    %{
+        expiry_time: (if orb.extinguish, do: DateTime.from_naive!(orb.extinguish, "Etc/UTC") |> DateTime.to_unix()),
         active: orb.active,
-        available: orb.active,
         orb_uuid: orb.id,
-        payload: %{source: orb.source,
-                   init: %{username: orb.initiator.username, media: orb.initiator.media, media_asset: Phos.Orbject.S3.get!("USR", orb.initiator.fyr_id, "150x150")},
-                   extinguishtime: DateTime.from_naive!(orb.extinguish, "Etc/UTC") |> DateTime.to_unix(),
-                   user_id: orb.initiator.fyr_id,
-                   where: orb.payload.where,
-                   creationtime: DateTime.from_naive!(orb.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
-                   media: orb.media,
-                   title: orb.title,
-                   info: orb.payload.info,
-                   media_asset: Phos.Orbject.S3.get!("ORB", orb.id, "1920x1080")},
+        title: orb.title,
+        relationships: relationship_mapper(orb),
+        creationtime: DateTime.from_naive!(orb.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
+        mutationtime: DateTime.from_naive!(orb.updated_at, "Etc/UTC") |> DateTime.to_unix(),
+        source: orb.source,
+        traits: orb.traits,
+        payload: orb_payload_mapper(orb),
         geolocation: %{
-          hashes: [],
-          radius: 0,
-          geolock: false,
-          hash: orb.central_geohash,
-          live: %{geohashes: []},
-          populate: true,
-          geolock: true,
-          target: 8#:h3.get_resolution(orb.central_geohash)
+          hash: orb.central_geohash
         }
+      }
+  end
+
+  def orb_payload_mapper(orb) do
+    (if orb.payload do
+      %{data:
+        %{ where: orb.payload.where,
+           inner_title: orb.payload.inner_title,
+           info: orb.payload.info,
+           tip: orb.payload.tip,
+           when: orb.payload.when
+        },
+        media: (if orb.media, do: S3.get_all!("ORB", orb.id, "banner"))
       }
     end)
   end
+
 
   def post_orb_mapper(orbs) do
     Enum.map(orbs, fn orb ->

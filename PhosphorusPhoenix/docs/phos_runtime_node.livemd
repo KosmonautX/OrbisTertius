@@ -3,58 +3,7 @@
 ## Root
 
 ```elixir
-# {:ok , media}= %{"media" => [%{"essence" => "banner", "resolution" => "raw"}, %{"essence" => "profile"}]} 
-# |> Phos.Orbject.Structure.apply_user_changeset()
-
-{:ok, orbject} =
-  Phos.Orbject.Structure.apply_user_changeset(
-    %Phos.Orbject.Structure{},
-    %{
-      id: Ecto.UUID.generate(),
-      archetype: "USR",
-      media: [%{"essence" => "banner", "resolution" => "raw"}, %{"essence" => "profile"}]
-    }
-  )
-
-# orbject
-# |> (fn orbject ->
-#       for m <- orbject.media do
-#         "#{m.essence}#{unless is_nil(m.resolution),
-#           do: "/#{m.resolution}"}#{unless is_nil(m.height),
-#           do: "#{m.height}x#{m.width}"}#{unless is_nil(m.ext),
-#           do: ".#{m.ext}"}"
-#       end
-#     end).()
-
-orbject |> Phos.Orbject.S3.put_all!()
-
-# Ecto.Changeset.apply_action(
-#   Enum.map( , fn x -> end), :orbject_fetch)
-```
-
-```elixir
-alias Phos.Users
-id = Phos.Users.get_user_by_fyr("BX1BxM9KkwdFmy2J4FNNkFxclpS2").id
-user = Users.get_user!(id)
-
-params = %{
-  "private_profile" => %{
-    "user_id" => id,
-    "geolocation" => [%{"id" => "home", "geohash" => 7_534_130_938_142}]
-  },
-  "personal_orb" => %{
-    "id" => Ecto.UUID.generate(),
-    "active" => true,
-    "locations" => [%{"id" => 623_212_828_750_938_111}, %{"id" => 623_212_828_750_970_879}]
-  }
-}
-
-user
-
-Phos.Users.User.territorial_changeset(user, params)
-|> Phos.Repo.update()
-
-# Phos.Users.update_user(user, %{"username" => "cool", "public_profile" => %{"bio" => "wow"}})
+Phos.Users.feeds("b2f8be78-cf09-4ddb-aa67-1856425c75cf", 1)
 ```
 
 ## recompile @ node

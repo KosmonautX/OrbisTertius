@@ -96,16 +96,19 @@ defmodule PhosWeb.Router do
     get "/userland/self", UserProfileController, :show_self
     put "/userland/self", UserProfileController, :update_self
     put "/userland/self/territory", UserProfileController, :update_territory
+    get "/userland/others/:id", UserProfileController, :show
 
-    resources "/userland/users", UserProfileController, only: [:show]
-
+    get "/userland/others/:id/history", OrbController, :show_history
+    get "/orbland/stream/:id", OrbController, :show_territory
     resources "/orbland/orbs", OrbController, except: [:new, :edit]
+
     resources "/orbland/comments", CommentController, except: [:new, :edit]
     get "/orbland/comments/root/:id", CommentController, :show_root
     get "/orbland/comments/children/:id", CommentController, :show_children
     get "/orbland/comments/ancestor/:id", CommentController, :show_ancestor
 
     scope "/folkland" do
+      get "/stream/self", OrbController, :show_friends
       resources "/friends", FriendController, except: [:new, :edit, :show, :update]
       put "/friends/ended", FriendController, :ended
       put "/friends/begun", FriendController, :begun

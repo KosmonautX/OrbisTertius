@@ -6,8 +6,8 @@
 :localipAddress = http://localhost:4000/api
 :princeton=0b3gd5XUGtNP6lqQean4IAp7ogG3
 :satrio=BX1BxM9KkwdFmy2J4FNNkFxclpS2
-:princeton_id="10db31d9-e231-4a69-b1f0-60f495184540"
-:satrio_id="c034e023-31f1-496c-be4a-cd7f8a0a2e24"
+:princeton_id=10db31d9-e231-4a69-b1f0-60f495184540
+:satrio_id=b2f8be78-cf09-4ddb-aa67-1856425c75cf
 :lky=08c21b36-c3ca-4693-8dd3-085da8e81967
 :auth-headers = <<
 Authorization: :token
@@ -24,7 +24,7 @@ GET :localipAddress/devland/flameon?user=:lky
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
-GET :localipAddress/devland/lankaonfyr?fyr_id=:princeton
+GET :localipAddress/devland/lankaonfyr?fyr_id=:satrio
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 
@@ -64,11 +64,17 @@ PUT :ipAddress/userland/self/
         }
     ],
     "traits": [
-        "jesus",
-        "nodejs"
+        "aikido",
+        "matrix"
     ],
     "occupation": "bloatwarengingeer"
 }
+## Read userdata of Others Profile
+GET :ipAddress/userland/others/:satrio_id
+:auth-headers
+## Read all of User Orb History
+GET :ipAddress/userland/others/:satrio_id/history?page=1
+:auth-headers
 
 ## Update territorial data of self
 PUT :ipAddress/userland/self/territory
@@ -77,19 +83,25 @@ PUT :ipAddress/userland/self/territory
     "territory": [
         {
             "id": "home",
-            "geohash": 623276216935972863,
+            "geohash": 627843393045598207,
             "location_description": "Pending road"
         },
         {
             "id": "work",
-            "geohash": 627843155476234239
+            "geohash": 627843377464406015
         }
     ]
 }
 
 ## ! Folkland Calls
+## View others Profile
+
 ## List all current Buddies
 GET :ipAddress/folkland/friends
+:auth-headers
+
+## Orb Stream directed at yourself from friends
+GET :ipAddress/folkland/stream/self?page=2
 :auth-headers
 
 ## Send connection request
@@ -127,8 +139,8 @@ GET :ipAddress/folkland/friends/pending
 GET :ipAddress/orbland/orbs/9ab5d83a-1142-4bc3-a4e8-61d68af34e4f
 :auth-headers
 
-## Read all orbs (Paginated Call incoming)
-GET :ipAddress/orbland/orbs
+## Read all orbs in that geohash id
+GET :ipAddress/orbland/stream/623276216935972863
 :auth-headers
 
 ## Create Orbs
@@ -136,15 +148,40 @@ POST :ipAddress/orbland/orbs
 -> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (assq 'data (json-read)))))
 :auth-headers
 {
-    "geohash": {
-        "target": 8,
+    "geolocation": {
         "central_geohash": 623276216935972863
     },
     "title": "aikido style",
+    "inner_title": "xcape the matrix",
     "info": "ba sing se",
     "active": "true",
-    "media": "false",
-    "expires_in": "10000"
+    "media": [
+        {
+            "essence": "banner",
+            "resolution": "lossless"
+        }],
+    "expires_in": "10000",
+    "traits": ["holy", "mooncakes"]
+}
+## Update Orbs (Deactivate etc)
+PUT :ipAddress/orbland/orbs/b2f8be78-cf09-4ddb-aa67-1856425c75cf
+-> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (assq 'data (json-read)))))
+:auth-headers
+{
+    "geolocation": {
+        "central_geohash": 623276216935972863
+    },
+    "title": "aikido style",
+    "inner_title": "xcape the matrix",
+    "info": "ba sing se",
+    "active": "false",
+    "media": [
+        {
+            "essence": "banner",
+            "resolution": "lossless"
+        }],
+    "expires_in": "10000",
+    "traits": ["holy", "mooncakes"]
 }
 
 

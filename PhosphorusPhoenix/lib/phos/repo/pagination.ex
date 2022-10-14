@@ -37,7 +37,7 @@ defmodule Phos.Repo.Paginated do
         downstream: false,
         upstream: page > 1,
         current: page,
-        start: (page - 1) * limit + 1 ,
+        start: (unless (count==0), do: (page - 1) * limit + 1, else: (page - 1) * limit + count),
         end: (page - 1) * limit + count
      }}}
     end

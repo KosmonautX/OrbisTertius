@@ -10,9 +10,10 @@ defmodule Phos.Action.Orb do
     field :extinguish, :naive_datetime
     field :media, :boolean, default: false
     field :title, :string
-    field :source, Ecto.Enum, values: [:web, :tele, :api]
+    field :source, Ecto.Enum, values: [:web, :tele, :api], default: :api
     field :central_geohash, :integer
     field :traits, {:array, :string}, default: []
+    field :userbound, :boolean, default: false
     field :topic, :string, virtual: true
     field :comment_count, :integer, default: 0, virtual: true
 
@@ -29,7 +30,9 @@ defmodule Phos.Action.Orb do
     orb
       |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])
       |> cast_embed(:payload)
-      |> validate_required([:id, :title, :active, :media, :extinguish])
+      |> cast_assoc(:locations)
+      |> validate_required([:id, :title, :active, :media, :extinguish, :initiator_id])
+      |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 
   @doc """
@@ -37,24 +40,27 @@ defmodule Phos.Action.Orb do
 
   Editing orb does not need fields like geolocation.
   """
-  def changeset_edit(user, attrs) do
-    user
+  def update_changeset(%Orb{} = orb, attrs) do
+    orb
     |> cast(attrs, [:title, :active, :media, :extinguish, :traits])
     |> cast_embed(:payload)
+    |> validate_required([:active, :title])
+    |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 
   def personal_changeset(%Orb{} = orb, attrs) do
     orb
-      |> cast(attrs, [:id, :active, :traits])
+      |> cast(attrs, [:id, :active, :userbound, :initiator_id, :traits])
       |> cast_embed(:payload)
-      |> validate_required([:id, :active])
+      |> validate_required([:id, :active, :userbound, :initiator_id])
       |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 
   def territorial_changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:id, :active])
+    |> cast(params, [:id, :active, :userbound, :initiator_id])
     |> cast_assoc(:locations)
+    |> validate_required([:id, :active, :userbound, :initiator_id])
     |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 

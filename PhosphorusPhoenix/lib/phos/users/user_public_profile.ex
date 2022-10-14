@@ -9,6 +9,8 @@ defmodule Phos.Users.Public_Profile do
     field :bio, :string
     field :occupation, :string
     field :honorific, :string
+    field :banner_pic, :integer, default: :rand.uniform(7)
+    field :profile_pic, :integer, default: :rand.uniform(7)
     field :traits, {:array, :string}, default: []
   end
 

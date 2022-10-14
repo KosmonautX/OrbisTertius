@@ -9,9 +9,12 @@ defmodule PhosWeb.API.UserProfileController do
 
   # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X GET 'http://localhost:4000/api/userland/self'
 
-  def show(%Plug.Conn{assigns: %{current_user: %{"user_id" => _id}}} = conn, %{"id" => user_id}) do
-    user = Users.get_public_user!(user_id)
-    render(conn, "show.json", user_profile: user)
+  def show(conn, %{"id" => user_id}) do
+    with %User{} = user <-  Users.get_public_user(user_id) do
+      render(conn, "show.json", user_profile: user)
+    else
+      nil -> {:error, :not_found}
+    end
   end
 
   def show_self(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, _params) do
@@ -42,12 +45,14 @@ defmodule PhosWeb.API.UserProfileController do
                             "bio" => params["bio"],
                             "public_name" => params["public_name"],
                             "occupation" => params["occupation"],
-                            "traits" => (if is_list(params["traits"]), do: params["traits"], else: [])
+                            "traits" => params["traits"]
                            } |> purge_nil(),
       "personal_orb" => %{"id" => (if is_nil(user.personal_orb), do: Ecto.UUID.generate(), else: user.personal_orb.id),
+                          "userbound" => true,
                           "initiator_id" => user.id,
-                          "traits" => (if is_list(params["traits"]), do: ["personal" | params["traits"]], else: ["personal"])}
+                          "traits" => params["traits"]
     } |> purge_nil()
+      } |> purge_nil()
   end
 
 
@@ -83,6 +88,8 @@ defmodule PhosWeb.API.UserProfileController do
         "personal_orb" => %{
           "id" => (if is_nil(user.personal_orb), do: Ecto.UUID.generate(), else: user.personal_orb.id),
           "active" => true,
+          "userbound" => true,
+          "initiator_id" => user.id,
           "locations" => present_territory
           |> Enum.map(fn hash -> :h3.parent(hash, 8) |> :h3.k_ring(1) end)
           |>  List.flatten() |> Enum.uniq() |> Enum.map(fn hash -> %{"id" => hash} end)

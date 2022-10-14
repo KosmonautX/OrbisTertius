@@ -22,7 +22,8 @@ defmodule Phos.ActionTest do
     end
 
     test "create_orb/1 with valid data creates a orb" do
-      valid_attrs = %{id: Ecto.UUID.generate(), active: true, extinguish: ~N[2022-05-20 12:12:00], media: true, title: "some title"}
+      %{id: user_id} = user_fixture()
+      valid_attrs = %{id: Ecto.UUID.generate(), active: true, extinguish: ~N[2022-05-20 12:12:00], media: true, initiator_id: user_id, title: "some title"}
 
       assert {:ok, %Orb{} = orb} = Action.create_orb(valid_attrs)
       assert orb.active == true

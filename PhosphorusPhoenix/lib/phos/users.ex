@@ -317,7 +317,7 @@ defmodule Phos.Users do
 
   def get_territorial_user!(id), do: Repo.get!(User, id) |> Repo.preload([:private_profile, personal_orb: :locations])
 
-  def get_public_user!(id), do: Repo.get!(User, id)
+  def get_public_user(id), do: Repo.get(User, id) |> Repo.preload([:orbs])
 
   ## User registration
 

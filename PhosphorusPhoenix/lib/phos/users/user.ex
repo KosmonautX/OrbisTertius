@@ -11,7 +11,6 @@ defmodule Phos.Users.User do
     field :username, :string
     field :role, :string
     field :media, :boolean, default: false
-    field :profile_pic, :integer, default: :rand.uniform(6)
     field :fyr_id, :string
 
     field :password, :string, virtual: true, redact: true
@@ -21,7 +20,7 @@ defmodule Phos.Users.User do
     has_many :orbs, Orb, references: :id, foreign_key: :initiator_id
     has_many :auths, Auth, references: :id, foreign_key: :user_id
 
-    has_one :personal_orb, Orb, references: :id, foreign_key: :initiator_id, where: [traits: ["personal"]]
+    has_one :personal_orb, Orb, foreign_key: :id
     has_one :private_profile, Private_Profile, references: :id, foreign_key: :user_id
     embeds_one :public_profile, Public_Profile, on_replace: :delete
 
@@ -31,7 +30,7 @@ defmodule Phos.Users.User do
   @doc false
   def changeset(%Phos.Users.User{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :media, :profile_pic, :email, :fyr_id])
+    |> cast(attrs, [:username, :media, :email, :fyr_id])
     #|> validate_required(:email)
     |> cast_embed(:public_profile)
     |> cast_assoc(:private_profile)
@@ -40,7 +39,7 @@ defmodule Phos.Users.User do
 
   def personal_changeset(%Phos.Users.User{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :media, :profile_pic])
+    |> cast(attrs, [:username, :media])
     #|> validate_required(:email)
     |> cast_embed(:public_profile)
     |> cast_assoc(:personal_orb, with: &Orb.personal_changeset/2)
@@ -71,7 +70,7 @@ defmodule Phos.Users.User do
 
   def migration_changeset(%Phos.Users.User{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :media, :profile_pic, :fyr_id])
+    |> cast(attrs, [:username, :media, :fyr_id])
     #|> validate_required(:email)
     |> cast_embed(:public_profile)
     |> cast_assoc(:private_profile)
@@ -88,14 +87,14 @@ defmodule Phos.Users.User do
 
   def pub_profile_changeset(%Phos.Users.User{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :media, :profile_pic])
+    |> cast(attrs, [:username, :media])
     |> cast_embed(:public_profile)
     |> unique_constraint(:username, name: :unique_username)
   end
 
   def user_profile_changeset(%Phos.Users.User{} = user, attrs) do
     user
-    |> cast(attrs, [:media, :profile_pic])
+    |> cast(attrs, [:media])
     |> cast_embed(:public_profile)
     |> unique_constraint(:username, name: :unique_username)
   end

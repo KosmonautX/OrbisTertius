@@ -5,11 +5,9 @@ defmodule Phos.Action do
 
   import Ecto.Query, warn: false
   alias Phos.Repo
-  alias Phos.Action.{Orb, Location, Orb_Payload, Orb_Location}
+  alias Phos.Action.{Orb, Location, Orb_Location}
 
-  alias Ecto.Multi
-
-  @doc """
+@doc """
   Returns the list of orbs.
 
   ## Examples
@@ -19,7 +17,7 @@ defmodule Phos.Action do
 
   """
   def list_orbs(filters \\ []) do
-    default_query = from o in Orb, preload: [:locations, :initiator], order_by: [desc: o.inserted_at]
+    default_query = from o in Orb, preload: [:initiator], order_by: [desc: o.inserted_at]
     query = case Kernel.length(filters) do
       0 -> default_query
       _ -> advanced_orb_listing(filters, default_query)
@@ -28,6 +26,7 @@ defmodule Phos.Action do
     Repo.all(query)
   end
 
+  # orb filtering lens
   defp advanced_orb_listing(filters, default_query) do
     case Keyword.get(filters, :initiator_id) do
       ids when is_list(ids) ->
@@ -70,9 +69,9 @@ defmodule Phos.Action do
     Repo.all(query)
   end
 
-  def active_orbs_by_geohashes(ids) do
+  def active_orbs_by_geohashes(hashes) do
     from(l in Phos.Action.Orb_Location,
-      where: l.location_id in ^ids,
+      where: l.location_id in ^hashes,
       left_join: orbs in assoc(l, :orbs),
       where: orbs.active == true,
       preload: [orbs: :initiator],
@@ -81,31 +80,64 @@ defmodule Phos.Action do
       |> Enum.map(fn orb -> orb.orbs end)
   end
 
-  # def get_active_orbs_by_geohashes(ids) do
-  #   query =
-  #     Orb_Location
-  #     |> where([e], e.location_id in ^ids)
-  #     |> preload(:orbs)
-  #     |> preload(:locations)
-  #     |> order_by(desc: :inserted_at)
+  def orbs_by_geohashes(hashes, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    from(l in Orb_Location,
+      as: :l,
+      where: l.location_id in ^hashes,
+      left_join: orbs in assoc(l, :orbs),
+      where: orbs.userbound != true,
+      preload: [orbs: :initiator],
+      inner_lateral_join: c in subquery(
+        from c in Phos.Comments.Comment,
+        where: c.orb_id == parent_as(:l).orb_id,
+        select: %{count: count()}
+      ),
+      select_merge: %{comment_count: c.count})
+      |> Repo.Paginated.all(page, sort_attribute, limit)
+  end
 
-  #   Repo.all(query, limit: 32)
-  #   |> Enum.map(fn orb -> orb.orbs end)
-  #   |> Enum.filter(fn orb -> orb.active == true end)
-  # end
+  def users_by_geohashes(hashes, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    from(l in Orb_Location,
+      as: :l,
+      where: l.location_id in ^hashes,
+      left_join: orbs in assoc(l, :orbs),
+      where: orbs.userbound == true,
+      preload: [orbs: :initiator],
+      inner_lateral_join: c in subquery(
+        from c in Phos.Comments.Comment,
+        where: c.orb_id == parent_as(:l).orb_id,
+        select: %{count: count()}
+      ),
+      select_merge: %{comment_count: c.count})
+      |> Repo.Paginated.all(page, sort_attribute, limit)
+  end
+
+  def orbs_by_initiators(user_ids, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    from(o in Orb,
+      as: :o,
+      where: o.initiator_id in ^user_ids,
+      preload: [:initiator],
+      inner_lateral_join: c in subquery(
+        from c in Phos.Comments.Comment,
+        where: c.orb_id == parent_as(:o).id,
+        select: %{count: count()}
+      ),
+      select_merge: %{comment_count: c.count})
+      |> Repo.Paginated.all(page, sort_attribute, limit)
+  end
 
   def get_active_orbs_by_geohashes(ids) do
     query =
       from l in Orb_Location,
-        as: :l,
-        where: l.location_id in ^ids,
-        preload: [:orbs, :locations],
-        inner_lateral_join: c in subquery(
-          from c in Phos.Comments.Comment,
-          where: c.orb_id == parent_as(:l).orb_id,
-          select: %{count: count()}
-        ),
-        select_merge: %{comment_count: c.count}
+      as: :l,
+      where: l.location_id in ^ids,
+      preload: [:orbs, :locations],
+      inner_lateral_join: c in subquery(
+        from c in Phos.Comments.Comment,
+        where: c.orb_id == parent_as(:l).orb_id,
+        select: %{count: count()}
+      ),
+      select_merge: %{comment_count: c.count}
 
     Repo.all(query, limit: 32)
     |> Enum.map(fn orbloc -> Map.put(orbloc.orbs, :comment_count, orbloc.comment_count) end)
@@ -113,7 +145,7 @@ defmodule Phos.Action do
     |> Enum.filter(fn orb -> orb.active == true end)
   end
 
-  def get_active_orbs_by_userid(user_id) do
+  def get_active_orbs_by_initiator(user_id) do
     query =
       from o in Orb,
         as: :o,
@@ -168,32 +200,15 @@ defmodule Phos.Action do
 #   """
 
   def create_orb(attrs \\ %{}) do
-    case attrs do
-      %{"geolocation" => location_list} ->
-        timestamp = NaiveDateTime.utc_now()
-        |> NaiveDateTime.truncate(:second)
-
-        maps = Enum.map(location_list, &%{
-          id: &1,
-          inserted_at: timestamp,
-          updated_at: timestamp
-        })
-
-        Repo.insert_all(Location, maps, on_conflict: :nothing, conflict_target: :id)
-        location_ids = Enum.map(maps, fn loc -> loc.id end)
-        orb_locations_upsert(attrs, location_ids)
-
-        _ ->
-        %Orb{}
-        |> Orb.changeset(attrs)
-        |> Repo.insert()
-    end
+    %Orb{}
+    |> Orb.changeset(attrs)
+    |> Repo.insert()
     |> case do
-      {:ok, orb} = data ->
-        spawn(fn -> user_feeds_publisher(orb) end)
-        data
-      err -> err
-    end
+         {:ok, orb} = data ->
+           spawn(fn -> user_feeds_publisher(orb) end)
+           {:ok, orb |> Repo.preload([:locations])}
+         err -> err
+       end
   end
 
   defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
@@ -253,7 +268,7 @@ defmodule Phos.Action do
 #   """
   def update_orb(%Orb{} = orb, attrs) do
     orb
-    |> Orb.changeset(attrs)
+    |> Orb.update_changeset(attrs)
     |> Repo.update()
   end
 
@@ -271,7 +286,7 @@ defmodule Phos.Action do
 
   def update_orb!(%Orb{} = orb, attrs) do
     orb
-    |> Orb.changeset_edit(attrs)
+    |> Orb.update_changeset(attrs)
     |> Repo.update!()
     |> Repo.preload([:initiator, :locations])
   end
