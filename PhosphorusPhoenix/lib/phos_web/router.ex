@@ -99,6 +99,8 @@ defmodule PhosWeb.Router do
     get "/userland/others/:id", UserProfileController, :show
 
     get "/userland/others/:id/history", OrbController, :show_history
+
+
     get "/orbland/stream/:id", OrbController, :show_territory
     resources "/orbland/orbs", OrbController, except: [:new, :edit]
 
@@ -109,6 +111,7 @@ defmodule PhosWeb.Router do
 
     scope "/folkland" do
       get "/stream/self", OrbController, :show_friends
+      get "/stream/discovery/:id", FriendController, :show_discovery
       resources "/friends", FriendController, except: [:new, :edit, :show, :update]
       put "/friends/ended", FriendController, :ended
       put "/friends/begun", FriendController, :begun

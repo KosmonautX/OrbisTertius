@@ -38,4 +38,14 @@ defmodule PhosWeb.API.FriendController do
       {:error, reason} -> render(conn |> put_status(:conflict), "relation_error.json", reason: reason)
     end
   end
+
+  def show_discovery(conn, %{"id" => hash, "page" => page}) do
+    live_friends = Phos.Action.users_by_geohashes([String.to_integer(hash) |> :h3.parent(8)], page)
+    render(conn, "paginated.json", friends: live_friends)
+  end
+
+  def show_discovery(conn, %{"id" => hash}) do
+    live_friends = Phos.Action.users_by_geohashes([String.to_integer(hash) |> :h3.parent(8)], 1)
+    render(conn, "paginated.json", friends: live_friends)
+  end
 end

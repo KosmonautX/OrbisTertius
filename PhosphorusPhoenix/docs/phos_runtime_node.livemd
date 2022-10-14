@@ -4,8 +4,11 @@
 
 ```elixir
 # import Ecto.Query
-Phos.Repo.get(Phos.Users.User, "b2f8be78-cf09-4ddb-aa67-1856425c75cf")
-|> Phos.Repo.Preloader.lateral(:orbs, limit: 3)
+Phos.Action.users_by_geohashes([627_843_377_464_406_015 |> :h3.parent(8)], 1)
+# Phos.Repo.get(Phos.Users.User, "b2f8be78-cf09-4ddb-aa67-1856425c75cf") 
+# |> Phos.Repo.Preloader.lateral(:orbs, [limit: 3])
+
+# Map.put(q, :data, Enum.map(q.data, fn x -> x.orbs.initiator end) |> Phos.Repo.Preloader.lateral(:orbs, [limit: 3]))
 ```
 
 ## recompile @ node

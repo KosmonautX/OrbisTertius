@@ -5,6 +5,10 @@ defmodule PhosWeb.API.FriendView do
     %{data: render_many(friends, __MODULE__, "show.json")}
   end
 
+  def render("paginated.json", %{friends: friends}) do
+    %{data: render_many(friends.data, __MODULE__, "show.json"), meta: friends.meta}
+  end
+
   def render("show.json", %{friend: user}) do
     PhosWeb.Util.Viewer.user_mapper(user)
   end

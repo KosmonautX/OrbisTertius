@@ -110,6 +110,8 @@ defmodule Phos.Action do
       ),
       select_merge: %{comment_count: c.count})
       |> Repo.Paginated.all(page, sort_attribute, limit)
+      |> (&(Map.put(&1, :data, Enum.map(&1.data, fn x -> x.orbs.initiator end)
+          |> Repo.Preloader.lateral(:orbs, [limit: 5])))).()
   end
 
   def orbs_by_initiators(user_ids, page, sort_attribute \\ :inserted_at, limit \\ 12) do

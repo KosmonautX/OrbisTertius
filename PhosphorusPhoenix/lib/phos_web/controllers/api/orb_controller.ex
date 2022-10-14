@@ -3,7 +3,6 @@ defmodule PhosWeb.API.OrbController do
 
   alias Phos.Action
   alias Phos.Action.Orb
-  alias PhosWeb.Utility.Encoder
 
   action_fallback PhosWeb.API.FallbackController
 
@@ -15,21 +14,21 @@ defmodule PhosWeb.API.OrbController do
   end
   # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X GET 'http://localhost:4000/api/orbs'
 
-#   @doc """
-#   Creates a orb.
+  #   @doc """
+  #   Creates a orb.
 
-#   ## Examples
+  #   ## Examples
 
-#       iex> create_orb(%{field: value})
-#       {"data": %Orb{}}
+  #       iex> create_orb(%{field: value})
+  #       {"data": %Orb{}}
 
-#       iex> create_orb(%{field: bad_value})
-#       ""
+  #       iex> create_orb(%{field: bad_value})
+  #       ""
 
-#   """
+  #   """
 
-# Media Strategy
- def create(conn = %{assigns: %{current_user: user}}, params = %{"media" => [_|_] = media}) do
+  # Media Strategy
+  def create(conn = %{assigns: %{current_user: user}}, params = %{"media" => [_|_] = media}) do
 
     with {:ok, attrs} <- orb_constructor(user, params),
          {:ok, media} <- Phos.Orbject.Structure.apply_orb_changeset(%{id: attrs["id"], archetype: "ORB", media: media}),
@@ -171,7 +170,7 @@ defmodule PhosWeb.API.OrbController do
   end
 
 
-   def update(conn = %{assigns: %{current_user: user}}, params = %{"id" => id, "media" => [_|_] = media}) do
+  def update(conn = %{assigns: %{current_user: user}}, params = %{"id" => id, "media" => [_|_] = media}) do
     orb = Action.get_orb!(id)
     with true <- orb.initiator.id == user.id,
          {:ok, attrs} <- orb_constructor(user, params),
