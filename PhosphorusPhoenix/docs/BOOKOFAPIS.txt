@@ -104,6 +104,10 @@ GET :ipAddress/folkland/friends
 GET :ipAddress/folkland/stream/self?page=2
 :auth-headers
 
+## Orb Stream directed at yourself from friends
+GET :ipAddress/folkland/stream/discovery?page=2
+:auth-headers
+
 ## Send connection request
 POST :ipAddress/folkland/friends
 :auth-headers
@@ -174,7 +178,7 @@ PUT :ipAddress/orbland/orbs/b2f8be78-cf09-4ddb-aa67-1856425c75cf
     "title": "aikido style",
     "inner_title": "xcape the matrix",
     "info": "ba sing se",
-    "active": "false",
+    "active": "true",
     "media": [
         {
             "essence": "banner",

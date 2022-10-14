@@ -2,6 +2,8 @@ defmodule Phos.Repo.Paginated do
   import Ecto.Query
 
 
+  ## TODO include time as a variable to filter out upstream downstream
+
   def query_builder(query, page, attr, limit) do
     query
     |> order_by(desc: ^attr)

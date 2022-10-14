@@ -17,7 +17,7 @@ defmodule Phos.Users.Public_Profile do
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:birthday, :public_name, :bio, :occupation, :honorific, :traits])
+    |> cast(attrs, [:birthday, :public_name, :bio, :occupation, :honorific, :traits, :profile_pic, :banner_pic])
     |> validate_inclusion(:honorific, ["Mr", "Ms", "Dr"])
   end
 end

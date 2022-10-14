@@ -3,7 +3,9 @@
 ## Root
 
 ```elixir
-Phos.Users.feeds("b2f8be78-cf09-4ddb-aa67-1856425c75cf", 1)
+# import Ecto.Query
+Phos.Repo.get(Phos.Users.User, "b2f8be78-cf09-4ddb-aa67-1856425c75cf")
+|> Phos.Repo.Preloader.lateral(:orbs, limit: 3)
 ```
 
 ## recompile @ node
