@@ -93,7 +93,10 @@ defmodule Phos.Orbject.S3 do
   end
 
   defp path_constructor(archetype, uuid, m = %Orbject.Structure.Media{}) do
-    "#{archetype}/#{uuid}/#{m.essence}#{unless is_nil(m.resolution),
+    "#{archetype}/#{uuid}#{unless is_nil(m.access),
+          do: "/#{m.access}"}#{unless is_nil(m.essence),
+          do: "/#{m.essence}"}#{unless is_nil(m.count),
+          do: "/#{m.count}"}#{unless is_nil(m.resolution),
           do: "/#{m.resolution}"}#{unless is_nil(m.height),
           do: "#{m.height}x#{m.width}"}#{unless is_nil(m.ext),
           do: ".#{m.ext}"}"

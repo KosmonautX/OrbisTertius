@@ -9,11 +9,12 @@ defmodule Phos.Orbject.Structure do
   embedded_schema do
     field(:archetype, :string)
     embeds_many :media, Media do
+      field(:access, :string)
       field(:essence, :string)
       field(:resolution, :string)
       field(:height, :integer)
       field(:width, :integer)
-      field(:number, :integer)
+      field(:count, :integer)
       field(:ext, :string)
       field(:path, :string)
     end
@@ -36,16 +37,20 @@ defmodule Phos.Orbject.Structure do
 
   def user_media_changeset(structure, attrs) do
     structure
-    |> cast(attrs, [:essence, :resolution, :height, :width, :ext])
+    |> cast(attrs, [:access, :essence, :resolution, :height, :width, :ext])
+    |> validate_inclusion(:access, ["protected", "public"])
     |> validate_inclusion(:essence, ["banner", "profile"])
     |> validate_inclusion(:resolution, ["lossy", "lossless"])
+    |> validate_required([:access, :essence])
   end
 
   def orb_media_changeset(structure, attrs) do
     structure
-    |> cast(attrs, [:essence, :resolution, :height, :width, :ext])
+    |> cast(attrs, [:access, :essence, :count, :resolution, :height, :width, :ext])
+    |> validate_inclusion(:access, ["public"])
     |> validate_inclusion(:essence, ["banner"])
     |> validate_inclusion(:resolution, ["lossy", "lossless"])
+    |> validate_required([:access, :essence])
   end
 
 end

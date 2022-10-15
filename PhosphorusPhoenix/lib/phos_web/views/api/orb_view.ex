@@ -17,16 +17,13 @@ defmodule PhosWeb.API.OrbView do
 
   def render("show.json", %{orb: orb, media: media}) do
     %{data: render_one(orb, OrbView, "orb.json"),
-      media: (unless is_nil(media),
+      media_herald: (unless is_nil(media),
        do: Phos.Orbject.S3.put_all!(media))
     }
   end
 
   def render("show.json", %{orb: orb}) do
-    %{data: render_one(orb, OrbView, "orb.json"),
-      media: (if orb.media,
-       do: Phos.Orbject.S3.get_all!("ORB", orb.id))
-    }
+    %{data: render_one(orb, OrbView, "orb.json")}
   end
 
   def render("orb.json", %{orb: orb}) do

@@ -14,8 +14,7 @@ defmodule PhosWeb.Util.Viewer do
       (if Ecto.assoc_loaded?(entity.initiator) && !is_nil(entity.initiator) do
           %{initiator:
             %{data: user_mapper(entity.initiator),
-              links: %{self: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, entity.initiator.id)},
-              media: (if entity.initiator.media, do: S3.get_all!("USR", entity.initiator.id, "profile"))
+              links: %{self: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, entity.initiator.id)}
             }
           }
         end)
@@ -43,6 +42,7 @@ defmodule PhosWeb.Util.Viewer do
       relationships: relationship_mapper(user),
       creationtime: DateTime.from_naive!(user.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
       mutationtime: DateTime.from_naive!(user.updated_at, "Etc/UTC") |> DateTime.to_unix(),
+      media: (if user.media, do: S3.get_all!("USR", user.id, "public"))
     }
   end
 
@@ -69,8 +69,7 @@ defmodule PhosWeb.Util.Viewer do
            banner_pic: user.public_profile.banner_pic,
            traits: user.public_profile.traits,
            territories: user.public_profile.territories
-        },
-        media: (if user.media, do: S3.get_all!("USR", user.id, "profile"))
+        }
       }
     end)
   end
@@ -90,7 +89,8 @@ defmodule PhosWeb.Util.Viewer do
       payload: orb_payload_mapper(orb),
       geolocation: %{
         hash: orb.central_geohash
-      }
+      },
+      media: (if orb.media, do: S3.get_all!("ORB", orb.id, "public"))
     }
   end
 
@@ -102,8 +102,7 @@ defmodule PhosWeb.Util.Viewer do
            info: orb.payload.info,
            tip: orb.payload.tip,
            when: orb.payload.when
-        },
-        media: (if orb.media, do: S3.get_all!("ORB", orb.id, "banner"))
+        }
       }
     end)
   end
