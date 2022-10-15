@@ -42,4 +42,4 @@ path = "/metrics"
     grace_period = "10s"
     interval = "20s"
     restart_limit = 5
-    timeout = "5s"
+    timeout = "10s"
