@@ -67,7 +67,8 @@ PUT :ipAddress/userland/self/
         "aikido",
         "matrix"
     ],
-    "occupation": "bloatwarengingeer"
+    "occupation": "bloatwarengingeer",
+    "profile_pic": 3
 }
 ## Read userdata of Others Profile
 GET :ipAddress/userland/others/:satrio_id
@@ -83,12 +84,12 @@ PUT :ipAddress/userland/self/territory
     "territory": [
         {
             "id": "home",
-            "geohash": 627843393045598207,
+            "geohash": 628021297666224127,
             "location_description": "Pending road"
         },
         {
             "id": "work",
-            "geohash": 627843377464406015
+            "geohash": 627986446952349695
         }
     ]
 }

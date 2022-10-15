@@ -67,7 +67,8 @@ defmodule PhosWeb.Util.Viewer do
            public_name: user.public_profile.public_name,
            profile_pic: user.public_profile.profile_pic,
            banner_pic: user.public_profile.banner_pic,
-           traits: user.public_profile.traits
+           traits: user.public_profile.traits,
+           territories: user.public_profile.territories
         },
         media: (if user.media, do: S3.get_all!("USR", user.id, "profile"))
       }

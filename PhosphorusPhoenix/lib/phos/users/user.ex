@@ -22,7 +22,7 @@ defmodule Phos.Users.User do
 
     has_one :personal_orb, Orb, foreign_key: :id
     has_one :private_profile, Private_Profile, references: :id, foreign_key: :user_id
-    embeds_one :public_profile, Public_Profile, on_replace: :delete
+    embeds_one :public_profile, Public_Profile, on_replace: :update
 
     timestamps()
   end
@@ -50,6 +50,7 @@ defmodule Phos.Users.User do
     user
     |> cast(attrs, [])
     |> cast_assoc(:personal_orb, with: &Orb.territorial_changeset/2)
+    |> cast_embed(:public_profile, with: &Public_Profile.territorial_changeset/2)
     |> cast_assoc(:private_profile)
   end
 

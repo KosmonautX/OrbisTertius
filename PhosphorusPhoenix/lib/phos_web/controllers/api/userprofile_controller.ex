@@ -45,7 +45,9 @@ defmodule PhosWeb.API.UserProfileController do
                             "bio" => params["bio"],
                             "public_name" => params["public_name"],
                             "occupation" => params["occupation"],
-                            "traits" => params["traits"]
+                            "traits" => params["traits"],
+                            "profile_pic" => params["profile_pic"],
+                            "banner_pic" => params["banner_pic"]
                            } |> purge_nil(),
       "personal_orb" => %{"id" => (if is_nil(user.personal_orb), do: Ecto.UUID.generate(), else: user.personal_orb.id),
                           "userbound" => true,
@@ -84,15 +86,17 @@ defmodule PhosWeb.API.UserProfileController do
   defp parse_territory(user , wished_territory) when is_list(wished_territory) do
     try do
       present_territory = wished_territory |> Enum.map(fn loc -> :h3.parent(loc["geohash"], 11) end)
+      |> Enum.map(fn hash -> :h3.parent(hash, 8) |> :h3.k_ring(1) end)
+      |>  List.flatten() |> Enum.uniq()
+
       %{"private_profile" => %{"user_id" => user.id, "geolocation" => wished_territory},
+        "public_profile" => %{"territories" => present_territory},
         "personal_orb" => %{
           "id" => (if is_nil(user.personal_orb), do: Ecto.UUID.generate(), else: user.personal_orb.id),
           "active" => true,
           "userbound" => true,
           "initiator_id" => user.id,
-          "locations" => present_territory
-          |> Enum.map(fn hash -> :h3.parent(hash, 8) |> :h3.k_ring(1) end)
-          |>  List.flatten() |> Enum.uniq() |> Enum.map(fn hash -> %{"id" => hash} end)
+          "locations" =>  present_territory |> Enum.map(fn hash -> %{"id" => hash} end)
         }
       }
     rescue

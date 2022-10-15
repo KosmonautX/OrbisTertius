@@ -9,15 +9,24 @@ defmodule Phos.Users.Public_Profile do
     field :bio, :string
     field :occupation, :string
     field :honorific, :string
-    field :banner_pic, :integer, default: :rand.uniform(7)
-    field :profile_pic, :integer, default: :rand.uniform(7)
+    field :banner_pic, :integer, default: :rand.uniform(6)
+    field :profile_pic, :integer, default: :rand.uniform(6)
     field :traits, {:array, :string}, default: []
+    field :territories, {:array, :integer}, default: []
   end
 
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:birthday, :public_name, :bio, :occupation, :honorific, :traits, :profile_pic, :banner_pic])
+    |> cast(attrs, [:birthday, :public_name, :bio, :occupation, :honorific, :banner_pic, :profile_pic, :traits])
     |> validate_inclusion(:honorific, ["Mr", "Ms", "Dr"])
   end
+
+
+  def territorial_changeset(user, attrs) do
+    user
+    |> cast(attrs, Phos.Users.Public_Profile.__schema__(:fields))
+    |> validate_inclusion(:honorific, ["Mr", "Ms", "Dr"])
+  end
+
 end
