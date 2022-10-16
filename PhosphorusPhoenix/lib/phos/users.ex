@@ -81,7 +81,7 @@ defmodule Phos.Users do
     Repo.all(query |> preload(:private_profile))
   end
 
-  @decorate cache_put(cache: Cache, key: id)
+  @decorate cacheable(cache: Cache, key: {User, :find, id}, opts: [ttl: @ttl])
   def find_user_by_id(id) when is_bitstring(id) do
     query = from u in User, where: u.id == ^id, limit: 1
     case Repo.one(query) do
@@ -149,28 +149,28 @@ defmodule Phos.Users do
 #       {:error, %Ecto.Changeset{}}
 
 #   """
-  @decorate cache_evict(cache: Cache, key: user.id)
+  @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
   def update_user(%User{} = user, attrs) do
     user
     |> User.personal_changeset(attrs)
     |> Repo.update()
   end
 
-  @decorate cache_evict(cache: Cache, key: user.id)
+  @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
   def update_territorial_user(%User{} = user, attrs) do
     user
     |> User.territorial_changeset(attrs)
     |> Repo.update()
   end
 
-  @decorate cache_evict(cache: Cache, key: user.id)
+  @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
   def update_pub_user(%User{} = user, attrs) do
     user
     |> User.pub_profile_changeset(attrs)
     |> Repo.update()
   end
 
-  @decorate cache_evict(cache: Cache, key: user.id)
+  @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
   def update_user_profile(%User{} = user, attrs) do
     changeset = Ecto.Changeset.change(user.public_profile)
     user_changeset = Ecto.Changeset.change(user)
@@ -191,7 +191,7 @@ defmodule Phos.Users do
 #       {:error, %Ecto.Changeset{}}
 
 #   """
-  @decorate cache_evict(cache: Cache, key: user.id)
+  @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
   def delete_user(%User{} = user) do
     Repo.delete(user)
   end
@@ -414,7 +414,7 @@ defmodule Phos.Users do
       {:error, %Ecto.Changeset{}}
 
   """
-  @decorate cache_evict(cache: Cache, key: user.id)
+  @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
   def apply_user_email(user, password, attrs) do
     user
     |> User.email_changeset(attrs)
@@ -493,7 +493,7 @@ defmodule Phos.Users do
       {:error, %Ecto.Changeset{}}
 
   """
-  @decorate cache_evict(cache: Cache, key: user.id)
+  @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
   def update_user_password(user, password, attrs) do
     changeset =
       user
@@ -635,7 +635,7 @@ defmodule Phos.Users do
       {:error, %Ecto.Changeset{}}
 
   """
-  @decorate cache_evict(cache: Cache, key: user.id)
+  @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
   def reset_user_password(user, attrs) do
     Multi.new()
     |> Multi.update(:user, User.password_changeset(user, attrs))
