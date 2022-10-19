@@ -745,17 +745,26 @@ defmodule Phos.Users do
   @spec add_friend(requester_id :: Ecto.UUID.t(), acceptor_id :: Ecto.UUID.t()) :: {:ok, Phos.Users.Relation.t()} | {:error, Ecto.Changeset.t()}
   def add_friend(requester_id, acceptor_id) when requester_id != acceptor_id do
     params = %{requester_id: requester_id, acceptor_id: acceptor_id}
-    existing_relation(requester_id, acceptor_id)
+    relation_type = [requester_id, acceptor_id] |> Enum.map(&uuid_to_binary/1) |> Enum.sort() |> Enum.join()
+    existing_relation(relation_type)
     |> case do
-      nil -> do_insert_friends(params)
-      [] -> do_insert_friends(params)
+      nil -> Map.put(params, :user_relation_type, relation_type) |> do_insert_friends()
+      [] -> Map.put(params, :user_relation_type, relation_type) |> do_insert_friends()
       _ -> {:error, "Cannot add requested friend"}
     end
   end
   def add_friend(_requester_id, _acceptor_id), do: {:error, "API not needed to connect to your own inner self"}
 
-  defp existing_relation(requester_id, acceptor_id) do
-    query = from q in Relation, where: q.requester_id in ^[requester_id, acceptor_id] and q.acceptor_id in ^[requester_id, acceptor_id]
+  defp uuid_to_binary(uuid) when is_bitstring(uuid) do
+    case UUID.info(uuid) do
+      {:ok, data} -> Keyword.get(data, :binary)
+      _ -> uuid_to_binary(nil)
+    end
+  end
+  defp uuid_to_binary(_uuid), do: <<0>>
+
+  defp existing_relation(relation_type) do
+    query = from q in Relation, where: q.user_relation_type == ^relation_type, limit: 1
 
     Repo.all(query)
   end

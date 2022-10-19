@@ -18,6 +18,8 @@ defmodule Phos.Users.Relation do
     belongs_to :requester, User, references: :id, type: Ecto.UUID
     belongs_to :acceptor, User, references: :id, type: Ecto.UUID
 
+    field :user_relation_type, :binary
+
     field :state, :string, default: "REQUESTED"
     field :requested_at, :naive_datetime
     field :accepted_at, :naive_datetime
@@ -25,8 +27,8 @@ defmodule Phos.Users.Relation do
 
   def changeset(relation, attrs) do
     relation
-    |> cast(attrs, [:requester_id, :acceptor_id, :state, :accepted_at])
-    |> validate_required([:requester_id, :acceptor_id])
+    |> cast(attrs, [:requester_id, :acceptor_id, :state, :accepted_at, :user_relation_type])
+    |> validate_required([:requester_id, :acceptor_id, :user_relation_type])
     |> validate_users()
     |> default_fields()
   end
