@@ -8,7 +8,7 @@ defmodule Phos.Users do
   import Ecto.Query, warn: false
   alias Phos.Repo
   alias Phos.Users
-  alias Phos.Users.{User, Public_Profile, Private_Profile, Auth, Relation}
+  alias Phos.Users.{User, Public_Profile, Private_Profile, Auth, Relation, Friend}
   alias Phos.Cache
   alias Ecto.Multi
 
@@ -749,7 +749,6 @@ defmodule Phos.Users do
     existing_relation(relation_type)
     |> case do
       nil -> Map.put(params, :user_relation_type, relation_type) |> do_insert_friends()
-      [] -> Map.put(params, :user_relation_type, relation_type) |> do_insert_friends()
       _ -> {:error, "Cannot add requested friend"}
     end
   end
@@ -763,10 +762,17 @@ defmodule Phos.Users do
   end
   defp uuid_to_binary(_uuid), do: <<0>>
 
+  defp existing_relation(requester_id, acceptor_id) do
+    [requester_id, acceptor_id]
+    |> Enum.map(&uuid_to_binary/1)
+    |> Enum.sort()
+    |> Enum.join()
+    |> existing_relation()
+  end
   defp existing_relation(relation_type) do
     query = from q in Relation, where: q.user_relation_type == ^relation_type, limit: 1
 
-    Repo.all(query)
+    Repo.one(query)
   end
 
   defp do_insert_friends(params) do
@@ -789,10 +795,11 @@ defmodule Phos.Users do
   """
   @spec reject_friend(actor_id :: Ecto.UUID.t(), requester_id :: Ecto.UUID.t()) :: {:ok, Phos.Users.Relation.t()} | {:error, Ecto.Changeset.t()}
   def reject_friend(actor_id, requester_id) do
-    friend_requests(actor_id, [user_id: requester_id])
+    existing_relation(actor_id, requester_id)
     |> case do
+      %{acceptor_id: acceptor_id} = relation when acceptor_id == actor_id ->
+        Fsmx.transition_changeset(relation, "HOLD") |> Repo.update()
       nil -> {:error, "Cannot reject friend requests"}
-      relation -> Fsmx.transition_changeset(relation, "HOLD")
     end
   end
 
@@ -811,15 +818,13 @@ defmodule Phos.Users do
   @spec accept_friend(actor_id :: Ecto.UUID.t() | Phos.Users.User.t(), requester_id :: Ecto.UUID.t()) :: {:ok, Phos.Users.Relation.t()} | {:error, Ecto.Changeset.t()}
   def accept_friend(%Phos.Users.User{id: id}, requester_id), do: accept_friend(id, requester_id)
   def accept_friend(actor_id, requester_id) do
-    relation_requests(actor_id, [user_id: requester_id])
+    existing_relation(actor_id, requester_id)
+    |> IO.inspect()
     |> case do
-      nil -> {:error, "Cannot accept friend requests"}
-      relation ->
-        relation
-        |> Fsmx.transition_changeset("ACCEPTED")
-        |> Repo.update()
+      %{acceptor_id: acceptor_id} = relation when acceptor_id == actor_id ->
+        do_accept_friend(relation)
         |> case do
-          {:ok, _user} = data ->
+          {:ok, %{relation: data}} ->
             spawn(fn ->
               Cache.delete({User, :friends, actor_id})
               Cache.delete({User, :friends, requester_id})
@@ -828,24 +833,25 @@ defmodule Phos.Users do
             end)
             data
         end
+      _ -> {:error, "Cannot accept friend requests"}
     end
   end
 
-  defp relation_requests(actor_id, filters \\ []) do
-    default_filters = [acceptor_id: actor_id]
-    ff = case Keyword.get(filters, :user_id) do
-      user_id when is_binary(user_id) -> Keyword.put(default_filters, :requester_id, user_id)
-      _ -> default_filters
-    end
-
-    query = from r in Relation, where: is_nil(r.accepted_at), where: ^ff
-
-    case Kernel.length(filters) do
-      0 -> Repo.all(query)
-      _ ->
-        q = from query, limit: 1
-        Repo.one(q)
-    end
+  defp do_accept_friend(relation) do
+    Multi.new()
+    |> Multi.update(:relation, fn _ ->
+      relation
+      |> Fsmx.transition_changeset("ACCEPTED")
+    end)
+    |> Multi.insert(:requester, fn %{relation: relation} ->
+      %Friend{}
+      |> Friend.changeset(%{user_id: relation.acceptor_id, friend_id: relation.requester_id, relation_id: relation.id})
+    end)
+    |> Multi.insert(:addressee, fn %{relation: relation} ->
+      %Friend{}
+      |> Friend.changeset(%{user_id: relation.requester_id, friend_id: relation.acceptor_id, relation_id: relation.id})
+    end)
+    |> Repo.transaction()
   end
 
   def feeds(%Phos.Users.User{id: id} = _user), do: feeds(id)
