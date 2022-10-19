@@ -6,9 +6,8 @@
 :localipAddress = http://localhost:4000/api
 :princeton=0b3gd5XUGtNP6lqQean4IAp7ogG3
 :satrio=BX1BxM9KkwdFmy2J4FNNkFxclpS2
-:princeton_id=10db31d9-e231-4a69-b1f0-60f495184540
+:princeton_id=8b3efad3-0901-4b53-bd7b-a4d7a7968fdd
 :satrio_id=b2f8be78-cf09-4ddb-aa67-1856425c75cf
-:lky=08c21b36-c3ca-4693-8dd3-085da8e81967
 :auth-headers = <<
 Authorization: :token
 Content-Type: application/json
@@ -20,11 +19,11 @@ Content-Type: application/json
 User-Agent: Emacs27
 ##
 ## Generate Client-side JWT
-GET :localipAddress/devland/flameon?user=:lky
+GET :localipAddress/devland/flameon?user=:princeton_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
-GET :localipAddress/devland/lankaonfyr?fyr_id=:satrio
+GET :localipAddress/devland/lankaonfyr?fyr_id=:princeton
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 
@@ -102,34 +101,37 @@ PUT :ipAddress/userland/self/territory
 ## List all current Buddies
 GET :ipAddress/folkland/friends
 :auth-headers
+{
+    "id": ":princeton_id"
+}
 
 ## Orb Stream directed at yourself from friends
 GET :ipAddress/folkland/stream/self?page=2
 :auth-headers
 
 ## Orb Stream directed at yourself from friends
-GET :ipAddress/folkland/stream/discovery/627843377464406015?page=1
+GET :ipAddress/folkland/stream/discovery/628021297666224127?page=1
 :auth-headers
 
 ## Send connection request
 POST :ipAddress/folkland/friends
 :auth-headers
 {
-    "friend_id": :princeton_id
+    "friend_id": ":princeton_id"
 }
 
 ## Ended the friendship
 PUT :ipAddress/folkland/friends/ended
 :auth-headers
 {
-    "friend_id": :princeton_id
+    "friend_id": ":princeton_id"
 }
 
 ## Began the friendship
 PUT :ipAddress/folkland/friends/begun
 :auth-headers
 {
-    "friend_id": ":lky"
+    "friend_id": ":satrio_id"
 }
 
 ## List of requests to you

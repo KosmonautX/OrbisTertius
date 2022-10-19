@@ -13,11 +13,8 @@ defmodule PhosWeb.UserChannel do
   def join("archetype:usr:" <> id , _payload, socket) do
     if authorized?(socket, id) do
       send(self(), :initiation)
-      # if user not migrated yet from nodejs(dynamodb), create model on postgres through firebase id
-      # if (Action.get_orb_by_fyr(id) == nil), do: Migrator.user_profile("DAAohgsLMpQPmsbpbvgQ5PEPuy22")
       {:ok, socket
       |> assign(:user_id, id)
-      #|> assign(:user, Users.get_user_by_fyr(id))
       }
     else
       {:error, %{reason: "unauthorized"}}
@@ -47,7 +44,7 @@ defmodule PhosWeb.UserChannel do
         broadcast socket, "shout", echo #broadcast to both channels from and to, first the source as shout event
         PhosWeb.Endpoint.broadcast_from!(self(), "archetype:usr:" <> echo.destination, "shout", echo) #then  broadcast to destination as well
         #fyring and forgetting
-        Phos.Fyr.Task.start_link(Pigeon.FCM.Notification.new({:topic, "USR." <> echo.destination}, %{"title" => "Message from #{socket.assigns.user_agent["username"]}", "body" => echo.message},echo))
+        #Phos.Fyr.Task.start_link(Pigeon.FCM.Notification.new({:topic, "USR." <> echo.destination}, %{"title" => "Message from #{socket.assigns.user_agent["username"]}", "body" => echo.message},echo))
       {:error, changeset} ->
         IO.puts("Message Create Echo failed: #{inspect(changeset)}")
     end

@@ -102,13 +102,13 @@ defmodule Phos.Action do
       where: l.location_id in ^hashes,
       left_join: orbs in assoc(l, :orbs),
       where: orbs.userbound == true,
-      preload: [orbs: :initiator],
-      inner_lateral_join: c in subquery(
-        from c in Phos.Comments.Comment,
-        where: c.orb_id == parent_as(:l).orb_id,
-        select: %{count: count()}
-      ),
-      select_merge: %{comment_count: c.count})
+      preload: [orbs: :initiator])
+      # inner_lateral_join: c in subquery(
+      #   from c in Phos.Comments.Comment,
+      #   where: c.orb_id == parent_as(:l).orb_id,
+      #   select: %{count: count()}
+      # ),
+      # select_merge: %{comment_count: c.count})
       |> Repo.Paginated.all(page, sort_attribute, limit)
       |> (&(Map.put(&1, :data, Enum.map(&1.data, fn x -> x.orbs.initiator end)
           |> Repo.Preloader.lateral(:orbs, [limit: 5])))).()

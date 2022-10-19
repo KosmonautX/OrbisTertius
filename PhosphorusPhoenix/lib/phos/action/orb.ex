@@ -42,7 +42,7 @@ defmodule Phos.Action.Orb do
   """
   def update_changeset(%Orb{} = orb, attrs) do
     orb
-    |> cast(attrs, [:title, :active, :media, :extinguish, :traits])
+    |> cast(attrs, [:title, :active, :media, :traits])
     |> cast_embed(:payload)
     |> validate_required([:active, :title])
     |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])

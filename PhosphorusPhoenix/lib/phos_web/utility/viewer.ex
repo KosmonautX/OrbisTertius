@@ -21,7 +21,7 @@ defmodule PhosWeb.Util.Viewer do
       %{orbs: [%Phos.Action.Orb{} | _]} ->
       (if Ecto.assoc_loaded?(entity.orbs) && !is_nil(entity.orbs) do
         %{orbs:
-          %{data: Enum.map(entity.orbs, fn orb -> orb_mapper(orb) end),
+          %{data: orb_mapper(entity.orbs),
             links: %{self: PhosWeb.Router.Helpers.orb_path(PhosWeb.Endpoint, :show_history, entity.id)},
         }}
       end)
@@ -75,7 +75,14 @@ defmodule PhosWeb.Util.Viewer do
   end
 
   # Orb Mapper
-  def orb_mapper(orb) do
+  #
+  def orb_mapper(orbs = [%Phos.Action.Orb{} | _]) do
+    Enum.map(orbs, fn orb ->
+      orb_mapper(orb)
+    end)
+  end
+
+  def orb_mapper(orb = %Phos.Action.Orb{}) do
     %{
       expiry_time: (if orb.extinguish, do: DateTime.from_naive!(orb.extinguish, "Etc/UTC") |> DateTime.to_unix()),
       active: orb.active,

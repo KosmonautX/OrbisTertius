@@ -4,7 +4,7 @@
 
 ```elixir
 # import Ecto.Query
-Phos.Action.users_by_geohashes([627_843_377_464_406_015 |> :h3.parent(8)], 1)
+# Phos.Action.users_by_geohashes([627_843_377_464_406_015 |> :h3.parent(8)], 1)
 # Phos.Repo.get(Phos.Users.User, "b2f8be78-cf09-4ddb-aa67-1856425c75cf") 
 # |> Phos.Repo.Preloader.lateral(:orbs, [limit: 3])
 
