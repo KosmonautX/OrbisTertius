@@ -8,7 +8,7 @@ defmodule Phos.Users do
   import Ecto.Query, warn: false
   alias Phos.Repo
   alias Phos.Users
-  alias Phos.Users.{User, Public_Profile, Private_Profile, Auth, Relation, Friend}
+  alias Phos.Users.{User, Public_Profile, Private_Profile, Auth, Relation, RelationInformation}
   alias Phos.Cache
   alias Ecto.Multi
 
@@ -744,41 +744,37 @@ defmodule Phos.Users do
   """
   @spec add_friend(requester_id :: Ecto.UUID.t(), acceptor_id :: Ecto.UUID.t()) :: {:ok, Phos.Users.Relation.t()} | {:error, Ecto.Changeset.t()}
   def add_friend(requester_id, acceptor_id) when requester_id != acceptor_id do
-    params = %{requester_id: requester_id, acceptor_id: acceptor_id}
-    relation_type = [requester_id, acceptor_id] |> Enum.map(&uuid_to_binary/1) |> Enum.sort() |> Enum.join()
-    existing_relation(relation_type)
-    |> case do
-      nil -> Map.put(params, :user_relation_type, relation_type) |> do_insert_friends()
-      _ -> {:error, "Cannot add requested friend"}
-    end
+    Multi.new()
+    |> Multi.run(:existing_relation, fn repo, _ -> existing_relation(requester_id, acceptor_id, repo: repo) end)
+    |> Multi.run(:existing_relation_checker, fn _, %{existing_relation: relation} ->
+      case relation do
+        {:insert, msg} -> {:ok, msg}
+        _ -> {:error, "Relation already built."}
+      end
+    end)
+    |> Multi.insert(:information, fn _ ->
+      %RelationInformation{}
+      |> RelationInformation.changeset(%{requester_id: requester_id})
+    end)
+    |> Multi.insert(:requester, fn %{information: information} ->
+      %Relation{}
+      |> Relation.changeset(%{user_id: requester_id, friend_id: acceptor_id, information_id: information.id})
+    end)
+    |> Multi.insert(:acceptor, fn %{information: information} ->
+      %Relation{}
+      |> Relation.changeset(%{user_id: acceptor_id, friend_id: requester_id, information_id: information.id})
+    end)
+    |> Repo.transaction()
   end
   def add_friend(_requester_id, _acceptor_id), do: {:error, "API not needed to connect to your own inner self"}
 
-  defp uuid_to_binary(uuid) when is_bitstring(uuid) do
-    case UUID.info(uuid) do
-      {:ok, data} -> Keyword.get(data, :binary)
-      _ -> uuid_to_binary(nil)
+  defp existing_relation(requester_id, acceptor_id, opts \\ []) do
+    repo = Keyword.get(opts, :repo, Repo)
+    query = from q in Relation, preload: [:information], where: q.user_id == ^requester_id and q.friend_id == ^acceptor_id, limit: 1
+    case repo.one(query) do
+      nil -> {:ok, {:insert, "Relation doesn't exsits."}}
+      data -> {:ok, {:update, data}}
     end
-  end
-  defp uuid_to_binary(_uuid), do: <<0>>
-
-  defp existing_relation(requester_id, acceptor_id) do
-    [requester_id, acceptor_id]
-    |> Enum.map(&uuid_to_binary/1)
-    |> Enum.sort()
-    |> Enum.join()
-    |> existing_relation()
-  end
-  defp existing_relation(relation_type) do
-    query = from q in Relation, where: q.user_relation_type == ^relation_type, limit: 1
-
-    Repo.one(query)
-  end
-
-  defp do_insert_friends(params) do
-    %Relation{}
-    |> Relation.changeset(params)
-    |> Repo.insert()
   end
 
   @doc """
@@ -794,13 +790,29 @@ defmodule Phos.Users do
 
   """
   @spec reject_friend(actor_id :: Ecto.UUID.t(), requester_id :: Ecto.UUID.t()) :: {:ok, Phos.Users.Relation.t()} | {:error, Ecto.Changeset.t()}
-  def reject_friend(actor_id, requester_id) do
-    existing_relation(actor_id, requester_id)
-    |> case do
-      %{acceptor_id: acceptor_id} = relation when acceptor_id == actor_id ->
-        Fsmx.transition_changeset(relation, "HOLD") |> Repo.update()
-      nil -> {:error, "Cannot reject friend requests"}
-    end
+  def reject_friend(acceptor_id, requester_id) do
+    Multi.new()
+    |> Multi.run(:existing_relation, &existing_relation(requester_id, acceptor_id, repo: &1))
+    |> Multi.run(:validation, fn _repo, %{existing_relation: relation} ->
+      case relation do
+        {:insert, msg} -> {:error, msg}
+        {_, data} -> {:ok, data}
+      end
+    end)
+    |> Multi.run(:precondition, fn _repo, %{validataion: relation} ->
+      Map.get(relation, :information, %{})
+      |> Map.get(:requester_id)
+      |> Kernel.==(requester_id)
+      |> case do
+        true -> {:ok, "Actor can reject friend request."}
+        _ -> {:error, "Actor cannot reject friend request."}
+      end
+    end)
+    |> Multi.update(:information, fn %{existing_relation: %{information: information}} ->
+      information
+      |> Fsmx.transition_changeset("HOLD")
+    end)
+    |> Repo.transaction()
   end
 
   @doc """
@@ -817,40 +829,35 @@ defmodule Phos.Users do
   """
   @spec accept_friend(actor_id :: Ecto.UUID.t() | Phos.Users.User.t(), requester_id :: Ecto.UUID.t()) :: {:ok, Phos.Users.Relation.t()} | {:error, Ecto.Changeset.t()}
   def accept_friend(%Phos.Users.User{id: id}, requester_id), do: accept_friend(id, requester_id)
-  def accept_friend(actor_id, requester_id) do
-    existing_relation(actor_id, requester_id)
-    |> IO.inspect()
-    |> case do
-      %{acceptor_id: acceptor_id} = relation when acceptor_id == actor_id ->
-        do_accept_friend(relation)
-        |> case do
-          {:ok, %{relation: data}} ->
-            spawn(fn ->
-              Cache.delete({User, :friends, actor_id})
-              Cache.delete({User, :friends, requester_id})
-              Cache.delete({User, :feeds, actor_id})
-              Cache.delete({User, :feeds, requester_id})
-            end)
-            data
-        end
-      _ -> {:error, "Cannot accept friend requests"}
-    end
-  end
-
-  defp do_accept_friend(relation) do
+  def accept_friend(acceptor_id, requester_id) do
     Multi.new()
-    |> Multi.update(:relation, fn _ ->
-      relation
-      |> Fsmx.transition_changeset("ACCEPTED")
+    |> Multi.run(:existing_relation, fn repo, _ -> existing_relation(requester_id, acceptor_id, repo: repo) end)
+    |> Multi.run(:validation, fn _repo, %{existing_relation: relation} ->
+      case relation do
+        {:insert, msg} -> {:error, msg}
+        {_, data} -> {:ok, data}
+      end
     end)
-    |> Multi.insert(:requester, fn %{relation: relation} ->
-      %Friend{}
-      |> Friend.changeset(%{user_id: relation.acceptor_id, friend_id: relation.requester_id, relation_id: relation.id})
+    |> Multi.run(:precondition, fn _repo, %{validation: %{information: information}} ->
+      Map.get(information, :requester_id)
+      |> Kernel.==(requester_id)
+      |> case do
+        true -> {:ok, "Actor can accept friend request."}
+        _ -> {:error, "Actor cannot accept friend request."}
+      end
     end)
-    |> Multi.insert(:addressee, fn %{relation: relation} ->
-      %Friend{}
-      |> Friend.changeset(%{user_id: relation.requester_id, friend_id: relation.acceptor_id, relation_id: relation.id})
+    |> Multi.update(:information, fn %{validation: %{information: information}} ->
+      information
+      |> Fsmx.transition_changeset("accepted")
     end)
+    |> Multi.update(:complete_information, fn %{information: information} ->
+      information
+      |> Fsmx.transition_changeset("completed")
+    end)
+    |> Multi.update_all(:friends, fn %{information: information} ->
+      now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+      from(r in Relation, where: r.information_id == ^information.id, update: [set: [completed_at: ^now]])
+    end, [])
     |> Repo.transaction()
   end
 
