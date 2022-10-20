@@ -8,8 +8,8 @@ defmodule PhosWeb.API.FriendController do
     render(conn, "index.json", friends: friends)
   end
 
-  def index(%{assigns: %{current_user: _user}} = conn, %{"id" => uid}) do
-    friends = Phos.Users.friends(uid)
+  def show(%{assigns: %{current_user: _user}} = conn, %{"id" => uid}) do
+    friends = Phos.Users.friends_lite(uid)
     render(conn, "index.json", friends: friends)
   end
 

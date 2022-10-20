@@ -724,8 +724,20 @@ defmodule Phos.Users do
 
   @decorate cacheable(cache: Cache, key: {User, :friends, user_id}, opts: [ttl: @ttl])
   def friends(user_id) do
-    relations = from r in Relation, where: not is_nil(r.accepted_at), where: r.acceptor_id == ^user_id or r.requester_id == ^user_id
-    query = from u in User, join: r in ^relations, where: u.id == r.acceptor_id or u.id == r.requester_id
+    relations = from r in Relation,
+      where: not is_nil(r.accepted_at),
+      where: r.acceptor_id == ^user_id or r.requester_id == ^user_id
+    query = from u in User,
+      join: r in ^relations,
+      where: u.id == r.acceptor_id or u.id == r.requester_id
+    Repo.all(query)
+    |> Enum.reject(&Kernel.==(&1.id, user_id))
+  end
+
+  def friends_lite(user_id) do
+    query = from r in Relation,
+      where: not is_nil(r.accepted_at),
+      where: r.acceptor_id == ^user_id or r.requester_id == ^user_id
     Repo.all(query)
     |> Enum.reject(&Kernel.==(&1.id, user_id))
   end

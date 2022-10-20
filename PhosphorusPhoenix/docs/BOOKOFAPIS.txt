@@ -19,11 +19,11 @@ Content-Type: application/json
 User-Agent: Emacs27
 ##
 ## Generate Client-side JWT
-GET :localipAddress/devland/flameon?user=:princeton_id
+GET :localipAddress/devland/flameon?user=:satrio_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
-GET :localipAddress/devland/lankaonfyr?fyr_id=:princeton
+GET :localipAddress/devland/lankaonfyr?fyr_id=:satrio
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 
@@ -99,11 +99,8 @@ PUT :ipAddress/userland/self/territory
 ## View others Profile
 
 ## List all current Buddies
-GET :ipAddress/folkland/friends
+GET :ipAddress/folkland/friends/:princeton_id
 :auth-headers
-{
-    "id": ":princeton_id"
-}
 
 ## Orb Stream directed at yourself from friends
 GET :ipAddress/folkland/stream/self?page=2

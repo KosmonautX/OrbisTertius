@@ -11,6 +11,10 @@ Mix.install([
 ])
 ```
 
+## Root
+
+<!-- livebook:{"branch_parent_index":0} -->
+
 ## Location
 
 ```elixir
@@ -145,160 +149,145 @@ message = %{"name" => "home", "geohash" => 623_276_216_929_026_047}
 # {:ok, ref} = push(socket, "archetype:loc:R3Vsjq9CARfprwOJps44kbVczFQ2", :geocalibrate, message)
 ```
 
+<!-- livebook:{"branch_parent_index":0} -->
+
+## Chat Socket
+
 ```elixir
-defmodule SocketWithCare do
-  alias Phoenix.Channels.GenSocketClient
-  @behaviour GenSocketClient
-  @channel "archetype:loc:R3Vsjq9CARfprwOJps44kbVczFQ2"
-  @token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiUjNWc2pxOUNBUmZwcndPSnBzNDRrYlZjekZRMiIsInJvbGUiOiJwbGViIiwidGVycml0b3J5Ijp7ImxpdmUiOnsicmFkaXVzIjo4LCJoYXNoIjoiODg2NTIwY2I1YmZmZmZmIn19LCJ1c2VybmFtZSI6IlJ5YW4iLCJpYXQiOjE2NTY2ODE2NjAsImV4cCI6MTY2ODY4MTY2MCwiaXNzIjoiUHJpbmNldG9uIiwic3ViIjoiU2NyYXRjaEJhYyJ9.gVJ0yrF8df9NfT6KGh4T5TkFPtXB_zM_VqOKydmRuOc"
-  # @token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiUjNWc2pxOUNBUmZwcndPSnBzNDRrYlZjekZRMiIsInJvbGUiOiJwbGViIiwiaWF0IjoxNjQzNzQzNjAyLCJleHAiOjI4NDM3NDM2MDIsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.hlhvTS37qxxqwrynoGbsHQG4gyjH5XDJfSC-zSrR6N8"
-  @domain "wss://nyx.scrb.ac"
-  # @domain "ws://localhost:4000"
-  def start_link() do
-    GenSocketClient.start_link(
-      __MODULE__,
-      Phoenix.Channels.GenSocketClient.Transport.WebSocketClient,
-      @domain <> "/socket/websocket"
-    )
+defmodule ChattingDownSockets do
+  use Slipstream,
+    restart: :temporary
+
+  require Logger
+
+  @channel "archetype:usr:b2f8be78-cf09-4ddb-aa67-1856425c75cf"
+
+  def start_link(args) do
+    Slipstream.start_link(__MODULE__, args, name: __MODULE__)
   end
 
-  def init(url) do
-    {:connect, url, [token: @token], %{first_join: true, ping_ref: 1}}
-  end
+  @impl Slipstream
+  def init(config) do
+    case connect(config) do
+      {:ok, socket} ->
+        {:ok, socket}
 
-  def handle_connected(transport, state) do
-    IO.inspect("connected")
-    GenSocketClient.join(transport, @channel)
-    {:ok, state}
-  end
-
-  def handle_disconnected(reason, state) do
-    IO.puts("disconnected: #{inspect(reason)}")
-    Process.send_after(self(), :connect, :timer.seconds(1))
-    {:ok, state}
-  end
-
-  def handle_joined(topic, _payload, _transport, state) do
-    IO.puts("joined the topic #{topic}")
-
-    if state.first_join do
-      :timer.send_interval(:timer.seconds(20), self(), :ping_server)
-      # :timer.send_interval(:timer.seconds(5), self(), :maybe_stop)
-      {:ok, %{state | first_join: false, ping_ref: 1}}
-    else
-      {:ok, %{state | ping_ref: 1}}
-    end
-  end
-
-  def handle_join_error(topic, payload, _transport, state) do
-    IO.puts("join error on the topic #{topic}: #{inspect(payload)}")
-    {:ok, state}
-  end
-
-  def handle_channel_closed(topic, payload, _transport, state) do
-    IO.puts("disconnected from the topic #{topic}: #{inspect(payload)}")
-    Process.send_after(self(), {:join, topic}, :timer.seconds(1))
-    {:ok, state}
-  end
-
-  def handle_message(topic, event, payload, _transport, state) do
-    IO.puts("Topic #{topic}: about Event => #{event} with Payload #{inspect(payload)}")
-    {:ok, state}
-  end
-
-  def handle_reply("ping", _ref, %{"status" => "ok"} = payload, _transport, state) do
-    IO.puts("server pping ##{payload["response"]["ping_ref"]}")
-    {:ok, state}
-  end
-
-  def handle_reply(topic, _ref, payload, _transport, state) do
-    IO.puts("reply on topic #{topic}: #{inspect(payload)}")
-    {:ok, state}
-  end
-
-  def handle_info(:connect, _transport, state) do
-    IO.puts("connecting")
-    {:connect, state}
-  end
-
-  def handle_info({:join, topic}, transport, state) do
-    IO.puts("joining the topic #{topic}")
-
-    case GenSocketClient.join(transport, topic) do
       {:error, reason} ->
-        IO.puts("error joining the topic #{topic}: #{inspect(reason)}")
-        Process.send_after(self(), {:join, topic}, :timer.seconds(10))
+        Logger.error(
+          "Could not start #{__MODULE__} because of " <>
+            "validation failure: #{inspect(reason)}"
+        )
 
-      {:ok, _ref} ->
-        :ok
-    end
-
-    {:ok, state}
-  end
-
-  def handle_info(:ping_server, transport, state) do
-    IO.puts("sending ping ##{state.ping_ref}")
-    GenSocketClient.push(transport, "ping", "ping", %{ping_ref: state.ping_ref})
-    {:ok, %{state | ping_ref: state.ping_ref + 1}}
-  end
-
-  def handle_info(:maybe_stop, _transport, state) do
-    if :rand.uniform(5) == 1 do
-      IO.puts("stopping the socket client")
-      {:stop, :normal, state}
-    else
-      {:ok, state}
+        :ignore
     end
   end
 
-  def handle_info(:stop, _transport, state) do
-    IO.puts("sayonara")
-    {:stop, :normal, state}
+  def handle_connect(socket) do
+    {:ok, join(socket, @channel)}
   end
 
-  def handle_info(message, _transport, state) do
-    IO.puts("Unhandled message #{inspect(message)}")
-    {:ok, state}
+  def handle_join(@channel, _join_response, socket) do
+    # an asynchronous push with no reply:
+    ref = push(socket, @channel, "ping", %{"hello" => "there"})
+
+    {:ok, socket}
   end
 
-  def handle_call({:geocalibrate, message}, _from, transport, state) do
-    IO.puts("message recieved geocalibrate: #{inspect(message)}")
-    GenSocketClient.push(transport, @channel, "location_update", message)
-    {:reply, {:ok, :hao}, state}
+  @impl Slipstream
+  def handle_message(@channel, "shout", message, socket) do
+    Logger.info(
+      # <>
+      "Message shouted"
+    )
+
+    IO.inspect(message)
+
+    {:ok, socket}
   end
 
-  def handle_call({:message, message}, _from, transport, state) do
-    IO.puts("message recieved: #{inspect(message)}")
-    GenSocketClient.push(transport, @channel, "shout", message)
-    {:reply, {:ok, :hao}, state}
+  def handle_message(@channel, "reverie", message, socket) do
+    Logger.info(
+      # <>
+      "Messages Remembered"
+    )
+
+    IO.inspect(message)
+
+    {:ok, socket}
   end
 
-  def handle_call({:say, goodbye}, _from, transport, state) do
-    IO.puts("server going bye bye in T-#{inspect(goodbye)}s")
-    :timer.send_interval(:timer.seconds(goodbye), self(), :stop)
-    {:reply, {:ok, :saygoodbye}, state}
+  @impl Slipstream
+  def handle_message(@channel, event, message, socket) do
+    Logger.error(
+      "Was not expecting a push from the server. Heard: " <>
+        inspect({@channel, event, message})
+    )
+
+    {:ok, socket}
   end
 
-  def handle_call(message, _from, _transport, state) do
-    IO.puts("Did not expect to receive call with message: #{inspect(message)}")
-    {:reply, {:error, :unexpected_message}, state}
+  @impl Slipstream
+  def handle_disconnect(reason, socket) do
+    IO.inspect(reason)
+
+    {:stop, :normal, socket}
   end
 
-  def terminate(reason, _state) do
-    IO.puts("Terminating and cleaning up state. Reason for termination: #{reason}")
+  @impl Slipstream
+  def handle_call({:shout, message}, _from, socket) do
+    IO.puts("message shouted: #{inspect(message)}")
+    push(socket, @channel, "shout", message)
+    {:reply, {:ok, :hao}, socket}
+  end
+
+  @impl Slipstream
+  def handle_call({:say, goodbyein}, _from, socket) do
+    IO.puts("server going bye bye in T-#{inspect(goodbyein)}s")
+    :timer.send_interval(:timer.seconds(goodbyein), self(), :stop)
+    {:reply, {:ok, :saygoodbye}, socket}
+  end
+
+  @impl Slipstream
+  def handle_info(:stop, socket) do
+    IO.puts("sayonara mai gud ser")
+    {:stop, :normal, socket}
+  end
+
+  @impl Slipstream
+  def terminate(reason, socket) do
+    Logger.debug("shutting down: " <> inspect(reason))
+
+    disconnect(socket)
   end
 end
 ```
 
 ```elixir
-{:ok, pid} = SocketWithCare.start_link()
+token =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmeXJfaWQiOiJCWDFCeE05S2t3ZEZteTJKNEZOTmtGeGNscFMyIiwidGVycml0b3J5Ijp7ImhvbWUiOnsiaGFzaCI6NjI4MDIxMjk3NjY2MjI0MTI3LCJyYWRpdXMiOjE2NjU4MzA5NTV9LCJ3b3JrIjp7Imhhc2giOjYyNzk4NjQ0Njk1MjM0OTY5NSwicmFkaXVzIjoxNjY1ODMwOTU1fX0sInVzZXJfaWQiOiJiMmY4YmU3OC1jZjA5LTRkZGItYWE2Ny0xODU2NDI1Yzc1Y2YiLCJ1c2VybmFtZSI6InNva2thIiwiZXhwIjoxNjY2MjQxMTMzLCJpYXQiOjE2NjYyMzk5MjEsImlzcyI6IlByaW5jZXRvbiIsInJvbGUiOiJwbGViIiwic3ViIjoiU2NyYXRjaEJhYyJ9.kCiPpjPBcWMRwpAhS-dNlCiK3yAR2MRxziR-nx4npzI"
+
+# @domain "wss://nyx.scrb.ac"
+domain = "ws://localhost:4000"
+
+config = [
+  uri: domain <> "/socket/websocket?token=" <> token,
+  reconnect_after_msec: [200, 500, 1_000, 2_000]
+]
+
+{:ok, pid} = ChattingDownSockets.start_link(config)
 ```
 
 ```elixir
-# message = %{"destination" => "albert", "destination_archetype" => "USR", "message" => "hi satrio"}
-# Phoenix.Channels.GenSocketClient.call(pid, {:message, message})
-message = %{"name" => "home", "geohash" => 623_276_216_929_026_047}
-Phoenix.Channels.GenSocketClient.call(pid, {:geocalibrate, message})
+message = %{
+  source: "b2f8be78-cf09-4ddb-aa67-1856425c75cf",
+  destination: "b2f8be78-cf09-4ddb-aa67-1856425c75cf",
+  destination_archetype: "USR",
+  subject_archetype: "ORB",
+  subject: "LMAO",
+  message: "hello"
+}
+
+GenServer.call(pid, {:shout, message})
 ```
 
 ## Cleaning up
