@@ -147,14 +147,20 @@ defmodule PhosWeb.API.OrbController do
     render(conn, "paginated.json", orbs: orbs)
   end
 
-  def show_territory(conn, %{"id" => hash, "page" => page}) do
-    loc_orbs = Action.orbs_by_geohashes([String.to_integer(hash) |> :h3.parent(8)], page)
-    render(conn, "paginated.json", locations: loc_orbs)
+  def show_territory(%{assigns: %{current_user: user}} = conn, %{"id" => hashes, "page" => page}) do
+    geohashes = String.split(hashes, ",")
+    |> Enum.map(fn hash -> String.to_integer(hash) |> :h3.parent(8) end)
+    |> Enum.uniq()
+    loc_orbs = Action.orbs_by_geohashes({geohashes, user.id} , page)
+    render(conn, "paginated.json", orbs: loc_orbs)
   end
 
-  def show_territory(conn, %{"id" => hash}) do
-    loc_orbs = Action.orbs_by_geohashes([String.to_integer(hash) |> :h3.parent(8)], 1)
-    render(conn, "paginated.json", locations: loc_orbs)
+  def show_territory(%{assigns: %{current_user: user}} = conn, %{"id" => hashes}) do
+    geohashes = String.split(hashes, ",")
+    |> Enum.map(fn hash -> String.to_integer(hash) |> :h3.parent(8) end)
+    |> Enum.uniq()
+    loc_orbs = Action.orbs_by_geohashes({geohashes, user.id}, 1)
+    render(conn, "paginated.json", orbs: loc_orbs)
   end
 
   def show_friends(conn = %{assigns: %{current_user: %{id: id}}}, %{"page" => page}) do

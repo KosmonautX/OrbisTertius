@@ -108,7 +108,7 @@ GET :ipAddress/folkland/others/:princeton_id?page=1
 :auth-headers
 
 ## Orb Stream directed at yourself from friends
-GET :ipAddress/folkland/stream/self?page=2
+GET :ipAddress/folkland/stream/self?page=1
 :auth-headers
 
 ## Orb Stream directed at yourself from friends

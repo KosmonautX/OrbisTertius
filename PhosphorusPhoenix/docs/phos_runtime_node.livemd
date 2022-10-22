@@ -34,43 +34,48 @@ payload = %{
 # |> RelationRoot.mutate_state_changeset(payloadz)
 # |> Phos.Repo.update()
 
-Phos.Repo.one(
-  from(u in User,
-    where: u.id == ^req,
-    left_join:
-      rel in subquery(
-        from(r in RelationBranch,
-          where: r.friend_id == ^acpt,
-          inner_join: root in assoc(r, :root),
-          select: root
-        )
-      ),
-    select_merge: %{self_relation: rel}
-  )
-)
-|> Phos.Repo.Preloader.lateral(:orbs, limit: 5)
+# Phos.Repo.one(from u in User,
+#       where: u.id == ^req,
+#       left_join: rel in subquery(from r in RelationBranch,
+#         where: r.friend_id == ^acpt,
+#         inner_join: root in assoc(r, :root),
+#         select: root
+#       ),
+#       select_merge: %{self_relation: rel}
+#     ) 
+#     |> Phos.Repo.Preloader.lateral(:orbs, [limit: 5])
 
 from(l in Phos.Action.Orb_Location,
   as: :l,
-  where: l.location_id in ^[614_510_498_785_787_903],
+  where: l.location_id in ^[623_276_216_935_972_863 |> :h3.parent(8)],
   left_join: orbs in assoc(l, :orbs),
-  on: orbs.userbound == true,
+  on: orbs.userbound != true,
   left_join: initiator in assoc(orbs, :initiator),
-  select: initiator,
+  select: orbs,
   left_join:
     rel in subquery(
-      from(r in RelationBranch,
-        where: r.friend_id == ^acpt,
+      from(r in Phos.Users.RelationBranch,
+        where: r.friend_id == ^req,
         inner_join: root in assoc(r, :root),
         select: root
       )
     ),
-  select_merge: %{self_relation: rel}
+  select_merge: %{initiator: %{initiator | self_relation: rel}},
+  inner_lateral_join:
+    c in subquery(
+      from(c in Phos.Comments.Comment,
+        where: c.orb_id == parent_as(:l).orb_id,
+        select: %{count: count()}
+      )
+    ),
+  select_merge: %{comment_count: c.count}
 )
 |> Phos.Repo.all()
 ```
 
-## recompile @ node
+```elixir
+
+```
 
 ```elixir
 defmodule R do
