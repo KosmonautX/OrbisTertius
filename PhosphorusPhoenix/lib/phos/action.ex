@@ -214,7 +214,7 @@ defmodule Phos.Action do
   end
 
   defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
-    Phos.Users.friends(user_id)
+    Phos.Folk.friends_lite(user_id)
     |> Enum.each(fn user ->
       spawn(fn -> Phos.Cache.delete({Phos.Users.User, :feeds, user.id}) end)
       spawn(fn -> Phos.PubSub.publish(orb, {:feeds, "new"}, "userfeed:#{user.id}") end)

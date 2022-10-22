@@ -3,7 +3,7 @@ defmodule Phos.Users.User do
   use Ecto.Schema
   import Ecto.Changeset
   alias Phos.Action.{Orb}
-  alias Phos.Users.{Geohash, Public_Profile, Private_Profile, Auth, RelationRoot, RelationBranch}
+  alias Phos.Users.{Public_Profile, Private_Profile, Auth, RelationBranch}
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "users" do
@@ -21,11 +21,10 @@ defmodule Phos.Users.User do
     has_many :auths, Auth, references: :id, foreign_key: :user_id
     has_many :relations, RelationBranch, foreign_key: :user_id
 
-    has_many :initiated_relations, RelationRoot, foreign_key: :user_id, where: [completed_at: nil]
-    field :relation_state, :string, virtual: true
+    field :friend_state, :string, virtual: true
 
-    # has_many :pending_relations, Relation, foreign_key: :user_id, where: [completed_at: nil]
-    # has_many :completed_relations, Relation, foreign_key: :user_id, where: [completed_at: {:not, nil}]
+    # has_many :pending_relations, RelationBranch, foreign_key: :user_id, where: [completed_at: nil]
+    # has_many :completed_relations, RelationBranch, foreign_key: :user_id, where: [completed_at: {:not, nil}]
     # #has_many :friends, through: [:completed_relations, :friend]
 
     has_one :personal_orb, Orb, foreign_key: :id

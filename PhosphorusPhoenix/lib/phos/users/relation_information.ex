@@ -17,6 +17,7 @@ defmodule Phos.Users.RelationRoot do
   schema "user_relations_root" do
 
     field :state, :string
+
     has_many :branches, RelationBranch, references: :id, foreign_key: :root_id, on_delete: :delete_all
     belongs_to :initiator, User, references: :id, type: Ecto.UUID
     belongs_to :acceptor, User, references: :id, type: Ecto.UUID

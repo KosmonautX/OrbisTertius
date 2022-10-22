@@ -38,6 +38,7 @@ defmodule PhosWeb.Util.Viewer do
       id: user.id,
       username: user.username,
       fyr_id: user.fyr_id,
+      friend_state: user.friend_state,
       profile: user_profile_mapper(user),
       relationships: relationship_mapper(user),
       creationtime: DateTime.from_naive!(user.inserted_at, "Etc/UTC") |> DateTime.to_unix(),

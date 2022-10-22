@@ -39,11 +39,10 @@ defmodule Phos.ActionTest do
     test "update_orb/2 with valid data updates the orb" do
       orb = orb_fixture_no_location()
       %{id: user_id} = user_fixture()
-      update_attrs = %{initiator: user_id, active: false, extinguish: ~N[2022-05-21 12:12:00], media: false, title: "some updated title"}
+      update_attrs = %{initiator: user_id, active: false, media: false, title: "some updated title"}
 
       assert {:ok, %Orb{} = orb} = Action.update_orb(orb, update_attrs)
       assert orb.active == false
-      assert orb.extinguish == ~N[2022-05-21 12:12:00]
       assert orb.media == false
       assert orb.title == "some updated title"
     end

@@ -7,7 +7,7 @@ req = "5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"
 acpt = "9bf9c443-f89b-460a-972d-6704ae66823d"
 alt = "deb2800c-a418-40fe-b35a-db30b01f59f8"
 import Ecto.Query
-alias Phos.Users.{RelationBranch, RelationRoot}
+alias Phos.Users.{RelationBranch, RelationRoot, User}
 
 ## CREATE
 payload = %{
@@ -33,6 +33,21 @@ payload = %{
 # Phos.Repo.get!(RelationRoot, "5a096428-32b9-45a9-b5c1-a6f68443d201")
 # |> RelationRoot.mutate_state_changeset(payloadz)
 # |> Phos.Repo.update()
+
+Phos.Repo.one(
+  from(u in User,
+    where: u.id == ^req,
+    left_join:
+      rel in subquery(
+        from(r in RelationBranch,
+          where: r.friend_id == ^acpt
+        )
+      ),
+    on: rel.user_id == u.id,
+    select_merge: %{relation_state: not is_nil(rel.completed_at)}
+  )
+)
+|> Phos.Repo.Preloader.lateral(:orbs, limit: 5)
 ```
 
 ## recompile @ node

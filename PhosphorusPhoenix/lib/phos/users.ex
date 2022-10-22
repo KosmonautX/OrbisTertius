@@ -98,6 +98,7 @@ defmodule Phos.Users do
       _ -> authenticate(nil, nil)
     end
   end
+
   def authenticate(_, _), do: {:error, "Email or password not match"}
 
   #   @doc """
@@ -322,7 +323,17 @@ defmodule Phos.Users do
 
   def get_territorial_user!(id), do: Repo.get!(User, id) |> Repo.preload([:private_profile, personal_orb: :locations])
 
-  def get_public_user(id), do: Repo.get(User, id) |> Repo.Preloader.lateral(:orbs, [limit: 5])
+  def get_public_user(user_id, your_id) do
+    Phos.Repo.one(from u in User,
+      where: u.id == ^user_id,
+      left_join: rel in subquery(from r in RelationBranch,
+        where: r.friend_id == ^your_id
+      ),
+      on: rel.user_id == u.id,
+      select_merge: %{relation_state: not is_nil(rel.completed_at)}
+    )
+    |> Phos.Repo.Preloader.lateral(:orbs, [limit: 5])
+  end
 
   ## User registration
 
