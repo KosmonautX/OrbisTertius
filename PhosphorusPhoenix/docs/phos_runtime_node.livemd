@@ -54,8 +54,18 @@ from(l in Phos.Action.Orb_Location,
   as: :l,
   where: l.location_id in ^[614_510_498_785_787_903],
   left_join: orbs in assoc(l, :orbs),
-  where: orbs.userbound == true,
-  preload: [orbs: :initiator]
+  on: orbs.userbound == true,
+  left_join: initiator in assoc(orbs, :initiator),
+  select: initiator,
+  left_join:
+    rel in subquery(
+      from(r in RelationBranch,
+        where: r.friend_id == ^acpt,
+        inner_join: root in assoc(r, :root),
+        select: root
+      )
+    ),
+  select_merge: %{self_relation: rel}
 )
 |> Phos.Repo.all()
 ```

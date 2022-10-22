@@ -80,7 +80,7 @@ defmodule Phos.Action do
       |> Enum.map(fn orb -> orb.orbs end)
   end
 
-  def orbs_by_geohashes(hashes, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+  def orbs_by_geohashes({hashes, your_id}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
     from(l in Orb_Location,
       as: :l,
       where: l.location_id in ^hashes,
@@ -96,22 +96,22 @@ defmodule Phos.Action do
       |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
-  def users_by_geohashes(hashes, page, sort_attribute \\ :inserted_at, limit \\ 12) do
-    from(l in Orb_Location,
+  def users_by_geohashes({hashes, your_id}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    from(l in Phos.Action.Orb_Location,
       as: :l,
       where: l.location_id in ^hashes,
       left_join: orbs in assoc(l, :orbs),
-      where: orbs.userbound == true,
-      preload: [orbs: :initiator])
-      # inner_lateral_join: c in subquery(
-      #   from c in Phos.Comments.Comment,
-      #   where: c.orb_id == parent_as(:l).orb_id,
-      #   select: %{count: count()}
-      # ),
-      # select_merge: %{comment_count: c.count})
+      on: orbs.userbound == true,
+      left_join: initiator in assoc(orbs, :initiator),
+      select: initiator,
+      left_join: rel in subquery(from r in Phos.Users.RelationBranch,
+        where: r.friend_id == ^your_id,
+        inner_join: root in assoc(r, :root),
+        select: root
+      ),
+      select_merge: %{self_relation: rel})
       |> Repo.Paginated.all(page, sort_attribute, limit)
-      |> (&(Map.put(&1, :data, Enum.map(&1.data, fn x -> x.orbs.initiator end)
-          |> Repo.Preloader.lateral(:orbs, [limit: 5])))).()
+      |> (&(Map.put(&1, :data, &1.data |> Repo.Preloader.lateral(:orbs, [limit: 5])))).()
   end
 
   def orbs_by_initiators(user_ids, page, sort_attribute \\ :inserted_at, limit \\ 12) do

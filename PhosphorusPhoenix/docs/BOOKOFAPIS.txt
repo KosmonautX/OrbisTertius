@@ -112,7 +112,7 @@ GET :ipAddress/folkland/stream/self?page=2
 :auth-headers
 
 ## Orb Stream directed at yourself from friends
-GET :ipAddress/folkland/stream/discovery/628021297666224127?page=1
+GET :ipAddress/folkland/stream/discovery/614510498785787903?page=1
 :auth-headers
 
 ## Send connection request
