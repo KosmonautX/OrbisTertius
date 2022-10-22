@@ -3,12 +3,36 @@
 ## Root
 
 ```elixir
-# import Ecto.Query
-# Phos.Action.users_by_geohashes([627_843_377_464_406_015 |> :h3.parent(8)], 1)
-# Phos.Repo.get(Phos.Users.User, "b2f8be78-cf09-4ddb-aa67-1856425c75cf") 
-# |> Phos.Repo.Preloader.lateral(:orbs, [limit: 3])
+req = "5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"
+acpt = "9bf9c443-f89b-460a-972d-6704ae66823d"
+alt = "deb2800c-a418-40fe-b35a-db30b01f59f8"
+import Ecto.Query
+alias Phos.Users.{RelationBranch, RelationRoot}
 
-# Map.put(q, :data, Enum.map(q.data, fn x -> x.orbs.initiator end) |> Phos.Repo.Preloader.lateral(:orbs, [limit: 3]))
+## CREATE
+payload = %{
+  "initiator_id" => req,
+  "acceptor_id" => acpt,
+  "branches" => [
+    %{"user_id" => acpt, "friend_id" => req},
+    %{"user_id" => req, "friend_id" => acpt}
+  ]
+}
+
+%RelationRoot{}
+|> RelationRoot.gen_branches_changeset(payload)
+|> Phos.Repo.insert()
+
+# ## READ
+
+# Phos.Repo.get_by(RelationBranch, [user_id: req, friend_id: acpt])
+# |> Phos.Repo.preload(:root)
+
+# ## UPDATE
+# payloadz = %{"state" => "completed"}
+# Phos.Repo.get!(RelationRoot, "5a096428-32b9-45a9-b5c1-a6f68443d201")
+# |> RelationRoot.mutate_state_changeset(payloadz)
+# |> Phos.Repo.update()
 ```
 
 ## recompile @ node

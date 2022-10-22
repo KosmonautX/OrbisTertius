@@ -3,9 +3,10 @@ defmodule Phos.Repo.Migrations.CreateTableRelationInformation do
 
   def change do
 
-    create table(:user_relation_informations, primary_key: false) do
+    create table(:user_relations_root, primary_key: false) do
       add :id, :uuid, primary_key: true
-      add :requester_id, :uuid, null: false
+      add :initiator_id, references(:users, column: :id, type: :uuid)
+      add :acceptor_id, references(:users, column: :id, type: :uuid)
       add :state, :string, default: "requested"
 
       timestamps()

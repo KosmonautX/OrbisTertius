@@ -112,11 +112,12 @@ defmodule PhosWeb.Router do
     scope "/folkland" do
       get "/stream/self", OrbController, :show_friends
       get "/stream/discovery/:id", FriendController, :show_discovery
-      resources "/friends", FriendController, except: [:new, :edit, :update]
+      resources "/friends", FriendController, except: [:show, :new, :edit, :update]
+      get "/others/:id", FriendController, :show_others
       put "/friends/ended", FriendController, :ended
       put "/friends/begun", FriendController, :begun
-      get "/friends/requests", FriendController, :requests
-      get "/friends/pending", FriendController, :pending
+      get "/self/requests", FriendController, :requests
+      get "/self/pending", FriendController, :pending
     end
 
   end

@@ -1,6 +1,6 @@
 defmodule Phos.Users do
   @moduledoc """
-  The Action context.
+  The Users context.
   """
 
   use Nebulex.Caching
@@ -8,7 +8,7 @@ defmodule Phos.Users do
   import Ecto.Query, warn: false
   alias Phos.Repo
   alias Phos.Users
-  alias Phos.Users.{User, Public_Profile, Private_Profile, Auth, Relation, RelationInformation}
+  alias Phos.Users.{User, Public_Profile, Private_Profile, Auth}
   alias Phos.Cache
   alias Ecto.Multi
 
@@ -20,8 +20,8 @@ defmodule Phos.Users do
 
   ## Examples
 
-      iex> list_users()
-      [%User{}, ...]
+  iex> list_users()
+  [%User{}, ...]
 
   """
   def list_users do
@@ -34,20 +34,20 @@ defmodule Phos.Users do
   #   Repo.all(query)
   # end
 
-#   @doc """
-#   Gets a single user.
+  #   @doc """
+  #   Gets a single user.
 
-#   Raises `Ecto.NoResultsError` if the User does not exist.
+  #   Raises `Ecto.NoResultsError` if the User does not exist.
 
-#   ## Examples
+  #   ## Examples
 
-#       iex> get_user!(123)
-#       %User{}
+  #       iex> get_user!(123)
+  #       %User{}
 
-#       iex> get_user!(456)
-#       ** (Ecto.NoResultsError)
+  #       iex> get_user!(456)
+  #       ** (Ecto.NoResultsError)
 
-#   """
+  #   """
   def get_user_by_fyr(id), do: Repo.get_by(User, fyr_id: id) |> Repo.preload([:private_profile])
 
   def get_user_by_username(username), do: Repo.get_by(User, username: username)
@@ -72,11 +72,11 @@ defmodule Phos.Users do
     Repo.get_by(User |> preload(:private_profile), fyr_id: id)
   end
 
-  def get_users_by_home(id, locname) do
+  def get_users_by_home(_id, locname) do
     query = from u in User,
       join: p in assoc(u, :private_profile),
       where: fragment("? <@ ANY(?)", ~s|{"id": "home"}|, p.geolocation)
-      # select: p.geolocation
+    # select: p.geolocation
 
     Repo.all(query |> preload(:private_profile))
   end
@@ -100,18 +100,18 @@ defmodule Phos.Users do
   end
   def authenticate(_, _), do: {:error, "Email or password not match"}
 
-#   @doc """
-#   Creates a user.
+  #   @doc """
+  #   Creates a user.
 
-#   ## Examples
+  #   ## Examples
 
-#       iex> create_user(%{field: value})
-#       {:ok, %User{}}
+  #       iex> create_user(%{field: value})
+  #       {:ok, %User{}}
 
-#       iex> create_user(%{field: bad_value})
-#       {:error, %Ecto.Changeset{}}
+  #       iex> create_user(%{field: bad_value})
+  #       {:error, %Ecto.Changeset{}}
 
-#   """
+  #   """
 
   def create_user(attrs \\ %{}) do
     %User{}
@@ -137,18 +137,18 @@ defmodule Phos.Users do
     |> Repo.insert()
   end
 
-#   @doc """
-#   Updates a user.
+  #   @doc """
+  #   Updates a user.
 
-#   ## Examples
+  #   ## Examples
 
-#       iex> update_user(user, %{field: new_value})
-#       {:ok, %User{}}
+  #       iex> update_user(user, %{field: new_value})
+  #       {:ok, %User{}}
 
-#       iex> update_user(user, %{field: bad_value})
-#       {:error, %Ecto.Changeset{}}
+  #       iex> update_user(user, %{field: bad_value})
+  #       {:error, %Ecto.Changeset{}}
 
-#   """
+  #   """
   @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
   def update_user(%User{} = user, attrs) do
     user
@@ -179,32 +179,32 @@ defmodule Phos.Users do
     |> Phos.Repo.update()
   end
 
-#   @doc """
-#   Deletes a user.
+  #   @doc """
+  #   Deletes a user.
 
-#   ## Examples
+  #   ## Examples
 
-#       iex> delete_user(user)
-#       {:ok, %User{}}
+  #       iex> delete_user(user)
+  #       {:ok, %User{}}
 
-#       iex> delete_user(user)
-#       {:error, %Ecto.Changeset{}}
+  #       iex> delete_user(user)
+  #       {:error, %Ecto.Changeset{}}
 
-#   """
+  #   """
   @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
   def delete_user(%User{} = user) do
     Repo.delete(user)
   end
 
-#   @doc """
-#   Returns an `%Ecto.Changeset{}` for tracking user changes.
+  #   @doc """
+  #   Returns an `%Ecto.Changeset{}` for tracking user changes.
 
-#   ## Examples
+  #   ## Examples
 
-#       iex> change_user(user)
-#       %Ecto.Changeset{data: %User{}}
+  #       iex> change_user(user)
+  #       %Ecto.Changeset{data: %User{}}
 
-#   """
+  #   """
   def change_user(%User{} = user, attrs \\ %{}) do
     User.changeset(user, attrs)
   end
@@ -225,7 +225,7 @@ defmodule Phos.Users do
   end
 
   defp do_query_from_auth(id, provider) when is_atom(provider), do:
-    do_query_from_auth(id, Atom.to_string(provider))
+  do_query_from_auth(id, Atom.to_string(provider))
   defp do_query_from_auth(id, provider) do
     Repo.one(
       from a in Auth,
@@ -240,7 +240,7 @@ defmodule Phos.Users do
       auths: [%{
         auth_id: id,
         auth_provider: to_string(provider)
-      }]
+              }]
     }
     %User{}
     |> User.telegram_changeset(params)
@@ -260,9 +260,9 @@ defmodule Phos.Users do
     |> Auth.changeset(params)
     |> Repo.insert()
     |> case do
-      {:ok, auth} -> {:ok, auth.user}
-      error -> error
-    end
+         {:ok, auth} -> {:ok, auth.user}
+         error -> error
+       end
   end
 
   alias Phos.Users.{User, UserToken, UserNotifier}
@@ -274,11 +274,11 @@ defmodule Phos.Users do
 
   ## Examples
 
-      iex> get_user_by_email("foo@example.com")
-      %User{}
+  iex> get_user_by_email("foo@example.com")
+  %User{}
 
-      iex> get_user_by_email("unknown@example.com")
-      nil
+  iex> get_user_by_email("unknown@example.com")
+  nil
 
   """
   def get_user_by_email(email) when is_binary(email) do
@@ -290,15 +290,15 @@ defmodule Phos.Users do
 
   ## Examples
 
-      iex> get_user_by_email_and_password("foo@example.com", "correct_password")
-      %User{}
+  iex> get_user_by_email_and_password("foo@example.com", "correct_password")
+  %User{}
 
-      iex> get_user_by_email_and_password("foo@example.com", "invalid_password")
-      nil
+  iex> get_user_by_email_and_password("foo@example.com", "invalid_password")
+  nil
 
   """
   def get_user_by_email_and_password(email, password)
-      when is_binary(email) and is_binary(password) do
+  when is_binary(email) and is_binary(password) do
     user = Repo.get_by(User, email: email)
     if User.valid_password?(user, password), do: user
   end
@@ -310,11 +310,11 @@ defmodule Phos.Users do
 
   ## Examples
 
-      iex> get_user!(123)
-      %User{}
+  iex> get_user!(123)
+  %User{}
 
-      iex> get_user!(456)
-      ** (Ecto.NoResultsError)
+  iex> get_user!(456)
+  ** (Ecto.NoResultsError)
 
   """
 
@@ -331,11 +331,11 @@ defmodule Phos.Users do
 
   ## Examples
 
-      iex> register_user(%{field: value})
-      {:ok, %User{}}
+  iex> register_user(%{field: value})
+  {:ok, %User{}}
 
-      iex> register_user(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
+  iex> register_user(%{field: bad_value})
+  {:error, %Ecto.Changeset{}}
 
   """
   def register_user(attrs) do
@@ -349,8 +349,8 @@ defmodule Phos.Users do
 
   ## Examples
 
-      iex> change_user_registration(user)
-      %Ecto.Changeset{data: %User{}}
+  iex> change_user_registration(user)
+  %Ecto.Changeset{data: %User{}}
 
   """
   def change_user_registration(%User{} = user, attrs \\ %{}) do
@@ -364,21 +364,21 @@ defmodule Phos.Users do
 
   ## Examples
 
-      iex> change_user_email(user)
-      %Ecto.Changeset{data: %User{}}
+  iex> change_user_email(user)
+  %Ecto.Changeset{data: %User{}}
 
   """
   def change_user_email(user, attrs \\ %{}) do
     User.email_changeset(user, attrs)
   end
 
-    @doc """
+  @doc """
   Returns an `%Ecto.Changeset{}` for changing the user email.
 
   ## Examples
 
-      iex> change_pub_profile(user)
-      %Ecto.Changeset{data: %User{}}
+  iex> change_pub_profile(user)
+  %Ecto.Changeset{data: %User{}}
 
   """
   def change_pub_profile(user, attrs \\ %{}) do
@@ -386,13 +386,13 @@ defmodule Phos.Users do
   end
 
 
-    @doc """
+  @doc """
   Returns an `%Ecto.Changeset{}` for changing telegram login users.
 
   ## Examples
 
-      iex> change_pub_profile(user)
-      %Ecto.Changeset{data: %User{}}
+  iex> change_pub_profile(user)
+  %Ecto.Changeset{data: %User{}}
 
   """
   def change_telegram_login(user, attrs \\ %{}) do
@@ -407,11 +407,11 @@ defmodule Phos.Users do
 
   ## Examples
 
-      iex> apply_user_email(user, "valid password", %{email: ...})
-      {:ok, %User{}}
+  iex> apply_user_email(user, "valid password", %{email: ...})
+  {:ok, %User{}}
 
-      iex> apply_user_email(user, "invalid password", %{email: ...})
-      {:error, %Ecto.Changeset{}}
+  iex> apply_user_email(user, "invalid password", %{email: ...})
+  {:error, %Ecto.Changeset{}}
 
   """
   @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
@@ -456,12 +456,12 @@ defmodule Phos.Users do
 
   ## Examples
 
-      iex> deliver_update_email_instructions(user, current_email, &Routes.user_update_email_url(conn, :edit, &1))
-      {:ok, %{to: ..., body: ...}}
+  iex> deliver_update_email_instructions(user, current_email, &Routes.user_update_email_url(conn, :edit, &1))
+  {:ok, %{to: ..., body: ...}}
 
   """
   def deliver_update_email_instructions(%User{} = user, current_email, update_email_url_fun)
-      when is_function(update_email_url_fun, 1) do
+  when is_function(update_email_url_fun, 1) do
     {encoded_token, user_token} = UserToken.build_email_token(user, "change:#{current_email}")
 
     Repo.insert!(user_token)
@@ -473,8 +473,8 @@ defmodule Phos.Users do
 
   ## Examples
 
-      iex> change_user_password(user)
-      %Ecto.Changeset{data: %User{}}
+  iex> change_user_password(user)
+  %Ecto.Changeset{data: %User{}}
 
   """
   def change_user_password(user, attrs \\ %{}) do
@@ -486,11 +486,11 @@ defmodule Phos.Users do
 
   ## Examples
 
-      iex> update_user_password(user, "valid password", %{password: ...})
-      {:ok, %User{}}
+  iex> update_user_password(user, "valid password", %{password: ...})
+  {:ok, %User{}}
 
-      iex> update_user_password(user, "invalid password", %{password: ...})
-      {:error, %Ecto.Changeset{}}
+  iex> update_user_password(user, "invalid password", %{password: ...})
+  {:error, %Ecto.Changeset{}}
 
   """
   @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
@@ -505,9 +505,9 @@ defmodule Phos.Users do
     |> Multi.delete_all(:tokens, UserToken.user_and_contexts_query(user, :all))
     |> Repo.transaction()
     |> case do
-      {:ok, %{user: user}} -> {:ok, user}
-      {:error, :user, changeset, _} -> {:error, changeset}
-    end
+         {:ok, %{user: user}} -> {:ok, user}
+         {:error, :user, changeset, _} -> {:error, changeset}
+       end
   end
 
   ## Session
@@ -544,15 +544,15 @@ defmodule Phos.Users do
 
   ## Examples
 
-      iex> deliver_user_confirmation_instructions(user, &Routes.user_confirmation_url(conn, :edit, &1))
-      {:ok, %{to: ..., body: ...}}
+  iex> deliver_user_confirmation_instructions(user, &Routes.user_confirmation_url(conn, :edit, &1))
+  {:ok, %{to: ..., body: ...}}
 
-      iex> deliver_user_confirmation_instructions(confirmed_user, &Routes.user_confirmation_url(conn, :edit, &1))
-      {:error, :already_confirmed}
+  iex> deliver_user_confirmation_instructions(confirmed_user, &Routes.user_confirmation_url(conn, :edit, &1))
+  {:error, :already_confirmed}
 
   """
   def deliver_user_confirmation_instructions(%User{} = user, confirmation_url_fun)
-      when is_function(confirmation_url_fun, 1) do
+  when is_function(confirmation_url_fun, 1) do
     if user.confirmed_at do
       {:error, :already_confirmed}
     else
@@ -591,12 +591,12 @@ defmodule Phos.Users do
 
   ## Examples
 
-      iex> deliver_user_reset_password_instructions(user, &Routes.user_reset_password_url(conn, :edit, &1))
-      {:ok, %{to: ..., body: ...}}
+  iex> deliver_user_reset_password_instructions(user, &Routes.user_reset_password_url(conn, :edit, &1))
+  {:ok, %{to: ..., body: ...}}
 
   """
   def deliver_user_reset_password_instructions(%User{} = user, reset_password_url_fun)
-      when is_function(reset_password_url_fun, 1) do
+  when is_function(reset_password_url_fun, 1) do
     {encoded_token, user_token} = UserToken.build_email_token(user, "reset_password")
     Repo.insert!(user_token)
     UserNotifier.deliver_reset_password_instructions(user, reset_password_url_fun.(encoded_token))
@@ -607,11 +607,11 @@ defmodule Phos.Users do
 
   ## Examples
 
-      iex> get_user_by_reset_password_token("validtoken")
-      %User{}
+  iex> get_user_by_reset_password_token("validtoken")
+  %User{}
 
-      iex> get_user_by_reset_password_token("invalidtoken")
-      nil
+  iex> get_user_by_reset_password_token("invalidtoken")
+  nil
 
   """
   def get_user_by_reset_password_token(token) do
@@ -628,11 +628,11 @@ defmodule Phos.Users do
 
   ## Examples
 
-      iex> reset_user_password(user, %{password: "new long password", password_confirmation: "new long password"})
-      {:ok, %User{}}
+  iex> reset_user_password(user, %{password: "new long password", password_confirmation: "new long password"})
+  {:ok, %User{}}
 
-      iex> reset_user_password(user, %{password: "valid", password_confirmation: "not the same"})
-      {:error, %Ecto.Changeset{}}
+  iex> reset_user_password(user, %{password: "valid", password_confirmation: "not the same"})
+  {:error, %Ecto.Changeset{}}
 
   """
   @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
@@ -642,246 +642,9 @@ defmodule Phos.Users do
     |> Multi.delete_all(:tokens, UserToken.user_and_contexts_query(user, :all))
     |> Repo.transaction()
     |> case do
-      {:ok, %{user: user}} -> {:ok, user}
-      {:error, :user, changeset, _} -> {:error, changeset}
-    end
+         {:ok, %{user: user}} -> {:ok, user}
+         {:error, :user, changeset, _} -> {:error, changeset}
+       end
   end
 
-  def get_user_activities(user_id), do: Phos.Activity.filter(%{owner_id: user_id})
-
-  @doc """
-  List of user pending friends request
-
-  This contains of user data
-
-  ## Examples:
-
-      iex> pending_requests(user_id_with_no_pending_requests)
-      []
-
-      iex> pending_requests(user_id)
-      [%User{}, %User{}]
-
-  """
-  @spec pending_requests(user_id :: Ecto.UUID.t() | Phos.Users.User.t()) :: [Phos.Users.User.t()]
-  def pending_requests(%Phos.Users.User{id: id}), do: pending_requests(id)
-  def pending_requests(user_id) do
-    relations = from r in Relation, where: is_nil(r.accepted_at), where: r.requester_id == ^user_id
-    query = from u in User, join: r in ^relations, where: u.id == r.acceptor_id
-    Repo.all(query)
-  end
-
-  @doc """
-  List of requested friends
-
-  This contains of user data
-
-  ## Examples:
-
-      iex> pending_requests(user_id_with_no_frind_requests)
-      []
-
-      iex> pending_requests(user_id)
-      [%User{}, %User{}]
-
-  """
-  @spec friend_requests(user_id :: Ecto.UUID.t() | Phos.Users.User.t(), filters :: Keyword.t()) :: [Phos.Users.User.t()] | Phos.Users.User.t()
-  def friend_requests(user_id, filters \\ [])
-  def friend_requests(%Phos.Users.User{id: id}, filters), do: friend_requests(id, filters)
-  def friend_requests(user_id, filters) do
-    default_filters = [acceptor_id: user_id]
-    ff = case Keyword.get(filters, :user_id) do
-      user_id when is_binary(user_id) -> Keyword.put(default_filters, :requester_id, user_id)
-      _ -> default_filters
-    end
-
-    relations = from r in Relation, where: is_nil(r.accepted_at), where: ^ff
-    query = from u in User, join: r in ^relations, where: u.id == r.requester_id
-    case Kernel.length(filters) do
-      0 -> Repo.all(query)
-      _ ->
-        q = from query, limit: 1
-        Repo.one(q)
-    end
-  end
-
-  @doc """
-  List of friends
-
-  This contains of user data
-
-  ## Examples:
-
-      iex> pending_requests(user_id_with_no_friends)
-      []
-
-      iex> pending_requests(user_id)
-      [%User{}, %User{}]
-
-  """
-  @spec friends(user_id :: Ecto.UUID.t() | Phos.Users.User.t()) :: [Phos.Users.User.t()]
-  def friends(%Phos.Users.User{id: id}), do: friends(id)
-
-  @decorate cacheable(cache: Cache, key: {User, :friends, user_id}, opts: [ttl: @ttl])
-  def friends(user_id) do
-    relations = from r in Relation,
-      where: not is_nil(r.accepted_at),
-      where: r.acceptor_id == ^user_id or r.requester_id == ^user_id
-    query = from u in User,
-      join: r in ^relations,
-      where: u.id == r.acceptor_id or u.id == r.requester_id
-    Repo.all(query)
-    |> Enum.reject(&Kernel.==(&1.id, user_id))
-  end
-
-  def friends_lite(user_id) do
-    query = from r in Relation,
-      where: not is_nil(r.accepted_at),
-      where: r.acceptor_id == ^user_id or r.requester_id == ^user_id
-    Repo.all(query)
-    |> Enum.reject(&Kernel.==(&1.id, user_id))
-  end
-
-  @doc """
-  Add friend
-
-  Request user as friend
-  Accpetor cannot request a user as friend
-
-  ## Examples:
-
-      iex> add_friend(user_id_with_no_friends)
-      {:ok, %Phos.Users.Relation{}}
-
-  """
-  @spec add_friend(requester_id :: Ecto.UUID.t(), acceptor_id :: Ecto.UUID.t()) :: {:ok, Phos.Users.Relation.t()} | {:error, Ecto.Changeset.t()}
-  def add_friend(requester_id, acceptor_id) when requester_id != acceptor_id do
-    Multi.new()
-    |> Multi.run(:existing_relation, fn repo, _ -> existing_relation(requester_id, acceptor_id, repo: repo) end)
-    |> Multi.run(:existing_relation_checker, fn _, %{existing_relation: relation} ->
-      case relation do
-        {:insert, msg} -> {:ok, msg}
-        _ -> {:error, "Relation already built."}
-      end
-    end)
-    |> Multi.insert(:information, fn _ ->
-      %RelationInformation{}
-      |> RelationInformation.changeset(%{requester_id: requester_id})
-    end)
-    |> Multi.insert(:requester, fn %{information: information} ->
-      %Relation{}
-      |> Relation.changeset(%{user_id: requester_id, friend_id: acceptor_id, information_id: information.id})
-    end)
-    |> Multi.insert(:acceptor, fn %{information: information} ->
-      %Relation{}
-      |> Relation.changeset(%{user_id: acceptor_id, friend_id: requester_id, information_id: information.id})
-    end)
-    |> Repo.transaction()
-  end
-  def add_friend(_requester_id, _acceptor_id), do: {:error, "API not needed to connect to your own inner self"}
-
-  defp existing_relation(requester_id, acceptor_id, opts \\ []) do
-    repo = Keyword.get(opts, :repo, Repo)
-    query = from q in Relation, preload: [:information], where: q.user_id == ^requester_id and q.friend_id == ^acceptor_id, limit: 1
-    case repo.one(query) do
-      nil -> {:ok, {:insert, "Relation doesn't exsits."}}
-      data -> {:ok, {:update, data}}
-    end
-  end
-
-  @doc """
-  Reject a friend
-
-  Reject requested friend
-  Acceptor reject requested friend request.
-
-  ## Examples:
-
-      iex> reject_friend(acceptor_id, requester_id)
-      {:ok, %Phos.Users.Relation{}}
-
-  """
-  @spec reject_friend(actor_id :: Ecto.UUID.t(), requester_id :: Ecto.UUID.t()) :: {:ok, Phos.Users.Relation.t()} | {:error, Ecto.Changeset.t()}
-  def reject_friend(acceptor_id, requester_id) do
-    Multi.new()
-    |> Multi.run(:existing_relation, &existing_relation(requester_id, acceptor_id, repo: &1))
-    |> Multi.run(:validation, fn _repo, %{existing_relation: relation} ->
-      case relation do
-        {:insert, msg} -> {:error, msg}
-        {_, data} -> {:ok, data}
-      end
-    end)
-    |> Multi.run(:precondition, fn _repo, %{validataion: relation} ->
-      Map.get(relation, :information, %{})
-      |> Map.get(:requester_id)
-      |> Kernel.==(requester_id)
-      |> case do
-        true -> {:ok, "Actor can reject friend request."}
-        _ -> {:error, "Actor cannot reject friend request."}
-      end
-    end)
-    |> Multi.update(:information, fn %{existing_relation: %{information: information}} ->
-      information
-      |> Fsmx.transition_changeset("HOLD")
-    end)
-    |> Repo.transaction()
-  end
-
-  @doc """
-  Accept a friend
-
-  Accept requested friend
-  Acceptor accept requested friend request.
-
-  ## Examples:
-
-      iex> reject_friend(acceptor_id, requester_id)
-      {:ok, %Phos.Users.Relation{}}
-
-  """
-  @spec accept_friend(actor_id :: Ecto.UUID.t() | Phos.Users.User.t(), requester_id :: Ecto.UUID.t()) :: {:ok, Phos.Users.Relation.t()} | {:error, Ecto.Changeset.t()}
-  def accept_friend(%Phos.Users.User{id: id}, requester_id), do: accept_friend(id, requester_id)
-  def accept_friend(acceptor_id, requester_id) do
-    Multi.new()
-    |> Multi.run(:existing_relation, fn repo, _ -> existing_relation(requester_id, acceptor_id, repo: repo) end)
-    |> Multi.run(:validation, fn _repo, %{existing_relation: relation} ->
-      case relation do
-        {:insert, msg} -> {:error, msg}
-        {_, data} -> {:ok, data}
-      end
-    end)
-    |> Multi.run(:precondition, fn _repo, %{validation: %{information: information}} ->
-      Map.get(information, :requester_id)
-      |> Kernel.==(requester_id)
-      |> case do
-        true -> {:ok, "Actor can accept friend request."}
-        _ -> {:error, "Actor cannot accept friend request."}
-      end
-    end)
-    |> Multi.update(:information, fn %{validation: %{information: information}} ->
-      information
-      |> Fsmx.transition_changeset("accepted")
-    end)
-    |> Multi.update(:complete_information, fn %{information: information} ->
-      information
-      |> Fsmx.transition_changeset("completed")
-    end)
-    |> Multi.update_all(:friends, fn %{information: information} ->
-      now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
-      from(r in Relation, where: r.information_id == ^information.id, update: [set: [completed_at: ^now]])
-    end, [])
-    |> Repo.transaction()
-  end
-
-  def feeds(%Phos.Users.User{id: id} = _user), do: feeds(id)
-
-  @decorate cacheable(cache: Cache, key: {User, :feeds, user_id}, opts: [ttl: @ttl])
-  def feeds(user_id) do
-    friends(user_id)
-    |> Enum.map(&(&1.id))
-    |> Kernel.++([user_id])
-    |> do_get_feeds()
-  end
-
-  defp do_get_feeds(friend_ids), do: Phos.Action.list_orbs([initiator_id: friend_ids])
 end

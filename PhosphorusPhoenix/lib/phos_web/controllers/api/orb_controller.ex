@@ -158,13 +158,13 @@ defmodule PhosWeb.API.OrbController do
   end
 
   def show_friends(conn = %{assigns: %{current_user: %{id: id}}}, %{"page" => page}) do
-    friends = Phos.Users.friends(id) |> Enum.map(&(&1.id))
+    friends = Phos.Folk.friends_lite(id)
     orbs = Phos.Action.orbs_by_initiators([id | friends], page)
     render(conn, "paginated.json", orbs: orbs)
   end
 
   def show_friends(conn = %{assigns: %{current_user: %{id: id}}}, _params) do
-    friends = Phos.Users.friends(id) |> Enum.map(&(&1.id))
+    friends = Phos.Folk.friends_lite(id)
     orbs = Phos.Action.orbs_by_initiators([id | friends], 1)
     render(conn, "paginated.json", orbs: orbs)
   end

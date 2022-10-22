@@ -74,6 +74,20 @@ defmodule PhosWeb.Util.Viewer do
     end)
   end
 
+  # User RelationRoot Mapper
+  def user_relation_mapper(rel) do
+    %{
+      id: rel.id,
+      state: rel.state,
+      initiator_id: rel.initiator_id,
+      acceptor_id: rel.acceptor_id,
+      creationtime: DateTime.from_naive!(rel.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
+      mutationtime: DateTime.from_naive!(rel.updated_at, "Etc/UTC") |> DateTime.to_unix(),
+      self_initiated: rel.self_initiated,
+      media: (if rel.self_initiated , do: S3.get_all!("USR", rel.acceptor_id, "public"), else: S3.get_all!("USR", rel.initiator_id, "public"))
+    }
+  end
+
   # Orb Mapper
   #
   def orb_mapper(orbs = [%Phos.Action.Orb{} | _]) do
