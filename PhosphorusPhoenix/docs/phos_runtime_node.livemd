@@ -40,14 +40,24 @@ Phos.Repo.one(
     left_join:
       rel in subquery(
         from(r in RelationBranch,
-          where: r.friend_id == ^acpt
+          where: r.friend_id == ^acpt,
+          inner_join: root in assoc(r, :root),
+          select: root
         )
       ),
-    on: rel.user_id == u.id,
-    select_merge: %{relation_state: not is_nil(rel.completed_at)}
+    select_merge: %{self_relation: rel}
   )
 )
 |> Phos.Repo.Preloader.lateral(:orbs, limit: 5)
+
+from(l in Phos.Action.Orb_Location,
+  as: :l,
+  where: l.location_id in ^[614_510_498_785_787_903],
+  left_join: orbs in assoc(l, :orbs),
+  where: orbs.userbound == true,
+  preload: [orbs: :initiator]
+)
+|> Phos.Repo.all()
 ```
 
 ## recompile @ node

@@ -21,7 +21,7 @@ defmodule Phos.Users.User do
     has_many :auths, Auth, references: :id, foreign_key: :user_id
     has_many :relations, RelationBranch, foreign_key: :user_id
 
-    field :friend_state, :string, virtual: true
+    field :self_relation, :string, virtual: true
 
     # has_many :pending_relations, RelationBranch, foreign_key: :user_id, where: [completed_at: nil]
     # has_many :completed_relations, RelationBranch, foreign_key: :user_id, where: [completed_at: {:not, nil}]

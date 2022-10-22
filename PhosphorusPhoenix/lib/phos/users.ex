@@ -8,7 +8,7 @@ defmodule Phos.Users do
   import Ecto.Query, warn: false
   alias Phos.Repo
   alias Phos.Users
-  alias Phos.Users.{User, Public_Profile, Private_Profile, Auth}
+  alias Phos.Users.{User, Public_Profile, Private_Profile, Auth, RelationBranch}
   alias Phos.Cache
   alias Ecto.Multi
 
@@ -327,10 +327,11 @@ defmodule Phos.Users do
     Phos.Repo.one(from u in User,
       where: u.id == ^user_id,
       left_join: rel in subquery(from r in RelationBranch,
-        where: r.friend_id == ^your_id
+        where: r.friend_id == ^your_id,
+        inner_join: root in assoc(r, :root),
+        select: root
       ),
-      on: rel.user_id == u.id,
-      select_merge: %{relation_state: not is_nil(rel.completed_at)}
+      select_merge: %{self_relation: rel}
     )
     |> Phos.Repo.Preloader.lateral(:orbs, [limit: 5])
   end

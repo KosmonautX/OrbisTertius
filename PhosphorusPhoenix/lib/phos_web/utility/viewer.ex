@@ -8,28 +8,35 @@ defmodule PhosWeb.Util.Viewer do
   alias Phos.Orbject.S3
 
   # Relationship Mapper
-  def relationship_mapper(entity) do
-    case entity do
-      %{initiator: %Phos.Users.User{}} ->
-      (if Ecto.assoc_loaded?(entity.initiator) && !is_nil(entity.initiator) do
-          %{initiator:
-            %{data: user_mapper(entity.initiator),
-              links: %{self: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, entity.initiator.id)}
-            }
-          }
-        end)
-      %{orbs: [%Phos.Action.Orb{} | _]} ->
-      (if Ecto.assoc_loaded?(entity.orbs) && !is_nil(entity.orbs) do
+  def relationship_mapper(field, entity) do
+    case field do
+      {:initiator, %Phos.Users.User{} = initiator} ->
+
+        %{initiator:
+          %{data: PhosWeb.Util.Viewer.user_mapper(initiator),
+            links: %{profile: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, initiator.id)}}}
+
+      {:self_relation, %Phos.Users.RelationRoot{} = self_relation} ->
+
+        %{self:
+          %{data: %{PhosWeb.Util.Viewer.user_relation_mapper(self_relation) | self_initiated: self_relation.initiator_id != entity.id},
+            links: %{self: PhosWeb.Router.Helpers.friend_path(PhosWeb.Endpoint, :show_others, entity.id)}}}
+
+
+      {:orbs, [%Phos.Action.Orb{} | _] = orbs} ->
         %{orbs:
-          %{data: orb_mapper(entity.orbs),
-            links: %{self: PhosWeb.Router.Helpers.orb_path(PhosWeb.Endpoint, :show_history, entity.id)},
-        }}
-      end)
+          %{data: PhosWeb.Util.Viewer.orb_mapper(orbs),
+          links: %{history: PhosWeb.Router.Helpers.orb_path(PhosWeb.Endpoint, :show_history, entity.id)}}}
 
-        _ -> nil
+      _ -> %{}
+
     end
+  end
 
-
+  def relationship_reducer(entity) do
+    entity
+    |> Map.from_struct()
+    |> Enum.reduce(%{}, fn({k,v}, acc) -> Map.merge(acc, relationship_mapper({k,v}, entity)) end)
   end
 
   # User Mapper
@@ -38,9 +45,8 @@ defmodule PhosWeb.Util.Viewer do
       id: user.id,
       username: user.username,
       fyr_id: user.fyr_id,
-      friend_state: user.friend_state,
       profile: user_profile_mapper(user),
-      relationships: relationship_mapper(user),
+      relationships: relationship_reducer(user),
       creationtime: DateTime.from_naive!(user.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
       mutationtime: DateTime.from_naive!(user.updated_at, "Etc/UTC") |> DateTime.to_unix(),
       media: (if user.media, do: S3.get_all!("USR", user.id, "public"))
@@ -103,7 +109,7 @@ defmodule PhosWeb.Util.Viewer do
       active: orb.active,
       orb_uuid: orb.id,
       title: orb.title,
-      relationships: relationship_mapper(orb),
+      relationships: relationship_reducer(orb),
       creationtime: DateTime.from_naive!(orb.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
       mutationtime: DateTime.from_naive!(orb.updated_at, "Etc/UTC") |> DateTime.to_unix(),
       source: orb.source,
@@ -218,4 +224,4 @@ defmodule PhosWeb.Util.Viewer do
       %{}
     end
   end
-end
+ end
