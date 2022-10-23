@@ -326,12 +326,11 @@ defmodule Phos.Users do
   def get_public_user(user_id, your_id) do
     Phos.Repo.one(from u in User,
       where: u.id == ^user_id,
-      left_join: rel in subquery(from r in RelationBranch,
-        where: r.friend_id == ^your_id,
-        inner_join: root in assoc(r, :root),
-        select: root
-      ),
-      select_merge: %{self_relation: rel}
+      inner_join: branch in assoc(u, :relations),
+      on: branch.friend_id == ^your_id,
+      inner_join: root in assoc(branch, :root),
+      select: u,
+      select_merge: %{self_relation: root}
     )
     |> Phos.Repo.Preloader.lateral(:orbs, [limit: 5])
   end

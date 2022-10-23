@@ -86,14 +86,12 @@ defmodule Phos.Action do
       where: l.location_id in ^hashes,
       left_join: orbs in assoc(l, :orbs),
       on: orbs.userbound != true,
-      left_join: initiator in assoc(orbs, :initiator),
       select: orbs,
-      left_join: rel in subquery(from r in Phos.Users.RelationBranch,
-        where: r.friend_id == ^your_id,
-        inner_join: root in assoc(r, :root),
-        select: root
-      ),
-      select_merge: %{initiator: %{initiator | self_relation: rel}},
+      left_join: initiator in assoc(orbs, :initiator),
+      left_join: branch in assoc(initiator, :relations),
+      on: branch.friend_id == ^your_id,
+      left_join: root in assoc(branch, :root),
+      select_merge: %{initiator: %{initiator | self_relation: root}},
       inner_lateral_join: c in subquery(
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:l).orb_id,
@@ -111,12 +109,10 @@ defmodule Phos.Action do
       on: orbs.userbound == true,
       left_join: initiator in assoc(orbs, :initiator),
       select: initiator,
-      left_join: rel in subquery(from r in Phos.Users.RelationBranch,
-        where: r.friend_id == ^your_id,
-        inner_join: root in assoc(r, :root),
-        select: root
-      ),
-      select_merge: %{self_relation: rel})
+      left_join: branch in assoc(initiator, :relations),
+      on: branch.friend_id == ^your_id,
+      left_join: root in assoc(branch, :root),
+      select_merge: %{self_relation: root})
       |> Repo.Paginated.all(page, sort_attribute, limit)
       |> (&(Map.put(&1, :data, &1.data |> Repo.Preloader.lateral(:orbs, [limit: 5])))).()
   end

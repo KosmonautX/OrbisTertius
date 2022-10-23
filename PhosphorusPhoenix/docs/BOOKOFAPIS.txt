@@ -9,6 +9,8 @@
 :princeton_id=9bf9c443-f89b-460a-972d-6704ae66823d
 :satrio_id=5c82aeea-7c2b-4a97-a80b-d5b728c4ee86
 :lky_id=3995c7f6-af54-4e31-85ee-3608e16ec00f
+:aang_id=5972b8e6-319b-4bf4-95cf-f58fb2117e21
+:zuko_id=6f6c7d30-4447-4687-8fb9-f95a2de82957
 :auth-headers = <<
 Authorization: :token
 Content-Type: application/json
@@ -20,7 +22,7 @@ Content-Type: application/json
 User-Agent: Emacs27
 ##
 ## Generate Client-side JWT
-GET :localipAddress/devland/flameon?user=:princeton_id
+GET :localipAddress/devland/flameon?user=:satrio_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
@@ -104,7 +106,7 @@ GET :ipAddress/folkland/friends?page=1
 :auth-headers
 
 ## List all current Buddies of others
-GET :ipAddress/folkland/others/:princeton_id?page=1
+GET :ipAddress/folkland/others/5972b8e6-319b-4bf4-95cf-f58fb2117e21?page=1
 :auth-headers
 
 ## Orb Stream directed at yourself from friends
@@ -112,32 +114,32 @@ GET :ipAddress/folkland/stream/self?page=1
 :auth-headers
 
 ## Orb Stream directed at yourself from friends
-GET :ipAddress/folkland/stream/discovery/614510498785787903?page=1
+GET :ipAddress/folkland/stream/discovery/614510498777399295?page=1
 :auth-headers
 
 ## Send connection request
 POST :ipAddress/folkland/friends
 :auth-headers
 {
-    "acceptor_id": ":lky_id"
+    "acceptor_id": ":zuko_id"
 }
 
 ## Delete Relation Resource (reset everything)
-DELETE :ipAddress/folkland/friends/c47311cc-7dce-4280-bd28-613aa1500078
+DELETE :ipAddress/folkland/friends/62be6788-7354-4253-9e9b-8ba19ea487b2
 :auth-headers
 
 ## Ended the friendship
 PUT :ipAddress/folkland/friends/ended
 :auth-headers
 {
-    "relation_id": "c47311cc-7dce-4280-bd28-613aa1500078"
+    "relation_id": "62be6788-7354-4253-9e9b-8ba19ea487b2"
 }
 
 ## Began the friendship
 PUT :ipAddress/folkland/friends/begun
 :auth-headers
 {
-    "relation_id": ":satrio_id"
+    "relation_id": "652aa8c3-7be7-4d01-a25a-972eec49fd8d"
 }
 
 ## List of requests to you
@@ -155,7 +157,7 @@ GET :ipAddress/orbland/orbs/59f60ff7-6874-4471-b732-12ef2f5c0d36
 :auth-headers
 
 ## Read all orbs in that geohash id
-GET :ipAddress/orbland/stream/623276216935972863
+GET :ipAddress/orbland/stream/623276216935972863?page=1
 :auth-headers
 
 ## Create Orbs
