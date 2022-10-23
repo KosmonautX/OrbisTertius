@@ -63,7 +63,7 @@ defmodule PhosWeb.API.FriendController do
     |> Enum.map(fn relation -> %{relation | self_initiated: user_id == relation.initiator_id} end)
   end
 
-  def ended(%{assigns: %{current_user: user}} = conn, %{"relation_id" => rel_id}) do
+  def reject(%{assigns: %{current_user: user}} = conn, %{"relation_id" => rel_id}) do
     root = Folk.get_relation!(rel_id)
     with true <- root.acceptor_id == user.id,
     {:ok, %RelationRoot{} = relation} <- Folk.update_relation(root, %{"state" => "ghosted"}) do
@@ -75,7 +75,7 @@ defmodule PhosWeb.API.FriendController do
     end
   end
 
-  def begun(%{assigns: %{current_user: user}} = conn, %{"relation_id" => rel_id}) do
+  def accept(%{assigns: %{current_user: user}} = conn, %{"relation_id" => rel_id}) do
     root = Folk.get_relation!(rel_id)
     with true <- root.acceptor_id == user.id,
     {:ok, %RelationRoot{} = relation} <- Folk.update_relation(root, %{"state" => "completed"}) do

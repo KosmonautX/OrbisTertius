@@ -114,8 +114,8 @@ defmodule PhosWeb.Router do
       get "/stream/discovery/:id", FriendController, :show_discovery
       resources "/friends", FriendController, except: [:new, :edit, :update]
       get "/others/:id", FriendController, :show_others
-      put "/friends/ended", FriendController, :ended
-      put "/friends/begun", FriendController, :begun
+      put "/friends/reject", FriendController, :reject
+      put "/friends/accept", FriendController, :accept
       get "/self/requests", FriendController, :requests
       get "/self/pending", FriendController, :pending
     end
