@@ -88,9 +88,8 @@ defmodule Phos.MixProject do
       {:ecto_ltree, "~> 0.3.0"},
       #debugging
       {:rexbug, "~> 1.0"},
-      { :uuid, "~> 1.1" },
-
-      #{:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
+      # { :uuid, "~> 1.1" },
+      # {:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
     ]
   end
 

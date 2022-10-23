@@ -326,9 +326,9 @@ defmodule Phos.Users do
   def get_public_user(user_id, your_id) do
     Phos.Repo.one(from u in User,
       where: u.id == ^user_id,
-      inner_join: branch in assoc(u, :relations),
+      left_join: branch in assoc(u, :relations),
       on: branch.friend_id == ^your_id,
-      inner_join: root in assoc(branch, :root),
+      left_join: root in assoc(branch, :root),
       select: u,
       select_merge: %{self_relation: root}
     )

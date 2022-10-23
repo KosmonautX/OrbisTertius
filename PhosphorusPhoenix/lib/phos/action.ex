@@ -87,7 +87,7 @@ defmodule Phos.Action do
       left_join: orbs in assoc(l, :orbs),
       on: orbs.userbound != true,
       select: orbs,
-      left_join: initiator in assoc(orbs, :initiator),
+      inner_join: initiator in assoc(orbs, :initiator),
       left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,
       left_join: root in assoc(branch, :root),
