@@ -126,7 +126,8 @@ defmodule Phos.Folk do
   def pending_requests(%Phos.Users.User{id: id}), do: pending_requests(id)
   def pending_requests(user_id, page, sort_attribute \\ :inserted_at, limit \\ 15) do
     query = from r in RelationRoot,
-      where: r.initiator_id == ^user_id and r.state == "requested"
+      where: r.initiator_id == ^user_id and r.state == "requested",
+      preload: [:acceptor]
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
   end
@@ -149,7 +150,9 @@ defmodule Phos.Folk do
   def friend_requests(%Phos.Users.User{id: id}), do: friend_requests(id)
   def friend_requests(user_id, page, sort_attribute \\ :inserted_at, limit \\ 15) do
     query = from r in RelationRoot,
-      where: r.acceptor_id == ^user_id and r.state == "requested"
+      where: r.acceptor_id == ^user_id and r.state == "requested",
+      preload: [:initiator]
+
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
   end

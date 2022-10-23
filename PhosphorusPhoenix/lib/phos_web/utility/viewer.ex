@@ -16,6 +16,12 @@ defmodule PhosWeb.Util.Viewer do
           %{data: PhosWeb.Util.Viewer.user_mapper(initiator),
             links: %{profile: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, initiator.id)}}}
 
+      {:acceptor, %Phos.Users.User{} = acceptor} ->
+
+        %{acceptor:
+          %{data: PhosWeb.Util.Viewer.user_mapper(acceptor),
+            links: %{profile: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, acceptor.id)}}}
+
       {:self_relation, %Phos.Users.RelationRoot{} = self_relation} ->
 
         %{self:
@@ -91,6 +97,7 @@ defmodule PhosWeb.Util.Viewer do
       creationtime: DateTime.from_naive!(rel.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
       mutationtime: DateTime.from_naive!(rel.updated_at, "Etc/UTC") |> DateTime.to_unix(),
       self_initiated: rel.self_initiated,
+      relationships: relationship_reducer(rel),
       media: (if rel.self_initiated , do: S3.get_all!("USR", rel.acceptor_id, "public"), else: S3.get_all!("USR", rel.initiator_id, "public"))
     }
   end

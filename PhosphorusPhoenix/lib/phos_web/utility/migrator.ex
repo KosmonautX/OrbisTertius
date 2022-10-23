@@ -45,6 +45,7 @@ defmodule PhosWeb.Util.Migrator do
   ## TODO Tie together to Auth
 
   defp insert_or_update_user(%{"kind" => "identitytoolkit#GetAccountInfoResponse", "users" => user_info }) do
+    # https://developers.google.com/resources/api-libraries/documentation/identitytoolkit/v3/python/latest/identitytoolkit_v3.relyingparty.html#getAccountInfo
     data = List.first(user_info)
     Multi.new()
     |> Multi.run(:providers, fn _repo, _ -> {:ok, Map.get(data, "providerUserInfo")} end)
@@ -133,7 +134,7 @@ defmodule PhosWeb.Util.Migrator do
     providers
     |> Enum.map(fn provider ->
       %{
-        auth_id: get_in(provider, ["uid"]),
+        auth_id: get_in(provider, ["uid"]) || get_in(provider, ["rawId"]),
         user_id: user.id,
         auth_provider: Map.get(provider, "providerId", "") |> String.split(".") |> List.first(),
         inserted_at: time,

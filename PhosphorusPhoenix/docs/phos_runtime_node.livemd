@@ -33,44 +33,13 @@ payload = %{
 # Phos.Repo.get!(RelationRoot, "5a096428-32b9-45a9-b5c1-a6f68443d201")
 # |> RelationRoot.mutate_state_changeset(payloadz)
 # |> Phos.Repo.update()
+# doesnt't exist but has data msGW3TpSFQcmfqOmICkHZl1OImC2
+# no data fFKlWcfV9RRavNZJUxt46BLYB5n1
+Phos.Users.get_user_by_fyr("fFKlWcfV9RRavNZJUxt46BLYB5n1")
+|> Phos.Repo.preload(:auths)
 
-# Phos.Repo.one(from u in User,
-#       where: u.id == ^req,
-#       left_join: rel in subquery(from r in RelationBranch,
-#         where: r.friend_id == ^acpt,
-#         inner_join: root in assoc(r, :root),
-#         select: root
-#       ),
-#       select_merge: %{self_relation: rel}
-#     ) 
-#     |> Phos.Repo.Preloader.lateral(:orbs, [limit: 5])
-
-from(l in Phos.Action.Orb_Location,
-  as: :l,
-  where: l.location_id in ^[623_276_216_935_972_863 |> :h3.parent(8)],
-  left_join: orbs in assoc(l, :orbs),
-  on: orbs.userbound != true,
-  left_join: initiator in assoc(orbs, :initiator),
-  select: orbs,
-  left_join:
-    rel in subquery(
-      from(r in Phos.Users.RelationBranch,
-        where: r.friend_id == ^req,
-        inner_join: root in assoc(r, :root),
-        select: root
-      )
-    ),
-  select_merge: %{initiator: %{initiator | self_relation: rel}},
-  inner_lateral_join:
-    c in subquery(
-      from(c in Phos.Comments.Comment,
-        where: c.orb_id == parent_as(:l).orb_id,
-        select: %{count: count()}
-      )
-    ),
-  select_merge: %{comment_count: c.count}
-)
-|> Phos.Repo.all()
+# Phos.Users.get_user_by_fyr("fFKlWcfV9RRavNZJUxt46BLYB5n1") |> Phos.Users.delete_user()
+# PhosWeb.Util.Migrator.fyr_profile("eyJhbGciOiJSUzI1NiIsImtpZCI6IjVkMzQwZGRiYzNjNWJhY2M0Y2VlMWZiOWQxNmU5ODM3ZWM2MTYzZWIiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiVml2ZWtiYWxhIGZyb20gU2NyYXRjaGJhYyIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BTG01d3UxRkdhdm1hdm9VdXRxXzYwZ1VFdFlVbmpiNEh1UHZWRjRGdDN0WD1zOTYtYyIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS9zY3JhdGNoYmFjLW5vcmJhbmR5IiwiYXVkIjoic2NyYXRjaGJhYy1ub3JiYW5keSIsImF1dGhfdGltZSI6MTY2NjUyNzQxOSwidXNlcl9pZCI6ImZGS2xXY2ZWOVJSYXZOWkpVeHQ0NkJMWUI1bjEiLCJzdWIiOiJmRktsV2NmVjlSUmF2TlpKVXh0NDZCTFlCNW4xIiwiaWF0IjoxNjY2NTI3NDE5LCJleHAiOjE2NjY1MzEwMTksImVtYWlsIjoidml2ZWtiYWxhQHNjcmF0Y2hiYWMuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZ29vZ2xlLmNvbSI6WyIxMDk1NDI1OTIzOTIwOTU0MzY4MjMiXSwiZW1haWwiOlsidml2ZWtiYWxhQHNjcmF0Y2hiYWMuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoiY3VzdG9tIn19.a5Zyy2CT0Im2gwCh9jnoKzaK58rq1A2memiO3jpsebQArQucozsyxPd4AhdBMOXTbiUvUgd_zAfDtmV-hzy_qhsYBmJNUjbbu2MYEHkd6RR66544isSPmb515-xaVV-BVbX2aeSpS8lspUTYXD0gVxPq58PqMkG4vvt-RHyv46FfATuUt02-SST7Xorp_6EpMoXmPwnsf6Q-7Q0ji0j0xWdrRpCSUfMfvJFmz6NEaWKd4LkXFdYB_6dzYtEv_C9KnIJYuBl1Bniwk5KHlbPvC20OT-gwD7fiyqJxU6XMoLjbDctwGM_vyESp6xiH9cnTEZgF4JFn50r_0Sk2o6evrw")
 ```
 
 ```elixir
