@@ -123,8 +123,9 @@ defmodule Phos.Folk do
 
   """
   @spec pending_requests(user_id :: Ecto.UUID.t() | Phos.Users.User.t()) :: [Phos.Users.User.t()]
-  def pending_requests(%Phos.Users.User{id: id}), do: pending_requests(id)
-  def pending_requests(user_id, page, sort_attribute \\ :inserted_at, limit \\ 15) do
+  def pending_requests(user, page \\ 1, sort_attribute \\ :inserted_at, limit \\ 15)
+  def pending_requests(%Phos.Users.User{id: id}, page, sort_attribute, limit), do: pending_requests(id, page, sort_attribute, limit)
+  def pending_requests(user_id, page, sort_attribute, limit) do
     query = from r in RelationRoot,
       where: r.initiator_id == ^user_id and r.state == "requested",
       preload: [:acceptor]
@@ -147,8 +148,9 @@ defmodule Phos.Folk do
 
   """
   @spec friend_requests(user_id :: Ecto.UUID.t() | Phos.Users.User.t(), filters :: Keyword.t()) :: [Phos.Users.User.t()] | Phos.Users.User.t()
-  def friend_requests(%Phos.Users.User{id: id}), do: friend_requests(id)
-  def friend_requests(user_id, page, sort_attribute \\ :inserted_at, limit \\ 15) do
+  def friend_requests(user, page \\ 1, sort_attribute \\ :inserted_at, limit \\ 15)
+  def friend_requests(%Phos.Users.User{id: id}, page, sort_attribute, limit), do: friend_requests(id, page, sort_attribute, limit)
+  def friend_requests(user_id, page, sort_attribute, limit) do
     query = from r in RelationRoot,
       where: r.acceptor_id == ^user_id and r.state == "requested",
       preload: [:initiator]
@@ -171,8 +173,11 @@ defmodule Phos.Folk do
       [%User{}, %User{}]
 
   """
-  @decorate cacheable(cache: Cache, key: {User, :friends, user_id}, opts: [ttl: @ttl])
-  def friends(user_id, page, sort_attribute \\ :completed_at, limit \\ 15) do
+  def friends(user_id, page \\ 1, sort_attribute \\ :completed_at, limit \\ 15)
+  def friends(%Phos.Users.User{id: id}, page, sort_attribute, limit), do: friends(id, page, sort_attribute, limit)
+
+  @decorate cacheable(cache: Cache, key: {User, :friends, [user_id, page, sort_attribute, limit]}, opts: [ttl: @ttl])
+  def friends(user_id, page, sort_attribute, limit) do
     query = from r in RelationBranch,
       where: not is_nil(r.completed_at),
       where: r.user_id == ^user_id,
