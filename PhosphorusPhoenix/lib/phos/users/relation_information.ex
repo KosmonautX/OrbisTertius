@@ -18,7 +18,7 @@ defmodule Phos.Users.RelationRoot do
 
     field :state, :string
 
-    has_many :branches, RelationBranch, references: :id, foreign_key: :root_id
+    has_many :branches, RelationBranch, references: :id, foreign_key: :root_id, on_delete: :delete_all
     belongs_to :initiator, User, references: :id, type: Ecto.UUID
     belongs_to :acceptor, User, references: :id, type: Ecto.UUID
     field :self_initiated, :boolean, virtual: true

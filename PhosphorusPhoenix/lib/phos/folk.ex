@@ -8,7 +8,7 @@ defmodule Phos.Folk do
   alias Phos.{Cache, Repo}
   alias Phos.Users.{User, RelationBranch, RelationRoot}
 
-  @ttl :timer.hours(1)
+  #@ttl :timer.hours(1)
 
   #   @doc """
   #   Gets a single Relation.
@@ -176,12 +176,13 @@ defmodule Phos.Folk do
   def friends(user_id, page \\ 1, sort_attribute \\ :completed_at, limit \\ 15)
   def friends(%Phos.Users.User{id: id}, page, sort_attribute, limit), do: friends(id, page, sort_attribute, limit)
 
-  @decorate cacheable(cache: Cache, key: {User, :friends, [user_id, page, sort_attribute, limit]}, opts: [ttl: @ttl])
+  ## cache invalidation when updated needed
+  #@decorate cacheable(cache: Cache, key: {User, :friends, [user_id, page, sort_attribute, limit]}, opts: [ttl: @ttl])
   def friends(user_id, page, sort_attribute, limit) do
     query = from r in RelationBranch,
       where: not is_nil(r.completed_at),
       where: r.user_id == ^user_id,
-      preload: [:root]
+      preload: [:root, :friend]
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
   end

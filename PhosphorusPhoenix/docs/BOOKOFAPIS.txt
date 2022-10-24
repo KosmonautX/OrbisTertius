@@ -1,11 +1,13 @@
 # -*- restclient -*-
 # Phos API Endpoint Documentation
 
-#:ipAddress = http://localhost:4000/api
-:ipAddress = https://nyx.scrb.ac/api
+:ipAddress = http://localhost:4000/api
+#:ipAddress = https://nyx.scrb.ac/api
 :localipAddress = http://localhost:4000/api
 :princeton=0b3gd5XUGtNP6lqQean4IAp7ogG3
 :satrio=BX1BxM9KkwdFmy2J4FNNkFxclpS2
+:owen=0ErhlIM10Maldn1qVMGOJMKu6J92
+:tate=FbXQKufaWFOUNIsVYsn5tdW1qUc2
 :princeton_id=9bf9c443-f89b-460a-972d-6704ae66823d
 :satrio_id=5c82aeea-7c2b-4a97-a80b-d5b728c4ee86
 :lky_id=3995c7f6-af54-4e31-85ee-3608e16ec00f
@@ -26,7 +28,7 @@ GET :localipAddress/devland/flameon?user=:satrio_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
-GET :localipAddress/devland/lankaonfyr?fyr_id=:princeton
+GET :localipAddress/devland/lankaonfyr?fyr_id=:tate
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 
@@ -121,11 +123,11 @@ GET :ipAddress/folkland/stream/discovery/627779416113979391?page=1
 POST :ipAddress/folkland/friends
 :auth-headers
 {
-    "acceptor_id": ":zuko_id"
+    "acceptor_id": ":satrio_id"
 }
 
 ## Delete Relation Resource (reset everything)
-DELETE :ipAddress/folkland/friends/62be6788-7354-4253-9e9b-8ba19ea487b2
+DELETE :ipAddress/folkland/friends/be4877fc-38b3-40cb-af2a-7dacd2cb58fd
 :auth-headers
 
 ## Ended the friendship
