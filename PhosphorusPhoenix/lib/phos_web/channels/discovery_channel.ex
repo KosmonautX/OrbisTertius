@@ -1,7 +1,7 @@
 defmodule PhosWeb.DiscoveryChannel do
   use PhosWeb, :channel
 
-  @visibility [8, 9, 10]
+  @visibility [8]
   @location_type ["home", "work", "live"]
 
   def join("discovery:" <> id, _payload, socket) do

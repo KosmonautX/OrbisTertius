@@ -22,6 +22,7 @@ defmodule Phos.Users.RelationRoot do
     belongs_to :initiator, User, references: :id, type: Ecto.UUID
     belongs_to :acceptor, User, references: :id, type: Ecto.UUID
     field :self_initiated, :boolean, virtual: true
+    field :friend, :map, virtual: true
 
     timestamps()
   end

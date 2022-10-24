@@ -10,6 +10,25 @@ defmodule PhosWeb.Util.Viewer do
   # Relationship Mapper
   def relationship_mapper(field, entity) do
     case field do
+      {:self_relation, %Phos.Users.RelationRoot{} = self_relation} ->
+
+        %{self:
+          %{data: %{PhosWeb.Util.Viewer.user_relation_mapper(self_relation) | self_initiated: self_relation.initiator_id != entity.id},
+            links: %{self: PhosWeb.Router.Helpers.friend_path(PhosWeb.Endpoint, :show_others, entity.id)}}}
+
+
+      {:orbs, [%Phos.Action.Orb{} | _] = orbs} ->
+        %{orbs:
+          %{data: PhosWeb.Util.Viewer.orb_mapper(orbs),
+          links: %{history: PhosWeb.Router.Helpers.orb_path(PhosWeb.Endpoint, :show_history, entity.id)}}}
+
+
+      {:friend, %Phos.Users.User{} = friend} ->
+
+        %{friend:
+          %{data: PhosWeb.Util.Viewer.user_mapper(friend),
+            links: %{profile: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, friend.id)}}}
+
       {:initiator, %Phos.Users.User{} = initiator} ->
 
         %{initiator:
@@ -22,17 +41,6 @@ defmodule PhosWeb.Util.Viewer do
           %{data: PhosWeb.Util.Viewer.user_mapper(acceptor),
             links: %{profile: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, acceptor.id)}}}
 
-      {:self_relation, %Phos.Users.RelationRoot{} = self_relation} ->
-
-        %{self:
-          %{data: %{PhosWeb.Util.Viewer.user_relation_mapper(self_relation) | self_initiated: self_relation.initiator_id != entity.id},
-            links: %{self: PhosWeb.Router.Helpers.friend_path(PhosWeb.Endpoint, :show_others, entity.id)}}}
-
-
-      {:orbs, [%Phos.Action.Orb{} | _] = orbs} ->
-        %{orbs:
-          %{data: PhosWeb.Util.Viewer.orb_mapper(orbs),
-          links: %{history: PhosWeb.Router.Helpers.orb_path(PhosWeb.Endpoint, :show_history, entity.id)}}}
 
       _ -> %{}
 

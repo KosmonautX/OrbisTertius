@@ -10,7 +10,7 @@ defmodule PhosWeb.API.FriendController do
     friends = Folk.friends(user.id, page)
     render(conn, "paginated.json",
       relations: friends.data
-      |> Enum.map(fn branch -> branch.root end)
+      |> Enum.map(fn branch -> %{branch.root | friend: branch.friend} end)
       |> self_initiated_enricher(user.id),
       meta: friends.meta
     )
@@ -20,7 +20,7 @@ defmodule PhosWeb.API.FriendController do
     friends = Folk.friends(user_id, page)
     render(conn, "paginated.json",
       relations: friends.data
-      |> Enum.map(fn branch -> branch.root end)
+      |> Enum.map(fn branch ->  %{branch.root | friend: branch.friend} end)
       |> self_initiated_enricher(user_id),
       meta: friends.meta
     )

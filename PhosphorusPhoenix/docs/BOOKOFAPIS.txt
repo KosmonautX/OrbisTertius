@@ -28,7 +28,7 @@ GET :localipAddress/devland/flameon?user=:satrio_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
-GET :localipAddress/devland/lankaonfyr?fyr_id=:tate
+GET :localipAddress/devland/lankaonfyr?fyr_id=:satrio
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 
@@ -131,17 +131,17 @@ DELETE :ipAddress/folkland/friends/be4877fc-38b3-40cb-af2a-7dacd2cb58fd
 :auth-headers
 
 ## Ended the friendship
-PUT :ipAddress/folkland/friends/ended
+PUT :ipAddress/folkland/friends/reject
 :auth-headers
 {
     "relation_id": "62be6788-7354-4253-9e9b-8ba19ea487b2"
 }
 
 ## Began the friendship
-PUT :ipAddress/folkland/friends/begun
+PUT :ipAddress/folkland/friends/accept
 :auth-headers
 {
-    "relation_id": "652aa8c3-7be7-4d01-a25a-972eec49fd8d"
+    "relation_id": "afdda033-7b1b-4551-bfb7-1523ae597441"
 }
 
 ## List of requests to you
