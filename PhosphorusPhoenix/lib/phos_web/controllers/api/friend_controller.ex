@@ -70,8 +70,6 @@ defmodule PhosWeb.API.FriendController do
       conn
       |> put_status(200)
       |> render("show.json", relation: relation)
-    else
-      false -> {:error, :unauthorized}
     end
   end
 
@@ -84,6 +82,10 @@ defmodule PhosWeb.API.FriendController do
       |> render("show.json", relation: relation)
     else
       false -> {:error, :unauthorized}
+      {:error, reason} ->
+        conn
+        |> put_status(400)
+        |> render("relation_error.json", reason: reason)
     end
   end
 
