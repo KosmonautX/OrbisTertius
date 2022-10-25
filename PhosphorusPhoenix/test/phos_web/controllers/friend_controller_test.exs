@@ -114,29 +114,29 @@ defmodule PhosWeb.API.FriendControllerTest do
     end
   end
 
-  describe "PUT /api/folkland/friends/reject" do
+  describe "PUT /api/folkland/friends/block" do
     setup [:inject_user_token]
 
-    test "return relation detail when rejecting friends", %{conn: conn, user: user} do
+    test "return relation detail when blocking friends", %{conn: conn, user: user} do
       initiator = Phos.UsersFixtures.user_fixture()
 
       assert {:ok, root} = Phos.Folk.add_friend(initiator.id, user.id)
       assert root.state == "requested"
 
-      conn = put(conn, Routes.friend_path(conn, :reject), %{"relation_id" => root.id})
+      conn = put(conn, Routes.friend_path(conn, :block), %{"relation_id" => root.id})
 
       assert %{"data" => relation} = json_response(conn, 200)
       assert Map.get(relation, "state") == "ghosted"
     end
 
-    test "return error when already friends and then reject", %{conn: conn, user: user} do
+    test "return error when already friends and then block", %{conn: conn, user: user} do
       initiator = Phos.UsersFixtures.user_fixture()
 
       assert {:ok, root} = Phos.Folk.add_friend(initiator.id, user.id)
       assert {:ok, updated_relation} = Phos.Folk.update_relation(root, %{"state" => "completed"})
       assert updated_relation.state == "completed"
 
-      conn = put(conn, Routes.friend_path(conn, :reject), %{"relation_id" => updated_relation.id})
+      conn = put(conn, Routes.friend_path(conn, :block), %{"relation_id" => updated_relation.id})
 
       assert %{"errors" => %{"state" => [msg]}} = json_response(conn, 422)
       assert msg == "transition_changeset failed: invalid transition from completed to ghosted"

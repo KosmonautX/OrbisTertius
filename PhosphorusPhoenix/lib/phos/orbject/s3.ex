@@ -47,10 +47,12 @@ defmodule Phos.Orbject.S3 do
     root_path = path_constructor(archetype, uuid, form)
     with {:ok, response} <- ExAws.S3.list_objects_v2("orbistertius", prefix: root_path, encoding_type: "url") |> ExAws.request(),
          true <- response.status_code >= 200 and response.status_code < 300,
+         [_ |_] <- response.body.contents,
            addresses <- (for obj <- response.body.contents, into: %{} do
                                   {path_suffix(obj.key, root_path), signer!(:get,obj.key)} end) do
       {:ok, addresses}
     else
+      [] -> nil
       {:error, err} -> {:error, err}
     end
   end
@@ -59,7 +61,8 @@ defmodule Phos.Orbject.S3 do
     with {:ok, address} <- Phos.Orbject.S3.get_all(archetype, uuid, form) do
       address
     else
-      {:error, err} -> nil #TODO better error parsing
+      {:error, _err} -> nil #TODO better error parsing
+      nil -> nil
     end
   end
 

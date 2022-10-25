@@ -451,7 +451,8 @@ defmodule Phos.Action do
 
   def subscribe_to_orb(%Orb{id: id} = _orb, %Phos.Users.User{} = user) do
     topic = "ORB.#{id}"
-    token = Map.get(user, :private_profile, %{}) |> Map.get(:user_token)
-    Phos.Notification.subscribe(token, topic)
+    ## TODO SUB User Topic to Orb
+    #token = Map.get(user, :private_profile, %{}) |> Map.get(:user_token)
+    #Phos.Notification.subscribe(token, topic)
   end
 end

@@ -1,8 +1,8 @@
 # -*- restclient -*-
 # Phos API Endpoint Documentation
 
-#:ipAddress = http://localhost:4000/api
-:ipAddress = https://nyx.scrb.ac/api
+:ipAddress = http://localhost:4000/api
+#:ipAddress = https://nyx.scrb.ac/api
 :localipAddress = http://localhost:4000/api
 :princeton=0b3gd5XUGtNP6lqQean4IAp7ogG3
 :satrio=BX1BxM9KkwdFmy2J4FNNkFxclpS2
@@ -56,7 +56,7 @@ PUT :ipAddress/userland/self/
 :auth-headers
 {
     "bio": "alberto robotos",
-    "username": "zuko",
+    "username": "tate",
     "public_name": "Albert the Robot",
     "birthday": 16123442423,
     "media": [
@@ -79,7 +79,7 @@ PUT :ipAddress/userland/self/
     "profile_pic": 3
 }
 ## Read userdata of Others Profile
-GET :ipAddress/userland/others/c4282856-5f09-4799-b87f-facec71b6020
+GET :ipAddress/userland/others/3995c7f6-af54-4e31-85ee-3608e16ec00f
 :auth-headers
 ## Read all of User Orb History
 GET :ipAddress/userland/others/:satrio_id/history?page=1
@@ -118,7 +118,7 @@ GET :ipAddress/folkland/stream/self?page=1
 :auth-headers
 
 ## Orb Stream directed at yourself from friends
-GET :ipAddress/folkland/stream/discovery/627779416113979391?page=1
+GET :ipAddress/folkland/stream/discovery/614510498785787903?page=1
 :auth-headers
 
 ## Send connection request
