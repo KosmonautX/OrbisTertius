@@ -24,7 +24,7 @@ defmodule Phos.Notification do
 
   def unsubscribe(token, topic) when is_bitstring(token), do: unsubscribe([token], topic)
   def unsubscribe(tokens, topic) when is_list(tokens) do
-    GenServer.cast(executor(), {:unsubcribe, tokens, topic})
+    GenServer.cast(executor(), {:unsubscribe, tokens, topic})
   end
 
   def push(token, notification) when is_bitstring(token), do: push([token], notification)

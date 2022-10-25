@@ -18,7 +18,7 @@ defmodule PhosWeb.UserProfileLive.Index do
     {:noreply, socket
       |> assign(:params, params)
       |> assign(:user, Users.get_user!(user_id))
-      |> assign(:orbs, Action.get_active_orbs_by_userid(user_id))
+      |> assign(:orbs, Action.get_active_orbs_by_initiator(user_id))
       |> apply_action(socket.assigns.live_action, params)}
   end
 
@@ -26,7 +26,7 @@ defmodule PhosWeb.UserProfileLive.Index do
     {:noreply, socket
       |> assign(:params, params)
       |> assign(:user, Users.get_user!(user_id))
-      |> assign(:orbs, Action.get_active_orbs_by_userid(user_id))
+      |> assign(:orbs, Action.get_active_orbs_by_initiator(user_id))
       |> apply_action(socket.assigns.live_action, params)}
   end
 

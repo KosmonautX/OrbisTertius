@@ -20,6 +20,15 @@ defmodule PhosWeb.Menshen.Auth do
     end
   end
 
+  def validate_fyr(token) do
+    case ExFirebaseAuth.Token.verify_token(token) do
+    {:ok, _fyr_id, %JOSE.JWT{fields: claims}} ->
+        {:ok, claims}
+    {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
   def validate_boni(token) do
     Role.Boni.verify_and_validate(token)
   end

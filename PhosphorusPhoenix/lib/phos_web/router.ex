@@ -92,23 +92,34 @@ defmodule PhosWeb.Router do
   scope "/api", PhosWeb.API do
     pipe_through [:api, :authorize_user]
 
-    resources "/userland/users", UserController, except: [:new, :edit]
-    resources "/userland/profile", UserProfileController, except: [:new, :edit]
 
+    get "/userland/self", UserProfileController, :show_self
+    put "/userland/self", UserProfileController, :update_self
+    put "/userland/self/territory", UserProfileController, :update_territory
+    get "/userland/others/:id", UserProfileController, :show
+
+    get "/userland/others/:id/history", OrbController, :show_history
+
+
+    get "/orbland/stream/:id", OrbController, :show_territory
     resources "/orbland/orbs", OrbController, except: [:new, :edit]
+
     resources "/orbland/comments", CommentController, except: [:new, :edit]
     get "/orbland/comments/root/:id", CommentController, :show_root
-    get "/orbland/comments/:id/ancestor/:cid", CommentController, :show_ancestor
+    get "/orbland/comments/children/:id", CommentController, :show_children
+    get "/orbland/comments/ancestor/:id", CommentController, :show_ancestor
 
-
-    get "/freshorbstream", OrbController, :fresh_orb_stream
-
-    scope "/users" do
-      resources "/friends", FriendController, except: [:new, :edit, :show, :update]
-      post "/friends/reject", FriendController, :reject
-      get "/friends/requests", FriendController, :requests
-      get "/friends/pending", FriendController, :pending
+    scope "/folkland" do
+      get "/stream/self", OrbController, :show_friends
+      get "/stream/discovery/:id", FriendController, :show_discovery
+      resources "/friends", FriendController, except: [:new, :edit, :update]
+      get "/others/:id", FriendController, :show_others
+      put "/friends/block", FriendController, :block
+      put "/friends/accept", FriendController, :accept
+      get "/self/requests", FriendController, :requests
+      get "/self/pending", FriendController, :pending
     end
+
   end
 
   # Other scopes may use custom stacks.

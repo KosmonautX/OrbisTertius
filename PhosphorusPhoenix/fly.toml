@@ -41,5 +41,5 @@ path = "/metrics"
   [[services.tcp_checks]]
     grace_period = "10s"
     interval = "20s"
-    restart_limit = 3
-    timeout = "5s"
+    restart_limit = 5
+    timeout = "10s"

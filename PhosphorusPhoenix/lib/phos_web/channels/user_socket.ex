@@ -12,7 +12,7 @@ defmodule PhosWeb.UserSocket do
   channel "archetype:usr:*", PhosWeb.UserChannel
   channel "archetype:loc:*", PhosWeb.UserLocationChannel
   channel "userfeed:*", PhosWeb.UserFeedChannel
-  channel "discovery:*", PhosWeb.DiscoveryChannel
+  channel "discovery:usr:*", PhosWeb.DiscoveryChannel
 
   ## Transports
   #transport :websocket, Phoenix.Transports.WebSocket, check_origin: ["//localhost",  "//echo.scrb.ac"]
@@ -44,6 +44,7 @@ defmodule PhosWeb.UserSocket do
   end
 
   @impl true
+
   def connect(_params, _socket, _connect_info), do: :error
 
   # Socket id's are topics that allow you to identify all sockets for a given user:

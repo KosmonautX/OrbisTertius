@@ -90,7 +90,7 @@ defmodule PhosWeb do
     quote do
       use Phoenix.Channel
       import PhosWeb.Gettext
-      import PhosWeb.Utility.Authorization
+      import PhosWeb.Util.Authorization
     end
   end
 

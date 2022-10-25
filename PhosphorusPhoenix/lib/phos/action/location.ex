@@ -14,5 +14,6 @@ defmodule Phos.Action.Location do
   def changeset(orb, attrs) do
     orb
     |> cast(attrs, [:id])
+    |> Map.put(:repo_opts, [on_conflict: :nothing, conflict_target: :id])
   end
 end

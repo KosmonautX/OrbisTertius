@@ -8,7 +8,7 @@ defmodule PhosWeb.UserFeedLive.Index do
 
   def handle_params(_params, _url, %{assigns: %{current_user: user}} = socket) do
     {:noreply, socket
-      |> assign(:feeds, Phos.Users.feeds(user.id))}
+      |> assign(:feeds, Phos.Folk.feeds(user.id))}
   end
 
   def handle_info({Phos.PubSub, {:feeds, "new"}, orb}, %{assigns: %{feeds: feeds}} = socket) do

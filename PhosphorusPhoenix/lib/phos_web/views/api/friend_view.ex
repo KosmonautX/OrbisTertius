@@ -5,14 +5,29 @@ defmodule PhosWeb.API.FriendView do
     %{data: render_many(friends, __MODULE__, "show.json")}
   end
 
-  def render("show.json", %{friend: user}) do
-    Map.take(user, [:id, :email, :username])
-    |> Map.put(:public_profile, Map.take(user.public_profile, [:bio, :birthday, :honorific, :occupation, :traits]))
+  def render("paginated.json", %{friends: friends}) do
+    %{data: render_many(friends.data, __MODULE__, "show.json"), meta: friends.meta}
   end
 
-  def render("relation.json", %{relation: relation}) do
-    Map.take(relation, [:id, :state])
+  def render("show.json", %{friend: user}) do
+    PhosWeb.Util.Viewer.user_mapper(user)
   end
+
+  def render("paginated.json", %{relations: data, meta: meta}) do
+    %{data: render_many(data, __MODULE__, "relation.json"), meta: meta}
+  end
+
+
+
+  def render("show.json", %{relation: relation}) do
+    %{data: render_one(relation, __MODULE__, "relation.json")}
+  end
+
+
+  def render("relation.json", %{friend: relation}) do
+    PhosWeb.Util.Viewer.user_relation_mapper(relation)
+  end
+
 
   def render("relation_error.json", %{reason: reason}) when is_bitstring(reason) do
     %{

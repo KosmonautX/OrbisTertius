@@ -6,10 +6,8 @@ defmodule Phos.Comments do
   import Ecto.Query, warn: false
   import EctoLtree.Functions
   alias Phos.Repo
-  alias Phos.Action.{Orb, Location, Orb_Payload, Orb_Location}
   alias Phos.Comments.{Comment}
 
-  alias Ecto.Multi
 
   @doc """
   Returns the list of comments.
@@ -21,7 +19,7 @@ defmodule Phos.Comments do
 
   """
   def list_comments do
-    Repo.all(Comment)
+    Repo.all(Comment) |> Repo.preload([:initiator])
   end
 
   #   @doc """
@@ -62,10 +60,80 @@ defmodule Phos.Comments do
   def get_comment(id), do: Repo.get(Comment, id) |> Repo.preload([:initiator])
   def get_comment!(id), do: Repo.get!(Comment, id) |> Repo.preload([:initiator])
 
-  def get_comments_by_orb(id) do
+  def get_descendents_comment(id) do
     query =
-      Comment
-      |> where([e], e.orb_id == ^id)
+      from c in Comment,
+      as: :c,
+      where: c.parent_id == ^id,
+      preload: [:initiator],
+      order_by: [desc: c.inserted_at],
+      inner_lateral_join: sc in subquery(
+        from sc in Comment,
+        where: sc.parent_id == parent_as(:c).id,
+        select: %{count: count()}
+      ),
+      select_merge: %{child_count: sc.count}
+    Repo.all(query)
+  end
+
+
+  def get_root_comments_by_orb(id) do
+    query =
+      from c in Comment,
+      as: :c,
+      where: c.orb_id == ^id,
+      where: nlevel(c.path) == 1,
+      preload: [:initiator],
+      order_by: [desc: c.inserted_at],
+      inner_lateral_join: sc in subquery(
+        from sc in Comment,
+        where: sc.parent_id == parent_as(:c).id,
+        select: %{count: count()}
+      ),
+      select_merge: %{child_count: sc.count}
+
+    Repo.all(query)
+
+  end
+
+  def get_descendents_comment(id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    query =
+      from c in Comment,
+      as: :c,
+      where: c.parent_id == ^id,
+      preload: [:initiator],
+      inner_lateral_join: sc in subquery(
+        from sc in Comment,
+        where: sc.parent_id == parent_as(:c).id,
+        select: %{count: count()}
+      ),
+      select_merge: %{child_count: sc.count}
+
+    Repo.Paginated.all(query, page, sort_attribute, limit)
+  end
+
+  def get_root_comments_by_orb(id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    query =
+      from c in Comment,
+      as: :c,
+      where: c.orb_id == ^id,
+      where: nlevel(c.path) == 1,
+      preload: [:initiator],
+      inner_lateral_join: sc in subquery(
+        from sc in Comment,
+        where: sc.parent_id == parent_as(:c).id,
+        select: %{count: count()}
+      ),
+      select_merge: %{child_count: sc.count}
+
+    Repo.Paginated.all(query, page, sort_attribute, limit)
+  end
+
+
+
+  def get_comments_by_orb(id) do
+    query = Comment
+    |> where([e], e.orb_id == ^id)
     |> preload(:initiator)
     |> order_by(desc: :inserted_at)
 
@@ -80,23 +148,6 @@ defmodule Phos.Comments do
     Repo.one(query)
   end
 
-  def get_root_comments_by_orb(id) do
-    query =
-      from c in Comment,
-      as: :c,
-      where: c.orb_id == ^id,
-      where: nlevel(c.path) == 1,
-      preload: [:initiator],
-      inner_lateral_join: sc in subquery(
-        from sc in Comment,
-        where: sc.parent_id == parent_as(:c).id,
-        select: %{count: count()}
-      ),
-      select_merge: %{child_count: sc.count}
-
-    Repo.all(query)
-
-  end
 
   # Gets child comments 1 level down only
   def get_child_comments_by_orb(id, path) do
