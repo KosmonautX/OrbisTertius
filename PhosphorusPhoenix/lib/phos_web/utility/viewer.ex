@@ -98,7 +98,7 @@ defmodule PhosWeb.Util.Viewer do
   # User RelationRoot Mapper
   def user_relation_mapper(rel) do
     %{
-      id: rel.id,
+      relation_id: rel.id,
       state: rel.state,
       initiator_id: rel.initiator_id,
       acceptor_id: rel.acceptor_id,

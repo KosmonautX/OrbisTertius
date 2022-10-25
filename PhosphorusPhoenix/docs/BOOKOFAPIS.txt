@@ -1,8 +1,8 @@
 # -*- restclient -*-
 # Phos API Endpoint Documentation
 
-:ipAddress = http://localhost:4000/api
-#:ipAddress = https://nyx.scrb.ac/api
+#:ipAddress = http://localhost:4000/api
+:ipAddress = https://nyx.scrb.ac/api
 :localipAddress = http://localhost:4000/api
 :princeton=0b3gd5XUGtNP6lqQean4IAp7ogG3
 :satrio=BX1BxM9KkwdFmy2J4FNNkFxclpS2
@@ -13,6 +13,8 @@
 :lky_id=3995c7f6-af54-4e31-85ee-3608e16ec00f
 :aang_id=5972b8e6-319b-4bf4-95cf-f58fb2117e21
 :zuko_id=6f6c7d30-4447-4687-8fb9-f95a2de82957
+:owen_id=233e50b1-5507-4a3c-96a7-b6339e8d27f4
+:tate_id=5e7ed96c-f444-43e5-96e9-fe44bba1a664
 :auth-headers = <<
 Authorization: :token
 Content-Type: application/json
@@ -24,11 +26,11 @@ Content-Type: application/json
 User-Agent: Emacs27
 ##
 ## Generate Client-side JWT
-GET :localipAddress/devland/flameon?user=:satrio_id
+GET :localipAddress/devland/flameon?user=:princeton_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
-GET :localipAddress/devland/lankaonfyr?fyr_id=:satrio
+GET :localipAddress/devland/lankaonfyr?fyr_id=:tate
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 
@@ -77,7 +79,7 @@ PUT :ipAddress/userland/self/
     "profile_pic": 3
 }
 ## Read userdata of Others Profile
-GET :ipAddress/userland/others/:satrio_id
+GET :ipAddress/userland/others/c4282856-5f09-4799-b87f-facec71b6020
 :auth-headers
 ## Read all of User Orb History
 GET :ipAddress/userland/others/:satrio_id/history?page=1
@@ -123,7 +125,7 @@ GET :ipAddress/folkland/stream/discovery/627779416113979391?page=1
 POST :ipAddress/folkland/friends
 :auth-headers
 {
-    "acceptor_id": ":satrio_id"
+    "acceptor_id": ":owen_id"
 }
 
 ## Delete Relation Resource (reset everything)
@@ -168,7 +170,7 @@ POST :ipAddress/orbland/orbs
 :auth-headers
 {
     "geolocation": {
-        "central_geohash": 623276216935972863
+        "central_geohash": 628021598572208127
     },
     "title": "aikido style",
     "inner_title": "xcape the matrix",

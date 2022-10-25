@@ -4,7 +4,7 @@ defmodule PhosWeb.DiscoveryChannel do
   @visibility [8]
   @location_type ["home", "work", "live"]
 
-  def join("discovery:" <> id, _payload, socket) do
+  def join("discovery:usr:" <> id, _payload, socket) do
     if authorized?(socket, id) do
       Process.send_after(self(), :geoinitiation, 500)
       {:ok, assign(socket, locations: %{})}
@@ -14,10 +14,9 @@ defmodule PhosWeb.DiscoveryChannel do
   end
 
   def handle_in("discover", _payload, %{assigns: %{current_user: user}} = socket) do
-    current_user = Phos.Repo.preload(user, :private_profile)
-    geohashes = Map.get(current_user, :private_profile, %{}) |> Map.get(:geolocation, []) |> Enum.map(&(&1.id))
-    orbs = Phos.Action.get_orb_by_trait_geo(geohashes, ["personal"])
-    {:noreply, assign(socket, :orbs, orbs)}
+    geohashes = Map.get(user, :private_profile, %{}) |> Map.get(:geolocation, []) |> Enum.map(&(&1.id))
+    orbs = Phos.Action.users_by_geohashes({geohashes, user.id}, 1)
+    {:noreply, assign(socket, :orbs, orbs.data)}
   end
 
   def handle_in("unsubscribe", %{"name" => name, "locations" => locs}, %{assigns: %{locations: locations}} = socket) do
@@ -35,6 +34,7 @@ defmodule PhosWeb.DiscoveryChannel do
       nil -> {:noreply, assign(socket, :locations, Map.put(locations, name, geos))}
       locs ->
         location_unsubscribe(locs)
+        location_subscribe(geos)
         {:noreply, assign(socket, :locations, %{locations | name => geos})}
     end
   end
@@ -45,9 +45,6 @@ defmodule PhosWeb.DiscoveryChannel do
     {:noreply, assign(socket, orbs: discoveries, locations: addresses)}
   end
 
-  def handle_info(:private_profile_loader, %{assigns: %{current_user: user}} = socket) do
-    {:noreply, assign(socket, :current_user, Phos.Repo.preload(user, :private_profile))}
-  end
 
   defp geolocation_decider(%{private_profile: %Ecto.Association.NotLoaded{}} = user, locations) do
     send(self(), :private_profile_loader)
@@ -60,6 +57,7 @@ defmodule PhosWeb.DiscoveryChannel do
     addrs = orb_addresses(locations)
     {geos, addrs}
   end
+
   defp geolocation_decider(_, geohashes), do: {geohashes, %{}}
 
   defp orb_location_by_geohash(locations, existing_geos) do
@@ -85,5 +83,5 @@ defmodule PhosWeb.DiscoveryChannel do
   defp location_subscribe(location) when is_number(location), do: Phos.PubSub.subscribe(topic(location))
   defp location_subscribe(locations) when is_list(locations), do: Enum.each(locations, &location_subscribe/1)
 
-  defp topic(hash), do: "DISCOVERY.#{hash}"
+  defp topic(hash), do: "LOC.#{hash}"
 end

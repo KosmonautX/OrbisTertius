@@ -218,9 +218,9 @@ defmodule Phos.Action do
 
   defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
     Phos.Folk.friends_lite(user_id)
-    |> Enum.each(fn user ->
-      spawn(fn -> Phos.Cache.delete({Phos.Users.User, :feeds, user.id}) end)
-      spawn(fn -> Phos.PubSub.publish(orb, {:feeds, "new"}, "userfeed:#{user.id}") end)
+    |> Enum.each(fn user_id ->
+      spawn(fn -> Phos.Cache.delete({Phos.Users.User, :feeds, user_id}) end)
+      spawn(fn -> Phos.PubSub.publish(orb, {:feeds, "new"}, "userfeed:#{user_id}") end)
     end)
   end
 
@@ -326,6 +326,7 @@ defmodule Phos.Action do
   end
 
   defp orb_loc_publisher(orb, event, to_locations) do
+    dbg()
     to_locations |> Enum.map(fn loc-> Phos.PubSub.publish(%{orb | topic: loc.id}, {:orb, event}, loc_topic(loc.id)) end)
   end
 

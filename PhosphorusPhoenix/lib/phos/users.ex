@@ -162,6 +162,16 @@ defmodule Phos.Users do
     user
     |> User.territorial_changeset(attrs)
     |> Repo.update()
+    |> case do
+         {:ok, user} = data ->
+           spawn(fn -> discovery_publisher(user, attrs) end)
+         err -> err
+       end
+  end
+
+  defp discovery_publisher(past, present) do
+    dbg()
+    #Phos.PubSub.publish(%{orb | topic: loc}, {:orb, event}, loc_topic(loc))
   end
 
   @decorate cache_evict(cache: Cache, key: {User, :find, user.id})

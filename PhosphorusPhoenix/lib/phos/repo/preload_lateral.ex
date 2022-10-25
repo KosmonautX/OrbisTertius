@@ -16,6 +16,7 @@ defmodule Phos.Repo.Preloader do
 
   def lateral(entities, assoc, opts \\ [])
   def lateral([], _, _), do: []
+  def lateral(nil, _, _), do: nil
   def lateral([%source_queryable{} | _] = entities, assoc, opts) do
     limit = Keyword.get(opts, :limit, 2)
     {order_direction, order_field} = Keyword.get(opts, :order_by, {:desc, :inserted_at})
