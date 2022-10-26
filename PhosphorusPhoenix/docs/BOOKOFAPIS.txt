@@ -257,3 +257,7 @@ GET :ipAddress/orbland/comments/children/:commie?page=1
 ## Delete Comment
 DELETE :ipAddress/orbland/comments/4f0e37a2-abab-46e8-aeb1-d4520255bf21
 :auth-headers
+
+
+## Version Check Major.Minor.Patch
+GET :ipAddress/version/1.1.4-alpha.1

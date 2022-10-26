@@ -74,11 +74,16 @@ defmodule PhosWeb.Router do
     live "/orbs/:id", OrbLive.Show, :show
   end
 
-  scope "/api/userland/auth/fyr", PhosWeb.API do
+  scope "/api", PhosWeb.API do
     #firebased auth
     pipe_through [:api] # , error_handler:
-    get "/", FyrAuthController, :transmute
-    post "/genesis", FyrAuthController, :genesis # Create User
+
+    get "/version/:version", FyrAuthController, :semver
+
+    scope "/userland/auth/fyr" do
+      get "/", FyrAuthController, :transmute
+      post "/genesis", FyrAuthController, :genesis # Create User
+    end
     # get "/", AuthController, :index
     # patch "/", AuthController, :update
     # post "/login", AuthController, :login
@@ -87,7 +92,7 @@ defmodule PhosWeb.Router do
     # post "/forgot_password", AuthController, :forgot_password
     # post "/reset_password", AuthController, :reset_password
 
-  end
+   end
 
   scope "/api", PhosWeb.API do
     pipe_through [:api, :authorize_user]
