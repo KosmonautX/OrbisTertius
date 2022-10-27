@@ -104,6 +104,10 @@ defmodule PhosWeb.API.UserProfileController do
     end
   end
 
+  def update_beacon(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"fcm_token" => token}) do
+    render(conn, "private_profile.json", private_profile: Map.put(user.private_profile, :fcm_token, token))
+  end
+
   defp purge_nil(map), do: map |> Enum.reject(fn {_, v} -> is_nil(v) end) |> Map.new()
 
 end

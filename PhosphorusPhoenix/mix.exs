@@ -52,7 +52,6 @@ defmodule Phos.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.3"},
-      {:pigeon, "~> 2.0.0-rc.1"},
       {:plug_cowboy, "~> 2.5"},
       {:joken, "~> 2.5"},
       {:h3, github: "helium/erlang-h3"},

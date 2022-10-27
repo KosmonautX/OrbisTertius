@@ -37,6 +37,10 @@ defmodule Phos.Notification do
     GenServer.call(executor(), {:push, tokens, notification, data})
   end
 
+  def push(topic, notificaiton, data) when is_binary(topic ) do
+    #message["condition"] = `'${topic}' in topics && !('${me}' in topics)`
+  end
+
   defp executor do
     current = Counter.current()
     DynamicSupervisor.which_children(Phos.Notification.Poller)

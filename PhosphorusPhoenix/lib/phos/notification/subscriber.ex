@@ -23,7 +23,7 @@ defmodule Phos.Notification.Subscriber do
   end
 
   @impl true
-  def handle_cast({:unsubcribe, tokens, topic}, state) do
+  def handle_cast({:unsubscribe, tokens, topic}, state) do
     Fcmex.Subscription.unsubscribe(topic, tokens)
     {:noreply, state}
   end

@@ -18,11 +18,11 @@ unless config_env() == :prod do
   #dotenv Parsing .env file
   DotenvParser.load_file('../.env')
 
-  # FCM
-  config :phos, Phos.Fyr.Message,
-  adapter: Pigeon.FCM,
-  project_id: System.get_env("FYR_PROJ"),
-  service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
+  # # FCM
+  # config :phos, Phos.Fyr.Message,
+  # adapter: Pigeon.FCM,
+  # project_id: System.get_env("FYR_PROJ"),
+  # service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
 
   #Firebase Auth
   config :ex_firebase_auth,
@@ -114,10 +114,10 @@ if config_env() == :prod do
 
 
   # FCM Prod
-  config :phos, Phos.Fyr.Message,
-    adapter: Pigeon.FCM,
-    project_id: System.get_env("FYR_PROJ"),
-    service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
+  # config :phos, Phos.Fyr.Message,
+  #   adapter: Pigeon.FCM,
+  #   project_id: System.get_env("FYR_PROJ"),
+  #   service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
 
   #Firebase Auth
   config :ex_firebase_auth, :issuer, "https://securetoken.google.com/#{System.get_env("FYR_PROJ")}"

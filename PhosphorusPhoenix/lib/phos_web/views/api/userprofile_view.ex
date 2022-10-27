@@ -20,6 +20,14 @@ defmodule PhosWeb.API.UserProfileView do
     %{data: render_one(user, UserProfileView, "user.json")}
   end
 
+  def render("show.json", %{private_profile: user}) do
+    %{data: render_one(user, UserProfileView, "private_profile.json")}
+  end
+
+  def render("private_profile.json", %{private_profile: user}) do
+    PhosWeb.Util.Viewer.user_private_mapper(user)
+  end
+
 
   def render("user.json", %{user_profile: user}) do
     PhosWeb.Util.Viewer.user_mapper(user)
