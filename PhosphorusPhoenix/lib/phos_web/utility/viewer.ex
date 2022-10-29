@@ -83,7 +83,14 @@ defmodule PhosWeb.Util.Viewer do
     (if Ecto.assoc_loaded?(profile) do
       %{data: %{
            geolocation: profile.geolocation,
-           fcm_token: profile.fcm_token
+        }}
+    end)
+  end
+
+  def user_integration_mapper(%{integrations: profile}) do
+    (if Ecto.assoc_loaded?(profile) do
+      %{data: %{
+           fcm_token: profile.fcm_token,
         }}
     end)
   end
@@ -159,6 +166,23 @@ defmodule PhosWeb.Util.Viewer do
     end)
   end
 
+  ## Comment Mapper
+  def comment_mapper(comment= %Phos.Comments.Comment{}) do
+    %{
+      id: comment.id,
+      active: comment.active,
+      child_count: comment.child_count,
+      body: comment.body,
+      path: to_string(comment.path),
+      parent_id: comment.parent_id,
+      orb_id: comment.orb_id,
+      relationships:  PhosWeb.Util.Viewer.relationship_reducer(comment),
+      creationtime: DateTime.from_naive!(comment.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
+      mutationtime: DateTime.from_naive!(comment.updated_at, "Etc/UTC") |> DateTime.to_unix()
+    }
+
+  end
+
 
   def post_orb_mapper(orbs) do
     Enum.map(orbs, fn orb ->
@@ -187,7 +211,7 @@ defmodule PhosWeb.Util.Viewer do
             geolock: true
           }}}
     end)
-  end
+   end
 
   def fresh_orb_stream_mapper(orbs) do
     Enum.map(orbs, fn orb ->

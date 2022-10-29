@@ -6,6 +6,7 @@ defmodule Phos.Folk do
   import Ecto.Query, warn: false
   use Nebulex.Caching
   alias Phos.{Cache, Repo}
+  alias Phos.Users
   alias Phos.Users.{User, RelationBranch, RelationRoot}
 
   #@ttl :timer.hours(1)
@@ -46,7 +47,19 @@ defmodule Phos.Folk do
   def create_relation(attrs \\ %{}) do
     %RelationRoot{}
     |> RelationRoot.gen_branches_changeset(attrs)
-    |> Phos.Repo.insert()
+    |> Repo.insert()
+    |> case do
+         {:ok, rel} = data ->
+           rel = rel |> Repo.preload([:initiator])
+           spawn(fn ->
+             Phos.Notification.target("'USR.#{rel.acceptor_id}' in topics",
+               %{title: "#{rel.initiator.username} requested to be your friend"},
+               PhosWeb.Util.Viewer.user_relation_mapper(rel))
+             IO.inspect("#{rel.initiator.username} requested to be your friend / USR.#{rel.acceptor_id}")
+           end)
+           data
+         err -> err
+       end
   end
 
   #   @doc """
@@ -66,6 +79,18 @@ defmodule Phos.Folk do
     relation
     |> RelationRoot.mutate_state_changeset(attrs)
     |> Repo.update()
+    |> case do
+         {:ok, rel} = data ->
+           rel = rel |> Repo.preload([:acceptor])
+           spawn(fn ->
+             Phos.Notification.target("'USR.#{rel.initiator_id}' in topics",
+               %{title: "#{rel.acceptor.username} has accepted to become your friend"},
+               PhosWeb.Util.Viewer.user_relation_mapper(rel))
+             IO.inspect("#{rel.acceptor.username} requested to be your friend / USR.#{rel.initiator_id}")
+           end)
+           data
+         err -> err
+       end
   end
 
 
@@ -202,7 +227,7 @@ defmodule Phos.Folk do
 
   def feeds(user_id) do
     friends_lite(user_id)
-    |> Kernel.++([user_id])
+    #|> Kernel.++([user_id])
     |> do_get_feeds()
   end
 

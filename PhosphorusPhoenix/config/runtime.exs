@@ -27,7 +27,7 @@ unless config_env() == :prod do
   #Firebase Auth
   config :ex_firebase_auth,
     issuer: "https://securetoken.google.com/#{System.get_env("FYR_PROJ")}",
-    key_store_fail_strategy: "silent",
+    key_store_fail_strategy: :silent,
     mock: [enabled: true]
 
   # AWS

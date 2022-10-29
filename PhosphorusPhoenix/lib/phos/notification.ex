@@ -37,8 +37,9 @@ defmodule Phos.Notification do
     GenServer.call(executor(), {:push, tokens, notification, data})
   end
 
-  def push(topic, notificaiton, data) when is_binary(topic ) do
-    #message["condition"] = `'${topic}' in topics && !('${me}' in topics)`
+  def target(condition, notification, data \\ %{}) do
+    #`'${topic}' in topics && !('${me}' in topics)`, eg. "'ORB.1' in topics && !('USR.1' in topics)"
+    GenServer.call(executor(), {:target, condition, notification, data}, 10_000)
   end
 
   defp executor do

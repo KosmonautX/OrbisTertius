@@ -29,6 +29,12 @@ defmodule Phos.Notification.Subscriber do
   end
 
   @impl true
+  def handle_call({:target, condition, notification, data}, _from,  state) do
+    result = Fcmex.push("", notification: notification, condition: condition, data: data)
+    {:reply, result, state}
+  end
+
+  @impl true
   def handle_call({:push, tokens, notification}, _from, state) do
     result =
       Fcmex.push(tokens, notification: notification)
@@ -61,7 +67,7 @@ end
 
 defimpl Jason.Encoder, for: Fcmex.Payload do
   def encode(value, opts) do
-    Map.take(value, [:notification, :registration_ids])
+    Map.take(value, [:to, :condition, :notification, :registration_ids])
     |> Jason.Encode.map(opts)
   end
 end

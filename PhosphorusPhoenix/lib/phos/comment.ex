@@ -38,6 +38,31 @@ defmodule Phos.Comments do
     %Comment{}
     |> Comment.changeset(attrs)
     |> Repo.insert()
+    |> case do
+         {:ok, %{parent_id: p_id} = comment} = data ->
+           comment = comment |> Repo.preload([:initiator])
+           spawn(fn ->
+             Fcmex.Subscription.subscribe("COM.#{comment.id}", comment.initiator.integrations.fcm_token)
+             Phos.Notification.target("'COM.#{p_id}' in topics",
+               %{title: "#{comment.initiator.username} commented on your comment",
+                 body: comment.body
+               },
+               PhosWeb.Util.Viewer.comment_mapper(comment))
+           end)
+           data
+        {:ok, %{orb_id: o_id} = comment} = data ->
+           comment = comment |> Repo.preload([:initiator])
+           spawn(fn ->
+             Fcmex.Subscription.subscribe("COM.#{comment.id}", comment.initiator.integrations.fcm_token)
+             Phos.Notification.target("'ORB.#{o_id}' in topics",
+               %{title: "#{comment.initiator.username} commented on your post",
+                 body: comment.body
+               },
+               PhosWeb.Util.Viewer.comment_mapper(comment))
+           end)
+           data
+         err -> err
+       end
   end
 
   #   @doc """

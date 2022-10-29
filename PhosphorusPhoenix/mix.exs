@@ -81,7 +81,7 @@ defmodule Phos.MixProject do
       {:nebulex, "~> 2.4"},
       {:shards, "~> 1.0"},
       {:decorator, "~> 1.4"},
-      {:fcmex, "~> 0.6.0"},
+      {:fcmex, github: "KosmonautX/fcmex"},
 
       # comments
       {:ecto_ltree, "~> 0.3.0"},

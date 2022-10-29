@@ -173,6 +173,12 @@ defmodule Phos.Users do
   #   dbg() ## add topic virtual feed to user object and send it down discovery feed
   #   #Phos.PubSub.publish(%{orb | topic: loc}, {:orb, event}, loc_topic(loc))
   # end
+  @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
+  def update_integrations_user(%User{} = user, attrs) do
+    user
+    |> User.integration_changeset(attrs)
+    |> Repo.update()
+  end
 
   @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
   def update_pub_user(%User{} = user, attrs) do
@@ -220,9 +226,6 @@ defmodule Phos.Users do
     User.changeset(user, attrs)
   end
 
-  def change_user_profile(%Users.Public_Profile{} = user_profile, attrs \\ %{}) do
-    Public_Profile.changeset(user_profile, attrs)
-  end
 
   @doc """
   Authenticate a user from oauth provider
@@ -343,6 +346,10 @@ defmodule Phos.Users do
       select_merge: %{self_relation: root}
     )
     |> Phos.Repo.Preloader.lateral(:orbs, [limit: 5])
+  end
+
+  def get_private_profile!(id) do
+    Repo.get!(Private_Profile, id)
   end
 
   ## User registration

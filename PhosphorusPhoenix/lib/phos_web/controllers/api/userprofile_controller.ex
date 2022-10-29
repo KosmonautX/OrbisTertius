@@ -105,7 +105,12 @@ defmodule PhosWeb.API.UserProfileController do
   end
 
   def update_beacon(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"fcm_token" => token}) do
-    render(conn, "private_profile.json", private_profile: Map.put(user.private_profile, :fcm_token, token))
+    #subscribing to past fcm logic etc
+    with true <- !Fcmex.unregistered?(token),
+         {:ok, %{}} <- Fcmex.Subscription.subscribe("USR." <> user.id, token),
+         {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => %{"fcm_token" => token}}) do
+      render(conn, "integration.json", integration: user_integration)
+    end
   end
 
   defp purge_nil(map), do: map |> Enum.reject(fn {_, v} -> is_nil(v) end) |> Map.new()

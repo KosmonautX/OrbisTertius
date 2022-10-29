@@ -11,10 +11,11 @@
 :princeton_id=9bf9c443-f89b-460a-972d-6704ae66823d
 :satrio_id=5c82aeea-7c2b-4a97-a80b-d5b728c4ee86
 :lky_id=3995c7f6-af54-4e31-85ee-3608e16ec00f
-:aang_id=5972b8e6-319b-4bf4-95cf-f58fb2117e21
+:aang_id=58c146d2-407f-49d5-a74d-0d9362e73be9
 :zuko_id=6f6c7d30-4447-4687-8fb9-f95a2de82957
 :owen_id=233e50b1-5507-4a3c-96a7-b6339e8d27f4
 :tate_id=5e7ed96c-f444-43e5-96e9-fe44bba1a664
+:fcm=dkoDy7FBSOybPE-juVQBHa:APA91bEdhNYKyZ75kG2ucjehb1Rqbfv69m2UiFGpve8bZS7ZAAMca3LiRmwg6g6JXPTgt35neGOQdGZcBJ_8Y5VVKNCMAIn0KHMJRfBiJZrcC-0VSazm3u6RTUecAUYxPQbLAZV0kRDA
 :auth-headers = <<
 Authorization: :token
 Content-Type: application/json
@@ -106,7 +107,7 @@ PUT :ipAddress/userland/self/territory
 PUT :ipAddress/userland/self/beacon
 :auth-headers
 {
-    "fcm_token": "hello"
+    "fcm_token": ":fcm"
 }
 
 ## ! Folkland Calls
@@ -132,11 +133,11 @@ GET :ipAddress/folkland/stream/discovery/614510498785787903?page=1
 POST :ipAddress/folkland/friends
 :auth-headers
 {
-    "acceptor_id": ":owen_id"
+    "acceptor_id": ":aang_id"
 }
 
 ## Delete Relation Resource (reset everything)
-DELETE :ipAddress/folkland/friends/be4877fc-38b3-40cb-af2a-7dacd2cb58fd
+DELETE :ipAddress/folkland/friends/2bf1407e-685f-4745-b172-c680779c1193
 :auth-headers
 
 ## Ended the friendship
@@ -150,7 +151,7 @@ PUT :ipAddress/folkland/friends/reject
 PUT :ipAddress/folkland/friends/accept
 :auth-headers
 {
-    "relation_id": "afdda033-7b1b-4551-bfb7-1523ae597441"
+    "relation_id": "a8c218e3-14d6-4b09-97f5-e3f8a38ef294"
 }
 
 ## List of requests to you
@@ -247,7 +248,7 @@ POST :ipAddress/orbland/comments/
 -> run-hook (restclient-set-var ":childcommie" (cdr (assq 'id (assq 'data (json-read)))))
 {
     "parent_id": ":childcommie",
-    "body": "I Have a secret comment"
+    "body": "I Have a secret comment baby"
 }
 
 ## Show Root Comments for ORB
