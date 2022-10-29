@@ -65,8 +65,8 @@ defmodule PhosWeb.API.FriendController do
 
   def block(%{assigns: %{current_user: user}} = conn, %{"relation_id" => rel_id}) do
     root = Folk.get_relation!(rel_id)
-    with true <- root.acceptor_id == user.id,
-    {:ok, %RelationRoot{} = relation} <- Folk.update_relation(root, %{"state" => "ghosted"}) do
+    with true <- (root.acceptor_id == user.id) or (root.initiator_id == user.id) ,
+    {:ok, %RelationRoot{} = relation} <- Folk.update_relation(root, %{"state" => "blocked"}) do
       conn
       |> put_status(200)
       |> render("show.json", relation: relation)

@@ -16,7 +16,7 @@ defmodule Phos.Notification do
 
     Supervisor.init(children , strategy: :one_for_all)
   end
-
+  def subscribe(token, nil) when is_bitstring(token), do: nil
   def subscribe(token, topic) when is_bitstring(token), do: subscribe([token], topic)
   def subscribe(tokens, topic) do
     GenServer.cast(executor(), {:subscribe, tokens, topic})

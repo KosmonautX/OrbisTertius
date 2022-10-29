@@ -109,6 +109,7 @@ defmodule Phos.Action do
       on: orbs.userbound == true,
       inner_join: initiator in assoc(orbs, :initiator),
       select: initiator,
+      distinct: initiator.id,
       left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,
       left_join: root in assoc(branch, :root),
@@ -212,7 +213,7 @@ defmodule Phos.Action do
          {:ok, orb} = data ->
            initiator = Map.get(orb |> Repo.preload([:initiator]), :initiator)
            spawn(fn ->
-             Fcmex.Subscription.subscribe("ORB.#{orb.id}", initiator.integrations.fcm_token)
+             Fcmex.Subscription.subscribe("ORB.#{orb.id}", get_in(initiator,[:integrations,:fcm_token]))
            end)
            #spawn(fn -> user_feeds_publisher(orb) end)
            data
