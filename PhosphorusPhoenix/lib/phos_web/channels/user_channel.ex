@@ -39,7 +39,11 @@ defmodule PhosWeb.UserChannel do
         broadcast socket, "shout", echo #broadcast to both channels from and to, first the source as shout event
         PhosWeb.Endpoint.broadcast_from!(self(), "archetype:usr:" <> echo.destination, "shout", echo) #then  broadcast to destination as well
         #TODO replace fyring and forgetting
-        #Phos.Fyr.Task.start_link(Pigeon.FCM.Notification.new({:topic, "USR." <> echo.destination}, %{"title" => "Message from #{socket.assigns.user_agent["username"]}", "body" => echo.message},echo))
+        Phos.Notification.target("'USR.#{echo.destination}'",
+          %{title: "Message from #{socket.assigns.user_agent["username"]}", body: echo.message},
+          echo)
+        #Phos.Fyr.Task.start_link(Pigeon.FCM.Notification.new({:topic, "USR." <> echo.destination},
+        #%{"title" => "Message from #{socket.assigns.user_agent["username"]}", "body" => echo.message},echo))
       {:error, changeset} ->
         IO.puts("Message Create Echo failed: #{inspect(changeset)}")
     end

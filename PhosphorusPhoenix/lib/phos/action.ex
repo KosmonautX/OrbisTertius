@@ -242,6 +242,7 @@ defmodule Phos.Action do
   def create_orb_and_publish(attrs) do
     case create_orb(attrs) do
       {:ok, orb} ->
+        orb = orb |> Repo.preload([:locations])
         orb_loc_publisher(orb, :genesis, orb.locations)
         {:ok, orb}
 

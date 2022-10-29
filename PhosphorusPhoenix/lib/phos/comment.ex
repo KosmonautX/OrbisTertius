@@ -39,7 +39,7 @@ defmodule Phos.Comments do
     |> Comment.changeset(attrs)
     |> Repo.insert()
     |> case do
-         {:ok, %{parent_id: p_id} = comment} = data ->
+         {:ok, %{parent_id: p_id} = comment} = data when not is_nil(p_id)->
            comment = comment |> Repo.preload([:initiator])
            spawn(fn ->
              Fcmex.Subscription.subscribe("COM.#{comment.id}", comment.initiator.integrations.fcm_token)
