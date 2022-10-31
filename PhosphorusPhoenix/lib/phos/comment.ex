@@ -42,19 +42,24 @@ defmodule Phos.Comments do
          {:ok, %{parent_id: p_id} = comment} = data when not is_nil(p_id)->
            comment = comment |> Repo.preload([:initiator])
            spawn(fn ->
-             Fcmex.Subscription.subscribe("COM.#{comment.id}", get_in(comment.initiator,[:integrations,:fcm_token]))
+             case comment.initiator do
+               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("COM.#{comment.id}", comment.initiator.fcm_token)
+               _ -> nil
+             end
              Phos.Notification.target("'COM.#{p_id}' in topics",
                %{title: "#{comment.initiator.username} commented on your comment",
                  body: comment.body
                },
                PhosWeb.Util.Viewer.comment_mapper(comment))
-           end)
+            end)
            data
         {:ok, %{orb_id: o_id} = comment} = data ->
            comment = comment |> Repo.preload([:initiator])
            spawn(fn ->
-
-             Fcmex.Subscription.subscribe("COM.#{comment.id}", get_in(comment.initiator,[:integrations,:fcm_token]))
+             case comment.initiator do
+               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("COM.#{comment.id}", comment.initiator.fcm_token)
+               _ -> nil
+             end
              Phos.Notification.target("'ORB.#{o_id}' in topics",
                %{title: "#{comment.initiator.username} commented on your post",
                  body: comment.body

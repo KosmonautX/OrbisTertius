@@ -1,11 +1,10 @@
 defmodule Phos.Users.RelationRoot do
   use Ecto.Schema
   use Fsmx.Struct, transitions: %{
-    "requested" => ["ghosted", "completed"],
+    "requested" => ["ghosted", "completed", "blocked"],
     "ghosted" => "living",
     "living" => ["requested"],
     "completed" => "living",
-    "*" => ["blocked"],
     "blocked" => "living"
   }
 

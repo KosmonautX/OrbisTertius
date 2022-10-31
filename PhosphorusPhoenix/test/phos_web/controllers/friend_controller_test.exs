@@ -205,7 +205,7 @@ defmodule PhosWeb.API.FriendControllerTest do
       conn = put(conn, Routes.friend_path(conn, :block), %{"relation_id" => root.id})
 
       assert %{"data" => relation} = json_response(conn, 200)
-      assert Map.get(relation, "state") == "ghosted"
+      assert Map.get(relation, "state") == "blocked"
     end
 
     test "return error when already friends and then block", %{conn: conn, user: user} do
@@ -218,7 +218,7 @@ defmodule PhosWeb.API.FriendControllerTest do
       conn = put(conn, Routes.friend_path(conn, :block), %{"relation_id" => updated_relation.id})
 
       assert %{"errors" => %{"state" => [msg]}} = json_response(conn, 422)
-      assert msg == "transition_changeset failed: invalid transition from completed to ghosted"
+      assert msg == "transition_changeset failed: invalid transition from completed to blocked"
     end
   end
 

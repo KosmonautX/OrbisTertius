@@ -211,9 +211,12 @@ defmodule Phos.Action do
     |> Repo.insert()
     |> case do
          {:ok, orb} = data ->
-           initiator = Map.get(orb |> Repo.preload([:initiator]), :initiator)
+           orb = orb |> Repo.preload([:initiator])
            spawn(fn ->
-             Fcmex.Subscription.subscribe("ORB.#{orb.id}", get_in(initiator,[:integrations,:fcm_token]))
+             case orb.initiator do
+               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("ORB.#{orb.id}", orb.initiator.fcm_token)
+               _ -> nil
+             end
            end)
            #spawn(fn -> user_feeds_publisher(orb) end)
            data
