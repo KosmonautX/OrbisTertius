@@ -2,90 +2,117 @@ defmodule PhosWeb.API.UserProfileController do
   use PhosWeb, :controller
 
   alias Phos.Users
-  alias Phos.Users.{User, User_Public_Profile}
-  alias PhosWeb.Util.Migrator
+  alias Phos.Users.User
+  alias Phos.Orbject
 
   action_fallback PhosWeb.API.FallbackController
 
-  def index(conn, _params) do
-    user_profile = Users.list_users()
-    render(conn, "index.json", user_profile: user_profile)
-  end
-  # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X GET 'http://localhost:4000/api/orbs'
+  # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X GET 'http://localhost:4000/api/userland/self'
 
-  def show(conn, %{"id" => id}) do
+  def show(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"id" => user_id}) do
+    with %User{} = user <-  Users.get_public_user(user_id, id) do
+      render(conn, "show.json", user_profile: user)
+    else
+      nil -> {:error, :not_found}
+    end
+  end
+
+  def show_self(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, _params) do
     user = Users.get_user!(id)
     render(conn, "show.json", user_profile: user)
   end
-  # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X GET 'http://localhost:4000/api/orbs/a4519fe0-70ec-42e7-86f3-fdab1ef8ca23'
 
-  def update(conn, %{"id" => id} = params) do
+  def update_self(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"media" => [_|_] = media} = params) do
     user = Users.get_user!(id)
-    params = Map.delete(params, "id")
-    params =
-      for {key, val} <- params, into: %{}, do: {String.to_atom(key), val}
+    with {:ok, media} <- Orbject.Structure.apply_user_changeset(%{id: id, archetype: "USR", media: media}),
+         {:ok, %User{} = user} <- Users.update_user(user, Map.put(profile_constructor(user, params),"media", true)) do
+      render(conn, "show.json", user_profile: user, media: media)
+    end
+  end
 
-    with {:ok, %User{} = user} <- Users.update_user_profile(user, params) do
+
+  def update_self(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, params) do
+    user = Users.get_user!(id)
+    with {:ok, %User{} = user} <- Users.update_user(user, profile_constructor(user,params)) do
       render(conn, "show.json", user_profile: user)
     end
   end
 
-  # Needs to include ALL publicprofile fields for request body
-  # def update(conn, %{"id" => id} = profile_params) do
-  #   case Ecto.UUID.cast(id) do
-  #     {:ok, _} ->
-  #       IO.inspect("im uuid")
-  #       case Users.get_user!(id) do
-
-  #         user = %User{} ->
-  #           IO.inspect("lol12")
-  #           with {:ok, %User{} = user} <- Users.update_pub_user(user, profile_params) do
-  #             render(conn, "show.json", user_profile: user)
-  #           end
-  #         (Ecto.NoResultsError) ->
-  #           IO.inspect("lol")
-  #           {:error, :no_result}
-  #         _ ->
-  #           IO.inspect("lol 2314")
-  #       end
-
-  #     :error ->
-  #       IO.inspect("Im fyr")
-  #       case Users.get_user_by_fyr(id) do
-  #         nil ->
-  #           user = Migrator.user_profile(id) |> List.first()
-  #           with {:ok, %User{} = user} <- Users.update_pub_user(user, profile_params) do
-  #             render(conn, "show.json", user_profile: user)
-  #           end
-
-  #         Ecto.NoResultsError ->
-  #           IO.inspect("lol")
-  #           {:error, :no_result}
-
-  #         user = %User{} ->
-  #           with {:ok, %User{} = user} <- Users.update_pub_user(user, profile_params) do
-  #             render(conn, "show.json", user_profile: user)
-  #           end
-
-  #         _ ->
-  #           IO.inspect("LOL")
-  #       end
-  #   end
-  # end
-
-  # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X PUT -d '{"active": "false"}' http://localhost:4000/api/orbs/fe1ac6b5-3db3-49e2-89b2-8aa30fad2578
-
-  # def delete(conn, %{"id" => id}) do
-  #   user = Users.get_user!(id)
-
-  #   with {:ok, %User{}} <- Users.delete_user(user) do
-  #     send_resp(conn, :no_content, "")
-  #   end
-  # end
-
-  def show_user_media(conn, %{"id" => id}) do
-    json(conn, %{payload: Phos.Orbject.S3.get!("USR", id, "150x150") })
+  defp profile_constructor(user, params) do
+    %{
+      "username" => params["username"],
+      "public_profile" => %{"birthday" => (if params["birthday"], do: params["birthday"]|> DateTime.from_unix!() |> DateTime.to_naive()),
+                            "bio" => params["bio"],
+                            "public_name" => params["public_name"],
+                            "occupation" => params["occupation"],
+                            "traits" => params["traits"],
+                            "profile_pic" => params["profile_pic"],
+                            "banner_pic" => params["banner_pic"]
+                           } |> purge_nil(),
+      "personal_orb" => %{"id" => (if is_nil(user.personal_orb), do: Ecto.UUID.generate(), else: user.personal_orb.id),
+                          "userbound" => true,
+                          "initiator_id" => user.id,
+                          "traits" => params["traits"]
+    } |> purge_nil()
+      } |> purge_nil()
   end
 
+
+
+  def update_territory(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"territory" => territory =[_ | _]}) do
+    user = Users.get_territorial_user!(id)
+    with [_ | _]<- validate_territory(user, territory),
+         payload = %{"private_profile" => _ , "personal_orb" => _} <- parse_territory(user, territory),
+         {:ok, %User{} = user} <- Users.update_territorial_user(user, payload) do
+      render(conn, "show.json", user_profile: user)
+    else
+      [] ->
+        render(conn, "show.json", user_profile: user)
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  defp validate_territory(%{private_profile: %{geolocation: past_territory}}, wished_territory) when is_list(wished_territory) do
+    past = past_territory |> Enum.into(%{},fn loc -> {loc.id, loc} end)
+    wished_territory |> Enum.reject(fn wish -> !(!Map.has_key?(past, wish["id"]) or (past[wish["id"]].geohash != wish["geohash"]))   end)
+  end
+
+  defp validate_territory(%{private_profile: _}, wished_territory) when is_list(wished_territory) do
+    wished_territory
+  end
+
+  defp parse_territory(user , wished_territory) when is_list(wished_territory) do
+    try do
+      present_territory = wished_territory |> Enum.map(fn loc -> :h3.parent(loc["geohash"], 11) end)
+      |> Enum.map(fn hash -> :h3.parent(hash, 8) |> :h3.k_ring(1) end)
+      |>  List.flatten() |> Enum.uniq()
+
+      %{"private_profile" => %{"user_id" => user.id, "geolocation" => wished_territory},
+        "public_profile" => %{"territories" => present_territory},
+        "personal_orb" => %{
+          "id" => (if is_nil(user.personal_orb), do: Ecto.UUID.generate(), else: user.personal_orb.id),
+          "active" => true,
+          "userbound" => true,
+          "initiator_id" => user.id,
+          "locations" =>  present_territory |> Enum.map(fn hash -> %{"id" => hash} end)
+        }
+      }
+    rescue
+      ArgumentError -> {:error, :unprocessable_entity}
+    end
+  end
+
+  def update_beacon(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"fcm_token" => token}) do
+    #subscribing to past fcm logic etc
+    with true <- !Fcmex.unregistered?(token),
+         {:ok, %{}} <- Fcmex.Subscription.subscribe("USR." <> user.id, token),
+         {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => %{"fcm_token" => token}}) do
+      render(conn, "integration.json", integration: user_integration)
+    end
+  end
+
+  defp purge_nil(map), do: map |> Enum.reject(fn {_, v} -> is_nil(v) end) |> Map.new()
 
 end

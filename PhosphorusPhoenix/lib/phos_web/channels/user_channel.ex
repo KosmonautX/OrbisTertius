@@ -1,23 +1,15 @@
 defmodule PhosWeb.UserChannel do
   use PhosWeb, :channel
-  alias PhosWeb.Menshen.Auth
   alias Phos.Message
-  alias Phos.Action
-  alias Phos.Users
-  alias Phos.PubSub
-  alias PhosWeb.Util.Geographer
-  alias PhosWeb.Util.Migrator
+
 
   @impl true
 
   def join("archetype:usr:" <> id , _payload, socket) do
     if authorized?(socket, id) do
       send(self(), :initiation)
-      # if user not migrated yet from nodejs(dynamodb), create model on postgres through firebase id
-      # if (Action.get_orb_by_fyr(id) == nil), do: Migrator.user_profile("DAAohgsLMpQPmsbpbvgQ5PEPuy22")
       {:ok, socket
       |> assign(:user_id, id)
-      #|> assign(:user, Users.get_user_by_fyr(id))
       }
     else
       {:error, %{reason: "unauthorized"}}
@@ -46,8 +38,12 @@ defmodule PhosWeb.UserChannel do
         |> Map.update!(:inserted_at, &(&1 |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix() |> to_string()))
         broadcast socket, "shout", echo #broadcast to both channels from and to, first the source as shout event
         PhosWeb.Endpoint.broadcast_from!(self(), "archetype:usr:" <> echo.destination, "shout", echo) #then  broadcast to destination as well
-        #fyring and forgetting
-        Phos.Fyr.Task.start_link(Pigeon.FCM.Notification.new({:topic, "USR." <> echo.destination}, %{"title" => "Message from #{socket.assigns.user_agent["username"]}", "body" => echo.message},echo))
+        #TODO replace fyring and forgetting
+        Phos.Notification.target("'USR.#{echo.destination}'",
+          %{title: "Message from #{socket.assigns.user_agent["username"]}", body: echo.message},
+          echo)
+        #Phos.Fyr.Task.start_link(Pigeon.FCM.Notification.new({:topic, "USR." <> echo.destination},
+        #%{"title" => "Message from #{socket.assigns.user_agent["username"]}", "body" => echo.message},echo))
       {:error, changeset} ->
         IO.puts("Message Create Echo failed: #{inspect(changeset)}")
     end
@@ -69,18 +65,4 @@ defmodule PhosWeb.UserChannel do
                                    }) end)
     {:noreply,socket}
    end
-
-  # Add authorization logic here as required. Process send_after for auth channel
-  defp authorized?(socket, id) do
-    case Auth.validate_user(socket.assigns.session_token) do
-      {:ok , claims} ->
-        if claims["user_id"] == socket.assigns.user_agent["user_id"] and claims["user_id"] == id do
-          true
-        else
-          false
-        end
-      { :error, _error } ->
-        {:error,  :authentication_required}
-    end
-  end
 end

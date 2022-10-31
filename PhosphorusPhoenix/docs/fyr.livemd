@@ -1,0 +1,49 @@
+# Playing with Fyr
+
+```elixir
+Mix.install([
+  {:fcmex, github: "KosmonautX/fcmex"}
+])
+```
+
+## Section
+
+```elixir
+token =
+  "dkoDy7FBSOybPE-juVQBHa:APA91bEdhNYKyZ75kG2ucjehb1Rqbfv69m2UiFGpve8bZS7ZAAMca3LiRmwg6g6JXPTgt35neGOQdGZcBJ_8Y5VVKNCMAIn0KHMJRfBiJZrcC-0VSazm3u6RTUecAUYxPQbLAZV0kRDA"
+
+System.put_env(
+  "FCM_SERVER_KEY",
+  "AAAALsqe4CU:APA91bEmiBm6MOBXyJ2Gg0nwr2fOPjqYJNyPpGmpBYsECIDXU-bcojG935HQxv5E-BYvux7YufHvJeEJy0ZhtH5KMZmjZkJXkVQi_2NaFLQM4Pmqj2SJukF8wtTwPnnl1XqxCYttq7mF"
+)
+```
+
+```elixir
+Fcmex.Subscription.get(token)
+```
+
+```elixir
+Fcmex.push("/topics/ORB.1",
+  notification: %{
+    title: "ORB.1 not USR.1",
+    body: "ORB",
+    icon: "https://avatars.githubusercontent.com/u/1641039?s=48&v=4"
+  }
+  # condition: "'ORB.1' in topics && !('USR.1' in topics)"
+)
+```
+
+```elixir
+defmodule R do
+  def recompile() do
+    Mix.Task.reenable("app.start")
+    Mix.Task.reenable("compile")
+    Mix.Task.reenable("compile.all")
+    compilers = Mix.compilers()
+    Enum.each(compilers, &Mix.Task.reenable("compile.#{&1}"))
+    Mix.Task.run("compile.all")
+  end
+end
+
+R.recompile()
+```

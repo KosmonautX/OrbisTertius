@@ -1,8 +1,9 @@
 defmodule Phos.Users.User do
+
   use Ecto.Schema
   import Ecto.Changeset
   alias Phos.Action.{Orb}
-  alias Phos.Users.{Geohash, User_Public_Profile, Private_Profile, Auth}
+  alias Phos.Users.{Public_Profile, Private_Profile, Auth, RelationBranch, Integrations}
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "users" do
@@ -10,18 +11,26 @@ defmodule Phos.Users.User do
     field :username, :string
     field :role, :string
     field :media, :boolean, default: false
-    field :profile_pic, :integer, default: :rand.uniform(6)
     field :fyr_id, :string
 
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
 
-    has_many :orbs, Orb, references: :id, foreign_key: :initiator
+    has_many :orbs, Orb, references: :id, foreign_key: :initiator_id
     has_many :auths, Auth, references: :id, foreign_key: :user_id
+    has_many :relations, RelationBranch, foreign_key: :user_id
 
+    field :self_relation, :string, virtual: true
+
+    # has_many :pending_relations, RelationBranch, foreign_key: :user_id, where: [completed_at: nil]
+    # has_many :completed_relations, RelationBranch, foreign_key: :user_id, where: [completed_at: {:not, nil}]
+    # #has_many :friends, through: [:completed_relations, :friend]
+
+    has_one :personal_orb, Orb, foreign_key: :id
     has_one :private_profile, Private_Profile, references: :id, foreign_key: :user_id
-    embeds_one :public_profile, User_Public_Profile, on_replace: :delete
+    embeds_one :public_profile, Public_Profile, on_replace: :update
+    embeds_one :integrations, Integrations, on_replace: :update
 
     timestamps()
   end
@@ -29,11 +38,34 @@ defmodule Phos.Users.User do
   @doc false
   def changeset(%Phos.Users.User{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :media, :profile_pic, :email, :fyr_id])
+    |> cast(attrs, [:username, :media, :email, :fyr_id])
     #|> validate_required(:email)
     |> cast_embed(:public_profile)
     |> cast_assoc(:private_profile)
     |> unique_constraint(:username, name: :unique_username)
+  end
+
+  def personal_changeset(%Phos.Users.User{} = user, attrs) do
+    user
+    |> cast(attrs, [:username, :media])
+    #|> validate_required(:email)
+    |> cast_embed(:public_profile)
+    |> cast_assoc(:personal_orb, with: &Orb.personal_changeset/2)
+    |> unique_constraint(:username, name: :unique_username)
+  end
+
+  def territorial_changeset(%Phos.Users.User{} = user, attrs) do
+    user
+    |> cast(attrs, [])
+    |> cast_assoc(:personal_orb, with: &Orb.territorial_changeset/2)
+    |> cast_embed(:public_profile, with: &Public_Profile.territorial_changeset/2)
+    |> cast_assoc(:private_profile)
+  end
+
+  def integration_changeset(%Phos.Users.User{} = user, attrs) do
+    user
+    |> cast(attrs, [])
+    |> cast_embed(:integrations)
   end
 
   @doc false
@@ -53,24 +85,31 @@ defmodule Phos.Users.User do
 
   def migration_changeset(%Phos.Users.User{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :media, :profile_pic, :fyr_id])
+    |> cast(attrs, [:username, :media, :fyr_id])
     #|> validate_required(:email)
     |> cast_embed(:public_profile)
     |> cast_assoc(:private_profile)
     |> unique_constraint(:username, name: :unique_username)
+  end
 
+  def fyr_registration_changeset(%Phos.Users.User{} = user, attrs) do
+    user
+    |> cast(attrs, [:username, :fyr_id])
+    |> validate_required(:fyr_id)
+    |> cast_embed(:public_profile)
+    |> unique_constraint(:username, name: :unique_username)
   end
 
   def pub_profile_changeset(%Phos.Users.User{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :media, :profile_pic])
+    |> cast(attrs, [:username, :media])
     |> cast_embed(:public_profile)
     |> unique_constraint(:username, name: :unique_username)
   end
 
   def user_profile_changeset(%Phos.Users.User{} = user, attrs) do
     user
-    |> cast(attrs, [:media, :profile_pic])
+    |> cast(attrs, [:media])
     |> cast_embed(:public_profile)
     |> unique_constraint(:username, name: :unique_username)
   end

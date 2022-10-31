@@ -6,6 +6,10 @@ defmodule PhosWeb.API.CommentView do
     %{data: render_many(comments, CommentView, "comment.json")}
   end
 
+  def render("paginated.json", %{comments: comments}) do
+    %{data: render_many(comments.data, CommentView, "comment.json"), meta: comments.meta}
+  end
+
   def render("show.json", %{comment: comment}) do
     %{data: render_one(comment, CommentView, "comment.json")}
   end
@@ -14,10 +18,14 @@ defmodule PhosWeb.API.CommentView do
     %{
       id: comment.id,
       active: comment.active,
+      child_count: comment.child_count,
       body: comment.body,
       path: to_string(comment.path),
       parent_id: comment.parent_id,
-      orb_id: comment.orb_id
+      orb_id: comment.orb_id,
+      relationships:  PhosWeb.Util.Viewer.relationship_reducer(comment),
+      creationtime: DateTime.from_naive!(comment.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
+      mutationtime: DateTime.from_naive!(comment.updated_at, "Etc/UTC") |> DateTime.to_unix()
     }
   end
 end

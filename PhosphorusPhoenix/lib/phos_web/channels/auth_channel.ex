@@ -1,4 +1,5 @@
 defmodule PhosWeb.AuthChannel do
+  ## in the future for authentication using oauth factors and persisting state on process and logout closes state
   use PhosWeb, :channel
 
   def join("auth:usr:" <> id, _payload, socket) when id != "" do
@@ -9,9 +10,11 @@ defmodule PhosWeb.AuthChannel do
       {:error, %{reason: "unauthorized"}}
     end
   end
-  def join("auth:authtenticate:" <> token, _payload, socket) when token != "" do
+
+  def join("auth:authenticate:" <> token, _payload, socket) when token != "" do
     {:ok, assign(socket, :temporary_token, token)}
   end
+
   def join(_, _payload, _socket), do: {:error, %{reason: "unauthorized"}}
 
   def handle_in("authenticate", %{"email" => email, "password" => password}, socket) do
@@ -39,13 +42,6 @@ defmodule PhosWeb.AuthChannel do
     end
   end
 
-  defp authorized?(%{assigns: %{session_token: token}} = _socket, id) when token != "" do
-    case PhosWeb.Menshen.Auth.validate_user(token) do
-      {:ok, %{"user_id" => user_id}} -> user_id == id
-      _ -> false
-    end
-  end
-  defp authorized?(_, _), do: false
 
   defp load_geolocation(%Phos.Users.User{id: id, username: username, private_profile: %Phos.Users.Private_Profile{geolocation: geolocations}} = user, socket) do
     teritories = Enum.reduce(geolocations, %{}, fn %{chronolock: chronolock, geohash: hash, location_description: desc}, acc ->

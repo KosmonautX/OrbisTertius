@@ -15,8 +15,7 @@
     <%= text_input f, :title %>
     <%= error_tag f, :title %>
 
-    <%= label f, :active %>
-    <%= checkbox f, :active, value: true %>
+    <%= hidden_input f, :active, value: true %>
     <%= error_tag f, :active %>
 
     <%= hidden_input f, :media %>

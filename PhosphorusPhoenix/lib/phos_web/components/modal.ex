@@ -22,8 +22,8 @@ defmodule PhosWeb.Components.Modal do
               |> assign_new(:footer, fn -> [] end)
 
     ~H"""
-    <div class="flex items-center justify-center fixed inset-0 bg-black/50 z-30">
-      <div class="relative w-10/12 md:w-8/12 xl:w-1/2">
+    <div class="overflow-scroll flex items-start justify-center fixed inset-0 bg-black/50 z-30">
+      <div class="h-6/12 w-10/12 md:w-8/12 xl:w-1/2">
         <div class="absolute top-2 right-2">
           <i class="fa-solid fa-xmark cursor-pointer" phx-click={onClose(assigns)} phx-target={onCloseTarget(assigns)}></i>
         </div>

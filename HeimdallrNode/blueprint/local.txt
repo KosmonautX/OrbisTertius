@@ -3,9 +3,9 @@
 # ScratchbacV4.7 (local env)
 #
 :localipAddress = http://localhost:5000
-:ipAddress = http://localhost:5000
+#:ipAddress = http://localhost:5000
 #:ipAddress = https://norbandy.scratchbac.org
-#:ipAddress = https://borbarossa.scratchbac.org
+:ipAddress = https://borbarossa.scratchbac.org
 :id = 01234567-89ABCDEF-01234567-89ABCDEF
 :googleAuth = <<
 Authorization: :fyrtoken
