@@ -73,6 +73,85 @@ defmodule PhosWeb.API.FriendControllerTest do
     end
   end
 
+  describe "GET /api/folkland/self/pending" do
+    setup [:inject_user_token]
+
+    test "return empty list when no friends", %{conn: conn} do
+      conn = get(conn, Routes.friend_path(conn, :pending), %{"page" => 1})
+
+      assert %{"data" => []} = json_response(conn, 200)
+    end
+
+    test "return pending friends list", %{conn: conn, user: user} do
+     acceptor = Phos.UsersFixtures.user_fixture()
+      assert {:ok, _root} = Phos.Folk.add_friend(user.id, acceptor.id)
+
+      conn = get(conn, Routes.friend_path(conn, :pending), %{"page" => 1})
+
+      assert %{"data" => [rel]} = json_response(conn, 200)
+      assert Map.get(rel, "acceptor_id") == acceptor.id
+    end
+  end
+
+  describe "GET /api/folkland/self/requests" do
+    setup [:inject_user_token]
+
+    test "return empty list when no friends requests", %{conn: conn} do
+      conn = get(conn, Routes.friend_path(conn, :requests), %{"page" => 1})
+
+      assert %{"data" => []} = json_response(conn, 200)
+    end
+
+    test "return pending friends list", %{conn: conn, user: user} do
+      initiator = Phos.UsersFixtures.user_fixture()
+      assert {:ok, _root} = Phos.Folk.add_friend(initiator.id, user.id)
+
+      conn = get(conn, Routes.friend_path(conn, :requests), %{"page" => 1})
+
+      assert %{"data" => [rel]} = json_response(conn, 200)
+      assert Map.get(rel, "initiator_id") == initiator.id
+    end
+  end
+
+  describe "GET /api/folkland/others/:id" do
+    setup [:inject_user_token]
+
+    test "return empty list when no friends in other user", %{conn: conn} do
+      stranger = Phos.UsersFixtures.user_fixture()
+      conn = get(conn, Routes.friend_path(conn, :show_others, stranger.id), %{"page" => 1})
+
+      assert %{"data" => []} = json_response(conn, 200)
+    end
+
+    test "return friends list", %{conn: conn, user: user} do
+      acceptor = Phos.UsersFixtures.user_fixture()
+      assert {:ok, root} = Phos.Folk.add_friend(user.id, acceptor.id)
+      assert {:ok, _data} = Phos.Folk.update_relation(root, %{"state" => "completed"})
+
+      conn = get(conn, Routes.friend_path(conn, :show_others, acceptor.id), %{"page" => 1})
+
+      assert %{"data" => [rel]} = json_response(conn, 200)
+      rel
+      |> get_in(["relationships", "friend", "data", "id"])
+      |> Kernel.==(user.id)
+      |> assert()
+    end
+
+    test "return friends list as initiator", %{conn: conn, user: user} do
+      initiator = Phos.UsersFixtures.user_fixture()
+      assert {:ok, root} = Phos.Folk.add_friend(initiator.id, user.id)
+      assert {:ok, _data} = Phos.Folk.update_relation(root, %{"state" => "completed"})
+
+      conn = get(conn, Routes.friend_path(conn, :show_others, initiator.id), %{"page" => 1})
+
+      assert %{"data" => [rel]} = json_response(conn, 200)
+      rel
+      |> get_in(["relationships", "friend", "data", "id"])
+      |> Kernel.==(user.id)
+      |> assert()
+    end
+  end
+
   describe "PUT /api/folkland/friends/accept" do
     setup [:inject_user_token]
 
@@ -143,4 +222,32 @@ defmodule PhosWeb.API.FriendControllerTest do
     end
   end
 
+  describe "DELETE /api/folkland/friends/:id" do
+    setup [:inject_user_token]
+
+    test "return relation detail when delete requested relation", %{conn: conn, user: user} do
+      initiator = Phos.UsersFixtures.user_fixture()
+
+      assert {:ok, root} = Phos.Folk.add_friend(initiator.id, user.id)
+      assert root.state == "requested"
+
+      conn = delete(conn, Routes.friend_path(conn, :delete, root.id))
+
+      assert %{"data" => relation} = json_response(conn, 200)
+      assert Map.get(relation, "state") == "requested"
+    end
+
+    test "return relation detail when delete complete relation", %{conn: conn, user: user} do
+      initiator = Phos.UsersFixtures.user_fixture()
+
+      assert {:ok, root} = Phos.Folk.add_friend(initiator.id, user.id)
+      assert {:ok, updated_relation} = Phos.Folk.update_relation(root, %{"state" => "completed"})
+      assert updated_relation.state == "completed"
+
+      conn = delete(conn, Routes.friend_path(conn, :delete, updated_relation.id))
+
+      assert %{"data" => relation} = json_response(conn, 200)
+      assert Map.get(relation, "state") == "completed"
+    end
+  end
 end

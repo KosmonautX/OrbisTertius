@@ -1,5 +1,9 @@
 defmodule PhosWeb.API.OrbController do
   use PhosWeb, :controller
+  use Phos.ParamsValidator, [
+    :id, :locations, :title, :media, :initiator_id, :traits, :active,
+    :source,  payload: [:when, :where, :info, :tip, :inner_title], rename: [:expires_in, :extinguish]
+  ]
 
   alias Phos.Action
   alias Phos.Action.Orb
@@ -54,78 +58,23 @@ defmodule PhosWeb.API.OrbController do
   end
 
   defp orb_constructor(user, params) do
+    constructor = sanitize(params)
     try do
-      case params do
+      options = case params do
         # Normal post, accepts a map containing target and central geohash
         # Generates 7x given the target
         %{"geolocation" => %{"central_geohash" => central_geohash}} ->
-          {:ok,
-           %{
-             "id" => Ecto.UUID.generate(),
-             "locations" => central_geohash |> :h3.parent(8) |> :h3.k_ring(1) |> Enum.map(fn hash -> %{"id" => hash} end),
-             "title" => params["title"],
-             "media" => params["media"],
-             "initiator_id" => user.id,
-             "payload" => %{
-               "when" => params["when"],
-               "where" => params["where"],
-               "info" => params["info"],
-               "tip" => params["tip"],
-               "inner_title" => params["inner_title"],
-             } |> purge_nil(),
-             "source" => :api,
-             "extinguish" => NaiveDateTime.utc_now() |> NaiveDateTime.add(String.to_integer(params["expires_in"])),
-             "central_geohash" => central_geohash,
-             "traits" => params["traits"],
-             "active" => params["active"] || true
-           } |> purge_nil()
-          }
+          locations = central_geohash |> :h3.parent(8) |> :h3.k_ring(1) |> Enum.map(&Map.new([{"id", &1}]))
+          %{"locations" => locations, "central_geohash" => central_geohash}
 
         %{"geolocation" => %{"geohashes" => hashes}} ->
-          {:ok,
-           %{
-             "id" => Ecto.UUID.generate(),
-             "locations" => hashes|> Enum.map(fn hash -> %{"id" => hash} end),
-             "title" => params["title"],
-             "media" => params["media"],
-             "initiator_id" => user.id,
-             "payload" => %{
-               "when" => params["when"],
-               "where" => params["where"],
-               "info" => params["info"],
-               "tip" => params["tip"],
-               "inner_title" => params["inner_title"],
-             } |> purge_nil(),
-             "source" => :api,
-             "extinguish" => NaiveDateTime.utc_now() |> NaiveDateTime.add(String.to_integer(params["expires_in"])),
-             "central_geohash" => List.first(hashes),
-             "traits" => params["traits"],
-             "active" => params["active"] || true
-           } |> purge_nil()
-          }
+          locations = Enum.map(hashes, &Map.new([{"id", &1}]))
+          %{"locations" => locations, "central_geohash" => List.first(hashes)}
 
-
-        _ ->
-          {:ok,
-           %{
-             "id" => params["id"] || Ecto.UUID.generate(),
-             "title" => params["title"],
-             "media" => params["media"],
-             "initiator_id" => user.id,
-             "payload" => %{
-               "when" => params["when"],
-               "where" => params["where"],
-               "info" => params["info"],
-               "tip" => params["tip"],
-               "inner_title" => params["inner_title"],
-             } |> purge_nil(),
-             "source" => :api,
-             "extinguish" => (if params["expires_in"], do: NaiveDateTime.utc_now() |> NaiveDateTime.add(String.to_integer(params["expires_in"]))),
-             "traits" => params["traits"],
-             "active" => params["active"] || true
-           } |> purge_nil()
-          }
+        _ -> %{}
       end
+      |> Map.put("initiator_id", user.id)
+      {:ok, Map.merge(constructor, options)}
     rescue
       ArgumentError -> {:error, :unprocessable_entity}
     end
@@ -189,6 +138,7 @@ defmodule PhosWeb.API.OrbController do
 
     else
       false -> {:error, :unauthorized}
+    error -> error
     end
   end
 
@@ -217,6 +167,11 @@ defmodule PhosWeb.API.OrbController do
     end
   end
 
-  defp purge_nil(map), do: map |> Enum.reject(fn {_, v} -> is_nil(v) end) |> Map.new()
-
+  def parse_params("id", data) when is_nil(data), do: Ecto.UUID.generate()
+  def parse_params("active", data) when is_nil(data), do: true
+  def parse_params("source", _), do: :api
+  def parse_params("extinguish", data) when not is_nil(data) do
+    NaiveDateTime.utc_now()
+    |> NaiveDateTime.add(String.to_integer(data))
+  end
 end
