@@ -78,6 +78,16 @@ config :tailwind, version: "3.1.6", default: [
   cd: Path.expand("../assets", __DIR__)
 ]
 
+config :phos, Phos.Cache,
+  primary: [
+    gc_interval: :timer.hours(12),
+    backend: :shards,
+    partitions: 2
+  ]
+
+config :fcmex,
+  [json_library: Jason]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

@@ -12,7 +12,9 @@ defmodule PhosWeb.API.FyrAuthController do
         nil ->
           case PhosWeb.Util.Migrator.user_profile(fyr_id) do
             {:ok, users} ->
-              json(conn, %{payload: Auth.generate_user!(List.first(users).id)})
+              conn
+              |> put_status(:created)
+              |> json(%{payload: Auth.generate_user!(List.first(users).id)})
             {:error, _reason} -> {:error, :not_found}
           end
       end
@@ -24,9 +26,13 @@ defmodule PhosWeb.API.FyrAuthController do
 
 
   def genesis(conn, %{"fyr" => fyr_token}) do
-    with {:ok, %{"sub" => fyr_id}} <- Auth.validate_fyr(fyr_token),
+    with {:ok, %{"sub" => _fyr_id}} <- Auth.validate_fyr(fyr_token),
          {:ok, user_data} <- PhosWeb.Util.Migrator.fyr_profile(fyr_token) do
-      json(conn, %{user_id: user_data.user.id, email: user_data.user.email, payload: Auth.generate_user!(user_data.user.id)})
+      conn
+      |> put_status(:created)
+      |> json(%{user_id: user_data.user.id,
+               email: user_data.user.email,
+               payload: Auth.generate_user!(user_data.user.id)})
 
     else
       {:error, _reason} -> {:error, :unprocessable_entity}
@@ -36,5 +42,27 @@ defmodule PhosWeb.API.FyrAuthController do
   def genesis(_conn, _) do
     {:error, :unprocessable_entity}
   end
+
+  def semver(conn, %{"version" => version}) do
+    latest = "1.2.0-alpha" # latest patch
+    earliest = "1.1.4-alpha" # below current minor version
+    #continue using the app
+    #recommended to update
+    #update now
+    response = cond do
+      Version.match?(version, "~> #{latest}") ->
+        "ignore"
+
+      Version.match?(version, "~> #{earliest}") ->
+        "recommend"
+
+      true ->
+        "force"
+    end
+
+    conn
+      |> put_status(200)
+      |> json(%{update: response})
+   end
 
 end

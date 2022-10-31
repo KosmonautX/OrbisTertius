@@ -27,11 +27,12 @@ defmodule PhosWeb.UserProfileLive.FormComponent do
   end
 
   def handle_event("save", %{"user" => profile_params}, socket) do
+    resolution = %{"150x150" => "lossy", "1920x1080" => "lossless"}
     # Process image upload
     file_uploaded =
       consume_uploaded_entries(socket, :image, fn %{path: path}, _entry ->
         for res <- ["150x150", "1920x1080"] do
-          {:ok, dest} = Phos.Orbject.S3.put("USR", profile_params["user_id"], res)
+          {:ok, dest} = Phos.Orbject.S3.put("USR", profile_params["user_id"], "public/profile/#{resolution[res]}")
           #compressed_image_path = ImageHandler.resize_file(path, res, Path.extname(entry.client_name))
           compressed_image =path
           |> Mogrify.open()

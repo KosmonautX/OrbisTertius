@@ -58,10 +58,10 @@ defmodule PhosWeb.Router do
       live "/orb/:id/reply/:cid", OrbLive.Show, :reply
       live "/orb/:id/edit/:cid", OrbLive.Show, :edit_comment
 
+      live "/user/feeds", UserFeedLive.Index, :index
+
       live "/user/:username/edit", UserProfileLive.Index, :edit
       live "/user/:username", UserProfileLive.Index, :index
-      live "/user/:user_id", UserProfileLive.Index, :indexid
-
     end
   end
 
@@ -74,11 +74,19 @@ defmodule PhosWeb.Router do
     live "/orbs/:id", OrbLive.Show, :show
   end
 
-  scope "/api/userland/auth/fyr", PhosWeb.API do
+  scope "/api", PhosWeb.API do
     #firebased auth
     pipe_through [:api] # , error_handler:
-    get "/", FyrAuthController, :transmute
-    post "/genesis", FyrAuthController, :genesis # Create User
+
+    get "/version/:version", FyrAuthController, :semver
+
+    scope "/userland" do
+
+      scope "/auth/fyr" do
+        get "/", FyrAuthController, :transmute
+        post "/genesis", FyrAuthController, :genesis # Create User
+      end
+    end
     # get "/", AuthController, :index
     # patch "/", AuthController, :update
     # post "/login", AuthController, :login
@@ -92,13 +100,34 @@ defmodule PhosWeb.Router do
   scope "/api", PhosWeb.API do
     pipe_through [:api, :authorize_user]
 
-    resources "/userland/users", UserController, except: [:new, :edit]
-    resources "/userland/profile", UserProfileController, except: [:new, :edit]
 
+    get "/userland/self", UserProfileController, :show_self
+    put "/userland/self", UserProfileController, :update_self
+    put "/userland/self/territory", UserProfileController, :update_territory
+    put "/userland/self/beacon", UserProfileController, :update_beacon
+    get "/userland/others/:id", UserProfileController, :show
+
+    get "/userland/others/:id/history", OrbController, :show_history
+
+
+    get "/orbland/stream/:id", OrbController, :show_territory
     resources "/orbland/orbs", OrbController, except: [:new, :edit]
+
     resources "/orbland/comments", CommentController, except: [:new, :edit]
     get "/orbland/comments/root/:id", CommentController, :show_root
-    get "/orbland/comments/:id/ancestor/:cid", CommentController, :show_ancestor
+    get "/orbland/comments/children/:id", CommentController, :show_children
+    get "/orbland/comments/ancestor/:id", CommentController, :show_ancestor
+
+    scope "/folkland" do
+      get "/stream/self", OrbController, :show_friends
+      get "/stream/discovery/:id", FriendController, :show_discovery
+      resources "/friends", FriendController, except: [:new, :edit, :update]
+      get "/others/:id", FriendController, :show_others
+      put "/friends/block", FriendController, :block
+      put "/friends/accept", FriendController, :accept
+      get "/self/requests", FriendController, :requests
+      get "/self/pending", FriendController, :pending
+    end
 
   end
 

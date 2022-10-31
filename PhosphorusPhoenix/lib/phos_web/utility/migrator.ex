@@ -34,13 +34,17 @@ defmodule PhosWeb.Util.Migrator do
     |> Enum.map(&(&1.user))
     |> Enum.map(&Phos.Repo.preload(&1, [:auths]))
   end
+
   defp user_migration(response, id) when is_map(response) do
     Task.async(fn ->
       insert_or_update_user(response, id)
     end)
   end
 
+
+
   defp insert_or_update_user(%{"kind" => "identitytoolkit#GetAccountInfoResponse", "users" => user_info }) do
+    # https://developers.google.com/resources/api-libraries/documentation/identitytoolkit/v3/python/latest/identitytoolkit_v3.relyingparty.html#getAccountInfo
     data = List.first(user_info)
     Multi.new()
     |> Multi.run(:providers, fn _repo, _ -> {:ok, Map.get(data, "providerUserInfo")} end)
@@ -62,6 +66,7 @@ defmodule PhosWeb.Util.Migrator do
       {:error, name, fields, required} -> %{name: name, fields: fields, required: required}
     end
   end
+
 
   defp insert_or_update_user(data, id) do
     Multi.new()
@@ -93,7 +98,7 @@ defmodule PhosWeb.Util.Migrator do
     |> case do
       {:ok, data} -> data
       {:error, err} -> err
-      {:error, name, fields, required} -> %{name: name, fields: fields, required: required}
+      {:error, _name, changeset, _required} -> {:error, changeset}
     end
   end
 
@@ -119,6 +124,8 @@ defmodule PhosWeb.Util.Migrator do
 
     Map.put(data, "geohash", geo)
   end
+
+
   defp get_location_from_h3(data), do: data
 
   defp insert_with_provider(%{providers: providers, user: user}) when length(providers) > 0 do
@@ -126,7 +133,7 @@ defmodule PhosWeb.Util.Migrator do
     providers
     |> Enum.map(fn provider ->
       %{
-        auth_id: get_in(provider, ["uid"]),
+        auth_id: get_in(provider, ["uid"]) || get_in(provider, ["rawId"]),
         user_id: user.id,
         auth_provider: Map.get(provider, "providerId", "") |> String.split(".") |> List.first(),
         inserted_at: time,
@@ -137,5 +144,7 @@ defmodule PhosWeb.Util.Migrator do
       is_nil(id) or prov == "password"
     end)
   end
+
   defp insert_with_provider(_), do: []
+
 end

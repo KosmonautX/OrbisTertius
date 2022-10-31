@@ -5,7 +5,19 @@ defmodule PhosWeb.Menshen.Auth do
   alias Phos.Users.{Private_Profile}
 
   def validate_user(token) do
-    Role.Pleb.verify_and_validate(token)
+    token
+    |> String.split()
+    |> List.last()
+    |> Role.Pleb.verify_and_validate()
+  end
+
+  def validate_fyr(token) do
+    case ExFirebaseAuth.Token.verify_token(token) do
+    {:ok, _fyr_id, %JOSE.JWT{fields: claims}} ->
+        {:ok, claims}
+    {:error, reason} ->
+        {:error, reason}
+    end
   end
 
   def validate_fyr(token) do

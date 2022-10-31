@@ -51,15 +51,15 @@ defmodule Phos.MixProject do
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.18"},
-      {:jason, "~> 1.2"},
-      {:pigeon, "~> 2.0.0-rc.0"},
+      {:jason, "~> 1.3"},
       {:plug_cowboy, "~> 2.5"},
-      {:joken, "~> 2.0-rc0"},
+      {:joken, "~> 2.5"},
       {:h3, github: "helium/erlang-h3"},
       {:libcluster, "~> 3.3"},
       # support aws s3
-      {:ex_aws, "~> 2.0"},
-      {:ex_aws_s3, "~> 2.0"},
+      {:ex_aws, "~> 2.3"},
+      {:ex_aws_s3, "~> 2.3"},
+      {:sweet_xml, "~> 0.7"},
       {:httpoison, "~> 1.8"},
       {:mogrify, "~> 0.9.1"},
 
@@ -77,10 +77,18 @@ defmodule Phos.MixProject do
       {:earmark, "~>1.4.25"},
       {:html_sanitize_ex, "~> 1.4"},
       {:prom_ex, "~> 1.7"},
+      {:fsmx, "~> 0.2.0"},
+      {:nebulex, "~> 2.4"},
+      {:shards, "~> 1.0"},
+      {:decorator, "~> 1.4"},
+      {:fcmex, github: "KosmonautX/fcmex"},
+
       # comments
       {:ecto_ltree, "~> 0.3.0"},
       #debugging
-      {:rexbug, "~> 1.0"}
+      {:rexbug, "~> 1.0"},
+      # { :uuid, "~> 1.1" },
+      # {:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
     ]
   end
 
