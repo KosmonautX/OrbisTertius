@@ -43,10 +43,10 @@ defmodule Phos.Comments do
            comment = comment |> Repo.preload([:initiator])
            spawn(fn ->
              case comment.initiator do
-               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("COM.#{comment.id}", comment.initiator.fcm_token)
+               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("COM.#{comment.id}", token)
                _ -> nil
              end
-             Phos.Notification.target("'COM.#{p_id}' in topics",
+             Phos.Notification.target("'COM.#{p_id}' in topics && !('USR.#{comment.initiator_id}' in topics)",
                %{title: "#{comment.initiator.username} commented on your comment",
                  body: comment.body
                },
@@ -57,11 +57,11 @@ defmodule Phos.Comments do
            comment = comment |> Repo.preload([:initiator])
            spawn(fn ->
              case comment.initiator do
-               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("COM.#{comment.id}", comment.initiator.fcm_token)
+               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("COM.#{comment.id}", token)
                _ -> nil
              end
-             Phos.Notification.target("'ORB.#{o_id}' in topics",
-               %{title: "#{comment.initiator.username} commented on your post",
+             Phos.Notification.target("'ORB.#{o_id}' in topics && !('USR.#{comment.initiator_id}' in topics)",
+               %{title: "#{comment.initiator.username} commented on your orb",
                  body: comment.body
                },
                PhosWeb.Util.Viewer.comment_mapper(comment))

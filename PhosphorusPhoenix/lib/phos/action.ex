@@ -214,7 +214,7 @@ defmodule Phos.Action do
            orb = orb |> Repo.preload([:initiator])
            spawn(fn ->
              case orb.initiator do
-               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("ORB.#{orb.id}", orb.initiator.fcm_token)
+               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("ORB.#{orb.id}", token)
                _ -> nil
              end
            end)
