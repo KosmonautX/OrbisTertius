@@ -106,12 +106,12 @@ defmodule Phos.Action do
       as: :l,
       where: l.location_id in ^hashes,
       left_join: orbs in assoc(l, :orbs),
-      on: orbs.userbound == true,
+      where: orbs.userbound == true,
       inner_join: initiator in assoc(orbs, :initiator),
       select: initiator,
       distinct: initiator.id,
       left_join: branch in assoc(initiator, :relations),
-      where: branch.friend_id == ^your_id,
+      on: branch.friend_id == ^your_id,
       left_join: root in assoc(branch, :root),
       select_merge: %{self_relation: root})
       |> Repo.Paginated.all(page, sort_attribute, limit)
