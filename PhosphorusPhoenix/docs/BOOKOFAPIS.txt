@@ -16,7 +16,7 @@
 :owen_id=233e50b1-5507-4a3c-96a7-b6339e8d27f4
 :tate_id=5e7ed96c-f444-43e5-96e9-fe44bba1a664
 :fcm=dkoDy7FBSOybPE-juVQBHa:APA91bEdhNYKyZ75kG2ucjehb1Rqbfv69m2UiFGpve8bZS7ZAAMca3LiRmwg6g6JXPTgt35neGOQdGZcBJ_8Y5VVKNCMAIn0KHMJRfBiJZrcC-0VSazm3u6RTUecAUYxPQbLAZV0kRDA
-:owen_fcm=cpBimzA3SAiFevxjKoN0Bg:APA91bGC-w4ql4Lx1WA8OjVJP1X4DGCr9vczdBuLA7T9ewjVVAlEEw6_tj9S8BvAsrNWNaV8PxjGO4nrA5j-D7IlFX-AHMOtL4z1q9740UAuHvMVZad7q4gvWVa-Lq_B3UHkozQkYOeV
+:prince_fcm=ewGVcsOAZ02gmzz9zbCLdo:APA91bGS6WbollBieIKBr9x7JvNzbHkTL2K-ukCbGDvjEYtJBqCoVC2U71jF3OAmwobRYocBGQZ-gVQr2-0Zk6ydjjlHuVf7EOjHdS2zA_TxUWIzvDkaZ0jvROqpLyOuMMqCTxqWs2UA
 :auth-headers = <<
 Authorization: :token
 Content-Type: application/json
@@ -28,7 +28,7 @@ Content-Type: application/json
 User-Agent: Emacs27
 ##
 ## Generate Client-side JWT
-GET :localipAddress/devland/flameon?user=:aang_id
+GET :localipAddress/devland/flameon?user=:princeton_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
@@ -108,7 +108,7 @@ PUT :ipAddress/userland/self/territory
 PUT :ipAddress/userland/self/beacon
 :auth-headers
 {
-    "fcm_token": ":fcm"
+    "fcm_token": ":prince_fcm"
 }
 
 ## ! Folkland Calls

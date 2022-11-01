@@ -66,8 +66,9 @@ defmodule Phos.Notification.Subscriber do
 end
 
 defimpl Jason.Encoder, for: Fcmex.Payload do
+  # Notification Parameters to Legacy FCM API
   def encode(value, opts) do
-    Map.take(value, [:to, :condition, :notification, :registration_ids])
+    Map.take(value, [:to, :condition, :notification, :registration_ids, :data])
     |> Jason.Encode.map(opts)
   end
 end
