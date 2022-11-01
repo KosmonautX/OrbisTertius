@@ -7,23 +7,13 @@ defmodule PhosWeb.API.FriendController do
   alias Phos.Folk
 
   def index(%{assigns: %{current_user: user}} = conn, %{"page" => page}) do
-    friends = Folk.friends(user.id, page)
-    render(conn, "paginated.json",
-      relations: friends.data
-      |> Enum.map(fn branch -> %{branch.root | friend: branch.friend} end)
-      |> self_initiated_enricher(user.id),
-      meta: friends.meta
-    )
+    friends = Folk.friends({user.id, user.id}, page)
+    render(conn, "paginated.json", friends: friends)
   end
 
-  def show_others(%{assigns: %{current_user: _user}} = conn, %{"id" => user_id, "page" => page}) do
-    friends = Folk.friends(user_id, page)
-    render(conn, "paginated.json",
-      relations: friends.data
-      |> Enum.map(fn branch ->  %{branch.root | friend: branch.friend} end)
-      |> self_initiated_enricher(user_id),
-      meta: friends.meta
-    )
+  def show_others(%{assigns: %{current_user: user}} = conn, %{"id" => others_id, "page" => page}) do
+    friends = Folk.friends({others_id, user.id}, page)
+    render(conn, "paginated.json", friends: friends)
   end
 
   def create(%{assigns: %{current_user: user}} = conn, %{"acceptor_id" => acceptor_id}) do

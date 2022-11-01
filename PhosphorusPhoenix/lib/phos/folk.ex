@@ -52,10 +52,14 @@ defmodule Phos.Folk do
          {:ok, rel} = data ->
            rel = rel |> Repo.preload([:initiator])
            spawn(fn ->
+             case rel.initiator do
+               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("FLK.#{rel.acceptor_id}", token)
+               _ -> nil
+             end
+
              Phos.Notification.target("'USR.#{rel.acceptor_id}' in topics",
                %{title: "#{rel.initiator.username} requested to be your friend"},
                PhosWeb.Util.Viewer.user_relation_mapper(rel))
-             IO.inspect("#{rel.initiator.username} requested to be your friend / USR.#{rel.acceptor_id}")
            end)
            data
          err -> err
@@ -83,10 +87,15 @@ defmodule Phos.Folk do
          {:ok, rel} = data ->
            rel = rel |> Repo.preload([:acceptor])
            spawn(fn ->
+
+             case rel.acceptor do
+               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("FLK.#{rel.initiator_id}", token)
+               _ -> nil
+             end
+
              Phos.Notification.target("'USR.#{rel.initiator_id}' in topics",
                %{title: "#{rel.acceptor.username} has accepted to become your friend"},
                PhosWeb.Util.Viewer.user_relation_mapper(rel))
-             IO.inspect("#{rel.acceptor.username} requested to be your friend / USR.#{rel.initiator_id}")
            end)
            data
          err -> err
@@ -203,6 +212,21 @@ defmodule Phos.Folk do
 
   ## cache invalidation when updated needed
   #@decorate cacheable(cache: Cache, key: {User, :friends, [user_id, page, sort_attribute, limit]}, opts: [ttl: @ttl])
+
+  def friends({user_id, your_id}, page, sort_attribute, limit) do
+    query = from r in Phos.Users.RelationBranch,
+      where: r.user_id == ^user_id and not is_nil(r.completed_at),
+      left_join: friend in assoc(r, :friend),
+      select: friend,
+      left_join: mutual in assoc(friend, :relations),
+      on: mutual.friend_id == ^your_id,
+      left_join: root in assoc(mutual, :root),
+      select_merge: %{self_relation: root}
+
+    Repo.Paginated.all(query, page, sort_attribute, limit)
+  end
+
+
   def friends(user_id, page, sort_attribute, limit) do
     query = from r in RelationBranch,
       where: not is_nil(r.completed_at),

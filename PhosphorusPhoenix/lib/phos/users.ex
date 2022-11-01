@@ -8,7 +8,7 @@ defmodule Phos.Users do
   import Ecto.Query, warn: false
   alias Phos.Repo
   alias Phos.Users
-  alias Phos.Users.{User, Public_Profile, Private_Profile, Auth, RelationBranch}
+  alias Phos.Users.{User, Private_Profile, Auth}
   alias Phos.Cache
   alias Ecto.Multi
 
