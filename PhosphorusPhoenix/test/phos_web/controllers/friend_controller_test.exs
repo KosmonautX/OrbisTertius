@@ -69,7 +69,7 @@ defmodule PhosWeb.API.FriendControllerTest do
       conn = get(conn, Routes.friend_path(conn, :index), %{"page" => 1})
 
       assert %{"data" => [rel]} = json_response(conn, 200)
-      assert Map.get(rel, "acceptor_id") == acceptor.id
+      assert Map.get(rel, "id") == acceptor.id
     end
   end
 
@@ -132,7 +132,7 @@ defmodule PhosWeb.API.FriendControllerTest do
 
       assert %{"data" => [rel]} = json_response(conn, 200)
       rel
-      |> get_in(["relationships", "friend", "data", "id"])
+      |> get_in(["id"])
       |> Kernel.==(user.id)
       |> assert()
     end
@@ -146,7 +146,8 @@ defmodule PhosWeb.API.FriendControllerTest do
 
       assert %{"data" => [rel]} = json_response(conn, 200)
       rel
-      |> get_in(["relationships", "friend", "data", "id"])
+      |> get_in(["id"])
+      #|> get_in(["relationships", "self", "data", "initiator_id"])
       |> Kernel.==(user.id)
       |> assert()
     end
