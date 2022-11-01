@@ -1,16 +1,16 @@
 # Playing with Fyr
 
 ```elixir
-Mix.install([
-  {:fcmex, github: "KosmonautX/fcmex"}
-])
+# Mix.install([
+#   {:fcmex, github: "KosmonautX/fcmex"}
+# ])
 ```
 
 ## Section
 
 ```elixir
 token =
-  "dkoDy7FBSOybPE-juVQBHa:APA91bEdhNYKyZ75kG2ucjehb1Rqbfv69m2UiFGpve8bZS7ZAAMca3LiRmwg6g6JXPTgt35neGOQdGZcBJ_8Y5VVKNCMAIn0KHMJRfBiJZrcC-0VSazm3u6RTUecAUYxPQbLAZV0kRDA"
+  "ewGVcsOAZ02gmzz9zbCLdo:APA91bGS6WbollBieIKBr9x7JvNzbHkTL2K-ukCbGDvjEYtJBqCoVC2U71jF3OAmwobRYocBGQZ-gVQr2-0Zk6ydjjlHuVf7EOjHdS2zA_TxUWIzvDkaZ0jvROqpLyOuMMqCTxqWs2UA"
 
 System.put_env(
   "FCM_SERVER_KEY",
@@ -23,11 +23,13 @@ Fcmex.Subscription.get(token)
 ```
 
 ```elixir
-Fcmex.push("/topics/ORB.1",
+Fcmex.push(token,
   notification: %{
-    title: "ORB.1 not USR.1",
-    body: "ORB",
-    icon: "https://avatars.githubusercontent.com/u/1641039?s=48&v=4"
+    title: "Escape the matrix the second",
+    body: "escape to prod"
+  },
+  data: %{
+    "hao" => "wohen hao"
   }
   # condition: "'ORB.1' in topics && !('USR.1' in topics)"
 )

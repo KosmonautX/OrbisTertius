@@ -111,7 +111,7 @@ defmodule Phos.Action do
       select: initiator,
       distinct: initiator.id,
       left_join: branch in assoc(initiator, :relations),
-      on: branch.friend_id == ^your_id,
+      where: branch.friend_id == ^your_id,
       left_join: root in assoc(branch, :root),
       select_merge: %{self_relation: root})
       |> Repo.Paginated.all(page, sort_attribute, limit)
@@ -217,6 +217,11 @@ defmodule Phos.Action do
                %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("ORB.#{orb.id}", token)
                _ -> nil
              end
+             Phos.Notification.target("'FLK.#{orb.initiator_id}' in topics && !('USR.#{orb.initiator_id}' in topics)",
+               %{title: "#{orb.initiator.username} forged an orb ⚡",
+                 body: orb.title
+               }, PhosWeb.Util.Viewer.orb_mapper(orb))
+
            end)
            #spawn(fn -> user_feeds_publisher(orb) end)
            data
