@@ -3,15 +3,23 @@
 ## Root
 
 ```elixir
-System.put_env(
-  "FCM_SERVER_KEY",
-  "AAAALsqe4CU:APA91bEmiBm6MOBXyJ2Gg0nwr2fOPjqYJNyPpGmpBYsECIDXU-bcojG935HQxv5E-BYvux7YufHvJeEJy0ZhtH5KMZmjZkJXkVQi_2NaFLQM4Pmqj2SJukF8wtTwPnnl1XqxCYttq7mF"
+Phos.Action.orbs_by_geohashes(
+  {[614_510_799_689_351_167], "5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"},
+  1
+).data
+|> length()
+
+Phos.Action.orbs_by_geotraits(
+  {[614_510_799_689_351_167], "5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"},
+  ["pin"],
+  1
 )
+```
 
-token =
-  "dkoDy7FBSOybPE-juVQBHa:APA91bEdhNYKyZ75kG2ucjehb1Rqbfv69m2UiFGpve8bZS7ZAAMca3LiRmwg6g6JXPTgt35neGOQdGZcBJ_8Y5VVKNCMAIn0KHMJRfBiJZrcC-0VSazm3u6RTUecAUYxPQbLAZV0kRDA"
-
-Fcmex.Subscription.get(token)
+```elixir
+Phos.Action.list_orbs()
+|> Enum.filter(fn x -> length(x.traits) > 0 end)
+|> Enum.map(fn x -> Phos.Repo.preload(x, [:locations]) end)
 ```
 
 ```elixir

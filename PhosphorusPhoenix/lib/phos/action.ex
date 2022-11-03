@@ -41,16 +41,16 @@ defmodule Phos.Action do
 
 #   Raises `Ecto.NoResultsError` if the Orb does not exist.
 
-#   ## Examples
+  #   ## Examples
 
-#       iex> get_orb!(123)
-#       %Orb{}
+  #       iex> get_orb!(123)
+  #       %Orb{}
 
-#       iex> get_orb!(456)
-#       ** (Ecto.NoResultsError)
+  #       iex> get_orb!(456)
+  #       ** (Ecto.NoResultsError)
 
-#   """
-#
+  #   """
+  #
 
   def get_orb(id) when is_binary(id) do
     query = from o in Orb, preload: [:locations, :initiator], where: o.id == ^id, limit: 1
@@ -80,12 +80,41 @@ defmodule Phos.Action do
       |> Enum.map(fn orb -> orb.orbs end)
   end
 
-  def orbs_by_geohashes({hashes, your_id}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+  def orbs_by_geohashes({hashes, your_id}, page, opts \\ []) do
+
+    sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
+    limit = Keyword.get(opts, :limit, 12)
+
     from(l in Orb_Location,
       as: :l,
       where: l.location_id in ^hashes,
       left_join: orbs in assoc(l, :orbs),
-      on: orbs.userbound != true,
+      where: orbs.userbound != true,
+      select: orbs,
+      inner_join: initiator in assoc(orbs, :initiator),
+      left_join: branch in assoc(initiator, :relations),
+      on: branch.friend_id == ^your_id,
+      left_join: root in assoc(branch, :root),
+      select_merge: %{initiator: %{initiator | self_relation: root}},
+      inner_lateral_join: c in subquery(
+        from c in Phos.Comments.Comment,
+        where: c.orb_id == parent_as(:l).orb_id,
+        select: %{count: count()}
+      ),
+      select_merge: %{comment_count: c.count})
+      |> Repo.Paginated.all(page, sort_attribute, limit)
+  end
+
+  def orbs_by_geotraits({hashes, your_id}, traits, page, opts \\ []) do
+
+    sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
+    limit = Keyword.get(opts, :limit, 12)
+
+    from(l in Orb_Location,
+      as: :l,
+      where: l.location_id in ^hashes,
+      left_join: orbs in assoc(l, :orbs),
+      where: orbs.userbound != true and fragment("? @> ?", orbs.traits, ^traits),
       select: orbs,
       inner_join: initiator in assoc(orbs, :initiator),
       left_join: branch in assoc(initiator, :relations),
@@ -154,15 +183,15 @@ defmodule Phos.Action do
   def get_active_orbs_by_initiator(user_id) do
     query =
       from o in Orb,
-        as: :o,
-        where: o.initiator_id == ^user_id,
-        preload: [:initiator],
-        inner_lateral_join: c in subquery(
-          from c in Phos.Comments.Comment,
-          where: c.orb_id == parent_as(:o).id,
-          select: %{count: count()}
-        ),
-        select_merge: %{comment_count: c.count}
+      as: :o,
+      where: o.initiator_id == ^user_id,
+      preload: [:initiator],
+      inner_lateral_join: c in subquery(
+        from c in Phos.Comments.Comment,
+        where: c.orb_id == parent_as(:o).id,
+        select: %{count: count()}
+      ),
+      select_merge: %{comment_count: c.count}
 
     Repo.all(query, limit: 32)
     |> Enum.map(&(Map.put(&1, :comment_count, &1.comment_count)))
@@ -192,18 +221,18 @@ defmodule Phos.Action do
   end
   def get_orb_by_trait_geo(geohash, trait, options), do: get_orb_by_trait_geo(geohash, [trait], options)
 
-#   @doc """
-#   Creates a orb.
+  #   @doc """
+  #   Creates a orb.
 
-#   ## Examples
+  #   ## Examples
 
-#       iex> create_orb(%{field: value})
-#       {:ok, %Orb{}}
+  #       iex> create_orb(%{field: value})
+  #       {:ok, %Orb{}}
 
-#       iex> create_orb(%{field: bad_value})
-#       {:error, %Ecto.Changeset{}}
+  #       iex> create_orb(%{field: bad_value})
+  #       {:error, %Ecto.Changeset{}}
 
-#   """
+  #   """
 
   def create_orb(attrs \\ %{}) do
     %Orb{}
@@ -232,7 +261,7 @@ defmodule Phos.Action do
   defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
     Phos.Folk.friends_lite(user_id)
     |> Enum.each(fn user_id ->
-     # spawn(fn -> Phos.Cache.delete({Phos.Users.User, :feeds, user_id}) end)
+      # spawn(fn -> Phos.Cache.delete({Phos.Users.User, :feeds, user_id}) end)
       spawn(fn -> Phos.PubSub.publish(orb, {:feeds, "new"}, "userfeed:#{user_id}") end)
     end)
   end
@@ -261,17 +290,6 @@ defmodule Phos.Action do
     end
   end
 
-  def orb_locations_upsert(attrs, location_ids) when is_list(location_ids) do
-    locations =
-      Location
-      |> where([location], location.id in ^location_ids)
-      |> Repo.all()
-
-
-    %Orb{} |> Orb.changeset(attrs) |> Repo.insert!() |> Repo.preload([:locations, :initiator])
-    |> Orb.changeset_update_locations(locations)
-    |> Repo.update()
-  end
 
 #   @doc """
 #   Updates a orb.

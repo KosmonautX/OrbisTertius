@@ -170,7 +170,7 @@ GET :ipAddress/orbland/orbs/59f60ff7-6874-4471-b732-12ef2f5c0d36
 :auth-headers
 
 ## Read all orbs in that geohash id
-GET :ipAddress/orbland/stream/627779412580450303,627986446952349695?page=1
+GET :ipAddress/orbland/stream/614510799689351167,627779412580450303,627986446952349695?page=1&traits=pin
 :auth-headers
 
 ## Create Orbs
