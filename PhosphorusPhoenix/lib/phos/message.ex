@@ -66,6 +66,8 @@ defmodule Phos.Message do
     query = Phos.Message.Echo
     |> where([e], e.source == ^id and e.source_archetype == ^archetype )
     |> or_where([e], e.destination == ^id and e.destination_archetype == ^archetype)
+    |> order_by([e], desc: e.inserted_at)
+    Phos.Repo.all(query, limit: 8)
   end
 
   def usr_call(id) do
