@@ -1,9 +1,9 @@
 defmodule Phos.External.Notion do
   use HTTPoison.Base
+  use Retry
 
   def today_post, do: DateTime.utc_now()
   |> DateTime.add(60 * 60 * 8) |> DateTime.to_date() |> date_post()
-
 
   def yesterday_post, do: DateTime.utc_now()
   |> DateTime.add(-60 * 60 * 16) |> DateTime.to_date() |> date_post()
@@ -18,9 +18,20 @@ defmodule Phos.External.Notion do
         }
       }
     }
-    case post("/databases/#{database()}/query", date_query) do
+
+    case do_get_date_post(date_query) do
       {:ok, %HTTPoison.Response{body: body}} -> Map.get(body, "results", [])
       {:error, err} -> HTTPoison.Error.message(err)
+    end
+  end
+
+  defp do_get_date_post(query) do
+    retry with: constant_backoff(100) |> Stream.take(5) do
+      post("/databases/#{database()}/query", query)
+    after
+      {:ok, _res} = response -> response
+    else
+      err -> err
     end
   end
 

@@ -90,5 +90,5 @@ config :phos, Phos.External.HeimdallrClient,
   base_url: {System, :get_env, ["HEIMDALLR_ENDPOINT"]}
 
 config :phos, Phos.Admin,
-  password: "791c56ee67aa532df7c080bef3f9a525ee8d385e4f447638a10ca358ff5704db",
+  password: "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
   algorithm: :sha256

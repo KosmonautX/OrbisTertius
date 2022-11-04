@@ -5,11 +5,13 @@ defmodule PhosWeb.Util.Migrator do
 
   """
 
+  use Retry
+
   alias Phos.Users
   alias Ecto.Multi
 
   def user_profile(id) do
-    with {:ok, response} <- Phos.External.HeimdallrClient.get("/tele/get_users/" <> id),
+    with {:ok, response} <- do_get_user_profile(id),
          true <- response.status_code >= 200 and response.status_code < 300,
          users <- user_migration(response.body, id) do
       {:ok, users}
@@ -18,13 +20,33 @@ defmodule PhosWeb.Util.Migrator do
     end
   end
 
+  defp do_get_user_profile(id) do
+    retry with: constant_backoff(100) |> Stream.take(5) do
+      Phos.External.HeimdallrClient.get("/tele/get_users/" <> id)
+    after
+      {:ok, _result} = response -> response
+    else
+      err -> err
+    end
+  end
+
   def fyr_profile(token) do
-    with {:ok, response} <- Phos.External.GoogleIdentity.post("getAccountInfo", %{idToken: token}),
+    with {:ok, response} <- do_get_account_info(token),
          true <- response.status_code >= 200 and response.status_code < 300,
          users <- insert_or_update_user(response.body) do
       {:ok, users}
     else
       {:error, err} -> {:error, err}
+    end
+  end
+
+  defp do_get_account_info(token) do
+    retry with: constant_backoff(100) |> Stream.take(5) do
+      Phos.External.GoogleIdentity.post("getAccountInfo", %{idToken: token})
+    after
+      {:ok, _result} = response -> response
+    else
+      error -> error
     end
   end
 
@@ -40,8 +62,6 @@ defmodule PhosWeb.Util.Migrator do
       insert_or_update_user(response, id)
     end)
   end
-
-
 
   defp insert_or_update_user(%{"kind" => "identitytoolkit#GetAccountInfoResponse", "users" => user_info }) do
     # https://developers.google.com/resources/api-libraries/documentation/identitytoolkit/v3/python/latest/identitytoolkit_v3.relyingparty.html#getAccountInfo
