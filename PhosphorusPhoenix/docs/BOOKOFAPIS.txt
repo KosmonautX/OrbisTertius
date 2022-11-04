@@ -9,7 +9,10 @@
 :owen=0ErhlIM10Maldn1qVMGOJMKu6J92
 :tate=FbXQKufaWFOUNIsVYsn5tdW1qUc2
 :princeton_id=9bf9c443-f89b-460a-972d-6704ae66823d
+:owentwo_id=973da4ae-48a6-498d-b988-548af3af99f6
 :satrio_id=5c82aeea-7c2b-4a97-a80b-d5b728c4ee86
+:satrioremote_id=5972b8e6-319b-4bf4-95cf-f58fb2117e21
+:brandon_id=b556571a-362e-4017-9894-f1eed0b39794
 :lky_id=3995c7f6-af54-4e31-85ee-3608e16ec00f
 :aang_id=58c146d2-407f-49d5-a74d-0d9362e73be9
 :zuko_id=6f6c7d30-4447-4687-8fb9-f95a2de82957
@@ -28,7 +31,7 @@ Content-Type: application/json
 User-Agent: Emacs27
 ##
 ## Generate Client-side JWT
-GET :localipAddress/devland/flameon?user=:princeton_id
+GET :localipAddress/devland/flameon?user=:satrio_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
@@ -81,7 +84,7 @@ PUT :ipAddress/userland/self/
     "profile_pic": 3
 }
 ## Read userdata of Others Profile
-GET :ipAddress/userland/others/3995c7f6-af54-4e31-85ee-3608e16ec00f
+GET :ipAddress/userland/others/:owentwo_id
 :auth-headers
 ## Read all of User Orb History
 GET :ipAddress/userland/others/:satrio_id/history?page=1
@@ -108,7 +111,7 @@ PUT :ipAddress/userland/self/territory
 PUT :ipAddress/userland/self/beacon
 :auth-headers
 {
-    "fcm_token": ":prince_fcm"
+    "fcm_token": ":fcm"
 }
 
 ## ! Folkland Calls
@@ -134,7 +137,7 @@ GET :ipAddress/folkland/stream/discovery/614510498785787903,614510497487650815?p
 POST :ipAddress/folkland/friends
 :auth-headers
 {
-    "acceptor_id": ":satrio_id"
+    "acceptor_id": ":satrioremote_id"
 }
 
 ## Delete Relation Resource (reset everything)
@@ -152,7 +155,7 @@ PUT :ipAddress/folkland/friends/reject
 PUT :ipAddress/folkland/friends/accept
 :auth-headers
 {
-    "relation_id": "03758acb-9d86-4511-9c25-e294628e254d"
+    "relation_id": "b829879d-37f8-47ce-8214-1a18bcb0e0af"
 }
 
 ## List of requests to you

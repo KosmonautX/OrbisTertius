@@ -74,13 +74,13 @@ defmodule PhosWeb.Util.Viewer do
   end
 
   def user_private_mapper(%{private_profile: profile}) do
-    (if Ecto.assoc_loaded?(profile) do
+    (if profile && Ecto.assoc_loaded?(profile) do
       %{data: %{geolocation: profile.geolocation}}
     end)
   end
 
   def user_private_mapper(profile) do
-    (if Ecto.assoc_loaded?(profile) do
+    (if profile && Ecto.assoc_loaded?(profile) do
       %{data: %{
            geolocation: profile.geolocation,
         }}

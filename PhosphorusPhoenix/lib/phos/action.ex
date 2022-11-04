@@ -135,7 +135,7 @@ defmodule Phos.Action do
       as: :l,
       where: l.location_id in ^hashes,
       left_join: orbs in assoc(l, :orbs),
-      where: orbs.userbound == true,
+      where: orbs.userbound == true and fragment("? != '[]'", orbs.traits),
       inner_join: initiator in assoc(orbs, :initiator),
       select: initiator,
       distinct: initiator.id,
