@@ -58,7 +58,7 @@ defmodule Phos.Folk do
              end
 
              Phos.Notification.target("'USR.#{rel.acceptor_id}' in topics",
-               %{title: "#{rel.initiator.username} requested to be your friend"},
+               %{title: "#{rel.initiator.username} requested to be your ally"},
                PhosWeb.Util.Viewer.user_relation_mapper(rel))
            end)
            data
@@ -94,7 +94,7 @@ defmodule Phos.Folk do
              end
 
              Phos.Notification.target("'USR.#{rel.initiator_id}' in topics",
-               %{title: "#{rel.acceptor.username} has accepted to become your friend"},
+               %{title: "#{rel.acceptor.username} has accepted your request to become your ally"},
                PhosWeb.Util.Viewer.user_relation_mapper(rel))
            end)
            data
