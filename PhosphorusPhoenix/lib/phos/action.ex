@@ -487,4 +487,13 @@ defmodule Phos.Action do
     #token = Map.get(user, :private_profile, %{}) |> Map.get(:user_token)
     #Phos.Notification.subscribe(token, topic)
   end
+
+  def filter_orbs_by_traits(traits, opts \\ []) do
+    page = Keyword.get(opts, :page, 1)
+    limit = Keyword.get(opts, :limit, 10)
+    sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
+    query = from p in __MODULE__.Orb, preload: [:initiator], where: fragment("? @> ?", p.traits, ^traits)
+
+    Repo.Paginated.all(query, page, sort_attribute, limit)
+  end
 end

@@ -13,20 +13,25 @@
         </.form>
       </div>
     </div>
-    <table class="items-center w-full bg-transparent border-collapse">
-      <thead>
-        <tr>
-          <.header_item title="No" />
-          <.header_item title="Title" />
-          <.header_item title="Initiator" />
-          <.header_item title="Source" />
-          <.header_item title="Traits" />
-          <.header_item title="Created at" />
-        </tr>
-      </thead>
-      <tbody>
-        <.table_values entries={@orbs} socket={@socket} />
-      </tbody>
-    </table>
+    <div class="flex items-center flex-col">
+      <table class="items-center w-full bg-transparent border-collapse">
+        <thead>
+          <tr>
+            <.header_item title="No" />
+            <.header_item title="Title" />
+            <.header_item title="Initiator" />
+            <.header_item title="Source" />
+            <.header_item title="Traits" />
+            <.header_item title="Created at" />
+          </tr>
+        </thead>
+        <tbody>
+          <.table_values entries={@orbs} socket={@socket} />
+        </tbody>
+      </table>
+      <div class="hidden px-4 py-3 w-full sm:flex sm:flex-1 sm:items-center sm:justify-between">
+        <.paginate meta={@pagination} first={true} last={true} limit={@limit} />
+      </div>
+    </div>
   </.live_component>
 </div>
