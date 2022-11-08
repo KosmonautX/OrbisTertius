@@ -200,7 +200,7 @@ defmodule Phos.Action do
 
   def get_orbs_by_trait(trait) do
     query =
-      from p in Phos.Action.Orb, where: fragment("? @> ?", p.traits, ^trait)
+      from p in Phos.Action.Orb, preload: [:initiator], where: fragment("? @> ?", p.traits, ^trait)
 
     Repo.all(query, limit: 8)
   end

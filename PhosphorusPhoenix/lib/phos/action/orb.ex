@@ -32,7 +32,7 @@ defmodule Phos.Action.Orb do
     |> cast_embed(:payload)
     |> cast_assoc(:locations)
     |> validate_required([:id, :title, :active, :media, :extinguish, :initiator_id])
-    |> validate_superset(:traits, ~w(admin pin personal))
+    |> validate_exclude_subset(:traits, ~w(admin pin personal))
     #|> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 
