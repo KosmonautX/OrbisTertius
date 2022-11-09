@@ -62,7 +62,7 @@ defmodule PhosWeb.Admin.OrbLive.Index do
       <%= for {entry, index} <- Enum.with_index(@entries) do %>
         <tr>
           <th class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-left"><%= index + 1 %></th>
-          <.table_column value={live_patch(entry.title, to: Routes.admin_orb_show_path(@socket, :show, entry.id))} />
+          <.table_column value={live_redirect(entry.title, to: Routes.admin_orb_show_path(@socket, :show, entry.id))} />
           <.table_column value={entry.initiator.username} />
           <.table_column value={entry.source} />
           <.table_column value={entry.traits} />
@@ -82,7 +82,6 @@ defmodule PhosWeb.Admin.OrbLive.Index do
   end
 
   def paginate(assigns) do
-    IO.inspect(assigns)
     ~H"""
       <nav class="isolate border border-gray-300 inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
         <%= if (@first), do: first_page(assigns) %>
