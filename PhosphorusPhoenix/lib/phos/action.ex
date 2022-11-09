@@ -59,6 +59,22 @@ defmodule Phos.Action do
       _ -> {:error, "Record not found"}
     end
   end
+  def get_orb(orb_id, your_id) do
+    from(orbs in Phos.Action.Orb,
+      where: orbs.id == ^orb_id,
+      inner_join: initiator in assoc(orbs, :initiator),
+      left_join: branch in assoc(initiator, :relations),
+      on: branch.friend_id == ^your_id,
+      left_join: root in assoc(branch, :root),
+      select_merge: %{initiator: %{initiator | self_relation: root}},
+      inner_lateral_join: c in subquery(
+        from c in Phos.Comments.Comment,
+        where: c.orb_id == ^orb_id,
+        select: %{count: count()}
+      ),
+      select_merge: %{comment_count: c.count})
+      |> Phos.Repo.one()
+  end
   def get_orb!(id), do: Repo.get!(Orb, id) |> Repo.preload([:locations, :initiator])
   def get_orb_by_fyr(id), do: Repo.get_by(Phos.Users.User, fyr_id: id)
 
@@ -178,7 +194,7 @@ defmodule Phos.Action do
     |> Enum.map(fn orbloc -> Map.put(orbloc.orbs, :comment_count, orbloc.comment_count) end)
     # |> Enum.map(fn orb -> orb.orbs end)
     |> Enum.filter(fn orb -> orb.active == true end)
-  end
+   end
 
   def get_active_orbs_by_initiator(user_id) do
     query =
