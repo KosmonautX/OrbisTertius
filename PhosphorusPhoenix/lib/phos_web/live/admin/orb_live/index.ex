@@ -9,6 +9,11 @@ defmodule PhosWeb.Admin.OrbLive.Index do
       |> assign(:orbs, orbs)}
   end
 
+  def handle_params(params, _url, socket) do
+    {:noreply, socket
+      |> assign(:params, params)}
+  end
+
   defp get_all_active_orbs(params) do
     params
     |> Enum.map(fn {k, v} -> {String.to_existing_atom(k), v} end)

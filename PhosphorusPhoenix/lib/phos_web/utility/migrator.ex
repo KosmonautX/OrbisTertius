@@ -5,16 +5,48 @@ defmodule PhosWeb.Util.Migrator do
 
   """
 
+  use Retry
+
   alias Phos.Users
   alias Ecto.Multi
 
   def user_profile(id) do
-    with {:ok, response} <- Phos.External.HeimdallrClient.get("/tele/get_users/" <> id),
+    with {:ok, response} <- do_get_user_profile(id),
          true <- response.status_code >= 200 and response.status_code < 300,
          users <- user_migration(response.body, id) do
-      users
+      {:ok, users}
     else
-      {:error, err} -> err
+      {:error, err} -> {:error, err}
+    end
+  end
+
+  defp do_get_user_profile(id) do
+    retry with: constant_backoff(100) |> Stream.take(5) do
+      Phos.External.HeimdallrClient.get("/tele/get_users/" <> id)
+    after
+      {:ok, _result} = response -> response
+    else
+      err -> err
+    end
+  end
+
+  def fyr_profile(token) do
+    with {:ok, response} <- do_get_account_info(token),
+         true <- response.status_code >= 200 and response.status_code < 300,
+         users <- insert_or_update_user(response.body) do
+      {:ok, users}
+    else
+      {:error, err} -> {:error, err}
+    end
+  end
+
+  defp do_get_account_info(token) do
+    retry with: constant_backoff(100) |> Stream.take(5) do
+      Phos.External.GoogleIdentity.post("getAccountInfo", %{idToken: token})
+    after
+      {:ok, _result} = response -> response
+    else
+      error -> error
     end
   end
 
@@ -24,11 +56,37 @@ defmodule PhosWeb.Util.Migrator do
     |> Enum.map(&(&1.user))
     |> Enum.map(&Phos.Repo.preload(&1, [:auths]))
   end
+
   defp user_migration(response, id) when is_map(response) do
     Task.async(fn ->
       insert_or_update_user(response, id)
     end)
   end
+
+  defp insert_or_update_user(%{"kind" => "identitytoolkit#GetAccountInfoResponse", "users" => user_info }) do
+    # https://developers.google.com/resources/api-libraries/documentation/identitytoolkit/v3/python/latest/identitytoolkit_v3.relyingparty.html#getAccountInfo
+    data = List.first(user_info)
+    Multi.new()
+    |> Multi.run(:providers, fn _repo, _ -> {:ok, Map.get(data, "providerUserInfo")} end)
+    |> Multi.run(:payload, fn _repo, %{providers: providers} ->
+      {:ok, %{"fyr_id" => data["localId"], "email" => email_provider(providers)}}
+    end)
+    |> Multi.run(:user, fn _repo, %{payload: payload} ->
+      case Users.get_user_by_fyr(data["localId"]) do
+        %Users.User{} = user -> {:ok, user}
+        nil ->
+          Users.create_user(payload)
+      end
+    end)
+    |> Multi.insert_all(:registered_providers, Users.Auth, &insert_with_provider/1, on_conflict: :replace_all, conflict_target: [:auth_id, :user_id, :auth_provider])
+    |> Phos.Repo.transaction()
+    |> case do
+      {:ok, data} -> data
+      {:error, err} -> err
+      {:error, name, fields, required} -> %{name: name, fields: fields, required: required}
+    end
+  end
+
 
   defp insert_or_update_user(data, id) do
     Multi.new()
@@ -60,7 +118,7 @@ defmodule PhosWeb.Util.Migrator do
     |> case do
       {:ok, data} -> data
       {:error, err} -> err
-      {:error, name, fields, required} -> %{name: name, fields: fields, required: required}
+      {:error, _name, changeset, _required} -> {:error, changeset}
     end
   end
 
@@ -86,6 +144,8 @@ defmodule PhosWeb.Util.Migrator do
 
     Map.put(data, "geohash", geo)
   end
+
+
   defp get_location_from_h3(data), do: data
 
   defp insert_with_provider(%{providers: providers, user: user}) when length(providers) > 0 do
@@ -93,7 +153,7 @@ defmodule PhosWeb.Util.Migrator do
     providers
     |> Enum.map(fn provider ->
       %{
-        auth_id: get_in(provider, ["uid"]),
+        auth_id: get_in(provider, ["uid"]) || get_in(provider, ["rawId"]),
         user_id: user.id,
         auth_provider: Map.get(provider, "providerId", "") |> String.split(".") |> List.first(),
         inserted_at: time,
@@ -104,5 +164,7 @@ defmodule PhosWeb.Util.Migrator do
       is_nil(id) or prov == "password"
     end)
   end
+
   defp insert_with_provider(_), do: []
+
 end

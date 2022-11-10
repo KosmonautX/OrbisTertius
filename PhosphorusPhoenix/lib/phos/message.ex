@@ -21,6 +21,60 @@ defmodule Phos.Message do
     Repo.all(Echo)
   end
 
+
+  @doc """
+  Returns paginated call of the first message between each unique source destination pair
+
+  ## Examples
+
+      iex> first_echoes()
+      [%Echo{}, ...]
+
+  """
+
+  def first_echoes() do
+
+  end
+
+  @doc """
+  Returns paginated call of the messages between for one unique source destination pair
+
+  ## Examples
+
+      iex> list_echoes()
+      [%Echo{}, ...]
+
+  """
+
+  def echoes_by_pair() do
+
+  end
+
+
+  @doc """
+
+  Query Builder for Symmetric Source & Destination
+
+  ## Examples
+
+      iex> list_echoes()
+      [%Echo{}, ...]
+
+  """
+
+    def ur_call(archetype, id) do
+    query = Phos.Message.Echo
+    |> where([e], e.source == ^id and e.source_archetype == ^archetype )
+    |> or_where([e], e.destination == ^id and e.destination_archetype == ^archetype)
+    |> order_by([e], desc: e.inserted_at)
+    Phos.Repo.all(query, limit: 8)
+  end
+
+  def usr_call(id) do
+    ur_call("USR", id) #user-user specific call
+  end
+
+
   @doc """
   Gets a single echo.
 
@@ -103,15 +157,4 @@ defmodule Phos.Message do
     Echo.changeset(echo, attrs)
   end
 
-  def ur_call(archetype, id) do
-    query = Phos.Message.Echo
-    |> where([e], e.source == ^id and e.source_archetype == ^archetype )
-    |> or_where([e], e.destination == ^id and e.destination_archetype == ^archetype)
-    |> order_by([e], desc: e.inserted_at)
-    Phos.Repo.all(query, limit: 8)
-  end
-
-  def usr_call(id) do
-    ur_call("USR", id) #user-user specific call
-  end
  end

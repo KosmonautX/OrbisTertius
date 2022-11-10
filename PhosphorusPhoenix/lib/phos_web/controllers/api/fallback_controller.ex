@@ -35,4 +35,11 @@ defmodule PhosWeb.API.FallbackController do
     |> render(:"403")
   end
 
+  def call(conn, {:error, message}) when is_binary(message) do
+    conn
+    |> put_status(:unprocessable_entity)
+    |> put_view(PhosWeb.API.ChangesetView)
+    |> render("error.json", reason: message)
+  end
+
 end

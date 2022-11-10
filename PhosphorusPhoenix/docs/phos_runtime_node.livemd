@@ -1,15 +1,43 @@
 # Phos Phoenix Runtime Node
 
 ## Root
-## oRBs
 
 ```elixir
-# 614496378250330111 , 618999977876652031, 623503577503956991
-# 614496378250330111 , 618999977876652031, 623503577503793151
-# 614496353074020351, 618999952700342271 , 623503552326795263
+orb_id = "9bf9c443-f89b-460a-972d-6704ae66823d"
+your_id = "5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"
+import Ecto.Query
 
-Phos.Action.get_orbs_by_geohashes([])
-|> PhosWeb.Util.Viewer.fresh_orb_stream_mapper()
+from(orbs in Phos.Action.Orb,
+  where: orbs.id == ^orb_id,
+  inner_join: initiator in assoc(orbs, :initiator),
+  left_join: branch in assoc(initiator, :relations),
+  on: branch.friend_id == ^your_id,
+  left_join: root in assoc(branch, :root),
+  select_merge: %{initiator: %{initiator | self_relation: root}},
+  inner_lateral_join:
+    c in subquery(
+      from(c in Phos.Comments.Comment,
+        where: c.orb_id == ^orb_id,
+        select: %{count: count()}
+      )
+    ),
+  select_merge: %{comment_count: c.count}
+)
+|> Phos.Repo.one()
+
+%{
+  "id" => Ecto.UUID.generate(),
+  "title" => "orb",
+  "media" => true,
+  "active" => true,
+  "extinguish" => ~N[2022-10-22 16:31:07],
+  "initiator_id" => your_id,
+  "payload" => %{
+    "info" => "ok",
+    "ext_link" => %{"name" => "Chat with me", "link" => "https://scrbac.com/THChatWithUs"}
+  }
+}
+|> Phos.Action.create_orb()
 ```
 
 ```elixir
@@ -26,6 +54,7 @@ end
 
 R.recompile()
 ```
+
 <!-- livebook:{"branch_parent_index":0} -->
 
 ## External APIs
@@ -76,11 +105,51 @@ user_id = List.first(Phos.Users.list_users()).id
     "active" => true,
     "extinguish" => ~N[2022-05-20 12:12:00],
     "media" => true,
-    "title" => "623503577503793151",
+    "title" => "weird",
     "initiator_id" => user_id,
-    "geolocation" => [623_503_577_503_793_151],
+    "geolocation" => [623_276_216_929_910_783],
     "payload" => %{"where" => "here"}
   })
 
 orb
+```
+
+```elixir
+req = "5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"
+acpt = "9bf9c443-f89b-460a-972d-6704ae66823d"
+alt = "deb2800c-a418-40fe-b35a-db30b01f59f8"
+import Ecto.Query
+alias Phos.Users.{RelationBranch, RelationRoot, User}
+
+## CREATE
+payload = %{
+  "initiator_id" => req,
+  "acceptor_id" => acpt,
+  "branches" => [
+    %{"user_id" => acpt, "friend_id" => req},
+    %{"user_id" => req, "friend_id" => acpt}
+  ]
+}
+
+%RelationRoot{}
+|> RelationRoot.gen_branches_changeset(payload)
+|> Phos.Repo.insert()
+
+# ## READ
+
+# Phos.Repo.get_by(RelationBranch, [user_id: req, friend_id: acpt])
+# |> Phos.Repo.preload(:root)
+
+# ## UPDATE
+# payloadz = %{"state" => "completed"}
+# Phos.Repo.get!(RelationRoot, "5a096428-32b9-45a9-b5c1-a6f68443d201")
+# |> RelationRoot.mutate_state_changeset(payloadz)
+# |> Phos.Repo.update()
+# doesnt't exist but has data msGW3TpSFQcmfqOmICkHZl1OImC2
+# no data fFKlWcfV9RRavNZJUxt46BLYB5n1
+Phos.Users.get_user_by_fyr("fFKlWcfV9RRavNZJUxt46BLYB5n1")
+|> Phos.Repo.preload(:auths)
+
+# Phos.Users.get_user_by_fyr("fFKlWcfV9RRavNZJUxt46BLYB5n1") |> Phos.Users.delete_user()
+# PhosWeb.Util.Migrator.fyr_profile("eyJhbGciOiJSUzI1NiIsImtpZCI6IjVkMzQwZGRiYzNjNWJhY2M0Y2VlMWZiOWQxNmU5ODM3ZWM2MTYzZWIiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiVml2ZWtiYWxhIGZyb20gU2NyYXRjaGJhYyIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BTG01d3UxRkdhdm1hdm9VdXRxXzYwZ1VFdFlVbmpiNEh1UHZWRjRGdDN0WD1zOTYtYyIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS9zY3JhdGNoYmFjLW5vcmJhbmR5IiwiYXVkIjoic2NyYXRjaGJhYy1ub3JiYW5keSIsImF1dGhfdGltZSI6MTY2NjUyNzQxOSwidXNlcl9pZCI6ImZGS2xXY2ZWOVJSYXZOWkpVeHQ0NkJMWUI1bjEiLCJzdWIiOiJmRktsV2NmVjlSUmF2TlpKVXh0NDZCTFlCNW4xIiwiaWF0IjoxNjY2NTI3NDE5LCJleHAiOjE2NjY1MzEwMTksImVtYWlsIjoidml2ZWtiYWxhQHNjcmF0Y2hiYWMuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZ29vZ2xlLmNvbSI6WyIxMDk1NDI1OTIzOTIwOTU0MzY4MjMiXSwiZW1haWwiOlsidml2ZWtiYWxhQHNjcmF0Y2hiYWMuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoiY3VzdG9tIn19.a5Zyy2CT0Im2gwCh9jnoKzaK58rq1A2memiO3jpsebQArQucozsyxPd4AhdBMOXTbiUvUgd_zAfDtmV-hzy_qhsYBmJNUjbbu2MYEHkd6RR66544isSPmb515-xaVV-BVbX2aeSpS8lspUTYXD0gVxPq58PqMkG4vvt-RHyv46FfATuUt02-SST7Xorp_6EpMoXmPwnsf6Q-7Q0ji0j0xWdrRpCSUfMfvJFmz6NEaWKd4LkXFdYB_6dzYtEv_C9KnIJYuBl1Bniwk5KHlbPvC20OT-gwD7fiyqJxU6XMoLjbDctwGM_vyESp6xiH9cnTEZgF4JFn50r_0Sk2o6evrw")
 ```

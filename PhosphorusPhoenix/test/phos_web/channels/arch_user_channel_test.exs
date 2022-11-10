@@ -2,11 +2,14 @@ defmodule PhosWeb.UserChannelTest do
   use PhosWeb.ChannelCase
 
   setup do
-    {:ok, socket} = PhosWeb.UserSocket.connect(%{"token" => ~s(eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiUjNWc2pxOUNBUmZwcndPSnBzNDRrYlZjekZRMiIsInJvbGUiOiJwbGViIiwiaWF0IjoxNjQzNzQzNjAyLCJleHAiOjI4NDM3NDM2MDIsImlzcyI6IlByaW5jZXRvbiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.hlhvTS37qxxqwrynoGbsHQG4gyjH5XDJfSC-zSrR6N8)},
+
+    user = Phos.UsersFixtures.user_fixture()
+
+    {:ok, socket} = PhosWeb.UserSocket.connect(%{"token" => PhosWeb.Menshen.Auth.generate_user!(user.id)},
       socket(PhosWeb.UserSocket, "user_id", %{some: "assigns"}), %{})
 
     {:ok, _, socket} = socket |>
-      subscribe_and_join(PhosWeb.UserChannel, "archetype:usr:R3Vsjq9CARfprwOJps44kbVczFQ2")
+      subscribe_and_join(PhosWeb.UserChannel, "archetype:usr:" <> user.id)
 
     %{socket: socket}
   end

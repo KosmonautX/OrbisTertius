@@ -1,0 +1,51 @@
+# Playing with Fyr
+
+```elixir
+# Mix.install([
+#   {:fcmex, github: "KosmonautX/fcmex"}
+# ])
+```
+
+## Section
+
+```elixir
+token =
+  "ewGVcsOAZ02gmzz9zbCLdo:APA91bGS6WbollBieIKBr9x7JvNzbHkTL2K-ukCbGDvjEYtJBqCoVC2U71jF3OAmwobRYocBGQZ-gVQr2-0Zk6ydjjlHuVf7EOjHdS2zA_TxUWIzvDkaZ0jvROqpLyOuMMqCTxqWs2UA"
+
+System.put_env(
+  "FCM_SERVER_KEY",
+  "AAAALsqe4CU:APA91bEmiBm6MOBXyJ2Gg0nwr2fOPjqYJNyPpGmpBYsECIDXU-bcojG935HQxv5E-BYvux7YufHvJeEJy0ZhtH5KMZmjZkJXkVQi_2NaFLQM4Pmqj2SJukF8wtTwPnnl1XqxCYttq7mF"
+)
+```
+
+```elixir
+Fcmex.Subscription.get(token)
+```
+
+```elixir
+Fcmex.push(token,
+  notification: %{
+    title: "Escape the matrix the second",
+    body: "escape to prod"
+  },
+  data: %{
+    "hao" => "wohen hao"
+  }
+  # condition: "'ORB.1' in topics && !('USR.1' in topics)"
+)
+```
+
+```elixir
+defmodule R do
+  def recompile() do
+    Mix.Task.reenable("app.start")
+    Mix.Task.reenable("compile")
+    Mix.Task.reenable("compile.all")
+    compilers = Mix.compilers()
+    Enum.each(compilers, &Mix.Task.reenable("compile.#{&1}"))
+    Mix.Task.run("compile.all")
+  end
+end
+
+R.recompile()
+```

@@ -63,7 +63,7 @@ defmodule Phos.PromEx do
       Plugins.Application,
       Plugins.Beam,
       {Plugins.Phoenix, router: PhosWeb.Router, endpoint: PhosWeb.Endpoint},
-      Plugins.Ecto,
+      {Plugins.Ecto, otp_app: :phos, repos: [Phos.Repo]},
       Plugins.PhoenixLiveView
       # Plugins.Oban,
       # Plugins.Absinthe,

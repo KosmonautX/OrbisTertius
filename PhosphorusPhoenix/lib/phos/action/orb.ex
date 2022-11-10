@@ -10,9 +10,10 @@ defmodule Phos.Action.Orb do
     field :extinguish, :naive_datetime
     field :media, :boolean, default: false
     field :title, :string
-    field :source, Ecto.Enum, values: [:web, :tele, :flutter]
+    field :source, Ecto.Enum, values: [:web, :tele, :api], default: :api
     field :central_geohash, :integer
     field :traits, {:array, :string}, default: []
+    field :userbound, :boolean, default: false
     field :topic, :string, virtual: true
     field :comment_count, :integer, default: 0, virtual: true
 
@@ -27,10 +28,15 @@ defmodule Phos.Action.Orb do
   @doc false
   def changeset(%Orb{} = orb, attrs) do
     orb
-      |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])
-      |> cast_embed(:payload)
-      |> validate_required([:title, :active, :media, :extinguish])
-      # |> validate_media()
+    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])
+    |> cast_embed(:payload)
+    |> cast_assoc(:locations)
+    |> validate_required([:id, :title, :active, :media, :extinguish, :initiator_id])
+    |> validate_change(:traits, fn :traits, traits ->
+      validate_traits(traits)
+    end)
+    #|> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
+
   end
 
   @doc """
@@ -38,16 +44,42 @@ defmodule Phos.Action.Orb do
 
   Editing orb does not need fields like geolocation.
   """
-  def changeset_edit(user, attrs) do
-    user
-    |> cast(attrs, [:title, :active, :media, :extinguish, :traits])
+  def update_changeset(%Orb{} = orb, attrs) do
+    orb
+    |> cast(attrs, [:title, :active, :media, :traits])
     |> cast_embed(:payload)
+    |> validate_required([:active, :title])
+    |> validate_change(:traits, fn :traits, traits ->
+      validate_traits(traits)
+    end)
+    |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 
-  def changeset_update_locations(%Orb{} = orb, locations) do
+  def personal_changeset(%Orb{} = orb, attrs) do
     orb
-    |> cast(%{}, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])
-    |> put_assoc(:locations, locations)
+      |> cast(attrs, [:id, :active, :userbound, :initiator_id, :traits])
+      |> cast_embed(:payload)
+      |> validate_required([:id, :active, :userbound, :initiator_id])
+      |> validate_exclusion(:traits, ["pin", "admin"])
+      |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
+  end
+
+  def territorial_changeset(struct, params \\ %{}) do
+    struct
+    |> cast(params, [:id, :active, :userbound, :initiator_id])
+    |> cast_assoc(:locations)
+    |> validate_required([:id, :active, :userbound, :initiator_id])
+    |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
+  end
+
+  def admin_changeset(%Orb{} = orb, attrs) do
+    orb
+    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])
+    |> cast_embed(:payload, with: &Orb_Payload.admin_changeset/2)
+    |> cast_assoc(:locations)
+    |> validate_required([:id, :title, :active, :media, :extinguish, :initiator_id])
+    |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
+
   end
 
   def validate_media(changeset) do
@@ -59,5 +91,15 @@ defmodule Phos.Action.Orb do
       changeset
     end
 
+  end
+
+  def validate_traits(traits) do
+    if (["personal", "pin", "admin"]
+      |> Enum.map(fn untrait -> Enum.member?(traits , untrait) end)
+      |> Enum.member?(true)) do
+        [traits: "restricted traits"]
+        else
+          []
+      end
   end
 end

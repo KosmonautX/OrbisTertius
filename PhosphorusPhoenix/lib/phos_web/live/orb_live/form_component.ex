@@ -45,6 +45,8 @@ defmodule PhosWeb.OrbLive.FormComponent do
 
     file_uploaded =
     consume_uploaded_entries(socket, :image, fn %{path: path}, _entry ->
+      IO.inspect path
+      IO.inspect _entry
       for res <- ["150x150", "1920x1080"] do
         {:ok, dest} = Phos.Orbject.S3.put("ORB", orb_id, res)
         #compressed_image_path = ImageHandler.resize_file(path, res, Path.extname(entry.client_name))

@@ -12,21 +12,23 @@ if System.get_env("PHX_SERVER") && System.get_env("RELEASE_NAME") do
   config :phos, PhosWeb.Endpoint, server: true
 end
 
+## Shared Configs
+
 unless config_env() == :prod do
   #dotenv Parsing .env file
   DotenvParser.load_file('../.env')
 
-  # Joken Signer Config
-  config :joken, menshenSB: [
-    signer_alg: "HS256",
-    key_octet: "BALA"
-  ]
+  # # FCM
+  # config :phos, Phos.Fyr.Message,
+  # adapter: Pigeon.FCM,
+  # project_id: System.get_env("FYR_PROJ"),
+  # service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
 
-  # FCM
-  config :phos, Phos.Fyr.Message,
-  adapter: Pigeon.FCM,
-  project_id: System.get_env("FYR_PROJ"),
-  service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
+  #Firebase Auth
+  config :ex_firebase_auth,
+    issuer: "https://securetoken.google.com/#{System.get_env("FYR_PROJ")}",
+    key_store_fail_strategy: :silent,
+    mock: [enabled: true]
 
   # AWS
   config :ex_aws,
@@ -34,14 +36,23 @@ unless config_env() == :prod do
   secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, :instance_role],
   region: "ap-southeast-1"
 
+  # Joken JWT Settings
+  config :joken, menshenSB: [
+    signer_alg: "HS256",
+    key_octet: System.get_env("SECRET_TUNNEL")
+  ]
+
+
   # Notion Importing / Exporting
   config :phos, Phos.External.Notion,
   token: System.get_env("NOTION_TOKEN"),
   database: System.get_env("NOTION_DATABASE"),
   version: System.get_env("NOTION_VERSION")
 
+  #Precached town hexagons
   config :phos, Phos.External.Sector,
   url: System.get_env("SECTOR_URL")
+
   # Prometheus
   config :phos, Phos.PromEx,
   disabled: true,
@@ -103,10 +114,13 @@ if config_env() == :prod do
 
 
   # FCM Prod
-  config :phos, Phos.Fyr.Message,
-    adapter: Pigeon.FCM,
-    project_id: System.get_env("FYR_PROJ"),
-    service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
+  # config :phos, Phos.Fyr.Message,
+  #   adapter: Pigeon.FCM,
+  #   project_id: System.get_env("FYR_PROJ"),
+  #   service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
+
+  #Firebase Auth
+  config :ex_firebase_auth, :issuer, "https://securetoken.google.com/#{System.get_env("FYR_PROJ")}"
 
   config :phos, Phos.Repo,
     # ssl: true,
@@ -114,6 +128,23 @@ if config_env() == :prod do
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
     socket_options: maybe_ipv6,
     types: Phos.PostgresTypes
+
+  # Joken JWT Settings
+  config :joken, menshenSB: [
+    signer_alg: "HS256",
+    key_octet: System.get_env("SECRET_TUNNEL")
+  ]
+
+
+  # Notion Importing / Exporting
+  config :phos, Phos.External.Notion,
+  token: System.get_env("NOTION_TOKEN"),
+  database: System.get_env("NOTION_DATABASE"),
+  version: System.get_env("NOTION_VERSION")
+
+  #Precached town hexagons
+  config :phos, Phos.External.Sector,
+  url: System.get_env("SECTOR_URL")
 
   # Prometheus
   config :phos, Phos.PromEx,
@@ -159,20 +190,6 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
-  config :joken, menshenSB: [
-    signer_alg: "HS256",
-    key_octet: System.get_env("SECRET_TUNNEL")
-  ]
-
-    # Notion Importing / Exporting
-  config :phos, Phos.External.Notion,
-  token: System.get_env("NOTION_TOKEN"),
-  database: System.get_env("NOTION_DATABASE"),
-  version: System.get_env("NOTION_VERSION")
-
-  config :phos, Phos.External.Sector,
-  url: System.get_env("SECTOR_URL")
-  
   config :phos, Phos.Admin,
   password: System.get_env("ADMIN_TUNNEL"),
   algorithm: :sha256
