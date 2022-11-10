@@ -56,11 +56,11 @@ defmodule Phos.Action do
     query = from o in Orb, preload: [:locations, :initiator], where: o.id == ^id, limit: 1
     case Repo.one(query) do
       %Orb{} = orb -> {:ok, orb}
-      _ -> {:error, "Record not found"}
+      _ -> {:error, :not_found}
     end
   end
   def get_orb(orb_id, your_id) do
-    from(orbs in Phos.Action.Orb,
+    from(orbs in Orb,
       where: orbs.id == ^orb_id,
       inner_join: initiator in assoc(orbs, :initiator),
       left_join: branch in assoc(initiator, :relations),
@@ -73,7 +73,7 @@ defmodule Phos.Action do
         select: %{count: count()}
       ),
       select_merge: %{comment_count: c.count})
-      |> Phos.Repo.one()
+    |> Repo.one()
   end
   def get_orb!(id), do: Repo.get!(Orb, id) |> Repo.preload([:locations, :initiator])
   def get_orb_by_fyr(id), do: Repo.get_by(Phos.Users.User, fyr_id: id)
@@ -86,7 +86,7 @@ defmodule Phos.Action do
   end
 
   def active_orbs_by_geohashes(hashes) do
-    from(l in Phos.Action.Orb_Location,
+    from(l in Orb_Location,
       where: l.location_id in ^hashes,
       left_join: orbs in assoc(l, :orbs),
       where: orbs.active == true,

@@ -14,13 +14,6 @@ defmodule PhosWeb.API.FallbackController do
     |> render("error.json", changeset: changeset)
   end
 
-  def call(conn, {:error, message}) when is_binary(message) do
-    conn
-    |> put_status(:unprocessable_entity)
-    |> put_view(PhosWeb.API.ChangesetView)
-    |> render("error.json", reason: message)
-  end
-
   def call(conn, {:error, :unprocessable_entity}) do
     conn
     |> put_status(:unprocessable_entity)
@@ -40,6 +33,13 @@ defmodule PhosWeb.API.FallbackController do
     |> put_status(:unauthorized)
     |> put_view(PhosWeb.ErrorView)
     |> render(:"403")
+  end
+
+  def call(conn, {:error, message}) when is_binary(message) do
+    conn
+    |> put_status(:unprocessable_entity)
+    |> put_view(PhosWeb.API.ChangesetView)
+    |> render("error.json", reason: message)
   end
 
 end

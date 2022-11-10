@@ -24,18 +24,20 @@ from(orbs in Phos.Action.Orb,
   select_merge: %{comment_count: c.count}
 )
 |> Phos.Repo.one()
-```
 
-```elixir
-Phos.Action.list_orbs()
-|> Enum.filter(fn x -> length(x.traits) > 0 end)
-|> Enum.map(fn x -> Phos.Repo.preload(x, [:locations]) end)
-```
-
-```elixir
-Fcmex.push(token, notification: %{title: "ORB.1 not USR.1"})
-# condition: "'ORB.1' in topics && !('USR.1' in topics)"
-# )
+%{
+  "id" => Ecto.UUID.generate(),
+  "title" => "orb",
+  "media" => true,
+  "active" => true,
+  "extinguish" => ~N[2022-10-22 16:31:07],
+  "initiator_id" => your_id,
+  "payload" => %{
+    "info" => "ok",
+    "ext_link" => %{"name" => "Chat with me", "link" => "https://scrbac.com/THChatWithUs"}
+  }
+}
+|> Phos.Action.create_orb()
 ```
 
 ```elixir
