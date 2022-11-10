@@ -75,7 +75,7 @@ defmodule Phos.Action.Orb do
   def admin_changeset(%Orb{} = orb, attrs) do
     orb
     |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])
-    |> cast_embed(:payload)
+    |> cast_embed(:payload, with: &Orb_Payload.admin_changeset/2)
     |> cast_assoc(:locations)
     |> validate_required([:id, :title, :active, :media, :extinguish, :initiator_id])
     |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
