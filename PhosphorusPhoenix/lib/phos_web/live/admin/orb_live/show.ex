@@ -69,7 +69,7 @@ defmodule PhosWeb.Admin.OrbLive.Show do
 
   @impl true
   def handle_event("change_image", _params, %{assigns: %{orb: orb}} = socket) do
-    resolution = %{"150x150" => "lossy", "1920x1080" => "lossless"}
+    resolution = %{"150x150" => "public/banner/lossy", "1920x1080" => "public/banner/lossless"}
     file_uploaded = 
       consume_uploaded_entries(socket, :image, fn %{path: path}, _entry ->
         for res <- ["150x150", "1920x1080"] do

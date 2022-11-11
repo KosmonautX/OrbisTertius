@@ -72,8 +72,7 @@ defmodule Phos.Action.Orb do
     |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])
     |> cast_embed(:payload)
     |> cast_assoc(:locations)
-    |> validate_required([:id, :title, :active, :media, :extinguish, :initiator_id])
-    |> validate_subset(:traits, ~w(admin personal pin))
+    |> validate_required([:id, :title, :active, :media, :initiator_id])
     |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 

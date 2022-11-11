@@ -82,8 +82,8 @@
           <%= submit "Change image", class: "button button-sm mt-2" %>
 
           <div class="px-4 py-2">
-            <img src={Phos.Orbject.S3.get!("ORB", @orb.id, "lossless")} />
-            <img src={Phos.Orbject.S3.get!("ORB", @orb.id, "lossy")}, class="mt-2" />
+            <img src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless")} />
+            <img src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossy")}, class="mt-2" />
           </div>
         <% else %>
           <%= submit "Add image", class: "button button-sm" %>

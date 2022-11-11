@@ -12,7 +12,6 @@ Phos.Action.orbs_by_geohashes(
 Phos.Action.orbs_by_geotraits(
   {[614_510_799_689_351_167], "5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"},
   ["pin"],
-  1
 )
 ```
 

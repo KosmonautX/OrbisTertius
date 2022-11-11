@@ -258,6 +258,30 @@ defmodule Phos.Action do
        end
   end
 
+  def admin_create_orb(attrs \\ %{}) do
+    %Orb{}
+    |> Orb.admin_changeset(attrs)
+    |> Repo.insert()
+    |> case do
+         {:ok, orb} = data ->
+           orb = orb |> Repo.preload([:initiator])
+           spawn(fn ->
+             case orb.initiator do
+               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("ORB.#{orb.id}", token)
+               _ -> nil
+             end
+             Phos.Notification.target("'FLK.#{orb.initiator_id}' in topics && !('USR.#{orb.initiator_id}' in topics)",
+               %{title: "#{orb.initiator.username} forged an orb ⚡",
+                 body: orb.title
+               }, PhosWeb.Util.Viewer.orb_mapper(orb))
+
+           end)
+           #spawn(fn -> user_feeds_publisher(orb) end)
+           data
+         err -> err
+       end
+  end
+
   defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
     Phos.Folk.friends_lite(user_id)
     |> Enum.each(fn user_id ->
@@ -278,7 +302,7 @@ defmodule Phos.Action do
   end
 
   def create_orb_and_publish(attrs) do
-    case create_orb(attrs) do
+    case admin_create_orb(attrs) do
       {:ok, orb} ->
         orb = orb |> Repo.preload([:locations])
         orb_loc_publisher(orb, :genesis, orb.locations)

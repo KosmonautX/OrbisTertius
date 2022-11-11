@@ -20,7 +20,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
   @impl true
   def handle_event("import-selected-orbs", _, %{assigns: %{selected_orbs: selected_orbs, orbs: orbs}} = socket) do
     # allow users to super user the user they login with instead or post on behalf of other users (notion)
-    {:ok, initiator} = Phos.Users.get_admin()
+    initiator = Phos.Users.get_admin()
     selected_orbs
     |> Enum.map(&String.to_integer/1)
     |> Enum.map(&Enum.at(orbs, &1))
@@ -35,20 +35,25 @@ defmodule PhosWeb.Admin.OrbLive.Import do
         case contains_error?(data) do
           true ->
             {:noreply, socket
-            |> put_flash(:error, "Orb(s) contains error.")
+            |> put_flash(:error, "Orb(s) contains error. 💥")
             |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
           _ ->
-            case Phos.External.HeimdallrClient.post_orb(data) do
-              {:ok, _response} ->
-                {:noreply, socket
+            {:noreply, socket
                 |> put_flash(:info, "Orbs have been born 🥳 @" <> (DateTime.now!("Asia/Singapore") |> Calendar.strftime("%y-%m-%d %I:%M:%S %p")))
                 |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
-              {:error, message} ->
-                {:noreply, socket
-                |> put_flash(:error, "Take down Orbs 💥, failed to propogate to legacy api service
-                #{inspect(message)}")
-                |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
-            end
+
+            # legacy apis deprecated
+            # case Phos.External.HeimdallrClient.post_orb(data) do
+            #   {:ok, _response} ->
+            #     {:noreply, socket
+            #     |> put_flash(:info, "Orbs have been born 🥳 @" <> (DateTime.now!("Asia/Singapore") |> Calendar.strftime("%y-%m-%d %I:%M:%S %p")))
+            #     |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+            #   {:error, message} ->
+            #     {:noreply, socket
+            #     |> put_flash(:error, "Take down Orbs 💥, failed to propogate to legacy api service
+            #     #{inspect(message)}")
+            #     |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+            # end
 
         end
     end
@@ -180,7 +185,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
     %{
       "id" => Map.get(orb, :id, nil) || Ecto.UUID.generate(),
       "active" => true,
-      "geolocation" => hashes,
+      "locations" => Enum.map(hashes, &Map.new([{"id", &1}])),
       "title" => Map.get(orb, :outer_title, title),
       "initiator_id" => initiator_id,
       "payload" => %{"info" => orb.info, "inner_title" => title},
@@ -195,7 +200,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
     %{
       "id" => Map.get(orb, :id, nil) || Ecto.UUID.generate(),
       "active" => true,
-      "geolocation" => get_geolock_target(live),
+      "locations" => get_geolock_target(live) |> Enum.map(&Map.new([{"id", &1}])),
       "title" => orb.title,
       "initiator_id" => initiator_id,
       "payload" => %{"info" => orb.info},
