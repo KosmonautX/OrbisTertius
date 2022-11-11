@@ -3,28 +3,42 @@
 ## Root
 
 ```elixir
-Phos.Action.orbs_by_geohashes(
-  {[614_510_799_689_351_167], "5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"},
-  1
-).data
-|> length()
 
-Phos.Action.orbs_by_geotraits(
-  {[614_510_799_689_351_167], "5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"},
-  ["pin"],
+orb_id = "9bf9c443-f89b-460a-972d-6704ae66823d"
+your_id = "5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"
+import Ecto.Query
+
+from(orbs in Phos.Action.Orb,
+  where: orbs.id == ^orb_id,
+  inner_join: initiator in assoc(orbs, :initiator),
+  left_join: branch in assoc(initiator, :relations),
+  on: branch.friend_id == ^your_id,
+  left_join: root in assoc(branch, :root),
+  select_merge: %{initiator: %{initiator | self_relation: root}},
+  inner_lateral_join:
+    c in subquery(
+      from(c in Phos.Comments.Comment,
+        where: c.orb_id == ^orb_id,
+        select: %{count: count()}
+      )
+    ),
+  select_merge: %{comment_count: c.count}
 )
-```
+|> Phos.Repo.one()
 
-```elixir
-Phos.Action.list_orbs()
-|> Enum.filter(fn x -> length(x.traits) > 0 end)
-|> Enum.map(fn x -> Phos.Repo.preload(x, [:locations]) end)
-```
-
-```elixir
-Fcmex.push(token, notification: %{title: "ORB.1 not USR.1"})
-# condition: "'ORB.1' in topics && !('USR.1' in topics)"
-# )
+%{
+  "id" => Ecto.UUID.generate(),
+  "title" => "orb",
+  "media" => true,
+  "active" => true,
+  "extinguish" => ~N[2022-10-22 16:31:07],
+  "initiator_id" => your_id,
+  "payload" => %{
+    "info" => "ok",
+    "ext_link" => %{"name" => "Chat with me", "link" => "https://scrbac.com/THChatWithUs"}
+  }
+}
+|> Phos.Action.create_orb()
 ```
 
 ```elixir

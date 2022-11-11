@@ -40,7 +40,7 @@ defmodule PhosWeb.OrbControllerTest do
   end
 
 
-  ## TODO add with tests on territory, and history
+  ## TODO add thetests on territory, and history
 
     describe "index" do
       setup [:inject_user_token]
@@ -143,10 +143,9 @@ defmodule PhosWeb.OrbControllerTest do
       orb = orb_fixture(%{"initiator_id" => user.id})
       conn = delete(conn, Routes.orb_path(conn, :delete, orb))
       assert response(conn, 204)
+      conn = get(conn, Routes.orb_path(conn, :show, orb))
 
-      assert_error_sent 404, fn ->
-        get(conn, Routes.orb_path(conn, :show, orb))
-      end
+      assert response conn, 404
     end
   end
 end

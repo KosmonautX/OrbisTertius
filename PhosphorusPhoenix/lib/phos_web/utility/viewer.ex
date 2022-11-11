@@ -160,7 +160,12 @@ defmodule PhosWeb.Util.Viewer do
            inner_title: orb.payload.inner_title,
            info: orb.payload.info,
            tip: orb.payload.tip,
-           when: orb.payload.when
+           when: orb.payload.when,
+           ext_link: (if !is_nil(orb.payload.ext_link),
+          do: %{
+                name: orb.payload.ext_link.name,
+                url: orb.payload.ext_link.url
+              })
         }
       }
     end)
