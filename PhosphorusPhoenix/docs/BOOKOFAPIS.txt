@@ -1,8 +1,8 @@
 # -*- restclient -*-
 # Phos API Endpoint Documentation
 
-#:ipAddress = http://localhost:4000/api
-:ipAddress = https://nyx.scrb.ac/api
+:ipAddress = http://localhost:4000/api
+#:ipAddress = https://nyx.scrb.ac/api
 :localipAddress = http://localhost:4000/api
 :princeton=0b3gd5XUGtNP6lqQean4IAp7ogG3
 :satrio=BX1BxM9KkwdFmy2J4FNNkFxclpS2
@@ -169,11 +169,11 @@ GET :ipAddress/folkland/self/pending?page=1
 
 ### ! Orbland Calls
 ## Read Orb
-GET :ipAddress/orbland/orbs/59f60ff7-6874-4471-b732-12ef2f5c0d36
+GET :ipAddress/orbland/orbs/3e9ebaa7-cdd0-4d3e-857e-0661aeb12d0b
 :auth-headers
 
 ## Read all orbs in that geohash id
-GET :ipAddress/orbland/stream/614510799689351167,627779412580450303,627986446952349695?page=1&traits=pin
+GET :ipAddress/orbland/stream/623517998944845823,628021598572208127?page=1&traits=pin
 :auth-headers
 
 ## Create Orbs

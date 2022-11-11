@@ -150,7 +150,7 @@ defmodule Phos.Action do
   def orbs_by_initiators(user_ids, page, sort_attribute \\ :inserted_at, limit \\ 12) do
     from(o in Orb,
       as: :o,
-      where: o.initiator_id in ^user_ids,
+      where: o.initiator_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]),
       preload: [:initiator],
       inner_lateral_join: c in subquery(
         from c in Phos.Comments.Comment,
