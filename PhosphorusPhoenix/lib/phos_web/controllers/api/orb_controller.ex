@@ -100,12 +100,18 @@ defmodule PhosWeb.API.OrbController do
   end
 
   def show_territory(%{assigns: %{current_user: user}} = conn, %{"id" => hashes, "page" => page, "traits" => trait}) do
-    geohashes = String.split(hashes, ",")
-    |> Enum.map(fn hash -> String.to_integer(hash) |> :h3.parent(8) end)
-    |> Enum.uniq()
-    traits = String.split(trait, ",") |> Enum.uniq()
-    loc_orbs = Action.orbs_by_geotraits({geohashes, user.id}, traits, page)
-    render(conn, "paginated.json", orbs: loc_orbs)
+    try do
+      geohashes = String.split(hashes, ",")
+      |> Enum.map(fn hash ->
+        Enum.map([8,9,10], &(:h3.parent(String.to_integer(hash), &1))) end)
+        |> List.flatten()
+        |> Enum.uniq()
+      traits = String.split(trait, ",") |> Enum.uniq()
+      loc_orbs = Action.orbs_by_geotraits({geohashes, user.id}, traits, page)
+      render(conn, "paginated.json", orbs: loc_orbs)
+    rescue
+      ArgumentError -> {:error, :unprocessable_entity}
+    end
   end
 
   def show_territory(%{assigns: %{current_user: user}} = conn, %{"id" => hashes, "page" => page}) do

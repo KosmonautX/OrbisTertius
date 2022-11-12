@@ -166,7 +166,7 @@ defmodule Phos.Action do
   def orbs_by_initiators(user_ids, page, sort_attribute \\ :inserted_at, limit \\ 12) do
     from(o in Orb,
       as: :o,
-      where: o.initiator_id in ^user_ids,
+      where: o.initiator_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]),
       preload: [:initiator],
       inner_lateral_join: c in subquery(
         from c in Phos.Comments.Comment,
@@ -216,7 +216,7 @@ defmodule Phos.Action do
 
   def get_orbs_by_trait(trait) do
     query =
-      from p in Phos.Action.Orb, where: fragment("? @> ?", p.traits, ^trait)
+      from p in Phos.Action.Orb, preload: [:initiator], where: fragment("? @> ?", p.traits, ^trait)
 
     Repo.all(query, limit: 8)
   end
@@ -274,6 +274,30 @@ defmodule Phos.Action do
        end
   end
 
+  def admin_create_orb(attrs \\ %{}) do
+    %Orb{}
+    |> Orb.admin_changeset(attrs)
+    |> Repo.insert()
+    |> case do
+         {:ok, orb} = data ->
+           orb = orb |> Repo.preload([:initiator])
+           spawn(fn ->
+             case orb.initiator do
+               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("ORB.#{orb.id}", token)
+               _ -> nil
+             end
+             Phos.Notification.target("'FLK.#{orb.initiator_id}' in topics && !('USR.#{orb.initiator_id}' in topics)",
+               %{title: "#{orb.initiator.username} forged an orb ⚡",
+                 body: orb.title
+               }, PhosWeb.Util.Viewer.orb_mapper(orb))
+
+           end)
+           #spawn(fn -> user_feeds_publisher(orb) end)
+           data
+         err -> err
+       end
+  end
+
   defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
     Phos.Folk.friends_lite(user_id)
     |> Enum.each(fn user_id ->
@@ -294,7 +318,7 @@ defmodule Phos.Action do
   end
 
   def create_orb_and_publish(attrs) do
-    case create_orb(attrs) do
+    case admin_create_orb(attrs) do
       {:ok, orb} ->
         orb = orb |> Repo.preload([:locations])
         orb_loc_publisher(orb, :genesis, orb.locations)
@@ -502,5 +526,14 @@ defmodule Phos.Action do
     ## TODO SUB User Topic to Orb
     #token = Map.get(user, :private_profile, %{}) |> Map.get(:user_token)
     #Phos.Notification.subscribe(token, topic)
+  end
+
+  def filter_orbs_by_traits(traits, opts \\ []) do
+    page = Keyword.get(opts, :page, 1)
+    limit = Keyword.get(opts, :limit, 10)
+    sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
+    query = from p in __MODULE__.Orb, preload: [:initiator], where: fragment("? @> ?", p.traits, ^traits)
+
+    Repo.Paginated.all(query, page, sort_attribute, limit)
   end
 end

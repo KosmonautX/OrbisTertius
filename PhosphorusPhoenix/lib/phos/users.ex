@@ -53,10 +53,10 @@ defmodule Phos.Users do
   def get_user_by_username(username), do: Repo.get_by(User, username: username)
 
   def get_admin do
-    query = from u in User, where: u.fyr_id == "DAAohgsLMpQPmsbpbvgQ5PEPuy22"
-    case Repo.all(query) do
-      data when is_list(data) and data != [] -> {:ok, List.first(data)}
-      _ ->
+    query = from u in User, where: u.email == "scratchbac@gmail.com"
+    case Repo.one(query) do
+      user = %User{} -> user
+      nil ->
         query = from u in User, order_by: u.inserted_at, limit: 1
         Repo.one(query)
     end

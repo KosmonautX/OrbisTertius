@@ -6,8 +6,8 @@ defmodule PhosWeb.Util.ImageHandler do
   """
 
   def store_ext_links(entity = %{id: id, lossy: lossy, lossless: lossless}, archetype)  do
-    Phos.Orbject.S3.put!(archetype, id, "150x150") |> upload_link(lossy)
-    Phos.Orbject.S3.put!(archetype, id, "1920x1080") |> upload_link(lossless)
+    Phos.Orbject.S3.put!(archetype, id, "public/banner/lossy") |> upload_link(lossy)
+    Phos.Orbject.S3.put!(archetype, id, "public/banner/lossless") |> upload_link(lossless)
     entity
   end
 

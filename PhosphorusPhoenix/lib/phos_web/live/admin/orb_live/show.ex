@@ -5,8 +5,11 @@ defmodule PhosWeb.Admin.OrbLive.Show do
 
   @impl true
   def mount(%{"id" => id} = _params, _session, socket) do
+    socket = allow_upload(socket, :image, accept: ~w(.jpg .jpeg .png), max_entries: 1, max_file_size: 8888888)
     case Action.get_orb(id) do
-      {:ok, orb} -> {:ok, assign(socket, orb: orb, traits_form: [], changeset: Ecto.Changeset.change(orb))}
+      {:ok, orb} ->
+        {:ok,
+          assign(socket, orb: orb, traits_form: [], changeset: Ecto.Changeset.change(orb))}
       _ -> {:ok, assign(socket, :orb, nil)}
     end
   end
@@ -29,7 +32,7 @@ defmodule PhosWeb.Admin.OrbLive.Show do
   end
 
   @impl true
-  def handle_event("trait_management", %{"method" => "delete", "id" => id} = params, %{assigns: %{traits_form: val}} = socket) do
+  def handle_event("trait_management", %{"method" => "delete", "id" => id} = _params, %{assigns: %{traits_form: val}} = socket) do
     index = String.to_integer(id)
     {:noreply, assign(socket, [traits_form: List.delete_at(val, index)])}
   end
@@ -63,4 +66,35 @@ defmodule PhosWeb.Admin.OrbLive.Show do
         |> put_flash(:error, "orb traits failed to update")}
     end
   end
+
+  @impl true
+  def handle_event("change_image", _params, %{assigns: %{orb: orb}} = socket) do
+    resolution = %{"150x150" => "public/banner/lossy", "1920x1080" => "public/banner/lossless"}
+    file_uploaded = 
+      consume_uploaded_entries(socket, :image, fn %{path: path}, _entry ->
+        for res <- ["150x150", "1920x1080"] do
+          {:ok, dest} = Phos.Orbject.S3.put("ORB", orb.id, resolution[res])
+          compressed_image =
+            path
+            |> Mogrify.open()
+            |> Mogrify.resize(res)
+            |> Mogrify.save()
+
+          HTTPoison.put(dest, {:file, compressed_image.path})
+        end
+        {:ok, path}
+      end)
+
+    if Enum.empty?(file_uploaded) do
+      {:noreply, put_flash(socket, :error, "Error upload image")}
+    else
+      case Action.update_orb(orb, %{media: true}) do
+        {:ok, orb} -> {:noreply, assign(socket, :orb, orb)}
+        _ -> {:noreply, put_flash(socket, :error, "Error saving media")}
+      end
+    end
+  end
+
+  defp error_to_string(:too_large), do: "Image too large"
+  defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
 end
