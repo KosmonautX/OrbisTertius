@@ -4,8 +4,8 @@ defmodule PhosWeb.Admin.OrbLive.Index do
   alias Phos.Action
 
   def mount(params, _session, socket) do
-    %{data: orbs, meta: meta} = Action.filter_orbs_by_traits([], limit: 10, page: 1)
-    {:ok, assign(socket, orbs: orbs, pagination: meta.pagination, traits: [], limit: 10)}
+    %{data: orbs, meta: meta} = Action.filter_orbs_by_traits([], limit: 20, page: 1)
+    {:ok, assign(socket, orbs: orbs, pagination: meta.pagination, traits: [], limit: 20)}
   end
 
   def handle_params(%{"page" => page} = params, _url,%{assigns: %{traits: traits, pagination: pagination, limit: limit}} = socket) do
