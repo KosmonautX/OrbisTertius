@@ -84,16 +84,16 @@ defmodule PhosWeb.Components.Pagination do
     """
   end
 
-  defp prev_page(%{route_path: route, route_method: method} = assigns) do
-    %{meta: %{downstream: downstream, current: current}} = assigns
+  defp prev_page(%{route_path: route, route_method: method, limit: limit} = assigns) do
+    %{meta: %{upstream: upstream, current: current}} = assigns
     base_class = "relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 border-l border-gray-300"
 
-    current_class = case downstream do
+    current_class = case upstream do
       false -> base_class <> " bg-gray-50 cursor-not-allowed"
       _ -> base_class <> " hover:bg-gray-50"
     end
 
-    expected_page = case downstream do
+    expected_page = case upstream do
       false -> current
       _ -> current - 1
     end
@@ -108,16 +108,17 @@ defmodule PhosWeb.Components.Pagination do
     """
   end
 
-  defp next_page(%{route_path: route, route_method: method} = assigns) do
-    %{meta: %{upstream: upstream, current: current}} = assigns
+  defp next_page(%{route_path: route, route_method: method, limit: limit} = assigns) do
+    %{meta: %{total: total, current: current}} = assigns
     base_class = "relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 border-l border-gray-300"
+    has_next_page? = Kernel.>(total, limit * current)
 
-    current_class = case upstream do
+    current_class = case has_next_page? do
       false -> base_class <> " bg-gray-50 cursor-not-allowed"
       _ -> base_class <> " hover:bg-gray-50"
     end
 
-    expected_page = case upstream do
+    expected_page = case has_next_page? do
       false -> current
       _ -> current + 1
     end
@@ -132,8 +133,13 @@ defmodule PhosWeb.Components.Pagination do
     """
   end
 
-  def paginate_value(%{meta: %{end: page, current: current}, limit: limit} = assigns) when page > limit do
-    num = Kernel.div(page, limit)
+  def paginate_value(%{meta: %{total: page, current: current}, limit: limit} = assigns) when page > limit do
+    lim = Kernel.div(page, limit)
+    num = case Kernel.rem(page, limit) do
+      0 -> lim
+      _ -> lim + 1
+    end
+
     ~H"""
       <%= for i <- 1..num do %>
         <.paginate_child number={i}, active={current == i}  route_path={@route_path} route_method={@route_method} />
@@ -151,7 +157,6 @@ defmodule PhosWeb.Components.Pagination do
     """
   end
   def paginate_child(%{active: active} = assigns) do
-    IO.inspect(active)
     current_class = decide_active_class(active)
 
     ~H"""
@@ -160,5 +165,5 @@ defmodule PhosWeb.Components.Pagination do
   end
 
   defp decide_active_class(true), do: "relative z-10 inline-flex items-center border border-indigo-500 bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 focus:z-20"
-  defp decide_active_class(_), do: "relative inline-flex items-center border border-gray-300 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-20"
+  defp decide_active_class(_), do: "relative inline-flex items-center border border-gray-300 px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-20"
 end

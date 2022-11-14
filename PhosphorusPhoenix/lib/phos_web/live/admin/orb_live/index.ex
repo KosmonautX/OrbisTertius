@@ -4,8 +4,9 @@ defmodule PhosWeb.Admin.OrbLive.Index do
   alias Phos.Action
 
   def mount(params, _session, socket) do
-    %{data: orbs, meta: meta} = Action.filter_orbs_by_traits([], limit: 10, page: 1)
-    {:ok, assign(socket, orbs: orbs, pagination: meta.pagination, traits: [], limit: 10)}
+    limit = 10
+    %{data: orbs, meta: meta} = Action.filter_orbs_by_traits([], limit: limit, page: 1)
+    {:ok, assign(socket, orbs: orbs, pagination: meta.pagination, traits: [], limit: limit)}
   end
 
   def handle_params(%{"page" => page} = params, _url,%{assigns: %{traits: traits, pagination: pagination, limit: limit}} = socket) do
@@ -15,7 +16,7 @@ defmodule PhosWeb.Admin.OrbLive.Index do
       true -> {:noreply, socket}
       _ -> 
         %{data: orbs, meta: meta} = Action.filter_orbs_by_traits(traits, limit: limit, page: expected_page)
-        {:noreply, assign(socket, orb: orbs, pagination: meta.pagination)}
+        {:noreply, assign(socket, orbs: orbs, pagination: meta.pagination)}
     end
   end
 
@@ -60,7 +61,7 @@ defmodule PhosWeb.Admin.OrbLive.Index do
   def table_values(%{entries: []} = assigns) do
     ~H"""
       <tr>
-          <td colspan="6" class="border-t-0 px-6 align-middle text-center border-l-0 border-r-0 text-xs italic whitespace-nowrap p-4 text-left">No Orbs found</td>
+        <td colspan="6" class="border-t-0 px-6 align-middle text-center border-l-0 border-r-0 text-xs italic whitespace-nowrap p-4 text-left">No Orbs found</td>
       </tr>
     """
   end
