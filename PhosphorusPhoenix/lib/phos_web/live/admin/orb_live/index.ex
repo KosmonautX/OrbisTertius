@@ -3,19 +3,19 @@ defmodule PhosWeb.Admin.OrbLive.Index do
 
   alias Phos.Action
 
-  def mount(params, _session, socket) do
+  def mount(_params, _session, socket) do
     limit = 10
-    %{data: orbs, meta: meta} = Action.filter_orbs_by_traits([], limit: limit, page: 1)
-    {:ok, assign(socket, orbs: orbs, pagination: meta.pagination, traits: [], limit: limit)}
+    %{data: orbs, meta: meta} = filter_by_traits("", limit: limit, page: 1)
+    {:ok, assign(socket, orbs: orbs, pagination: meta.pagination, traits: "", limit: limit)}
   end
 
-  def handle_params(%{"page" => page} = params, _url,%{assigns: %{traits: traits, pagination: pagination, limit: limit}} = socket) do
+  def handle_params(%{"page" => page} = _params, _url,%{assigns: %{traits: traits, pagination: pagination, limit: limit} = assigns} = socket) do
     expected_page = parse_integer(page)
 
     case expected_page == pagination.current do
       true -> {:noreply, socket}
       _ -> 
-        %{data: orbs, meta: meta} = Action.filter_orbs_by_traits(traits, limit: limit, page: expected_page)
+        %{data: orbs, meta: meta} = filter_by_traits(traits, limit: limit, page: expected_page)
         {:noreply, assign(socket, orbs: orbs, pagination: meta.pagination)}
     end
   end
@@ -30,25 +30,25 @@ defmodule PhosWeb.Admin.OrbLive.Index do
     end
   end
 
-  defp get_all_active_orbs(params) do
-    params
-    |> Enum.map(fn {k, v} -> {String.to_existing_atom(k), v} end)
-    |> Action.list_all_active_orbs()
-  end
-
   def handle_event("search", %{"search" => %{"traits" => keyword}}, socket) do
     case String.length(keyword) > 3 do
       true ->
-        orbs = filter_by_traits(keyword)
-        {:noreply, assign(socket, :orbs, orbs)}
+        %{data: orbs, meta: meta} = filter_by_traits(keyword)
+        {:noreply, assign(socket, orbs: orbs, traits: keyword, pagination: meta.pagination)}
       _ -> {:noreply, socket}
     end
   end
 
-  defp filter_by_traits(keyword) do
-    String.split(keyword, ",")
-    |> Enum.map(&String.trim(&1, " "))
-    |> Action.get_orbs_by_trait()
+  defp filter_by_traits(keyword, options \\ [])
+  defp filter_by_traits(keyword, options) when is_list(keyword), do: Action.filter_orbs_by_traits(keyword, options)
+  defp filter_by_traits(keyword, options) do
+    keyword
+    |> String.trim()
+    |> case do
+      "" -> []
+      key -> String.split(key, ",")
+    end
+    |> filter_by_traits(options)
   end
 
   # slots
@@ -65,7 +65,7 @@ defmodule PhosWeb.Admin.OrbLive.Index do
       </tr>
     """
   end
-  def table_values(%{entries: entries} = assigns) do
+  def table_values(assigns) do
     ~H"""
       <%= for {entry, index} <- Enum.with_index(@entries) do %>
         <tr>
