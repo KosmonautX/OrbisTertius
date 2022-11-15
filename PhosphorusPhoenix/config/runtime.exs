@@ -75,6 +75,12 @@ unless config_env() == :prod do
     ]
 
 
+  # Admin Console
+  config :phos, Phos.Admin,
+  password: System.get_env("ADMIN_TUNNEL"),
+  algorithm: :sha256
+
+
 end
 
 if config_env() == :prod do

@@ -33,6 +33,7 @@ defmodule Phos.External.GoogleIdentity do
     }
 
      System.get_env("FYR_KEY")
+     |> String.replace("\\n", "\n")
      |> JOSE.JWK.from_pem()
      |> JOSE.JWT.sign(%{"alg" => "RS256"}, payload)
      |> JOSE.JWS.compact()

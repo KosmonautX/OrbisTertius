@@ -7,21 +7,21 @@ defmodule Phos.Action do
   alias Phos.Repo
   alias Phos.Action.{Orb, Location, Orb_Location}
 
-@doc """
+  @doc """
   Returns the list of orbs.
 
   ## Examples
 
-      iex> list_orbs()
-      [%Orb{}, ...]
+  iex> list_orbs()
+  [%Orb{}, ...]
 
   """
   def list_orbs(filters \\ []) do
     default_query = from o in Orb, preload: [:initiator], order_by: [desc: o.inserted_at]
     query = case Kernel.length(filters) do
-      0 -> default_query
-      _ -> advanced_orb_listing(filters, default_query)
-    end
+              0 -> default_query
+              _ -> advanced_orb_listing(filters, default_query)
+            end
 
     Repo.all(query)
   end
@@ -36,10 +36,10 @@ defmodule Phos.Action do
     end
   end
 
-#   @doc """
-#   Gets a single orb.
+  #   @doc """
+  #   Gets a single orb.
 
-#   Raises `Ecto.NoResultsError` if the Orb does not exist.
+  #   Raises `Ecto.NoResultsError` if the Orb does not exist.
 
   #   ## Examples
 
@@ -73,7 +73,7 @@ defmodule Phos.Action do
         select: %{count: count()}
       ),
       select_merge: %{comment_count: c.count})
-    |> Repo.one()
+      |> Repo.one()
   end
   def get_orb!(id), do: Repo.get!(Orb, id) |> Repo.preload([:locations, :initiator])
   def get_orb_by_fyr(id), do: Repo.get_by(Phos.Users.User, fyr_id: id)
@@ -166,7 +166,7 @@ defmodule Phos.Action do
   def orbs_by_initiators(user_ids, page, sort_attribute \\ :inserted_at, limit \\ 12) do
     from(o in Orb,
       as: :o,
-      where: o.initiator_id in ^user_ids,
+      where: o.initiator_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]),
       preload: [:initiator],
       inner_lateral_join: c in subquery(
         from c in Phos.Comments.Comment,
@@ -194,7 +194,7 @@ defmodule Phos.Action do
     |> Enum.map(fn orbloc -> Map.put(orbloc.orbs, :comment_count, orbloc.comment_count) end)
     # |> Enum.map(fn orb -> orb.orbs end)
     |> Enum.filter(fn orb -> orb.active == true end)
-   end
+  end
 
   def get_active_orbs_by_initiator(user_id) do
     query =
@@ -216,7 +216,7 @@ defmodule Phos.Action do
 
   def get_orbs_by_trait(trait) do
     query =
-      from p in Phos.Action.Orb, where: fragment("? @> ?", p.traits, ^trait)
+      from p in Phos.Action.Orb, preload: [:initiator], where: fragment("? @> ?", p.traits, ^trait)
 
     Repo.all(query, limit: 8)
   end
@@ -274,6 +274,31 @@ defmodule Phos.Action do
        end
   end
 
+  def admin_create_orb(attrs \\ %{}) do
+    %Orb{}
+    |> Orb.admin_changeset(attrs)
+    |> Repo.insert()
+    |> case do
+         {:ok, orb} = data ->
+           orb = orb |> Repo.preload([:initiator])
+           spawn(fn ->
+             case orb.initiator do
+               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("ORB.#{orb.id}", token)
+               _ -> nil
+             end
+             unless(Enum.member?(orb.traits, "mirage")) do
+               Phos.Notification.target("'FLK.#{orb.initiator_id}' in topics && !('USR.#{orb.initiator_id}' in topics)",
+                 %{title: "#{orb.initiator.username} forged an orb ⚡",
+                   body: orb.title
+                 }, PhosWeb.Util.Viewer.orb_mapper(orb))
+             end
+             #spawn(fn -> user_feeds_publisher(orb) end)
+           end)
+           data
+         err -> err
+       end
+  end
+
   defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
     Phos.Folk.friends_lite(user_id)
     |> Enum.each(fn user_id ->
@@ -294,7 +319,7 @@ defmodule Phos.Action do
   end
 
   def create_orb_and_publish(attrs) do
-    case create_orb(attrs) do
+    case admin_create_orb(attrs) do
       {:ok, orb} ->
         orb = orb |> Repo.preload([:locations])
         orb_loc_publisher(orb, :genesis, orb.locations)
@@ -307,18 +332,18 @@ defmodule Phos.Action do
   end
 
 
-#   @doc """
-#   Updates a orb.
+  #   @doc """
+  #   Updates a orb.
 
-#   ## Examples
+  #   ## Examples
 
-#       iex> update_orb(orb, %{field: new_value})
-#       {:ok, %Orb{}}
+  #       iex> update_orb(orb, %{field: new_value})
+  #       {:ok, %Orb{}}
 
-#       iex> update_orb(orb, %{field: bad_value})
-#       {:error, %Ecto.Changeset{}}
+  #       iex> update_orb(orb, %{field: bad_value})
+  #       {:error, %Ecto.Changeset{}}
 
-#   """
+  #   """
   def update_orb(%Orb{} = orb, attrs) do
     orb
     |> Orb.update_changeset(attrs)
@@ -326,16 +351,16 @@ defmodule Phos.Action do
   end
 
   #   @doc """
-#   Updates a orb.
+  #   Updates a orb.
 
-#   ## Examples
+  #   ## Examples
 
-#       iex> update_orb!(%{field: value})
-#       %Orb{}
+  #       iex> update_orb!(%{field: value})
+  #       %Orb{}
 
-#       iex> Need to Catch error state
+  #       iex> Need to Catch error state
 
-#   """
+  #   """
 
   def update_orb!(%Orb{} = orb, attrs) do
     orb
@@ -344,31 +369,31 @@ defmodule Phos.Action do
     |> Repo.preload([:initiator, :locations])
   end
 
-#   @doc """
-#   Deletes a orb.
+  #   @doc """
+  #   Deletes a orb.
 
-#   ## Examples
+  #   ## Examples
 
-#       iex> delete_orb(orb)
-#       {:ok, %Orb{}}
+  #       iex> delete_orb(orb)
+  #       {:ok, %Orb{}}
 
-#       iex> delete_orb(orb)
-#       {:error, %Ecto.Changeset{}}
+  #       iex> delete_orb(orb)
+  #       {:error, %Ecto.Changeset{}}
 
-#   """
+  #   """
   def delete_orb(%Orb{} = orb) do
     Repo.delete(orb)
   end
 
-#   @doc """
-#   Returns an `%Ecto.Changeset{}` for tracking orb changes.
+  #   @doc """
+  #   Returns an `%Ecto.Changeset{}` for tracking orb changes.
 
-#   ## Examples
+  #   ## Examples
 
-#       iex> change_orb(orb)
-#       %Ecto.Changeset{data: %Orb{}}
+  #       iex> change_orb(orb)
+  #       %Ecto.Changeset{data: %Orb{}}
 
-#   """
+  #   """
   def change_orb(%Orb{} = orb, attrs \\ %{}) do
     Orb.changeset(orb, attrs)
   end
@@ -418,23 +443,23 @@ defmodule Phos.Action do
     traits = Map.get(properties, "Traits", %{}) |> notion_get_values()
     default_orb_populator(sector, properties)
     |> Map.merge(%{
-      where: notion_get_values(location) |> String.replace("[town]", name),
-      title: notion_get_values(title) |> String.replace("[town]", name),
-      geolocation: %{ live: live_location_populator(hashes, radius) },
-      traits: traits
-    })
+          where: notion_get_values(location) |> String.replace("[town]", name),
+          title: notion_get_values(title) |> String.replace("[town]", name),
+          geolocation: %{ live: live_location_populator(hashes, radius) },
+          traits: traits
+                 })
   end
 
   defp orb_imported_detail({name, hashes} = sector, %{"Inside Title" => inside_title, "Outside Title" => outer_title, "Location" => location, "Radius" => radius} = properties) do
     traits = Map.get(properties, "Traits", %{}) |> notion_get_values()
     default_orb_populator(sector, properties)
     |> Map.merge(%{
-      where: notion_get_values(location) |> String.replace("[town]", name),
-      title: notion_get_values(inside_title) |> String.replace("[town]", name),
-      outer_title: notion_get_values(outer_title) |> String.replace("[town]", name),
-      geolocation: %{ live: live_location_populator(hashes, radius) },
-      traits: traits
-    })
+          where: notion_get_values(location) |> String.replace("[town]", name),
+          title: notion_get_values(inside_title) |> String.replace("[town]", name),
+          outer_title: notion_get_values(outer_title) |> String.replace("[town]", name),
+          geolocation: %{ live: live_location_populator(hashes, radius) },
+          traits: traits
+                 })
   end
 
   defp orb_local_imported_detail(%{"Inside Title" => inside_title, "Coordinate" => coordinate, "Location" => location, "Info" => info, "Radius" => radius} = properties) do
@@ -443,19 +468,19 @@ defmodule Phos.Action do
     title = Map.get(properties, "Title", %{}) |> notion_get_values()
     default_orb_populator({ name, nil}, properties)
     |> Map.merge(%{
-      where: notion_get_values(location) |> String.replace("[town]", name),
-      title: notion_get_values(inside_title) |> String.replace("[town]", title),
-      geolocation: %{
-        live: %{
-          latlon: %{
-            lat: latlong_converter(coordinate, 0),
-            lon: latlong_converter(coordinate, 1)
+          where: notion_get_values(location) |> String.replace("[town]", name),
+          title: notion_get_values(inside_title) |> String.replace("[town]", title),
+          geolocation: %{
+            live: %{
+              latlon: %{
+                lat: latlong_converter(coordinate, 0),
+                lon: latlong_converter(coordinate, 1)
+              },
+              target: notion_get_values(radius) |> String.trim() |> String.to_integer()
+            }
           },
-          target: notion_get_values(radius) |> String.trim() |> String.to_integer()
-        }
-      },
-      traits: traits
-    })
+          traits: traits
+                 })
   end
 
   defp default_orb_populator({name, _hashes}, %{"Info" => info, "1920_1080 Image" => lossless, "200_150 Image" => lossy, "Done" => done} = _properties) do
@@ -502,5 +527,14 @@ defmodule Phos.Action do
     ## TODO SUB User Topic to Orb
     #token = Map.get(user, :private_profile, %{}) |> Map.get(:user_token)
     #Phos.Notification.subscribe(token, topic)
+  end
+
+  def filter_orbs_by_traits(traits, opts \\ []) do
+    page = Keyword.get(opts, :page, 1)
+    limit = Keyword.get(opts, :limit, 10)
+    sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
+    query = from p in __MODULE__.Orb, preload: [:initiator], where: fragment("? @> ?", p.traits, ^traits)
+
+    Repo.Paginated.all(query, page, sort_attribute, limit)
   end
 end
