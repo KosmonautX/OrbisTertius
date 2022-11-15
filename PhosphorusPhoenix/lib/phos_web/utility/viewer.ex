@@ -74,13 +74,13 @@ defmodule PhosWeb.Util.Viewer do
   end
 
   def user_private_mapper(%{private_profile: profile}) do
-    (if Ecto.assoc_loaded?(profile) do
+    (if profile && Ecto.assoc_loaded?(profile) do
       %{data: %{geolocation: profile.geolocation}}
     end)
   end
 
   def user_private_mapper(profile) do
-    (if Ecto.assoc_loaded?(profile) do
+    (if profile && Ecto.assoc_loaded?(profile) do
       %{data: %{
            geolocation: profile.geolocation,
         }}
@@ -160,7 +160,12 @@ defmodule PhosWeb.Util.Viewer do
            inner_title: orb.payload.inner_title,
            info: orb.payload.info,
            tip: orb.payload.tip,
-           when: orb.payload.when
+           when: orb.payload.when,
+           ext_link: (if !is_nil(orb.payload.ext_link),
+          do: %{
+                name: orb.payload.ext_link.name,
+                url: orb.payload.ext_link.url
+              })
         }
       }
     end)

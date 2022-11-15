@@ -88,7 +88,3 @@ config :ex_aws, :s3,
 
 config :phos, Phos.External.HeimdallrClient,
   base_url: {System, :get_env, ["HEIMDALLR_ENDPOINT"]}
-
-config :phos, Phos.Admin,
-  password: "791c56ee67aa532df7c080bef3f9a525ee8d385e4f447638a10ca358ff5704db",
-  algorithm: :sha256

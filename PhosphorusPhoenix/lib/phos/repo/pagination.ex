@@ -18,6 +18,7 @@ defmodule Phos.Repo.Paginated do
 
   def all(query, page, attr, limit) when is_integer(page) and is_integer(limit) do
     dao = Phos.Repo.all(query_builder(query, page, attr, limit))
+    total = Phos.Repo.aggregate(query, :count, attr)
     count = length(dao)
 
     if(count > limit) do
@@ -28,6 +29,7 @@ defmodule Phos.Repo.Paginated do
         downstream: true,
         upstream: page > 1,
         current: page,
+        total: total,
         start: (page - 1) * limit + 1 ,
         end: (page - 1) * limit + limit
      }}}
@@ -39,6 +41,7 @@ defmodule Phos.Repo.Paginated do
         downstream: false,
         upstream: page > 1,
         current: page,
+        total: total,
         start: (unless (count==0), do: (page - 1) * limit + 1, else: (page - 1) * limit + count),
         end: (page - 1) * limit + count
      }}}

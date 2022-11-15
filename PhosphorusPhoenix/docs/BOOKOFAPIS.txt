@@ -2,20 +2,24 @@
 # Phos API Endpoint Documentation
 
 :ipAddress = http://localhost:4000/api
-# :ipAddress = https://nyx.scrb.ac/api
+#:ipAddress = https://nyx.scrb.ac/api
 :localipAddress = http://localhost:4000/api
 :princeton=0b3gd5XUGtNP6lqQean4IAp7ogG3
 :satrio=BX1BxM9KkwdFmy2J4FNNkFxclpS2
 :owen=0ErhlIM10Maldn1qVMGOJMKu6J92
 :tate=FbXQKufaWFOUNIsVYsn5tdW1qUc2
 :princeton_id=9bf9c443-f89b-460a-972d-6704ae66823d
+:owentwo_id=973da4ae-48a6-498d-b988-548af3af99f6
 :satrio_id=5c82aeea-7c2b-4a97-a80b-d5b728c4ee86
+:satrioremote_id=5972b8e6-319b-4bf4-95cf-f58fb2117e21
+:brandon_id=b556571a-362e-4017-9894-f1eed0b39794
 :lky_id=3995c7f6-af54-4e31-85ee-3608e16ec00f
 :aang_id=58c146d2-407f-49d5-a74d-0d9362e73be9
 :zuko_id=6f6c7d30-4447-4687-8fb9-f95a2de82957
 :owen_id=233e50b1-5507-4a3c-96a7-b6339e8d27f4
 :tate_id=5e7ed96c-f444-43e5-96e9-fe44bba1a664
 :fcm=dkoDy7FBSOybPE-juVQBHa:APA91bEdhNYKyZ75kG2ucjehb1Rqbfv69m2UiFGpve8bZS7ZAAMca3LiRmwg6g6JXPTgt35neGOQdGZcBJ_8Y5VVKNCMAIn0KHMJRfBiJZrcC-0VSazm3u6RTUecAUYxPQbLAZV0kRDA
+:prince_fcm=ewGVcsOAZ02gmzz9zbCLdo:APA91bGS6WbollBieIKBr9x7JvNzbHkTL2K-ukCbGDvjEYtJBqCoVC2U71jF3OAmwobRYocBGQZ-gVQr2-0Zk6ydjjlHuVf7EOjHdS2zA_TxUWIzvDkaZ0jvROqpLyOuMMqCTxqWs2UA
 :auth-headers = <<
 Authorization: :token
 Content-Type: application/json
@@ -27,11 +31,11 @@ Content-Type: application/json
 User-Agent: Emacs27
 ##
 ## Generate Client-side JWT
-GET :localipAddress/devland/flameon?user=:princeton_id
+GET :localipAddress/devland/flameon?user=:satrio_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
-GET :localipAddress/devland/lankaonfyr?fyr_id=:tate
+GET :localipAddress/devland/lankaonfyr?fyr_id=:satrio
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 
@@ -80,7 +84,7 @@ PUT :ipAddress/userland/self/
     "profile_pic": 3
 }
 ## Read userdata of Others Profile
-GET :ipAddress/userland/others/3995c7f6-af54-4e31-85ee-3608e16ec00f
+GET :ipAddress/userland/others/:owentwo_id
 :auth-headers
 ## Read all of User Orb History
 GET :ipAddress/userland/others/:satrio_id/history?page=1
@@ -118,7 +122,7 @@ GET :ipAddress/folkland/friends?page=1
 :auth-headers
 
 ## List all current Buddies of others
-GET :ipAddress/folkland/others/5972b8e6-319b-4bf4-95cf-f58fb2117e21?page=1
+GET :ipAddress/folkland/others/:satrio_id?page=1
 :auth-headers
 
 ## Orb Stream directed at yourself from friends
@@ -133,11 +137,11 @@ GET :ipAddress/folkland/stream/discovery/614510498785787903,614510497487650815?p
 POST :ipAddress/folkland/friends
 :auth-headers
 {
-    "acceptor_id": ":aang_id"
+    "acceptor_id": ":brandon_id"
 }
 
 ## Delete Relation Resource (reset everything)
-DELETE :ipAddress/folkland/friends/2bf1407e-685f-4745-b172-c680779c1193
+DELETE :ipAddress/folkland/friends/98c22a1e-0e84-4f2f-b2e3-eb752c7d7c0c
 :auth-headers
 
 ## Ended the friendship
@@ -151,7 +155,7 @@ PUT :ipAddress/folkland/friends/reject
 PUT :ipAddress/folkland/friends/accept
 :auth-headers
 {
-    "relation_id": "a8c218e3-14d6-4b09-97f5-e3f8a38ef294"
+    "relation_id": "b829879d-37f8-47ce-8214-1a18bcb0e0af"
 }
 
 ## List of requests to you
@@ -165,11 +169,11 @@ GET :ipAddress/folkland/self/pending?page=1
 
 ### ! Orbland Calls
 ## Read Orb
-GET :ipAddress/orbland/orbs/59f60ff7-6874-4471-b732-12ef2f5c0d36
+GET :ipAddress/orbland/orbs/3e9ebaa7-cdd0-4d3e-857e-0661aeb12d0b
 :auth-headers
 
 ## Read all orbs in that geohash id
-GET :ipAddress/orbland/stream/627779412580450303,627986446952349695?page=1
+GET :ipAddress/orbland/stream/623517998944845823,628021598572208127?page=1&traits=pin
 :auth-headers
 
 ## Create Orbs

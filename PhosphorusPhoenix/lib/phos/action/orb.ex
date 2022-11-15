@@ -28,11 +28,12 @@ defmodule Phos.Action.Orb do
   @doc false
   def changeset(%Orb{} = orb, attrs) do
     orb
-      |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])
-      |> cast_embed(:payload)
-      |> cast_assoc(:locations)
-      |> validate_required([:id, :title, :active, :media, :extinguish, :initiator_id])
-      |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
+    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])
+    |> cast_embed(:payload)
+    |> cast_assoc(:locations)
+    |> validate_required([:id, :title, :active, :media, :extinguish, :initiator_id])
+    |> validate_exclude_subset(:traits, ~w(admin pin personal))
+    #|> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 
   @doc """
@@ -45,15 +46,17 @@ defmodule Phos.Action.Orb do
     |> cast(attrs, [:title, :active, :media, :traits])
     |> cast_embed(:payload)
     |> validate_required([:active, :title])
+    |> validate_exclude_subset(:traits, ~w(admin personal pin), message: "restricted area")
     |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 
   def personal_changeset(%Orb{} = orb, attrs) do
     orb
-      |> cast(attrs, [:id, :active, :userbound, :initiator_id, :traits])
-      |> cast_embed(:payload)
-      |> validate_required([:id, :active, :userbound, :initiator_id])
-      |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
+    |> cast(attrs, [:id, :active, :userbound, :initiator_id, :traits])
+    |> cast_embed(:payload)
+    |> validate_required([:id, :active, :userbound, :initiator_id])
+    |> validate_exclude_subset(:traits, ~w(admin pin))
+    |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 
   def territorial_changeset(struct, params \\ %{}) do
@@ -64,20 +67,43 @@ defmodule Phos.Action.Orb do
     |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 
-  def changeset_update_locations(%Orb{} = orb, locations) do
+  def admin_changeset(%Orb{} = orb, attrs) do
     orb
-    |> cast(%{}, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])
-    |> put_assoc(:locations, locations)
+    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])
+    |> cast_embed(:payload, with: &Orb_Payload.admin_changeset/2)
+    |> cast_assoc(:locations)
+    |> validate_required([:id, :title, :active, :media, :initiator_id])
+    |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 
   def validate_media(changeset) do
     image = get_field(changeset, :image)
 
     if Enum.empty?(image) do
-      changeset = add_error(changeset, :image, "must insert media")
+      add_error(changeset, :image, "must insert media")
     else
       changeset
     end
+  end
 
+
+  defp validate_exclude_subset(changeset, field, data, opts \\ []) do
+    validate_change changeset, field, {:superset, data}, fn _, value ->
+      element_type =
+        case Map.fetch!(changeset.types, field) do
+          {:array, element_type} ->
+            element_type
+          type ->
+            {:array, element_type} = Ecto.Type.type(type)
+            element_type
+        end
+
+      Enum.map(data, &Ecto.Type.include?(element_type, &1, value))
+      |> Enum.member?(true)
+      |> case do
+        true -> [{field, {Keyword.get(opts, :message, "has an invalid entry"), [validation: :superset, enum: data]}}]
+        _ -> []
+      end
+    end
   end
 end

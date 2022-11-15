@@ -1,14 +1,34 @@
 defmodule Phos.External.HeimdallrClient do
   use HTTPoison.Base
+  use Retry
 
-  def get_dyn_user(id), do: List.first(Phos.External.HeimdallrClient.get!("query/get_users/" <> id).body)
+  def get_dyn_user(id) do
+    do_get_users(id)
+    |> List.first()
+  end
 
-  def post_orb(orbs) when is_list(orbs), do: Phos.External.HeimdallrClient.post("tele/post_orb",
-        orbs |> post_orb_mapper())
+  defp do_get_users(id) do
+    retry with: constant_backoff(100) |> Stream.take(5) do
+      get("query/get_users/" <> id)
+    after
+      {:ok, response} -> response.body
+    else
+      error -> raise ArgumentError, inspect(error)
+    end
+  end
 
-  def post_orb(orb) when is_map(orb), do: Phos.External.HeimdallrClient.post("tele/post_orb",
-        [orb] |> post_orb_mapper())
+  def post_orb(orbs) when is_list(orbs), do: do_post_orb(orbs)
+  def post_orb(orbs) when is_map(orbs), do: do_post_orb([orbs])
 
+  defp do_post_orb(orbs) do
+    retry with: constant_backoff(100) |> Stream.take(5) do
+      post("tele/post_orb", orbs)
+    after
+      result -> PhosWeb.Util.Viewer.post_orb_mapper(result)
+    else
+      error -> error
+    end
+  end
 
   def process_request_url(url) do
     config()
@@ -46,7 +66,6 @@ defmodule Phos.External.HeimdallrClient do
   end
 
   defp parse_url(base, url), do: parse_url(base, "/" <> url)
-  defp post_orb_mapper(orbs), do: PhosWeb.Util.Viewer.post_orb_mapper(orbs)
 
   defp define_module({module, fun, args}), do: apply(module, fun, args)
   defp define_module(arg), do: arg

@@ -80,9 +80,12 @@ defmodule PhosWeb.API.OrbController do
     end
   end
 
-  def show(conn, %{"id" => id}) do
-    orb = Action.get_orb!(id)
-    render(conn, "show.json", orb: orb)
+  def show(conn = %{assigns: %{current_user: user}}, %{"id" => id}) do
+    with %Orb{} = orb <-  Action.get_orb(id, user.id) do
+      render(conn, "show.json", orb: orb)
+    else
+      nil -> {:error, :not_found}
+    end
   end
   # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X GET 'http://localhost:4000/api/orbs/a4519fe0-70ec-42e7-86f3-fdab1ef8ca23'
   #
@@ -94,6 +97,21 @@ defmodule PhosWeb.API.OrbController do
   def show_history(conn, %{"id" => id}) do
     orbs = Action.orbs_by_initiators([id], 1)
     render(conn, "paginated.json", orbs: orbs)
+  end
+
+  def show_territory(%{assigns: %{current_user: user}} = conn, %{"id" => hashes, "page" => page, "traits" => trait}) do
+    try do
+      geohashes = String.split(hashes, ",")
+      |> Enum.map(fn hash ->
+        Enum.map([8,9,10], &(:h3.parent(String.to_integer(hash), &1))) end)
+        |> List.flatten()
+        |> Enum.uniq()
+      traits = String.split(trait, ",") |> Enum.uniq()
+      loc_orbs = Action.orbs_by_geotraits({geohashes, user.id}, traits, page)
+      render(conn, "paginated.json", orbs: loc_orbs)
+    rescue
+      ArgumentError -> {:error, :unprocessable_entity}
+    end
   end
 
   def show_territory(%{assigns: %{current_user: user}} = conn, %{"id" => hashes, "page" => page}) do

@@ -1,12 +1,13 @@
 defmodule PhosWeb.Util.ImageHandler do
+  use Retry
 
   @moduledoc """
   For all your Image Handling Needs
   """
 
   def store_ext_links(entity = %{id: id, lossy: lossy, lossless: lossless}, archetype)  do
-    Phos.Orbject.S3.put!(archetype, id, "150x150") |> upload_link(lossy)
-    Phos.Orbject.S3.put!(archetype, id, "1920x1080") |> upload_link(lossless)
+    Phos.Orbject.S3.put!(archetype, id, "public/banner/lossy") |> upload_link(lossy)
+    Phos.Orbject.S3.put!(archetype, id, "public/banner/lossless") |> upload_link(lossless)
     entity
   end
 
@@ -15,13 +16,22 @@ defmodule PhosWeb.Util.ImageHandler do
   end
 
   def upload_link(dest, src) do
-    %HTTPoison.Response{body: image} = HTTPoison.get!(src)
+    %HTTPoison.Response{body: image} = get_upload_link(src)
     path = "/tmp/" <> (:crypto.strong_rand_bytes(30) |> Base.url_encode64()) <> ".png"
     File.write!(path , image)
     HTTPoison.put(dest, {:file, path})
     File.rm(path)
   end
 
+  defp get_upload_link(source) do
+    retry with: constant_backoff(100) |> Stream.take(5) do
+      HTTPoison.get(source)
+    after
+      {:ok, response} -> response
+    else
+      err -> raise ArgumentError, inspect(err)
+    end
+  end
 
   # def resize_file(path, dimension, ext) do
   #   dim = String.split(dimension, "x")

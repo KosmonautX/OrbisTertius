@@ -1,10 +1,5 @@
 <div class="w-half p-2">
   <.live_component module={PhosWeb.Components.Card} title="Detail orb" id="detail_orb">
-    <%= if @orb.media do %>
-    <li>
-    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "150x150") }>
-    </li>
-  <% end%>
     <.live_component module={PhosWeb.Components.List} name="ID" value={@orb.id} id="orb_id_#{orb.id}"/>
     <.live_component module={PhosWeb.Components.List} name="Title" editable={true} update={&update_title/2} data={@orb} value={:title} id="orb_title_#{orb.id}"/>
     <.live_component module={PhosWeb.Components.List} name="Extinguish" value={Timex.format!(@orb.extinguish, "{D} {Mshort} {YY} {h24}:{m}")} id="orb_extinguish_#{orb.id}" />
@@ -62,6 +57,38 @@
       <%= for {t, i} <- Enum.with_index(@orb.traits) do %>
         <.live_component module={PhosWeb.Components.List} name={t} value="" id={"detail_orb_traits_#{i}"}/>
       <% end %>
+    </div>
+  </.live_component>
+</div>
+
+<div class="w-full p-2 mt-4">
+  <.live_component module={PhosWeb.Components.Card} title="Image Preview" id="image_preview">
+    <div class="container" phx-drop-target={@uploads.image.ref}>
+      <.form let={f} for={@changeset} phx-submit="change_image" id="change_image_form" class="px-2 py-3">
+        <%= live_file_input @uploads.image, class: "my-2" %>
+        <%= for entry <- @uploads.image.entries do %>
+          <figure class="my-2">
+            <%= live_img_preview entry %>
+            <figcaption><strong>Image</strong></figcaption>
+          </figure>
+        <% end %>
+
+        <%= for err <- upload_errors(@uploads.image) do %>
+          <p class="alert alert-danger"><%= error_to_string(err) %></p>
+        <% end %>
+
+        <%= if @orb.media do %>
+
+          <%= submit "Change image", class: "button button-sm mt-2" %>
+
+          <div class="px-4 py-2">
+            <img src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless")} />
+            <img src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossy")}, class="mt-2" />
+          </div>
+        <% else %>
+          <%= submit "Add image", class: "button button-sm" %>
+        <% end%>
+      </.form>
     </div>
   </.live_component>
 </div>
