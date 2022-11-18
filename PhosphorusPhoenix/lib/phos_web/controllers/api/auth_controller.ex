@@ -44,11 +44,8 @@ defmodule PhosWeb.API.FyrAuthController do
   end
 
   def semver(conn, %{"version" => version}) do
-    latest = "1.2.0-alpha" # latest patch
-    earliest = "1.1.4-alpha" # below current minor version
-    #continue using the app
-    #recommended to update
-    #update now
+    latest = "1.2.4" # latest patch
+    earliest = "1.2.3" # below current minor version
     response = cond do
       Version.match?(version, "~> #{latest}") ->
         "ignore"
