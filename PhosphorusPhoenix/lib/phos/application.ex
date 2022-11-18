@@ -8,6 +8,10 @@ defmodule Phos.Application do
   @impl true
   def start(_type, _args) do
     topologies = Application.get_env(:libcluster, :topologies) || []
+    token = case ExGram.Config.get(:ex_gram, :token) do
+      {module, func, env} -> apply(module, func, [env])
+      data -> data
+    end
 
     children = [
       # Start the Ecto repository
@@ -28,6 +32,9 @@ defmodule Phos.Application do
       #restart: :temporary supervisor strategy?
       # Start a worker by calling: Phos.Worker.start_link(arg)
       # {Phos.Worker, arg}
+      ExGram, # This will setup the Registry.ExGram
+      {Phos.TeleBot, [method: :polling, token: token]},
+      Phos.TeleBot.Remainder
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

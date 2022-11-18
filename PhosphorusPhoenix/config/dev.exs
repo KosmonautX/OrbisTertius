@@ -20,7 +20,7 @@ config :phos, PhosWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {0, 0, 0, 0}, port: System.get_env("PORT") || 4000], ## 0,0,0,0 to postgres for docker
-  check_origin: false,
+  check_origin: ["//*.ngrok.io", "http://localhost"],
   code_reloader: true,
   debug_errors: true, # true for error message
   secret_key_base: "Kg0QgtaLpp2OQJIfeNPfCoiFsIyL3gTKA8KMUXaNyD0xYw5+wFlelPexSf1m9k8m",
@@ -88,3 +88,7 @@ config :ex_aws, :s3,
 
 config :phos, Phos.External.HeimdallrClient,
   base_url: {System, :get_env, ["HEIMDALLR_ENDPOINT"]}
+
+config :phos, Phos.TeleBot,
+  callback_url: {System, :get_env, ["TELEGRAM_CALLBACK_URL"]},
+  bot_username: {System, :get_env, ["TELEGRAM_BOT_USERNAME"]}

@@ -226,6 +226,20 @@ defmodule Phos.Users do
     User.changeset(user, attrs)
   end
 
+  def get_user_by_telegram(id) do
+    case do_query_from_auth(id, "telegram") do
+      %Auth{user: user} -> {:ok, user}
+      err -> err
+    end
+  end
+
+  def telegram_user_exists?(id) when is_binary(id) do
+    case do_query_from_auth(id, "telegram") do
+      %Auth{} -> true
+      _ -> false
+    end
+  end
+  def telegram_user_exists?(id), do: to_string(id) |> telegram_user_exists?()
 
   @doc """
   Authenticate a user from oauth provider
@@ -243,13 +257,13 @@ defmodule Phos.Users do
   defp do_query_from_auth(id, provider) do
     Repo.one(
       from a in Auth,
-      preload: [:user],
+      preload: [user: [:private_profile]],
       where: a.auth_id == ^id and a.auth_provider == ^provider,
       limit: 1
     )
   end
 
-  defp create_new_user(id, provider, %{"auth_date" => _date}) when provider == "telegram" do
+  defp create_new_user(id, provider, _params) when provider == "telegram" do
     params = %{
       auths: [%{
         auth_id: id,
@@ -260,6 +274,7 @@ defmodule Phos.Users do
     |> User.telegram_changeset(params)
     |> Repo.insert()
   end
+
 
   defp create_new_user(id, provider, %{"email" => email}) do
     params = %{

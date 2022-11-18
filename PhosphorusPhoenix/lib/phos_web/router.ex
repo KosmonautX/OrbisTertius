@@ -42,6 +42,8 @@ defmodule PhosWeb.Router do
       resources "/archetype/usr", UserController, only: [:show]
     end
 
+    get "/telegram_signup", TelegramController, :create
+
     live_session :authenticated, on_mount: {PhosWeb.Menshen.Mounter, :pleb} do
       get "/", PageController, :index
 

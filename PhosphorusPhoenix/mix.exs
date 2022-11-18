@@ -90,6 +90,8 @@ defmodule Phos.MixProject do
       {:rexbug, "~> 1.0"},
       # { :uuid, "~> 1.1" },
       # {:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
+      {:ex_gram, "~> 0.30.0"},
+      {:tesla, "~> 1.2"},
     ]
   end
 
