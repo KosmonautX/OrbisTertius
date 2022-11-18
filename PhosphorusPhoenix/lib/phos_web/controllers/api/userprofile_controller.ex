@@ -38,26 +38,6 @@ defmodule PhosWeb.API.UserProfileController do
     end
   end
 
-  defp profile_constructor(user, params) do
-    %{
-      "username" => params["username"],
-      "public_profile" => %{"birthday" => (if params["birthday"], do: params["birthday"]|> DateTime.from_unix!() |> DateTime.to_naive()),
-                            "bio" => params["bio"],
-                            "public_name" => params["public_name"],
-                            "occupation" => params["occupation"],
-                            "traits" => params["traits"],
-                            "profile_pic" => params["profile_pic"],
-                            "banner_pic" => params["banner_pic"]
-                           } |> purge_nil(),
-      "personal_orb" => %{"id" => (if is_nil(user.personal_orb), do: Ecto.UUID.generate(), else: user.personal_orb.id),
-                          "userbound" => true,
-                          "initiator_id" => user.id,
-                          "traits" => params["traits"]
-    } |> purge_nil()
-      } |> purge_nil()
-  end
-
-
 
   def update_territory(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"territory" => territory =[_ | _]}) do
     user = Users.get_territorial_user!(id)
@@ -114,5 +94,33 @@ defmodule PhosWeb.API.UserProfileController do
   end
 
   defp purge_nil(map), do: map |> Enum.reject(fn {_, v} -> is_nil(v) end) |> Map.new()
+
+    defp profile_constructor(user, params) do
+    %{
+      "username" => params["username"],
+      "public_profile" => %{"birthday" => (if params["birthday"], do: params["birthday"]|> DateTime.from_unix!() |> DateTime.to_naive()),
+                            "bio" => params["bio"],
+                            "public_name" => params["public_name"],
+                            "occupation" => params["occupation"],
+                            "traits" => params["traits"],
+                            "profile_pic" => params["profile_pic"],
+                            "banner_pic" => params["banner_pic"]
+                           } |> purge_nil(),
+      "personal_orb" => %{"id" => (if is_nil(user.personal_orb), do: Ecto.UUID.generate(), else: user.personal_orb.id),
+                          "userbound" => true,
+                          "initiator_id" => user.id,
+                          "traits" => params["traits"],
+                          "title" => "Today is my first day 🐣 looking for allies 👀
+
+These are my defining traits 🎎: #{Enum.reduce_while(params["traits"], "", fn x, acc ->
+
+  if (String.length(acc) + String.length(x)) < 110, do: {:cont, acc <> " ##{x}"}, else: {:halt, acc}
+
+end)}
+
+Ask me anything in the comments 💬"
+                         } |> purge_nil()
+    } |> purge_nil()
+  end
 
 end

@@ -46,13 +46,14 @@ defmodule Phos.Action.Orb do
     |> cast(attrs, [:title, :active, :media, :traits])
     |> cast_embed(:payload)
     |> validate_required([:active, :title])
-    |> validate_exclude_subset(:traits, ~w(admin personal pin), message: "restricted area")
+    |> validate_exclude_subset(:traits, ~w(admin personal pin), message: "unnatural traits")
     |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 
   def personal_changeset(%Orb{} = orb, attrs) do
     orb
-    |> cast(attrs, [:id, :active, :userbound, :initiator_id, :traits])
+    |> Map.put(:userbound, true)
+    |> cast(attrs, [:id, :active, :userbound, :initiator_id, :traits, :title])
     |> cast_embed(:payload)
     |> validate_required([:id, :active, :userbound, :initiator_id])
     |> validate_exclude_subset(:traits, ~w(admin pin))
