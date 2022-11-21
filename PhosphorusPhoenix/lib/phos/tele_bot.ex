@@ -9,8 +9,6 @@ defmodule Phos.TeleBot do
   alias __MODULE__.{Config, Remainder}
 
   command("start")
-  command("register", description: "Register a user")
-  command("setlocation", description: "Set current location")
   command("help", description: "Print the bot's help")
 
   middleware(ExGram.Middleware.IgnoreUsername)
@@ -74,6 +72,16 @@ defmodule Phos.TeleBot do
     end
   end
 
+  def handle({:bot_message, to, %Phos.Action.Orb{} = orb}, _context) do
+    text = case orb.media do
+      true ->
+        url = Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless")
+        "#{url}\n\n#{orb_telegram_text_creator(orb)}"
+      _ -> orb_telegram_text_creator(orb)
+    end
+    ExGram.send_message(to, text, reply_markup: build_orb_notification_button())
+  end
+
   def build_menu_button() do
     %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [[
       %ExGram.Model.InlineKeyboardButton{text: "Set Location", callback_data: "location"},
@@ -101,6 +109,19 @@ defmodule Phos.TeleBot do
       %ExGram.Model.InlineKeyboardButton{text: "Set Work Location", callback_data: "location_work"},
       %ExGram.Model.InlineKeyboardButton{text: "Set Live Location", callback_data: "location_live"},
     ]]}
+  end
+
+  defp build_orb_notification_button() do
+    %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [
+      [
+        %ExGram.Model.InlineKeyboardButton{text: "💬 Message User", callback_data: "orb_message_user"},
+        %ExGram.Model.InlineKeyboardButton{text: "♥️  Like", callback_data: "orb_like"},
+      ],
+      [
+        %ExGram.Model.InlineKeyboardButton{text: "🙈 Hide", callback_data: "orb_hide"},
+        %ExGram.Model.InlineKeyboardButton{text: "More ...", callback_data: "orb_more"},
+      ],
+    ]}
   end
 
   defp registration_menu(context) do
@@ -143,12 +164,32 @@ defmodule Phos.TeleBot do
         _ -> [loc | acc]
       end
     end)
-    IO.inspect(geos)
+
     Remainder.remove_location(telegram_id)
     case Phos.Users.update_territorial_user(user, %{private_profile: %{user_id: user.id, geolocation: [%{"id" => type, "geohash" => :h3.from_geo(geo, 8)} | geos]}}) do
       {:ok, _user} ->
         answer(context, "Your #{type} location is set")
       _ -> answer(context, "Your #{type} location is not set.")
+    end
+  end
+
+  defp orb_telegram_text_creator(%{payload: payload} = orb) do
+    inner_title = Map.get(payload, :inner_title, "")
+    title = "💙 Title: " <> payload_getter(orb, :title, inner_title)
+    where = "💚 Where: " <> payload_getter(payload, :where, "-")
+    date = "💛 When: " <> payload_getter(payload, :when, "-")
+    tip = "🧡 Tip: " <> payload_getter(payload, :tip, "-")
+    initiator = "By: [[ #{orb.initiator.username} ]]"
+    level = "Level: ✨"
+
+    [title, "\n", where, date, tip, "\n", initiator, level]
+    |> Enum.join("\n")
+  end
+
+  defp payload_getter(payload, type, default) do
+    case Map.get(payload, type) do
+      nil -> default
+      data -> data
     end
   end
 end
