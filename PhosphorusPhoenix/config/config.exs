@@ -95,8 +95,12 @@ config :phos, Phos.Admin,
   password: System.get_env("ADMIN_TUNNEL"),
   algorithm: :sha256
 
-config :ex_gram, token: "token",
+config :ex_gram, token: System.get_env("TELEGRAM_BOT_ID"),
   json_engine: Jason
+
+config :phos, Phos.TeleBot,
+  callback_url: {System, :get_env, ["TELEGRAM_CALLBACK_URL"]},
+  bot_username: {System, :get_env, ["TELEGRAM_BOT_USERNAME"]}
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
