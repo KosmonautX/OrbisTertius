@@ -4,7 +4,8 @@ import Config
 config :phos, Phos.Repo,
   username: System.get_env("PGUSERNAME") || "postgres",
   password: System.get_env("PGPASSWORD") || "root",
-  hostname: System.get_env("PGDOMAIN") || "localhost", ## domain change to postgres for docker
+  ## domain change to postgres for docker
+  hostname: System.get_env("PGDOMAIN") || "localhost",
   database: "phos_dev",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10,
@@ -19,10 +20,12 @@ config :phos, Phos.Repo,
 config :phos, PhosWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {0, 0, 0, 0}, port: System.get_env("PORT") || 4000], ## 0,0,0,0 to postgres for docker
+  ## 0,0,0,0 to postgres for docker
+  http: [ip: {0, 0, 0, 0}, port: System.get_env("PORT") || 4000],
   check_origin: ["//*.ngrok.io", "http://localhost"],
   code_reloader: true,
-  debug_errors: true, # true for error message
+  # true for error message
+  debug_errors: true,
   secret_key_base: "Kg0QgtaLpp2OQJIfeNPfCoiFsIyL3gTKA8KMUXaNyD0xYw5+wFlelPexSf1m9k8m",
   watchers: [
     # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
@@ -54,10 +57,12 @@ config :phos, PhosWeb.Endpoint,
 # configured to run both http and https servers on
 # different ports.
 # Joken Signer Config
-config :joken, menshenSB: [
-   signer_alg: "HS256",
-   key_octet: "BALA"
-]
+config :joken,
+  menshenSB: [
+    signer_alg: "HS256",
+    key_octet: "BALA"
+  ]
+
 # Watch static and templates for browser reloading.
 config :phos, PhosWeb.Endpoint,
   live_reload: [
@@ -86,9 +91,4 @@ config :ex_aws, :s3,
   host: "localhost",
   port: 9000
 
-config :phos, Phos.External.HeimdallrClient,
-  base_url: {System, :get_env, ["HEIMDALLR_ENDPOINT"]}
-
-config :phos, Phos.TeleBot,
-  callback_url: {System, :get_env, ["TELEGRAM_CALLBACK_URL"]},
-  bot_username: {System, :get_env, ["TELEGRAM_BOT_USERNAME"]}
+config :phos, Phos.External.HeimdallrClient, base_url: {System, :get_env, ["HEIMDALLR_ENDPOINT"]}

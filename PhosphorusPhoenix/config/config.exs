@@ -12,8 +12,9 @@ config :phos,
 
 # Configures the endpoint
 config :phos, PhosWeb.Endpoint,
-  url: [host: "localhost"], #change to "127.0.0.1" to work on privelleged port 80
-render_errors: [view: PhosWeb.ErrorView, accepts: ~w(html json), layout: false],
+  # change to "127.0.0.1" to work on privelleged port 80
+  url: [host: "localhost"],
+  render_errors: [view: PhosWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: Phos.PubSub,
   live_view: [signing_salt: "r193MsgJ"]
 
@@ -34,7 +35,8 @@ config :phos, Phos.Mailer, adapter: Swoosh.Adapters.Local
 config :esbuild,
   version: "0.14.0",
   default: [
-    args: ~w(js/app.js js/admin.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
+    args:
+      ~w(js/app.js js/admin.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
@@ -46,7 +48,7 @@ config :logger, :console,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
-#config :phoenix, :filter_parameters, ["token"]
+# config :phoenix, :filter_parameters, ["token"]
 
 config :phos, Phos.OAuthStrategy,
   google: [
@@ -58,25 +60,29 @@ config :phos, Phos.OAuthStrategy,
   apple: [
     team_id: {System, :get_env, ["APPLE_TEAM_ID"]},
     client_id: {System, :get_env, ["APPLE_CLIENT_ID"]},
-    private_key: {System, :get_env, ["APPLE_PRIVATE_KEY"]}, # use either private_key or private_key path
+    # use either private_key or private_key path
+    private_key: {System, :get_env, ["APPLE_PRIVATE_KEY"]},
     private_key_id: {System, :get_env, ["APPLE_PRIVATE_KEY_ID"]},
     # private_key_path: {System, :get_env, ["APPLE_PRIVATE_KEY_PATH"]}, # Use either private_key or private_key_path
     strategy: Assent.Strategy.Apple,
     http_adapter: Assent.HTTPAdapter.Mint
   ],
   telegram: [
-    host: {System, :get_env, ["TELEGRAM_REDIRECT_HOST"]}, # https://endpoint.com
-    bot_id: {System, :get_env, ["TELEGRAM_BOT_ID"]},
+    # https://endpoint.com
+    host: {System, :get_env, ["TELEGRAM_REDIRECT_HOST"]},
+    bot_id: {System, :get_env, ["TELEGRAM_BOT_ID"]}
   ]
 
-config :tailwind, version: "3.1.6", default: [
-  args: ~w(
+config :tailwind,
+  version: "3.1.6",
+  default: [
+    args: ~w(
     --config=tailwind.config.js
     --input=css/admin.css
     --output=../priv/static/assets/admin.css
   ),
-  cd: Path.expand("../assets", __DIR__)
-]
+    cd: Path.expand("../assets", __DIR__)
+  ]
 
 config :phos, Phos.Cache,
   primary: [
@@ -86,20 +92,20 @@ config :phos, Phos.Cache,
   ]
 
 config :fcmex,
-  [json_library: Jason]
+  json_library: Jason
 
-config :phos, Phos.External.Notion,
-  token: {System, :get_env, "NOTION_TOKEN"}
+config :phos, Phos.External.Notion, token: {System, :get_env, "NOTION_TOKEN"}
 
 config :phos, Phos.Admin,
   password: System.get_env("ADMIN_TUNNEL"),
   algorithm: :sha256
 
-config :ex_gram, token: System.get_env("TELEGRAM_BOT_ID"),
+config :ex_gram,
+  token: System.get_env("TELEGRAM_BOT_ID"),
   json_engine: Jason
 
 config :phos, Phos.TeleBot,
-  callback_url: {System, :get_env, ["TELEGRAM_CALLBACK_URL"]},
+  callback_url: {PhosWeb.Router.Helpers, :telegram_url, [PhosWeb.Endpoint, :create]},
   bot_username: {System, :get_env, ["TELEGRAM_BOT_USERNAME"]}
 
 # Import environment specific config. This must remain at the bottom
