@@ -96,14 +96,6 @@ config :fcmex,
 
 config :phos, Phos.External.Notion, token: {System, :get_env, "NOTION_TOKEN"}
 
-config :phos, Phos.Admin,
-  password: System.get_env("ADMIN_TUNNEL"),
-  algorithm: :sha256
-
-config :ex_gram,
-  token: System.get_env("TELEGRAM_BOT_ID"),
-  json_engine: Jason
-
 config :phos, Phos.TeleBot,
   callback_url: {PhosWeb.Router.Helpers, :telegram_url, [PhosWeb.Endpoint, :create]},
   bot_username: {System, :get_env, ["TELEGRAM_BOT_USERNAME"]}

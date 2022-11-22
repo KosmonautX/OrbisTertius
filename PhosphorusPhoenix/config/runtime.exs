@@ -81,6 +81,11 @@ unless config_env() == :prod do
   algorithm: :sha256
 
 
+  # Telegram Bot
+  config :ex_gram,
+  token: System.get_env("TELEGRAM_BOT_ID"),
+  json_engine: Jason
+
 end
 
 if config_env() == :prod do
@@ -199,6 +204,11 @@ if config_env() == :prod do
   config :phos, Phos.Admin,
   password: System.get_env("ADMIN_TUNNEL"),
   algorithm: :sha256
+
+  # Telegram Bot
+  config :ex_gram,
+  token: System.get_env("TELEGRAM_BOT_ID"),
+  json_engine: Jason
 
   # ## Using releases
   #
