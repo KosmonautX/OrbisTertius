@@ -8,6 +8,7 @@ defmodule Phos.Application do
   @impl true
   def start(_type, _args) do
     topologies = Application.get_env(:libcluster, :topologies) || []
+
     token = case ExGram.Config.get(:ex_gram, :token) do
       {module, func, env} -> apply(module, func, [env])
       data -> data

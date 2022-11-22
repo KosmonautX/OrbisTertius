@@ -98,7 +98,7 @@ config :phos, Phos.External.Notion, token: {System, :get_env, "NOTION_TOKEN"}
 
 config :phos, Phos.TeleBot,
   callback_url: {PhosWeb.Router.Helpers, :telegram_url, [PhosWeb.Endpoint, :create]},
-  bot_username: {System, :get_env, ["TELEGRAM_BOT_USERNAME"]}
+  bot_username: {System, :get_env, ["TELEGRAM_BOT_NAME"]}
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
