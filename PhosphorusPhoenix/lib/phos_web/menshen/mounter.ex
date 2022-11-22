@@ -1,4 +1,5 @@
 defmodule PhosWeb.Menshen.Mounter do
+  import Phoenix.Component
 
    @moduledoc """
   Supporting Mounting of distinct User Flows applied to all LiveViews attaching this hook.
