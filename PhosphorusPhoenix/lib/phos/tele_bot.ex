@@ -16,23 +16,13 @@ defmodule Phos.TeleBot do
 
   def bot(), do: @bot
 
-  def handle({:command, :start, %{chat: chat} = _msg}, context) do
+  def handle({:command, com, %{chat: chat} = _msg}, context) when com in [:start, :menu]  do
     get_in(chat, [:id])
     |> Users.telegram_user_exists?()
     |> case do
       false -> registration_menu(context)
       _ -> main_menu(context)
     end
-  end
-
-  def handle({:command, :menu, _msg}, context) do
-    texts = [
-      "ScratchBac Telegram Bot Menu",
-      "You can choose one of the button",
-      "Right now, you can set your location and edit the SB personal data"
-    ]
-
-    answer(context, Enum.join(texts, "\n"), reply_markup: build_menu_button())
   end
 
   def handle({:command, :help, _msg}, context) do
