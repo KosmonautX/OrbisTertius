@@ -8,8 +8,9 @@ defmodule Phos.TeleBot do
   alias Phos.Users
   alias __MODULE__.{Config, Remainder}
 
-  command("start")
+  command("start", description: "Start the interactive bot")
   command("help", description: "Print the bot's help")
+  command("menu", description: "Show menu buttons")
 
   middleware(ExGram.Middleware.IgnoreUsername)
 
@@ -24,15 +25,20 @@ defmodule Phos.TeleBot do
     end
   end
 
+  def handle({:command, :menu, _msg}, context) do
+    texts = [
+      "ScratchBac Telegram Bot Menu",
+      "You can choose one of the button",
+      "Right now, you can set your location and edit the SB personal data"
+    ]
+
+    answer(context, Enum.join(texts, "\n"), reply_markup: build_menu_button())
+  end
+
   def handle({:command, :help, _msg}, context) do
     helps = [
       "Here is your inline command help:",
       "1. /start - To start a conversation",
-      "2. /register - register to ScratchBac application",
-      "3. /setlocation number - To set location of User",
-      "\t1 - to set home location",
-      "\t2 - to set work location",
-      "\t3 (default) - to set live location",
       "\n",
       "Additional information",
       "- /help - Show this help",
