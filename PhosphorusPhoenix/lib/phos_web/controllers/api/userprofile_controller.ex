@@ -110,7 +110,7 @@ defmodule PhosWeb.API.UserProfileController do
                           "userbound" => true,
                           "initiator_id" => user.id,
                           "traits" => params["traits"],
-                          "title" => "Today is my first day 🐣 looking for allies 👀
+                          "title" => (unless is_nil(params["traits"]), do: "Today is my first day 🐣 looking for allies 👀
 
 These are my defining traits 🎎: #{Enum.reduce_while(params["traits"], "", fn x, acc ->
 
@@ -118,7 +118,7 @@ These are my defining traits 🎎: #{Enum.reduce_while(params["traits"], "", fn 
 
 end)}
 
-Ask me anything in the comments 💬"
+Ask me anything in the comments 💬")
                          } |> purge_nil()
     } |> purge_nil()
   end
