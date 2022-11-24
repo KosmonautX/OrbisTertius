@@ -35,15 +35,15 @@ defmodule Phos.MixProject do
   defp deps do
     [
       {:bcrypt_elixir, "~> 3.0"},
-      {:phoenix, "~> 1.6.6"},
+      {:phoenix, "~> 1.6.15"},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.6"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 0.17.10"},
+      {:phoenix_live_view, "~> 0.18"},
       {:floki, ">= 0.30.0", only: :test},
-      {:phoenix_live_dashboard, "~> 0.6"},
+      {:phoenix_live_dashboard, "~> 0.7"},
       {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
       {:dotenv_parser, "~> 2.0", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.3"},
@@ -89,7 +89,6 @@ defmodule Phos.MixProject do
       #debugging
       {:rexbug, "~> 1.0"},
       # { :uuid, "~> 1.1" },
-      # {:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
     ]
   end
 

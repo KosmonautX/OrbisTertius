@@ -4,6 +4,7 @@ defmodule PhosWeb.Menshen.Mounter do
   Supporting Mounting of distinct User Flows applied to all LiveViews attaching this hook.
   """
   import Phoenix.LiveView
+  import Phoenix.Component
 
 
   def on_mount(:pleb, _params, %{"user_token" => token}, socket) do

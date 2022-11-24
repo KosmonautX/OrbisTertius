@@ -1,5 +1,6 @@
 defmodule Phos.Admin.Mounter do
   import Phoenix.LiveView
+  import Phoenix.Component
 
   def on_mount(_, _params, %{"admin_token" => token} = _session, socket) do
     case Phos.Admin.verify_token(token) do
