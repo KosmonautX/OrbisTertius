@@ -3,7 +3,6 @@
 ## Root
 
 ```elixir
-
 orb_id = "9bf9c443-f89b-460a-972d-6704ae66823d"
 your_id = "5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"
 import Ecto.Query
