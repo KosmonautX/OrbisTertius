@@ -6,7 +6,7 @@ defmodule PhosWeb.UserResetPasswordController do
   plug :get_user_by_reset_password_token when action in [:edit, :update]
 
   def new(conn, _params) do
-    render(conn, "new.html")
+    render(conn, :new)
   end
 
   def create(conn, %{"user" => %{"email" => email}}) do
@@ -26,7 +26,7 @@ defmodule PhosWeb.UserResetPasswordController do
   end
 
   def edit(conn, _params) do
-    render(conn, "edit.html", changeset: Users.change_user_password(conn.assigns.user))
+    render(conn, :edit, changeset: Users.change_user_password(conn.assigns.user))
   end
 
   # Do not log in the user after reset password to avoid a
@@ -39,7 +39,7 @@ defmodule PhosWeb.UserResetPasswordController do
         |> redirect(to: Routes.user_session_path(conn, :new))
 
       {:error, changeset} ->
-        render(conn, "edit.html", changeset: changeset)
+        render(conn, :edit, changeset: changeset)
     end
   end
 

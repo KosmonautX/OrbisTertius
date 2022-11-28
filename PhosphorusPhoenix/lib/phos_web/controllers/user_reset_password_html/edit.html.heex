@@ -1,0 +1,20 @@
+<h1>Reset password</h1>
+
+<.simple_form let={f} for={@changeset} action={~p"/users/reset_password/#{@token}"}>
+  <div class="alert alert-danger" :if={@changeset.action}>
+    <p>Oops, something went wrong! Please check the errors below.</p>
+  </div>
+
+  <.input field={{f, :password}} type="password" required={true} label="New password" />
+  <.input field={{f, :password_confirmation}} type="password" required={true} label="Confirm new password" />
+
+  <:actions>
+    <.button type="submit">Reset password</.button>
+  </:actions>
+</.simple_form>
+
+<p>
+  <.link patch={~p"/users/register"}>Register</.link>
+  <span> | </span>
+  <.link patch={~p"/users/log_in"}>Log in</.link>
+</p>

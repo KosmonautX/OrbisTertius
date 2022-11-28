@@ -69,14 +69,23 @@ config :phos, Phos.OAuthStrategy,
     bot_id: {System, :get_env, ["TELEGRAM_BOT_ID"]},
   ]
 
-config :tailwind, version: "3.1.6", default: [
-  args: ~w(
-    --config=tailwind.config.js
-    --input=css/admin.css
-    --output=../priv/static/assets/admin.css
-  ),
-  cd: Path.expand("../assets", __DIR__)
-]
+config :tailwind, version: "3.1.6",
+  admin: [
+    args: ~w(
+      --config=tailwind.config.js
+      --input=css/admin.css
+      --output=../priv/static/assets/admin.css
+    ),
+    cd: Path.expand("../assets", __DIR__)
+  ],
+  default: [
+    args: ~w(
+      --config=tailwind.config.js
+      --input=css/app.css
+      --output=../priv/static/assets/app.css
+    ),
+    cd: Path.expand("../assets", __DIR__)
+  ]
 
 config :phos, Phos.Cache,
   primary: [

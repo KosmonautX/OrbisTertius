@@ -14,7 +14,7 @@ defmodule PhosWeb.API.OrbController do
 
   def index(conn, _params) do
     orbs = Action.list_orbs()
-    render(conn, "index.json", orbs: orbs)
+    render(conn, :index, orbs: orbs)
   end
   # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X GET 'http://localhost:4000/api/orbs'
 
@@ -40,7 +40,7 @@ defmodule PhosWeb.API.OrbController do
       conn
       |> put_status(:created)
       |> put_resp_header("location", Routes.orb_path(conn, :show, orb))
-      |> render("show.json", orb: orb, media: media)
+      |> render(:show, orb: orb, media: media)
     end
   end
 
@@ -53,7 +53,7 @@ defmodule PhosWeb.API.OrbController do
       conn
       |> put_status(:created)
       |> put_resp_header("location", Routes.orb_path(conn, :show, orb))
-      |> render("show.json", orb: orb)
+      |> render(:show, orb: orb)
     end
   end
 
@@ -91,12 +91,12 @@ defmodule PhosWeb.API.OrbController do
   #
   def show_history(conn, %{"id" => id, "page" => page}) do
     orbs = Action.orbs_by_initiators([id], page)
-    render(conn, "paginated.json", orbs: orbs)
+    render(conn, :paginated, orbs: orbs)
   end
 
   def show_history(conn, %{"id" => id}) do
     orbs = Action.orbs_by_initiators([id], 1)
-    render(conn, "paginated.json", orbs: orbs)
+    render(conn, :paginated, orbs: orbs)
   end
 
   def show_territory(%{assigns: %{current_user: user}} = conn, %{"id" => hashes, "page" => page, "traits" => trait}) do
@@ -108,7 +108,7 @@ defmodule PhosWeb.API.OrbController do
         |> Enum.uniq()
       traits = String.split(trait, ",") |> Enum.uniq()
       loc_orbs = Action.orbs_by_geotraits({geohashes, user.id}, traits, page)
-      render(conn, "paginated.json", orbs: loc_orbs)
+      render(conn, :paginated, orbs: loc_orbs)
     rescue
       ArgumentError -> {:error, :unprocessable_entity}
     end
@@ -119,7 +119,7 @@ defmodule PhosWeb.API.OrbController do
     |> Enum.map(fn hash -> String.to_integer(hash) |> :h3.parent(8) end)
     |> Enum.uniq()
     loc_orbs = Action.orbs_by_geohashes({geohashes, user.id} , page)
-    render(conn, "paginated.json", orbs: loc_orbs)
+    render(conn, :paginated, orbs: loc_orbs)
   end
 
   def show_territory(%{assigns: %{current_user: user}} = conn, %{"id" => hashes}) do
@@ -127,19 +127,19 @@ defmodule PhosWeb.API.OrbController do
     |> Enum.map(fn hash -> String.to_integer(hash) |> :h3.parent(8) end)
     |> Enum.uniq()
     loc_orbs = Action.orbs_by_geohashes({geohashes, user.id}, 1)
-    render(conn, "paginated.json", orbs: loc_orbs)
+    render(conn, :paginated, orbs: loc_orbs)
   end
 
   def show_friends(conn = %{assigns: %{current_user: %{id: id}}}, %{"page" => page}) do
     friends = Phos.Folk.friends_lite(id)
     orbs = Phos.Action.orbs_by_initiators([id | friends], page)
-    render(conn, "paginated.json", orbs: orbs)
+    render(conn, :paginated, orbs: orbs)
   end
 
   def show_friends(conn = %{assigns: %{current_user: %{id: id}}}, _params) do
     friends = Phos.Folk.friends_lite(id)
     orbs = Phos.Action.orbs_by_initiators([id | friends], 1)
-    render(conn, "paginated.json", orbs: orbs)
+    render(conn, :paginated, orbs: orbs)
   end
 
 
@@ -152,7 +152,7 @@ defmodule PhosWeb.API.OrbController do
       conn
       |> put_status(:ok)
       |> put_resp_header("location", Routes.orb_path(conn, :show, orb))
-      |> render("show.json", orb: orb, media: media)
+      |> render(:show, orb: orb, media: media)
 
     else
       false -> {:error, :unauthorized}
@@ -169,7 +169,7 @@ defmodule PhosWeb.API.OrbController do
       conn
       |> put_status(:ok)
       |> put_resp_header("location", Routes.orb_path(conn, :show, orb))
-      |> render("show.json", orb: orb)
+      |> render(:show, orb: orb)
     else
       false -> {:error, :unauthorized}
     end

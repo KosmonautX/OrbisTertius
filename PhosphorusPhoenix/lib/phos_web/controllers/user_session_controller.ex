@@ -5,7 +5,7 @@ defmodule PhosWeb.UserSessionController do
   alias PhosWeb.UserAuth
 
   def new(conn, _params) do
-    render(conn, "new.html", error_message: nil, telegram: Phos.OAuthStrategy.telegram())
+    render(conn, :new, error_message: nil, telegram: Phos.OAuthStrategy.telegram())
   end
 
   def create(conn, %{"user" => user_params}) do

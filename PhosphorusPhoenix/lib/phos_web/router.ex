@@ -8,7 +8,7 @@ defmodule PhosWeb.Router do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_live_flash
-    plug :put_root_layout, {PhosWeb.LayoutView, :root}
+    plug :put_root_layout, {PhosWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_user
@@ -18,7 +18,7 @@ defmodule PhosWeb.Router do
     plug :accepts, ["html", "json"]
     plug :fetch_session
     plug :fetch_live_flash
-    plug :put_root_layout, {PhosWeb.LayoutView, :root}
+    plug :put_root_layout, {PhosWeb.Layouts, :root}
     plug :put_secure_browser_headers
     plug :fetch_current_user
   end
@@ -31,7 +31,7 @@ defmodule PhosWeb.Router do
   end
 
   pipeline :admin do
-    plug :put_root_layout, {PhosWeb.LayoutView, :admin_root}
+    plug :put_root_layout, {PhosWeb.Layouts, :admin_root}
     plug Phos.Admin.Plug
   end
 

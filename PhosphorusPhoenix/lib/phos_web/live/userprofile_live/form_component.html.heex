@@ -3,56 +3,43 @@
 
   <section phx-drop-target={@uploads.image.ref}>
 
-  <.form
-    let={f}
-    for={@changeset}
-    id="userprofile-form"
-    phx-target={@myself}
-    phx-change="validate"
-    phx-submit="save">
+    <.simple_form
+      let={f}
+      for={@changeset}
+      id="userprofile-form"
+      phx-target={@myself}
+      phx-change="validate"
+      phx-submit="save">
 
-    <%= inputs_for f, :public_profile, fn ff -> %>
-      <%= label ff, :honorific %>
-      <%= select ff, :honorific, ["Mr", "Ms", "Dr"], selected: "Mr" %>
-      <%= error_tag ff, :honorific %>
+      <%= inputs_for f, :public_profile, fn ff -> %>
+        <.input field={{ff, :honorific}} type="select" label="Honorific" options={~w(Mr Ms Dr)} selected="Mr" />
+        <.input field={{ff, :bio}} label="Bio" />
+        <.input field={{ff, :occupation}} label="Occupation" />
+        <.input field={{ff, :birthday}} label="Birthday" />
+      <% end %>
 
-      <%= label ff, :bio %>
-      <%= text_input ff, :bio %>
-      <%= error_tag ff, :bio %>
+      <.input field={{f, :user_id}} type="hidden" value={@current_user.id} />
+      <.input field={{f, :media}} type="hidden" />
 
-      <%= label ff, :occupation %>
-      <%= text_input ff, :occupation %>
-      <%= error_tag ff, :occupation %>
+      <%= label f, :image %>
+      <%= if @user.media do %>
+        <img src={ Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless") }>
+      <% end%>
+      <%= live_file_input @uploads.image %>
+      <%= for entry <- @uploads.image.entries do %>
+        <figure>
+          <%= live_img_preview entry %>
+        <figcaption><strong>New Image</strong></figcaption>
+        </figure>
+      <% end %>
 
-      <%= label ff, :birthday %>
-      <%= datetime_select ff, :birthday %>
-      <%= error_tag ff, :birthday %>
-    <% end %>
+      <%= for err <- upload_errors(@uploads.image) do %>
+        <p class="alert alert-danger"><%= error_to_string(err) %></p>
+      <% end %>
 
-    <%= hidden_input f, :user_id, value: @current_user.id %>
-    <%= error_tag f, :user_id %>
-
-    <%= hidden_input f, :media %>
-
-    <%= label f, :image %>
-    <%= if @user.media do %>
-      <img src={ Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless") }>
-    <% end%>
-    <%= live_file_input @uploads.image %>
-    <%= for entry <- @uploads.image.entries do %>
-      <figure>
-        <%= live_img_preview entry %>
-      <figcaption><strong>New Image</strong></figcaption>
-      </figure>
-    <% end %>
-
-    <%= for err <- upload_errors(@uploads.image) do %>
-      <p class="alert alert-danger"><%= error_to_string(err) %></p>
-    <% end %>
-
-    <div>
-      <%= submit "Save", phx_disable_with: "Saving..." %>
-    </div>
-  </.form>
+      <:actions>
+        <.button type="submit" phx-disable-with="Saving...">Save</.button>
+      </:actions>
+    </.simple_form>
   </section>
 </div>

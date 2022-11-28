@@ -2,90 +2,49 @@
   <h2><%= @title %></h2>
 
   <section phx-drop-target={@uploads.image.ref}>
+    <.simple_form
+      let={f}
+      for={@changeset}
+      id="orb-form"
+      phx-target={@myself}
+      phx-change="validate"
+      phx-submit="save">
 
-  <.form
-    let={f}
-    for={@changeset}
-    id="orb-form"
-    phx-target={@myself}
-    phx-change="validate"
-    phx-submit="save">
+      <.input field={{f, :title}} label="Title" required={true} />
+      <.input field={{f, :active}} type="hidden" value={true} />
+      <.input field={{f, :media}} type="hidden" value={false} />
+      <.input field={{f, :source}} type="hidden" value="web" />
+      <.input field={{f, :initiator_id}} type="hidden" value={@current_user.id} />
+      <.input field={{f, :extinguish}} type="datetime" label="Extinguish" />
+      <.input field={{f, :radius}} type="select" label="Extinguish" options={["2km": 8, "1km": 9, "500m": 10]} selected={10} />
+      <.input :if={not is_nil(@addresses)} field={{f, :location}} type="select" options={Map.keys(@addresses)} selected={:live} />
+      <.input field={{f, :traits}} type="select" label="Traits" options={["Pinned": "pin", "Treasure Hunt": "treasurehunt"]} selected={10} />
 
-    <%= label f, :title %>
-    <%= text_input f, :title %>
-    <%= error_tag f, :title %>
+      <%= inputs_for f, :payload, fn ff -> %>
+        <%= label ff, :image %>
+        <img :if={@orb.media} src={ Phos.Orbject.S3.get!("ORB", @orb.id, "1920x1080") }>
+        <%= live_file_input @uploads.image %>
+        <%= for entry <- @uploads.image.entries do %>
+          <figure>
+            <%= live_img_preview entry %>
+          <figcaption><strong>New Image</strong></figcaption>
+          </figure>
+        <% end %>
 
-    <%= hidden_input f, :active, value: true %>
-    <%= error_tag f, :active %>
+        <%= for err <- upload_errors(@uploads.image) do %>
+          <p class="alert alert-danger"><%= error_to_string(err) %></p>
+        <% end %>
 
-    <%= hidden_input f, :media %>
-
-    <%= label f, :extinguish %>
-    <%= datetime_select f, :extinguish %>
-    <%= error_tag f, :extinguish %>
-
-    <%= hidden_input f, :source, value: :web %>
-    <%= error_tag f, :source %>
-
-    <%= hidden_input f, :initiator_id, value: @current_user.id %>
-    <%= error_tag f, :initiator_id %>
-    
-    <%= label f, :radius %>
-    <%= select f, :radius, ["2km": 8, "1km": 9, "500m": 10], selected: 10 %>
-    <%= error_tag f, :radius %>
-
-    <%= unless is_nil(@addresses) do %>
-    <%= label f, :location %>
-    <%= select f, :location, Map.keys(@addresses), selected: :live %>
-    <%= error_tag f, :location %>
-    <% end %>
-
-    <%= label f, :traits %>
-    <%= multiple_select f, :traits, ["Pinned": "pin", "Treasure Hunt": "treasurehunt"]%>
-    <%= error_tag f, :traits %>
-
-    <%= inputs_for f, :payload, fn ff -> %>
-      <%= label ff, :image %>
-      <%= if @orb.media do %>
-    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "1920x1080") }>
-     <% end%>
-      <%= live_file_input @uploads.image %>
-      <%= for entry <- @uploads.image.entries do %>
-        <figure>
-          <%= live_img_preview entry %>
-        <figcaption><strong>New Image</strong></figcaption>
-        </figure>
+        <.input field={{ff, :when}} />
+        <.input field={{ff, :where}} />
+        <.input field={{ff, :tip}} />
+        <.input field={{ff, :inner_title}} />
+        <.input field={{ff, :info}} />
       <% end %>
 
-      <%= for err <- upload_errors(@uploads.image) do %>
-        <p class="alert alert-danger"><%= error_to_string(err) %></p>
-      <% end %>
-
-
-      <%= label ff, :when %>
-      <%= text_input ff, :when %>
-      <%= error_tag ff, :when %>
-
-      <%= label ff, :where %>
-      <%= text_input ff, :where %>
-      <%= error_tag ff, :where %>
-
-      <%= label ff, :tip %>
-      <%= text_input ff, :tip %>
-      <%= error_tag ff, :tip %>
-
-      <%= label ff, :inner_title %>
-      <%= text_input ff, :inner_title %>
-      <%= error_tag ff, :inner_title %>
-
-      <%= label ff, :info %>
-      <%= text_input ff, :info %>
-      <%= error_tag ff, :info %>
-    <% end %>
-
-    <div>
-      <%= submit "Save", phx_disable_with: "Saving..." %>
-    </div>
-  </.form>
+      <:actions>
+        <.button type="submit" phx-disable-with="Saving...">Save</.button>
+      </:actions>
+    </.simple_form>
   </section>
 </div>

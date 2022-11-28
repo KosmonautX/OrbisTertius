@@ -87,6 +87,8 @@ defmodule Phos.MixProject do
       {:ecto_ltree, "~> 0.3.0"},
       #debugging
       {:rexbug, "~> 1.0"},
+      {:poison, "4.0.1", override: true},
+      {:phoenix_view, "~> 2.0"} # for error warning removal
       # { :uuid, "~> 1.1" },
       # {:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
     ]

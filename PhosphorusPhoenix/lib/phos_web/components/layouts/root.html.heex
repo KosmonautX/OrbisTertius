@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <%= csrf_meta_tag() %>
+      <.live_title suffix=" · Phosphorus">
+      <%= assigns[:page_title] || "Scratchbac" %>
+    </.live_title>
+    <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"}/>
+    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}></script>
+  </head>
+  <body>
+    <header>
+      <section class="container">
+        <nav>
+          <ul>
+            <li><a href="https://www.scratchbac.com">Get Started</a></li>
+            <li :if={Kernel.function_exported?(Routes, :live_dashboard_path, 2)}>
+              <.link href={apply(Routes, :live_dashboard_path, [@conn, :home])}>LiveDashboard</.link>
+            </li>
+          </ul>
+          <.user_menu />
+        </nav>
+        <a href="/orb" class="phx-logo">
+          <img src={~p"/images/socrates.png"} alt="Scratchbac Phos"/>
+        </a>
+      </section>
+    </header>
+    <%= @inner_content %>
+  </body>
+</html>
+
