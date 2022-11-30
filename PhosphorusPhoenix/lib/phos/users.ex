@@ -382,7 +382,7 @@ defmodule Phos.Users do
 
   """
   def change_user_registration(%User{} = user, attrs \\ %{}) do
-    User.registration_changeset(user, attrs, hash_password: false)
+    User.registration_changeset(user, attrs, hash_password: false, validate_email: false)
   end
 
   ## Settings
@@ -397,7 +397,7 @@ defmodule Phos.Users do
 
   """
   def change_user_email(user, attrs \\ %{}) do
-    User.email_changeset(user, attrs)
+    User.email_changeset(user, attrs, validate_email: false)
   end
 
   @doc """

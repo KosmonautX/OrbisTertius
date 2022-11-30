@@ -27,9 +27,6 @@ defmodule PhosWeb.Router do
     plug :accepts, ["json"]
   end
 
-  pipeline :authentication do
-  end
-
   pipeline :admin do
     plug :put_root_layout, {PhosWeb.Layouts, :admin_root}
     plug Phos.Admin.Plug
