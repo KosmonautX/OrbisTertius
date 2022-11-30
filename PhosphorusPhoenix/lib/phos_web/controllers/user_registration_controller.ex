@@ -17,8 +17,7 @@ defmodule PhosWeb.UserRegistrationController do
         {:ok, _} =
           Users.deliver_user_confirmation_instructions(
             user,
-            &Routes.user_confirmation_url(conn, :edit, &1)
-          )
+            fn token -> ~p"/users/confirm/#{token}" end)
 
         conn
         |> put_flash(:info, "User created successfully.")

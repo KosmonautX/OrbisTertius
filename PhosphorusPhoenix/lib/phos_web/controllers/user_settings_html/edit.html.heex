@@ -1,8 +1,8 @@
-<h1>Settings</h1>
+<h1 class="text-2xl font-bold mt-6">Settings</h1>
 
 <div :if={Map.get(@current_user, :auths) == []}>
   <div id="change_email">
-    <h3>Change email</h3>
+    <h3 class="text-lg font-bold mt-6">Change email</h3>
 
     <.simple_form let={f} for={@email_changeset} action={~p"/users/settings"} id="update_email">
       <div class="alert alert-danger" :if={@email_changeset.action}>
@@ -20,7 +20,7 @@
   </div>
 
   <div id="change_password">
-    <h3>Change password</h3>
+    <h3 class="text-lg font-bold mt-6">Change password</h3>
 
     <.simple_form let={f} for={@email_changeset} action={~p"/users/settings"} id="update_password">
       <div class="alert alert-danger" :if={@email_changeset.action}>
@@ -40,7 +40,7 @@
 </div>
 
 <div>
-  <h3>Set Username</h3>
+  <h3 class="text-lg font-bold mt-6">Set Username</h3>
   <.simple_form let={f} for={@pub_profile_changeset} action={~p"/users/settings"} id="update_username">
     <div class="alert alert-danger" :if={@pub_profile_changeset.action}>
       <p>Oops, something went wrong! Please check the errors below.</p>

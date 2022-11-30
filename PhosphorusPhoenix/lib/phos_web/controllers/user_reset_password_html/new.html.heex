@@ -1,16 +1,18 @@
-<h1>Forgot your password?</h1>
+<h1 class="text-2xl font-bold mt-6">Forgot your password?</h1>
 
-<.simple_form let={f} for={:user} action={~p"/users/reset_password"}>
-  <.input field={{f, :email}} type="email" required={true} label="Email" />
+<div class="w-1/2 m-auto">
+  <.simple_form let={f} for={:user} action={~p"/users/reset_password"}>
+    <.input field={{f, :email}} type="email" required={true} label="Email" />
 
-  <:actions>
-    <.button type="submit">Send instructions to reset password</.button>
-  </:actions>
-</.simple_form>
+    <:actions>
+      <.button type="submit">Send instructions to reset password</.button>
+    </:actions>
+  </.simple_form>
 
-<p>
-  <.link patch={~p"/users/register"}>Register</.link>
-  <span> | </span>
-  <.link patch={~p"/users/log_in"}>Log in</.link>
-</p>
+  <p class="mt-2">
+    <.link patch={~p"/users/register"}>Register</.link>
+    <span> | </span>
+    <.link patch={~p"/users/log_in"}>Log in</.link>
+  </p>
 
+</div>

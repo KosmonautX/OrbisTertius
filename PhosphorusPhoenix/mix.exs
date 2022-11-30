@@ -55,6 +55,7 @@ defmodule Phos.MixProject do
       {:joken, "~> 2.5"},
       {:h3, github: "helium/erlang-h3"},
       {:libcluster, "~> 3.3"},
+      {:heroicons, "~> 0.5.0"},
       # support aws s3
       {:ex_aws, "~> 2.3"},
       {:ex_aws_s3, "~> 2.3"},
