@@ -250,6 +250,19 @@ defmodule PhosWeb.Util.Viewer do
     end)
   end
 
+  def echo_mapper(echo) do
+      %{
+        source: echo.source,
+        destination: echo.destination,
+        source_archetype: echo.source_archetype,
+        destination_archetype: echo.destination_archetype,
+        subject_archetype: echo.subject_archetype,
+        subject: echo.subject,
+        message: echo.message,
+        time: DateTime.from_naive!(echo.inserted_at,"Etc/UTC") |> DateTime.to_unix()
+      }
+  end
+
   # user.private_profile.geolocation -> socket.assigns.geolocation
   def profile_geolocation_mapper(geolocs) do
     Enum.map(geolocs, fn loc ->
@@ -259,7 +272,7 @@ defmodule PhosWeb.Util.Viewer do
         })
     end)
     |> Enum.reduce(fn x, y ->
-      Map.merge(x, y, fn _k, v1, v2 -> v2 ++ v1 end)
+      Map.merge(x, y, fn _k, v1, v2 -> v2 ++ v1  end)
     end)
   end
 

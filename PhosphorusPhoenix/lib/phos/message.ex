@@ -23,7 +23,7 @@ defmodule Phos.Message do
 
 
   @doc """
-  Returns paginated call of the first message between each unique source destination pair
+  Returns paginated call of the last message between each unique source destination pair
 
   ## Examples
 
@@ -32,8 +32,14 @@ defmodule Phos.Message do
 
   """
 
-  def first_echoes() do
-
+  def last_echoes(id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    archetype = "USR"
+    Phos.Message.Echo
+    |> where([e], e.source == ^id and e.source_archetype == ^archetype )
+    |> or_where([e], e.destination == ^id and e.destination_archetype == ^archetype)
+    |> distinct([e], [e.source, e.destination])
+    |> order_by([e], desc: e.inserted_at)
+    |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
   @doc """
@@ -46,10 +52,15 @@ defmodule Phos.Message do
 
   """
 
-  def echoes_by_pair() do
-
+  def list_echoes_by_pair({id, yours}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    archetype = "USR"
+    Phos.Message.Echo
+    |> where([e], (e.source == ^id and e.source_archetype == ^archetype) and (e.destination == ^yours and e.destination_archetype == ^archetype))
+    |> or_where([e], (e.source == ^yours and e.source_archetype == ^archetype) and (e.destination == ^id and e.destination_archetype == ^archetype))
+    |> distinct([e], e.subject)
+    |> order_by([e], desc: e.inserted_at)
+    |> Repo.Paginated.all(page, sort_attribute, limit)
   end
-
 
   @doc """
 
