@@ -60,29 +60,34 @@ GET :ipAddress/userland/self/
 PUT :ipAddress/userland/self/
 :auth-headers
 {
-    "bio": "alberto robotos",
-    "username": "tate",
-    "public_name": "Albert the Robot",
-    "birthday": 16123442423,
-    "media": [
-        {
-            "access": "public",
-            "essence": "banner",
-            "resolution": "lossless"
-        },
-        {
-            "access": "public",
-            "essence": "profile",
-            "resolution": "lossy"
-        }
-    ],
-    "traits": [
-        "aikido",
-        "matrix"
-    ],
-    "occupation": "bloatwarengingeer",
-    "profile_pic": 3
+    "username": "tate"
 }
+
+##
+# {
+#     "bio": "alberto robotos",
+#     "username": "tate",
+#     "public_name": "Albert the Robot",
+#     "birthday": 16123442423,
+#     "media": [
+#         {
+#             "access": "public",
+#             "essence": "banner",
+#             "resolution": "lossless"
+#         },
+#         {
+#             "access": "public",
+#             "essence": "profile",
+#             "resolution": "lossy"
+#         }
+#     ],
+#     "traits": [
+#         "aikido",
+#         "matrix"
+#     ],
+#     "occupation": "bloatwarengingeer",
+#     "profile_pic": 3
+# }
 ## Read userdata of Others Profile
 GET :ipAddress/userland/others/:owentwo_id
 :auth-headers
