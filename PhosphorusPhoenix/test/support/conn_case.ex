@@ -24,10 +24,12 @@ defmodule PhosWeb.ConnCase do
       import Phoenix.ConnTest
       import PhosWeb.ConnCase
 
-      alias PhosWeb.Router.Helpers, as: Routes
+      #alias PhosWeb.Router.Helpers, as: Routes
 
       # The default endpoint for testing
       @endpoint PhosWeb.Endpoint
+
+      use PhosWeb, :verified_routes
     end
   end
 
