@@ -140,7 +140,7 @@ defmodule Phos.Users.User do
     |> unique_constraint(:username, name: :unique_username)
   end
 
-  defp validate_email(changeset, opts) do
+  defp validate_email(changeset, opts \\ []) do
     changeset
     |> validate_required([:email])
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
