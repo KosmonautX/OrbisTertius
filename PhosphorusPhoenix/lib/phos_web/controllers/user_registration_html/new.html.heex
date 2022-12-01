@@ -1,37 +1,36 @@
-<h1>Register</h1>
+<h1 class="text-2xl font-bold mt-6">Register</h1>
 
-<div style="width:100%; text-align: center;display:flex; align-items:center" >
-  <div style="display:inline-block">
-    <.link 
-      class="button"
-      href={~p"/auth/google"}>
-      <img
-          src={Routes.static_path(@conn, "/images/google-logo.png")}
-          alt="google logo"
-          width="12px"
-          height="12px" />
-      <span>Continue with Google</span>
-    </.link>
-  </div>
-  <div style="display:inline-block;margin:0 12px;">
-    <.link 
-      class="button"
-      href={~p"/auth/apple"}>
-      <img
-          src={Routes.static_path(@conn, "/images/apple-logo.png")}
-          alt="apple logo"
-          width="12px"
-          height="12px" />
-      <span>Continue with Google</span>
-    </.link>
-  </div>
+<div class="flex w-full mt-4 justify-evenly">
+  <.link 
+    class="bg-blue-300 px-4 py-2 rounded flex items-center hover:text-white"
+    href={~p"/auth/google"}>
+    <img
+        src={~p"/images/google-logo.png"}
+        alt="google logo"
+        class="mr-2"
+        width="12px"
+        height="12px" />
+    <span>Continue with Google</span>
+  </.link>
+  <.link 
+    class="bg-blue-300 px-4 py-2 rounded flex items-center hover:text-white"
+    href={~p"/auth/apple"}>
+    <img
+        src={~p"/images/apple-logo.png"}
+        alt="apple logo"
+        width="12px"
+        class="mr-2"
+        height="12px" />
+    <span>Continue with Google</span>
+  </.link>
   <div style="display:inline-block">
     <div class="tgme_widget_login medium nouserpic" id="widget_login">
-      <button style="display:flex;align-items: center" class="btn tgme_widget_login_button" onclick="return telegramLogin();">
+      <button class="btn tgme_widget_login_button  bg-blue-300 px-4 py-2 rounded flex items-center hover:text-white" onclick="return telegramLogin();">
         <img
-            src={Routes.static_path(@conn, "/images/telegram-logo.png")}
+            src={~p"/images/telegram-logo.png"}
             alt="telegram logo"
             width="20px"
+            class="mr-2"
             height="20px" />
         Log in with Telegram
       </button>
@@ -74,23 +73,25 @@
 <br>
 <div style="width: 100%; height: 1px; visibility: visible; border-bottom: 1px solid rgba(55, 53, 47, 0.16);"></div>
 <br>
-<.simple_form let={f} for={@changeset} action={~p"/users/registration"}>
-  <div class="alert alert-danger" :if={@changeset.action}>
-    <p>Oops, something went wrong! Please check the errors below.</p>
-  </div>
 
-  <.input field={{f, :username}} required={true} label="Username" />
-  <.input field={{f, :email}} type="email" required={true} label="Email" />
-  <.input field={{f, :password}} type="password" required={true} label="Password" />
+<div class="w-1/2 m-auto">
+  <.simple_form let={f} for={@changeset} action={~p"/users/register"}>
+    <div class="alert alert-danger" :if={@changeset.action}>
+      <p>Oops, something went wrong! Please check the errors below.</p>
+    </div>
 
-  <:actions>
-    <.button type="submit">Register</.button>
-  </:actions>
-</.simple_form>
+    <.input field={{f, :username}} required={true} label="Username" />
+    <.input field={{f, :email}} type="email" required={true} label="Email" />
+    <.input field={{f, :password}} type="password" required={true} label="Password" />
 
-<p>
-  <.link patch={~p"/users/log_in"}>Login</.link>
-  <span> | </span>
-  <.link patch={~p"/users/forgot_password"}>Log in</.link>
-</p>
+    <:actions>
+      <.button type="submit">Register</.button>
+    </:actions>
+  </.simple_form>
 
+  <p class="mt-2">
+    <.link patch={~p"/users/log_in"}>Login</.link>
+    <span> | </span>
+    <.link patch={~p"/users/reset_password"}>Reset password</.link>
+  </p>
+</div>

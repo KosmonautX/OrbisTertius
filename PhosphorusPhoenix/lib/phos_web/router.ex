@@ -1,4 +1,5 @@
 defmodule PhosWeb.Router do
+  alias PhosWeb.API.OrbController
   use PhosWeb, :router
 
   import PhosWeb.UserAuth
@@ -12,6 +13,7 @@ defmodule PhosWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_user
+    plug PhosWeb.Menshen.Mounter, :pleb
   end
 
   pipeline :apple_callback do
@@ -41,6 +43,9 @@ defmodule PhosWeb.Router do
 
     live_session :authenticated, on_mount: {PhosWeb.Menshen.Mounter, :pleb} do
       get "/", PageController, :index
+      # get "/orb/sethome", OrbLiveController, :set_home
+      # get "/orb/setwork", OrbLiveController, :set_work
+      # resources "/orb", OrbLiveController, only: [:index, :show]
 
       live "/orb/sethome", OrbLive.Index, :sethome
       live "/orb/setwork", OrbLive.Index, :setwork

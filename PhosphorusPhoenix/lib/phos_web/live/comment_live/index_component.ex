@@ -23,7 +23,7 @@ defmodule PhosWeb.CommentLive.IndexComponent do
   #   |> assign(:page_title, "Reply")
   # end
 
-  def card(assigns) do
+  def xcard(assigns) do
     ~H"""
     <div class="comment" id={"comment-#{elem(@comment, 1).id}"}>
       <a class="avatar">

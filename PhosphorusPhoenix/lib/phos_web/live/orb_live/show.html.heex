@@ -4,97 +4,62 @@
 
 <h1>Show Orb</h1>
 
-<%= if @live_action in [:edit] do %>
-  <.modal return_to={Routes.orb_show_path(@socket, :show, @orb)}>
-    <.live_component
-      module={PhosWeb.OrbLive.FormComponent}
-      id={@orb.id}
-      title={@page_title}
-      action={@live_action}
-      orb={@orb}
-      current_user={@current_user}
-      addresses={nil}
-      geolocation={nil}
-      return_to={Routes.orb_show_path(@socket, :show, @orb)}
-    />
-  </.modal>
-<% end %>
+<.modal id={"modal_for_#{@live_action}"} :if={@live_action in [:edit]}>
+  <.live_component
+    module={PhosWeb.OrbLive.FormComponent}
+    id={@orb.id}
+    title={@page_title}
+    action={@live_action}
+    orb={@orb}
+    current_user={@current_user}
+    addresses={nil}
+    geolocation={nil}
+    return_to={~p"/orb/#{@orb.id}"} />
+</.modal>
 
-<%= if @live_action in [:reply, :edit_comment] do %>
-    <.modal return_to={Routes.orb_show_path(@socket, :show, @orb)}>
-        <.live_component
-          module={PhosWeb.CommentLive.FormComponent}
-          id={@comment.id}
-          action={@live_action}
-          comment={@comment}
-          changeset={@changeset}
-          orb={@orb}
-          current_user={@current_user}
-          return_to={Routes.orb_show_path(@socket, :show, @orb)}
-        />
-    </.modal>
-<% end %>
+<.modal id={"modal_for_#{@live_action}"} :if={@live_action in [:reply, :edit_comment]}>
+  <.live_component
+    module={PhosWeb.CommentLive.FormComponent}
+    id={@comment.id}
+    action={@live_action}
+    comment={@comment}
+    changeset={@changeset}
+    orb={@orb}
+    current_user={@current_user}
+    return_to={~p"/orb/#{@orb.id}"}
+  />
+</.modal>
 
-<ul>
+<.list>
+  <:item title="Title"><%= @orb.title %></:item>
+  <:item title="Central Geohash"><%= @orb.central_geohash %></:item>
+  <:item title="Active"><%= @orb.active %></:item>
+  <:item title="Media" :if={@orb.media}>
+    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "150x150")} />
+    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "1920x1080")} />
+  </:item>
+  <:item title="Extinguish"><%= @orb.extinguish %></:item>
+  <:item title="When"><%= @orb.payload.when %></:item>
+  <:item title="Where"><%= @orb.payload.where %></:item>
+  <:item title="Tip"><%= @orb.payload.tip %></:item>
+  <:item title="Info"><%= @orb.payload.info %></:item>
+  <:item title="Traits"><%= inspect @orb.traits %></:item>
+</.list>
 
-  <li>
-    <strong>Title:</strong>
-    <%= @orb.title %>
-  </li>
+<div class="mt-4">
+  <.link navigate={~p"/orb/#{@orb.id}/edit"} replace={true} class="text-white px-4 py-2 bg-blue-300 hover:bg-blue-500 rounded hover:text-white">Show</.link>
+  <.link navigate={~p"/orb"} replace={true} class="text-white px-4 py-2 bg-blue-300 hover:bg-blue-500 rounded hover:text-white">Back</.link>
+</div>
 
-  <li>
-    <strong>Central Geohash:</strong>
-    <%= @orb.central_geohash %>
-  </li>
-
-  <li>
-    <strong>Active:</strong>
-    <%= @orb.active %>
-  </li>
-
-  <%= if @orb.media do %>
-  <li>
-    <strong>Media:</strong>
-    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "150x150") }>
-    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "1920x1080") }>
-  </li>
-  <% end%>
-
-  <li>
-    <strong>Extinguish:</strong>
-    <%= @orb.extinguish %>
-  </li>
-
-  <li>
-    <strong>When:</strong>
-    <%= @orb.payload.when %>
-  </li>
-
-  <li>
-    <strong>Where:</strong>
-    <%= @orb.payload.where %>
-  </li>
-
-  <li>
-    <strong>Tip:</strong>
-    <%= @orb.payload.tip %>
-  </li>
-
-  <li>
-    <strong>Info:</strong>
-    <%= @orb.payload.info %>
-  </li>
-
-  <li>
-    <strong>Traits:</strong>
-    <%= @orb.traits %>
-  </li>
-
-
-</ul>
-
-<span><%= live_patch "Edit", to: Routes.orb_show_path(@socket, :edit, @orb), class: "button" %></span> |
-<span><%= live_redirect "Back", to: Routes.orb_index_path(@socket, :index) %></span>
-
-<%# <PhosWeb.CommentLive.Index.render changeset={@changeset} orb={@orb} comments={@comments} current_user={@current_user} socket={@socket} live_action={@live_action}/> %>
-<.live_component module={PhosWeb.CommentLive.IndexComponent} id="commentindex" changeset={@changeset} action="new" orb={@orb} comments={@comments} current_user={@current_user} socket={@socket} live_action={@live_action} />
+<div class="mt-4">
+  <.live_component
+    module={PhosWeb.CommentLive.IndexComponent}
+    id="commentindex"
+    changeset={@changeset}
+    action="new"
+    orb={@orb}
+    comments={@comments}
+    current_user={@current_user}
+    socket={@socket}
+    live_action={@live_action} />
+</div>

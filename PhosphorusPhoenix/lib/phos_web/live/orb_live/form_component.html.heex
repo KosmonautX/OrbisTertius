@@ -1,5 +1,5 @@
 <div>
-  <h2><%= @title %></h2>
+  <h2 class="text-2xl font-bold mt-6"><%= @title %></h2>
 
   <section phx-drop-target={@uploads.image.ref}>
     <.simple_form
@@ -15,15 +15,15 @@
       <.input field={{f, :media}} type="hidden" value={false} />
       <.input field={{f, :source}} type="hidden" value="web" />
       <.input field={{f, :initiator_id}} type="hidden" value={@current_user.id} />
-      <.input field={{f, :extinguish}} type="datetime" label="Extinguish" />
+      <.input field={{f, :extinguish}} type="datetime-local" label="Extinguish" />
       <.input field={{f, :radius}} type="select" label="Extinguish" options={["2km": 8, "1km": 9, "500m": 10]} selected={10} />
       <.input :if={not is_nil(@addresses)} field={{f, :location}} type="select" options={Map.keys(@addresses)} selected={:live} />
-      <.input field={{f, :traits}} type="select" label="Traits" options={["Pinned": "pin", "Treasure Hunt": "treasurehunt"]} selected={10} />
+      <.input field={{f, :traits}} type="select" multiple={true} label="Traits" options={["Pinned": "pin", "Treasure Hunt": "treasurehunt"]} selected="treasurehunt"/>
 
       <%= inputs_for f, :payload, fn ff -> %>
         <%= label ff, :image %>
         <img :if={@orb.media} src={ Phos.Orbject.S3.get!("ORB", @orb.id, "1920x1080") }>
-        <%= live_file_input @uploads.image %>
+        <.live_file_input upload={@uploads.image} />
         <%= for entry <- @uploads.image.entries do %>
           <figure>
             <%= live_img_preview entry %>
@@ -35,11 +35,11 @@
           <p class="alert alert-danger"><%= error_to_string(err) %></p>
         <% end %>
 
-        <.input field={{ff, :when}} />
-        <.input field={{ff, :where}} />
-        <.input field={{ff, :tip}} />
-        <.input field={{ff, :inner_title}} />
-        <.input field={{ff, :info}} />
+        <.input field={{ff, :when}} label="When" />
+        <.input field={{ff, :where}} label="Where" />
+        <.input field={{ff, :tip}} label="Tip" />
+        <.input field={{ff, :inner_title}} label="Inner Title" />
+        <.input field={{ff, :info}} label="Info" />
       <% end %>
 
       <:actions>

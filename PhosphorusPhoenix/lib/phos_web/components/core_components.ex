@@ -537,6 +537,36 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  @doc """
+  Renders a back navigation link.
+
+  ## Examples
+
+      <.card title="Card title">
+        Body
+      </.card>
+  """
+  attr :title, :string, required: true
+  attr :class, :string, default: nil
+  slot :inner_block, required: true
+  slot :actions, doc: "the slot for form actions, such as a submit button"
+
+  def card(assigns) do
+    ~H"""
+    <div class={["flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded", @class]}>
+      <div class="rounded-t mb-0 px-4 py-3 border-0">
+        <h1 class="font-semibold text-lg text-gray-700"><%= @title %></h1>
+      </div>
+      <div class="block w-full overflow-x-auto px-2">
+        <%= render_slot(@inner_block) %>
+      </div>
+      <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-6">
+        <%= render_slot(action) %>
+      </div>
+    </div>
+    """
+  end
+
   ## JS Commands
 
   def show(js \\ %JS{}, selector) do

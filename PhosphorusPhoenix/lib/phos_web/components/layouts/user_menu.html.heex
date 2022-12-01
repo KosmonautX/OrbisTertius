@@ -1,15 +1,15 @@
 <ul :if={not is_nil(Map.get(assigns, :current_user))}>
   <li :if={not is_nil(@current_user.username)}>
     <span>Welcome</span>
-    <.link patch={~p"/users/profile/#{@current_user.username}"}>
+    <.link navigate={~p"/user/#{@current_user.username}"}>
       <%= @current_user.username %>
     </.link>
   </li>
-  <li><.link patch={~p"/users/settings"}>Settings</.link></li>
-  <li><.link patch={~p"/users/log_out"} method="delete">Sign out</.link></li>
+  <li><.link navigate={~p"/users/settings"}>Settings</.link></li>
+  <li><.link href={~p"/users/log_out"} method="delete">Sign out</.link></li>
 </ul>
 
 <ul :if={is_nil(Map.get(assigns, :current_user))}>
-  <li><.link patch={~p"/users/register"}>Sign up</.link></li>
-  <li><.link patch={~p"/users/log_in"}>Log in</.link></li>
+  <li><.link navigate={~p"/users/register"}>Sign up</.link></li>
+  <li><.link navigate={~p"/users/log_in"}>Log in</.link></li>
 </ul>
