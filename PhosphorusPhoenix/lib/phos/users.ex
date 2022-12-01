@@ -488,7 +488,7 @@ defmodule Phos.Users do
   {:ok, %{to: ..., body: ...}}
 
   """
-  def deliver_update_email_instructions(%User{} = user, current_email, update_email_url_fun)
+  def deliver_user_update_email_instructions(%User{} = user, current_email, update_email_url_fun)
   when is_function(update_email_url_fun, 1) do
     {encoded_token, user_token} = UserToken.build_email_token(user, "change:#{current_email}")
 
@@ -560,7 +560,7 @@ defmodule Phos.Users do
   @doc """
   Deletes the signed token with the given context.
   """
-  def delete_session_token(token) do
+  def delete_user_session_token(token) do
     Repo.delete_all(UserToken.token_and_context_query(token, "session"))
     :ok
   end
