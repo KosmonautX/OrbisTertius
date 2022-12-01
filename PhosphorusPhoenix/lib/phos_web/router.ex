@@ -2,7 +2,7 @@ defmodule PhosWeb.Router do
   alias PhosWeb.API.OrbController
   use PhosWeb, :router
 
-  import PhosWeb.UserAuth
+  import PhosWeb.Menshen.Gate
   import PhosWeb.Menshen.Plug
 
   pipeline :browser do
@@ -13,7 +13,7 @@ defmodule PhosWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_user
-    plug PhosWeb.Menshen.Mounter, :pleb
+    #plug PhosWeb.Menshen.Mounter, :pleb
   end
 
   pipeline :apple_callback do
@@ -35,13 +35,14 @@ defmodule PhosWeb.Router do
   end
 
   scope "/", PhosWeb do
-    pipe_through [:browser]
+    pipe_through [:browser, :require_authenticated_user]
 
     get "/archetype", ArchetypeController, :show do
       resources "/archetype/usr", UserController, only: [:show]
     end
 
-    live_session :authenticated, on_mount: {PhosWeb.Menshen.Mounter, :pleb} do
+    live_session :required_authenticated_user,
+      on_mount: {PhosWeb.Menshen.Gate, :ensure_authenticated} do
       get "/", PageController, :index
       # get "/orb/sethome", OrbLiveController, :set_home
       # get "/orb/setwork", OrbLiveController, :set_work
@@ -100,7 +101,7 @@ defmodule PhosWeb.Router do
   end
 
   scope "/api", PhosWeb.API do
-    pipe_through [:api, :authorize_user]
+    pipe_through [:api, :authorized_user]
 
 
     get "/userland/self", UserProfileController, :show_self
@@ -188,37 +189,42 @@ defmodule PhosWeb.Router do
   end
 
   ## Authentication routes
-
+  ##
+  ##
   scope "/", PhosWeb do
     pipe_through [:browser, :redirect_if_user_is_authenticated]
 
-    get "/users/register", UserRegistrationController, :new
-    post "/users/register", UserRegistrationController, :create
-    get "/users/log_in", UserSessionController, :new
+    live_session :redirect_if_user_is_authenticated,
+      on_mount: [{PhosWeb.Menshen.Gate, :redirect_if_user_is_authenticated}] do
+      live "/users/register", UserRegistrationLive, :new
+      live "/users/log_in", UserLoginLive, :new
+      live "/users/reset_password", UserForgotPasswordLive, :new
+      live "/users/reset_password/:token", UserResetPasswordLive, :edit
+    end
+
     post "/users/log_in", UserSessionController, :create
-    get "/users/reset_password", UserResetPasswordController, :new
-    post "/users/reset_password", UserResetPasswordController, :create
-    get "/users/reset_password/:token", UserResetPasswordController, :edit
-    put "/users/reset_password/:token", UserResetPasswordController, :update
   end
 
   scope "/", PhosWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    get "/users/settings", UserSettingsController, :edit
-    put "/users/settings", UserSettingsController, :update
-    get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
+    live_session :require_authenticated_user,
+      on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}] do
+      live "/users/settings", UserSettingsLive, :edit
+      live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
+    end
   end
 
   scope "/", PhosWeb do
     pipe_through [:browser]
 
-    resources "/admin/sessions", Admin.SessionController, only: [:new, :create, :index], as: :admin_session
-
     delete "/users/log_out", UserSessionController, :delete
-    get "/users/confirm", UserConfirmationController, :new
-    post "/users/confirm", UserConfirmationController, :create
-    get "/users/confirm/:token", UserConfirmationController, :edit
-    post "/users/confirm/:token", UserConfirmationController, :update
+
+    live_session :current_user,
+      on_mount: [{PhosWeb.Menshen.Gate, :mount_current_user}] do
+      live "/users/confirm/:token", UserConfirmationLive, :edit
+      live "/users/confirm", UserConfirmationInstructionsLive, :new
+    end
   end
+
  end
