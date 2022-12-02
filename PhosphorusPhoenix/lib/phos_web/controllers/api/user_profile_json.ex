@@ -1,4 +1,4 @@
-defmodule PhosWeb.Api.UserProfileJSON do
+defmodule PhosWeb.API.UserProfileJSON do
   alias PhosWeb.Util.Viewer
 
   def index(%{user_profile: profile}), do: %{data: Enum.map(profile, &user_profile_json/1)}
