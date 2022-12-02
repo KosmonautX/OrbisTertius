@@ -11,7 +11,7 @@ defmodule PhosWeb.API.UserProfileController do
 
   def show(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"id" => user_id}) do
     with %User{} = user <-  Users.get_public_user(user_id, id) do
-      render(conn, "show.json", user_profile: user)
+      render(conn, :show, user_profile: user)
     else
       nil -> {:error, :not_found}
     end
@@ -19,14 +19,14 @@ defmodule PhosWeb.API.UserProfileController do
 
   def show_self(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, _params) do
     user = Users.get_user!(id)
-    render(conn, "show.json", user_profile: user)
+    render(conn, :show, user_profile: user)
   end
 
   def update_self(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"media" => [_|_] = media} = params) do
     user = Users.get_user!(id)
     with {:ok, media} <- Orbject.Structure.apply_user_changeset(%{id: id, archetype: "USR", media: media}),
          {:ok, %User{} = user} <- Users.update_user(user, Map.put(profile_constructor(user, params),"media", true)) do
-      render(conn, "show.json", user_profile: user, media: media)
+      render(conn, :show, user_profile: user, media: media)
     end
   end
 
@@ -34,7 +34,7 @@ defmodule PhosWeb.API.UserProfileController do
   def update_self(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, params) do
     user = Users.get_user!(id)
     with {:ok, %User{} = user} <- Users.update_user(user, profile_constructor(user,params)) do
-      render(conn, "show.json", user_profile: user)
+      render(conn, :show, user_profile: user)
     end
   end
 
@@ -44,10 +44,10 @@ defmodule PhosWeb.API.UserProfileController do
     with [_ | _]<- validate_territory(user, territory),
          payload = %{"private_profile" => _ , "personal_orb" => _} <- parse_territory(user, territory),
          {:ok, %User{} = user} <- Users.update_territorial_user(user, payload) do
-      render(conn, "show.json", user_profile: user)
+      render(conn, :show, user_profile: user)
     else
       [] ->
-        render(conn, "show.json", user_profile: user)
+        render(conn, :show, user_profile: user)
 
       {:error, changeset} ->
         {:error, changeset}
@@ -89,7 +89,7 @@ defmodule PhosWeb.API.UserProfileController do
     with true <- !Fcmex.unregistered?(token),
          {:ok, %{}} <- Fcmex.Subscription.subscribe("USR." <> user.id, token),
          {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => %{"fcm_token" => token}}) do
-      render(conn, "integration.json", integration: user_integration)
+      render(conn, :show, integration: user_integration)
     end
   end
 
