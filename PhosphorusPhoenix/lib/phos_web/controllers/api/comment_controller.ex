@@ -11,7 +11,6 @@ defmodule PhosWeb.API.CommentController do
 
   def index(conn, _params) do
     comments = Comments.list_comments()
-    #IO.inspect
     render(conn, :index, comments: comments)
   end
   # curl -H "Content-Type: application/json" -X GET http://localhost:4000/api/comments
@@ -31,7 +30,7 @@ defmodule PhosWeb.API.CommentController do
         with {:ok, %Comment{} = comment} <- Comments.create_comment(comment_params) do
           conn
           |> put_status(:created)
-          |> put_resp_header("location", Routes.comment_path(conn, :show, comment))
+          |> put_resp_header("location", ~p"/orbland/comments/#{comment.id}")
           |> render(:show, comment: comment)
         end
         # Create child comment flow
@@ -48,7 +47,7 @@ defmodule PhosWeb.API.CommentController do
         with {:ok, %Comment{} = comment} <- Comments.create_comment(comment_params) do
           conn
           |> put_status(:created)
-          |> put_resp_header("location", Routes.comment_path(conn, :show, comment))
+          |> put_resp_header("location",  ~p"/orbland/comments/#{comment.id}")
           |> render(:show, comment: comment)
         end
     end
@@ -56,6 +55,7 @@ defmodule PhosWeb.API.CommentController do
 
   def show(conn, %{"id" => id}) do
     comment = Comments.get_comment!(id)
+    # IO.inspect(comment)
     render(conn, :show, comment: comment)
 
   end
@@ -107,5 +107,4 @@ defmodule PhosWeb.API.CommentController do
       send_resp(conn, :no_content, "")
     end
   end
-
 end

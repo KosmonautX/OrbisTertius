@@ -1,4 +1,4 @@
-defmodule PhosWeb.ErrorJSON do
+defmodule PhosWeb.ErrorView do
   def render("404.json", _assigns) do
     %{errors: %{detail: "Internal Server Error 400 json"}}
   end

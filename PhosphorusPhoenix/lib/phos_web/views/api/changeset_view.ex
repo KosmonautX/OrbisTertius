@@ -6,15 +6,11 @@ defmodule PhosWeb.API.ChangesetView do
   `PhosWeb.ErrorHelpers.translate_error/1` for more details.
   """
   def translate_errors(changeset) do
-      Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
-        Regex.replace(~r"%{(\w+)}", msg, fn _, key ->
-          opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
-        end)
+    Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
+      Regex.replace(~r"%{(\w+)}", msg, fn _, key ->
+        opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
       end)
-      |> Enum.map(fn {key, msgs} ->
-        Enum.map(msgs, fn m -> "#{key} #{m}" end)
-      end)
-      |> List.flatten()
+    end)
   end
 
   def render("error.json", %{changeset: changeset}) do

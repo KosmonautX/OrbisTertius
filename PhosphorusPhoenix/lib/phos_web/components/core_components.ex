@@ -152,7 +152,8 @@ defmodule PhosWeb.CoreComponents do
         <Heroicons.exclamation_circle :if={@kind == :error} mini class="h-4 w-4" />
         <%= @title %>
       </p>
-      <p class="mt-2 text-[0.8125rem] leading-5"><%= msg %></p>
+      <p :if={@title} class="mt-2 text-[0.8125rem] leading-5"><%= msg %></p>
+      <p class="font-semibold text-[0.8125rem] leading-5"><%= msg %></p>
       <button
         :if={@close}
         type="button"

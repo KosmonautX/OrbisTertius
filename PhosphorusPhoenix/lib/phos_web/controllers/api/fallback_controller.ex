@@ -17,21 +17,21 @@ defmodule PhosWeb.API.FallbackController do
   def call(conn, {:error, :unprocessable_entity}) do
     conn
     |> put_status(:unprocessable_entity)
-    |> put_view(PhosWeb.ErrorView)
+    |> put_view(PhosWeb.ErrorJSON)
     |> render(:"422")
   end
 
   def call(conn, {:error, :not_found}) do
     conn
     |> put_status(:not_found)
-    |> put_view(PhosWeb.ErrorView)
+    |> put_view(PhosWeb.ErrorJSON)
     |> render(:"404")
   end
 
   def call(conn, {:error, :unauthorized}) do
     conn
     |> put_status(:unauthorized)
-    |> put_view(PhosWeb.ErrorView)
+    |> put_view(PhosWeb.ErrorJSON)
     |> render(:"403")
   end
 
@@ -42,4 +42,11 @@ defmodule PhosWeb.API.FallbackController do
     |> render("error.json", reason: message)
   end
 
+  def call(conn, opts) do
+    IO.inspect(opts)
+    conn
+    |> put_status(:unprocessable_entity)
+    |> put_view(PhosWeb.API.ChangesetView)
+    |> render("error.json", reason: "")
+  end
 end
