@@ -1,4 +1,4 @@
-defmodule PhosWeb.Api.OrbJSON do
+defmodule PhosWeb.API.OrbJSON do
 
   def index(%{orbs: orbs}), do: %{data: Enum.map(orbs, &orb_json/1)}
   def paginated(%{orbs: %{data: data, meta: meta}}), do: %{data: Enum.map(data, &orb_json/1), meta: meta}

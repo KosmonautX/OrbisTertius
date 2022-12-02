@@ -47,7 +47,7 @@ defmodule PhosWeb.OrbControllerTest do
 
       test "lists all orbs", %{conn: conn, user: user} do
         orb = orb_fixture(%{"initiator_id" => user.id})
-        conn = get(conn, Routes.orb_path(conn, :index))
+        conn = get(conn, ~p"/api/orbland/orbs")
 
         assert [%{"orb_uuid" => id}] = json_response(conn, 200)["data"]
 
@@ -62,10 +62,10 @@ defmodule PhosWeb.OrbControllerTest do
   describe "create orb with target geohash" do
     setup [:inject_user_token]
     test "renders orb when data is valid", %{conn: conn} do
-      conn = post(conn, Routes.orb_path(conn, :create), @create_attrs_central_geohash)
+      conn = post(conn, ~p"/api/orbland/orbs", @create_attrs_central_geohash)
       assert %{"orb_uuid" => id} = json_response(conn, 201)["data"]
 
-      conn = get(conn, Routes.orb_path(conn, :show, id))
+      conn = get(conn, ~p"/api/orbland/orbs/#{id}")
 
       assert %{
                "orb_uuid" => ^id,
@@ -75,7 +75,7 @@ defmodule PhosWeb.OrbControllerTest do
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
-      conn = post(conn, Routes.orb_path(conn, :create), @invalid_attrs)
+      conn = post(conn, ~p"/api/orbland/orbs", @invalid_attrs)
 
       assert %{
         "title" => ["can't be blank"],
@@ -86,10 +86,10 @@ defmodule PhosWeb.OrbControllerTest do
   describe "create orb with geohash list" do
     setup [:inject_user_token]
     test "renders orb when data is valid", %{conn: conn, user: user} do
-      conn = post(conn, Routes.orb_path(conn, :create), @create_attrs_geohash_list)
+      conn = post(conn, ~p"/api/orbland/orbs", @create_attrs_geohash_list)
       assert %{"orb_uuid" => id} = json_response(conn, 201)["data"]
 
-      conn = get(conn, Routes.orb_path(conn, :show, id))
+      conn = get(conn, ~p"/api/orbland/orbs/#{id}")
 
       assert %{
                "orb_uuid" => ^id,
@@ -99,7 +99,7 @@ defmodule PhosWeb.OrbControllerTest do
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
-      conn = post(conn, Routes.orb_path(conn, :create), @invalid_attrs)
+      conn = post(conn, ~p"/api/orbland/orbs", @invalid_attrs)
 
       assert %{
         "title" => ["can't be blank"],
@@ -112,10 +112,10 @@ defmodule PhosWeb.OrbControllerTest do
 
     test "renders orb when data is valid", %{conn: conn, user: user} do
       orb = orb_fixture(%{"initiator_id" => user.id})
-      conn = put(conn, Routes.orb_path(conn, :update, orb), @update_attrs)
+      conn = put(conn, ~p"/api/orbland/orbs/#{orb.id}", @update_attrs)
       assert %{"orb_uuid" => id} = json_response(conn, 200)["data"]
 
-      conn = get(conn, Routes.orb_path(conn, :show, id))
+      conn = get(conn, ~p"/api/orbland/orbs/#{id}")
 
       assert %{
         "orb_uuid" => ^id,
@@ -141,9 +141,9 @@ defmodule PhosWeb.OrbControllerTest do
 
     test "deletes chosen orb", %{conn: conn, user: user} do
       orb = orb_fixture(%{"initiator_id" => user.id})
-      conn = delete(conn, Routes.orb_path(conn, :delete, orb))
+      conn = delete(conn, ~p"/api/orbland/orbs/#{orb.id}")
       assert response(conn, 204)
-      conn = get(conn, Routes.orb_path(conn, :show, orb))
+      conn = get(conn, ~p"/api/orbland/orbs/#{orb.id}")
 
       assert response conn, 404
     end

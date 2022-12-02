@@ -1,5 +1,4 @@
 defmodule PhosWeb.Router do
-  alias PhosWeb.API.OrbController
   use PhosWeb, :router
 
   import PhosWeb.Menshen.Gate

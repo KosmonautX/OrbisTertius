@@ -39,7 +39,7 @@ defmodule PhosWeb.API.OrbController do
          {:ok, %Orb{} = orb} <- Action.create_orb(%{attrs | "media" => true}) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", Routes.orb_path(conn, :show, orb))
+      |> put_resp_header("location", ~p"/api/orbland/orbs/#{orb.id}")
       |> render(:show, orb: orb, media: media)
     end
   end
@@ -52,7 +52,7 @@ defmodule PhosWeb.API.OrbController do
          {:ok, %Orb{} = orb} <- Action.create_orb(attrs) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", Routes.orb_path(conn, :show, orb))
+      |> put_resp_header("location", ~p"/api/orbland/orbs/#{orb.id}")
       |> render(:show, orb: orb)
     end
   end
@@ -151,7 +151,7 @@ defmodule PhosWeb.API.OrbController do
          {:ok, %Orb{} = orb} <- Action.update_orb(orb, %{attrs | "media" => true}) do
       conn
       |> put_status(:ok)
-      |> put_resp_header("location", Routes.orb_path(conn, :show, orb))
+      |> put_resp_header("location", ~p"/api/orbland/orbs/#{orb.id}")
       |> render(:show, orb: orb, media: media)
 
     else
@@ -168,7 +168,7 @@ defmodule PhosWeb.API.OrbController do
          {:ok, %Orb{} = orb} <- Action.update_orb(orb, attrs) do
       conn
       |> put_status(:ok)
-      |> put_resp_header("location", Routes.orb_path(conn, :show, orb))
+      |> put_resp_header("location", ~p"/api/orbland/orbs/#{orb.id}")
       |> render(:show, orb: orb)
     else
       false -> {:error, :unauthorized}
