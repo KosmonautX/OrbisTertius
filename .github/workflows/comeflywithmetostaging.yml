@@ -26,8 +26,8 @@ jobs:
           --health-retries 5
     steps:
     - uses: actions/checkout@v2
-    - name: Install libncurses-dev
-      run: sudo apt-get install -y libncurses-dev
+    - name: Install dependecies for build
+      run: sudo apt-get install -y libncurses-dev libtinfo5
     - name: Set up Elixir
       uses: erlef/setup-elixir@885971a72ed1f9240973bd92ab57af8c1aa68f24
       with:
