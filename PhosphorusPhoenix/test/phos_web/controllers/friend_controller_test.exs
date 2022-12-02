@@ -14,14 +14,14 @@ defmodule PhosWeb.API.FriendControllerTest do
     test "request friend relation", %{conn: conn} do
       friend = user_fixture()
 
-      %{assigns: %{current_user: user}} = conn = post(conn, Routes.friend_path(conn, :create), %{"acceptor_id" => friend.id})
+      %{assigns: %{current_user: user}} = conn = post(conn, ~p"/api/folkland/friends", %{"acceptor_id" => friend.id})
       assert %{"data" => data} = json_response(conn, 201)
       assert Map.get(data, "initiator_id") == user.id
       assert Map.get(data, "acceptor_id") == friend.id
     end
 
     test "cannot request friend relation when request to himself", %{conn: conn, user: user} do
-      conn = post(conn, Routes.friend_path(conn, :create), %{"acceptor_id" => user.id})
+      conn = post(conn, ~p"/api/folkland/friends", %{"acceptor_id" => user.id})
       assert %{"message" => msg, "state" => state} = json_response(conn, 422)
       assert msg == "API not needed to connect to your own inner self"
       assert state == "error"
@@ -29,7 +29,7 @@ defmodule PhosWeb.API.FriendControllerTest do
 
     test "error request friend relation", %{conn: conn} do
       fake_uuid = "00000000-0000-0000-0000-000000000000"
-      conn = post(conn, Routes.friend_path(conn, :create), %{"acceptor_id" => fake_uuid})
+      conn = post(conn, ~p"/api/folkland/friends", %{"acceptor_id" => fake_uuid})
       assert %{"errors" => err} = json_response(conn, 422)
       assert Map.get(err, "acceptor_id") == ["does not exist"]
     end
@@ -37,12 +37,12 @@ defmodule PhosWeb.API.FriendControllerTest do
     test "request friend relation twice", %{conn: conn} do
       friend = user_fixture()
 
-      %{assigns: %{current_user: user}} = conn = post(conn, Routes.friend_path(conn, :create), %{"acceptor_id" => friend.id})
+      %{assigns: %{current_user: user}} = conn = post(conn, ~p"/api/folkland/friends", %{"acceptor_id" => friend.id})
       assert %{"data" => data} = json_response(conn, 201)
       assert Map.get(data, "initiator_id") == user.id
       assert Map.get(data, "acceptor_id") == friend.id
 
-      conn = post(conn, Routes.friend_path(conn, :create), %{"acceptor_id" => friend.id})
+      conn = post(conn, ~p"/api/folkland/friends", %{"acceptor_id" => friend.id})
       assert %{"errors" => err} = json_response(conn, 422)
       Map.get(err, "branches")
       |> List.first()
@@ -56,7 +56,7 @@ defmodule PhosWeb.API.FriendControllerTest do
     setup [:inject_user_token]
 
     test "return empty list when no friends", %{conn: conn} do
-      conn = get(conn, Routes.friend_path(conn, :index), %{"page" => 1})
+      conn = get(conn, ~p"/api/folkland/friends", %{"page" => 1})
 
       assert %{"data" => []} = json_response(conn, 200)
     end
@@ -66,7 +66,7 @@ defmodule PhosWeb.API.FriendControllerTest do
       assert {:ok, root} = Phos.Folk.add_friend(user.id, acceptor.id)
       assert {:ok, _data} = Phos.Folk.update_relation(root, %{"state" => "completed"})
 
-      conn = get(conn, Routes.friend_path(conn, :index), %{"page" => 1})
+      conn = get(conn, ~p"/api/folkland/friends", %{"page" => 1})
 
       assert %{"data" => [rel]} = json_response(conn, 200)
       assert Map.get(rel, "id") == acceptor.id
@@ -77,7 +77,7 @@ defmodule PhosWeb.API.FriendControllerTest do
     setup [:inject_user_token]
 
     test "return empty list when no friends", %{conn: conn} do
-      conn = get(conn, Routes.friend_path(conn, :pending), %{"page" => 1})
+      conn = get(conn, ~p"/api/folkland/self/pending", %{"page" => 1})
 
       assert %{"data" => []} = json_response(conn, 200)
     end
@@ -86,7 +86,7 @@ defmodule PhosWeb.API.FriendControllerTest do
      acceptor = Phos.UsersFixtures.user_fixture()
       assert {:ok, _root} = Phos.Folk.add_friend(user.id, acceptor.id)
 
-      conn = get(conn, Routes.friend_path(conn, :pending), %{"page" => 1})
+      conn = get(conn, ~p"/api/folkland/self/pending", %{"page" => 1})
 
       assert %{"data" => [rel]} = json_response(conn, 200)
       assert Map.get(rel, "acceptor_id") == acceptor.id
@@ -97,7 +97,7 @@ defmodule PhosWeb.API.FriendControllerTest do
     setup [:inject_user_token]
 
     test "return empty list when no friends requests", %{conn: conn} do
-      conn = get(conn, Routes.friend_path(conn, :requests), %{"page" => 1})
+      conn = get(conn, ~p"/api/folkland/self/requests", %{"page" => 1})
 
       assert %{"data" => []} = json_response(conn, 200)
     end
@@ -106,7 +106,7 @@ defmodule PhosWeb.API.FriendControllerTest do
       initiator = Phos.UsersFixtures.user_fixture()
       assert {:ok, _root} = Phos.Folk.add_friend(initiator.id, user.id)
 
-      conn = get(conn, Routes.friend_path(conn, :requests), %{"page" => 1})
+      conn = get(conn, ~p"/api/folkland/self/requests", %{"page" => 1})
 
       assert %{"data" => [rel]} = json_response(conn, 200)
       assert Map.get(rel, "initiator_id") == initiator.id
@@ -118,7 +118,7 @@ defmodule PhosWeb.API.FriendControllerTest do
 
     test "return empty list when no friends in other user", %{conn: conn} do
       stranger = Phos.UsersFixtures.user_fixture()
-      conn = get(conn, Routes.friend_path(conn, :show_others, stranger.id), %{"page" => 1})
+      conn = get(conn, ~p"/api/folkland/others/#{stranger.id}", %{"page" => 1})
 
       assert %{"data" => []} = json_response(conn, 200)
     end
@@ -128,7 +128,7 @@ defmodule PhosWeb.API.FriendControllerTest do
       assert {:ok, root} = Phos.Folk.add_friend(user.id, acceptor.id)
       assert {:ok, _data} = Phos.Folk.update_relation(root, %{"state" => "completed"})
 
-      conn = get(conn, Routes.friend_path(conn, :show_others, acceptor.id), %{"page" => 1})
+      conn = get(conn, ~p"/api/folkland/others/#{acceptor.id}", %{"page" => 1})
 
       assert %{"data" => [rel]} = json_response(conn, 200)
       rel
@@ -142,7 +142,7 @@ defmodule PhosWeb.API.FriendControllerTest do
       assert {:ok, root} = Phos.Folk.add_friend(initiator.id, user.id)
       assert {:ok, _data} = Phos.Folk.update_relation(root, %{"state" => "completed"})
 
-      conn = get(conn, Routes.friend_path(conn, :show_others, initiator.id), %{"page" => 1})
+      conn = get(conn, ~p"/api/folkland/others/#{initiator.id}", %{"page" => 1})
 
       assert %{"data" => [rel]} = json_response(conn, 200)
       rel
@@ -162,7 +162,7 @@ defmodule PhosWeb.API.FriendControllerTest do
       assert {:ok, root} = Phos.Folk.add_friend(initiator.id, user.id)
       assert root.state == "requested"
 
-      conn = put(conn, Routes.friend_path(conn, :accept), %{"relation_id" => root.id})
+      conn = put(conn, ~p"/api/folkland/friends/accept", %{"relation_id" => root.id})
 
       assert %{"data" => relation} = json_response(conn, 200)
       assert Map.get(relation, "state") == "completed"
@@ -174,9 +174,9 @@ defmodule PhosWeb.API.FriendControllerTest do
       assert {:ok, root} = Phos.Folk.add_friend(user.id, acceptor.id)
       assert root.state == "requested"
 
-      conn = put(conn, Routes.friend_path(conn, :accept), %{"relation_id" => root.id})
+      conn = put(conn, ~p"/api/folkland/friends/accept", %{"relation_id" => root.id})
 
-      assert "Forbidden" = json_response(conn, 401)
+      assert %{"errors" => %{"detail" => "Forbidden"}} = json_response(conn, 401)
     end
 
     test "return error when already friends", %{conn: conn, user: user} do
@@ -186,7 +186,7 @@ defmodule PhosWeb.API.FriendControllerTest do
       assert {:ok, updated_relation} = Phos.Folk.update_relation(root, %{"state" => "completed"})
       assert updated_relation.state == "completed"
 
-      conn = put(conn, Routes.friend_path(conn, :accept), %{"relation_id" => updated_relation.id})
+      conn = put(conn, ~p"/api/folkland/friends/accept", %{"relation_id" => updated_relation.id})
 
       assert %{"messages" => [msg], "state" => state} = json_response(conn, 400)
       assert state == "error"
@@ -203,7 +203,7 @@ defmodule PhosWeb.API.FriendControllerTest do
       assert {:ok, root} = Phos.Folk.add_friend(initiator.id, user.id)
       assert root.state == "requested"
 
-      conn = put(conn, Routes.friend_path(conn, :block), %{"relation_id" => root.id})
+      conn = put(conn, ~p"/api/folkland/friends/block", %{"relation_id" => root.id})
 
       assert %{"data" => relation} = json_response(conn, 200)
       assert Map.get(relation, "state") == "blocked"
@@ -216,7 +216,7 @@ defmodule PhosWeb.API.FriendControllerTest do
       assert {:ok, updated_relation} = Phos.Folk.update_relation(root, %{"state" => "completed"})
       assert updated_relation.state == "completed"
 
-      conn = put(conn, Routes.friend_path(conn, :block), %{"relation_id" => updated_relation.id})
+      conn = put(conn, ~p"/api/folkland/friends/block", %{"relation_id" => updated_relation.id})
 
       assert %{"errors" => %{"state" => [msg]}} = json_response(conn, 422)
       assert msg == "transition_changeset failed: invalid transition from completed to blocked"
@@ -232,7 +232,7 @@ defmodule PhosWeb.API.FriendControllerTest do
       assert {:ok, root} = Phos.Folk.add_friend(initiator.id, user.id)
       assert root.state == "requested"
 
-      conn = delete(conn, Routes.friend_path(conn, :delete, root.id))
+      conn = delete(conn, ~p"/api/folkland/friends/#{root.id}")
 
       assert %{"data" => relation} = json_response(conn, 200)
       assert Map.get(relation, "state") == "requested"
@@ -245,7 +245,7 @@ defmodule PhosWeb.API.FriendControllerTest do
       assert {:ok, updated_relation} = Phos.Folk.update_relation(root, %{"state" => "completed"})
       assert updated_relation.state == "completed"
 
-      conn = delete(conn, Routes.friend_path(conn, :delete, updated_relation.id))
+      conn = delete(conn, ~p"/api/folkland/friends/#{updated_relation.id}")
 
       assert %{"data" => relation} = json_response(conn, 200)
       assert Map.get(relation, "state") == "completed"

@@ -1,4 +1,4 @@
-defmodule PhosWeb.Api.FriendJSON do
+defmodule PhosWeb.API.FriendJSON do
   def index(%{friends: friends}) do
     %{data: Enum.map(friends, &friend_json/1)}
   end
@@ -12,7 +12,7 @@ defmodule PhosWeb.Api.FriendJSON do
   end
 
   def show(%{friend: friend}), do: friend_json(friend)
-  def show(%{relation: relation}), do: relation_json(relation)
+  def show(%{relation: relation}), do: %{data: relation_json(relation)}
 
   def relation_error(%{reason: reason}) when is_bitstring(reason) do
     %{
