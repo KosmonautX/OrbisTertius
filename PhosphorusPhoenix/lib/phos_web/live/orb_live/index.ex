@@ -98,7 +98,7 @@ defmodule PhosWeb.OrbLive.Index do
 
   def handle_info({:user_profile_loc_update, %{"profile" => profile}}, socket) do
     updated_user =
-      put_in(socket.assigns.current_user, [:private_profile], profile)
+      put_in(socket.assigns.current_user, [Access.key(:private_profile)], profile)
     {:noreply, socket
       |> assign(:current_user, updated_user)}
   end

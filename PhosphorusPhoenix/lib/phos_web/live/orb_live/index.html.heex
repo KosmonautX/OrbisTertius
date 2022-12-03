@@ -5,7 +5,7 @@
 
 <h1 class="text-2xl font-bold mt-6">Listing Orbs</h1>
 
-<div :if={is_nil(@guest) or !@guest }>
+<div :if={is_nil(@guest) or !@guest}>
   <.link patch={~p"/orb/sethome"}>Set Home</.link>
   <.link patch={~p"/orb/setwork"}>Set Work</.link>
 </div>
@@ -60,7 +60,6 @@
     <:col :let={orb} label="Title"><%= orb.title %></:col>
     <:col :let={orb} label="Active"><%= orb.active %></:col>
     <:col :let={orb} label="Extinguish"><%= orb.extinguish %></:col>
-    <:col :let={orb} label="Time"><%= orb.payload.time %></:col>
     <:col :let={orb} label="Tip"><%= orb.payload.tip %></:col>
     <:col :let={orb} label="Info"><%= orb.payload.info %></:col>
     <:col :let={orb} label="Comments"><%= orb.comment_count %></:col>
@@ -68,7 +67,9 @@
     <:action :let={orb}>
       <span><.link href={~p"/orb/#{orb.id}"}>Show</.link></span>
       <span><.link patch={~p"/orb/#{orb.id}/edit"}>Show</.link></span>
-      <span><.link href={~p"/orb/#{orb.id}"} method="delete">Delete</.link></span>
+      <span><.link phx-click={JS.push("delete", value: %{id: orb.id})} data-confirm="Are you sure?">
+      Delete
+    </.link></span>
     </:action>
   </.table>
 </div>
