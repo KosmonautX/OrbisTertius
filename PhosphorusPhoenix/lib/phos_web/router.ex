@@ -170,6 +170,11 @@ defmodule PhosWeb.Router do
       resources "/friends", FriendController, except: [:new, :edit, :update]
     end
 
+    scope "/echoland" do
+      get "/others/:id", MessageController, :show_others
+      get "/last", MessageController, :show_last
+    end
+
   end
 
   # Other scopes may use custom stacks.
