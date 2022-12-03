@@ -19,7 +19,7 @@
       </.simple_form>
     </div>
     <%= for comment <- filter_root_comments_chrono(@comments) do %>
-      <.card comment={comment} comments={@comments} changeset={@changeset} orb={@orb} current_user={@current_user} socket={@socket} live_action={@live_action}/>
+      <.xcard comment={comment} comments={@comments} changeset={@changeset} orb={@orb} current_user={@current_user} socket={@socket} live_action={@live_action}/>
     <% end %>
   </div>
 </div>

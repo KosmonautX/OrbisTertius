@@ -4,7 +4,11 @@
 
 <h1>Show Orb</h1>
 
-<.modal id={"modal_for_#{@live_action}"} :if={@live_action in [:edit]}>
+<.modal 
+  id={"modal_for_#{@live_action}"}
+  :if={@live_action in [:edit]}
+  on_confirm={JS.navigate(~p"/orb/#{@orb.id}")}
+  on_cancel={JS.navigate(~p"/orb/#{@orb.id}")}>
   <.live_component
     module={PhosWeb.OrbLive.FormComponent}
     id={@orb.id}
@@ -47,7 +51,7 @@
 </.list>
 
 <div class="mt-4">
-  <.link navigate={~p"/orb/#{@orb.id}/edit"} replace={true} class="text-white px-4 py-2 bg-blue-300 hover:bg-blue-500 rounded hover:text-white">Show</.link>
+  <.link navigate={~p"/orb/#{@orb.id}/edit"} class="text-white px-4 py-2 bg-blue-300 hover:bg-blue-500 rounded hover:text-white">Edit</.link>
   <.link navigate={~p"/orb"} replace={true} class="text-white px-4 py-2 bg-blue-300 hover:bg-blue-500 rounded hover:text-white">Back</.link>
 </div>
 
