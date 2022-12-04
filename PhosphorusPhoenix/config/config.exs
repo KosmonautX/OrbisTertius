@@ -13,7 +13,10 @@ config :phos,
 # Configures the endpoint
 config :phos, PhosWeb.Endpoint,
   url: [host: "localhost"], #change to "127.0.0.1" to work on privelleged port 80
-render_errors: [view: PhosWeb.ErrorView, accepts: ~w(html json), layout: false],
+  render_errors: [
+    formats: [html: PhosWeb.ErrorHTML, json: PhosWeb.ErrorJSON],
+    layout: false
+  ],
   pubsub_server: Phos.PubSub,
   live_view: [signing_salt: "r193MsgJ"]
 

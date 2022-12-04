@@ -6,7 +6,7 @@ defmodule PhosWeb.UserController do
   end
 
   def show(conn, _params) do
-    render(conn, :show, archetype: "Root" )
+    render(conn, :show, archetype: "Root")
   end
 
 end
