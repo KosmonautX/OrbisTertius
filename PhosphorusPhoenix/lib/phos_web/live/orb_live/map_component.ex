@@ -1,8 +1,6 @@
 defmodule PhosWeb.OrbLive.MapComponent do
   use PhosWeb, :live_component
 
-  alias PhosWeb.Util.{Viewer,ImageHandler}
-  alias Phos.Action
   alias Phos.Users
 
   @impl true

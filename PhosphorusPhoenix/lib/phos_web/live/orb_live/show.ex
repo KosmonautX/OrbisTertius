@@ -30,7 +30,7 @@ defmodule PhosWeb.OrbLive.Show do
     #  |> assign(:image, {:ok, Phos.Orbject.S3.get("ORB", id, "150x150")})
   end
 
-  defp apply_action(socket, :reply, %{"id" => orb_id, "cid" => cid} = _params) do
+  defp apply_action(socket, :reply, %{"id" => _orb_id, "cid" => cid} = _params) do
     socket
     |> assign(:comment, Comments.get_comment!(cid))
     |> assign(:page_title, "Reply")
@@ -50,7 +50,7 @@ defmodule PhosWeb.OrbLive.Show do
     |> assign(:page_title, "Edit")
   end
 
-  defp apply_action(socket, :show, %{"id" => id} = _params) do
+  defp apply_action(socket, :show, %{"id" => _id} = _params) do
     socket
     |> assign(:page_title, "Show")
   end
@@ -81,7 +81,7 @@ defmodule PhosWeb.OrbLive.Show do
         socket
         |> assign(:comments, updated_comments)
         |> put_flash(:info, "Comment added successfully")
-        |> push_patch(to: Routes.orb_show_path(socket, :show, comment.orb))}
+        |> push_patch(to: ~p"/orb/#{comment.orb_id}")}
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, changeset: changeset)}
     end
@@ -113,7 +113,7 @@ defmodule PhosWeb.OrbLive.Show do
         socket
         |> assign(:comments, updated_comments)
         |> put_flash(:info, "Reply added successfully")
-        |> push_patch(to: Routes.orb_show_path(socket, :show, comment.orb))}
+        |> push_patch(to: ~p"/orb/#{comment.orb_id}")}
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, changeset: changeset)}
     end
@@ -129,7 +129,7 @@ defmodule PhosWeb.OrbLive.Show do
         {:noreply,
          socket
          |> put_flash(:info, "Comment updated successfully")
-         |> push_patch(to: Routes.orb_show_path(socket, :show, comment.orb))
+         |> push_patch(to: ~p"/orb/#{comment.orb_id}")
          |> assign(:comments, updated_comments)}
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :changeset, changeset)}
@@ -151,7 +151,6 @@ defmodule PhosWeb.OrbLive.Show do
 
   @impl true
   def handle_event("toggle_more_replies", %{"initmorecomments" => initmorecomments, "orb" => orb_id, "path" => path}, socket) do
-
     updated_comments =
       if initmorecomments == "true" do
         comments = Comments.get_child_comments_by_orb(orb_id,path) |> decode_to_comment_tuple_structure()

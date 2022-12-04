@@ -65,11 +65,11 @@
     <:col :let={orb} label="Comments"><%= orb.comment_count %></:col>
 
     <:action :let={orb}>
-      <span><.link href={~p"/orb/#{orb.id}"}>Show</.link></span>
-      <span><.link patch={~p"/orb/#{orb.id}/edit"}>Show</.link></span>
-      <span><.link phx-click={JS.push("delete", value: %{id: orb.id})} data-confirm="Are you sure?">
-      Delete
-    </.link></span>
+      <div id={"#{key}orb-#{orb.id}"}>
+        <.link href={~p"/orb/#{orb.id}"}>Show</.link>
+        <.link navigate={~p"/orb/#{orb.id}/edit"}>Edit</.link>
+        <.link phx-click={JS.push("delete", value: %{id: orb.id})} data-confirm="Are you sure?">Delete</.link>
+      </div>
     </:action>
   </.table>
 </div>
