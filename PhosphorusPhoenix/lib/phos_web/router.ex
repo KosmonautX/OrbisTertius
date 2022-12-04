@@ -3,6 +3,7 @@ defmodule PhosWeb.Router do
 
   import PhosWeb.Menshen.Gate
   import PhosWeb.Menshen.Plug
+  import Phoenix.LiveDashboard.Router
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -59,6 +60,8 @@ defmodule PhosWeb.Router do
   scope "/", PhosWeb do
     pipe_through [:browser]
 
+    resources "/admin/sessions", AdminSessionController, only: [:new, :create, :index], as: :admin_session
+
     delete "/users/log_out", UserSessionController, :delete
 
     live_session :current_user,
@@ -109,6 +112,7 @@ defmodule PhosWeb.Router do
   scope "/admin", PhosWeb.Admin, as: :admin, on_mount: {Phos.Admin.Mounter, :admin} do
     pipe_through [:browser, :admin]
 
+    live_dashboard "/dashboard", metrics: PhosWeb.Telemetry
     live "/", DashboardLive, :index
     live "/orbs", OrbLive.Index, :index
     live "/orbs/import", OrbLive.Import, :import
@@ -201,15 +205,16 @@ defmodule PhosWeb.Router do
   # If your application does not have an admins-only section yet,
   # you can use Plug.BasicAuth to set up some basic authentication
   # as long as you are also using SSL (which you should anyway).
-  if Mix.env() in [:dev, :test] do
-    import Phoenix.LiveDashboard.Router
 
-    scope "/" do
-      pipe_through :browser
+  # if Mix.env() in [:dev, :test] do
+  #   import Phoenix.LiveDashboard.Router
 
-      live_dashboard "/dashboard", metrics: PhosWeb.Telemetry
-    end
-  end
+  #   scope "/" do
+  #     pipe_through :browser
+
+  #     live_dashboard "/dashboard", metrics: PhosWeb.Telemetry
+  #   end
+  # end
 
   # Enables the Swoosh mailbox preview in development.
   #

@@ -16,9 +16,6 @@
       <nav>
         <ul>
           <li><.link href="https://www.scratchbac.com">Get Started</.link></li>
-          <li :if={Mix.env() == :dev}>
-            <.link href={~p"/dashboard"}>LiveDashboard</.link>
-          </li>
         </ul>
         <.user_menu current_user={@current_user} />
       </nav>

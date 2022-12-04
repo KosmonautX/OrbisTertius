@@ -11,7 +11,7 @@ defmodule Phos.Admin.Plug do
       {:error, _reason} ->
         conn
         |> put_flash(:error, "Restricted area")
-        |> redirect(to: PhosWeb.Router.Helpers.admin_session_path(conn, :new))
+        |> redirect(to: "/admin/sessions/new")
         |> halt()
     end
   end
