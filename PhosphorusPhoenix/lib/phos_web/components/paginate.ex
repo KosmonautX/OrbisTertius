@@ -43,16 +43,16 @@ defmodule PhosWeb.Components.Pagination do
     end
 
     ~H"""
-      <%= live_patch to: apply(Routes, route, [PhosWeb.Endpoint, method, [page: page]]), class: current_class do %>
+      <.link navigate={"#{route}?page=#{page}"} class={current_class}>
         <span class="sr-only">First</span>
         <div class="h-5 w-5 flex items-center justify-center">
-          <%= for n <- [1, 2] do %>
+          <%= for _n <- [1, 2] do %>
             <svg class="h-5 w-5 -m-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
             </svg>
           <% end %>
         </div>
-      <% end %>
+      </.link>
     """
   end
 
@@ -71,7 +71,7 @@ defmodule PhosWeb.Components.Pagination do
     end
 
     ~H"""
-      <%= live_patch to: apply(Routes, route, [PhosWeb.Endpoint, method, [page: page]]), class: current_class do %>
+      <.link navigate={"#{route}?page=#{page}"} class={current_class}>
         <span class="sr-only">Last</span>
         <div class="h-5 w-5 flex items-center justify-center">
           <%= for n <- [1, 2] do %>
@@ -80,7 +80,7 @@ defmodule PhosWeb.Components.Pagination do
             </svg>
           <% end %>
         </div>
-      <% end %>
+      </.link>
     """
   end
 
@@ -99,7 +99,7 @@ defmodule PhosWeb.Components.Pagination do
     end
 
     ~H"""
-      <.link patch={apply(Routes, route, [PhosWeb.Endpoint, method, [page: expected_page]])} class={current_class}>
+      <.link navigate={"#{route}?page=#{expected_page}"} class={current_class}>
         <span class="sr-only">Previous</span>
         <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
           <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
@@ -124,7 +124,7 @@ defmodule PhosWeb.Components.Pagination do
     end
 
     ~H"""
-      <.link patch={apply(Routes, route, [PhosWeb.Endpoint, method, [page: expected_page]])} class={current_class}>
+      <.link navigate={"#{route}?page=#{expected_page}"} class={current_class}>
         <span class="sr-only">Next</span>
         <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
           <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
@@ -153,14 +153,14 @@ defmodule PhosWeb.Components.Pagination do
     current_class = decide_active_class(active)
 
     ~H"""
-      <%= live_patch number, to: apply(Routes, route, [PhosWeb.Endpoint, method, [page: number]]), class: current_class %>
+      <.link navigate={"#{route}?page=#{number}"} class={current_class}><%= number %></.link>
     """
   end
   def paginate_child(%{active: active} = assigns) do
     current_class = decide_active_class(active)
 
     ~H"""
-      <%= live_patch "...", to: "#", class: current_class %>
+      <.link href="#" class={current_class}>...</.link>
     """
   end
 
