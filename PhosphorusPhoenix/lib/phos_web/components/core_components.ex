@@ -551,17 +551,20 @@ defmodule PhosWeb.CoreComponents do
   attr :class, :string, default: nil
   slot :inner_block, required: true
   slot :actions, doc: "the slot for form actions, such as a submit button"
+  attr :rest, :global,
+    include: ~w(id name rel),
+    doc: "the arbitrary HTML attributes to apply to the form tag"
 
   def card(assigns) do
     ~H"""
-    <div class={["flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded", @class]}>
+    <div class={["flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded", @class]} {@rest}>
       <div class="rounded-t mb-0 px-4 py-3 border-0">
         <h1 class="font-semibold text-lg text-gray-700"><%= @title %></h1>
       </div>
-      <div class="block w-full overflow-x-auto px-2">
+      <div class="block w-full overflow-none px-2 py-3">
         <%= render_slot(@inner_block) %>
       </div>
-      <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-6">
+      <div :for={action <- @actions} class="mt-2 mb-4 flex items-center justify-between gap-6">
         <%= render_slot(action) %>
       </div>
     </div>

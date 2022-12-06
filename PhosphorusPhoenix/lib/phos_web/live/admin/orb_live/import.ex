@@ -141,7 +141,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
   def orb_card(assigns) do
     ~H"""
     <div id={"orb_detail_#{@id}"} class="w-full hover:cursor-pointer" phx-click="set-selected-orb" phx-value-selected={@index}>
-      <.live_component module={PhosWeb.Components.Card} title={@data.title} id={@id} name="name" class={define_class(@index, @selected_orbs)}>
+      <.card title={@data.title} id={@id} name="orb_modal" class={define_class(@index, @selected_orbs)}>
         <div class="px-2 pb-3">
           <%= if Map.get(@data, :lossy) do %>
             <img src={Map.get(@data, :lossy)} class="max-w-full h-auto mx-auto" alt="image here" />
@@ -163,7 +163,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
             <%= if selected_orbs?(@index, @selected_orbs), do: "Unselect", else: "select" %>
           </button>
         </div>
-      </.live_component>
+      </.card>
     </div>
     """
   end
