@@ -4,6 +4,8 @@ defmodule PhosWeb.API.CommentJSON do
     %{data: Enum.map(comments, &comment_json/1)}
   end
 
+  def paginated(%{comments: %{data: data, meta: meta}}), do: %{data: Enum.map(data, &comment_json/1), meta: meta}
+
   def show(%{comment: comment}), do: %{data: comment_json(comment)}
 
   defp comment_json(comment) do

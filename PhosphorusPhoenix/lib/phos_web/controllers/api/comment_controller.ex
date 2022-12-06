@@ -27,12 +27,6 @@ defmodule PhosWeb.API.CommentController do
                            "path" => Encoder.encode_lpath(comment_id),
                            "body" => comment_params["body"]}
 
-        with {:ok, %Comment{} = comment} <- Comments.create_comment(comment_params) do
-          conn
-          |> put_status(:created)
-          |> put_resp_header("location", ~p"/orbland/comments/#{comment.id}")
-          |> render(:show, comment: comment)
-        end
         # Create child comment flow
         %{"parent_id" => parent_id} ->
         parent_comment = Comments.get_comment!(parent_id)
@@ -43,21 +37,19 @@ defmodule PhosWeb.API.CommentController do
                            "initiator_id" => user_id,
                            "path" => Encoder.encode_lpath(comment_id, to_string(parent_comment.path)),
                            "body" => comment_params["body"]}
+    end
 
-        with {:ok, %Comment{} = comment} <- Comments.create_comment(comment_params) do
+    with {:ok, %Comment{} = comment} <- Comments.create_comment(comment_params) do
           conn
           |> put_status(:created)
           |> put_resp_header("location",  ~p"/orbland/comments/#{comment.id}")
           |> render(:show, comment: comment)
-        end
     end
   end
 
   def show(conn, %{"id" => id}) do
     comment = Comments.get_comment!(id)
-    # IO.inspect(comment)
     render(conn, :show, comment: comment)
-
   end
 
   # curl -H "Content-Type: application/json" -X POST -d '{"comment": {"id": "51f7a029-2023-4da1-8ff8-7981ac81b7a8", "body": "Hi comment", "path": "51f7a029", "active": "true", "orb_id": "a003b89a-74a5-448a-9b7a-94a4e2324cb3", "initiator_id": "d9476604-f725-4068-9852-1be66a046efd"}}' http://localhost:4000/api/comments
