@@ -1,0 +1,89 @@
+defmodule PhosWeb.API.EchoController do
+  use PhosWeb, :controller
+
+  alias Phos.Message
+  alias Phos.Message.Echo
+  action_fallback PhosWeb.API.FallbackController
+
+  def show_last(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"page" => page}) do
+     render(conn, :paginated, echoes: Message.last_echoes(id, page))
+  end
+
+  def show_others(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => user_id, "page" => page}),
+    do: render(conn, :paginated, echoes: Message.list_echoes_by_pair({user_id, your_id}, page))
+
+  # def show(conn = %{assigns: %{current_user: user}}, %{"id" => id}) do
+  #   with %Echo{} = echo <-  Action.get_echo(id, user.id) do
+  #     render(conn, "show.json", echo: echo)
+  #   else
+  #     nil -> {:error, :not_found}
+  #   end
+  # end
+
+  # # media support
+
+  # def create(conn = %{assigns: %{current_user: user}}, params = %{"media" => [_|_] = media}) do
+  #   with {:ok, attrs} <- echo_constructor(user, params),
+  #        {:ok, media} <- Phos.Echoject.Structure.apply_echo_changeset(%{id: attrs["id"], archetype: "ECHO", media: media}),
+  #        {:ok, %Echo{} = echo} <- Action.create_echo(%{attrs | "media" => true}) do
+  #     conn
+  #     |> put_status(:created)
+  #     |> put_resp_header("location", ~p"/api/echoland/echoes/#{echo.id}")
+  #     |> render(:show, echo: echo, media: media)
+  #   end
+  # end
+
+  # # Target Insert
+  # # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -d '{"geohash": {"target": 8, "central_geohash": 623275816647884799}, "title": "toa payoh echo 4", "active": "true", "media": "false", "expires_in": "10000"}' -X POST 'http://localhost:4000/api/echos'
+  def create(conn = %{assigns: %{current_user: user}}, params) do
+
+    with {:ok, attrs} <- echo_constructor(user, params),
+         {:ok, %Echo{} = echo} <- Message.create_echo(attrs) do
+      conn
+      |> put_status(:created)
+      |> put_resp_header("location", ~p"/api/echoland/echoes/#{echo.id}")
+      |> render(:show, echo: echo)
+    end
+  end
+
+  def update(%Plug.Conn{assigns: %{current_user: %{id: user_id}}} = conn , %{"id" => id} = params) do
+    echo = Message.get_echo!(id)
+    with true <- echo.initiator.id == user_id,
+         {:ok, attrs} <- echo_constructor(user_id, params),
+         {:ok, %Echo{} = echo} <- Message.update_echo(echo, attrs) do
+      conn
+      |> put_status(:ok)
+      |> put_resp_header("location", ~p"/api/echoland/echos/#{echo.id}")
+      |> render(:show, echo: echo)
+    else
+      false -> {:error, :unauthorized}
+    end
+  end
+
+  # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X PUT -d '{"active": "false"}' http://localhost:4000/api/echos/fe1ac6b5-3db3-49e2-89b2-8aa30fad2578
+
+  def delete(%Plug.Conn{assigns: %{current_user: %{id: user_id}}} = conn, %{"id" => id}) do
+    echo = Message.get_echo!(id)
+
+    with true <- echo.initiator.id == user_id,
+         {:ok, %Echo{}} <- Message.delete_echo(echo) do
+      send_resp(conn, :no_content, "")
+    end
+  end
+
+  defp echo_constructor(user_id, params) do
+    try do
+      echo = %{
+      "destination" => params["destination"],
+      "destination_archetype" => params["destination_archetype"],
+      "subject" => params["subject"],
+      "subject_archetype" => params["subject_archetype"],
+      "source_archetype" => "USR"
+      }
+      |> Map.put("source", user_id)
+      {:ok, echo}
+    rescue
+      ArgumentError -> {:error, :unprocessable_entity}
+    end
+  end
+end
