@@ -17,25 +17,25 @@ defmodule PhosWeb.API.CommentController do
 
 
   def create(conn = %{assigns: %{current_user: %{id: user_id}}}, comment_params) do
-    case comment_params do
-      # Create root comment flow
-      %{"orb_id" => orb_id} ->
-        comment_id = Ecto.UUID.generate()
-        comment_params = %{"id" => comment_id,
-                           "orb_id" => orb_id,
-                           "initiator_id" => user_id,
-                           "path" => Encoder.encode_lpath(comment_id),
-                           "body" => comment_params["body"]}
-
-        # Create child comment flow
-        %{"parent_id" => parent_id} ->
+    comment_params = case comment_params do
+      # Create child comment flow
+      %{"parent_id" => parent_id} ->
         parent_comment = Comments.get_comment!(parent_id)
         comment_id = Ecto.UUID.generate()
-        comment_params = %{"id" => comment_id,
+        %{"id" => comment_id,
                            "orb_id" => parent_comment.orb_id,
                            "parent_id" => parent_comment.id,
                            "initiator_id" => user_id,
                            "path" => Encoder.encode_lpath(comment_id, to_string(parent_comment.path)),
+                           "body" => comment_params["body"]}
+
+      # Create root comment flow
+      %{"orb_id" => orb_id} ->
+        comment_id = Ecto.UUID.generate()
+        %{"id" => comment_id,
+                           "orb_id" => orb_id,
+                           "initiator_id" => user_id,
+                           "path" => Encoder.encode_lpath(comment_id),
                            "body" => comment_params["body"]}
     end
 
