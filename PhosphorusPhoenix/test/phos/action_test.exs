@@ -5,6 +5,7 @@ defmodule Phos.ActionTest do
 
   describe "orbs" do
     alias Phos.Action.Orb
+
     import Phos.ActionFixtures
     import Phos.UsersFixtures
 
@@ -62,6 +63,27 @@ defmodule Phos.ActionTest do
     test "change_orb/1 returns a orb changeset" do
       orb = orb_fixture()
       assert %Ecto.Changeset{} = Action.change_orb(orb)
+    end
+
+    test "reorb/2 with no comment" do
+      orb = orb_fixture_no_location()
+      %{id: user_id} = user_fixture()
+
+      {:ok, reorb} = Action.reorb(user_id, orb.id)
+      assert reorb.parent_id == orb.id
+      assert reorb.path
+      refute reorb.comment_id
+    end
+
+    test "reorb/3 with comment" do
+      orb = orb_fixture_no_location()
+      message = "This is re post message"
+      %{id: user_id} = user_fixture()
+
+      {:ok, reorb} = Action.reorb(user_id, orb.id, message)
+      assert reorb.parent_id == orb.id
+      assert reorb.path
+      assert reorb.comment_id
     end
   end
 end

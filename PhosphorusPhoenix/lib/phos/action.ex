@@ -4,6 +4,8 @@ defmodule Phos.Action do
   """
 
   import Ecto.Query, warn: false
+
+  alias Ecto.Multi
   alias Phos.Repo
   alias Phos.Action.{Orb, Location, Orb_Location}
 
@@ -536,5 +538,71 @@ defmodule Phos.Action do
     query = from p in __MODULE__.Orb, preload: [:initiator], where: fragment("? @> ?", p.traits, ^traits)
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
+  end
+
+  def reorb(user_id, orb_id, message \\ "")
+  def reorb(user_id, orb_id, message) when is_binary(user_id) do
+    with {:ok, user} <- Phos.Users.find_user_by_id(user_id) do
+      reorb(user, orb_id, message)
+    else
+      _ -> {:error, "User not found."}
+    end
+  end
+  def reorb(user_id, orb_id, message) when is_binary(orb_id) do
+    with {:ok, orb} <- get_orb(orb_id) do
+      reorb(user_id, orb, message)
+    else
+      _ -> {:error, "Orb not found."}
+    end
+  end
+  def reorb(%Phos.Users.User{} = user, %Orb{} = orb, message), do: reorb_updater(user, orb, message)
+  defp reorb_updater(%Phos.Users.User{} = user, %Orb{} = orb, message) when is_binary(message) do
+    Multi.new()
+    |> Multi.run(:reposted_orb, fn repo, _ ->
+      Orb.reorb_changeset(user.id, orb)
+      |> repo.insert()
+    end)
+    |> Multi.run(:comment, fn repo, _ ->
+      case String.trim(message) do
+        "" -> {:ok, nil}
+        msg ->
+          id = Ecto.UUID.generate()
+          params = %{
+            id: id,
+            path: encode_lpath(id),
+            orb_id: orb.id,
+            body: message,
+            initiator_id: user.id
+          }
+          Phos.Comments.Comment.changeset(%Phos.Comments.Comment{}, params)
+          |> repo.insert()
+      end
+    end)
+    |> Multi.run(:reorb, fn repo, %{comment: comment, reposted_orb: reposted_orb} ->
+      lpath = encode_lpath(reposted_orb.id, orb.id)
+      reposted_orb
+      |> repo.preload(:reposted_comment)
+      |> Orb.reorb_attach_changeset(comment, %{path: lpath})
+      |> repo.update()
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{reorb: orb}} -> {:ok, orb}
+      {:error, _reason} = reason -> reason
+    end
+  end
+
+  defp encode_lpath(id), do: String.replace(id, "-", "")
+  defp encode_lpath(id, parent_string) do
+    case String.contains?(parent_string, "-") do
+      true -> encode_lpath(parent_string)
+      _ -> parent_string
+    end
+    |> Kernel.<>(".")
+    |> Kernel.<>(encode_lpath(id))
+  end
+
+  defp decode_lpath(<<time_low::binary-size(8), time_mid::binary-size(4), version::binary-size(4), clock::binary-size(4), rest::binary>>) do
+    "#{time_low}-#{time_mid}-#{version}-#{clock}-#{rest}"
   end
 end

@@ -1,8 +1,12 @@
 defmodule Phos.Action.Orb do
   use Ecto.Schema
+
   import Ecto.Changeset
+
+  alias EctoLtree.LabelTree, as: Ltree
   alias Phos.Action.{Location,Orb, Orb_Payload, Orb_Location}
-  alias Phos.Users.{User}
+  alias Phos.Users.User
+  alias Phos.Comments.Comment
 
   @primary_key {:id, Ecto.UUID, autogenerate: false}
   schema "orbs" do
@@ -16,9 +20,15 @@ defmodule Phos.Action.Orb do
     field :userbound, :boolean, default: false
     field :topic, :string, virtual: true
     field :comment_count, :integer, default: 0, virtual: true
+    field :path, Ltree
 
     belongs_to :initiator, User, references: :id, type: Ecto.UUID
+    belongs_to :parent, __MODULE__, references: :id, type: Ecto.UUID
+    belongs_to :reposted_comment, Comment, foreign_key: :comment_id, references: :id, type: Ecto.UUID
     #belongs_to :users, User, references: :id, foreign_key: :acceptor, type: Ecto.UUID
+
+    has_many :comments, Comment, references: :id
+    
     many_to_many :locations, Location, join_through: Orb_Location, on_replace: :delete, on_delete: :delete_all#, join_keys: [id: :id, location_id: :location_id]
     embeds_one :payload, Orb_Payload, on_replace: :delete
 
@@ -106,5 +116,35 @@ defmodule Phos.Action.Orb do
         _ -> []
       end
     end
+  end
+
+  def reorb_changeset(user_id, orb) do
+    payload = case orb.payload do
+      nil -> %{}
+      _ -> Map.from_struct(orb.payload)
+    end
+    attrs =
+      Map.from_struct(orb)
+      |> Map.take(~W(active central_geohash extinguish media title topic userbound)a)
+      |> Map.merge(%{
+        id: Ecto.UUID.generate(),
+        initiator_id: user_id,
+        traits: ["reorb" | Map.get(orb, :traits, [])],
+        payload: payload
+      })
+
+    changeset(%__MODULE__{}, attrs)
+    |> put_change(:parent_id, orb.id)
+  end
+
+  def reorb_attach_changeset(orb, comment, attrs \\ %{})
+  def reorb_attach_changeset(orb, %Comment{} = comment, attrs) do
+    reorb_attach_changeset(orb, nil, attrs)
+    |> put_assoc(:reposted_comment, comment)
+  end
+  def reorb_attach_changeset(orb, _comment, attrs) do
+    orb
+    |> cast(attrs, ~w(path)a)
+    |> validate_required(~w(path parent_id)a)
   end
 end
