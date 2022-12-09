@@ -38,7 +38,7 @@ defmodule Phos.Action.Orb do
   @doc false
   def changeset(%Orb{} = orb, attrs) do
     orb
-    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])
+    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits, :path])
     |> cast_embed(:payload)
     |> cast_assoc(:locations)
     |> validate_required([:id, :title, :active, :media, :extinguish, :initiator_id])
@@ -118,16 +118,27 @@ defmodule Phos.Action.Orb do
     end
   end
 
-  def reorb_changeset(user_id, orb) do
+  def reorb_changeset(user_id, orb, %Comment{} = comment) do
+    reorb_changeset(user_id, orb, nil)
+    |> put_assoc(:reposted_comment, comment)
+  end
+  def reorb_changeset(user_id, orb, nil) do
+    id = Ecto.UUID.generate()
     payload = case orb.payload do
       nil -> %{}
       _ -> Map.from_struct(orb.payload)
+    end
+    path = case orb.path do
+      %{labels: []} -> Phos.Utility.Encoder.encode_lpath(id, orb.id)
+      %{labels: labels} -> Phos.Utility.Encoder.encode_lpath(id, labels)
+      _ -> Phos.Utility.Encoder.encode_lpath(id, orb.id)
     end
     attrs =
       Map.from_struct(orb)
       |> Map.take(~W(active central_geohash extinguish media title topic userbound)a)
       |> Map.merge(%{
-        id: Ecto.UUID.generate(),
+        id: id,
+        path: path,
         initiator_id: user_id,
         traits: ["reorb" | Map.get(orb, :traits, [])],
         payload: payload
@@ -137,14 +148,4 @@ defmodule Phos.Action.Orb do
     |> put_change(:parent_id, orb.id)
   end
 
-  def reorb_attach_changeset(orb, comment, attrs \\ %{})
-  def reorb_attach_changeset(orb, %Comment{} = comment, attrs) do
-    reorb_attach_changeset(orb, nil, attrs)
-    |> put_assoc(:reposted_comment, comment)
-  end
-  def reorb_attach_changeset(orb, _comment, attrs) do
-    orb
-    |> cast(attrs, ~w(path)a)
-    |> validate_required(~w(path parent_id)a)
-  end
 end

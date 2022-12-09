@@ -558,10 +558,6 @@ defmodule Phos.Action do
   def reorb(%Phos.Users.User{} = user, %Orb{} = orb, message), do: reorb_updater(user, orb, message)
   defp reorb_updater(%Phos.Users.User{} = user, %Orb{} = orb, message) when is_binary(message) do
     Multi.new()
-    |> Multi.run(:reposted_orb, fn repo, _ ->
-      Orb.reorb_changeset(user.id, orb)
-      |> repo.insert()
-    end)
     |> Multi.run(:comment, fn repo, _ ->
       case String.trim(message) do
         "" -> {:ok, nil}
@@ -569,7 +565,7 @@ defmodule Phos.Action do
           id = Ecto.UUID.generate()
           params = %{
             id: id,
-            path: encode_lpath(id),
+            path: Phos.Utility.Encoder.encode_lpath(id),
             orb_id: orb.id,
             body: message,
             initiator_id: user.id
@@ -578,12 +574,8 @@ defmodule Phos.Action do
           |> repo.insert()
       end
     end)
-    |> Multi.run(:reorb, fn repo, %{comment: comment, reposted_orb: reposted_orb} ->
-      lpath = encode_lpath(reposted_orb.id, orb.id)
-      reposted_orb
-      |> repo.preload(:reposted_comment)
-      |> Orb.reorb_attach_changeset(comment, %{path: lpath})
-      |> repo.update()
+    |> Multi.insert(:reorb, fn %{comment: comment} ->
+      Orb.reorb_changeset(user.id, orb, comment)
     end)
     |> Repo.transaction()
     |> case do
@@ -592,17 +584,4 @@ defmodule Phos.Action do
     end
   end
 
-  defp encode_lpath(id), do: String.replace(id, "-", "")
-  defp encode_lpath(id, parent_string) do
-    case String.contains?(parent_string, "-") do
-      true -> encode_lpath(parent_string)
-      _ -> parent_string
-    end
-    |> Kernel.<>(".")
-    |> Kernel.<>(encode_lpath(id))
-  end
-
-  defp decode_lpath(<<time_low::binary-size(8), time_mid::binary-size(4), version::binary-size(4), clock::binary-size(4), rest::binary>>) do
-    "#{time_low}-#{time_mid}-#{version}-#{clock}-#{rest}"
-  end
 end
