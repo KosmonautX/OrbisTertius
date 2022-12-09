@@ -20,6 +20,7 @@ defmodule Phos.Action.Orb do
     field :userbound, :boolean, default: false
     field :topic, :string, virtual: true
     field :comment_count, :integer, default: 0, virtual: true
+    field :number_of_repost, :integer, default: 0, virtual: true
     field :path, Ltree
 
     belongs_to :initiator, User, references: :id, type: Ecto.UUID

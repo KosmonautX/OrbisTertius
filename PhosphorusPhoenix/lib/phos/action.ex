@@ -55,7 +55,23 @@ defmodule Phos.Action do
   #
 
   def get_orb(id) when is_binary(id) do
-    query = from o in Orb, preload: [:locations, :initiator], where: o.id == ^id, limit: 1
+    parent_path = "*.#{Phos.Utility.Encoder.encode_lpath(id)}.*"
+    query = 
+      from o in Orb,
+        preload: [:locations, :initiator],
+        where: o.id == ^id,
+        inner_lateral_join: p in subquery(
+          from p in Orb,
+            where: fragment("path ~ ?", ^parent_path),
+            select: %{count: count(p)}
+        ),
+        inner_lateral_join: c in subquery(
+          from c in Phos.Comments.Comment,
+          where: c.orb_id == ^id,
+          select: %{count: count()}
+        ),
+        select_merge: %{number_of_repost: p.count, comment_count: c.count},
+        limit: 1
     case Repo.one(query) do
       %Orb{} = orb -> {:ok, orb}
       _ -> {:error, :not_found}
