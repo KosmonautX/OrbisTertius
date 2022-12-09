@@ -1,13 +1,14 @@
 defmodule PhosWeb.API.EchoController do
   use PhosWeb, :controller
-
+  use Phos.ParamsValidator, [
+    :message, :destination, :destination_archetype, :subject, :subject_archetype
+  ]
   alias Phos.Message
   alias Phos.Message.Echo
   action_fallback PhosWeb.API.FallbackController
 
-  def show_last(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"page" => page}) do
-     render(conn, :paginated, echoes: Message.last_echoes(id, page))
-  end
+  def show_last(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"page" => page}),
+    do: render(conn, :paginated, echoes: Message.last_echoes(id, page))
 
   def show_others(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => user_id, "page" => page}),
     do: render(conn, :paginated, echoes: Message.list_echoes_by_pair({user_id, your_id}, page))
@@ -22,16 +23,16 @@ defmodule PhosWeb.API.EchoController do
 
   # # media support
 
-  # def create(conn = %{assigns: %{current_user: user}}, params = %{"media" => [_|_] = media}) do
-  #   with {:ok, attrs} <- echo_constructor(user, params),
-  #        {:ok, media} <- Phos.Echoject.Structure.apply_echo_changeset(%{id: attrs["id"], archetype: "ECHO", media: media}),
-  #        {:ok, %Echo{} = echo} <- Action.create_echo(%{attrs | "media" => true}) do
-  #     conn
-  #     |> put_status(:created)
-  #     |> put_resp_header("location", ~p"/api/echoland/echoes/#{echo.id}")
-  #     |> render(:show, echo: echo, media: media)
-  #   end
-  # end
+  def create(conn = %{assigns: %{current_user: user}}, params = %{"media" => [_|_] = media}) do
+    with {:ok, attrs} <- echo_constructor(user, params),
+         {:ok, media} <- Phos.Orbject.Structure.apply_echo_changeset(%{id: attrs["id"], archetype: "echo", media: media}),
+         {:ok, %Echo{} = echo} <- Action.create_echo(%{attrs | "media" => true}) do
+      conn
+      |> put_status(:created)
+      |> put_resp_header("location", ~p"/api/echoland/echoes/#{echo.id}")
+      |> render(:show, echo: echo, media: media)
+    end
+  end
 
   # # Target Insert
   # # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -d '{"geohash": {"target": 8, "central_geohash": 623275816647884799}, "title": "toa payoh echo 4", "active": "true", "media": "false", "expires_in": "10000"}' -X POST 'http://localhost:4000/api/echos'
@@ -72,16 +73,9 @@ defmodule PhosWeb.API.EchoController do
   end
 
   defp echo_constructor(user_id, params) do
+    constructor = sanitize(params)
     try do
-      echo = %{
-      "destination" => params["destination"],
-      "destination_archetype" => params["destination_archetype"],
-      "subject" => params["subject"],
-      "subject_archetype" => params["subject_archetype"],
-      "source_archetype" => "USR"
-      }
-      |> Map.put("source", user_id)
-      {:ok, echo}
+      {:ok, constructor}
     rescue
       ArgumentError -> {:error, :unprocessable_entity}
     end

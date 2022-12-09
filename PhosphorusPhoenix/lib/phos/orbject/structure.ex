@@ -49,7 +49,17 @@ defmodule Phos.Orbject.Structure do
     |> cast(attrs, [:access, :essence, :count, :resolution, :height, :width, :ext])
     |> validate_inclusion(:access, ["public"])
     |> validate_inclusion(:essence, ["banner"])
-    |> validate_number(:count, less_than: 6)
+    |> validate_number(:count, greater_than: 0, less_than: 6)
+    |> validate_inclusion(:resolution, ["lossy", "lossless"])
+    |> validate_required([:access, :essence])
+  end
+
+  def echo_media_changeset(structure, attrs) do
+    structure
+    |> cast(attrs, [:access, :essence, :count, :resolution, :height, :width, :ext])
+    |> validate_inclusion(:access, ["public"])
+    |> validate_inclusion(:essence, ["banner"])
+    |> validate_number(:count, greater_than: 0, less_than: 6)
     |> validate_inclusion(:resolution, ["lossy", "lossless"])
     |> validate_required([:access, :essence])
   end

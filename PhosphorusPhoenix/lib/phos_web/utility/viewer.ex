@@ -263,7 +263,9 @@ defmodule PhosWeb.Util.Viewer do
         subject_archetype: echo.subject_archetype,
         subject: echo.subject,
         message: echo.message,
-        time: DateTime.from_naive!(echo.inserted_at,"Etc/UTC") |> DateTime.to_unix()
+        creationtime: DateTime.from_naive!(echo.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
+        mutationtime: DateTime.from_naive!(echo.updated_at, "Etc/UTC") |> DateTime.to_unix()
+        #time: DateTime.from_naive!(echo.inserted_at,"Etc/UTC") |> DateTime.to_unix()
       }
   end
 

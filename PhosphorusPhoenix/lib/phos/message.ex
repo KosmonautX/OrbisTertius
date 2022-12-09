@@ -37,7 +37,7 @@ defmodule Phos.Message do
     Phos.Message.Echo
     |> where([e], e.source == ^id and e.source_archetype == ^archetype )
     |> or_where([e], e.destination == ^id and e.destination_archetype == ^archetype)
-    |> distinct([e], [e.source, e.destination, e.subject])
+    |> distinct([e], [e.subject, e.source, e.destination])
     |> order_by([e], desc: e.inserted_at)
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end

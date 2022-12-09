@@ -206,6 +206,24 @@ POST :ipAddress/orbland/orbs
             "essence": "banner",
             "resolution": "lossless",
             "count": 2
+        },
+        {
+            "access": "public",
+            "essence": "banner",
+            "resolution": "lossless",
+            "count": 3
+        },
+        {
+            "access": "public",
+            "essence": "banner",
+            "resolution": "lossless",
+            "count": 4
+        },
+        {
+            "access": "public",
+            "essence": "banner",
+            "resolution": "lossless",
+            "count": 5
         }
         ],
     "expires_in": "10000",
