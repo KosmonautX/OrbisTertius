@@ -8,10 +8,10 @@ defmodule PhosWeb.Components.AdminSidebar do
   def render(assigns) do
     ~H"""
     <li class="items-center" phx-click="on-click" phx-target={@myself}>
-      <%= live_patch(to: @to, class: "text-xs uppercase py-3 font-bold block text-gray-500 hover:text-blue-400", phx: [click: "click", value: "value"]) do %>
+      <.link patch={@to} class="text-xs uppercase py-3 font-bold block text-gray-500 hover:text-blue-400">
         <i class={"fas mr-2 text-sm opacity-75 #{@icon}"}></i>
         <%= @title %>
-      <% end %>
+      </.link>
     </li>
     """
   end

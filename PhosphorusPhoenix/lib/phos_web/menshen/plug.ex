@@ -4,8 +4,8 @@ defmodule PhosWeb.Menshen.Plug do
 
   def init(opts), do: opts
 
-  @spec authorize_user(Plug.Conn.t(), any) :: Plug.Conn.t()
-  def authorize_user(conn, _opts) do
+  @spec authorized_user(Plug.Conn.t(), any) :: Plug.Conn.t()
+  def authorized_user(conn, _opts) do
     with [jwt | _tail] when is_binary(jwt) <- get_req_header(conn, "authorization"),
          {:ok , claims} <- Auth.validate_user(jwt) do
       conn |> shallPass(claims)

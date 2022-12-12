@@ -1,0 +1,16 @@
+<div class="w-full h-screen bg-gray-200 mx-auto flex justify-center items-center">
+  <div class="bg-white rounded-lg p-4 border border-gray-300">
+    <h1>[sudo] for Scratchbac Admin</h1>
+    <.form let={f} for={@conn} action={~p"/admin/sessions"} as={:user}>
+      <div class="mt-4">
+        <%= label f, :password do  %>
+          <%= password_input f, :password, required: true, placeholder: "🗿...", class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
+        <% end %>
+      </div>
+      <div class="mt-4">
+        <%= submit "Exit the Matrix ☼", class: "bg-blue-400 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" %>
+      </div>
+    </.form>
+  </div>
+</div>
+

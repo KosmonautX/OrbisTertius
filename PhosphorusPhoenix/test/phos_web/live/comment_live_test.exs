@@ -1,23 +1,15 @@
 defmodule PhosWeb.CommentLiveTest do
   use PhosWeb.ConnCase
-  alias PhosWeb.CommentLive.Index
-  alias Phos.Users
-  alias Phos.Comments
   import Phoenix.LiveViewTest
   import Phos.ActionFixtures
   # import PhosWeb.ConnCase
-  import Phos.UsersFixtures
-  import Phos.CommentsFixtures
+
+  alias Phos.CommentsFixtures
 
   @create_attrs %{body: "some body"}
   @update_attrs %{body: "some updated body"}
   @invalid_attrs %{body: nil}
   @reply_attrs %{body: "some reply body"}
-
-  defp create_comment(_) do
-    comment = comment_fixture()
-    %{comment: comment}
-  end
 
   defp create_orb(_) do
     orb = orb_fixture()
@@ -28,9 +20,9 @@ defmodule PhosWeb.CommentLiveTest do
     setup [:create_orb, :register_and_log_in_user]
 
     test "lists root comments", %{conn: conn, orb: orb, user: user} do
-      Phos.CommentsFixtures.comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
+      CommentsFixtures.comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
 
-      {:ok, index_live, html} = live(conn, Routes.orb_show_path(conn, :show, orb))
+      {:ok, index_live, _html} = live(conn, ~p"/orb/#{orb.id}")
 
       assert render(index_live) =~ "some body"
 
@@ -38,8 +30,7 @@ defmodule PhosWeb.CommentLiveTest do
 
 
     test "create new comment", %{conn: conn, orb: orb} do
-
-      {:ok, index_live, _html} = live(conn, Routes.orb_show_path(conn, :show, orb))
+      {:ok, index_live, _html} = live(conn, ~p"/orb/#{orb.id}")
 
       view =
         index_live
@@ -52,7 +43,7 @@ defmodule PhosWeb.CommentLiveTest do
 
     test "create invalid comment", %{conn: conn, orb: orb} do
 
-      {:ok, index_live, _html} = live(conn, Routes.orb_show_path(conn, :show, orb))
+      {:ok, index_live, _html} = live(conn, ~p"/orb/#{orb.id}")
 
       view =
         index_live
@@ -63,13 +54,13 @@ defmodule PhosWeb.CommentLiveTest do
     end
 
     test "edit comment", %{conn: conn, orb: orb, user: user} do
-      comment = Phos.CommentsFixtures.comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
+      comment = CommentsFixtures.comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
 
-      {:ok, index_live, _html} = live(conn, Routes.orb_show_path(conn, :show, orb))
+      {:ok, index_live, _html} = live(conn, ~p"/orb/#{orb.id}")
       assert index_live |> element("#comment-#{comment.id} a", "Edit") |> render_click() =~
                "Edit"
 
-      assert_patch(index_live, Routes.orb_show_path(conn, :edit_comment, orb, comment))
+      assert_patch(index_live, ~p"/orb/#{orb.id}/edit/#{comment.id}")
 
       view =
         index_live
@@ -80,9 +71,9 @@ defmodule PhosWeb.CommentLiveTest do
     end
 
     test "deactivate comment", %{conn: conn, orb: orb, user: user} do
-      comment = Phos.CommentsFixtures.comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
+      comment = CommentsFixtures.comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
 
-      {:ok, index_live, _html} = live(conn, Routes.orb_show_path(conn, :show, orb))
+      {:ok, index_live, _html} = live(conn, ~p"/orb/#{orb.id}")
       assert index_live |> element("#comment-#{comment.id} a", "Delete") |> render_click()
 
       refute has_element?(index_live, "#comment-#{comment.id} a", "Edit")
@@ -90,9 +81,9 @@ defmodule PhosWeb.CommentLiveTest do
     end
 
     test "reply to existing comment", %{conn: conn, orb: orb, user: user} do
-      comment = Phos.CommentsFixtures.comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
+      comment = CommentsFixtures.comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
 
-      {:ok, index_live, _html} = live(conn, Routes.orb_show_path(conn, :show, orb))
+      {:ok, index_live, _html} = live(conn, ~p"/orb/#{orb.id}")
       assert index_live |> element("#comment-#{comment.id} a", "Reply") |> render_click() =~
       "reply"
 
@@ -106,15 +97,15 @@ defmodule PhosWeb.CommentLiveTest do
     end
 
     test "lists ancestor comments", %{conn: conn, orb: orb, user: user} do
-      root_comment = Phos.CommentsFixtures.comment_fixture(%{orb_id: orb.id, body: "root_comment", initiator_id: user.id})
-      second_level_comment = Phos.CommentsFixtures.comment_fixture(%{orb_id: orb.id, body: "second_level_comment", initiator_id: user.id, parent_id: root_comment.id, parent_path: to_string(root_comment.path)})
-      third_level_comment = Phos.CommentsFixtures.comment_fixture(%{orb_id: orb.id, body: "third_level_comment", initiator_id: user.id, parent_id: second_level_comment.id, parent_path: to_string(second_level_comment.path)})
+      root_comment = CommentsFixtures.comment_fixture(%{orb_id: orb.id, body: "root_comment", initiator_id: user.id})
+      second_level_comment = CommentsFixtures.comment_fixture(%{orb_id: orb.id, body: "second_level_comment", initiator_id: user.id, parent_id: root_comment.id, parent_path: to_string(root_comment.path)})
 
-      {:ok, index_live, html} = live(conn, Routes.orb_show_path(conn, :show_ancestor, orb.id, third_level_comment))
+      {:ok, index_live, html} = live(conn, ~p"/orb/#{orb.id}")
 
       assert html =~ root_comment.body
-      assert html =~ second_level_comment.body
-      assert html =~ third_level_comment.body
+
+      new_html = index_live |> element("#initshowreply-#{root_comment.id} a", "Show replies [1]") |> render_click()
+      assert new_html =~ second_level_comment.body
     end
   end
 end

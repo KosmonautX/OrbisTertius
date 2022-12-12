@@ -5,6 +5,10 @@ defmodule PhosWeb.Util.Viewer do
   For our Viewer Helper function that moulds data Models into Views
 
   """
+
+  import Phoenix.VerifiedRoutes, only: [path: 3, sigil_p: 2]
+
+  alias PhosWeb.Router
   alias Phos.Orbject.S3
 
   # Relationship Mapper
@@ -14,32 +18,32 @@ defmodule PhosWeb.Util.Viewer do
 
         %{self:
           %{data: %{PhosWeb.Util.Viewer.user_relation_mapper(self_relation) | self_initiated: self_relation.initiator_id != entity.id},
-            links: %{self: PhosWeb.Router.Helpers.friend_path(PhosWeb.Endpoint, :show_others, entity.id)}}}
+            links: %{self: path(PhosWeb.Endpoint, Router, ~p"/api/folkland/others/#{entity.id}")}}}
 
 
       {:orbs, [%Phos.Action.Orb{} | _] = orbs} ->
         %{orbs:
           %{data: PhosWeb.Util.Viewer.orb_mapper(orbs),
-          links: %{history: PhosWeb.Router.Helpers.orb_path(PhosWeb.Endpoint, :show_history, entity.id)}}}
+          links: %{history: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{entity.id}/history")}}}
 
 
       {:friend, %Phos.Users.User{} = friend} ->
 
         %{friend:
           %{data: PhosWeb.Util.Viewer.user_mapper(friend),
-            links: %{profile: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, friend.id)}}}
+            links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{friend.id}")}}}
 
       {:initiator, %Phos.Users.User{} = initiator} ->
 
         %{initiator:
           %{data: PhosWeb.Util.Viewer.user_mapper(initiator),
-            links: %{profile: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, initiator.id)}}}
+            links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{initiator.id}")}}}
 
       {:acceptor, %Phos.Users.User{} = acceptor} ->
 
         %{acceptor:
           %{data: PhosWeb.Util.Viewer.user_mapper(acceptor),
-            links: %{profile: PhosWeb.Router.Helpers.user_profile_path(PhosWeb.Endpoint, :show, acceptor.id)}}}
+            links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{acceptor.id}")}}}
 
 
       _ -> %{}
@@ -250,6 +254,21 @@ defmodule PhosWeb.Util.Viewer do
     end)
   end
 
+  def echo_mapper(echo) do
+      %{
+        source: echo.source,
+        destination: echo.destination,
+        source_archetype: echo.source_archetype,
+        destination_archetype: echo.destination_archetype,
+        subject_archetype: echo.subject_archetype,
+        subject: echo.subject,
+        message: echo.message,
+        creationtime: DateTime.from_naive!(echo.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
+        mutationtime: DateTime.from_naive!(echo.updated_at, "Etc/UTC") |> DateTime.to_unix()
+        #time: DateTime.from_naive!(echo.inserted_at,"Etc/UTC") |> DateTime.to_unix()
+      }
+  end
+
   # user.private_profile.geolocation -> socket.assigns.geolocation
   def profile_geolocation_mapper(geolocs) do
     Enum.map(geolocs, fn loc ->
@@ -259,7 +278,7 @@ defmodule PhosWeb.Util.Viewer do
         })
     end)
     |> Enum.reduce(fn x, y ->
-      Map.merge(x, y, fn _k, v1, v2 -> v2 ++ v1 end)
+      Map.merge(x, y, fn _k, v1, v2 -> v2 ++ v1  end)
     end)
   end
 

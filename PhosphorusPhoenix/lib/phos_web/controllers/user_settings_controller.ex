@@ -6,8 +6,9 @@ defmodule PhosWeb.UserSettingsController do
 
   plug :assign_email_and_profile_and_password_changesets
 
-  def edit(conn, _params) do
-    render(conn, "edit.html")
+  def edit(%{assigns: %{current_user: user}} = conn, _params) do
+    user = Phos.Repo.preload(user, :auths)
+    render(conn, :edit, current_user: user)
   end
 
   def update(conn, %{"action" => "update_email"} = params) do
@@ -30,7 +31,7 @@ defmodule PhosWeb.UserSettingsController do
         |> redirect(to: Routes.user_settings_path(conn, :edit))
 
       {:error, changeset} ->
-        render(conn, "edit.html", email_changeset: changeset)
+        render(conn, :edit, email_changeset: changeset)
     end
   end
 
@@ -46,7 +47,7 @@ defmodule PhosWeb.UserSettingsController do
         |> UserAuth.log_in_user(user)
 
       {:error, changeset} ->
-        render(conn, "edit.html", password_changeset: changeset)
+        render(conn, :edit, password_changeset: changeset)
     end
   end
 
@@ -68,7 +69,7 @@ defmodule PhosWeb.UserSettingsController do
         # |> UserAuth.log_in_user(user) # remember to implement token for oatuh temporary sol above
 
       {:error, changeset} ->
-        render(conn, "edit.html", pub_profile_changeset: changeset)
+        render(conn, :edit, pub_profile_changeset: changeset)
     end
   end
 

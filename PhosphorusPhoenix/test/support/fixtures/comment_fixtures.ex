@@ -3,8 +3,6 @@ defmodule Phos.CommentsFixtures do
   This module defines test helpers for creating
   entities via the `Phos.Action` context.
   """
-  import Phos.UsersFixtures
-  import Phos.ActionFixtures
   alias PhosWeb.Utility.Encoder
   @doc """
   Generate a comment.

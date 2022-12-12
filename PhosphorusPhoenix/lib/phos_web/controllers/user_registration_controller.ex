@@ -7,7 +7,7 @@ defmodule PhosWeb.UserRegistrationController do
 
   def new(conn, _params) do
     changeset = Users.change_user_registration(%User{})
-    render(conn, "new.html", changeset: changeset, telegram: Phos.OAuthStrategy.telegram())
+    render(conn, :new, changeset: changeset, telegram: Phos.OAuthStrategy.telegram())
   end
 
   def create(conn, %{"user" => user_params}) do
@@ -17,15 +17,14 @@ defmodule PhosWeb.UserRegistrationController do
         {:ok, _} =
           Users.deliver_user_confirmation_instructions(
             user,
-            &Routes.user_confirmation_url(conn, :edit, &1)
-          )
+            fn token -> ~p"/users/confirm/#{token}" end)
 
         conn
         |> put_flash(:info, "User created successfully.")
         |> UserAuth.log_in_user(user)
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "new.html", changeset: changeset, telegram: Phos.OAuthStrategy.telegram())
+        render(conn, :new, changeset: changeset, telegram: Phos.OAuthStrategy.telegram())
     end
   end
 end

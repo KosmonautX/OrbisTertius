@@ -13,7 +13,10 @@ config :phos,
 # Configures the endpoint
 config :phos, PhosWeb.Endpoint,
   url: [host: "localhost"], #change to "127.0.0.1" to work on privelleged port 80
-render_errors: [view: PhosWeb.ErrorView, accepts: ~w(html json), layout: false],
+  render_errors: [
+    formats: [html: PhosWeb.ErrorHTML, json: PhosWeb.ErrorJSON],
+    layout: false
+  ],
   pubsub_server: Phos.PubSub,
   live_view: [signing_salt: "r193MsgJ"]
 
@@ -69,14 +72,23 @@ config :phos, Phos.OAuthStrategy,
     bot_id: {System, :get_env, ["TELEGRAM_BOT_ID"]},
   ]
 
-config :tailwind, version: "3.1.6", default: [
-  args: ~w(
-    --config=tailwind.config.js
-    --input=css/admin.css
-    --output=../priv/static/assets/admin.css
-  ),
-  cd: Path.expand("../assets", __DIR__)
-]
+config :tailwind, version: "3.1.6",
+  admin: [
+    args: ~w(
+      --config=tailwind.config.js
+      --input=css/admin.css
+      --output=../priv/static/assets/admin.css
+    ),
+    cd: Path.expand("../assets", __DIR__)
+  ],
+  default: [
+    args: ~w(
+      --config=tailwind.config.js
+      --input=css/app.css
+      --output=../priv/static/assets/app.css
+    ),
+    cd: Path.expand("../assets", __DIR__)
+  ]
 
 config :phos, Phos.Cache,
   primary: [

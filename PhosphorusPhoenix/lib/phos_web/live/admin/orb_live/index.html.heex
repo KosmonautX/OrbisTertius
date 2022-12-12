@@ -1,11 +1,11 @@
 <div class="w-full p-2">
-  <.live_component module={PhosWeb.Components.Card} title="List active orbs" id="active_orbs">
+  <.card title="List active orbs">
     <div class="flex items-center px-4 py-2">
       <div class="block mr-4">
-        <%= live_patch to: Routes.admin_orb_import_path(@socket, :import), replace: true, class: "button button-sm" do %>
+        <.link navigate={~p"/admin/orbs/import"} class="button button-sm">
           <i class="fa-solid fa-plus cursor-pointer mr-1"></i>
           Import orbs
-        <% end %>
+        </.link>
       </div>
       <div class="flex">
         <.form let={f} for={:search} phx_change="search">
@@ -13,25 +13,17 @@
         </.form>
       </div>
     </div>
-    <div class="flex items-center flex-col">
-      <table class="items-center w-full bg-transparent border-collapse">
-        <thead>
-          <tr>
-            <.header_item title="No" />
-            <.header_item title="Title" />
-            <.header_item title="Initiator" />
-            <.header_item title="Source" />
-            <.header_item title="Traits" />
-            <.header_item title="Created at" />
-          </tr>
-        </thead>
-        <tbody>
-          <.table_values entries={@orbs} socket={@socket} />
-        </tbody>
-      </table>
-      <div class="hidden px-4 py-3 w-full sm:flex sm:flex-1 sm:items-center sm:justify-between">
-        <.live_component module={PhosWeb.Components.Pagination} limit={@limit} meta={@pagination} id="paginate" route_path={:admin_orb_index_path} />
-      </div>
+    <.table id="orbs" rows={@orbs}>
+      <:col let={orb} label="Title">
+        <.link navigate={~p"/admin/orbs/#{orb}"}><%= orb.title %></.link>
+      </:col>
+      <:col let={orb} label="Initiator"><%= orb.initiator.username %></:col>
+      <:col let={orb} label="Source"><%= orb.source %></:col>
+      <:col let={orb} label="Traits"><%= inspect orb.traits %></:col>
+      <:col let={orb} label="Created at"><%= Timex.format!(orb.inserted_at, "{D} {Mshort} {YY} {h24}:{m}") %></:col>
+    </.table>
+    <div class="hidden px-4 py-3 w-full sm:flex sm:flex-1 sm:items-center sm:justify-between">
+      <.live_component module={PhosWeb.Components.Pagination} limit={@limit} meta={@pagination} id="paginate" route_path={~p"/admin/orbs"} />
     </div>
-  </.live_component>
+  </.card>
 </div>

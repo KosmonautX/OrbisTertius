@@ -41,7 +41,7 @@ defmodule PhosWeb.CommentControllerTest do
 
     test "lists all comments", %{conn: conn, orb: orb, user: user} do
       comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
-      conn = get(conn, Routes.comment_path(conn, :index))
+      conn = get(conn, path(conn, ~p"/api/orbland/comments"))
 
       assert [%{"id" => id}] = json_response(conn, 200)["data"]
 
@@ -56,7 +56,7 @@ defmodule PhosWeb.CommentControllerTest do
       root_comment = comment_fixture(%{orb_id: orb.id, body: "root_comment", initiator_id: user.id})
       root_comment2 = comment_fixture(%{orb_id: orb.id, body: "root_comment_2", initiator_id: user.id})
 
-      conn = get(conn, Routes.comment_path(conn, :show_root, orb))
+      conn = get(conn, path(conn, Router, ~p"/api/orbland/comments/root/#{orb.id}"))
 
       assert [%{
         "body" => "root_comment",
@@ -70,7 +70,7 @@ defmodule PhosWeb.CommentControllerTest do
       second_level_comment = comment_fixture(%{orb_id: orb.id, body: "second_level_comment", initiator_id: user.id, parent_id: root_comment.id, parent_path: to_string(root_comment.path)})
       third_level_comment = comment_fixture(%{orb_id: orb.id, body: "third_level_comment", initiator_id: user.id, parent_id: second_level_comment.id, parent_path: to_string(second_level_comment.path)})
 
-      conn = get(conn, Routes.comment_path(conn, :show_ancestor, third_level_comment))
+      conn = get(conn, path(conn, Router, ~p"/api/orbland/comments/ancestor/#{third_level_comment.id}"))
 
       assert [%{
         "body" => "root_comment",
@@ -91,10 +91,10 @@ defmodule PhosWeb.CommentControllerTest do
         initiator_id: user.id,
       }
 
-      conn = post(conn, Routes.comment_path(conn, :create), comment)
+      conn = post(conn, path(conn, ~p"/api/orbland/comments"), comment)
       assert %{"id" => id} = json_response(conn, 201)["data"]
 
-      conn = get(conn, Routes.comment_path(conn, :show, id))
+      conn = get(conn, path(conn, Router, ~p"/api/orbland/comments/#{id}"))
 
       assert %{
                "id" => ^id,
@@ -104,7 +104,7 @@ defmodule PhosWeb.CommentControllerTest do
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
-      conn = post(conn, Routes.comment_path(conn, :create), @invalid_attrs)
+      conn = post(conn, path(conn, Router, ~p"/api/orbland/comments"), @invalid_attrs)
 
       assert %{
         "body" => ["can't be blank"],
@@ -123,10 +123,10 @@ defmodule PhosWeb.CommentControllerTest do
         parent_id: parent_comment_id
       }
 
-      conn = post(conn, Routes.comment_path(conn, :create), child_comment)
+      conn = post(conn, path(conn, Router, ~p"/api/orbland/comments"), child_comment)
       assert %{"id" => id} = json_response(conn, 201)["data"]
 
-      conn = get(conn, Routes.comment_path(conn, :show, id))
+      conn = get(conn, path(conn, Router, ~p"/api/orbland/comments/#{id}"))
 
       assert %{
                "id" => ^id,
@@ -145,11 +145,9 @@ defmodule PhosWeb.CommentControllerTest do
         parent_id: parent_comment_id
       }
 
-      conn = post(conn, Routes.comment_path(conn, :create), child_comment)
+      conn = post(conn, path(conn, Router, ~p"/api/orbland/comments"), child_comment)
 
-      assert %{
-        "body" => ["can't be blank"],
-      } = json_response(conn, 422)["errors"]
+      assert %{"body" => ["can't be blank"]} = json_response(conn, 422)["errors"]
     end
   end
 
@@ -158,10 +156,10 @@ defmodule PhosWeb.CommentControllerTest do
 
     test "renders comment when data is valid", %{conn: conn, orb: orb, user: user} do
       comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
-      conn = put(conn, Routes.comment_path(conn, :update, comment), @update_attrs)
+      conn = put(conn, path(conn, Router, ~p"/api/orbland/comments/#{comment.id}"), @update_attrs)
       assert %{"id" => id} = json_response(conn, 200)["data"]
 
-      conn = get(conn, Routes.comment_path(conn, :show, id))
+      conn = get(conn, path(conn, Router, ~p"/api/orbland/comments/#{id}"))
 
       assert %{
         "id" => ^id,
@@ -172,7 +170,7 @@ defmodule PhosWeb.CommentControllerTest do
 
     test "renders errors when data is invalid", %{conn: conn, orb: orb, user: user} do
       comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
-      conn = put(conn, Routes.comment_path(conn, :update, comment), @invalid_attrs)
+      conn = put(conn, path(conn, Router, ~p"/api/orbland/comments/#{comment.id}"), @invalid_attrs)
 
       assert %{
         "body" => ["can't be blank"],
@@ -187,10 +185,10 @@ defmodule PhosWeb.CommentControllerTest do
       root_comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
       second_level_comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id, parent_id: root_comment.id})
 
-      conn = put(conn, Routes.comment_path(conn, :update, second_level_comment), @update_attrs)
+      conn = put(conn, path(conn, Router, ~p"/api/orbland/comments/#{second_level_comment.id}"), @update_attrs)
       assert %{"id" => id} = json_response(conn, 200)["data"]
 
-      conn = get(conn, Routes.comment_path(conn, :show, id))
+      conn = get(conn, path(conn, Router, ~p"/api/orbland/comments/#{id}"))
 
       assert %{
         "id" => ^id,
@@ -203,7 +201,7 @@ defmodule PhosWeb.CommentControllerTest do
       root_comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
       second_level_comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id, parent_id: root_comment.id})
 
-      conn = put(conn, Routes.comment_path(conn, :update, second_level_comment), @invalid_attrs)
+      conn = put(conn, path(conn, Router, ~p"/api/orbland/comments/#{second_level_comment.id}"), @invalid_attrs)
 
       assert %{
         "body" => ["can't be blank"],
@@ -216,11 +214,11 @@ defmodule PhosWeb.CommentControllerTest do
 
     test "deletes chosen comment", %{conn: conn, orb: orb, user: user} do
       comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
-      conn = delete(conn, Routes.comment_path(conn, :delete, comment))
+      conn = delete(conn, path(conn, Router, ~p"/api/orbland/comments/#{comment.id}"))
       assert response(conn, 204)
 
       assert_error_sent 404, fn ->
-        get(conn, Routes.comment_path(conn, :show, comment))
+        get(conn, path(conn, Router, ~p"/api/orbland/comments/#{comment.id}"))
       end
     end
   end

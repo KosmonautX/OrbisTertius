@@ -12,6 +12,7 @@
 :princeton_id=9bf9c443-f89b-460a-972d-6704ae66823d
 :owentwo_id=973da4ae-48a6-498d-b988-548af3af99f6
 :satrio_id=5c82aeea-7c2b-4a97-a80b-d5b728c4ee86
+:phong_id=f8ed10b7-147e-4864-9525-bcf49c457dfc
 :satrioremote_id=5972b8e6-319b-4bf4-95cf-f58fb2117e21
 :brandon_id=b556571a-362e-4017-9894-f1eed0b39794
 :lky_id=3995c7f6-af54-4e31-85ee-3608e16ec00f
@@ -61,34 +62,29 @@ GET :ipAddress/userland/self/
 PUT :ipAddress/userland/self/
 :auth-headers
 {
-    "username": "tate"
+    "bio": "alberto robotos",
+    "username": "tate",
+    "public_name": "Albert the Robot",
+    "birthday": 16123442423,
+    "media": [
+        {
+            "access": "public",
+            "essence": "banner",
+            "resolution": "lossless"
+        },
+        {
+            "access": "public",
+            "essence": "profile",
+            "resolution": "lossy"
+        }
+    ],
+    "traits": [
+        "aikido",
+        "matrix"
+    ],
+    "occupation": "bloatwarengingeer",
+    "profile_pic": 3
 }
-
-##
-# {
-#     "bio": "alberto robotos",
-#     "username": "tate",
-#     "public_name": "Albert the Robot",
-#     "birthday": 16123442423,
-#     "media": [
-#         {
-#             "access": "public",
-#             "essence": "banner",
-#             "resolution": "lossless"
-#         },
-#         {
-#             "access": "public",
-#             "essence": "profile",
-#             "resolution": "lossy"
-#         }
-#     ],
-#     "traits": [
-#         "aikido",
-#         "matrix"
-#     ],
-#     "occupation": "bloatwarengingeer",
-#     "profile_pic": 3
-# }
 ## Read userdata of Others Profile
 GET :ipAddress/userland/others/:owentwo_id
 :auth-headers
@@ -199,7 +195,38 @@ POST :ipAddress/orbland/orbs
             "access": "public",
             "essence": "banner",
             "resolution": "lossless"
-        }],
+        },
+        {
+            "access": "public",
+            "essence": "banner",
+            "resolution": "lossless",
+            "count": 1
+        },
+        {
+            "access": "public",
+            "essence": "banner",
+            "resolution": "lossless",
+            "count": 2
+        },
+        {
+            "access": "public",
+            "essence": "banner",
+            "resolution": "lossless",
+            "count": 3
+        },
+        {
+            "access": "public",
+            "essence": "banner",
+            "resolution": "lossless",
+            "count": 4
+        },
+        {
+            "access": "public",
+            "essence": "banner",
+            "resolution": "lossless",
+            "count": 5
+        }
+        ],
     "expires_in": "10000",
     "traits": ["holy", "mooncakes"]
 }
@@ -266,7 +293,7 @@ GET :ipAddress/orbland/comments/root/:orb?page=1
 :auth-headers
 
 ## Show Ancestors Comment
-GET :ipAddress/orbland/comments/:orb/ancestor/:commie
+GET :ipAddress/orbland/comments/ancestor/:commie
 :auth-headers
 
 ## Show Childrens Comment
@@ -275,6 +302,19 @@ GET :ipAddress/orbland/comments/children/:commie?page=1
 ## Delete Comment
 DELETE :ipAddress/orbland/comments/4f0e37a2-abab-46e8-aeb1-d4520255bf21
 :auth-headers
+
+### Echoland
+## All Messages between Pair of People
+GET :ipAddress/echoland/echoes/others/5b6ab4f6-c950-4c29-b354-6845d2ce720e?page=1
+:auth-headers
+
+## Show Last Message
+GET :ipAddress/echoland/echoes/last/?page=1
+:auth-headers
+
+
+### Medialand
+
 
 
 ## Version Check Major.Minor.Patch

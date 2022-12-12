@@ -1,28 +1,25 @@
 <div>
-<h2>Comments</h2>
+  <h2>Comments</h2>
 
-<div class="ui threaded comments">
-<%= unless @current_user == nil do %>
-<.form
-  let={f}
-  for={@changeset}
-  id="comment-form"
-  phx-submit="save">
+  <div class="ui threaded comments">
+    <div :if={not is_nil(@current_user)}>
+      <.simple_form
+        let={f}
+        for={@changeset}
+        id="comment-form"
+        phx-submit="save">
 
-  <%= textarea f, :body %>
-  <%= error_tag f, :body %>
+        <.input field={{f, :body}} type="textarea" />
+        <.input field={{f, :initiator_id}} type="hidden" value={@current_user.id} />
+        <.input field={{f, :orb_id}} type="hidden" value={@orb.id} />
 
-  <%= hidden_input f, :initiator_id, value: @current_user.id %>
-  <%= error_tag f, :initiator_id %>
-
-  <%= hidden_input f, :orb_id, value: @orb.id %>
-  <%= error_tag f, :orb_id %>
-
-  <%= submit "Add comment", phx_disable_with: "Saving..." %>
-  </.form>
-  <% end %>
-<%= for comment <- filter_root_comments_chrono(@comments) do %>
-    <.card comment={comment} comments={@comments} changeset={@changeset} orb={@orb} current_user={@current_user} socket={@socket} live_action={@live_action}/>
-<% end %>
+        <:actions>
+          <.button type="submit" phx-disable-with="Saving...">Add comment</.button>
+        </:actions>
+      </.simple_form>
     </div>
+    <%= for comment <- filter_root_comments_chrono(@comments) do %>
+      <.xcard comment={comment} comments={@comments} changeset={@changeset} orb={@orb} current_user={@current_user} socket={@socket} live_action={@live_action}/>
+    <% end %>
+  </div>
 </div>

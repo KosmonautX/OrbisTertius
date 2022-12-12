@@ -30,29 +30,29 @@ defmodule PhosWeb.Admin.OrbLive.Import do
     |> case do
       [] -> {:noreply, socket
         |> put_flash(:error, "Orb(s) failed to import.")
-        |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+        |> push_redirect(to: ~p"/admin/orbs", replace: true)}
       data ->
         case contains_error?(data) do
           true ->
             {:noreply, socket
             |> put_flash(:error, "Orb(s) contains error. 💥")
-            |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+            |> push_redirect(to: ~p"/admin/orbs", replace: true)}
           _ ->
             {:noreply, socket
                 |> put_flash(:info, "Orbs have been born 🥳 @" <> (DateTime.now!("Asia/Singapore") |> Calendar.strftime("%y-%m-%d %I:%M:%S %p")))
-                |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+                |> push_redirect(to: ~p"/admin/orbs", replace: true)}
 
             # legacy apis deprecated
             # case Phos.External.HeimdallrClient.post_orb(data) do
             #   {:ok, _response} ->
             #     {:noreply, socket
             #     |> put_flash(:info, "Orbs have been born 🥳 @" <> (DateTime.now!("Asia/Singapore") |> Calendar.strftime("%y-%m-%d %I:%M:%S %p")))
-            #     |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+            #     |> push_redirect(to: ~p"/admin/orbs", replace: true)}
             #   {:error, message} ->
             #     {:noreply, socket
             #     |> put_flash(:error, "Take down Orbs 💥, failed to propogate to legacy api service
             #     #{inspect(message)}")
-            #     |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+            #     |> push_redirect(to: ~p"/admin/orbs", replace: true)}
             # end
 
         end
@@ -141,7 +141,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
   def orb_card(assigns) do
     ~H"""
     <div id={"orb_detail_#{@id}"} class="w-full hover:cursor-pointer" phx-click="set-selected-orb" phx-value-selected={@index}>
-      <.live_component module={PhosWeb.Components.Card} title={@data.title} id={@id} name="name" class={define_class(@index, @selected_orbs)}>
+      <.card title={@data.title} id={@id} name="orb_modal" class={define_class(@index, @selected_orbs)}>
         <div class="px-2 pb-3">
           <%= if Map.get(@data, :lossy) do %>
             <img src={Map.get(@data, :lossy)} class="max-w-full h-auto mx-auto" alt="image here" />
@@ -163,7 +163,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
             <%= if selected_orbs?(@index, @selected_orbs), do: "Unselect", else: "select" %>
           </button>
         </div>
-      </.live_component>
+      </.card>
     </div>
     """
   end
