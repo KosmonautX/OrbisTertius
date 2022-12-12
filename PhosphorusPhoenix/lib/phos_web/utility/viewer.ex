@@ -6,7 +6,7 @@ defmodule PhosWeb.Util.Viewer do
 
   """
 
-  import Phoenix.VerifiedRoutes, only: [path: 3, sigil_p: 2]
+  import Phoenix.VerifiedRoutes, only: [path: 3]
 
   alias PhosWeb.Router
   alias Phos.Orbject.S3
@@ -132,12 +132,7 @@ defmodule PhosWeb.Util.Viewer do
 
   # Orb Mapper
   #
-  def orb_mapper(orbs = [%Phos.Action.Orb{} | _]) do
-    Enum.map(orbs, fn orb ->
-      orb_mapper(orb)
-    end)
-  end
-
+  def orb_mapper(orbs = [%Phos.Action.Orb{} | _]), do: Enum.map(orbs, &orb_mapper/1)
   def orb_mapper(orb = %Phos.Action.Orb{}) do
     %{
       expiry_time: (if orb.extinguish, do: DateTime.from_naive!(orb.extinguish, "Etc/UTC") |> DateTime.to_unix()),
@@ -153,6 +148,7 @@ defmodule PhosWeb.Util.Viewer do
       geolocation: %{
         hash: orb.central_geohash
       },
+      parent: parent_orb_mapper(orb.parent),
       media: (if orb.media, do: S3.get_all!("ORB", orb.id, "public"))
     }
   end
@@ -174,6 +170,9 @@ defmodule PhosWeb.Util.Viewer do
       }
     end)
   end
+
+  defp parent_orb_mapper(%Phos.Action.Orb{} = orb), do: orb_mapper(orb)
+  defp parent_orb_mapper(_), do: %{}
 
   ## Comment Mapper
   def comment_mapper(comment= %Phos.Comments.Comment{}) do
