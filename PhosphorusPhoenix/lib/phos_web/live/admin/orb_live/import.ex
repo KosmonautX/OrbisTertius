@@ -1,8 +1,6 @@
 defmodule PhosWeb.Admin.OrbLive.Import do
   use PhosWeb, :admin_view
 
-  alias PhosWeb.Components.{Card}
-
   @impl true
   def mount(_params, _session, socket) do
     Process.send_after(self(),  :live_orbs, 1000)
@@ -30,17 +28,17 @@ defmodule PhosWeb.Admin.OrbLive.Import do
     |> case do
       [] -> {:noreply, socket
         |> put_flash(:error, "Orb(s) failed to import.")
-        |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+        |> push_redirect(to: ~p"/admin/orbs")}
       data ->
         case contains_error?(data) do
           true ->
             {:noreply, socket
             |> put_flash(:error, "Orb(s) contains error. 💥")
-            |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+            |> push_redirect(to: ~p"/admin/orbs")}
           _ ->
             {:noreply, socket
                 |> put_flash(:info, "Orbs have been born 🥳 @" <> (DateTime.now!("Asia/Singapore") |> Calendar.strftime("%y-%m-%d %I:%M:%S %p")))
-                |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+                |> push_redirect(to: ~p"/admin/orbs")}
 
             # legacy apis deprecated
             # case Phos.External.HeimdallrClient.post_orb(data) do

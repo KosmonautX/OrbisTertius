@@ -8,13 +8,13 @@
         </.link>
       </div>
       <div class="flex">
-        <.form let={f} for={:search} phx_change="search">
+        <.form let={f} for={:search} phx-change="search">
           <%= text_input f, :traits, phx_debounce: 200, value: @traits, placeholder: "Filter traits", autocomplete: "off", class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
         </.form>
       </div>
     </div>
     <.table id="orbs" rows={@orbs}>
-      <:col let={orb} label="No">-</:col>
+      <:col label="No">-</:col>
       <:col let={orb} label="Title">
         <.link navigate={~p"/admin/orbs/#{orb}"}><%= orb.title %></.link>
       </:col>

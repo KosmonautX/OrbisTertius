@@ -25,7 +25,6 @@ defmodule Phos.Action.Orb do
 
     belongs_to :initiator, User, references: :id, type: Ecto.UUID
     belongs_to :parent, __MODULE__, references: :id, type: Ecto.UUID
-    belongs_to :reposted_comment, Comment, foreign_key: :comment_id, references: :id, type: Ecto.UUID
     #belongs_to :users, User, references: :id, foreign_key: :acceptor, type: Ecto.UUID
 
     has_many :comments, Comment, references: :id
@@ -39,7 +38,7 @@ defmodule Phos.Action.Orb do
   @doc false
   def changeset(%Orb{} = orb, attrs) do
     orb
-    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits, :path])
+    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits, :path, :parent_id])
     |> cast_embed(:payload)
     |> cast_assoc(:locations)
     |> validate_required([:id, :title, :active, :media, :extinguish, :initiator_id])

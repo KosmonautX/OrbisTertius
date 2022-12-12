@@ -58,11 +58,11 @@ defmodule Phos.Action do
     parent_path = "*.#{Phos.Utility.Encoder.encode_lpath(id)}.*"
     query = 
       from o in Orb,
-        preload: [:locations, :initiator],
+        preload: [:locations, :initiator, :parent],
         where: o.id == ^id,
         inner_lateral_join: p in subquery(
           from p in Orb,
-            where: fragment("path ~ ?", ^parent_path),
+            where: p.parent_id == ^id,
             select: %{count: count(p)}
         ),
         inner_lateral_join: c in subquery(
@@ -540,8 +540,8 @@ defmodule Phos.Action do
     |> create_orb()
   end
 
-  def subscribe_to_orb(%Orb{id: id} = _orb, %Phos.Users.User{} = user) do
-    topic = "ORB.#{id}"
+  def subscribe_to_orb(%Orb{id: _id} = _orb, %Phos.Users.User{} = _user) do
+    # topic = "ORB.#{id}"
     ## TODO SUB User Topic to Orb
     #token = Map.get(user, :private_profile, %{}) |> Map.get(:user_token)
     #Phos.Notification.subscribe(token, topic)
@@ -557,47 +557,29 @@ defmodule Phos.Action do
   end
 
   def reorb(user_id, orb_id, message \\ "")
-  def reorb(user_id, orb_id, message) when is_binary(user_id) do
-    with {:ok, user} <- Phos.Users.find_user_by_id(user_id) do
-      reorb(user, orb_id, message)
-    else
-      _ -> {:error, "User not found."}
+  def reorb(%Phos.Users.User{} = user, %Orb{} = orb, message), do: reorb(user.id, orb.id, message)
+  def reorb(user_id, orb_id, message) when is_binary(user_id) and is_binary(orb_id) do
+    id = Ecto.UUID.generate()
+    orb = get_orb!(orb_id)
+    message = if message == "", do: orb.title, else: message
+    path = case orb.path do
+      %{labels: []} -> Phos.Utility.Encoder.encode_lpath(id, orb.id)
+      %{labels: labels} -> Phos.Utility.Encoder.encode_lpath(id, labels)
+      _ -> Phos.Utility.Encoder.encode_lpath(id, orb.id)
     end
-  end
-  def reorb(user_id, orb_id, message) when is_binary(orb_id) do
-    with {:ok, orb} <- get_orb(orb_id) do
-      reorb(user_id, orb, message)
-    else
-      _ -> {:error, "Orb not found."}
-    end
-  end
-  def reorb(%Phos.Users.User{} = user, %Orb{} = orb, message), do: reorb_updater(user, orb, message)
-  defp reorb_updater(%Phos.Users.User{} = user, %Orb{} = orb, message) when is_binary(message) do
-    Multi.new()
-    |> Multi.run(:comment, fn repo, _ ->
-      case String.trim(message) do
-        "" -> {:ok, nil}
-        msg ->
-          id = Ecto.UUID.generate()
-          params = %{
-            id: id,
-            path: Phos.Utility.Encoder.encode_lpath(id),
-            orb_id: orb.id,
-            body: message,
-            initiator_id: user.id
-          }
-          Phos.Comments.Comment.changeset(%Phos.Comments.Comment{}, params)
-          |> repo.insert()
-      end
-    end)
-    |> Multi.insert(:reorb, fn %{comment: comment} ->
-      Orb.reorb_changeset(user.id, orb, comment)
-    end)
-    |> Repo.transaction()
-    |> case do
-      {:ok, %{reorb: orb}} -> {:ok, orb}
-      {:error, _reason} = reason -> reason
-    end
-  end
 
+    attrs = 
+      Map.from_struct(orb)
+      |> Map.take(~W(active central_geohash extinguish media)a)
+      |> Map.merge(%{
+        id: id,
+        title: message,
+        path: path,
+        parent_id: orb_id,
+        initiator_id: user_id,
+        traits: ["reorb" | Map.get(orb, :traits, [])],
+      })
+
+    create_orb(attrs)
+  end
 end

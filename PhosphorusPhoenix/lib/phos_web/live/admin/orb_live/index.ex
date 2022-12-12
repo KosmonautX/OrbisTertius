@@ -10,7 +10,7 @@ defmodule PhosWeb.Admin.OrbLive.Index do
     {:ok, assign(socket, orbs: orbs, pagination: meta.pagination, traits: "", limit: limit)}
   end
 
-  def handle_params(%{"page" => page} = _params, _url,%{assigns: %{traits: traits, pagination: pagination, limit: limit} = assigns} = socket) do
+  def handle_params(%{"page" => page} = _params, _url,%{assigns: %{traits: traits, pagination: pagination, limit: limit} = _assigns} = socket) do
     expected_page = parse_integer(page)
 
     case expected_page == pagination.current do
@@ -71,7 +71,7 @@ defmodule PhosWeb.Admin.OrbLive.Index do
       <%= for {entry, index} <- Enum.with_index(@entries) do %>
         <tr>
           <th class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-left"><%= index + 1 %></th>
-          <.table_column value={live_redirect(entry.title, to: Routes.admin_orb_show_path(@socket, :show, entry.id))} />
+          <.table_column value={live_redirect(entry.title, to: ~p"/admin/orbs/#{entry}")} />
           <.table_column value={entry.initiator.username} />
           <.table_column value={entry.source} />
           <.table_column value={entry.traits} />

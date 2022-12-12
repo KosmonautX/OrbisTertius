@@ -76,7 +76,6 @@ defmodule Phos.ActionTest do
       assert [parent_id, child_id] = reorb.path.labels
       assert parent_id == String.replace(orb.id, "-", "")
       assert child_id == String.replace(reorb.id, "-", "")
-      refute reorb.comment_id
 
       {:ok, parent_orb} = Action.get_orb(orb.id)
       assert parent_orb.number_of_repost == 1
@@ -89,16 +88,15 @@ defmodule Phos.ActionTest do
 
       {:ok, reorb} = Action.reorb(user_id, orb.id, message)
       assert reorb.parent_id == orb.id
+      assert reorb.title == message
       assert reorb.path
       assert Kernel.length(reorb.path.labels) == 2
       assert [parent_id, child_id] = reorb.path.labels
       assert parent_id == String.replace(orb.id, "-", "")
       assert child_id == String.replace(reorb.id, "-", "")
-      assert reorb.comment_id
 
       {:ok, parent_orb} = Action.get_orb(orb.id)
       assert parent_orb.number_of_repost == 1
-      assert parent_orb.comment_count == 1
     end
 
     test "reorb/2 with multiple repost" do
@@ -120,7 +118,10 @@ defmodule Phos.ActionTest do
       assert child_id == String.replace(reorb_2.id, "-", "")
 
       {:ok, parent_orb} = Action.get_orb(orb.id)
-      assert parent_orb.number_of_repost == 2
+      assert parent_orb.number_of_repost == 1
+
+      {:ok, reorb_1} = Action.get_orb(reorb_1.id)
+      assert reorb_1.number_of_repost == 1
     end
   end
 end
