@@ -4,7 +4,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
   @impl true
   def mount(_params, _session, socket) do
     Process.send_after(self(),  :live_orbs, 1000)
-    {:ok, assign(socket, [loading: true, orbs: [], message: "", selected_orbs: [], show_detail_id: nil])}
+    {:ok, assign(socket, [loading: true, orbs: [], message: "", selected_orbs: [], show_detail_id: nil, show_modal: false])}
   end
 
   @impl true
@@ -61,7 +61,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
   def handle_event("detail-orb", %{"index" => index}, %{assigns: %{orbs: _orbs}} = socket) do
     Process.send_after(self(), :marker_update, 500)
     Process.send_after(self(), :boundaries_update, 700)
-    {:noreply, assign(socket, :show_detail_id, String.to_integer(index))}
+    {:noreply, assign(socket, show_detail_id: String.to_integer(index), show_modal: true)}
   end
 
   @impl true
@@ -70,7 +70,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
   end
 
   @impl true
-  def handle_event("close-modal", _, socket), do: {:noreply, assign(socket, :show_detail_id, nil)}
+  def handle_event("close-modal", _, socket), do: {:noreply, assign(socket, show_detail_id: nil, show_modal: false)}
 
   @impl true
   def handle_info(:live_orbs, socket) do

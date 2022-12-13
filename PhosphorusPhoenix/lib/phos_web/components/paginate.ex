@@ -12,7 +12,7 @@ defmodule PhosWeb.Components.Pagination do
       |> assign_new(:last, fn -> true end)
       |> assign_new(:route_path, fn -> :root_path end)
       |> assign_new(:route_method, fn -> :index end)
-      |> assign_new(:limit, fn -> 10 end)}
+      |> assign_new(:limit, fn -> 2 end)}
   end
 
   @impl true
@@ -151,7 +151,7 @@ defmodule PhosWeb.Components.Pagination do
 
     ~H"""
       <%= for i <- 1..@num do %>
-        <.paginate_child number={i}, active={@current == i}  route_path={@route_path} route_method={@route_method} />
+        <.paginate_child number={i}, active={@current == i} route_path={@route_path} route_method={@route_method} />
       <% end %>
     """
   end
@@ -168,10 +168,10 @@ defmodule PhosWeb.Components.Pagination do
   end
   def paginate_child(%{active: active} = assigns) do
     current_class = decide_active_class(active)
-    assigns = assign(assigns, current_class: current_class)
+    # assigns = assign(assigns, current_class: current_class)
 
     ~H"""
-      <.link href="#" class={@current_class}>...</.link>
+      <.link href="#" class={current_class}>...</.link>
     """
   end
 
