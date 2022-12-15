@@ -2,12 +2,15 @@ defmodule Phos.Message.Echo do
   use Ecto.Schema
   import Ecto.Changeset
 
+  #@primary_key {:id, :binary_id, autogenerate: true}
+  #@foreign_key_type :binary_id
   schema "echo" do
     field :source, :string
     field :source_archetype, :string
     field :destination, :string
     field :destination_archetype, :string
     field :message, :string
+    #field :media, :boolean
     field :subject, :string
     field :subject_archetype, :string
 

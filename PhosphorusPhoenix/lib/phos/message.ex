@@ -27,13 +27,14 @@ defmodule Phos.Message do
 
   ## Examples
 
-      iex> first_echoes()
+      iex> last_echoes()
       [%Echo{}, ...]
 
   """
 
   def last_echoes(id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
     archetype = "USR"
+    #dbg()
     Phos.Message.Echo
     |> where([e], e.source == ^id and e.source_archetype == ^archetype )
     |> or_where([e], e.destination == ^id and e.destination_archetype == ^archetype)
@@ -168,4 +169,203 @@ defmodule Phos.Message do
     Echo.changeset(echo, attrs)
   end
 
- end
+
+  alias Phos.Message.Memory
+
+  @doc """
+  Returns the list of memories.
+
+  ## Examples
+
+      iex> list_memories()
+      [%Memory{}, ...]
+
+  """
+  def list_memories do
+    Repo.all(Memory)
+  end
+
+  @doc """
+  Gets a single memory.
+
+  Raises `Ecto.NoResultsError` if the Memory does not exist.
+
+  ## Examples
+
+      iex> get_memory!(123)
+      %Memory{}
+
+      iex> get_memory!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_memory!(id), do: Repo.get!(Memory, id)
+
+  @doc """
+  Creates a memory.
+
+  ## Examples
+
+      iex> create_memory(%{field: value})
+      {:ok, %Memory{}}
+
+      iex> create_memory(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+
+  def create_memory(%{"id" => _id} = attrs) do
+    %Memory{}
+    |> Memory.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def create_memory(attrs \\ %{}) do
+    %Memory{}
+    |> Memory.changeset(attrs |> Map.put(:id, Ecto.UUID.generate()))
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a memory.
+
+  ## Examples
+
+      iex> update_memory(memory, %{field: new_value})
+      {:ok, %Memory{}}
+
+      iex> update_memory(memory, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_memory(%Memory{} = memory, attrs) do
+    memory
+    |> Memory.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a memory.
+
+  ## Examples
+
+      iex> delete_memory(memory)
+      {:ok, %Memory{}}
+
+      iex> delete_memory(memory)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_memory(%Memory{} = memory) do
+    Repo.delete(memory)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking memory changes.
+
+  ## Examples
+
+      iex> change_memory(memory)
+      %Ecto.Changeset{data: %Memory{}}
+
+  """
+  def change_memory(%Memory{} = memory, attrs \\ %{}) do
+    Memory.changeset(memory, attrs)
+  end
+
+  alias Phos.Message.Reverie
+
+  @doc """
+  Returns the list of reveries.
+
+  ## Examples
+
+      iex> list_reveries()
+      [%Reverie{}, ...]
+
+  """
+  def list_reveries do
+    Repo.all(Reverie)
+  end
+
+  @doc """
+  Gets a single reverie.
+
+  Raises `Ecto.NoResultsError` if the Reverie does not exist.
+
+  ## Examples
+
+      iex> get_reverie!(123)
+      %Reverie{}
+
+      iex> get_reverie!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_reverie!(id), do: Repo.get!(Reverie, id)
+
+  @doc """
+  Creates a reverie.
+
+  ## Examples
+
+      iex> create_reverie(%{field: value})
+      {:ok, %Reverie{}}
+
+      iex> create_reverie(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_reverie(attrs \\ %{}) do
+    %Reverie{}
+    |> Reverie.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a reverie.
+
+  ## Examples
+
+      iex> update_reverie(reverie, %{field: new_value})
+      {:ok, %Reverie{}}
+
+      iex> update_reverie(reverie, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_reverie(%Reverie{} = reverie, attrs) do
+    reverie
+    |> Reverie.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a reverie.
+
+  ## Examples
+
+      iex> delete_reverie(reverie)
+      {:ok, %Reverie{}}
+
+      iex> delete_reverie(reverie)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_reverie(%Reverie{} = reverie) do
+    Repo.delete(reverie)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking reverie changes.
+
+  ## Examples
+
+      iex> change_reverie(reverie)
+      %Ecto.Changeset{data: %Reverie{}}
+
+  """
+  def change_reverie(%Reverie{} = reverie, attrs \\ %{}) do
+    Reverie.changeset(reverie, attrs)
+  end
+end
