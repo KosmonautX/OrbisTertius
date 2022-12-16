@@ -8,6 +8,7 @@
 :satrio=BX1BxM9KkwdFmy2J4FNNkFxclpS2
 :owen=0ErhlIM10Maldn1qVMGOJMKu6J92
 :tate=FbXQKufaWFOUNIsVYsn5tdW1qUc2
+:jean=HMhn3DPO71h0cMYFh52vM1tBacX2
 :princeton_id=9bf9c443-f89b-460a-972d-6704ae66823d
 :owentwo_id=973da4ae-48a6-498d-b988-548af3af99f6
 :satrio_id=5c82aeea-7c2b-4a97-a80b-d5b728c4ee86
@@ -36,7 +37,7 @@ GET :localipAddress/devland/flameon?user=:satrio_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
-GET :localipAddress/devland/lankaonfyr?fyr_id=:satrio
+GET :localipAddress/devland/lankaonfyr?fyr_id=:jean
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 
@@ -302,6 +303,7 @@ GET :ipAddress/orbland/comments/children/:commie?page=1
 DELETE :ipAddress/orbland/comments/4f0e37a2-abab-46e8-aeb1-d4520255bf21
 :auth-headers
 
+
 ### Memland
 ## All Messages between Pair of People
 GET :ipAddress/memland/memories/others/5b6ab4f6-c950-4c29-b354-6845d2ce720e?page=1
@@ -310,6 +312,7 @@ GET :ipAddress/memland/memories/others/5b6ab4f6-c950-4c29-b354-6845d2ce720e?page
 ## Show Last Message
 GET :ipAddress/echoland/echoes/last/?page=1
 :auth-headers
+
 
 ## Create Memories
 POST :ipAddress/memland/memories
@@ -358,7 +361,6 @@ POST :ipAddress/memland/memories
         }
         ]
 }
-
 
 ### Medialand
 

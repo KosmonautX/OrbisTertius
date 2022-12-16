@@ -14,7 +14,7 @@
       </div>
     </div>
     <.table id="orbs" rows={@orbs}>
-      <:col label="No">-</:col>
+      <:col label="No">~</:col>
       <:col let={orb} label="Title">
         <.link navigate={~p"/admin/orbs/#{orb}"}><%= orb.title %></.link>
       </:col>

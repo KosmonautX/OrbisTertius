@@ -23,7 +23,6 @@ defmodule PhosWeb.API.EchoController do
   # end
 
   # # media support
-  #
   def create(conn = %{assigns: %{current_user: user}}, params = %{"media" => [_|_] = media}) do
     with {:ok, attrs} <- echo_constructor(user, params),
          {:ok, media} <- Phos.Orbject.Structure.apply_memory_changeset(%{id: attrs["id"], archetype: "MEM", media: media}),
@@ -73,6 +72,7 @@ defmodule PhosWeb.API.EchoController do
       send_resp(conn, :no_content, "")
     end
   end
+
 
   defp echo_constructor(user, params) do
     constructor = sanitize(params)

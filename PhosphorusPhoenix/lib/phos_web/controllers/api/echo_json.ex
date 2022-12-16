@@ -8,7 +8,6 @@ defmodule PhosWeb.API.EchoJSON do
 
   def paginated(%{echoes: %{data: data, meta: meta}}), do: %{data: Enum.map(data, &echo_json/1), meta: meta}
 
-
   def show(%{memory: memory, media: media}) when not is_nil(media) do
     %{
       data: memory_json(memory),
@@ -26,5 +25,5 @@ defmodule PhosWeb.API.EchoJSON do
     PhosWeb.Util.Viewer.memory_mapper(memory)
   end
 
-  defp parse_time(time), do: DateTime.from_naive!(time, "Etc/UTC") |> DateTime.to_unix()
+
 end
