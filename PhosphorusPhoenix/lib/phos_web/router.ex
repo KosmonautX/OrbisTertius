@@ -195,8 +195,10 @@ defmodule PhosWeb.Router do
 
     scope "/memland" do
       resources "/memories", EchoController, except: [:new, :edit]
-      #get "/others/:id", MessageController, :show_others
-      #get "/last", MessageController, :show_last
+      get "/orbs", EchoController, :index_orbs
+      get "/friends", EchoController, :index_relations
+      get "/orbs/:id", EchoController, :show_orbs
+      get "/friends/:id", EchoController, :show_relations
     end
 
   end

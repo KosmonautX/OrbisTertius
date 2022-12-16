@@ -27,39 +27,70 @@ defmodule Phos.Message do
 
   ## Examples
 
-      iex> last_echoes()
+      iex> last_messages()
       [%Echo{}, ...]
 
   """
 
-  def last_messages(id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
-    archetype = "USR"
-    #dbg()
-    Phos.Message.Echo
-    |> where([e], e.source == ^id and e.source_archetype == ^archetype )
-    |> or_where([e], e.destination == ^id and e.destination_archetype == ^archetype)
-    |> distinct([e], [e.subject, e.source, e.destination])
+  def last_messages_by_relation(id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    Phos.Message.Reverie
+    |> where([r], r.user_destination_id == ^id)
+    |> join(:inner, [r], m in Phos.Message.Memory, on: r.memory_id == m.id)
+    |> select_merge([r, m], %{memory: m})
+    |> distinct([r, m], m.rel_subject_id)
     |> order_by([e], desc: e.inserted_at)
+    |> preload([memory: [:rel_subject, :user_source, :orb_subject]])
+    |> Repo.Paginated.all(page, sort_attribute, limit)
+  end
+
+  def last_messages_by_orb(id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    Phos.Message.Reverie
+    |> where([r], r.user_destination_id == ^id)
+    |> join(:inner, [r], m in Phos.Message.Memory, on: r.memory_id == m.id and not is_nil(m.orb_subject_id))
+    |> select_merge([r, m], %{memory: m})
+    |> distinct([r, m], m.orb_subject_id)
+    |> order_by([e], desc: e.inserted_at)
+    |> preload([memory: [:rel_subject, :user_source, :orb_subject]])
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
   @doc """
-  Returns paginated call of the messages between for one unique source destination pair
+  Returns paginated call of the messages by relation
 
   ## Examples
 
-      iex> list_echoes()
+      iex> list_messages_by_pair()
       [%Echo{}, ...]
 
   """
 
-  def list_echoes_by_pair({id, yours}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
-    archetype = "USR"
-    Phos.Message.Echo
-    |> where([e], (e.source == ^id and e.source_archetype == ^archetype) and (e.destination == ^yours and e.destination_archetype == ^archetype))
-    |> or_where([e], (e.source == ^yours and e.source_archetype == ^archetype) and (e.destination == ^id and e.destination_archetype == ^archetype))
-    #|> distinct([e], e.subject)
+  def list_messages_by_relation({rel_id, yours}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    Phos.Message.Reverie
+    |> where([r], r.user_destination_id == ^yours)
+    |> join(:inner, [r], m in Phos.Message.Memory, on: m.rel_subject_id == ^rel_id and r.memory_id == m.id)
+    |> select_merge([r, m], %{memory: m})
     |> order_by([e], desc: e.inserted_at)
+    |> preload([memory: [:rel_subject, :user_source, :orb_subject]])
+    |> Repo.Paginated.all(page, sort_attribute, limit)
+  end
+
+  @doc """
+  Returns paginated call of the messages by orb
+
+  ## Examples
+
+      iex> list_messages_by_pair()
+      [%Echo{}, ...]
+
+  """
+
+  def list_messages_by_orb({orb_id, yours}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    Phos.Message.Reverie
+    |> where([r], r.user_destination_id == ^yours)
+    |> join(:inner, [r], m in Phos.Message.Memory, on: m.orb_subject_id == ^orb_id and r.memory_id == m.id)
+    |> select_merge([r, m], %{memory: m})
+    |> order_by([e], desc: e.inserted_at)
+    |> preload([memory: [:rel_subject, :user_source, :orb_subject]])
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 

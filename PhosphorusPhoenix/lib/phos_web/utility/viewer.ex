@@ -27,23 +27,25 @@ defmodule PhosWeb.Util.Viewer do
           links: %{history: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{entity.id}/history")}}}
 
 
-      {:friend, %Phos.Users.User{} = friend} ->
 
-        %{friend:
-          %{data: PhosWeb.Util.Viewer.user_mapper(friend),
-            links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{friend.id}")}}}
 
-      {:initiator, %Phos.Users.User{} = initiator} ->
+      # {:friend, %Phos.Users.User{} = friend} ->
 
-        %{initiator:
-          %{data: PhosWeb.Util.Viewer.user_mapper(initiator),
-            links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{initiator.id}")}}}
+      #   %{friend:
+      #     %{data: PhosWeb.Util.Viewer.user_mapper(friend),
+      #       links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{friend.id}")}}}
 
-      {:acceptor, %Phos.Users.User{} = acceptor} ->
+      # {:initiator, %Phos.Users.User{} = initiator} ->
 
-        %{acceptor:
-          %{data: PhosWeb.Util.Viewer.user_mapper(acceptor),
-            links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{acceptor.id}")}}}
+      #   %{initiator:
+      #     %{data: PhosWeb.Util.Viewer.user_mapper(initiator),
+      #       links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{initiator.id}")}}}
+
+      # {:acceptor, %Phos.Users.User{} = acceptor} ->
+
+      #   %{acceptor:
+      #     %{data: PhosWeb.Util.Viewer.user_mapper(acceptor),
+      #       links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{acceptor.id}")}}}
 
       {k , %Phos.Users.User{} = user} ->
         Map.new([{k,
@@ -53,6 +55,10 @@ defmodule PhosWeb.Util.Viewer do
       {k, %Phos.Action.Orb{} = orb} ->
 
         Map.new([{k, %{data: PhosWeb.Util.Viewer.orb_mapper(orb)}}])
+
+      {k, %Phos.Message.Memory{} = memory} ->
+
+        Map.new([{k, %{data: PhosWeb.Util.Viewer.memory_mapper(memory)}}])
 
 
       {k, %Phos.Users.RelationRoot{} = relation} ->
@@ -81,6 +87,16 @@ defmodule PhosWeb.Util.Viewer do
         creationtime: DateTime.from_naive!(memory.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
         mutationtime: DateTime.from_naive!(memory.updated_at, "Etc/UTC") |> DateTime.to_unix(),
         media: (if memory.media, do: S3.get_all!("MEM", memory.id, "public"))
+      }
+  end
+
+  def reverie_mapper(reverie) do
+      %{
+        id: reverie.id,
+        relationships: relationship_reducer(reverie),
+        read: reverie.read,
+        creationtime: DateTime.from_naive!(reverie.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
+        mutationtime: DateTime.from_naive!(reverie.updated_at, "Etc/UTC") |> DateTime.to_unix(),
       }
   end
 

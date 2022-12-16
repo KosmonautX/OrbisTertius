@@ -305,12 +305,20 @@ DELETE :ipAddress/orbland/comments/4f0e37a2-abab-46e8-aeb1-d4520255bf21
 
 
 ### Memland
-## All Messages between Pair of People
-GET :ipAddress/memland/memories/others/5b6ab4f6-c950-4c29-b354-6845d2ce720e?page=1
+## Index by unique relations
+GET :ipAddress/memland/friends/?page=1
 :auth-headers
 
-## Show Last Message
-GET :ipAddress/echoland/echoes/last/?page=1
+## Show  by relation_id
+GET :ipAddress/memland/friends/17863710-b367-4914-b958-028dd1d8f097?page=1
+:auth-headers
+
+## Show message by orb
+GET :ipAddress/memland/orbs/36a3b2ac-52e7-4b38-b9e2-4a6e35f22311?page=1
+:auth-headers
+
+## Show message by orb
+GET :ipAddress/memland/orbs/?page=1
 :auth-headers
 
 
@@ -320,7 +328,7 @@ POST :ipAddress/memland/memories
 :auth-headers
 {
     "user_destination_id": "5b6ab4f6-c950-4c29-b354-6845d2ce720e",
-    "message": "ba sing se",
+    "message": "ba sing ses",
     "rel_subject_id": "17863710-b367-4914-b958-028dd1d8f097",
     "orb_subject_id": "36a3b2ac-52e7-4b38-b9e2-4a6e35f22311",
     "media": [
