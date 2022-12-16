@@ -27,7 +27,7 @@ defmodule Phos.Message.Memory do
   def gen_reveries_changeset(memory, attrs) do
     memory
     |> cast(attrs, [:id, :user_source_id, :orb_subject_id, :rel_subject_id, :media, :message])
-    |> cast_assoc(:reveries, with: &Reverie.changeset/2)
+    |> cast_assoc(:reveries, with: &Reverie.gen_changeset/2)
     |> validate_required([:id, :user_source_id])
     |> foreign_key_constraint(:user_source_id)
     |> foreign_key_constraint(:rel_subject_id)

@@ -32,7 +32,7 @@ defmodule Phos.Message do
 
   """
 
-  def last_echoes(id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+  def last_messages(id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
     archetype = "USR"
     #dbg()
     Phos.Message.Echo
