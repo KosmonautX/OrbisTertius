@@ -201,6 +201,27 @@ defmodule Phos.Message do
   """
   def get_memory!(id), do: Repo.get!(Memory, id)
 
+
+    @doc """
+  Create a Message.
+
+  ## Examples
+
+      iex> create_message(%{field: value})
+      {:ok, %Memory{}}
+
+      iex> create_message(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+
+    def create_message(%{"id" => mem_id, "user_source_id" => i_id, "rel_subject_id" => rel_id, "user_destination_id"=> a_id} = params) do
+      attrs = params
+      |> Map.put("reveries", [%{"user_destination_id" => i_id, "memory_id" => mem_id},
+                             %{"user_destination_id" => a_id, "memory_id" => mem_id}])
+      {:ok, gen_memory(attrs)}
+    end
+
   @doc """
   Creates a memory.
 
@@ -224,6 +245,13 @@ defmodule Phos.Message do
     %Memory{}
     |> Memory.changeset(attrs |> Map.put(:id, Ecto.UUID.generate()))
     |> Repo.insert()
+  end
+
+  def gen_memory(attrs \\ %{}) do
+    %Memory{}
+    |> Memory.gen_reveries_changeset(attrs)
+    |> Repo.insert!()
+    |> Repo.preload([:orb_subject, :rel_subject])
   end
 
   @doc """

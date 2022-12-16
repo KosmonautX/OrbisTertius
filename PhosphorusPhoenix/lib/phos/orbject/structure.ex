@@ -34,11 +34,11 @@ defmodule Phos.Orbject.Structure do
       |> cast_embed(:media, with: &Orbject.Structure.orb_media_changeset/2), :user_media)
   end
 
-  def apply_echo_changeset(attrs) do
+  def apply_memory_changeset(attrs) do
     apply_action(
       %Orbject.Structure{}
       |> cast(attrs, [:archetype, :id])
-      |> cast_embed(:media, with: &Orbject.Structure.echo_media_changeset/2), :user_media)
+      |> cast_embed(:media, with: &Orbject.Structure.memory_media_changeset/2), :user_media)
   end
 
 
@@ -61,7 +61,7 @@ defmodule Phos.Orbject.Structure do
     |> validate_required([:access, :essence])
   end
 
-  def echo_media_changeset(structure, attrs) do
+  def memory_media_changeset(structure, attrs) do
     structure
     |> cast(attrs, [:access, :essence, :count, :resolution, :height, :width, :ext])
     |> validate_inclusion(:access, ["public"])

@@ -138,7 +138,7 @@ GET :ipAddress/folkland/stream/discovery/614510498785787903,614510497487650815?p
 POST :ipAddress/folkland/friends
 :auth-headers
 {
-    "acceptor_id": ":brandon_id"
+    "acceptor_id": ":princeton_id"
 }
 
 ## Delete Relation Resource (reset everything)
@@ -302,25 +302,24 @@ GET :ipAddress/orbland/comments/children/:commie?page=1
 DELETE :ipAddress/orbland/comments/4f0e37a2-abab-46e8-aeb1-d4520255bf21
 :auth-headers
 
-### Echoland
+### Memland
 ## All Messages between Pair of People
-GET :ipAddress/echoland/echoes/others/5b6ab4f6-c950-4c29-b354-6845d2ce720e?page=1
+GET :ipAddress/memland/memories/others/5b6ab4f6-c950-4c29-b354-6845d2ce720e?page=1
 :auth-headers
 
 ## Show Last Message
 GET :ipAddress/echoland/echoes/last/?page=1
 :auth-headers
 
-## Create Echoes
-POST :ipAddress/echoland/echoes
+## Create Memories
+POST :ipAddress/memland/memories
 -> run-hook (restclient-set-var ":echo" (cdr (assq 'orb_uuid (assq 'data (json-read)))))
 :auth-headers
 {
-    "destination": "5b6ab4f6-c950-4c29-b354-6845d2ce720e",
-    "destination_archetype": "USR",
+    "user_destination_id": "5b6ab4f6-c950-4c29-b354-6845d2ce720e",
     "message": "ba sing se",
-    "subject": "ORB",
-    "subject_archetype": "something",
+    "rel_subject_id": "17863710-b367-4914-b958-028dd1d8f097",
+    "orb_subject_id": "36a3b2ac-52e7-4b38-b9e2-4a6e35f22311",
     "media": [
         {
             "access": "public",

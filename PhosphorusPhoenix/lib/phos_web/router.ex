@@ -109,19 +109,19 @@ defmodule PhosWeb.Router do
 
 
       live "/memories", MemoryLive.Index, :index
-    live "/memories/new", MemoryLive.Index, :new
-    live "/memories/:id/edit", MemoryLive.Index, :edit
+      live "/memories/new", MemoryLive.Index, :new
+      live "/memories/:id/edit", MemoryLive.Index, :edit
 
-    live "/memories/:id", MemoryLive.Show, :show
-    live "/memories/:id/show/edit", MemoryLive.Show, :edit
+      live "/memories/:id", MemoryLive.Show, :show
+      live "/memories/:id/show/edit", MemoryLive.Show, :edit
 
 
-    live "/reveries", ReverieLive.Index, :index
-    live "/reveries/new", ReverieLive.Index, :new
-    live "/reveries/:id/edit", ReverieLive.Index, :edit
+      live "/reveries", ReverieLive.Index, :index
+      live "/reveries/new", ReverieLive.Index, :new
+      live "/reveries/:id/edit", ReverieLive.Index, :edit
 
-    live "/reveries/:id", ReverieLive.Show, :show
-    live "/reveries/:id/show/edit", ReverieLive.Show, :edit
+      live "/reveries/:id", ReverieLive.Show, :show
+      live "/reveries/:id/show/edit", ReverieLive.Show, :edit
 
 
 
@@ -193,9 +193,10 @@ defmodule PhosWeb.Router do
       resources "/friends", FriendController, except: [:new, :edit, :update]
     end
 
-    scope "/echoland" do
-      get "/others/:id", MessageController, :show_others
-      get "/last", MessageController, :show_last
+    scope "/memland" do
+      resources "/memories", EchoController, except: [:new, :edit]
+      #get "/others/:id", MessageController, :show_others
+      #get "/last", MessageController, :show_last
     end
 
   end

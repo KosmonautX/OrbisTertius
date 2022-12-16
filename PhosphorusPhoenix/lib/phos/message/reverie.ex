@@ -15,7 +15,12 @@ defmodule Phos.Message.Reverie do
   @doc false
   def changeset(reverie, attrs) do
     reverie
+    |> cast(attrs, [:read, :user_destination_id, :memory_id])
+    |> validate_required([:user_destination_id, :memory_id])
+  end
+
+  def update_changeset(reverie, attrs) do
+    reverie
     |> cast(attrs, [:read])
-    |> validate_required([:read])
   end
 end

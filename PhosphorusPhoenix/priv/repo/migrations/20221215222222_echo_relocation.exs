@@ -6,6 +6,7 @@ defmodule Phos.Repo.Migrations.EchoMigration do
       add :id, :uuid, primary_key: true
       add :user_source_id, references(:users, on_delete: :nothing, column: :id, type: :uuid)
       add :orb_subject_id, references(:orbs, on_delete: :nothing, column: :id, type: :uuid)
+      add :rel_subject_id, references(:user_relations_root, on_delete: :nothing, column: :id, type: :uuid)
       #add :org_subject_id, references(:orgs, column: :id, type: :uuid)
       add :message, :string
       add :media, :boolean, default: false, null: false
