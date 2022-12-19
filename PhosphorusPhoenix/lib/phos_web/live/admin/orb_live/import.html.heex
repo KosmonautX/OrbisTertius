@@ -13,7 +13,8 @@
 
   <.modal
     id="import_orbs_modal"
-    show={not is_nil(@show_detail_id)}
+    :if={not is_nil(@show_detail_id)}
+    show={ true }
     on_cancel={JS.push("close-modal")}
     on_confirm={JS.push("close-and-select")} >
 

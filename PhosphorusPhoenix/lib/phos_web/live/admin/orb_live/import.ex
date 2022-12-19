@@ -1,12 +1,10 @@
 defmodule PhosWeb.Admin.OrbLive.Import do
   use PhosWeb, :admin_view
 
-  alias PhosWeb.Components.{Card}
-
   @impl true
   def mount(_params, _session, socket) do
     Process.send_after(self(),  :live_orbs, 1000)
-    {:ok, assign(socket, [loading: true, orbs: [], message: "", selected_orbs: [], show_detail_id: nil])}
+    {:ok, assign(socket, [loading: true, orbs: [], message: "", selected_orbs: [], show_detail_id: nil, show_modal: false])}
   end
 
   @impl true
@@ -30,7 +28,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
     |> case do
       [] -> {:noreply, socket
         |> put_flash(:error, "Orb(s) failed to import.")
-        |> push_redirect(to: ~p"/admin/orbs", replace: true)}
+        |> push_redirect(to: ~p"/admin/orbs")}
       data ->
         case contains_error?(data) do
           true ->
@@ -41,7 +39,6 @@ defmodule PhosWeb.Admin.OrbLive.Import do
             {:noreply, socket
                 |> put_flash(:info, "Orbs have been born 🥳 @" <> (DateTime.now!("Asia/Singapore") |> Calendar.strftime("%y-%m-%d %I:%M:%S %p")))
                 |> push_redirect(to: ~p"/admin/orbs", replace: true)}
-
             # legacy apis deprecated
             # case Phos.External.HeimdallrClient.post_orb(data) do
             #   {:ok, _response} ->
@@ -63,7 +60,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
   def handle_event("detail-orb", %{"index" => index}, %{assigns: %{orbs: _orbs}} = socket) do
     Process.send_after(self(), :marker_update, 500)
     Process.send_after(self(), :boundaries_update, 700)
-    {:noreply, assign(socket, :show_detail_id, String.to_integer(index))}
+    {:noreply, assign(socket, show_detail_id: String.to_integer(index), show_modal: true)}
   end
 
   @impl true
@@ -72,7 +69,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
   end
 
   @impl true
-  def handle_event("close-modal", _, socket), do: {:noreply, assign(socket, :show_detail_id, nil)}
+  def handle_event("close-modal", _, socket), do: {:noreply, assign(socket, show_detail_id: nil, show_modal: false)}
 
   @impl true
   def handle_info(:live_orbs, socket) do

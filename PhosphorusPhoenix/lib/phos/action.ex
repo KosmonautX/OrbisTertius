@@ -4,6 +4,8 @@ defmodule Phos.Action do
   """
 
   import Ecto.Query, warn: false
+
+  alias Ecto.Multi
   alias Phos.Repo
   alias Phos.Action.{Orb, Location, Orb_Location}
 
@@ -53,7 +55,23 @@ defmodule Phos.Action do
   #
 
   def get_orb(id) when is_binary(id) do
-    query = from o in Orb, preload: [:locations, :initiator], where: o.id == ^id, limit: 1
+    parent_path = "*.#{Phos.Utility.Encoder.encode_lpath(id)}.*"
+    query = 
+      from o in Orb,
+        preload: [:locations, :initiator, :parent],
+        where: o.id == ^id,
+        inner_lateral_join: p in subquery(
+          from p in Orb,
+            where: p.parent_id == ^id,
+            select: %{count: count(p)}
+        ),
+        inner_lateral_join: c in subquery(
+          from c in Phos.Comments.Comment,
+          where: c.orb_id == ^id,
+          select: %{count: count()}
+        ),
+        select_merge: %{number_of_repost: p.count, comment_count: c.count},
+        limit: 1
     case Repo.one(query) do
       %Orb{} = orb -> {:ok, orb}
       _ -> {:error, :not_found}
@@ -522,8 +540,8 @@ defmodule Phos.Action do
     |> create_orb()
   end
 
-  def subscribe_to_orb(%Orb{id: id} = _orb, %Phos.Users.User{} = user) do
-    topic = "ORB.#{id}"
+  def subscribe_to_orb(%Orb{id: _id} = _orb, %Phos.Users.User{} = _user) do
+    # topic = "ORB.#{id}"
     ## TODO SUB User Topic to Orb
     #token = Map.get(user, :private_profile, %{}) |> Map.get(:user_token)
     #Phos.Notification.subscribe(token, topic)
@@ -536,5 +554,32 @@ defmodule Phos.Action do
     query = from p in __MODULE__.Orb, preload: [:initiator], where: fragment("? @> ?", p.traits, ^traits)
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
+  end
+
+  def reorb(user_id, orb_id, message \\ "")
+  def reorb(%Phos.Users.User{} = user, %Orb{} = orb, message), do: reorb(user.id, orb.id, message)
+  def reorb(user_id, orb_id, message) when is_binary(user_id) and is_binary(orb_id) do
+    id = Ecto.UUID.generate()
+    orb = get_orb!(orb_id)
+    message = if message == "", do: orb.title, else: message
+    path = case orb.path do
+      %{labels: []} -> Phos.Utility.Encoder.encode_lpath(id, orb.id)
+      %{labels: labels} -> Phos.Utility.Encoder.encode_lpath(id, labels)
+      _ -> Phos.Utility.Encoder.encode_lpath(id, orb.id)
+    end
+
+    attrs = 
+      Map.from_struct(orb)
+      |> Map.take(~W(active central_geohash extinguish media)a)
+      |> Map.merge(%{
+        id: id,
+        title: message,
+        path: path,
+        parent_id: orb_id,
+        initiator_id: user_id,
+        traits: ["reorb" | Map.get(orb, :traits, [])],
+      })
+
+    create_orb(attrs)
   end
 end

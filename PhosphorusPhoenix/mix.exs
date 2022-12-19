@@ -83,6 +83,7 @@ defmodule Phos.MixProject do
       {:decorator, "~> 1.4"},
       {:fcmex, github: "KosmonautX/fcmex"},
       {:retry, "~> 0.17"},
+      { :uuid, "~> 1.1" },
 
       # comments
       {:ecto_ltree, "~> 0.3.0"},
