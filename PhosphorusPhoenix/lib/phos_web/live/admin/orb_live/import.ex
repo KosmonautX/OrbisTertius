@@ -39,7 +39,6 @@ defmodule PhosWeb.Admin.OrbLive.Import do
             {:noreply, socket
                 |> put_flash(:info, "Orbs have been born 🥳 @" <> (DateTime.now!("Asia/Singapore") |> Calendar.strftime("%y-%m-%d %I:%M:%S %p")))
                 |> push_redirect(to: ~p"/admin/orbs")}
-
             # legacy apis deprecated
             # case Phos.External.HeimdallrClient.post_orb(data) do
             #   {:ok, _response} ->
