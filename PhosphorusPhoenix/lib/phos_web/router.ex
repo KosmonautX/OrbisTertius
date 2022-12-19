@@ -175,8 +175,9 @@ defmodule PhosWeb.Router do
     end
 
     scope "/echoland" do
-      get "/others/:id", MessageController, :show_others
-      get "/last", MessageController, :show_last
+      #resources "/echoes", EchoController, except: [:new, :edit, :index]
+      get "/echoes/others/:id", EchoController, :show_others
+      get "/echoes/last", EchoController, :show_last
     end
 
   end

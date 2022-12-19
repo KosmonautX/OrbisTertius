@@ -23,7 +23,7 @@ defmodule Phos.Message do
 
 
   @doc """
-  Returns paginated call of the last message between each unique source destination pair
+  Returns paginated call of the last message between each unique subject source destination triplet
 
   ## Examples
 
@@ -37,7 +37,7 @@ defmodule Phos.Message do
     Phos.Message.Echo
     |> where([e], e.source == ^id and e.source_archetype == ^archetype )
     |> or_where([e], e.destination == ^id and e.destination_archetype == ^archetype)
-    |> distinct([e], [e.source, e.destination])
+    |> distinct([e], [e.subject, e.source, e.destination])
     |> order_by([e], desc: e.inserted_at)
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
@@ -57,7 +57,7 @@ defmodule Phos.Message do
     Phos.Message.Echo
     |> where([e], (e.source == ^id and e.source_archetype == ^archetype) and (e.destination == ^yours and e.destination_archetype == ^archetype))
     |> or_where([e], (e.source == ^yours and e.source_archetype == ^archetype) and (e.destination == ^id and e.destination_archetype == ^archetype))
-    |> distinct([e], e.subject)
+    #|> distinct([e], e.subject)
     |> order_by([e], desc: e.inserted_at)
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end

@@ -34,23 +34,22 @@ defmodule PhosWeb.Admin.OrbLive.Import do
           true ->
             {:noreply, socket
             |> put_flash(:error, "Orb(s) contains error. 💥")
-            |> push_redirect(to: ~p"/admin/orbs")}
+            |> push_redirect(to: ~p"/admin/orbs", replace: true)}
           _ ->
             {:noreply, socket
                 |> put_flash(:info, "Orbs have been born 🥳 @" <> (DateTime.now!("Asia/Singapore") |> Calendar.strftime("%y-%m-%d %I:%M:%S %p")))
-                |> push_redirect(to: ~p"/admin/orbs")}
-
+                |> push_redirect(to: ~p"/admin/orbs", replace: true)}
             # legacy apis deprecated
             # case Phos.External.HeimdallrClient.post_orb(data) do
             #   {:ok, _response} ->
             #     {:noreply, socket
             #     |> put_flash(:info, "Orbs have been born 🥳 @" <> (DateTime.now!("Asia/Singapore") |> Calendar.strftime("%y-%m-%d %I:%M:%S %p")))
-            #     |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+            #     |> push_redirect(to: ~p"/admin/orbs", replace: true)}
             #   {:error, message} ->
             #     {:noreply, socket
             #     |> put_flash(:error, "Take down Orbs 💥, failed to propogate to legacy api service
             #     #{inspect(message)}")
-            #     |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+            #     |> push_redirect(to: ~p"/admin/orbs", replace: true)}
             # end
 
         end
