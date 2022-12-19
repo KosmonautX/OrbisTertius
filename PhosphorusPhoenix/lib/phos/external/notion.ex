@@ -8,6 +8,14 @@ defmodule Phos.External.Notion do
   def yesterday_post, do: DateTime.utc_now()
   |> DateTime.add(-60 * 60 * 16) |> DateTime.to_date() |> date_post()
 
+  def platform_notification do
+    query = %{}
+
+    case do_get_notion_data(notification_database(), query) do
+      {:ok, %HTTPoison.Response{body: body}} -> Map.get(body, "results", [])
+      {:error, err} -> HTTPoison.Error.message(err)
+    end
+  end
 
   def date_post(date) do
     date_query = %{
@@ -19,15 +27,15 @@ defmodule Phos.External.Notion do
       }
     }
 
-    case do_get_date_post(date_query) do
+    case do_get_notion_data(database(), date_query) do
       {:ok, %HTTPoison.Response{body: body}} -> Map.get(body, "results", [])
       {:error, err} -> HTTPoison.Error.message(err)
     end
   end
 
-  defp do_get_date_post(query) do
+  defp do_get_notion_data(database, query) do
     retry with: constant_backoff(100) |> Stream.take(5) do
-      post("/databases/#{database()}/query", query)
+      post("/databases/#{database}/query", query)
     after
       {:ok, _res} = response -> response
     else
@@ -60,10 +68,11 @@ defmodule Phos.External.Notion do
     "#{auth_type} #{auth_token}"
   end
 
-  defp notion_version() do
-    Keyword.get(config(), :version) ||  "2022-02-22"
-  end
-
-  defp database, do: Keyword.get(config(), :database, "")
+  defp notion_version, do: Keyword.get(config(), :version) ||  "2022-02-22"
+  defp database, do: Keyword.get(config(), :database, "") |> eval_value()
+  defp notification_database, do: Keyword.get(config(), :notification_database, "") |> eval_value()
   defp config(), do: Application.get_env(:phos, __MODULE__, [])
+
+  defp eval_value({module, func, value}), do: apply(module, func, [value])
+  defp eval_value(value), do: value
 end

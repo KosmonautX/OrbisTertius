@@ -431,17 +431,36 @@ defmodule Phos.Action do
     end
   end
 
+  def import_platform_notification do
+    case Phos.External.Notion.platform_notification() do
+      data when is_list(data) -> notion_platform_importer(data)
+      _ -> {:error, "Error fetching data from notion"}
+    end
+  end
+
   defp notion_importer(data) when is_list(data), do: Enum.map(data, &notion_parse_properties/1) |> List.flatten()
   defp notion_importer(_), do: []
 
+  defp notion_platform_importer(data) when is_list(data) do 
+    Enum.map(data, &notion_platform_parse_properties/1)
+    |> List.flatten()
+    |> Enum.reject(fn v ->
+      Map.get(v, "title", "")
+      |> Kernel.in([[], ""])
+    end)
+  end
+  defp notion_platform_importer(_), do: []
+
+  defp notion_get_values(%{"type" => "select", "select" => data}) when is_map(data), do: Map.get(data, "name")
+  defp notion_get_values(%{"type" => "select", "select" => _data}), do: "-"
   defp notion_get_values(%{"type" => "multi_select", "multi_select" => data}), do: Enum.map(data, fn d -> Map.get(d, "name") end)
   defp notion_get_values(%{"type" => "files", "files" => files}) when is_list(files) and length(files) > 0, do: List.first(files)["file"]["url"]
   defp notion_get_values(%{"type" => type} = data), do: notion_get_values(Map.get(data, type))
   defp notion_get_values(%{"content" => data}), do: data
   defp notion_get_values(data) when is_boolean(data), do: data
   defp notion_get_values(data) when is_list(data) and length(data) > 0, do: Enum.reduce(data, "", fn val, acc -> Kernel.<>(acc, notion_get_values(val)) end)
+  defp notion_get_values([]), do: []
   defp notion_get_values(_), do: "[town]" #TODO this is a terrible default state
-
 
   defp notion_parse_properties(%{"properties" => %{"Type" => type, "Regions" => region} = properties}) do
     sectors = Phos.External.Sector.get()
@@ -456,6 +475,33 @@ defmodule Phos.Action do
       _ -> []
     end
   end
+
+  defp notion_platform_parse_properties(%{"properties" => properties}), do: Enum.reduce(properties, %{}, fn {k, v}, acc ->
+    key = String.downcase(k) |> String.replace(" ", "_")
+    value = notion_get_values(v)
+    case key do
+      "time_condition" -> Map.put(acc, key, notion_platform_time(value))
+      "title" -> Map.merge(acc, %{
+        "id" => :crypto.hash(:sha256, value) |> Base.encode16() |> String.downcase(),
+        "title" => value
+      })
+      k when k in ["id", "type"] -> acc
+      _ -> Map.put(acc, key, value)
+    end
+  end)
+
+  defp notion_platform_time(time) when is_bitstring(time) do
+    [hour | timezone] = String.split(time, " ")
+    tz = decide_timezone(List.first(timezone))
+    case Timex.parse(hour, "{h12}.{m}{am}") do
+      {:ok, h} -> Timex.Timezone.convert(h, tz) |> DateTime.to_time()
+      _ -> notion_platform_time(nil)
+    end
+  end
+  defp notion_platform_time(_time), do: ~T[07:30:00]
+
+  defp decide_timezone("SGD"), do: Timex.timezone("Asia/Singapore", {2022, 1, 1})
+  defp decide_timezone(_), do: Timex.Timezone.local()
 
   defp orb_imported_detail({name, hashes} = sector, %{"Title" => title, "Radius" => radius, "Location" => location} = properties) do
     traits = Map.get(properties, "Traits", %{}) |> notion_get_values()
