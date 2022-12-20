@@ -448,6 +448,9 @@ defmodule Phos.Action do
       Map.get(v, "title", "")
       |> Kernel.in([[], ""])
     end)
+    |> Enum.reduce([], fn data, acc ->
+      [Enum.map(data, fn {k, v} -> {String.to_atom(k), v} end) |> Enum.into(%{}) | acc]
+    end)
   end
   defp notion_platform_importer(_), do: []
 
