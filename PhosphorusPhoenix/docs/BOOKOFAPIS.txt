@@ -212,7 +212,8 @@ POST :ipAddress/orbland/orbs
             "access": "public",
             "essence": "banner",
             "resolution": "lossless",
-            "count": 3
+            "count": 3,
+            "ext": "mp3"
         },
         {
             "access": "public",
@@ -309,17 +310,18 @@ DELETE :ipAddress/orbland/comments/4f0e37a2-abab-46e8-aeb1-d4520255bf21
 GET :ipAddress/memland/friends/?page=1
 :auth-headers
 
-## Show  by relation_id
+## Index by unique orbs
+GET :ipAddress/memland/orbs/?page=1
+:auth-headers
+
+## Show by specific relation_id
 GET :ipAddress/memland/friends/17863710-b367-4914-b958-028dd1d8f097?page=1
 :auth-headers
 
-## Show message by orb
+## Show message by specific orb
 GET :ipAddress/memland/orbs/36a3b2ac-52e7-4b38-b9e2-4a6e35f22311?page=1
 :auth-headers
 
-## Show message by orb
-GET :ipAddress/memland/orbs/?page=1
-:auth-headers
 
 
 ## Create Memories

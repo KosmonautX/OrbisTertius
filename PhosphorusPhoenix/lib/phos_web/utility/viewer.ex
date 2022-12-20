@@ -79,6 +79,7 @@ defmodule PhosWeb.Util.Viewer do
   end
 
 
+  def memory_mapper(memories = [%Phos.Message.Memory{} | _]), do: Enum.map(memories, &memory_mapper/1)
   def memory_mapper(memory) do
       %{
         id: memory.id,

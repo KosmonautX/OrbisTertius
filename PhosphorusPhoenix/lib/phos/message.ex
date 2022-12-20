@@ -70,7 +70,7 @@ defmodule Phos.Message do
     |> join(:inner, [r], m in Phos.Message.Memory, on: m.rel_subject_id == ^rel_id and r.memory_id == m.id)
     |> select_merge([r, m], %{memory: m})
     |> order_by([e], desc: e.inserted_at)
-    |> preload([memory: [:rel_subject, :user_source, :orb_subject]])
+    |> preload([memory: [:user_source]])
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
@@ -90,7 +90,7 @@ defmodule Phos.Message do
     |> join(:inner, [r], m in Phos.Message.Memory, on: m.orb_subject_id == ^orb_id and r.memory_id == m.id)
     |> select_merge([r, m], %{memory: m})
     |> order_by([e], desc: e.inserted_at)
-    |> preload([memory: [:rel_subject, :user_source, :orb_subject]])
+    |> preload([memory: [:user_source]])
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
@@ -250,7 +250,7 @@ defmodule Phos.Message do
       attrs = params
       |> Map.put("reveries", [%{"user_destination_id" => i_id, "memory_id" => mem_id},
                              %{"user_destination_id" => a_id, "memory_id" => mem_id}])
-      {:ok, gen_memory(attrs)}
+      gen_memory(attrs)
     end
 
   @doc """
@@ -279,11 +279,16 @@ defmodule Phos.Message do
   end
 
   def gen_memory(attrs \\ %{}) do
-    %Memory{}
+    memory_changeset = %Memory{}
     |> Memory.gen_reveries_changeset(attrs)
-    |> Repo.insert!()
-    |> Repo.preload([:orb_subject, :rel_subject])
-  end
+
+    with {:ok, memory} <- Repo.insert(memory_changeset) do
+      memory
+      |> Repo.preload([:orb_subject, :user_source, :rel_subject])
+      |> Phos.PubSub.publish({:memory, "formation"}, memory.reveries)
+      |> (&({:ok, &1})).()
+    end
+   end
 
   @doc """
   Updates a memory.
