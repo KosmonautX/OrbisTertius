@@ -106,6 +106,25 @@ defmodule PhosWeb.Router do
 
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
+
+
+      live "/memories", MemoryLive.Index, :index
+      live "/memories/new", MemoryLive.Index, :new
+      live "/memories/:id/edit", MemoryLive.Index, :edit
+
+      live "/memories/:id", MemoryLive.Show, :show
+      live "/memories/:id/show/edit", MemoryLive.Show, :edit
+
+
+      live "/reveries", ReverieLive.Index, :index
+      live "/reveries/new", ReverieLive.Index, :new
+      live "/reveries/:id/edit", ReverieLive.Index, :edit
+
+      live "/reveries/:id", ReverieLive.Show, :show
+      live "/reveries/:id/show/edit", ReverieLive.Show, :edit
+
+
+
     end
   end
 
@@ -174,10 +193,12 @@ defmodule PhosWeb.Router do
       resources "/friends", FriendController, except: [:new, :edit, :update]
     end
 
-    scope "/echoland" do
-      #resources "/echoes", EchoController, except: [:new, :edit, :index]
-      get "/echoes/others/:id", EchoController, :show_others
-      get "/echoes/last", EchoController, :show_last
+    scope "/memland" do
+      resources "/memories", EchoController, except: [:new, :edit]
+      get "/orbs", EchoController, :index_orbs
+      get "/friends", EchoController, :index_relations
+      get "/orbs/:id", EchoController, :show_orbs
+      get "/friends/:id", EchoController, :show_relations
     end
 
   end

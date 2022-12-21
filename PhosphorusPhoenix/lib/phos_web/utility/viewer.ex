@@ -27,34 +27,78 @@ defmodule PhosWeb.Util.Viewer do
           links: %{history: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{entity.id}/history")}}}
 
 
-      {:friend, %Phos.Users.User{} = friend} ->
 
-        %{friend:
-          %{data: PhosWeb.Util.Viewer.user_mapper(friend),
-            links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{friend.id}")}}}
 
-      {:initiator, %Phos.Users.User{} = initiator} ->
+      # {:friend, %Phos.Users.User{} = friend} ->
 
-        %{initiator:
-          %{data: PhosWeb.Util.Viewer.user_mapper(initiator),
-            links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{initiator.id}")}}}
+      #   %{friend:
+      #     %{data: PhosWeb.Util.Viewer.user_mapper(friend),
+      #       links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{friend.id}")}}}
 
-      {:acceptor, %Phos.Users.User{} = acceptor} ->
+      # {:initiator, %Phos.Users.User{} = initiator} ->
 
-        %{acceptor:
-          %{data: PhosWeb.Util.Viewer.user_mapper(acceptor),
-            links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{acceptor.id}")}}}
+      #   %{initiator:
+      #     %{data: PhosWeb.Util.Viewer.user_mapper(initiator),
+      #       links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{initiator.id}")}}}
 
+      # {:acceptor, %Phos.Users.User{} = acceptor} ->
+
+      #   %{acceptor:
+      #     %{data: PhosWeb.Util.Viewer.user_mapper(acceptor),
+      #       links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{acceptor.id}")}}}
+
+      {k , %Phos.Users.User{} = user} ->
+        Map.new([{k,
+                  %{data: PhosWeb.Util.Viewer.user_mapper(user),
+                    links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{user.id}")}}}])
+
+      {k, %Phos.Action.Orb{} = orb} ->
+
+        Map.new([{k, %{data: PhosWeb.Util.Viewer.orb_mapper(orb)}}])
+
+      {k, %Phos.Message.Memory{} = memory} ->
+
+        Map.new([{k, %{data: PhosWeb.Util.Viewer.memory_mapper(memory)}}])
+
+
+      {k, %Phos.Users.RelationRoot{} = relation} ->
+
+        Map.new([{k, %{data: %{PhosWeb.Util.Viewer.user_relation_mapper(relation) | self_initiated: relation.initiator_id != entity.id},
+            links: %{self: path(PhosWeb.Endpoint, Router, ~p"/api/folkland/others/#{relation.initiator_id}")}}}])
 
       _ -> %{}
 
     end
   end
 
+
   def relationship_reducer(entity) do
-    entity
-    |> Map.from_struct()
-    |> Enum.reduce(%{}, fn({k,v}, acc) -> Map.merge(acc, relationship_mapper({k,v}, entity)) end)
+        entity
+        |> Map.from_struct()
+        |> Enum.reduce(%{}, fn({k,v}, acc) -> Map.merge(acc, relationship_mapper({k,v}, entity)) end)
+  end
+
+
+  def memory_mapper(memories = [%Phos.Message.Memory{} | _]), do: Enum.map(memories, &memory_mapper/1)
+  def memory_mapper(memory) do
+      %{
+        id: memory.id,
+        relationships: relationship_reducer(memory),
+        message: memory.message,
+        creationtime: DateTime.from_naive!(memory.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
+        mutationtime: DateTime.from_naive!(memory.updated_at, "Etc/UTC") |> DateTime.to_unix(),
+        media: (if memory.media, do: S3.get_all!("MEM", memory.id, "public"))
+      }
+  end
+
+  def reverie_mapper(reverie) do
+      %{
+        id: reverie.id,
+        relationships: relationship_reducer(reverie),
+        read: reverie.read,
+        creationtime: DateTime.from_naive!(reverie.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
+        mutationtime: DateTime.from_naive!(reverie.updated_at, "Etc/UTC") |> DateTime.to_unix(),
+      }
   end
 
   # User Mapper
@@ -262,11 +306,12 @@ defmodule PhosWeb.Util.Viewer do
         subject_archetype: echo.subject_archetype,
         subject: echo.subject,
         message: echo.message,
+        time: DateTime.from_naive!(echo.inserted_at,"Etc/UTC") |> DateTime.to_unix(),
         creationtime: DateTime.from_naive!(echo.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
         mutationtime: DateTime.from_naive!(echo.updated_at, "Etc/UTC") |> DateTime.to_unix()
-        #time: DateTime.from_naive!(echo.inserted_at,"Etc/UTC") |> DateTime.to_unix()
       }
   end
+
 
   # user.private_profile.geolocation -> socket.assigns.geolocation
   def profile_geolocation_mapper(geolocs) do

@@ -181,6 +181,25 @@ defmodule Phos.Action do
       |> (&(Map.put(&1, :data, &1.data |> Repo.Preloader.lateral(:orbs, [limit: 5])))).()
   end
 
+  def orbs_by_friends(your_id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    from(orbs in Orb,
+      as: :o,
+      where: not fragment("? @> ?", orbs.traits, ^["mirage"]),
+      inner_join: initiator in assoc(orbs, :initiator),
+      inner_join: branch in assoc(initiator, :relations),
+      on: branch.friend_id == ^your_id,
+      inner_join: root in assoc(branch, :root),
+      select_merge: %{initiator: %{initiator | self_relation: root}},
+      inner_lateral_join: c in subquery(
+        from c in Phos.Comments.Comment,
+        where: c.orb_id == parent_as(:o).id,
+        select: %{count: count()}
+      ),
+      select_merge: %{comment_count: c.count})
+      |> Repo.Paginated.all(page, sort_attribute, limit)
+      |> IO.inspect()
+  end
+
   def orbs_by_initiators(user_ids, page, sort_attribute \\ :inserted_at, limit \\ 12) do
     from(o in Orb,
       as: :o,

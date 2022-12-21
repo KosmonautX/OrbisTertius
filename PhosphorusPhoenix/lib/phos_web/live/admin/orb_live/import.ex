@@ -34,11 +34,11 @@ defmodule PhosWeb.Admin.OrbLive.Import do
           true ->
             {:noreply, socket
             |> put_flash(:error, "Orb(s) contains error. 💥")
-            |> push_redirect(to: ~p"/admin/orbs", replace: true)}
+            |> push_redirect(to: ~p"/admin/orbs")}
           _ ->
             {:noreply, socket
                 |> put_flash(:info, "Orbs have been born 🥳 @" <> (DateTime.now!("Asia/Singapore") |> Calendar.strftime("%y-%m-%d %I:%M:%S %p")))
-                |> push_redirect(to: ~p"/admin/orbs", replace: true)}
+                |> push_redirect(to: ~p"/admin/orbs")}
             # legacy apis deprecated
             # case Phos.External.HeimdallrClient.post_orb(data) do
             #   {:ok, _response} ->

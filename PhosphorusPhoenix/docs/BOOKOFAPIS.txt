@@ -139,7 +139,7 @@ GET :ipAddress/folkland/stream/discovery/614510498785787903,614510497487650815?p
 POST :ipAddress/folkland/friends
 :auth-headers
 {
-    "acceptor_id": ":brandon_id"
+    "acceptor_id": ":princeton_id"
 }
 
 ## Delete Relation Resource (reset everything)
@@ -212,7 +212,8 @@ POST :ipAddress/orbland/orbs
             "access": "public",
             "essence": "banner",
             "resolution": "lossless",
-            "count": 3
+            "count": 3,
+            "ext": "mp3"
         },
         {
             "access": "public",
@@ -303,15 +304,73 @@ GET :ipAddress/orbland/comments/children/:commie?page=1
 DELETE :ipAddress/orbland/comments/4f0e37a2-abab-46e8-aeb1-d4520255bf21
 :auth-headers
 
-### Echoland
-## All Messages between Pair of People
-GET :ipAddress/echoland/echoes/others/5b6ab4f6-c950-4c29-b354-6845d2ce720e?page=1
+
+### Memland
+## Index by unique relations
+GET :ipAddress/memland/friends/?page=1
 :auth-headers
 
-## Show Last Message
-GET :ipAddress/echoland/echoes/last/?page=1
+## Index by unique orbs
+GET :ipAddress/memland/orbs/?page=1
 :auth-headers
 
+## Show by specific relation_id
+GET :ipAddress/memland/friends/17863710-b367-4914-b958-028dd1d8f097?page=1
+:auth-headers
+
+## Show message by specific orb
+GET :ipAddress/memland/orbs/36a3b2ac-52e7-4b38-b9e2-4a6e35f22311?page=1
+:auth-headers
+
+
+
+## Create Memories
+POST :ipAddress/memland/memories
+-> run-hook (restclient-set-var ":echo" (cdr (assq 'orb_uuid (assq 'data (json-read)))))
+:auth-headers
+{
+    "user_destination_id": "5b6ab4f6-c950-4c29-b354-6845d2ce720e",
+    "message": "ba sing ses",
+    "rel_subject_id": "17863710-b367-4914-b958-028dd1d8f097",
+    "orb_subject_id": "36a3b2ac-52e7-4b38-b9e2-4a6e35f22311",
+    "media": [
+        {
+            "access": "public",
+            "essence": "profile",
+            "resolution": "lossless"
+        },
+        {
+            "access": "public",
+            "essence": "profile",
+            "resolution": "lossless",
+            "count": 1
+        },
+        {
+            "access": "public",
+            "essence": "profile",
+            "resolution": "lossless",
+            "count": 2
+        },
+        {
+            "access": "public",
+            "essence": "profile",
+            "resolution": "lossless",
+            "count": 3
+        },
+        {
+            "access": "public",
+            "essence": "profile",
+            "resolution": "lossless",
+            "count": 4
+        },
+        {
+            "access": "public",
+            "essence": "profile",
+            "resolution": "lossless",
+            "count": 5
+        }
+        ]
+}
 
 ### Medialand
 

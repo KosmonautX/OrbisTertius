@@ -1,0 +1,35 @@
+defmodule Phos.Message.Memory do
+  use Ecto.Schema
+  import Ecto.Changeset
+  alias Phos.Message.Reverie
+
+  @primary_key {:id, :binary_id, autogenerate: false}
+  @foreign_key_type :binary_id
+  schema "memories" do
+    field :media, :boolean, default: false
+    field :message, :string
+    belongs_to :user_source, Phos.Users.User, references: :id, type: Ecto.UUID
+    belongs_to :orb_subject, Phos.Action.Orb, references: :id, type: Ecto.UUID
+    belongs_to :rel_subject, Phos.Users.RelationRoot, references: :id, type: Ecto.UUID
+
+    has_many :reveries, Reverie, references: :id, foreign_key: :memory_id, on_delete: :delete_all
+
+    timestamps()
+  end
+
+  @doc false
+  def changeset(memory, attrs) do
+    memory
+    |> cast(attrs, [:id, :message, :media])
+    |> validate_required([:message, :media])
+  end
+
+  def gen_reveries_changeset(memory, attrs) do
+    memory
+    |> cast(attrs, [:id, :user_source_id, :orb_subject_id, :rel_subject_id, :media, :message])
+    |> cast_assoc(:reveries, with: &Reverie.gen_changeset/2)
+    |> validate_required([:id, :user_source_id])
+    |> foreign_key_constraint(:user_source_id)
+    |> foreign_key_constraint(:rel_subject_id)
+  end
+end
