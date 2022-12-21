@@ -70,7 +70,7 @@ defmodule Phos.Message do
     |> join(:inner, [r], m in Phos.Message.Memory, on: m.rel_subject_id == ^rel_id and r.memory_id == m.id)
     |> select_merge([r, m], %{memory: m})
     |> order_by([e], desc: e.inserted_at)
-    |> preload([memory: [:user_source]])
+    |> preload([memory: [:user_source, :orb_subject]])
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 

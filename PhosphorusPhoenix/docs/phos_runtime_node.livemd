@@ -8,7 +8,8 @@ your_id = "5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"
 import Ecto.Query
 
 from(orbs in Phos.Action.Orb,
-  where: orbs.id == ^orb_id,
+  as: :o,
+  # where: orbs.id == ^orb_id,
   inner_join: initiator in assoc(orbs, :initiator),
   left_join: branch in assoc(initiator, :relations),
   on: branch.friend_id == ^your_id,
@@ -23,21 +24,21 @@ from(orbs in Phos.Action.Orb,
     ),
   select_merge: %{comment_count: c.count}
 )
-|> Phos.Repo.one()
+|> Phos.Repo.all()
 
-%{
-  "id" => Ecto.UUID.generate(),
-  "title" => "orb",
-  "media" => true,
-  "active" => true,
-  "extinguish" => ~N[2022-10-22 16:31:07],
-  "initiator_id" => your_id,
-  "payload" => %{
-    "info" => "ok",
-    "ext_link" => %{"name" => "Chat with me", "link" => "https://scrbac.com/THChatWithUs"}
-  }
-}
-|> Phos.Action.create_orb()
+# %{
+#   "id" => Ecto.UUID.generate(),
+#   "title" => "orb",
+#   "media" => true,
+#   "active" => true,
+#   "extinguish" => ~N[2022-10-22 16:31:07],
+#   "initiator_id" => your_id,
+#   "payload" => %{
+#     "info" => "ok",
+#     "ext_link" => %{"name" => "Chat with me", "link" => "https://scrbac.com/THChatWithUs"}
+#   }
+# }
+# |> Phos.Action.create_orb()
 ```
 
 ```elixir

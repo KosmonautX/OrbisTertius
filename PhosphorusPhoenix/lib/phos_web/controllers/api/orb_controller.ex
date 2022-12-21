@@ -131,14 +131,12 @@ defmodule PhosWeb.API.OrbController do
   end
 
   def show_friends(conn = %{assigns: %{current_user: %{id: id}}}, %{"page" => page}) do
-    friends = Phos.Folk.friends_lite(id)
-    orbs = Phos.Action.orbs_by_initiators([id | friends], page)
+    orbs = Phos.Action.orbs_by_friends(id, page)
     render(conn, :paginated, orbs: orbs)
   end
 
   def show_friends(conn = %{assigns: %{current_user: %{id: id}}}, _params) do
-    friends = Phos.Folk.friends_lite(id)
-    orbs = Phos.Action.orbs_by_initiators([id | friends], 1)
+    orbs = Phos.Action.orbs_by_friends(id, 1)
     render(conn, :paginated, orbs: orbs)
   end
 
