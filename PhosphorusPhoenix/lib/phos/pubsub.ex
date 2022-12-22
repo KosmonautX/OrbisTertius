@@ -32,6 +32,13 @@ defmodule Phos.PubSub do
     case topic do
       %Phos.Message.Reverie{user_destination_id: user_id} ->
         PubSub.broadcast(__MODULE__, "memory:user:#{user_id}", {__MODULE__, event, message})
+
+
+        Phos.Notification.target("'USR.#{user_id}' in topics",
+          %{title: "Message from #{message.user_source.username}", body: message.message},
+          message |> PhosWeb.Util.Viewer.memory_mapper())
+
+        dbg()
     end
     message
   end
