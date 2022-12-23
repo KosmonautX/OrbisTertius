@@ -89,7 +89,7 @@ PUT :ipAddress/userland/self/
 GET :ipAddress/userland/others/:owentwo_id
 :auth-headers
 ## Read all of User Orb History
-GET :ipAddress/userland/others/:satrio_id/history?page=1
+GET :ipAddress/userland/others/:satrio_id/history?page=1&traits=personalpin
 :auth-headers
 
 ## Update territorial data of self
@@ -175,7 +175,7 @@ GET :ipAddress/orbland/orbs/3e9ebaa7-cdd0-4d3e-857e-0661aeb12d0b
 :auth-headers
 
 ## Read all orbs in that geohash id
-GET :ipAddress/orbland/stream/623517998944845823,628021598572208127?page=1&traits=pin
+GET :ipAddress/orbland/stream/623517998944845823,628021598572208127?page=1&traits=treasurehunt
 :auth-headers
 
 ## Create Orbs
@@ -229,7 +229,7 @@ POST :ipAddress/orbland/orbs
         }
         ],
     "expires_in": "10000",
-    "traits": ["holy", "mooncakes"]
+    "traits": ["personalpin"]
 }
 ## Update Orbs (Deactivate etc)
 ##

@@ -101,8 +101,8 @@ defmodule PhosWeb.Router do
 
       live "/user/feeds", UserFeedLive.Index, :index
 
-      live "/user/:username/edit", UserProfileLive.Index, :edit
-      live "/user/:username", UserProfileLive.Index, :index
+      live "/user/:username/edit", UserProfileLive.Show, :edit
+      live "/user/:username", UserProfileLive.Show, :show
 
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
