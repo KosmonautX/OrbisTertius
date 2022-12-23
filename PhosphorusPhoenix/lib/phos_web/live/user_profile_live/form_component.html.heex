@@ -13,7 +13,8 @@
 
       <%= inputs_for f, :public_profile, fn ff -> %>
         <.input field={{ff, :bio}} label="Bio" />
-        <.input field={{ff, :birthday}} label="Birthday" />
+        <.input field={{ff, :occupation}} label="Role" />
+        <.input field={{ff, :birthday}} type="datetime-local" label="Birthday" />
       <% end %>
 
       <.input field={{f, :user_id}} type="hidden" value={@current_user.id} />

@@ -14,10 +14,13 @@ defmodule PhosWeb.UserProfileLive.Show do
 
   @impl true
   def handle_params(%{"username" => username} = params, _url, socket) do
-    %{id: user_id} = Users.get_user_by_username(username)
+    user = %{id: user_id} =
+    Users.get_user_by_username(username)
+    |> Map.put(:locations, ["Chennai", "Vandavasi"])
+    |> Map.put(:traits, ["frontend_dev", "farmergirl", "noseafood", "doglover", "tailwind"])
     {:noreply, socket
       |> assign(:params, params)
-      |> assign(:user, Users.get_user!(user_id))
+      |> assign(:user, user )
       |> assign(:orbs, Action.get_active_orbs_by_initiator(user_id))
       |> apply_action(socket.assigns.live_action, params)}
   end
@@ -37,7 +40,7 @@ defmodule PhosWeb.UserProfileLive.Show do
 
   defp apply_action(socket, :edit, _params) do
     socket
-    |> assign(:page_title, "User Profile")
+    |> assign(:page_title, "Edit User Profile")
   end
 
   defp apply_action(socket, :sethome, _params) do
