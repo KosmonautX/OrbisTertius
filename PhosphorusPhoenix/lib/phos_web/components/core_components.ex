@@ -432,6 +432,7 @@ defmodule PhosWeb.CoreComponents do
   attr :id, :string, required: true
   attr :row_click, :any, default: nil
   attr :rows, :list, required: true
+  attr :row_class, :string, default: nil
 
   slot :col, required: true do
     attr :label, :string
@@ -453,7 +454,7 @@ defmodule PhosWeb.CoreComponents do
           <tr
             :for={row <- @rows}
             id={"#{@id}-#{Phoenix.Param.to_param(row)}"}
-            class="relative group hover:bg-zinc-50"
+            class={["relative group hover:bg-gray-100", @row_class]}
           >
             <td
               :for={{col, i} <- Enum.with_index(@col)}

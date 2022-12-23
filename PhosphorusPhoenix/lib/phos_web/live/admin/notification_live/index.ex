@@ -7,15 +7,10 @@ defmodule PhosWeb.Admin.NotificationLive.Index do
 
   def handle_params(_unsigned_params, _uri, socket) do
     notifications = Phos.Notification.Scheduller.list()
-    pid = self()
-    spawn(fn ->
-      case notifications do
-        [] ->
-          Phos.Notification.Scheduller.renew()
-          Process.send_after(pid, :refresh, 100)
-        _ -> :ok
-      end
-    end)
+    case notifications do 
+      [] -> reload_notification(self())
+      _ -> :ok
+    end
     {:noreply, assign(socket, notifications: notifications)}
   end
 
@@ -27,5 +22,24 @@ defmodule PhosWeb.Admin.NotificationLive.Index do
   def handle_event("execute", %{"id" => id}, socket) do
     Phos.Notification.Scheduller.execute(id)
     {:noreply, put_flash(socket, :info, "Notification with hash #{String.slice(id, 0..6)} was executed")}
+  end
+
+  def handle_event("enable", %{"id" => id}, socket) do
+    Phos.Notification.Scheduller.start(id)
+    reload_notification(self())
+    {:noreply, put_flash(socket, :info, "Notification with hash #{String.slice(id, 0..6)} started")}
+  end
+
+  def handle_event("disable", %{"id" => id}, socket) do
+    Phos.Notification.Scheduller.stop(id)
+    reload_notification(self())
+    {:noreply, put_flash(socket, :info, "Notification with hash #{String.slice(id, 0..6)} stopped")}
+  end
+
+  defp reload_notification(pid) do
+    spawn(fn ->
+      Phos.Notification.Scheduller.renew()
+      Process.send_after(pid, :refresh, 100)
+    end)
   end
 end

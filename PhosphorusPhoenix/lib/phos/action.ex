@@ -479,13 +479,13 @@ defmodule Phos.Action do
     end
   end
 
-  defp notion_platform_parse_properties(%{"properties" => properties}), do: Enum.reduce(properties, %{}, fn {k, v}, acc ->
+  defp notion_platform_parse_properties(%{"properties" => properties, "id" => id}), do: Enum.reduce(properties, %{}, fn {k, v}, acc ->
     key = String.downcase(k) |> String.replace(" ", "_")
     value = notion_get_values(v)
     case key do
       "time_condition" -> Map.put(acc, key, notion_platform_time(value))
       "title" -> Map.merge(acc, %{
-        "id" => :crypto.hash(:sha256, value) |> Base.encode16() |> String.downcase(),
+        "id" => id,
         "title" => value
       })
       k when k in ["id", "type"] -> acc

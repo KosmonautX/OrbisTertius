@@ -22,13 +22,13 @@ defmodule Phos.Notification.Scheduller do
   end
 
   def execute(id) do
-    Logger.info("Force executing notification with hash #{id}")
+    Logger.debug("Force executing notification with hash #{id}")
     # execute the notification
     GenServer.cast(__MODULE__, {:execute, id})
   end
 
   def get(id) do
-    Logger.info("Select notification with hash #{id}")
+    Logger.debug("Select notification with hash #{id}")
     # execute the notification
     GenServer.call(__MODULE__, {:get, id})
   end
@@ -38,15 +38,21 @@ defmodule Phos.Notification.Scheduller do
   end
 
   def renew do
-    Logger.info("Renewing notification list")
+    Logger.debug("Renewing notification list")
     # delete last scheduller and fetch new
     GenServer.cast(__MODULE__, :renew)
   end
 
+  def start(id) do
+    Logger.debug("Update notification with hash #{id}")
+    # start
+    GenServer.call(__MODULE__, {:update_status, id, true})
+  end
+
   def stop(id) do
-    Logger.info("Stop notification with hash #{id}")
+    Logger.debug("Update notification with hash #{id}")
     # stop
-    GenServer.call(__MODULE__, {:stop, id})
+    GenServer.call(__MODULE__, {:update_status, id, false})
   end
 
   @impl true
@@ -82,13 +88,15 @@ defmodule Phos.Notification.Scheduller do
   end
 
   @impl true
-  def handle_call({:stop, id}, _from, state) do
+  def handle_call({:update_status, id, status}, _from, state) do
     case lookup(state, id) do
-      {:ok, _data, false} -> {:reply, "already stopped", state}
-      {:ok, data, _} -> 
-        :ets.delete(state, id)
-        insert(state, id, data, false)
-        {:reply, data, state}
+      {:ok, _data, current_status} when current_status == status -> {:reply, "Cannot update status", state}
+      {:ok, %{id: id} = data, _current_status} -> 
+        Phos.External.Notion.update_platform_notification(id, %{
+          properties: %{"Active" => %{"checkbox" => status}}
+        }) 
+        GenServer.cast(__MODULE__, :renew)
+        {:reply, Map.put(data, :active, status), state}
       _ -> {:reply, "data not found", state}
     end
   end
@@ -161,7 +169,7 @@ defmodule Phos.Notification.Scheduller do
 
   defp run_notification_timer(notifications) do
     time = current_time()
-    Logger.info("Running notification timer at #{time}")
+    Logger.debug("Running notification timer at #{time}")
     Enum.filter(notifications, fn {_id, n, _active} ->
       ntime = Map.get(n, :time_condition)
       diff = Time.diff(time, ntime)
@@ -178,7 +186,11 @@ defmodule Phos.Notification.Scheduller do
     end
   end
 
-  defp insert(table, id, data, active \\ true), do: :ets.insert(table, {id, struct(__MODULE__, data), active})
+  defp insert(table, id, data) do
+    active = Map.get(data, :active, false)
+    schedule = struct(__MODULE__, data)
+    :ets.insert(table, {id, schedule, active})
+  end
 
   defp singapore_timezone do
     %{year: year, month: month, day: day} = Date.utc_today()
