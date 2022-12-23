@@ -201,6 +201,10 @@ defmodule PhosWeb.Router do
       get "/friends/:id", EchoController, :show_relations
     end
 
+    scope "/medialand" do
+      resources "/media", MediaController, except: [:new, :edit]
+    end
+
   end
 
   # Other scopes may use custom stacks.

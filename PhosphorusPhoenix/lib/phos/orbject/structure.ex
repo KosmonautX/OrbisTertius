@@ -20,6 +20,13 @@ defmodule Phos.Orbject.Structure do
     end
   end
 
+  def apply_media_changset(attrs) do
+    apply_action(
+      %Orbject.Structure{}
+      |> cast(attrs, [:archetype, :id])
+      |> cast_embed(:media, with: &Orbject.Structure.user_media_changeset/2), :media)
+  end
+
   def apply_user_changeset(attrs) do
     apply_action(
       %Orbject.Structure{}
@@ -31,14 +38,14 @@ defmodule Phos.Orbject.Structure do
     apply_action(
       %Orbject.Structure{}
       |> cast(attrs, [:archetype, :id])
-      |> cast_embed(:media, with: &Orbject.Structure.orb_media_changeset/2), :user_media)
+      |> cast_embed(:media, with: &Orbject.Structure.orb_media_changeset/2), :orb_media)
   end
 
   def apply_memory_changeset(attrs) do
     apply_action(
       %Orbject.Structure{}
       |> cast(attrs, [:archetype, :id])
-      |> cast_embed(:media, with: &Orbject.Structure.memory_media_changeset/2), :user_media)
+      |> cast_embed(:media, with: &Orbject.Structure.memory_media_changeset/2), :mem_media)
   end
 
 

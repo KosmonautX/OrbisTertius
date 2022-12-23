@@ -32,6 +32,14 @@ defmodule Phos.PubSub do
     case topic do
       %Phos.Message.Reverie{user_destination_id: user_id} ->
         PubSub.broadcast(__MODULE__, "memory:user:#{user_id}", {__MODULE__, event, message})
+
+
+        Phos.Notification.target("'USR.#{user_id}' in topics",
+          %{title: "Message from #{message.user_source.username}", body: message.message},
+          message
+          |> Map.drop([:user_source, :orb_subject])
+          # %{"error" => "MessageTooBig"}] 4096 bytes limitation on fcm
+          |> PhosWeb.Util.Viewer.memory_mapper())
     end
     message
   end
