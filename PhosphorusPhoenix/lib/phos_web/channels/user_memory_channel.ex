@@ -25,14 +25,12 @@ defmodule PhosWeb.UserMemoryChannel do
   end
 
   def handle_info(msg, socket) do
-    dbg()
     push(socket, "memory_", %{"data" => [msg] |> Viewer.memory_mapper()})
     {:noreply, socket}
   end
 
 
   def handle_in(anything, payload, socket) do
-    dbg()
     {:reply, {:ok, payload}, socket}
   end
 

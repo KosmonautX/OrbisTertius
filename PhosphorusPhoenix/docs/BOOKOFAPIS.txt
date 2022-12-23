@@ -89,7 +89,7 @@ PUT :ipAddress/userland/self/
 GET :ipAddress/userland/others/:owentwo_id
 :auth-headers
 ## Read all of User Orb History
-GET :ipAddress/userland/others/:satrio_id/history?page=1
+GET :ipAddress/userland/others/:satrio_id/history?page=1&traits=personalpin
 :auth-headers
 
 ## Update territorial data of self
