@@ -10,6 +10,7 @@ defmodule PhosWeb.CoreComponents do
   [heroicons_elixir](https://github.com/mveytsman/heroicons_elixir) project.
   """
   use Phoenix.Component
+  import Phoenix.VerifiedRoutes
 
   alias Phoenix.LiveView.JS
   import PhosWeb.Gettext
@@ -111,6 +112,22 @@ defmodule PhosWeb.CoreComponents do
         </div>
       </div>
     </div>
+    """
+  end
+
+  attr :name, :atom, required: true
+  attr :outlined, :boolean, default: false
+  attr :rest, :global, default: %{class: "w-4 h-4 inline-block"}
+
+  def icon(assigns) do
+    assigns = assign_new(assigns, :"aria-hidden", fn -> !Map.has_key?(assigns, :"aria-label") end)
+
+    ~H"""
+    <%= if @outlined do %>
+      <%= apply(Heroicons.Outline, @name, [Map.to_list(@rest)]) %>
+    <% else %>
+      <%= apply(Heroicons.Solid, @name, [Map.to_list(@rest)]) %>
+    <% end %>
     """
   end
 
@@ -551,6 +568,7 @@ defmodule PhosWeb.CoreComponents do
   attr :class, :string, default: nil
   slot :inner_block, required: true
   slot :actions, doc: "the slot for form actions, such as a submit button"
+
   attr :rest, :global,
     include: ~w(id name rel),
     doc: "the arbitrary HTML attributes to apply to the form tag"
@@ -653,5 +671,492 @@ defmodule PhosWeb.CoreComponents do
 
   defp input_equals?(val1, val2) do
     Phoenix.HTML.html_escape(val1) == Phoenix.HTML.html_escape(val2)
+  end
+
+  @doc """
+  User profile Image and User Name
+  """
+  attr :id, :string, required: true
+  attr :img_path, :string
+  slot :title
+  slot :location
+
+  def profile_upload_path(assigns) do
+    ~H"""
+    <div class="flex justify-between p-4 border-b md:border-none">
+      <img class="rounded-full w-12 h-12 border border-gray-500" src={@img_path} />
+      <div class="flex flex-col">
+        <span class="text-base font-bold  ml-2"><%= render_slot(@title) %></span>
+        <span class="flex items-center text-sm text-gray-500 ">
+          <span>
+            <Heroicons.map_pin class="mt-0.5 h-6 w-6" />
+          </span>
+          <%= render_slot(@location) %>
+        </span>
+      </div>
+      <button
+        type="button"
+        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1 ml-auto inline-flex items-center"
+      >
+        <Heroicons.ellipsis_vertical class="mt-0.5 h-6 w-6" />
+      </button>
+    </div>
+    """
+  end
+
+  @doc """
+   User Post Image
+   Desktop View
+  """
+  attr :img_post, :string
+
+  def post_image(assigns) do
+    ~H"""
+    <div>
+      <img class="object-cover md:inset-0 md:w-[38rem] md:h-[47rem]" src={@img_post} />
+    </div>
+    """
+  end
+
+  @doc """
+   User Post Information
+  """
+
+  slot :post_message
+
+  def post_information(assigns) do
+    ~H"""
+    <p class="text-base text-gray-700 font-normal p-2 ml-2 border-b ">
+      <%= render_slot(@post_message) %>
+    </p>
+    """
+  end
+
+  @doc """
+   User Post Comments And Reply
+   Desktop View
+  """
+
+  attr :id, :string, required: true
+  attr :comments_list, :any
+
+  def comments_post(assigns) do
+    ~H"""
+    <div class="flex flex-col  md:inset-0 h-modal md:w-[34rem] md:h-[55rem] space-y-2">
+      <div class="items-center justify-between mx-auto overflow-y-auto space-y-2 leading-relaxed p-2">
+        <%= for comment <- @comments_list do %>
+          <.comments_card comment={comment}></.comments_card>
+        <% end %>
+      </div>
+    </div>
+    """
+  end
+
+  attr :img_path, :string
+  attr :comment, :any
+  slot :title
+
+  def comments_card(assigns) do
+    ~H"""
+    <ul class="relative border-l border-gray-200 mt-4">
+      <li id="reply" class="mb-4 ml-6">
+        <div class="mr-3 flex flex-cols space-x-2">
+          <img class="rounded-full w-10 h-10" src={@comment.profile_image} />
+          <strong><%= @comment.username %></strong>
+        </div>
+        <time class="block flex mt-2 text-sm font-normal leading-none text-gray-400 mb-4">
+          <%= @comment.time %>
+          <span class="ml-4 text-sm font-bold leading-none text-teal-700 hover:text-teal-400 hover:underline">
+            Reply
+          </span>
+        </time>
+        <p class="mb-4 text-base font-normal text-gray-500">
+          <%= @comment.message %>
+        </p>
+      </li>
+      <%= for comment <- @comment.reply_comments do %>
+        <.comments_card comment={comment}></.comments_card>
+      <% end %>
+    </ul>
+    """
+  end
+
+  attr :img_path, :string
+
+  def input_type(assigns) do
+    ~H"""
+    <div class="flex gap-4 p-2">
+      <img class="rounded-full md:w-12 md:h-12 w-10 h-10 border border-gray-500" src={@img_path} />
+      <div class="flex-1 relative">
+        <input
+          class="block w-full md:p-4 p-2 text-base text-gray-900 focus:ring-black focus:outline-none  rounded-lg border border-gray-200 focus:z-10 focus:ring-4 focus:ring-gray-200"
+          placeholder="Any Comments..."
+          required
+        />
+        <button type="submit" class="absolute right-2.5 bottom-2.5 ">
+          <Heroicons.paper_airplane class="h-8 w-8 mr-2" />
+        </button>
+      </div>
+    </div>
+    """
+  end
+
+  def comment_action(assigns) do
+    ~H"""
+    <div class="flex justify-between space-x-2 p-2">
+      <div class="">
+        <Heroicons.exclamation_circle class="mt-0.5 h-8 w-8" />
+      </div>
+      <div class="flex flex-cols space-x-2">
+        <Heroicons.share class="mt-0.5 h-8 w-8" />
+        <Heroicons.chat_bubble_oval_left_ellipsis class="mt-0.5 h-8 w-8" />
+        <Heroicons.heart class="mt-0.5 h-8 w-8" />
+      </div>
+    </div>
+    """
+  end
+
+  def ord_modal(assigns) do
+    ~H"""
+    <div class="text-base max-w-xs font-bold p-6 rounded-lg border border-gray-100 shadow-md">
+      <ul class="space-y-4">
+        <li>
+          <a href="#" class="flex gap-4 items-center text-gray-500 hover:text-teal-600">
+            <Heroicons.x_mark class="mt-0.5 h-8 w-6" />Deactivate
+          </a>
+        </li>
+        <li>
+          <a href="#" class="flex gap-4 items-center text-gray-500 hover:text-teal-600">
+            <Heroicons.no_symbol class="mt-0.5 h-8 w-6" />Destroy Post
+          </a>
+        </li>
+      </ul>
+    </div>
+    """
+  end
+
+  def banner(assigns) do
+    ~H"""
+    <nav class="bg-red-400 border-gray-200 px-2 sm:px-4 py-2.5 rounded">
+      <div class="container flex flex-wrap items-center justify-between mx-auto">
+        <a href="/users/log_in" class="flex items-center">
+          <img src="/images/banner_logo_white.png" class="h-6 mr-3 sm:h-9" alt="Scratchbac Logo" />
+        </a>
+        <div class="flex md:order-2">
+          <button
+            type="button"
+            class="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 font-bold rounded-lg text-base px-5 py-2.5 text-center mr-2 mb-2"
+          >
+            Download App
+          </button>
+        </div>
+      </div>
+    </nav>
+    """
+  end
+
+  def redirect_mobile(assigns) do
+    ~H"""
+    <div class="relative bg-white max-w-sm md:max-w-md md:h-auto rounded-xl shadow-lg">
+      <button
+        type="button"
+        class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
+      >
+        <Heroicons.x_mark class="mt-0.5 h-8 w-6" />
+        <span class="sr-only">Close modal</span>
+      </button>
+      <div class="text-center p-6">
+        <h1 class="text-lg font-bold">Find Your Tribe</h1>
+        <h3 class="mb-2 mt-2 text-base font-normal text-gray-500">
+          Find Out what is happening around you today
+        </h3>
+      </div>
+      <button
+        type="button"
+        class="text-white h-16 bottom-0 w-full bg-teal-600 hover:bg-teal-800 focus:ring-4 focus:outline-none focus:ring-teal-300 font-bold rounded-b-lg  text-lg inline-flex items-center text-center justify-center"
+      >
+        Download Scratchbac now!
+      </button>
+    </div>
+    """
+  end
+
+  def dashboard(assigns) do
+    ~H"""
+    <aside
+      class="flex flex-col w-64  border-r border-gray-200 pt-5 pb-4 bg-gray-100"
+      aria-label="Sidebar"
+    >
+      <div class="py-4 px-3 rounded">
+        <a href="#" class="flex items-center pl-2.5 mb-5">
+          <img
+            src="https://vojislavd.com/ta-template-demo/assets/img/message3.jpg"
+            class="mr-3 w-10 h-10 rounded-full"
+            alt="Flowbite Logo"
+          />
+          <span class="self-center text-xl font-semibold whitespace-nowrap">
+            Sowmiya
+          </span>
+        </a>
+        <ul class="space-y-2">
+          <li>
+            <a
+              href="#"
+              class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100"
+            >
+              <Heroicons.home class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900" />
+              <span class="ml-3">Home</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="#"
+              class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100"
+            >
+              <Heroicons.plus_circle class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900" />
+              <span class="flex-1 ml-3 whitespace-nowrap">Create</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="#"
+              class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100"
+            >
+              <Heroicons.map_pin class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900" />
+              <span class="flex-1 ml-3 whitespace-nowrap">location</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="#"
+              class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 "
+            >
+              <Heroicons.chat_bubble_bottom_center class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900" />
+              <span class="flex-1 ml-3 whitespace-nowrap">Message</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="#"
+              class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100"
+            >
+              <Heroicons.user class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900" />
+              <span class="flex-1 ml-3 whitespace-nowrap">Profile</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </aside>
+    """
+  end
+
+  def show_dropdown(to) do
+    JS.show(
+      to: to,
+      transition:
+        {"transition ease-out duration-120", "transform opacity-0 scale-95",
+         "transform opacity-100 scale-100"}
+    )
+    |> JS.set_attribute({"aria-expanded", "true"}, to: to)
+  end
+
+  def hide_dropdown(to) do
+    JS.hide(
+      to: to,
+      transition:
+        {"transition ease-in duration-120", "transform opacity-100 scale-100",
+         "transform opacity-0 scale-95"}
+    )
+    |> JS.remove_attribute("aria-expanded", to: to)
+  end
+
+  slot :img do
+    attr :src, :string
+  end
+
+  slot :title
+  slot :subtitle
+
+  slot :link do
+    attr :navigate, :string
+    attr :href, :string
+    attr :method, :any
+  end
+
+  def dropdown(assigns) do
+    ~H"""
+    <!-- User account dropdown -->
+    <div class="px-3 mt-6 relative inline-block text-left">
+      <div>
+        <button
+          id={@id}
+          type="button"
+          class="group w-full bg-gray-100 rounded-md px-3.5 py-2 text-sm text-left font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-purple-500"
+          phx-click={show_dropdown("##{@id}-dropdown")}
+          phx-hook="Menu"
+          data-active-class="bg-gray-100"
+          aria-haspopup="true"
+        >
+          <span class="flex w-full justify-between items-center">
+            <span class="flex min-w-0 items-center justify-between space-x-3">
+              <%= for img <- @img do %>
+                <img
+                  class="w-10 h-10 bg-gray-300 rounded-full flex-shrink-0"
+                  alt=""
+                  {assigns_to_attributes(img)}
+                />
+              <% end %>
+              <span class="flex-1 flex flex-col min-w-0">
+                <span class="text-gray-900 text-sm font-medium truncate">
+                  <%= render_slot(@title) %>
+                </span>
+                <span class="text-gray-500 text-sm truncate"><%= render_slot(@subtitle) %></span>
+              </span>
+            </span>
+            <svg
+              class="flex-shrink-0 h-5 w-5 text-gray-400 group-hover:text-gray-500"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                clip-rule="evenodd"
+              >
+              </path>
+            </svg>
+          </span>
+        </button>
+      </div>
+      <div
+        id={"#{@id}-dropdown"}
+        phx-click-away={hide_dropdown("##{@id}-dropdown")}
+        class="hidden z-10 mx-3 origin-top absolute right-0 left-0 mt-1 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-200"
+        role="menu"
+        aria-labelledby={@id}
+      >
+        <div class="py-1" role="none">
+          <%= for link <- @link do %>
+            <.link
+              tabindex="-1"
+              role="menuitem"
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-purple-500"
+              {link}
+            >
+              <%= render_slot(link) %>
+            </.link>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  attr :id, :string, required: true
+  attr :img_path, :string
+  slot :title
+  slot :location
+
+  def user_profile(assigns) do
+    ~H"""
+    <div class="relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
+      <img class="object-cover w-full h-96 " src="/images/lake-gce85e5120_1920.jpg" alt="Emoji" />
+
+      <div class="absolute inset-0 px-6 py-4 flex flex-col items-center justify between bg-gray-700 bg-opacity-50">
+        <p class="text-2xl text-white font-bold mb-4">Tamilselvi</p>
+        <img
+          src="https://vojislavd.com/ta-template-demo/assets/img/profile.jpg"
+          class="w-60 border-4 border-white rounded-full"
+        />
+        <div class="flex-1 flex flex-col items-center mt-4 px-8">
+          <div class="flex items-center space-x-4">
+            <button class="flex items-center bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded md:text-base text-sm font-bold transition duration-100">
+              <Heroicons.map_pin class="mr-2 -ml-1 w-6 h-6" />
+              <span>New York</span>
+            </button>
+            <button class="flex items-center bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded md:text-base text-sm font-bold transition duration-100">
+              <Heroicons.map_pin class="mr-2 -ml-1 w-6 h-6" />
+              <span>India</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  @spec information_card(any) :: Phoenix.LiveView.Rendered.t()
+  def information_card(assigns) do
+    ~H"""
+    <div class="max-auto w-full bg-white md:border md:border-gray-200 md:rounded-lg md:shadow-md">
+      <div class="md:p-4 p-2">
+        <div class="flex justify-between">
+          <h5 class="md:text-xl text-base font-bold tracking-tight text-gray-900">
+            Noteworthy technology acquisitions
+          </h5>
+          <div class="flex gap-4">
+            <button
+              type="button"
+              class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm ml-auto inline-flex items-center"
+            >
+              <Heroicons.share class="mt-0.5 md:h=6 md:w-6 h-4 w-4" />
+            </button>
+            <button class="flex items-center bg-teal-600 hover:bg-teal-700 text-white rounded md:text-base text-sm font-bold transition duration-100 p-2">
+            <Heroicons.plus class="mr-2 -ml-1 w-4 h-4" />
+            <span>Ally</span>
+          </button>
+          </div>
+        </div>
+        <div class="md:text-base text-sm font-medium space-y-2">
+          <p class="text-gray-600">Community Member,25</p>
+          <a href="#" class="text-blue-600 hover:underline">www.scratchbac.com</a>
+          <p class="text-gray-700">
+            Lorem ipsum dolor sit amet, consetetur sadipscing elitr,
+            sed diam nonumy eirmod tempor invidunt ut labore et dolore
+            magna aliquyam erat, sed diam voluptua
+          </p>
+          <p class="text-gray-500">
+            #biggbosstamil #biggbosstamil6 #biggboss #vijaytvshow #vijaytelevision #tamilnadu #tamilcinema #tamilmovie #tamilcomedy #tamilmemes #tamilactress #tamilserialactress #cookwithcomali2 #cookwithcomali3 #cookwithcomali
+            #kerala
+            #tamilactor #tamilserial #thalapathy #thala #gpmuthu #janany #rachithamahalakshmi #azeem #vikraman
+          </p>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  attr :id, :string, required: true
+  attr :img_path, :string
+  slot :title
+  slot :location
+
+  def tabs_profile(assigns) do
+    ~H"""
+    <div class="md:border md:border-gray-200 md:rounded-lg md:shadow-md w-full max-auto">
+      <div class="flex justify-center items-center border-b border-gray-200 dark:border-gray-700">
+        <ul class="flex flex-wrap md:gap-80 gap-20 -mb-px text-sm font-medium text-gray-500">
+          <li class="mr-2">
+            <a
+              href="#"
+              class="inline-flex p-4 text-blue-600 rounded-t-lg border-b-2 border-blue-600 active group">
+              <Heroicons.plus_circle class="mr-2 w-5 h-5 text-blue-600" />Posts
+            </a>
+          </li>
+
+          <li class="mr-2">
+            <a
+              href="#"
+              class="inline-flex p-4 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 group"
+            >
+              <Heroicons.plus_small class="mr-2 w-5 h-5 text-gray-600" />Allies
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    """
   end
 end
