@@ -39,7 +39,7 @@ defmodule PhosWeb.Admin.NotificationLive.Index do
   defp reload_notification(pid) do
     spawn(fn ->
       Phos.Notification.Scheduller.renew()
-      Process.send_after(pid, :refresh, 100)
+      send(pid, :refresh)
     end)
   end
 end

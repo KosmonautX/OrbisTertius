@@ -169,14 +169,28 @@ defmodule Phos.Notification.Scheduller do
 
   defp run_notification_timer(notifications) do
     time = current_time()
-    Logger.debug("Running notification timer at #{time}")
-    Enum.filter(notifications, fn {_id, n, _active} ->
-      ntime = Map.get(n, :time_condition)
-      diff = Time.diff(time, ntime)
+    today = Timex.today()
+    Logger.debug("Running notification timer at #{today} #{time}")
+    Enum.filter(notifications, fn {_id, %{time_condition: ntime, frequency: frequency}, _active} ->
+      diff = case should_execute?(frequency, today) do
+        true -> Time.diff(time, ntime)
+        _ -> -1
+      end
       diff > 0 and diff < 60
     end)
     |> Enum.map(&Kernel.elem(&1, 1))
     |> Enum.each(&send_notification/1)
+  end
+
+  defp should_execute?(freq, date) do
+    String.downcase(freq)
+    |> case do
+      "daily" -> true
+      "now" -> true
+      "weekends" -> Timex.weekday(date) in [6, 7]
+      "weekly" -> Timex.weekday(date) == 1
+      _ -> false
+    end
   end
 
   defp lookup(table, id) do
