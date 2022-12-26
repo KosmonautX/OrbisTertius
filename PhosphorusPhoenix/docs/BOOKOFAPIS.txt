@@ -86,7 +86,7 @@ PUT :ipAddress/userland/self/
     "profile_pic": 3
 }
 ## Read userdata of Others Profile
-GET :ipAddress/userland/others/:owentwo_id
+GET :ipAddress/userland/others/:lky_id
 :auth-headers
 ## Read all of User Orb History
 GET :ipAddress/userland/others/:satrio_id/history?page=1&traits=personalpin
@@ -193,8 +193,7 @@ POST :ipAddress/orbland/orbs
     "media": [
         {
             "access": "public",
-            "essence": "banner",
-            "resolution": "lossless"
+            "essence": "banner"
         },
         {
             "access": "public",
@@ -373,6 +372,22 @@ POST :ipAddress/memland/memories
 }
 
 ### Medialand
+POST :ipAddress/medialand/media/USR/:lky_id?wildcard=true
+:auth-headers
+{
+    "media": [
+        {
+            "access": "public",
+            "essence": "profile",
+            "resolution": "lossless"
+        },
+        {
+            "access": "public",
+            "essence": "profile",
+            "resolution": "lossy"
+        }
+        ]
+}
 
 
 

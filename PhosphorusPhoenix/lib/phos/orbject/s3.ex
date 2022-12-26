@@ -42,9 +42,21 @@ defmodule Phos.Orbject.S3 do
     signer!(:put, path_constructor(archetype, uuid, form))
   end
 
+  def get_all!(orbject = %Orbject.Structure{}) do
+    root_path = path_constructor(orbject.archetype, orbject.id, "")
+    for obj <- orbject.media, into: %{} do
+      path = path_constructor(orbject.archetype, orbject.id, obj)
+      if orbject.wildcard do
+         {:ok, addresses} = get_all(path)
+        {path_suffix(path, root_path) , addresses}
+      else
+        {path_suffix(path, root_path) , signer!(:get, path)}
+      end
+     end
+  end
 
-  def get_all(archetype, uuid, form \\ "") do
-    root_path = path_constructor(archetype, uuid, form)
+
+  def get_all(root_path) do
     with {:ok, response} <- ExAws.S3.list_objects_v2("orbistertius", prefix: root_path, encoding_type: "url") |> ExAws.request(),
          true <- response.status_code >= 200 and response.status_code < 300,
          [_ |_] <- response.body.contents,
@@ -57,6 +69,12 @@ defmodule Phos.Orbject.S3 do
     end
   end
 
+
+  def get_all(archetype, uuid, form \\ "") do
+    root_path = path_constructor(archetype, uuid, form)
+    get_all(root_path)
+  end
+
   def get_all!(archetype, uuid, form \\ "") do
     with {:ok, address} <- Phos.Orbject.S3.get_all(archetype, uuid, form) do
       address
@@ -65,7 +83,6 @@ defmodule Phos.Orbject.S3 do
       nil -> nil
     end
   end
-
 
   def put_all!(orbject = %Orbject.Structure{}) do
     root_path = path_constructor(orbject.archetype, orbject.id, "")

@@ -24,7 +24,7 @@ defmodule PhosWeb.API.UserProfileController do
 
   def update_self(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"media" => [_|_] = media} = params) do
     user = Users.get_user!(id)
-    with {:ok, media} <- Orbject.Structure.apply_user_changeset(%{id: id, archetype: "USR", media: media}),
+    with {:ok, media} <- Orbject.Structure.apply_media_changeset(%{id: id, archetype: "USR", media: media}),
          {:ok, %User{} = user} <- Users.update_user(user, Map.put(profile_constructor(user, params),"media", true)) do
       render(conn, :show, user_profile: user, media: media)
     end

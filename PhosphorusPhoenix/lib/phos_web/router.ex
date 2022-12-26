@@ -202,7 +202,7 @@ defmodule PhosWeb.Router do
     end
 
     scope "/medialand" do
-      resources "/media", MediaController, except: [:new, :edit]
+      post "/media/:archetype/:id", MediaController, :show
     end
 
   end
