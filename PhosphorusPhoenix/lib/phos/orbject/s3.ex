@@ -64,8 +64,8 @@ defmodule Phos.Orbject.S3 do
                                   {path_suffix(obj.key, root_path), signer!(:get,obj.key)} end) do
       {:ok, addresses}
     else
-      [] -> nil
-      {:error, err} -> {:error, err}
+      [] -> {:ok, nil}
+      {:error, err} -> {:ok, nil}  #TODO better error parsing
     end
   end
 
@@ -78,9 +78,6 @@ defmodule Phos.Orbject.S3 do
   def get_all!(archetype, uuid, form \\ "") do
     with {:ok, address} <- Phos.Orbject.S3.get_all(archetype, uuid, form) do
       address
-    else
-      {:error, _err} -> nil #TODO better error parsing
-      nil -> nil
     end
   end
 

@@ -372,7 +372,8 @@ POST :ipAddress/memland/memories
 }
 
 ### Medialand
-POST :ipAddress/medialand/media/USR/:lky_id?wildcard=true
+#POST :ipAddress/medialand/media/USR/:lky_id?wildcard=true
+POST :ipAddress/medialand/media/MEM/:lky_id?wildcard=true
 :auth-headers
 {
     "media": [
