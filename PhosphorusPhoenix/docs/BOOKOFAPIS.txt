@@ -135,6 +135,10 @@ GET :ipAddress/folkland/stream/self?page=1
 GET :ipAddress/folkland/stream/discovery/614510498785787903,614510497487650815?page=1
 :auth-headers
 
+## Show Relation Resource
+GET :ipAddress/folkland/friends/17863710-b367-4914-b958-028dd1d8f097
+:auth-headers
+
 ## Send connection request
 POST :ipAddress/folkland/friends
 :auth-headers
@@ -373,7 +377,7 @@ POST :ipAddress/memland/memories
 
 ### Medialand
 #POST :ipAddress/medialand/media/USR/:lky_id?wildcard=true
-POST :ipAddress/medialand/media/MEM/:lky_id?wildcard=true
+POST :ipAddress/medialand/media/MEM/3408a6bc-eba4-4bdf-b14b-938bf206f2b4?wildcard=true
 :auth-headers
 {
     "media": [

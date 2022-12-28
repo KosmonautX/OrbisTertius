@@ -84,10 +84,14 @@ defmodule PhosWeb.Util.Viewer do
       %{
         id: memory.id,
         relationships: relationship_reducer(memory),
+        user_source_id: memory.user_source_id,
+        rel_subject_id: memory.rel_subject_id,
+        orb_subject_id: memory.orb_subject_id,
         message: memory.message,
         creationtime: DateTime.from_naive!(memory.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
         mutationtime: DateTime.from_naive!(memory.updated_at, "Etc/UTC") |> DateTime.to_unix(),
-        media: (if memory.media, do: S3.get_all!("MEM", memory.id, "public"))
+        media: (if memory.media, do: S3.get_all!("MEM", memory.id, "public")),
+        media_exists: memory.media
       }
   end
 

@@ -11,6 +11,11 @@ defmodule PhosWeb.API.FriendController do
     render(conn, :paginated, friends: friends)
   end
 
+  def show(%{assigns: %{current_user: user}} = conn, %{"id" => id}) do
+    relation = Folk.get_relation!(id, user.id)
+    render(conn, :show, relation: relation)
+  end
+
   def show_others(%{assigns: %{current_user: user}} = conn, %{"id" => others_id, "page" => page}) do
     friends = Folk.friends({others_id, user.id}, page)
     render(conn, :paginated, friends: friends)
