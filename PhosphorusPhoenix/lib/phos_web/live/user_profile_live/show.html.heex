@@ -1,8 +1,9 @@
 <.modal
-  :if={ @live_action in [:edit]}
+  :if={@live_action in [:edit]}
   id="edit_profile_modal"
   show={@live_action in [:edit]}
-  on_cancel={JS.navigate(~p"/user/#{@current_user.username}")}>
+  on_cancel={JS.navigate(~p"/user/#{@current_user.username}")}
+>
   <.live_component
     module={PhosWeb.UserProfileLive.FormComponent}
     id={@current_user.id}
@@ -10,21 +11,50 @@
     action={@live_action}
     user={@user}
     current_user={@current_user}
-    return_to={ ~p"/user/#{@current_user.username}" } />
+    return_to={~p"/user/#{@current_user.username}"}
+  />
 </.modal>
-
+<!--User Profile Image Uplodae-->
+<section class="md:mt-4 w-full mx-auto flex flex-col items-center justify-center">
+  <div class="w-full">
+    <.user_profile user={@user}>
+      <:user_name><%= @user.username %></:user_name>
+      <.link :if={is_nil(@guest) || !@guest} patch={~p"/user/#{@current_user.username}/edit"}>
+        Edit profile
+      </.link>
+    </.user_profile>
+  </div>
+  <div class="mt-4 md:w-[45rem] w-full mx-auto items-center justify-center mb-20">
+    <.information_card user={@user}>
+      <:user_role><%= @user.public_profile.occupation %></:user_role>
+      <:user_bio><%= @user.public_profile.bio %></:user_bio>
+      <:user_public_name>
+        <%= @user.public_profile.public_name %>
+      </:user_public_name>
+    </.information_card>
+    <.tabs_profile></.tabs_profile>
+    <.video></.video>
+    <.profile_upload_path></.profile_upload_path>
+    <.reply_post></.reply_post>
+  </div>
+</section>
 <div class="w-3/4 m-auto relative flex justify-between mt-12 items-center">
-
   <div class="w-1/4">
     <div :if={not is_nil(@user.media) && @user.media} class="p-2 flex justify-center">
       <img
         src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossy")}
         alt=""
-        class="w-20 h-20 p-2 rounded-full border border-solid border-black shadow-lg" />
+        class="w-20 h-20 p-2 rounded-full border border-solid border-black shadow-lg"
+      />
     </div>
     <div class="mt-2 font-bold text-md flex flex-col">
-      <.link :if={is_nil(@guest) || !@guest} class="underline" patch={~p"/user/#{@current_user.username}/edit"}>Edit profile</.link>
-
+      <.link
+        :if={is_nil(@guest) || !@guest}
+        class="underline"
+        patch={~p"/user/#{@current_user.username}/edit"}
+      >
+        Edit profile
+      </.link>
       <span class="text-lg"><%= @user.username %></span>
       <span><%= @user.public_profile.bio %></span>
     </div>
@@ -33,8 +63,12 @@
   <div class="px-4 py-2">
     <.list>
       <:item title="Email"><%= @user.email %></:item>
+
       <:item title="Role"><%= @user.public_profile.occupation %></:item>
+
       <:item title="Birthday"><%= @user.public_profile.birthday || "-" %></:item>
+
+      <:item title="Name"><%= @user.public_profile.public_name %></:item>
     </.list>
 
     <div class="mt-6">
@@ -51,7 +85,9 @@
           <:action :let={orb}>
             <.link navigate={~p"/orb/#{orb.id}"}>Show</.link>
             <.link navigate={~p"/orb/#{orb.id}/edit"}>Edit</.link>
-            <.link href={~p"/orb/#{orb.id}"} method="delete" data-confirm="Are you sure?">Delete</.link>
+            <.link href={~p"/orb/#{orb.id}"} method="delete" data-confirm="Are you sure?">
+              Delete
+            </.link>
           </:action>
         </.table>
       </.card>

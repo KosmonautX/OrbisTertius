@@ -5,9 +5,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content={get_csrf_token()} />
-    <link rel="stylesheet" href="https://unpkg.com/flowbite@1.5.5/dist/flowbite.min.css" />
-    <script src="https://unpkg.com/flowbite@1.5.5/dist/flowbite.js">
-    </script>
     <.live_title suffix=" · Phosphorus">
       <%= assigns[:page_title] || "Scratchbac" %>
     </.live_title>
@@ -25,17 +22,17 @@
         <.user_menu current_user={@current_user} />
       </div>
     <% end %>
-   <div class="h-screen overflow-auto md:pl-64"> <%= @inner_content %></div>
+   <div class="h-screen w-full overflow-auto"> <%= @inner_content %></div>
     <!--<header class="w-full flex justify-between px-6 flex-row-reverse items-center mt-2">
       <%= if @current_user do %>
-        <nav>
-          <ul>
+      <nav>
+        <ul>
             <li>
               <.link href="https://www.scratchbac.com">Get Started</.link>
             </li>
-          </ul>
-          <.user_menu current_user={@current_user} />
-        </nav>
+        </ul>
+        <.user_menu current_user={@current_user} />
+      </nav>
       <% end %>
     </header>-->
     <br />

@@ -684,14 +684,14 @@ defmodule PhosWeb.CoreComponents do
   def profile_upload_path(assigns) do
     ~H"""
     <div class="flex justify-between p-4 border-b md:border-none">
-      <img class="rounded-full w-12 h-12 border border-gray-500" src={@img_path} />
+      <img class="rounded-full w-12 h-12 border border-gray-500" src="/images/apotheosis.png" />
       <div class="flex flex-col">
-        <span class="text-base font-bold  ml-2"><%= render_slot(@title) %></span>
+        <span class="text-base font-bold  ml-2">Sowmiya</span>
         <span class="flex items-center text-sm text-gray-500 ">
           <span>
-            <Heroicons.map_pin class="mt-0.5 h-6 w-6" />
+            <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
           </span>
-          <%= render_slot(@location) %>
+          Chennai
         </span>
       </div>
       <button
@@ -713,7 +713,7 @@ defmodule PhosWeb.CoreComponents do
   def post_image(assigns) do
     ~H"""
     <div>
-      <img class="object-cover md:inset-0 md:w-[38rem] md:h-[47rem]" src={@img_post} />
+      <img class="object-cover md:inset-0 w-[50rem]" src="/images/thunderstorm-3440450__340.jpg" />
     </div>
     """
   end
@@ -727,7 +727,7 @@ defmodule PhosWeb.CoreComponents do
   def post_information(assigns) do
     ~H"""
     <p class="text-base text-gray-700 font-normal p-2 ml-2 border-b ">
-      <%= render_slot(@post_message) %>
+      Success is Not Final, Failure is Not Fatal: it is the Courage to Continue that Counts....
     </p>
     """
   end
@@ -837,17 +837,21 @@ defmodule PhosWeb.CoreComponents do
 
   def banner(assigns) do
     ~H"""
-    <nav class="bg-red-400 border-gray-200 px-2 sm:px-4 py-2.5 rounded">
-      <div class="container flex flex-wrap items-center justify-between mx-auto">
+    <nav class="border-gray-200 px-2 md:px-4 py-2.5 rounded">
+      <div class="flex flex-wrap items-center justify-between mx-auto">
         <a href="/users/log_in" class="flex items-center">
-          <img src="/images/banner_logo_white.png" class="h-6 mr-3 sm:h-9" alt="Scratchbac Logo" />
+          <img
+            src="/images/banner_logo_white.png"
+            class="h-8 mr-3 ml-4 md:h-10"
+            alt="Scratchbac Logo"
+          />
         </a>
         <div class="flex md:order-2">
           <button
             type="button"
-            class="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 font-bold rounded-lg text-base px-5 py-2.5 text-center mr-2 mb-2"
+            class="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 font-bold rounded-lg text-sm md:text-base px-4 py-2 text-center mr-2 mb-2"
           >
-            Download App
+            Open App
           </button>
         </div>
       </div>
@@ -1055,31 +1059,38 @@ defmodule PhosWeb.CoreComponents do
   end
 
   attr :id, :string, required: true
+  attr :navigate, :any, required: true
   attr :img_path, :string
-  slot :title
-  slot :location
+  slot :user_name
+  slot :inner_block, required: true
+  attr :user, :any
 
   def user_profile(assigns) do
     ~H"""
-    <div class="relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-      <img class="object-cover w-full h-96 " src="/images/lake-gce85e5120_1920.jpg" alt="Emoji" />
+    <div class="relative overflow-hidden cursor-pointer">
+      <img
+        class="object-cover w-full md:h-[30rem] h-80"
+        src="/images/lake-gce85e5120_1920.jpg"
+        alt="Emoji"
+      />
 
       <div class="absolute inset-0 px-6 py-4 flex flex-col items-center justify between bg-gray-700 bg-opacity-50">
-        <p class="text-2xl text-white font-bold mb-4">Tamilselvi</p>
+        <p class="md:text-2xl text-lg text-white font-bold md:mb-4"><%= render_slot(@user_name) %></p>
         <img
-          src="https://vojislavd.com/ta-template-demo/assets/img/profile.jpg"
-          class="w-60 border-4 border-white rounded-full"
+          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+          class="md:w-60 md:h-60 h-36 w-36 border-4 border-white rounded-full object-cover"
         />
-        <div class="flex-1 flex flex-col items-center mt-4 px-8">
+        <button class="m-4 text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-4 py-2 mr-2 mb-2">
+          <%= render_slot(@inner_block) %>
+        </button>
+        <div class="flex-1 flex flex-col items-center md:mt-4 mt-2 md:px-8">
           <div class="flex items-center space-x-4">
-            <button class="flex items-center bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded md:text-base text-sm font-bold transition duration-100">
-              <Heroicons.map_pin class="mr-2 -ml-1 w-6 h-6" />
-              <span>New York</span>
-            </button>
-            <button class="flex items-center bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded md:text-base text-sm font-bold transition duration-100">
-              <Heroicons.map_pin class="mr-2 -ml-1 w-6 h-6" />
-              <span>India</span>
-            </button>
+            <%= for location <- @user.locations do %>
+              <button class="flex items-center bg-white  text-black px-4 py-2 rounded-full md:text-base text-sm font-bold transition duration-100">
+                <Heroicons.map_pin class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4" />
+                <span><%= location %></span>
+              </button>
+            <% end %>
           </div>
         </div>
       </div>
@@ -1087,42 +1098,49 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  slot :user_role
+  slot :user_bio
+  slot :user_public_name
+  attr :user, :any
+
   @spec information_card(any) :: Phoenix.LiveView.Rendered.t()
   def information_card(assigns) do
     ~H"""
-    <div class="max-auto w-full bg-white md:border md:border-gray-200 md:rounded-lg md:shadow-md">
+    <div class="bg-white md:border md:border-gray-200 md:rounded-lg md:shadow-md font-Poppins">
       <div class="md:p-4 p-2">
         <div class="flex justify-between">
-          <h5 class="md:text-xl text-base font-bold tracking-tight text-gray-900">
-            Noteworthy technology acquisitions
+          <h5 class="md:text-3xl text-lg font-extrabold text-gray-900">
+            <%= render_slot(@user_public_name) %>
           </h5>
+
           <div class="flex gap-4">
             <button
               type="button"
-              class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm ml-auto inline-flex items-center"
+              class="text-gray-400 bg-transparent hover:bg-gray-200 p-2 rounded-lg text-sm ml-auto inline-flex items-center"
             >
-              <Heroicons.share class="mt-0.5 md:h=6 md:w-6 h-4 w-4" />
+              <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6" />
             </button>
-            <button class="flex items-center bg-teal-600 hover:bg-teal-700 text-white rounded md:text-base text-sm font-bold transition duration-100 p-2">
-            <Heroicons.plus class="mr-2 -ml-1 w-4 h-4" />
-            <span>Ally</span>
-          </button>
+            <button class="flex items-center bg-black hover:bg-gray-700 text-white px-4 py-2 text-center rounded md:text-base text-sm font-bold transition duration-100">
+              <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4" />
+              <span>Ally</span>
+            </button>
           </div>
         </div>
-        <div class="md:text-base text-sm font-medium space-y-2">
-          <p class="text-gray-600">Community Member,25</p>
-          <a href="#" class="text-blue-600 hover:underline">www.scratchbac.com</a>
-          <p class="text-gray-700">
-            Lorem ipsum dolor sit amet, consetetur sadipscing elitr,
-            sed diam nonumy eirmod tempor invidunt ut labore et dolore
-            magna aliquyam erat, sed diam voluptua
-          </p>
-          <p class="text-gray-500">
-            #biggbosstamil #biggbosstamil6 #biggboss #vijaytvshow #vijaytelevision #tamilnadu #tamilcinema #tamilmovie #tamilcomedy #tamilmemes #tamilactress #tamilserialactress #cookwithcomali2 #cookwithcomali3 #cookwithcomali
-            #kerala
-            #tamilactor #tamilserial #thalapathy #thala #gpmuthu #janany #rachithamahalakshmi #azeem #vikraman
-          </p>
-        </div>
+
+        <p class="md:text-lg text-gray-900 font-semibold	mb-4"><%= render_slot(@user_role) %></p>
+
+        <a href="#" class="text-blue-600 underline text-base font-medium">
+          www.scratchbac.com
+        </a>
+
+        <p class="text-gray-900 font-medium md:text-lg text-base mt-4 mb-4">
+          <%= render_slot(@user_bio) %>
+        </p>
+
+        <%= for traits <- @user.traits do %>
+          <span class="text-gray-500 md:text-lg text-base font-normal"><span>#</span>
+            <%= traits %></span>
+        <% end %>
       </div>
     </div>
     """
@@ -1135,14 +1153,15 @@ defmodule PhosWeb.CoreComponents do
 
   def tabs_profile(assigns) do
     ~H"""
-    <div class="md:border md:border-gray-200 md:rounded-lg md:shadow-md w-full max-auto">
+    <div class="md:border md:border-gray-200 max-auto mt-10">
       <div class="flex justify-center items-center border-b border-gray-200 dark:border-gray-700">
-        <ul class="flex flex-wrap md:gap-80 gap-20 -mb-px text-sm font-medium text-gray-500">
+        <ul class="flex flex-wrap md:gap-80 gap-20 -mb-px md:text-lg font-extrabold text-sm font-medium text-gray-500">
           <li class="mr-2">
             <a
               href="#"
-              class="inline-flex p-4 text-blue-600 rounded-t-lg border-b-2 border-blue-600 active group">
-              <Heroicons.plus_circle class="mr-2 w-5 h-5 text-blue-600" />Posts
+              class="inline-flex p-4 text-blue-600 rounded-t-lg border-b-2 border-blue-600 active group"
+            >
+              Posts
             </a>
           </li>
 
@@ -1150,10 +1169,157 @@ defmodule PhosWeb.CoreComponents do
             <a
               href="#"
               class="inline-flex p-4 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 group"
+              md:w-8
+              md:h-8
             >
-              <Heroicons.plus_small class="mr-2 w-5 h-5 text-gray-600" />Allies
+              Allies
             </a>
           </li>
+        </ul>
+      </div>
+    </div>
+    """
+  end
+
+  def video(assigns) do
+    ~H"""
+    <div class="w-full mx-auto flex items-center justify-center ">
+      <div class="relative">
+        <video class="object-cover object-fit w-[43rem] h-[46rem]" autoplay loop muted>
+          <source src="/images/WhatsApp Video 2022-12-26 at 8.32.21 AM.mp4" type="video/mp4" />
+        </video>
+
+        <div class="absolute inset-y-0 bottom-0 p-6 space-y-4 flex items-end gap-4">
+          <div class="flex-1 text-white md:text-lg text-sm font-bold">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin quis turpis pretium
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit Lorem ipsum dolor sit amet, consectetur adipiscing elit
+          </div>
+
+          <div class="space-y-6 text-white font-extrabold text-center md:text-xl text-base">
+            <div class="flex flex-col">
+              <Heroicons.heart class="stroke-white md:w-10 md:h-10 w-6 h-6" />
+              <span>2K</span>
+            </div>
+
+            <div class="flex flex-col">
+              <Heroicons.chat_bubble_oval_left_ellipsis class="stroke-white md:w-10 md:h-10 w-6 h-6" />
+              <span>226</span>
+            </div>
+            <div class="flex flex-col">
+              <Heroicons.share class="stroke-white md:w-8 md:h-8 w-6 h-6" />
+              <span>15</span>
+            </div>
+            <div class="flex flex-col">
+              <Heroicons.window class="stroke-white md:w-14 md:h-14 w-6 h-6" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  def reply_post(assigns) do
+    ~H"""
+    <div class="flex flex-col items-center justify-between mx-auto w-full md:w-[43rem]">
+      <div class="space-y-2 leading-relaxed p-2">
+        <ul class="relative md:border-l md:border-gray-400 mt-2">
+
+          <li id="reply" class="md:mb-4 mb-2 md:ml-6">
+            <div class="mx-auto flex flex-col mt-3 text-sm leading-normal border-b border-solid border-grey-light space-y-4">
+              <div class="flex justify-between md:p-2">
+                <img
+                  class="rounded-full w-12 h-12 border border-gray-500"
+                  src="/images/apotheosis.png"
+                />
+                <div class="flex flex-col space-y-1">
+                  <span class="font-bold">
+                    <a href="#" class="text-black">tamilsowmi</a><strong>@Sowmiya</strong>
+                  </span>
+                  <span class="flex items-center text-sm text-gray-500 ">
+                    <span>
+                      <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
+                    </span>
+                    Chennai
+                  </span>
+
+                  <div class="space-y-4">
+                    <p class="text-sm md:text-base text-gray-700 font-normal">
+                      Without a doubt one of the most important poems of the 20th century. “It has never lost its glamour,” Paul Muldoon observed.
+                    </p>
+                    <a href="#" class="text-blue-500 text-sm font-medium underline">github.com/tailwindcss/ta...</a>
+
+                    <a href="#">
+                      <img
+                        src="/images/thunderstorm-3440450__340.jpg"
+                        class="border border-solid border-grey-light rounded-sm mt-4 md:w-[43rem]"
+                      />
+                    </a>
+                  </div>
+
+                  <div class="flex justify-between space-x-2 p-2">
+                    <div class="">
+                      <span class="text-grey-dark">10 Oct 2001</span>
+                    </div>
+                    <div class="flex flex-cols space-x-2">
+                      <Heroicons.share class="mt-0.5 h-6 w-6" />
+                      <Heroicons.chat_bubble_oval_left_ellipsis class="mt-0.5 h-6 w-6" />
+                      <Heroicons.heart class="mt-0.5 h-6 w-6" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+
+          <li id="reply" class="md:mb-4 mb-2 md:ml-6">
+            <div class="mx-auto flex flex-col mt-3 text-sm leading-normal border-b border-solid border-grey-light space-y-4">
+              <div class="flex justify-between md:p-2">
+                <img
+                  class="rounded-full w-12 h-12 border border-gray-500"
+                  src="/images/apotheosis.png"
+                />
+                <div class="flex flex-col space-y-1">
+                  <span class="font-bold">
+                    <a href="#" class="text-black">tamilsowmi</a><strong class="text-gray-600">@Sowmiya</strong>
+                  </span>
+                  <span class="flex items-center text-sm text-gray-500 ">
+                    <span>
+                      <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
+                    </span>
+                    Chennai
+                  </span>
+
+                  <div class="space-y-4">
+                    <p class="text-sm md:text-base text-gray-700 font-normal">
+                      Without a doubt one of the most important poems of the 20th century. “It has never lost its glamour,” Paul Muldoon observed. “It has never failed to be equal to both the fracture of its own era and what, alas, turned out to be the even greater fracture of the ongoing 20th century and now, it seems, the 21st century.” See also: “The Love Song of J. Alfred Prufrock.”
+                    </p>
+                    <a href="#" class="text-blue-500 text-sm font-medium underline">github.com/tailwindcss/ta...</a>
+
+                    <a href="#">
+                      <iframe
+                        src="/images/WhatsApp Video 2022-12-26 at 8.32.21 AM.mp4"
+                        class="border border-solid border-grey-light rounded-sm mt-4 md:w-[35rem] md:h-[30rem] h-96"
+                      >
+                      </iframe>
+                    </a>
+                  </div>
+
+                  <div class="flex justify-between space-x-2 p-2">
+                    <div class="">
+                      <span class="text-grey-dark">10 Oct 2001</span>
+                    </div>
+                    <div class="flex flex-cols space-x-2">
+                      <Heroicons.share class="mt-0.5 h-6 w-6" />
+                      <Heroicons.chat_bubble_oval_left_ellipsis class="mt-0.5 h-6 w-6" />
+                      <Heroicons.heart class="mt-0.5 h-6 w-6" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+
         </ul>
       </div>
     </div>

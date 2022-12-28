@@ -1,0 +1,74 @@
+<.modal
+  :if={@live_action in [:edit]}
+  id="edit_profile_modal"
+  show={@live_action in [:edit]}
+  on_cancel={JS.navigate(~p"/user/#{@current_user.username}")}
+>
+  <.live_component
+    module={PhosWeb.UserProfileLive.FormComponent}
+    id={@current_user.id}
+    title={@page_title}
+    action={@live_action}
+    user={@user}
+    current_user={@current_user}
+    return_to={~p"/user/#{@current_user.username}"}
+  />
+</.modal>
+<!--Desktop View In Comments-->
+<div class="container  mx-auto md:flex-1 p-2 md:p-4 md:flex items-center flex flex-col">
+  <div class="relative md:flex md:flex-row gap-2 items-center justify-center min-h-full min-w-full mx-auto md:p-4">
+    <!--Profile in Mobile View-->
+    <div class="block md:hidden">
+      <%= for ally <- @ally_list do %>
+        <.profile_upload_path img_path={ally.profile_image}>
+          <:title><%= ally.username %></:title>
+          <:location><%= ally.location %></:location>
+        </.profile_upload_path>
+      <% end %>
+    </div>
+    <!--Image Modal-->
+    <div class="md:h[50rem] md:w-[38rem] bg-white border ">
+      <%= for ally <- @ally_list do %>
+        <.post_image img_post={ally.post_image}></.post_image>
+      <% end %>
+      <.comment_action></.comment_action>
+    </div>
+    <!--Main modal-->
+    <div class="flex flex-col inset-0 h-[25rem] md:w-[38rem] md:h-[50rem] space-y-2 bg-white border">
+      <!--Profile In Desktop View-->
+      <div class="hidden md:block">
+        <%= for ally <- @ally_list do %>
+          <.profile_upload_path img_path={ally.profile_image}>
+            <:title><%= ally.username %></:title>
+            <:location><%= ally.location %></:location>
+          </.profile_upload_path>
+        <% end %>
+      </div>
+      <%= for ally <- @ally_list do %>
+        <.post_information>
+          <:post_message><%= ally.post_message %></:post_message>
+        </.post_information>
+      <% end %>
+      <!--Modal body-->
+      <div class="items-center justify-between mx-auto overflow-y-auto space-y-2 leading-relaxed p-2 ">
+        <.comments_post comments_list={@comments_list}></.comments_post>
+      </div>
+      <.input_type img_path={@user_model.profile_image}></.input_type>
+    </div>
+  </div>
+</div>
+<!--Profile view in Desktop and Mobile View-->
+<div class=" min-h-full min-w-full mx-auto mt-4">
+  <div class="">
+    <.user_profile></.user_profile>
+  </div>
+  <div class="flex justify-center mt-4">
+    <.information_card></.information_card>
+  </div>
+  <div class="flex justify-center mt-4">
+    <.tabs_profile></.tabs_profile>
+  </div>
+   <div class="flex justify-center mt-4">
+    <.tabs_profile></.tabs_profile>
+  </div>
+</div>

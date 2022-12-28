@@ -15,6 +15,7 @@
         <.input field={{ff, :bio}} label="Bio" />
         <.input field={{ff, :occupation}} label="Role" />
         <.input field={{ff, :birthday}} type="datetime-local" label="Birthday" />
+        <.input field={{ff, :public_name}} label="Name" />
       <% end %>
 
       <.input field={{f, :user_id}} type="hidden" value={@current_user.id} />
