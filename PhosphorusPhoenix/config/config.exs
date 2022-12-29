@@ -103,9 +103,6 @@ config :fcmex,
 config :phos, Phos.External.Notion,
   token: {System, :get_env, "NOTION_TOKEN"}
 
-config :phos, Phos.Admin,
-  password: System.get_env("ADMIN_TUNNEL"),
-  algorithm: :sha256
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
