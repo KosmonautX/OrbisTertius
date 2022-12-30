@@ -8,6 +8,7 @@ defmodule Phos.Orbject.Structure do
   @primary_key{:id, :binary_id, autogenerate: false}
   embedded_schema do
     field(:archetype, :string)
+    field(:wildcard, :boolean)
     embeds_many :media, Media do
       field(:access, :string)
       field(:essence, :string)
@@ -20,32 +21,40 @@ defmodule Phos.Orbject.Structure do
     end
   end
 
-  def apply_media_changset(attrs) do
-    apply_action(
+  def apply_media_changeset(attrs) do
       %Orbject.Structure{}
-      |> cast(attrs, [:archetype, :id])
-      |> cast_embed(:media, with: &Orbject.Structure.user_media_changeset/2), :media)
+      |> cast(attrs, [:archetype, :id, :wildcard])
+      |> media_embed_switch()
   end
 
-  def apply_user_changeset(attrs) do
-    apply_action(
-      %Orbject.Structure{}
-      |> cast(attrs, [:archetype, :id])
-      |> cast_embed(:media, with: &Orbject.Structure.user_media_changeset/2), :user_media)
+  def media_embed_switch(changeset) do
+    changeset.changes.archetype
+    |> case do
+         "USR" ->
+           apply_user_changeset(changeset)
+         "ORB" ->
+           apply_orb_changeset(changeset)
+         "MEM" ->
+           apply_memory_changeset(changeset)
+       end
   end
 
-  def apply_orb_changeset(attrs) do
-    apply_action(
-      %Orbject.Structure{}
-      |> cast(attrs, [:archetype, :id])
-      |> cast_embed(:media, with: &Orbject.Structure.orb_media_changeset/2), :orb_media)
+  def apply_orb_changeset(changeset) do
+    changeset
+    |> cast_embed(:media, with: &Orbject.Structure.orb_media_changeset/2)
+    |> apply_action(:orb_media)
   end
 
-  def apply_memory_changeset(attrs) do
-    apply_action(
-      %Orbject.Structure{}
-      |> cast(attrs, [:archetype, :id])
-      |> cast_embed(:media, with: &Orbject.Structure.memory_media_changeset/2), :mem_media)
+  def apply_user_changeset(changeset) do
+    changeset
+    |> cast_embed(:media, with: &Orbject.Structure.user_media_changeset/2)
+    |> apply_action(:user_media)
+  end
+
+  def apply_memory_changeset(changeset) do
+    changeset
+    |> cast_embed(:media, with: &Orbject.Structure.memory_media_changeset/2)
+    |> apply_action(:memory_media)
   end
 
 
@@ -68,16 +77,6 @@ defmodule Phos.Orbject.Structure do
     |> validate_required([:access, :essence])
   end
 
-  def echo_media_changeset(structure, attrs) do
-    structure
-    |> cast(attrs, [:access, :essence, :count, :resolution, :height, :width, :ext])
-    |> validate_inclusion(:access, ["public"])
-    |> validate_inclusion(:essence, ["banner"])
-    |> validate_number(:count, greater_than: 0, less_than: 6)
-    |> validate_inclusion(:resolution, ["lossy", "lossless"])
-    |> validate_required([:access, :essence])
-  end
-
   def memory_media_changeset(structure, attrs) do
     structure
     |> cast(attrs, [:access, :essence, :count, :resolution, :height, :width, :ext])
@@ -87,4 +86,4 @@ defmodule Phos.Orbject.Structure do
     |> validate_inclusion(:resolution, ["lossy", "lossless"])
     |> validate_required([:access, :essence])
   end
-end
+ end

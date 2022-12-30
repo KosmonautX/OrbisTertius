@@ -176,7 +176,7 @@ defmodule PhosWeb.API.FriendControllerTest do
 
       conn = put(conn, ~p"/api/folkland/friends/accept", %{"relation_id" => root.id})
 
-      assert %{"errors" => %{"detail" => "Forbidden"}} = json_response(conn, 401)
+      assert %{"errors" => %{"message" => "Forbidden"}} = json_response(conn, 401)
     end
 
     test "return error when already friends", %{conn: conn, user: user} do

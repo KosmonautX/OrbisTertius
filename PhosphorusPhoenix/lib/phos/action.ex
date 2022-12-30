@@ -186,7 +186,7 @@ defmodule Phos.Action do
       where: not fragment("? @> ?", orbs.traits, ^["mirage"]),
       inner_join: initiator in assoc(orbs, :initiator),
       inner_join: branch in assoc(initiator, :relations),
-      on: branch.friend_id == ^your_id,
+      on: branch.friend_id == ^your_id and not is_nil(branch.completed_at),
       inner_join: root in assoc(branch, :root),
       select_merge: %{initiator: %{initiator | self_relation: root}},
       inner_lateral_join: c in subquery(

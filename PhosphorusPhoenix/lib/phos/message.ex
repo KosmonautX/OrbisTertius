@@ -39,7 +39,7 @@ defmodule Phos.Message do
     |> select_merge([r, m], %{memory: m})
     |> distinct([r, m], m.rel_subject_id)
     |> order_by([e], desc: e.inserted_at)
-    |> preload([memory: [:rel_subject, :user_source, :orb_subject]])
+    |> preload([memory: [rel_subject: [:acceptor, :initiator], orb_subject: []]])
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
@@ -50,7 +50,7 @@ defmodule Phos.Message do
     |> select_merge([r, m], %{memory: m})
     |> distinct([r, m], m.orb_subject_id)
     |> order_by([e], desc: e.inserted_at)
-    |> preload([memory: [:rel_subject, :user_source, :orb_subject]])
+    |> preload([memory: [:rel_subject, :orb_subject]])
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 

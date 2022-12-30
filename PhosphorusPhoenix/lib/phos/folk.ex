@@ -25,7 +25,22 @@ defmodule Phos.Folk do
   #       ** (Ecto.NoResultsError)
 
   #   """
-  def get_relation!(id), do: Repo.get!(RelationRoot, id)
+  #
+  def get_relation!(id),
+    do: Repo.get!(RelationRoot, id)
+  def get_relation!(id, your_id),
+    do: Repo.get!(RelationRoot, id)
+    |> self_initiated_enricher(your_id)
+
+  defp self_initiated_enricher(%RelationRoot{} = rel_root, your_id) do
+    %{rel_root | self_initiated: your_id == rel_root.initiator_id}
+    |> case do
+         %{self_initiated: true} = rel ->
+           rel |> Repo.preload([:acceptor])
+         %{self_initiated: false} = rel ->
+           rel |> Repo.preload([:initiator])
+    end
+  end
 
   def get_relation_by_pair(self, other),
     do: Repo.get_by(RelationBranch, [user_id: self, friend_id: other])

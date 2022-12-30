@@ -35,7 +35,7 @@ defmodule PhosWeb.API.OrbController do
   def create(conn = %{assigns: %{current_user: user}}, params = %{"media" => [_|_] = media}) do
 
     with {:ok, attrs} <- orb_constructor(user, params),
-         {:ok, media} <- Phos.Orbject.Structure.apply_orb_changeset(%{id: attrs["id"], archetype: "ORB", media: media}),
+         {:ok, media} <- Phos.Orbject.Structure.apply_media_changeset(%{id: attrs["id"], archetype: "ORB", media: media}),
          {:ok, %Orb{} = orb} <- Action.create_orb(%{attrs | "media" => true}) do
       conn
       |> put_status(:created)
@@ -152,7 +152,7 @@ defmodule PhosWeb.API.OrbController do
     orb = Action.get_orb!(id)
     with true <- orb.initiator.id == user.id,
          {:ok, attrs} <- orb_constructor(user, params),
-         {:ok, media} <- Phos.Orbject.Structure.apply_orb_changeset(%{id: id, archetype: "ORB", media: media}),
+         {:ok, media} <- Phos.Orbject.Structure.apply_media_changeset(%{id: id, archetype: "ORB", media: media}),
          {:ok, %Orb{} = orb} <- Action.update_orb(orb, %{attrs | "media" => true}) do
       conn
       |> put_status(:ok)
