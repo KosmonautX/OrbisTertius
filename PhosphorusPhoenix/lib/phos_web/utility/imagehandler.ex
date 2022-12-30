@@ -5,14 +5,14 @@ defmodule PhosWeb.Util.ImageHandler do
   For all your Image Handling Needs
   """
 
-  def store_ext_links(entity = %{id: id, lossy: lossy, lossless: lossless}, archetype)  do
+  def store_ext_links(entity = %{id: id, lossy: lossy, lossless: lossless}, archetype) when not (is_nil(lossless) or is_nil(lossy)) do
     Phos.Orbject.S3.put!(archetype, id, "public/banner/lossy") |> upload_link(lossy)
     Phos.Orbject.S3.put!(archetype, id, "public/banner/lossless") |> upload_link(lossless)
     entity
   end
 
   def store_ext_links(entity, _archetype)  do
-    entity |> Map.update!(:media, false)
+    %{entity | media: false}
   end
 
   def upload_link(dest, src) do
