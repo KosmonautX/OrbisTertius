@@ -3,7 +3,7 @@ defmodule Phos.Notification.Scheduller do
 
   require Logger
 
-  defstruct [:active, :archetype, :body, :frequency, :id, :pathing, :regions, :target_group, :time_condition, :title]
+  defstruct [:action_type, :active, :archetype, :frequency, :id, :regions, :target_group, :text, :time_condition, :trigger]
 
   @one_minute :timer.minutes(1)
 
@@ -169,10 +169,14 @@ defmodule Phos.Notification.Scheduller do
 
   defp run_notification_timer(notifications) do
     time = current_time()
-    today = Timex.today()
-    Logger.debug("Running notification timer at #{today} #{time}")
+    Logger.debug("Running notification timer at #{time}")
     Enum.filter(notifications, fn {_id, %{time_condition: ntime, frequency: frequency}, _active} ->
-      diff = case should_execute?(frequency, today) do
+      [date, time] = case ntime do
+        %DateTime{} -> [DateTime.to_date(ntime), DateTime.to_time(time)]
+        %Time{} -> [Timex.today, ntime]
+      end
+
+      diff = case should_execute?(frequency, date, time) do
         true -> Time.diff(time, ntime)
         _ -> -1
       end
@@ -182,14 +186,14 @@ defmodule Phos.Notification.Scheduller do
     |> Enum.each(&send_notification/1)
   end
 
-  defp should_execute?(freq, date) do
+  defp should_execute?(freq, date, current_time) do
     String.downcase(freq)
     |> case do
       "daily" -> true
       "now" -> true
-      "weekends" -> Timex.weekday(date) in [6, 7]
-      "weekly" -> Timex.weekday(date) == 1
-      _ -> false
+      "weekends" -> Timex.weekday(current_time) in [6, 7]
+      "weekly" -> Timex.weekday(current_time) == 1
+      _ -> Date.compare(date, DateTime.to_date(current_time)) == :eq
     end
   end
 
@@ -214,7 +218,6 @@ defmodule Phos.Notification.Scheduller do
   defp current_time do
     DateTime.utc_now()
     |> Timex.Timezone.convert(singapore_timezone())
-    |> DateTime.to_time()
   end
 
   defp orb_title(title, %Phos.Action.Orb{initiator: %{username: username}}) do

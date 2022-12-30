@@ -444,16 +444,13 @@ defmodule Phos.Action do
   defp notion_platform_importer(data) when is_list(data) do 
     Enum.map(data, &notion_platform_parse_properties/1)
     |> List.flatten()
-    |> Enum.reject(fn v ->
-      Map.get(v, "title", "")
-      |> Kernel.in([[], ""])
-    end)
     |> Enum.reduce([], fn data, acc ->
       [Enum.map(data, fn {k, v} -> {String.to_atom(k), v} end) |> Enum.into(%{}) | acc]
     end)
   end
   defp notion_platform_importer(_), do: []
 
+  defp notion_get_values(%{"type" => "date", "date" => data}), do: data
   defp notion_get_values(%{"type" => "select", "select" => data}) when is_map(data), do: Map.get(data, "name")
   defp notion_get_values(%{"type" => "select", "select" => _data}), do: "-"
   defp notion_get_values(%{"type" => "multi_select", "multi_select" => data}), do: Enum.map(data, fn d -> Map.get(d, "name") end)
@@ -484,7 +481,7 @@ defmodule Phos.Action do
     value = notion_get_values(v)
     case key do
       "time_condition" -> Map.put(acc, key, notion_platform_time(value))
-      "title" -> Map.merge(acc, %{
+      "" -> Map.merge(acc, %{
         "id" => id,
         "title" => value
       })
@@ -493,11 +490,16 @@ defmodule Phos.Action do
     end
   end)
 
-  defp notion_platform_time(time) when is_bitstring(time) do
-    [hour | timezone] = String.split(time, " ")
-    tz = decide_timezone(List.first(timezone))
-    case Timex.parse(hour, "{h12}.{m}{am}") do
-      {:ok, h} -> Timex.Timezone.convert(h, tz) |> DateTime.to_time()
+  defp notion_platform_time(%{"start" => <<_date::bytes-size(10)>> <> "T" <> _rest = date}) do
+    case Timex.parse(date, "{RFC3339}") do
+      {:ok, h} -> h
+      _ -> notion_platform_time(nil)
+    end
+  end
+  defp notion_platform_time(%{"start" => start_date}) do
+    tz = decide_timezone("SGD")
+    case Timex.parse(start_date, "{YYYY}-{0M}-{0D}") do
+      {:ok, h} -> Timex.Timezone.convert(h, tz)
       _ -> notion_platform_time(nil)
     end
   end
