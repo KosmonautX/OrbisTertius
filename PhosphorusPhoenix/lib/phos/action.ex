@@ -422,7 +422,7 @@ defmodule Phos.Action do
   defp notion_get_values(%{"content" => data}), do: data
   defp notion_get_values(data) when is_boolean(data), do: data
   defp notion_get_values(data) when is_list(data) and length(data) > 0, do: Enum.reduce(data, "", fn val, acc -> Kernel.<>(acc, notion_get_values(val)) end)
-  defp notion_get_values(_), do: "[town]" #TODO this is a terrible default state
+  defp notion_get_values(_), do: nil
 
 
   defp notion_parse_properties(%{"properties" => %{"Type" => type, "Regions" => region} = properties}) do
@@ -469,7 +469,7 @@ defmodule Phos.Action do
     default_orb_populator({ name, nil}, properties)
     |> Map.merge(%{
           where: notion_get_values(location) |> String.replace("[town]", name),
-          title: notion_get_values(inside_title) |> String.replace("[town]", title),
+          title: (if is_nil(notion_get_values(inside_title)), do: title, else: notion_get_values(inside_title)),
           geolocation: %{
             live: %{
               latlon: %{
@@ -489,7 +489,7 @@ defmodule Phos.Action do
       id: Ecto.UUID.generate(),
       username: "Administrator 👋",
       expires_in: expires_in,
-      info: notion_get_values(info) |> String.replace("[town]", name),
+      info: (unless is_nil(notion_get_values(info)), do: notion_get_values(info) |> String.replace("[town]", name)),
       done: notion_get_values(done),
       media: true,
       lossy: notion_get_values(lossy),
