@@ -178,7 +178,12 @@ defmodule PhosWeb.Menshen.Gate do
       %{"user_token" => user_token} ->
         socket
         |> Phoenix.Component.assign_new(:current_user, fn ->
-          Users.get_user_by_session_token(user_token)
+          user = Users.get_user_by_session_token(user_token)
+          if not is_nil(user.media) && user.media do
+            %{ user | profile_image: Phos.Orbject.S3.get!("USR", user.id, "public/profile/lossy")}
+            else
+            user
+          end
         end)
         |> Phoenix.Component.assign_new(:guest, fn ->  false end)
 

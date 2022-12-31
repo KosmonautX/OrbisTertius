@@ -25,7 +25,7 @@
     </.user_profile>
   </div>
   <div class="mt-4 md:w-[45rem] w-full mx-auto items-center justify-center mb-20">
-    <.information_card user={@user}>
+    <.information_card :if={not is_nil(@user.public_profile)} user={@user}>
       <:user_role><%= @user.public_profile.occupation %></:user_role>
       <:user_bio><%= @user.public_profile.bio %></:user_bio>
       <:user_public_name>
@@ -56,11 +56,11 @@
         Edit profile
       </.link>
       <span class="text-lg"><%= @user.username %></span>
-      <span><%= @user.public_profile.bio %></span>
+      <span :if={not is_nil(@user.public_profile)}><%= @user.public_profile.bio %></span>
     </div>
   </div>
 
-  <div class="px-4 py-2">
+  <div :if={not is_nil(@user.public_profile)} class="px-4 py-2">
     <.list>
       <:item title="Email"><%= @user.email %></:item>
 

@@ -885,6 +885,8 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  attr :current_user, :any
+
   def dashboard(assigns) do
     ~H"""
     <aside
@@ -892,14 +894,13 @@ defmodule PhosWeb.CoreComponents do
       aria-label="Sidebar"
     >
       <div class="py-4 px-3 rounded">
-        <a href="#" class="flex items-center pl-2.5 mb-5">
+        <a :if={not is_nil(@current_user.profile_image)} href="#" class="flex items-center pl-2.5 mb-5">
           <img
-            src="https://vojislavd.com/ta-template-demo/assets/img/message3.jpg"
+            src={@current_user.profile_image}
             class="mr-3 w-10 h-10 rounded-full"
-            alt="Flowbite Logo"
           />
           <span class="self-center text-xl font-semibold whitespace-nowrap">
-            Sowmiya
+            <.link href={"/user/#{@current_user.username}"}> <%= @current_user.username %> </.link>
           </span>
         </a>
         <ul class="space-y-2">

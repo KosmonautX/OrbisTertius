@@ -17,8 +17,7 @@
       <.banner></.banner>
     </div>
     <%= if @current_user do %>
-      <div class="hidden md:block fixed left-0 w-64 h-full">
-        <.dashboard></.dashboard>
+      <div class="hidden md:block fixed left-0 w-64 h-4/6 bottom-0">
         <.user_menu current_user={@current_user} />
       </div>
     <% end %>
