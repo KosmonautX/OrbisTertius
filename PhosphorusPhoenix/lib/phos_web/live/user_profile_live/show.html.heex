@@ -15,8 +15,8 @@
   />
 </.modal>
 <!--User Profile Image Uplodae-->
-<section class="md:mt-4 w-full mx-auto flex flex-col items-center justify-center">
-  <div class="w-full">
+<!--<section class="md:mt-4 min-w-full mx-auto flex flex-col items-center justify-center">
+  <div class="min-w-full">
     <.user_profile user={@user}>
       <:user_name><%= @user.username %></:user_name>
       <.link :if={is_nil(@guest) || !@guest} patch={~p"/user/#{@current_user.username}/edit"}>
@@ -28,16 +28,70 @@
     <.information_card :if={not is_nil(@user.public_profile)} user={@user}>
       <:user_role><%= @user.public_profile.occupation %></:user_role>
       <:user_bio><%= @user.public_profile.bio %></:user_bio>
-      <:user_public_name>
-        <%= @user.public_profile.public_name %>
-      </:user_public_name>
+      <:user_public_name><%= @user.public_profile.public_name %></:user_public_name>
     </.information_card>
     <.tabs_profile></.tabs_profile>
     <.video></.video>
     <.profile_upload_path></.profile_upload_path>
     <.reply_post></.reply_post>
   </div>
+</section>-->
+<!--<section class="max-auto container justify-items-center mt-10 mb-30 bg-gray-50">
+  <div class="flex flex-row">
+    <div class="max-w-sm space-y-4">
+      <div class="border border-gray-200 rounded-3xl shadow-lg">
+        <.user_profile user={@user}>
+          <:user_name><%= @user.username %></:user_name>
+        </.user_profile>
+      </div>
+      <div class="border border-gray-200 rounded-3xl shadow-lg">
+        <.user_information_card_md user={@user}>
+          <:user_bio><%= @user.public_profile.bio %></:user_bio>
+          <:user_public_name><%= @user.public_profile.public_name %></:user_public_name>
+        </.user_information_card_md>
+      </div>
+      <div class="border border-gray-200 rounded-3xl shadow-lg">
+        <.explore_tag user={@user}></.explore_tag>
+      </div>
+    </div>
+
+    <div class="w-[38rem] mx-auto items-center justify-center border border-gray-200 rounded-3xl shadow-lg">
+      <.profile_upload_path></.profile_upload_path>
+      <.post_image></.post_image>
+      <.post_information></.post_information>
+      <.comment_action></.comment_action>
+      <.input_type></.input_type>
+    </div>
+
+    <div class="max-w-sm space-y-4">
+      <div class="border border-gray-200 rounded-3xl shadow-lg">
+        <.user_profile user={@user}>
+          <:user_name><%= @user.username %></:user_name>
+        </.user_profile>
+      </div>
+      <div class="border border-gray-200 rounded-3xl shadow-lg">
+        <.user_information_card_md user={@user}>
+          <:user_bio><%= @user.public_profile.bio %></:user_bio>
+          <:user_public_name><%= @user.public_profile.public_name %></:user_public_name>
+        </.user_information_card_md>
+      </div>
+      <div class="border border-gray-200 rounded-3xl shadow-lg">
+        <.explore_tag user={@user}></.explore_tag>
+      </div>
+    </div>
+  </div>
+</section>-->
+
+<section class="max-auto container justify-items-center mt-10 bg-red-500">
+    <div class="w-[38rem] mx-auto items-center justify-center border border-gray-200 rounded-3xl shadow-lg">
+      <.profile_upload_path></.profile_upload_path>
+      <.post_image></.post_image>
+      <.post_information></.post_information>
+      <.comment_action></.comment_action>
+      <.input_type></.input_type>
+    </div>
 </section>
+
 <div class="w-3/4 m-auto relative flex justify-between mt-12 items-center">
   <div class="w-1/4">
     <div :if={not is_nil(@user.media) && @user.media} class="p-2 flex justify-center">

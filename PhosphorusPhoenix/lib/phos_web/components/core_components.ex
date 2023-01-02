@@ -115,22 +115,6 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  attr :name, :atom, required: true
-  attr :outlined, :boolean, default: false
-  attr :rest, :global, default: %{class: "w-4 h-4 inline-block"}
-
-  def icon(assigns) do
-    assigns = assign_new(assigns, :"aria-hidden", fn -> !Map.has_key?(assigns, :"aria-label") end)
-
-    ~H"""
-    <%= if @outlined do %>
-      <%= apply(Heroicons.Outline, @name, [Map.to_list(@rest)]) %>
-    <% else %>
-      <%= apply(Heroicons.Solid, @name, [Map.to_list(@rest)]) %>
-    <% end %>
-    """
-  end
-
   @doc """
   Renders flash notices.
 
@@ -712,8 +696,45 @@ defmodule PhosWeb.CoreComponents do
 
   def post_image(assigns) do
     ~H"""
-    <div>
-      <img class="object-cover md:inset-0 w-[50rem]" src="/images/thunderstorm-3440450__340.jpg" />
+    <!--<div>
+      <img
+        class="object-cover md:inset-0 w-[50rem] h-[30rem]"
+        src="/images/thunderstorm-3440450__340.jpg"
+      />
+    </div>-->
+    <div class="relative">
+      <!-- Carousel wrapper -->
+      <div class="relative overflow-hidden rounded-lg">
+        <!-- Item 1 -->
+        <div class="duration-700 ease-in-out">
+          <img
+            class="object-cover md:inset-0 w-[50rem] h-96"
+            src="/images/thunderstorm-3440450__340.jpg"
+          />
+        </div>
+      </div>
+      <!-- Slider controls -->
+      <button
+        type="button"
+        class="absolute top-0 left-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
+        data-carousel-prev
+      >
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50  group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
+          <Heroicons.chevron_left class="mt-0.5 h-6 w-6" />
+
+          <span class="sr-only">Previous</span>
+        </span>
+      </button>
+      <button
+        type="button"
+        class="absolute top-0 right-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
+        data-carousel-next
+      >
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
+          <Heroicons.chevron_right class="mt-0.5 h-6 w-6" />
+          <span class="sr-only">Next</span>
+        </span>
+      </button>
     </div>
     """
   end
@@ -726,7 +747,8 @@ defmodule PhosWeb.CoreComponents do
 
   def post_information(assigns) do
     ~H"""
-    <p class="text-base text-gray-700 font-normal p-2 ml-2 border-b ">
+    <p class="text-base text-gray-700 font-normal p-2 ml-2">
+      Success is Not Final, Failure is Not Fatal: it is the Courage to Continue that Counts
       Success is Not Final, Failure is Not Fatal: it is the Courage to Continue that Counts....
     </p>
     """
@@ -785,11 +807,14 @@ defmodule PhosWeb.CoreComponents do
 
   def input_type(assigns) do
     ~H"""
-    <div class="flex gap-4 p-2">
-      <img class="rounded-full md:w-12 md:h-12 w-10 h-10 border border-gray-500" src={@img_path} />
+    <div class="flex p-2 gap-2 ml-2">
+      <img
+        class="rounded-full md:w-14 md:h-14 w-10 h-10 border border-gray-500"
+        src="/images/IMG-20220404-WA0002.jpg"
+      />
       <div class="flex-1 relative">
         <input
-          class="block w-full md:p-4 p-2 text-base text-gray-900 focus:ring-black focus:outline-none  rounded-lg border border-gray-200 focus:z-10 focus:ring-4 focus:ring-gray-200"
+          class="block w-full p-4 text-base text-gray-900 focus:ring-black focus:outline-none  rounded-lg border border-gray-200 focus:z-10 focus:ring-4 focus:ring-gray-200"
           placeholder="Any Comments..."
           required
         />
@@ -803,14 +828,20 @@ defmodule PhosWeb.CoreComponents do
 
   def comment_action(assigns) do
     ~H"""
-    <div class="flex justify-between space-x-2 p-2">
+    <div class="flex justify-between p-2 ml-2">
       <div class="">
-        <Heroicons.exclamation_circle class="mt-0.5 h-8 w-8" />
+        <span class="">10 Oct 2001</span>
       </div>
-      <div class="flex flex-cols space-x-2">
-        <Heroicons.share class="mt-0.5 h-8 w-8" />
-        <Heroicons.chat_bubble_oval_left_ellipsis class="mt-0.5 h-8 w-8" />
-        <Heroicons.heart class="mt-0.5 h-8 w-8" />
+      <div class="flex flex-cols space-x-4">
+        <button class="text-center inline-flex items-center">
+          <Heroicons.share class="-ml-1 w-6 h-6" />15
+        </button>
+        <button class="text-center inline-flex items-center">
+          <Heroicons.chat_bubble_oval_left_ellipsis class="-ml-1 w-6 h-6" />15
+        </button>
+        <button class="text-center inline-flex items-center">
+          <Heroicons.heart class="-ml-1 w-6 h-6" />15
+        </button>
       </div>
     </div>
     """
@@ -1068,18 +1099,17 @@ defmodule PhosWeb.CoreComponents do
 
   def user_profile(assigns) do
     ~H"""
-    <div class="relative overflow-hidden cursor-pointer">
+    <div class="relative overflow-hidden cursor-pointer bg-white">
       <img
-        class="object-cover w-full md:h-[30rem] h-80"
+        class="object-cover h-80 w-full border border-gray-200 rounded-3xl shadow-lg"
         src="/images/lake-gce85e5120_1920.jpg"
         alt="Emoji"
       />
-
-      <div class="absolute inset-0 px-6 py-4 flex flex-col items-center justify between bg-gray-700 bg-opacity-50">
+      <div class="absolute inset-0 px-6 py-4 flex flex-col items-center justify between bg-opacity-50">
         <p class="md:text-2xl text-lg text-white font-bold md:mb-4"><%= render_slot(@user_name) %></p>
         <img
           src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
-          class="md:w-60 md:h-60 h-36 w-36 border-4 border-white rounded-full object-cover"
+          class="md:w-60 md:h-60 h-28 w-28 border-4 border-white rounded-full object-cover"
         />
         <button class="m-4 text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-4 py-2 mr-2 mb-2">
           <%= render_slot(@inner_block) %>
@@ -1147,6 +1177,75 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  slot :user_role
+  slot :user_bio
+  slot :user_public_name
+  attr :user, :any
+  attr :id, :string, required: true
+  attr :navigate, :any, required: true
+  attr :img_path, :string
+  slot :user_name
+  slot :inner_block, required: true
+
+  def user_information_card_md(assigns) do
+    ~H"""
+    <div class="flex flex-col items-center space-y-2 p-4">
+      <h5 class="md:text-3xl text-lg font-extrabold text-gray-900 text-center">
+        <%= render_slot(@user_public_name) %>
+      </h5>
+      <div class="flex  gap-4">
+        <button
+          type="button"
+          class="text-gray-400 bg-transparent bg-gray-200 p-2 rounded-lg text-sm ml-auto inline-flex items-center"
+        >
+          <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6" />
+        </button>
+        <button class="inline-flex items-center bg-yellow-400 hover:bg-gray-700 text-white px-4 py-2 text-center rounded md:text-base text-sm font-bold transition duration-100">
+          Chat
+        </button>
+      </div>
+      <div class="flex-1 flex flex-col items-center">
+        <div class="flex items-center">
+          <%= for location <- @user.locations do %>
+            <button class="flex items-center bg-white text-gray-800 px-4 py-2 rounded-full md:text-base text-sm font-bold transition duration-100">
+              <Heroicons.map_pin class="mr-2 -ml-1 w-6 h-6" />
+              <span><%= location %></span>
+            </button>
+          <% end %>
+        </div>
+      </div>
+      <p class="text-gray-900 font-medium text-base text-center">
+        <%= render_slot(@user_bio) %>
+      </p>
+      <div class="items-center text-center">
+        <%= for traits <- @user.traits do %>
+          <span class="text-gray-500 text-base font-normal "><span>#</span>
+            <%= traits %></span>
+        <% end %>
+      </div>
+    </div>
+    """
+  end
+
+  attr :user, :any
+  attr :id, :string, required: true
+
+  def explore_tag(assigns) do
+    ~H"""
+    <div class="items-center text-center p-2">
+      <h5 class="text-2xl font-extrabold text-gray-900 text-center mb-2">
+        Explore Tag
+      </h5>
+      <%= for traits <- @user.traits do %>
+        <span class="inline-block whitespace-nowrap  align-baseline font-bold leading-none text-teal-500 rounded-full border-2 border-teal-500 text-sm px-5 py-2.5 text-center mr-2 mb-2 ">
+          <span>#</span>
+          <%= traits %>
+        </span>
+      <% end %>
+    </div>
+    """
+  end
+
   attr :id, :string, required: true
   attr :img_path, :string
   slot :title
@@ -1155,7 +1254,7 @@ defmodule PhosWeb.CoreComponents do
   def tabs_profile(assigns) do
     ~H"""
     <div class="md:border md:border-gray-200 max-auto mt-10">
-      <div class="flex justify-center items-center border-b border-gray-200 dark:border-gray-700">
+      <div class="flex justify-center items-center border-b border-gray-200">
         <ul class="flex flex-wrap md:gap-80 gap-20 -mb-px md:text-lg font-extrabold text-sm font-medium text-gray-500">
           <li class="mr-2">
             <a
@@ -1225,7 +1324,6 @@ defmodule PhosWeb.CoreComponents do
     <div class="flex flex-col items-center justify-between mx-auto w-full md:w-[43rem]">
       <div class="space-y-2 leading-relaxed p-2">
         <ul class="relative md:border-l md:border-gray-400 mt-2">
-
           <li id="reply" class="md:mb-4 mb-2 md:ml-6">
             <div class="mx-auto flex flex-col mt-3 text-sm leading-normal border-b border-solid border-grey-light space-y-4">
               <div class="flex justify-between md:p-2">
@@ -1248,7 +1346,9 @@ defmodule PhosWeb.CoreComponents do
                     <p class="text-sm md:text-base text-gray-700 font-normal">
                       Without a doubt one of the most important poems of the 20th century. “It has never lost its glamour,” Paul Muldoon observed.
                     </p>
-                    <a href="#" class="text-blue-500 text-sm font-medium underline">github.com/tailwindcss/ta...</a>
+                    <a href="#" class="text-blue-500 text-sm font-medium underline">
+                      github.com/tailwindcss/ta...
+                    </a>
 
                     <a href="#">
                       <img
@@ -1260,7 +1360,7 @@ defmodule PhosWeb.CoreComponents do
 
                   <div class="flex justify-between space-x-2 p-2">
                     <div class="">
-                      <span class="text-grey-dark">10 Oct 2001</span>
+                      <span>10 Oct 2001</span>
                     </div>
                     <div class="flex flex-cols space-x-2">
                       <Heroicons.share class="mt-0.5 h-6 w-6" />
@@ -1295,7 +1395,9 @@ defmodule PhosWeb.CoreComponents do
                     <p class="text-sm md:text-base text-gray-700 font-normal">
                       Without a doubt one of the most important poems of the 20th century. “It has never lost its glamour,” Paul Muldoon observed. “It has never failed to be equal to both the fracture of its own era and what, alas, turned out to be the even greater fracture of the ongoing 20th century and now, it seems, the 21st century.” See also: “The Love Song of J. Alfred Prufrock.”
                     </p>
-                    <a href="#" class="text-blue-500 text-sm font-medium underline">github.com/tailwindcss/ta...</a>
+                    <a href="#" class="text-blue-500 text-sm font-medium underline">
+                      github.com/tailwindcss/ta...
+                    </a>
 
                     <a href="#">
                       <iframe
@@ -1308,7 +1410,7 @@ defmodule PhosWeb.CoreComponents do
 
                   <div class="flex justify-between space-x-2 p-2">
                     <div class="">
-                      <span class="text-grey-dark">10 Oct 2001</span>
+                      <span>10 Oct 2001</span>
                     </div>
                     <div class="flex flex-cols space-x-2">
                       <Heroicons.share class="mt-0.5 h-6 w-6" />
@@ -1320,9 +1422,93 @@ defmodule PhosWeb.CoreComponents do
               </div>
             </div>
           </li>
-
         </ul>
       </div>
+    </div>
+    """
+  end
+
+  def multi_image(assigns) do
+    ~H"""
+    <div id="carouselExampleCaptions" class="carousel slide relative" data-bs-ride="carousel">
+      <div class="carousel-indicators absolute right-0 bottom-0 left-0 flex justify-center p-0 mb-4">
+        <button
+          type="button"
+          data-bs-target="#carouselExampleCaptions"
+          data-bs-slide-to="0"
+          class="active"
+          aria-current="true"
+          aria-label="Slide 1"
+        >
+        </button>
+        <button
+          type="button"
+          data-bs-target="#carouselExampleCaptions"
+          data-bs-slide-to="1"
+          aria-label="Slide 2"
+        >
+        </button>
+        <button
+          type="button"
+          data-bs-target="#carouselExampleCaptions"
+          data-bs-slide-to="2"
+          aria-label="Slide 3"
+        >
+        </button>
+      </div>
+      <div class="carousel-inner relative w-full overflow-hidden">
+        <div class="carousel-item active relative float-left w-full">
+          <img
+            src="https://mdbootstrap.com/img/Photos/Slides/img%20(15).jpg"
+            class="block w-full"
+            alt="..."
+          />
+          <div class="carousel-caption hidden md:block absolute text-center">
+            <h5 class="text-xl">First slide label</h5>
+            <p>Some representative placeholder content for the first slide.</p>
+          </div>
+        </div>
+        <div class="carousel-item relative float-left w-full">
+          <img
+            src="https://mdbootstrap.com/img/Photos/Slides/img%20(22).jpg"
+            class="block w-full"
+            alt="..."
+          />
+          <div class="carousel-caption hidden md:block absolute text-center">
+            <h5 class="text-xl">Second slide label</h5>
+            <p>Some representative placeholder content for the second slide.</p>
+          </div>
+        </div>
+        <div class="carousel-item relative float-left w-full">
+          <img
+            src="https://mdbootstrap.com/img/Photos/Slides/img%20(23).jpg"
+            class="block w-full"
+            alt="..."
+          />
+          <div class="carousel-caption hidden md:block absolute text-center">
+            <h5 class="text-xl">Third slide label</h5>
+            <p>Some representative placeholder content for the third slide.</p>
+          </div>
+        </div>
+      </div>
+      <button
+        class="carousel-control-prev absolute top-0 bottom-0 flex items-center justify-center p-0 text-center border-0 hover:outline-none hover:no-underline focus:outline-none focus:no-underline left-0"
+        type="button"
+        data-bs-target="#carouselExampleCaptions"
+        data-bs-slide="prev"
+      >
+        <span class="carousel-control-prev-icon inline-block bg-no-repeat" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+      </button>
+      <button
+        class="carousel-control-next absolute top-0 bottom-0 flex items-center justify-center p-0 text-center border-0 hover:outline-none hover:no-underline focus:outline-none focus:no-underline right-0"
+        type="button"
+        data-bs-target="#carouselExampleCaptions"
+        data-bs-slide="next"
+      >
+        <span class="carousel-control-next-icon inline-block bg-no-repeat" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+      </button>
     </div>
     """
   end

@@ -3,28 +3,43 @@
     <div class="flex items-center px-4 py-2">
       <div class="block mr-4">
         <.link navigate={~p"/admin/orbs/import"} class="button button-sm">
-          <i class="fa-solid fa-plus cursor-pointer mr-1"></i>
-          Import orbs
+          <i class="fa-solid fa-plus cursor-pointer mr-1"></i> Import orbs
         </.link>
       </div>
       <div class="flex">
-        <.form let={f} for={:search} phx-change="search">
-          <%= text_input f, :traits, phx_debounce: 200, value: @traits, placeholder: "Filter traits", autocomplete: "off", class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
+        <.form :let={f} for={:search} phx-change="search">
+          <%= text_input(f, :traits,
+            phx_debounce: 200,
+            value: @traits,
+            placeholder: "Filter traits",
+            autocomplete: "off",
+            class:
+              "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+          ) %>
         </.form>
       </div>
     </div>
     <.table id="orbs" rows={@orbs}>
       <:col label="No">~</:col>
-      <:col let={orb} label="Title">
+      <:col :let={orb} label="Title">
         <.link navigate={~p"/admin/orbs/#{orb}"}><%= orb.title %></.link>
       </:col>
-      <:col let={orb} label="Initiator"><%= orb.initiator.username %></:col>
-      <:col let={orb} label="Source"><%= orb.source %></:col>
-      <:col let={orb} label="Traits"><%= inspect orb.traits %></:col>
-      <:col let={orb} label="Created at"><%= Timex.format!(orb.inserted_at, "{D} {Mshort} {YY} {h24}:{m}") %></:col>
+      <:col :let={orb} label="Initiator"><%= orb.initiator.username %></:col>
+      <:col :let={orb} label="Source"><%= orb.source %></:col>
+      <:col :let={orb} label="Traits"><%= inspect(orb.traits) %></:col>
+      <:col :let={orb} label="Created at">
+        <%= Timex.format!(orb.inserted_at, "{D} {Mshort} {YY} {h24}:{m}") %>
+      </:col>
     </.table>
     <div class="hidden px-4 py-3 w-full sm:flex sm:flex-1 sm:items-center sm:justify-between">
-      <.live_component module={PhosWeb.Components.Pagination} limit={@limit} meta={@pagination} id="paginate" route_path={~p"/admin/orbs"} current={@current} />
+      <.live_component
+        module={PhosWeb.Components.Pagination}
+        limit={@limit}
+        meta={@pagination}
+        id="paginate"
+        route_path={~p"/admin/orbs"}
+        current={@current}
+      />
     </div>
   </.card>
 </div>

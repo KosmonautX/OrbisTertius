@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script defer src="https://unpkg.com/alpinejs@3.2.3/dist/cdn.min.js">
+    </script>
     <meta name="csrf-token" content={get_csrf_token()} />
     <.live_title suffix=" · Phosphorus">
       <%= assigns[:page_title] || "Scratchbac" %>
@@ -13,15 +15,19 @@
     </script>
   </head>
   <body class="overflow-hidden">
-   <div class="sticky top-0 left-0 right-0">
+    <div class="sticky top-0 left-0 right-0">
       <.banner></.banner>
     </div>
     <%= if @current_user do %>
+
       <div class="hidden md:block fixed left-0 w-64 h-4/6 bottom-0">
+
+        <!--<.dashboard></.dashboard>-->
+
         <.user_menu current_user={@current_user} />
       </div>
     <% end %>
-   <div class="h-screen w-full overflow-auto"> <%= @inner_content %></div>
+    <div class="h-screen w-full overflow-auto"><%= @inner_content %></div>
     <!--<header class="w-full flex justify-between px-6 flex-row-reverse items-center mt-2">
       <%= if @current_user do %>
       <nav>
