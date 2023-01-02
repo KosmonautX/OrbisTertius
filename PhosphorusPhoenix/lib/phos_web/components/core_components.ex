@@ -702,40 +702,33 @@ defmodule PhosWeb.CoreComponents do
         src="/images/thunderstorm-3440450__340.jpg"
       />
     </div>-->
-    <div class="relative">
-      <!-- Carousel wrapper -->
-      <div class="relative overflow-hidden rounded-lg">
-        <!-- Item 1 -->
-        <div class="duration-700 ease-in-out">
-          <img
-            class="object-cover md:inset-0 w-[50rem] h-96"
-            src="/images/thunderstorm-3440450__340.jpg"
-          />
-        </div>
+    <section class="relative" id="m1" phx-hook="slider" phx-update="ignore">
+      <div class="relative overflow-hidden rounded-lg duration-700 ease-in-out">
+        <img
+          id="m1"
+          class="object-cover md:inset-0 w-[50rem] h-96"
+          src="/images/IMG-20220404-WA0002.jpg"
+        />
       </div>
-      <!-- Slider controls -->
       <button
+        onclick="forward()"
         type="button"
         class="absolute top-0 left-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
-        data-carousel-prev
       >
-        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50  group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
           <Heroicons.chevron_left class="mt-0.5 h-6 w-6" />
-
-          <span class="sr-only">Previous</span>
         </span>
       </button>
       <button
+        onclick="backward()"
         type="button"
         class="absolute top-0 right-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
-        data-carousel-next
       >
         <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
           <Heroicons.chevron_right class="mt-0.5 h-6 w-6" />
-          <span class="sr-only">Next</span>
         </span>
       </button>
-    </div>
+    </section>
     """
   end
 
