@@ -36,8 +36,8 @@ defmodule PhosWeb.CoreComponents do
   """
   attr :id, :string, required: true
   attr :show, :boolean, default: false
-  attr :on_cancel, JS, default: %JS{}
-  attr :on_confirm, JS, default: %JS{}
+  attr :on_cancel, JS, default: %JS{}, doc: "JS cancel action"
+  attr :on_confirm, JS, default: %JS{}, doc: "JS confirm action"
 
   slot :inner_block, required: true
   slot :title
@@ -207,12 +207,16 @@ defmodule PhosWeb.CoreComponents do
 
   ## Examples
 
-      <.button>Send!</.button>
+      <.button theme={:primary}>Send!</.button>
       <.button phx-click="go" class="ml-2">Send!</.button>
   """
-  attr :type, :string, default: nil
-  attr :class, :string, default: nil
-  attr :rest, :global, include: ~w(disabled form name value)
+  attr :tone, :atom, 
+    default: :primary,
+    values: ~w(primary success warning danger)a,
+    doc: "Theme of the button"
+  attr :type, :string, default: "button", doc: "Type of button"
+  attr :class, :string, default: ""
+  attr :rest, :global, include: ~w(disabled form name value), doc: "Rest of html attribute"
 
   slot :inner_block, required: true
 
@@ -220,16 +224,47 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <button
       type={@type}
-      class={[
-        "phx-submit-loading:opacity-75 rounded-lg bg-zinc-900 hover:bg-zinc-700 py-2 px-3",
-        "text-sm font-semibold leading-6 text-white active:text-white/80",
-        @class
-      ]}
+      class={List.flatten(button_class(@tone), String.split(@class, " "))}
       {@rest}
     >
       <%= render_slot(@inner_block) %>
     </button>
     """
+  end
+
+  defp button_class(:primary) do
+    [
+      "bg-blue-400", "hover:bg-blue-600"
+      | default_button_class()
+    ]
+  end
+
+  defp button_class(:warning) do
+    [
+      "bg-yellow-400", "hover:bg-yellow-600"
+      | default_button_class()
+    ]
+  end
+
+  defp button_class(:danger) do
+    [
+      "bg-red-400", "hover:bg-red-600"
+      | default_button_class()
+    ]
+  end
+
+  defp button_class(:success) do
+    [
+      "bg-green-400", "hover:bg-green-600"
+      | default_button_class()
+    ]
+  end
+
+  defp default_button_class do
+    [
+      "phx-submit-loading:opacity-75", "rounded-lg", "py-2", "px-3",
+      "text-sm", "font-semibold", "leading-6", "text-white", "active:text-white/80",
+    ]
   end
 
   @doc """
