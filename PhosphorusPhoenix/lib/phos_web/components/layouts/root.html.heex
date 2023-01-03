@@ -20,7 +20,7 @@
     </div>
     <%= if @current_user do %>
 
-      <div class="hidden md:block fixed left-0 w-64 h-4/6 bottom-0">
+      <div class="hidden md:block fixed left-0 w-fit h-fit bottom-0">
 
         <!--<.dashboard></.dashboard>-->
 
@@ -28,18 +28,6 @@
       </div>
     <% end %>
     <div class="h-screen w-full overflow-auto"><%= @inner_content %></div>
-    <!--<header class="w-full flex justify-between px-6 flex-row-reverse items-center mt-2">
-      <%= if @current_user do %>
-      <nav>
-        <ul>
-            <li>
-              <.link href="https://www.scratchbac.com">Get Started</.link>
-            </li>
-        </ul>
-        <.user_menu current_user={@current_user} />
-      </nav>
-      <% end %>
-    </header>-->
     <br />
   </body>
 </html>

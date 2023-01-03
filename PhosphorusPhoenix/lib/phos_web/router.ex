@@ -75,10 +75,6 @@ defmodule PhosWeb.Router do
   scope "/", PhosWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    get "/archetype", ArchetypeController, :show do
-      resources "/archetype/usr", UserController, only: [:show]
-    end
-
     live_session :required_authenticated_user,
       on_mount: {PhosWeb.Menshen.Gate, :ensure_authenticated} do
       get "/", PageController, :index

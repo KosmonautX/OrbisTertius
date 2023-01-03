@@ -15,11 +15,11 @@
   />
 </.modal>
 <!--User Profile Image Uplodae-->
-<!--<section class="md:mt-4 min-w-full mx-auto flex flex-col items-center justify-center">
+<section class="md:mt-4 min-w-full mx-auto flex flex-col items-center justify-center">
   <div class="min-w-full">
     <.user_profile user={@user}>
       <:user_name><%= @user.username %></:user_name>
-      <.link :if={is_nil(@guest) || !@guest} patch={~p"/user/#{@current_user.username}/edit"}>
+      <.link :if={@user.id == @current_user.id} patch={~p"/user/#{@current_user.username}/edit"}>
         Edit profile
       </.link>
     </.user_profile>
@@ -35,8 +35,9 @@
     <.profile_upload_path></.profile_upload_path>
     <.reply_post></.reply_post>
   </div>
-</section>-->
-<!--<section class="max-auto container justify-items-center mt-10 mb-30 bg-gray-50">
+</section>
+
+<section :if={not is_nil(@user.public_profile) && @user.public_profile} class="max-auto container justify-items-center mt-10 mb-30 bg-gray-50">
   <div class="flex flex-row">
     <div class="max-w-sm space-y-4">
       <div class="border border-gray-200 rounded-3xl shadow-lg">
@@ -80,7 +81,7 @@
       </div>
     </div>
   </div>
-</section>-->
+</section>
 <section class="max-auto container justify-items-center mt-10">
   <div class="w-[38rem] mx-auto items-center justify-center border border-gray-200 rounded-md shadow-lg">
     <.profile_upload_path></.profile_upload_path>

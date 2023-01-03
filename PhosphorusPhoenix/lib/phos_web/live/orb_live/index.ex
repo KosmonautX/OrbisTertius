@@ -9,18 +9,16 @@ defmodule PhosWeb.OrbLive.Index do
 
   @impl true
   def mount(params, _session, socket) do
-    send(self(), :geoinitiation)
+    #send(self(), :geoinitiation)
 
     {:ok,
      socket
-     |> assign(:geolocation, %{})
-     |> assign(:addresses, %{})}
+     |> assign(:geolocation, %{"all" => list_orbs()})
+     |> assign(:addresses, %{"all" => ["all"]})}
   end
 
   @impl true
   def handle_params(params, _url, socket) do
-    IO.inspect(socket.assigns.live_action, label: "sowmi")
-
     {:noreply,
      socket
      |> assign(:params, params)
