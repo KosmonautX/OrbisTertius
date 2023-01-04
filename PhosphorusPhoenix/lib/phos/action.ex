@@ -77,6 +77,7 @@ defmodule Phos.Action do
       _ -> {:error, :not_found}
     end
   end
+
   def get_orb(orb_id, your_id) do
     from(orbs in Orb,
       where: orbs.id == ^orb_id,
@@ -93,6 +94,7 @@ defmodule Phos.Action do
       select_merge: %{comment_count: c.count})
       |> Repo.one()
   end
+
   def get_orb!(id), do: Repo.get!(Orb, id) |> Repo.preload([:locations, :initiator])
   def get_orb_by_fyr(id), do: Repo.get_by(Phos.Users.User, fyr_id: id)
 
@@ -299,11 +301,8 @@ defmodule Phos.Action do
                %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("ORB.#{orb.id}", token)
                _ -> nil
              end
-             Phos.Notification.target("'FLK.#{orb.initiator_id}' in topics && !('USR.#{orb.initiator_id}' in topics)",
-               %{title: "#{orb.initiator.username} forged an orb ⚡",
-                 body: orb.title
-               }, PhosWeb.Util.Viewer.orb_mapper(orb))
-
+             # get token of friends
+             # get topic of locations 8
            end)
            #spawn(fn -> user_feeds_publisher(orb) end)
            data
@@ -324,10 +323,10 @@ defmodule Phos.Action do
                _ -> nil
              end
              unless(Enum.member?(orb.traits, "mirage")) do
-               Phos.Notification.target("'FLK.#{orb.initiator_id}' in topics && !('USR.#{orb.initiator_id}' in topics)",
-                 %{title: "#{orb.initiator.username} forged an orb ⚡",
-                   body: orb.title
-                 }, PhosWeb.Util.Viewer.orb_mapper(orb))
+               # Phos.Notification.target("'FLK.#{orb.initiator_id}' in topics && !('USR.#{orb.initiator_id}' in topics)",
+               #   %{title: "#{orb.initiator.username} forged an orb ⚡",
+               #     body: orb.title
+               #   }, PhosWeb.Util.Viewer.orb_mapper(orb))
              end
              #spawn(fn -> user_feeds_publisher(orb) end)
            end)

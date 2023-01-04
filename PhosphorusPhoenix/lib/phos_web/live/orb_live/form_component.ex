@@ -46,7 +46,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
     file_uploaded =
     consume_uploaded_entries(socket, :image, fn %{path: path}, _entry ->
       for res <- ["150x150", "1920x1080"] do
-        {:ok, dest} = Phos.Orbject.S3.put("ORB", orb_id, resolution[res])
+        {:ok, dest} = Phos.Orbject.S3.put("ORB", orb_id, "public/banner/#{resolution[res]}")
         compressed_image =path
         |> Mogrify.open()
         |> Mogrify.resize(res)

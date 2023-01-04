@@ -1,7 +1,3 @@
-<link rel="stylesheet"
-          href=
-"https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
-
 <h1>Show Orb</h1>
 
 <.modal 
@@ -34,13 +30,60 @@
   />
 </.modal>
 
+<section :if={not is_nil(@orb.initiator.public_profile) && @orb.initiator.public_profile} class="max-auto container justify-items-center mt-10 mb-30 bg-gray-50">
+  <div class="flex flex-row">
+    <div class="max-w-sm space-y-4">
+      <div class="border border-gray-200 rounded-3xl shadow-lg">
+        <.user_profile user={@orb.initiator}>
+          <:user_name><%= @orb.initiator.username %></:user_name>
+        </.user_profile>
+      </div>
+      <div class="border border-gray-200 rounded-3xl shadow-lg">
+        <.user_information_card_md user={@orb.initiator}>
+          <:user_bio><%= @orb.initiator.public_profile.bio %></:user_bio>
+          <:user_public_name><%= @orb.initiator.public_profile.public_name %></:user_public_name>
+        </.user_information_card_md>
+      </div>
+      <div class="border border-gray-200 rounded-3xl shadow-lg">
+        <.explore_tag user={@orb.initiator}></.explore_tag>
+      </div>
+    </div>
+
+    <div class="w-[38rem] mx-auto items-center justify-center border border-gray-200 rounded-3xl shadow-lg">
+      <.profile_upload_path></.profile_upload_path>
+      <.post_image></.post_image>
+      <.post_information></.post_information>
+      <.comment_action></.comment_action>
+      <.input_type></.input_type>
+    </div>
+
+    <div class="max-w-sm space-y-4">
+      <div class="border border-gray-200 rounded-3xl shadow-lg">
+        <.user_profile user={@orb.initiator}>
+          <:user_name><%= @orb.initiator.username %></:user_name>
+        </.user_profile>
+      </div>
+      <div class="border border-gray-200 rounded-3xl shadow-lg">
+        <.user_information_card_md user={@orb.initiator}>
+          <:user_bio><%= @orb.initiator.public_profile.bio %></:user_bio>
+          <:user_public_name><%= @orb.initiator.public_profile.public_name %></:user_public_name>
+        </.user_information_card_md>
+      </div>
+      <div class="border border-gray-200 rounded-3xl shadow-lg">
+        <.explore_tag user={@orb.initiator}></.explore_tag>
+      </div>
+    </div>
+  </div>
+</section>
+
+
 <.list>
   <:item title="Title"><%= @orb.title %></:item>
   <:item title="Central Geohash"><%= @orb.central_geohash %></:item>
   <:item title="Active"><%= @orb.active %></:item>
   <:item title="Media" :if={@orb.media}>
-    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "150x150")} />
-    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "1920x1080")} />
+    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossy")} />
+    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless")} />
   </:item>
   <:item title="Extinguish"><%= @orb.extinguish %></:item>
   <:item title="When"><%= @orb.payload.when %></:item>
