@@ -2,7 +2,6 @@ defmodule Storybook.Components.Button do
   use PhxLiveStorybook.Story, :component
 
   def function, do: &PhosWeb.CoreComponents.button/1
-  def description, do: "This simple component button"
 
   def variations do
     [

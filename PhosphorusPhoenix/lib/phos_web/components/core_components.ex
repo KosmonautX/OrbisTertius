@@ -65,9 +65,9 @@ defmodule PhosWeb.CoreComponents do
               phx-window-keydown={hide_modal(@on_cancel, @id)}
               phx-key="escape"
               phx-click-away={hide_modal(@on_cancel, @id)}
-              class="hidden relative rounded-2xl bg-white p-14 shadow-lg shadow-zinc-700/10 ring-1 ring-zinc-700/10 transition"
+              class="hidden relative rounded-2xl bg-white shadow-lg shadow-zinc-700/10 ring-1 ring-zinc-700/10 transition"
             >
-              <div class="absolute top-6 right-5">
+              <div class="absolute top-4 right-4">
                 <button
                   phx-click={hide_modal(@on_cancel, @id)}
                   type="button"
@@ -78,16 +78,18 @@ defmodule PhosWeb.CoreComponents do
                 </button>
               </div>
               <div id={"#{@id}-content"}>
-                <header :if={@title != []}>
+                <header :if={@title != []} class="p-2 pb-3 border-b">
                   <h1 id={"#{@id}-title"} class="text-lg font-semibold leading-8 text-zinc-800">
                     <%= render_slot(@title) %>
                   </h1>
-                  <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-zinc-600">
+                  <p :if={@subtitle != []} class="text-sm leading-4 text-zinc-600">
                     <%= render_slot(@subtitle) %>
                   </p>
                 </header>
-                <%= render_slot(@inner_block) %>
-                <div :if={@confirm != [] or @cancel != []} class="ml-6 mb-4 flex items-center gap-5">
+                <div id={"#{@id}-main"} class="p-4 w-full">
+                  <%= render_slot(@inner_block) %>
+                </div>
+                <div :if={@confirm != [] or @cancel != []} class="p-4 flex flex-row-reverse items-center gap-5">
                   <.button
                     :for={confirm <- @confirm}
                     id={"#{@id}-confirm"}
@@ -141,7 +143,7 @@ defmodule PhosWeb.CoreComponents do
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("#flash")}
       role="alert"
       class={[
-        "fixed hidden top-2 right-2 w-80 sm:w-96 z-50 rounded-lg p-3 shadow-md shadow-zinc-900/5 ring-1",
+        "absolute hidden top-2 right-2 w-80 sm:w-96 z-50 rounded-lg p-3 shadow-md shadow-zinc-900/5 ring-1",
         @kind == :info && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
         @kind == :error && "bg-rose-50 p-3 text-rose-900 shadow-md ring-rose-500 fill-rose-900"
       ]}
@@ -153,7 +155,7 @@ defmodule PhosWeb.CoreComponents do
         <%= @title %>
       </p>
       <p :if={@title} class="mt-2 text-[0.8125rem] leading-5"><%= msg %></p>
-      <p class="font-semibold text-[0.8125rem] leading-5"><%= msg %></p>
+      <p :if={is_nil(@title)} class="font-semibold text-[0.8125rem] leading-5"><%= msg %></p>
       <button
         :if={@close}
         type="button"
@@ -203,18 +205,27 @@ defmodule PhosWeb.CoreComponents do
   end
 
   @doc """
-  Renders a button.
+  Renders a button with predefined class
+
+  This button have several themes such as: :primary, :success, :warning and :danger
+
+  This button have several options such as
+  - tone: tone of the button. can be :primary, :success, :warning or :danger. Default is: :primary
+  - class: additional class if want to customize the button
+  - type: button type. can be "button" or "submit". Default is "button"
+  
+  Rest of the options can be assigned in the element such as: disabled, name, value and phx-* binding
 
   ## Examples
 
-      <.button theme={:primary}>Send!</.button>
+      <.button tone={:primary}>Send!</.button>
       <.button phx-click="go" class="ml-2">Send!</.button>
   """
   attr :tone, :atom, 
     default: :primary,
     values: ~w(primary success warning danger)a,
     doc: "Theme of the button"
-  attr :type, :string, default: "button", doc: "Type of button"
+  attr :type, :string, default: "button", values: ~w(button submit), doc: "Type of button"
   attr :class, :string, default: ""
   attr :rest, :global, include: ~w(disabled form name value), doc: "Rest of html attribute"
 
@@ -224,7 +235,11 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <button
       type={@type}
-      class={List.flatten(button_class(@tone), String.split(@class, " "))}
+      class={[
+        default_button_class(),
+        button_class(@tone)
+        | String.split(@class, " ")
+      ]}
       {@rest}
     >
       <%= render_slot(@inner_block) %>
@@ -232,39 +247,16 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  defp button_class(:primary) do
-    [
-      "bg-blue-400", "hover:bg-blue-600"
-      | default_button_class()
-    ]
-  end
-
-  defp button_class(:warning) do
-    [
-      "bg-yellow-400", "hover:bg-yellow-600"
-      | default_button_class()
-    ]
-  end
-
-  defp button_class(:danger) do
-    [
-      "bg-red-400", "hover:bg-red-600"
-      | default_button_class()
-    ]
-  end
-
-  defp button_class(:success) do
-    [
-      "bg-green-400", "hover:bg-green-600"
-      | default_button_class()
-    ]
-  end
+  defp button_class(:danger), do: "bg-red-400 hover:bg-red-600"
+  defp button_class(:primary), do: "bg-blue-400 hover:bg-blue-600"
+  defp button_class(:warning), do: "bg-yellow-400 hover:bg-yellow-600"
+  defp button_class(:success), do: "bg-green-400 hover:bg-green-600"
 
   defp default_button_class do
     [
       "phx-submit-loading:opacity-75", "rounded-lg", "py-2", "px-3",
       "text-sm", "font-semibold", "leading-6", "text-white", "active:text-white/80",
-    ]
+    ] |> Enum.join(" ")
   end
 
   @doc """
@@ -532,16 +524,18 @@ defmodule PhosWeb.CoreComponents do
         <:item title="Views"><%= @post.views %></:item>
       </.list>
   """
+  
+  attr :type, :string, default: "normal", values: ["normal", "stripped"], doc: "List type"
   slot :item, required: true do
     attr :title, :string, required: true
   end
 
   def list(assigns) do
     ~H"""
-    <div class="mt-14">
-      <dl class="-my-4 divide-y divide-zinc-100">
-        <div :for={item <- @item} class="flex gap-4 py-4 sm:gap-8">
-          <dt class="w-1/4 flex-none text-[0.8125rem] leading-6 text-zinc-500"><%= item.title %></dt>
+    <div class="mt-14 mb-6">
+      <dl class={"-my-4 divide-y divide-zinc-100 #{if(@type == "stripped", do: "[&>*:nth-child(odd)]:bg-gray-200 border border-gray-200 rounded-md")}"}]>
+        <div :for={item <- @item} class="flex gap-4 py-4 sm:gap-8 rounded-md">
+          <dt class="pl-2 w-1/4 flex-none text-[0.8125rem] leading-6 text-zinc-500"><%= item.title %></dt>
           <dd class="text-sm leading-6 text-zinc-700"><%= render_slot(item) %></dd>
         </div>
       </dl>
@@ -599,7 +593,7 @@ defmodule PhosWeb.CoreComponents do
       <div class="block w-full overflow-none px-2 py-3">
         <%= render_slot(@inner_block) %>
       </div>
-      <div :for={action <- @actions} class="mt-2 mb-4 flex items-center justify-between gap-6">
+      <div :for={action <- @actions} class="px-2 mt-2 mb-4 flex items-center justify-between gap-6">
         <%= render_slot(action) %>
       </div>
     </div>
