@@ -5,9 +5,8 @@ defmodule Phos.Action do
 
   import Ecto.Query, warn: false
 
-  alias Ecto.Multi
   alias Phos.Repo
-  alias Phos.Action.{Orb, Location, Orb_Location}
+  alias Phos.Action.{Orb, Orb_Location}
 
   @doc """
   Returns the list of orbs.
@@ -55,7 +54,7 @@ defmodule Phos.Action do
   #
 
   def get_orb(id) when is_binary(id) do
-    parent_path = "*.#{Phos.Utility.Encoder.encode_lpath(id)}.*"
+    # parent_path = "*.#{Phos.Utility.Encoder.encode_lpath(id)}.*"
     query = 
       from o in Orb,
         preload: [:locations, :initiator, :parent],
@@ -317,13 +316,13 @@ defmodule Phos.Action do
        end
   end
 
-  defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
-    Phos.Folk.friends_lite(user_id)
-    |> Enum.each(fn user_id ->
-      # spawn(fn -> Phos.Cache.delete({Phos.Users.User, :feeds, user_id}) end)
-      spawn(fn -> Phos.PubSub.publish(orb, {:feeds, "new"}, "userfeed:#{user_id}") end)
-    end)
-  end
+  # defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
+  #   Phos.Folk.friends_lite(user_id)
+  #   |> Enum.each(fn user_id ->
+  #     # spawn(fn -> Phos.Cache.delete({Phos.Users.User, :feeds, user_id}) end)
+  #     spawn(fn -> Phos.PubSub.publish(orb, {:feeds, "new"}, "userfeed:#{user_id}") end)
+  #   end)
+  # end
 
   def create_orb_and_publish(attrs \\ %{})
   def create_orb_and_publish(list) when is_list(list) do

@@ -25,11 +25,11 @@ defmodule PhosWeb.API.EchoController do
 
   def create(conn = %{assigns: %{current_user: user}}, params = %{"media" => [_|_] = media}) do
     with {:ok, attrs} <- echo_constructor(user, params),
-         {:ok, media} <- Phos.Orbject.Structure.apply_echo_changeset(%{id: attrs["id"], archetype: "echo", media: media}),
-         {:ok, %Echo{} = echo} <- Action.create_echo(%{attrs | "media" => true}) do
+         {:ok, media} <- Phos.Orbject.Structure.apply_user_changeset(%{id: attrs["id"], archetype: "echo", media: media}),
+         {:ok, %Echo{} = echo} <- Message.create_echo(%{attrs | "media" => true}) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", ~p"/api/echoland/echoes/#{echo.id}")
+      |> put_resp_header("location", ~p"/api/echoland/echoes/others/#{echo.id}")
       |> render(:show, echo: echo, media: media)
     end
   end
@@ -42,7 +42,7 @@ defmodule PhosWeb.API.EchoController do
          {:ok, %Echo{} = echo} <- Message.create_echo(attrs) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", ~p"/api/echoland/echoes/#{echo.id}")
+      |> put_resp_header("location", ~p"/api/echoland/echoes/others/#{echo.id}")
       |> render(:show, echo: echo)
     end
   end
@@ -54,7 +54,7 @@ defmodule PhosWeb.API.EchoController do
          {:ok, %Echo{} = echo} <- Message.update_echo(echo, attrs) do
       conn
       |> put_status(:ok)
-      |> put_resp_header("location", ~p"/api/echoland/echos/#{echo.id}")
+      |> put_resp_header("location", ~p"/api/echoland/echoes/others/#{echo.id}")
       |> render(:show, echo: echo)
     else
       false -> {:error, :unauthorized}
@@ -72,7 +72,7 @@ defmodule PhosWeb.API.EchoController do
     end
   end
 
-  defp echo_constructor(user_id, params) do
+  defp echo_constructor(_user_id, params) do
     constructor = sanitize(params)
     try do
       {:ok, constructor}

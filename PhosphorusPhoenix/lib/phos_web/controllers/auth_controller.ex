@@ -104,7 +104,7 @@ defmodule PhosWeb.AuthController do
   end
 
   defp username_decider(conn, %{username: username}) when username == "" or is_nil(username) do
-    redirect(conn, to: Routes.user_settings_path(conn, :edit))
+    redirect(conn, to: ~p"/users/settings")
   end
   defp username_decider(conn, _), do: redirect(conn, to: "/orb")
 end

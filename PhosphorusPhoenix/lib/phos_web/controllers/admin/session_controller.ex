@@ -4,7 +4,7 @@ defmodule PhosWeb.AdminSessionController do
   plug :put_root_layout, {PhosWeb.Layouts, :admin_root}
   #plug :put_layout, {PhosWeb.LayoutView, :admin}
 
-  def index(conn, params) do
+  def index(conn, _params) do
     conn
     |> redirect(to: "/admin/sessions/new")
     |> halt()

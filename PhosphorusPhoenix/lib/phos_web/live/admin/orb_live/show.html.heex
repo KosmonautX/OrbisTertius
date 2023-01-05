@@ -60,11 +60,11 @@
 <div class="w-full p-2 mt-4">
   <.card title="Image preview">
     <div class="container" phx-drop-target={@uploads.image.ref}>
-      <.form let={f} for={@changeset} phx-submit="change_image" id="change_image_form" class="px-2 py-3">
+      <.form let={_} for={@changeset} phx-submit="change_image" id="change_image_form" class="px-2 py-3">
         <.live_file_input upload={@uploads.image} class="my-2" />
         <div :for={entry <- @uploads.image.entries}>
           <figure class="my-2">
-            <.live_img_preview entry />
+            <%= live_img_preview entry %>
             <figcaption><strong>Image</strong></figcaption>
           </figure>
         </div>

@@ -1,7 +1,7 @@
 defmodule Phos.Users.Tele do
   use Ecto.Schema
-  import Ecto.Changeset
-  alias Phos.Users.{User}
+  # import Ecto.Changeset
+  # alias Phos.Users.{User}
 
   @primary_key false
   schema "tele" do

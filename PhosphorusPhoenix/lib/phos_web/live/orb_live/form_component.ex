@@ -1,7 +1,6 @@
 defmodule PhosWeb.OrbLive.FormComponent do
   use PhosWeb, :live_component
 
-  alias PhosWeb.Util.ImageHandler
   alias Phos.Action
 
   @impl true

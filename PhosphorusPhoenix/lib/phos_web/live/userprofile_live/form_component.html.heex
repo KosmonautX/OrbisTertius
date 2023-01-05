@@ -12,7 +12,7 @@
       phx-submit="save">
 
       <%= inputs_for f, :public_profile, fn ff -> %>
-        <.input field={{ff, :honorific}} type="select" label="Honorific" options={~w(Mr Ms Dr)} selected="Mr" />
+        <.input field={{ff, :honorific}} type="select" label="Honorific" options={~w(Mr Ms Dr)} />
         <.input field={{ff, :bio}} label="Bio" />
         <.input field={{ff, :occupation}} label="Occupation" />
         <.input field={{ff, :birthday}} label="Birthday" />

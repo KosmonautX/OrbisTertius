@@ -10,9 +10,5 @@ defmodule PhosWeb.API.EchoJSON do
 
   def show(%{echo: echo}), do: %{data: echo_json(echo)}
 
-  defp echo_json(echo) do
-    PhosWeb.Util.Viewer.echo_mapper(echo)
-  end
-
-  defp parse_time(time), do: DateTime.from_naive!(time, "Etc/UTC") |> DateTime.to_unix()
+  defp echo_json(echo), do: PhosWeb.Util.Viewer.echo_mapper(echo)
 end

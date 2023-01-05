@@ -288,11 +288,11 @@ defmodule PhosWeb.Util.Viewer do
   end
 
 
-  defp nested_put(nest) do
-    if nest do
-      nest
-    else
-      %{}
-    end
-  end
+  # defp nested_put(nest) do
+  #   if nest do
+  #     nest
+  #   else
+  #     %{}
+  #   end
+  # end
  end

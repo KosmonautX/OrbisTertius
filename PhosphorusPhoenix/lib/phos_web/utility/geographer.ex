@@ -1,7 +1,5 @@
 defmodule PhosWeb.Util.Geographer do
-  alias Phos.Action
   alias PhosWeb.Menshen.Auth
-  alias PhosWeb.Util.Viewer
 
   @moduledoc """
   For all our Geography centered Util Functions
