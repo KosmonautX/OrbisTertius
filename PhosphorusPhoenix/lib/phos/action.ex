@@ -231,12 +231,9 @@ defmodule Phos.Action do
     |> Enum.filter(fn orb -> orb.active == true end)
   end
 
-  def get_orbs_by_trait(trait) do
-    query =
-      from p in Phos.Action.Orb, preload: [:initiator], where: fragment("? @> ?", p.traits, ^trait)
-
-    Repo.all(query, limit: 8)
-  end
+  @doc "Get list of orbs by given traits"
+  @deprecated "Use filter_orbs_by_traits/2 instead which is more cleaner api with paginated response"
+  def get_orbs_by_trait(trait), do: filter_orbs_by_traits(trait, limit: 8) |> Map.get(:data, [])
 
   def get_orb_by_trait_geo(geohashes, traits, options \\ [])
   def get_orb_by_trait_geo(geohashes, trait, options) when is_list(geohashes) do
