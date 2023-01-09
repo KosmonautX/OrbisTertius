@@ -34,7 +34,7 @@ defmodule PhosWeb.CommentLive.IndexComponent do
         <div class="text">
           <p>CID: <%= elem(@comment, 1).id%></p>
           <p :if={elem(@comment, 1).active}><%= elem(@comment, 1).body %></p>
-          <div if={not elem(@comment, 1).active}>
+          <div :if={not elem(@comment, 1).active}>
             <p><i>-- Comment deleted --</i></p>
             <details>
               <summary>view deleted comment</summary>
@@ -49,23 +49,56 @@ defmodule PhosWeb.CommentLive.IndexComponent do
 
           <div :if={elem(@comment, 1).child_count > 0}>
             <div id={"showreply-#{elem(@comment, 1).id}"} style="display: none">
-              <.link href="#" phx-click={JS.push("toggle_more_replies") |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}") |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}") |> JS.toggle(to: "#showreply-#{elem(@comment, 1).id}") |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")}, phx-value-initmorecomments="false", phx-value-orb={@orb.id}, phx-value-path={to_string(elem(@comment, 1).path)}>Show replies [<%= elem(@comment, 1).child_count %>]</.link>
+              <.link 
+                href="#"
+                phx-click={
+                  JS.push("toggle_more_replies")
+                  |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}")
+                  |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}")
+                  |> JS.toggle(to: "#showreply-#{elem(@comment, 1).id}")
+                  |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")}
+                phx-value-initmorecomments="false"
+                phx-value-orb={@orb.id}
+                phx-value-path={to_string(elem(@comment, 1).path)}>
+                  Show replies [<%= elem(@comment, 1).child_count %>]
+              </.link>
             </div>
             <div id={"hidereply-#{elem(@comment, 1).id}"} style="display: none">
-              <.link href="#" phx-click={JS.push("toggle_more_replies") |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}") |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}") |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}") |> JS.toggle(to: "#showreply-#{elem(@comment, 1).id}")}, phx-value-initmorecomments="false", phx-value-orb={@orb.id}, phx-value-path={to_string(elem(@comment, 1).path)}>Hide replies  [<%= elem(@comment, 1).child_count %>]</.link>
+              <.link 
+                href="#"
+                phx-click={
+                  JS.push("toggle_more_replies")
+                  |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}")
+                  |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}")
+                  |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")
+                  |> JS.toggle(to: "#showreply-#{elem(@comment, 1).id}")
+                }
+                phx-value-initmorecomments="false"
+                phx-value-orb={@orb.id}
+                phx-value-path={to_string(elem(@comment, 1).path)}>
+                  Hide replies  [<%= elem(@comment, 1).child_count %>]
+              </.link>
             </div>
             <div id={"initshowreply-#{elem(@comment, 1).id}"} >
-              <.link href="#" phx-click={JS.push("toggle_more_replies") |> JS.toggle(to: "#initshowreply-#{elem(@comment, 1).id}") |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")}, phx-value-initmorecomments="true", phx-value-orb={@orb.id}, phx-value-path={to_string(elem(@comment, 1).path)}>Show replies [<%= elem(@comment, 1).child_count %>]</.link>
+              <.link
+                href="#"
+                phx-click={
+                  JS.push("toggle_more_replies")
+                  |> JS.toggle(to: "#initshowreply-#{elem(@comment, 1).id}")
+                  |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")
+                }
+                phx-value-initmorecomments="true"
+                phx-value-orb={@orb.id}
+                phx-value-path={to_string(elem(@comment, 1).path)}>
+                    Show replies [<%= elem(@comment, 1).child_count %>]
+              </.link>
             </div>
           </div>
         </div>
       </div>
 
       <div class="comments" id={"morereplies-#{elem(@comment, 1).id}"}>
-        <%= for nestedcomment <- filter_child_comments_chrono(@comments, @comment) do %>
-          <.xcard comment={nestedcomment} comments={@comments} changeset={@changeset} orb={@orb} current_user={@current_user} socket={@socket} live_action={@live_action}/>
-        <% end %>
-      <%# <.live_component module={PhosWeb.CommentLive.NestedComponent} id={"nested-#{elem(@comment,1).id}"} comment={@comment} changeset={@changeset} orb={@orb} comments={@comments} current_user={@current_user} socket={@socket} live_action={@live_action} /> %>
+        <.xcard :for={nestedcomment <- filter_child_comments_chrono(@comments, @comment)} comment={nestedcomment} comments={@comments} changeset={@changeset} orb={@orb} current_user={@current_user} socket={@socket} live_action={@live_action} />
       </div>
     </div>
     """

@@ -18,8 +18,6 @@
         </:actions>
       </.simple_form>
     </div>
-    <%= for comment <- filter_root_comments_chrono(@comments) do %>
-      <.xcard comment={comment} comments={@comments} changeset={@changeset} orb={@orb} current_user={@current_user} socket={@socket} live_action={@live_action}/>
-    <% end %>
+    <.xcard :for={comment <- filter_root_comments_chrono(@comments)} comment={comment} comments={@comments} changeset={@changeset} orb={@orb} current_user={@current_user} socket={@socket} live_action={@live_action} />
   </div>
 </div>

@@ -9,7 +9,6 @@ defmodule Phos.Users.Tele do
 
   end
 
-  @doc false
   # def changeset(%Phos.Users.Fyr{} = fyr, attrs) do
   #   fyr
   #   |> cast(attrs, [:id])
