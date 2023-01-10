@@ -11,11 +11,13 @@
 :jean=HMhn3DPO71h0cMYFh52vM1tBacX2
 :princeton_id=9bf9c443-f89b-460a-972d-6704ae66823d
 :owentwo_id=973da4ae-48a6-498d-b988-548af3af99f6
-:satrio_id=5c82aeea-7c2b-4a97-a80b-d5b728c4ee86
+:satrio_id=b3cd35ef-83e2-448e-831d-f5ded1c39692
+#:satrio_id=5c82aeea-7c2b-4a97-a80b-d5b728c4ee86
 :phong_id=f8ed10b7-147e-4864-9525-bcf49c457dfc
 :satrioremote_id=5972b8e6-319b-4bf4-95cf-f58fb2117e21
 :brandon_id=b556571a-362e-4017-9894-f1eed0b39794
-:lky_id=3995c7f6-af54-4e31-85ee-3608e16ec00f
+#:lky_id=3995c7f6-af54-4e31-85ee-3608e16ec00f
+:lky_id=4b2d6d8d-7781-4a20-b868-b0e0db245b85
 :aang_id=58c146d2-407f-49d5-a74d-0d9362e73be9
 :zuko_id=6f6c7d30-4447-4687-8fb9-f95a2de82957
 :owen_id=233e50b1-5507-4a3c-96a7-b6339e8d27f4
@@ -33,9 +35,8 @@ Content-Type: application/json
 User-Agent: Emacs27
 ##
 ## Generate Client-side JWT
-GET :localipAddress/devland/flameon?user=:satrio_id
+GET :localipAddress/devland/flameon?user=:lky_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
-
 ## Generate Google Identity idToken for Firebase Auth
 GET :localipAddress/devland/lankaonfyr?fyr_id=:jean
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
@@ -63,7 +64,7 @@ PUT :ipAddress/userland/self/
 :auth-headers
 {
     "bio": "alberto robotos",
-    "username": "tate",
+    "username": "albert",
     "public_name": "Albert the Robot",
     "birthday": 16123442423,
     "media": [
@@ -100,7 +101,7 @@ PUT :ipAddress/userland/self/territory
         {
             "id": "home",
             "geohash": 628021297666224127,
-            "location_description": "Pending road"
+            "location_description": "Keong Saik"
         },
         {
             "id": "work",
@@ -136,14 +137,16 @@ GET :ipAddress/folkland/stream/discovery/614510498785787903,614510497487650815?p
 :auth-headers
 
 ## Show Relation Resource
-GET :ipAddress/folkland/friends/17863710-b367-4914-b958-028dd1d8f097
+GET :ipAddress/folkland/friends/7dcd842a-8d07-4407-8ca4-6346d54b0f86
+-> run-hook (restclient-set-var ":rel" (cdr (assq 'relation_id (assq 'data (json-read)))))
 :auth-headers
 
 ## Send connection request
 POST :ipAddress/folkland/friends
+-> run-hook (restclient-set-var ":rel" (cdr (assq 'relation_id (assq 'data (json-read)))))
 :auth-headers
 {
-    "acceptor_id": ":princeton_id"
+    "acceptor_id": ":satrio_id"
 }
 
 ## Delete Relation Resource (reset everything)
@@ -317,12 +320,16 @@ GET :ipAddress/memland/friends/?page=1
 GET :ipAddress/memland/orbs/?page=1
 :auth-headers
 
-## Show by specific relation_id
-GET :ipAddress/memland/friends/17863710-b367-4914-b958-028dd1d8f097?page=1
+## Show by specific relation_id through pages
+GET :ipAddress/memland/friends/:rel?page=1
 :auth-headers
 
-## Show message by specific orb
-GET :ipAddress/memland/orbs/36a3b2ac-52e7-4b38-b9e2-4a6e35f22311?page=1
+## Show by specific relation_id through cursor
+GET :ipAddress/memland/friends/:rel?cursor=1673336224834
+:auth-headers
+
+## Show message by orbs within a relation
+GET :ipAddress/memland/friends/:rel/orbs/?page=1
 :auth-headers
 
 
@@ -332,47 +339,10 @@ POST :ipAddress/memland/memories
 -> run-hook (restclient-set-var ":echo" (cdr (assq 'orb_uuid (assq 'data (json-read)))))
 :auth-headers
 {
-    "user_destination_id": "5b6ab4f6-c950-4c29-b354-6845d2ce720e",
-    "message": "ba sing ses",
-    "rel_subject_id": "17863710-b367-4914-b958-028dd1d8f097",
-    "orb_subject_id": "36a3b2ac-52e7-4b38-b9e2-4a6e35f22311",
-    "media": [
-        {
-            "access": "public",
-            "essence": "profile",
-            "resolution": "lossless"
-        },
-        {
-            "access": "public",
-            "essence": "profile",
-            "resolution": "lossless",
-            "count": 1
-        },
-        {
-            "access": "public",
-            "essence": "profile",
-            "resolution": "lossless",
-            "count": 2
-        },
-        {
-            "access": "public",
-            "essence": "profile",
-            "resolution": "lossless",
-            "count": 3
-        },
-        {
-            "access": "public",
-            "essence": "profile",
-            "resolution": "lossless",
-            "count": 4
-        },
-        {
-            "access": "public",
-            "essence": "profile",
-            "resolution": "lossless",
-            "count": 5
-        }
-        ]
+    "user_destination_id": ":satrio_id",
+    "message": "second orb",
+    "rel_subject_id": ":rel",
+    "orb_subject_id": ":orb"
 }
 
 ### Medialand

@@ -86,5 +86,10 @@ config :ex_aws, :s3,
   host: "localhost",
   port: 9000
 
+config :ex_aws, :retries,
+  max_attempts: 2,
+  base_backoff_in_ms: 10,
+  max_backoff_in_ms: 10_000
+
 config :phos, Phos.External.HeimdallrClient,
   base_url: {System, :get_env, ["HEIMDALLR_ENDPOINT"]}

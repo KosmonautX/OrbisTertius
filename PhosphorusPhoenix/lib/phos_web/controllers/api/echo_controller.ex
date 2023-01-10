@@ -11,11 +11,17 @@ defmodule PhosWeb.API.EchoController do
   def index_relations(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"page" => page}),
     do: render(conn, :paginated, reveries: Message.last_messages_by_relation(id, page))
 
-  def index_orbs(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"page" => page}),
-    do: render(conn, :paginated, reveries: Message.last_messages_by_orb(id, page))
+  def show_relations_jump_orbs(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => rel_id, "page" => page}),
+    do: render(conn, :paginated, reveries: Message.last_messages_by_orb_within_relation({rel_id, your_id}, page))
 
   def show_relations(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => rel_id, "page" => page}),
     do: render(conn, :paginated, reveries: Message.list_messages_by_relation({rel_id, your_id}, page))
+
+  def show_relations(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => rel_id, "cursor" => cursor, "asc" => ascend}),
+    do: render(conn, :paginated, reveries: Message.list_messages_by_relation({rel_id, your_id}, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond), ascending?: ascend]))
+
+  def show_relations(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => rel_id, "cursor" => cursor}),
+    do: render(conn, :paginated, reveries: Message.list_messages_by_relation({rel_id, your_id}, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond)]))
 
   def show_orbs(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => orb_id, "page" => page}),
     do: render(conn, :paginated, reveries: Message.list_messages_by_orb({orb_id, your_id}, page))
@@ -61,8 +67,21 @@ defmodule PhosWeb.API.EchoController do
          {:ok, %Echo{} = memory} <- Message.update_memory(memory, attrs) do
       conn
       |> put_status(:ok)
-      |> put_resp_header("location", ~p"/api/echoland/echos/#{memory.id}")
+      |> put_resp_header("location", ~p"/api/memland/memories/#{memory.id}")
       |> render(:show, memory: memory)
+    else
+      false -> {:error, :unauthorized}
+    end
+  end
+
+  def update_reverie(%Plug.Conn{assigns: %{current_user: %{id: user_id}}} = conn , %{"id" => id} = attrs) do
+    reverie = Message.get_reverie!(id)
+    with true <- reverie.user_destination_id == user_id,
+         {:ok, %Echo{} = memory} <- Message.update_reverie(reverie, attrs) do
+      conn
+      |> put_status(:ok)
+      #|> put_resp_header("location", ~p"/api/memland/reveries/#{reverie.id}")
+      |> render(:show, reverie: reverie)
     else
       false -> {:error, :unauthorized}
     end
@@ -83,10 +102,7 @@ defmodule PhosWeb.API.EchoController do
   defp memory_constructor(user, params) do
     constructor = sanitize(params)
     try do
-      {:ok,
-       constructor
-       |> Map.put("user_source_id", user.id)
-      }
+      {:ok, constructor |> Map.put("user_source_id", user.id)}
     rescue
       ArgumentError -> {:error, :unprocessable_entity}
     end
