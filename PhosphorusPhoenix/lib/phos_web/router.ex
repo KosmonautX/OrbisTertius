@@ -38,7 +38,10 @@ defmodule PhosWeb.Router do
   scope "/", PhosWeb do
     pipe_through :browser
 
+    get "/firstpage", PageController, :home
     get "/", PageController, :home
+    get "/welcome", PageController, :welcome
+
   end
 
 

@@ -15,7 +15,7 @@
   />
 </.modal>
 <!--User Profile Image Uplodae-->
-<section class="md:mt-4 min-w-full mx-auto flex flex-col items-center justify-center">
+<section class="mt-20 min-w-full mx-auto flex flex-col items-center justify-center">
   <div class="min-w-full">
     <.user_profile user={@user}>
       <:user_name><%= @user.username %></:user_name>
@@ -32,65 +32,6 @@
     </.information_card>
     <.tabs_profile></.tabs_profile>
     <.video></.video>
-    <.profile_upload_path></.profile_upload_path>
     <.reply_post></.reply_post>
   </div>
 </section>
-
-
-<div class="w-3/4 m-auto relative flex justify-between mt-12 items-center">
-  <div class="w-1/4">
-    <div :if={not is_nil(@user.media) && @user.media} class="p-2 flex justify-center">
-      <img
-        src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossy")}
-        alt=""
-        class="w-20 h-20 p-2 rounded-full border border-solid border-black shadow-lg"
-      />
-    </div>
-    <div class="mt-2 font-bold text-md flex flex-col">
-      <.link
-        :if={not is_nil(@current_user)}
-        class="underline"
-        patch={~p"/user/#{@current_user.username}/edit"}
-      >
-        Edit profile
-      </.link>
-      <span class="text-lg"><%= @user.username %></span>
-      <span :if={not is_nil(@user.public_profile)}><%= @user.public_profile.bio %></span>
-    </div>
-  </div>
-
-  <div :if={not is_nil(@user.public_profile)} class="px-4 py-2">
-    <.list>
-      <:item title="Email"><%= @user.email %></:item>
-
-      <:item title="Role"><%= @user.public_profile.occupation %></:item>
-
-      <:item title="Birthday"><%= @user.public_profile.birthday || "-" %></:item>
-
-      <:item title="Name"><%= @user.public_profile.public_name %></:item>
-    </.list>
-
-    <div class="mt-6">
-      <.card title={"#{@user.username}'s Orbs"}>
-        <.table id="orbs" rows={@orbs}>
-          <:col :let={orb} label="Title"><%= orb.title %></:col>
-          <:col :let={orb} label="Media"><%= orb.media %></:col>
-          <:col :let={orb} label="Extinguish"><%= orb.extinguish %></:col>
-          <:col :let={orb} label="Time"><%= orb.payload.when %></:col>
-          <:col :let={orb} label="Tip"><%= orb.payload.tip %></:col>
-          <:col :let={orb} label="Info"><%= orb.payload.info %></:col>
-          <:col :let={orb} label="Comments"><%= orb.comment_count %></:col>
-
-          <:action :let={orb}>
-            <.link navigate={~p"/orb/#{orb.id}"}>Show</.link>
-            <.link navigate={~p"/orb/#{orb.id}/edit"}>Edit</.link>
-            <.link href={~p"/orb/#{orb.id}"} method="delete" data-confirm="Are you sure?">
-              Delete
-            </.link>
-          </:action>
-        </.table>
-      </.card>
-    </div>
-  </div>
-</div>

@@ -193,9 +193,9 @@ defmodule PhosWeb.CoreComponents do
   def simple_form(assigns) do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
-      <div class="space-y-8 bg-white mt-10">
+      <div class="space-y-4 bg-white mt-4">
         <%= render_slot(@inner_block, f) %>
-        <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-6">
+        <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-4">
           <%= render_slot(action, f) %>
         </div>
       </div>
@@ -222,8 +222,8 @@ defmodule PhosWeb.CoreComponents do
     <button
       type={@type}
       class={[
-        "phx-submit-loading:opacity-75 rounded-lg bg-zinc-900 hover:bg-zinc-700 py-2 px-3",
-        "text-sm font-semibold leading-6 text-white active:text-white/80",
+        "phx-submit-loading:opacity-75 rounded-lg bg-teal-500 hover:bg-teal-700 py-2 px-3",
+        "text-base font-semibold leading-6 text-white active:text-white/80",
         @class
       ]}
       {@rest}
@@ -408,10 +408,10 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <header class={[@actions != [] && "flex items-center justify-between gap-6", @class]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8 text-zinc-800">
+        <h1 class="text-lg font-semibold leading-8">
           <%= render_slot(@inner_block) %>
         </h1>
-        <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-zinc-600">
+        <p :if={@subtitle != []} class="leading-6">
           <%= render_slot(@subtitle) %>
         </p>
       </div>
@@ -662,20 +662,23 @@ defmodule PhosWeb.CoreComponents do
   """
   attr :id, :string, required: true
   attr :img_path, :string
-  slot :title
-  slot :location
+  slot :user_name
+  attr :user, :any
+  attr :orb, :any
+  slot :information
 
   def profile_upload_path(assigns) do
     ~H"""
-    <div class="flex justify-between p-4 border-b md:border-none">
-      <img class="rounded-full w-12 h-12 border border-gray-500" src="/images/apotheosis.png" />
+    <div class="flex justify-between p-2 border-b md:border-none">
+      <img
+        src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+        class=" h-16 w-16 border-4 border-white rounded-full object-cover"
+      />
+
       <div class="flex flex-col">
-        <span class="text-base font-bold  ml-2">Sowmiya</span>
-        <span class="flex items-center text-sm text-gray-500 ">
-          <span>
-            <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
-          </span>
-          Chennai
+        <span class="text-base md:text-lg font-bold ml-2"><%= render_slot(@user_name) %></span>
+        <span class="flex items-center text-sm md:text-base text-gray-500 ml-0.5">
+          <%= render_slot(@information) %>
         </span>
       </div>
       <button
@@ -692,22 +695,19 @@ defmodule PhosWeb.CoreComponents do
    User Post Image
    Desktop View
   """
-  attr :img_post, :string
+  attr :id, :string, required: true
+  attr :img_path, :string
+  attr :user, :any
+  attr :orb, :any
 
   def post_image(assigns) do
     ~H"""
-    <!--<div>
-      <img
-        class="object-cover md:inset-0 w-[50rem] h-[30rem]"
-        src="/images/thunderstorm-3440450__340.jpg"
-      />
-    </div>-->
     <section class="relative" id="m1" phx-hook="slider" phx-update="ignore">
       <div class="relative overflow-hidden rounded-lg duration-700 ease-in-out">
         <img
           id="m1"
-          class="object-cover md:inset-0 w-[50rem] h-96"
-          src="/images/IMG-20220404-WA0002.jpg"
+          class="object-cover md:inset-0 w-[50rem] md:h-96 h-64"
+          src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless")}
         />
       </div>
       <button
@@ -740,9 +740,8 @@ defmodule PhosWeb.CoreComponents do
 
   def post_information(assigns) do
     ~H"""
-    <p class="text-base text-gray-700 font-normal p-2 ml-2">
-      Success is Not Final, Failure is Not Fatal: it is the Courage to Continue that Counts
-      Success is Not Final, Failure is Not Fatal: it is the Courage to Continue that Counts....
+    <p class="text-sm md:text-base text-gray-700 font-normal p-2">
+      <%= render_slot(@inner_block) %>
     </p>
     """
   end
@@ -800,19 +799,19 @@ defmodule PhosWeb.CoreComponents do
 
   def input_type(assigns) do
     ~H"""
-    <div class="flex p-2 gap-2 ml-2">
+    <div class="flex p-2 gap-2 ml-2 mb-10">
       <img
-        class="rounded-full md:w-14 md:h-14 w-10 h-10 border border-gray-500"
-        src="/images/IMG-20220404-WA0002.jpg"
+        src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+        class=" h-14 w-14 border-4 border-white rounded-full object-cover"
       />
       <div class="flex-1 relative">
         <input
-          class="block w-full p-4 text-base text-gray-900 focus:ring-black focus:outline-none  rounded-lg border border-gray-200 focus:z-10 focus:ring-4 focus:ring-gray-200"
+          class="block w-full p-4 text-base text-gray-900 focus:ring-black focus:outline-none  rounded-lg border border-gray-200 focus:ring-2 focus:ring-gray-200"
           placeholder="Any Comments..."
           required
         />
         <button type="submit" class="absolute right-2.5 bottom-2.5 ">
-          <Heroicons.paper_airplane class="h-8 w-8 mr-2" />
+          <Heroicons.paper_airplane class="h-8 w-8 md:h-10 mr-2 text-teal-400 font-bold" />
         </button>
       </div>
     </div>
@@ -821,9 +820,9 @@ defmodule PhosWeb.CoreComponents do
 
   def comment_action(assigns) do
     ~H"""
-    <div class="flex justify-between p-2 ml-2">
+    <div class="flex justify-between p-2 w-full">
       <div class="">
-        <span class="">10 Oct 2001</span>
+        <span class="font-medium md:text-base text-sm">10 Oct 2001</span>
       </div>
       <div class="flex flex-cols space-x-4">
         <button class="text-center inline-flex items-center">
@@ -861,22 +860,59 @@ defmodule PhosWeb.CoreComponents do
 
   def banner(assigns) do
     ~H"""
-    <nav class="border-gray-200 px-2 md:px-4 py-2.5 rounded">
+    <nav class="bg-white px-2 md:py-2 fixed w-full z-20 top-0 left-0 border-b border-gray-200 sm:text-base md:text-lg font-bold">
       <div class="flex flex-wrap items-center justify-between mx-auto">
-        <a href="/users/log_in" class="flex items-center">
-          <img
-            src="/images/banner_logo_white.png"
-            class="h-8 mr-3 ml-4 md:h-10"
-            alt="Scratchbac Logo"
-          />
+        <a href="#" class="flex items-center">
+          <img src="/images/banner_logo_white.png" class="h-6 ml-4 md:h-9" alt="" />
         </a>
-        <div class="flex md:order-2">
+        <div class="flex items-center md:order-2  flex-col p-4 mt-2 rounded-lg md:flex-row md:space-x-4 md:mt-0 md:border-0">
+          <a
+            href="#"
+            class="hidden md:block block py-2 pl-3 pr-4 text-gray-700 rounded md:hover:bg-transparent md:hover:text-teal-400 md:p-0 hover:underline"
+          >
+            Signup
+          </a>
+          <a
+            href="#"
+            class="hidden md:block block py-2 pl-3 pr-4 text-gray-700 rounded md:hover:bg-transparent md:hover:text-teal-400 md:p-0 hover:underline"
+          >
+            Login
+          </a>
+
           <button
             type="button"
-            class="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 font-bold rounded-lg text-sm md:text-base px-4 py-2 text-center mr-2 mb-2"
+            class="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 rounded-lg px-4 py-2 text-center mr-2"
           >
             Open App
           </button>
+        </div>
+        <div class="hidden md:block items-center justify-between hidden w-full md:flex md:w-auto">
+          <ul class="flex flex-col p-4 mt-2 rounded-lg md:flex-row md:space-x-8 md:mt-0 md:border-0">
+            <li>
+              <a
+                href="#"
+                class="block py-2 pl-3 pr-4 text-gray-700 rounded md:hover:bg-transparent md:hover:text-teal-400 md:p-0 "
+              >
+                Pepole
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                class="block py-2 pl-3 pr-4 text-gray-700 rounded md:hover:bg-transparent md:hover:text-teal-400 md:p-0"
+              >
+                Explore
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                class="flex items-center justify-between py-2 pl-3 pr-4 hover:bg-gray-100 md:hover:bg-transparent md:hover:text-teal-400 md:p-0 text-gray-700"
+              >
+                Chats <Heroicons.chevron_down solid class="h-4 w-4 stroke-current" />
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
     </nav>
@@ -913,64 +949,82 @@ defmodule PhosWeb.CoreComponents do
 
   def dashboard(assigns) do
     ~H"""
-    <aside
-      class="flex flex-col w-64  border-r border-gray-200 pt-5 pb-4 bg-gray-100"
-      aria-label="Sidebar"
-    >
-      <div class="py-4 px-3 rounded">
-        <a :if={not is_nil(@current_user.profile_image)} href="#" class="flex items-center pl-2.5 mb-5">
-          <img
-            src={@current_user.profile_image}
-            class="mr-3 w-10 h-10 rounded-full"
-          />
-          <span class="self-center text-xl font-semibold whitespace-nowrap">
-            <.link href={"/user/#{@current_user.username}"}> <%= @current_user.username %> </.link>
-          </span>
-        </a>
-        <ul class="space-y-2">
+    <aside class="flex flex-col w-64 border-r border-gray-200  pb-4">
+      <div class="items-center block w-auto max-h-screen overflow-auto h-sidenav grow basis-full">
+        <ul class="flex flex-col pl-0 mb-0">
+          <li>
+            <a
+              href="#"
+              class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100 "
+            >
+              <Heroicons.home class="mt-0.5 h-8 w-6" />
+              <span class="ml-3">Home</span>
+            </a>
+          </li>
+
           <li>
             <a
               href="#"
               class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100"
             >
-              <Heroicons.home class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900" />
-              <span class="ml-3">Home</span>
+              <Heroicons.map_pin class="mt-0.5 h-8 w-6" />
+              <span class="ml-3">location</span>
             </a>
           </li>
+
           <li>
             <a
               href="#"
               class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100"
             >
-              <Heroicons.plus_circle class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900" />
-              <span class="flex-1 ml-3 whitespace-nowrap">Create</span>
+              <Heroicons.plus_circle class="mt-0.5 h-8 w-6" />
+              <span class="ml-3">Create</span>
             </a>
           </li>
+
+          <li>
+            <a
+              href="#"
+              class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100 "
+            >
+              <Heroicons.chat_bubble_left class="mt-0.5 h-8 w-6" />
+              <span class="ml-3">Message</span>
+            </a>
+          </li>
+
+          <li class="w-full mt-4">
+            <h6 class="pl-6 ml-2 font-bold  uppercase text-sm opacity-60">
+              Account pages
+            </h6>
+          </li>
+
           <li>
             <a
               href="#"
               class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100"
             >
-              <Heroicons.map_pin class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900" />
-              <span class="flex-1 ml-3 whitespace-nowrap">location</span>
+              <Heroicons.user class="mt-0.5 h-8 w-6" />
+              <span class="ml-3">Profile</span>
             </a>
           </li>
+
           <li>
             <a
               href="#"
-              class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 "
+              class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100 "
             >
-              <Heroicons.chat_bubble_bottom_center class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900" />
-              <span class="flex-1 ml-3 whitespace-nowrap">Message</span>
+              <Heroicons.arrow_right_on_rectangle class="mt-0.5 h-8 w-6" />
+              <span class="ml-3">Sign in</span>
             </a>
           </li>
+
           <li>
             <a
               href="#"
               class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100"
             >
-              <Heroicons.user class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900" />
-              <span class="flex-1 ml-3 whitespace-nowrap">Profile</span>
+              <Heroicons.arrow_left_on_rectangle class="mt-0.5 h-8 w-6" />
+              <span class="ml-3">Sign Up</span>
             </a>
           </li>
         </ul>
@@ -979,105 +1033,21 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  def show_dropdown(to) do
-    JS.show(
-      to: to,
-      transition:
-        {"transition ease-out duration-120", "transform opacity-0 scale-95",
-         "transform opacity-100 scale-100"}
-    )
-    |> JS.set_attribute({"aria-expanded", "true"}, to: to)
-  end
+  attr :id, :string, required: true
+  attr :img_path, :string
+  slot :user_name
+  attr :user, :any
+  attr :orb, :any
 
-  def hide_dropdown(to) do
-    JS.hide(
-      to: to,
-      transition:
-        {"transition ease-in duration-120", "transform opacity-100 scale-100",
-         "transform opacity-0 scale-95"}
-    )
-    |> JS.remove_attribute("aria-expanded", to: to)
-  end
-
-  slot :img do
-    attr :src, :string
-  end
-
-  slot :title
-  slot :subtitle
-
-  slot :link do
-    attr :navigate, :string
-    attr :href, :string
-    attr :method, :any
-  end
-
-  def dropdown(assigns) do
+  def post_related_user(assigns) do
     ~H"""
-    <!-- User account dropdown -->
-    <div class="px-3 mt-6 relative inline-block text-left">
-      <div>
-        <button
-          id={@id}
-          type="button"
-          class="group w-full bg-gray-100 rounded-md px-3.5 py-2 text-sm text-left font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-purple-500"
-          phx-click={show_dropdown("##{@id}-dropdown")}
-          phx-hook="Menu"
-          data-active-class="bg-gray-100"
-          aria-haspopup="true"
-        >
-          <span class="flex w-full justify-between items-center">
-            <span class="flex min-w-0 items-center justify-between space-x-3">
-              <%= for img <- @img do %>
-                <img
-                  class="w-10 h-10 bg-gray-300 rounded-full flex-shrink-0"
-                  alt=""
-                  {assigns_to_attributes(img)}
-                />
-              <% end %>
-              <span class="flex-1 flex flex-col min-w-0">
-                <span class="text-gray-900 text-sm font-medium truncate">
-                  <%= render_slot(@title) %>
-                </span>
-                <span class="text-gray-500 text-sm truncate"><%= render_slot(@subtitle) %></span>
-              </span>
-            </span>
-            <svg
-              class="flex-shrink-0 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                clip-rule="evenodd"
-              >
-              </path>
-            </svg>
-          </span>
-        </button>
-      </div>
-      <div
-        id={"#{@id}-dropdown"}
-        phx-click-away={hide_dropdown("##{@id}-dropdown")}
-        class="hidden z-10 mx-3 origin-top absolute right-0 left-0 mt-1 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-200"
-        role="menu"
-        aria-labelledby={@id}
-      >
-        <div class="py-1" role="none">
-          <%= for link <- @link do %>
-            <.link
-              tabindex="-1"
-              role="menuitem"
-              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-purple-500"
-              {link}
-            >
-              <%= render_slot(link) %>
-            </.link>
-          <% end %>
-        </div>
+    <div class="overflow-hidden cursor-pointer">
+      <div class="px-6 py-4 flex flex-col items-center justify between bg-opacity-50">
+        <p class="md:text-2xl text-lg font-bold md:mb-4"><%= render_slot(@user_name) %></p>
+        <img
+          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+          class=" h-52 w-52 border-4 border-white rounded-full object-cover"
+        />
       </div>
     </div>
     """
@@ -1094,19 +1064,22 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <div class="relative overflow-hidden cursor-pointer bg-white">
       <img
-        class="object-cover h-80 w-full border border-gray-200 rounded-3xl shadow-lg"
+        class="object-cover h-96 w-full border border-gray-200 md:rounded-3xl md:shadow-lg"
         src="/images/lake-gce85e5120_1920.jpg"
         alt="Emoji"
       />
-      <div class="absolute inset-0 px-6 py-4 flex flex-col items-center justify between bg-opacity-50">
+      <div class="absolute inset-0 px-6 py-4 flex flex-col items-center bg-opacity-50">
         <p class="md:text-2xl text-lg text-white font-bold md:mb-4"><%= render_slot(@user_name) %></p>
-        <img
-          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
-          class="md:w-60 md:h-60 h-28 w-28 border-4 border-white rounded-full object-cover"
-        />
-        <button class="m-4 text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-4 py-2 mr-2 mb-2">
+        <div class="relative flex justify-center items-center">
+          <img
+            src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+            class=" h-48 w-48 border-4 border-white rounded-full object-cover"
+          />
+          <span class="bottom-0 right-0 inline-block absolute w-12 h-12 bg-white border-2 border-white rounded-full">
+          <Heroicons.camera class="w-8 h-8 " />
+          </span>
+        </div>
           <%= render_slot(@inner_block) %>
-        </button>
         <div class="flex-1 flex flex-col items-center md:mt-4 mt-2 md:px-8">
           <div class="flex items-center space-x-4">
             <%= for location <- @user.locations do %>
@@ -1210,12 +1183,6 @@ defmodule PhosWeb.CoreComponents do
       <p class="text-gray-900 font-medium text-base text-center">
         <%= render_slot(@user_bio) %>
       </p>
-      <div class="items-center text-center">
-        <%= for traits <- @user.traits do %>
-          <span class="text-gray-500 text-base font-normal "><span>#</span>
-            <%= traits %></span>
-        <% end %>
-      </div>
     </div>
     """
   end
@@ -1312,196 +1279,127 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  attr :id, :string, required: true
+  attr :img_path, :string
+  slot :user_name
+  attr :user, :any
+  attr :orb, :any
+  slot :information
+
   def reply_post(assigns) do
     ~H"""
-    <div class="flex flex-col items-center justify-between mx-auto w-full md:w-[43rem]">
-      <div class="space-y-2 leading-relaxed p-2">
-        <ul class="relative md:border-l md:border-gray-400 mt-2">
-          <li id="reply" class="md:mb-4 mb-2 md:ml-6">
-            <div class="mx-auto flex flex-col mt-3 text-sm leading-normal border-b border-solid border-grey-light space-y-4">
-              <div class="flex justify-between md:p-2">
-                <img
-                  class="rounded-full w-12 h-12 border border-gray-500"
-                  src="/images/apotheosis.png"
-                />
-                <div class="flex flex-col space-y-1">
-                  <span class="font-bold">
-                    <a href="#" class="text-black">tamilsowmi</a><strong>@Sowmiya</strong>
-                  </span>
-                  <span class="flex items-center text-sm text-gray-500 ">
-                    <span>
-                      <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
-                    </span>
-                    Chennai
-                  </span>
-
-                  <div class="space-y-4">
-                    <p class="text-sm md:text-base text-gray-700 font-normal">
-                      Without a doubt one of the most important poems of the 20th century. “It has never lost its glamour,” Paul Muldoon observed.
-                    </p>
-                    <a href="#" class="text-blue-500 text-sm font-medium underline">
-                      github.com/tailwindcss/ta...
-                    </a>
-
-                    <a href="#">
-                      <img
-                        src="/images/thunderstorm-3440450__340.jpg"
-                        class="border border-solid border-grey-light rounded-sm mt-4 md:w-[43rem]"
-                      />
-                    </a>
-                  </div>
-
-                  <div class="flex justify-between space-x-2 p-2">
-                    <div class="">
-                      <span>10 Oct 2001</span>
-                    </div>
-                    <div class="flex flex-cols space-x-2">
-                      <Heroicons.share class="mt-0.5 h-6 w-6" />
-                      <Heroicons.chat_bubble_oval_left_ellipsis class="mt-0.5 h-6 w-6" />
-                      <Heroicons.heart class="mt-0.5 h-6 w-6" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+    <div class="flex flex-col md:inset-0 h-modal md:h-80 h-48 w-full overflow-y-auto ml-4">
+      <ul class="relative border-l border-gray-400 mt-2 space-y-4 text-sm md:text-base text-gray-700 font-normal p-2">
+        <li id="message_reply" class="md:mb-4 mb-2 border-b border-solid border-gray-200">
+          <p>
+            Without a doubt one of the most important poems of the 20th century.
+          </p>
+        </li>
+        <li id="message_reply" class="md:mb-4 mb-2 border-b border-solid border-gray-200">
+          <p>
+            Without a doubt one of the most important poems of the 20th century.
+          </p>
+        </li>
+        <li id="message_reply" class="md:mb-4 mb-2 border-b border-solid border-gray-200">
+          <p>
+            Without a doubt one of the most important poems of the 20th century.
+          </p>
+        </li>
+        <li id="message_reply" class="md:mb-4 mb-2 border-b border-solid border-gray-200">
+          <p>
+            Without a doubt one of the most important poems of the 20th century.
+          </p>
+        </li>
+        <li id="message_reply" class="md:mb-4 mb-2 border-b border-solid border-gray-200">
+          <p>
+            Without a doubt one of the most important poems of the 20th century.
+          </p>
+        </li>
+        <li id="message_reply" class="md:mb-4 mb-2 border-b border-solid border-gray-200">
+          <p>
+            Without a doubt one of the most important poems of the 20th century.
+          </p>
+        </li>
+        <li id="message_reply" class="md:mb-4 mb-2 border-b border-solid border-gray-200">
+          <p>
+            Without a doubt one of the most important poems of the 20th century.
+          </p>
+        </li>
+        <!--<li id="image_reply" class="md:ml-6 border-b border-solid border-red-800 mb-4">
+            <p>
+              Without a doubt one of the most important poems of the 20th century. “It has never lost its glamour,” Paul Muldoon observed.
+            </p>
+            <a href="#">
+              <img
+                src="/images/thunderstorm-3440450__340.jpg"
+                class="border border-solid border-grey-light rounded-sm mt-4 md:w-[43rem]"
+              />
+            </a>
           </li>
 
-          <li id="reply" class="md:mb-4 mb-2 md:ml-6">
-            <div class="mx-auto flex flex-col mt-3 text-sm leading-normal border-b border-solid border-grey-light space-y-4">
-              <div class="flex justify-between md:p-2">
-                <img
-                  class="rounded-full w-12 h-12 border border-gray-500"
-                  src="/images/apotheosis.png"
-                />
-                <div class="flex flex-col space-y-1">
-                  <span class="font-bold">
-                    <a href="#" class="text-black">tamilsowmi</a><strong class="text-gray-600">@Sowmiya</strong>
-                  </span>
-                  <span class="flex items-center text-sm text-gray-500 ">
-                    <span>
-                      <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
-                    </span>
-                    Chennai
-                  </span>
-
-                  <div class="space-y-4">
-                    <p class="text-sm md:text-base text-gray-700 font-normal">
-                      Without a doubt one of the most important poems of the 20th century. “It has never lost its glamour,” Paul Muldoon observed. “It has never failed to be equal to both the fracture of its own era and what, alas, turned out to be the even greater fracture of the ongoing 20th century and now, it seems, the 21st century.” See also: “The Love Song of J. Alfred Prufrock.”
-                    </p>
-                    <a href="#" class="text-blue-500 text-sm font-medium underline">
-                      github.com/tailwindcss/ta...
-                    </a>
-
-                    <a href="#">
-                      <iframe
-                        src="/images/WhatsApp Video 2022-12-26 at 8.32.21 AM.mp4"
-                        class="border border-solid border-grey-light rounded-sm mt-4 md:w-[35rem] md:h-[30rem] h-96"
-                      >
-                      </iframe>
-                    </a>
-                  </div>
-
-                  <div class="flex justify-between space-x-2 p-2">
-                    <div class="">
-                      <span>10 Oct 2001</span>
-                    </div>
-                    <div class="flex flex-cols space-x-2">
-                      <Heroicons.share class="mt-0.5 h-6 w-6" />
-                      <Heroicons.chat_bubble_oval_left_ellipsis class="mt-0.5 h-6 w-6" />
-                      <Heroicons.heart class="mt-0.5 h-6 w-6" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </div>
+          <li id="video_reply" class="md:ml-6 border-b border-solid border-red-800 mb-4">
+            <p>
+              Nice Post
+            </p>
+            <a href="#">
+              <iframe
+                src="/images/WhatsApp Video 2022-12-26 at 8.32.21 AM.mp4"
+                class="border border-solid border-grey-light rounded-sm mt-4 md:w-[35rem] md:h-[30rem] h-96"
+              >
+              </iframe>
+            </a>
+          </li>-->
+      </ul>
     </div>
     """
   end
 
-  def multi_image(assigns) do
+  def tabs_mobile(assigns) do
     ~H"""
-    <div id="carouselExampleCaptions" class="carousel slide relative" data-bs-ride="carousel">
-      <div class="carousel-indicators absolute right-0 bottom-0 left-0 flex justify-center p-0 mb-4">
-        <button
-          type="button"
-          data-bs-target="#carouselExampleCaptions"
-          data-bs-slide-to="0"
-          class="active"
-          aria-current="true"
-          aria-label="Slide 1"
-        >
-        </button>
-        <button
-          type="button"
-          data-bs-target="#carouselExampleCaptions"
-          data-bs-slide-to="1"
-          aria-label="Slide 2"
-        >
-        </button>
-        <button
-          type="button"
-          data-bs-target="#carouselExampleCaptions"
-          data-bs-slide-to="2"
-          aria-label="Slide 3"
-        >
-        </button>
-      </div>
-      <div class="carousel-inner relative w-full overflow-hidden">
-        <div class="carousel-item active relative float-left w-full">
-          <img
-            src="https://mdbootstrap.com/img/Photos/Slides/img%20(15).jpg"
-            class="block w-full"
-            alt="..."
-          />
-          <div class="carousel-caption hidden md:block absolute text-center">
-            <h5 class="text-xl">First slide label</h5>
-            <p>Some representative placeholder content for the first slide.</p>
-          </div>
-        </div>
-        <div class="carousel-item relative float-left w-full">
-          <img
-            src="https://mdbootstrap.com/img/Photos/Slides/img%20(22).jpg"
-            class="block w-full"
-            alt="..."
-          />
-          <div class="carousel-caption hidden md:block absolute text-center">
-            <h5 class="text-xl">Second slide label</h5>
-            <p>Some representative placeholder content for the second slide.</p>
-          </div>
-        </div>
-        <div class="carousel-item relative float-left w-full">
-          <img
-            src="https://mdbootstrap.com/img/Photos/Slides/img%20(23).jpg"
-            class="block w-full"
-            alt="..."
-          />
-          <div class="carousel-caption hidden md:block absolute text-center">
-            <h5 class="text-xl">Third slide label</h5>
-            <p>Some representative placeholder content for the third slide.</p>
-          </div>
-        </div>
-      </div>
-      <button
-        class="carousel-control-prev absolute top-0 bottom-0 flex items-center justify-center p-0 text-center border-0 hover:outline-none hover:no-underline focus:outline-none focus:no-underline left-0"
-        type="button"
-        data-bs-target="#carouselExampleCaptions"
-        data-bs-slide="prev"
-      >
-        <span class="carousel-control-prev-icon inline-block bg-no-repeat" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
-      </button>
-      <button
-        class="carousel-control-next absolute top-0 bottom-0 flex items-center justify-center p-0 text-center border-0 hover:outline-none hover:no-underline focus:outline-none focus:no-underline right-0"
-        type="button"
-        data-bs-target="#carouselExampleCaptions"
-        data-bs-slide="next"
-      >
-        <span class="carousel-control-next-icon inline-block bg-no-repeat" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
-      </button>
+    <div class="w-full border-gray-400 border-t-2 rounded-t-2xl bg-white md:hidden block fixed z-20 bottom-0 px-2 py-2">
+      <ul class="flex flex-wrap items-center justify-between mx-auto">
+        <li class="mt-0.5">
+          <a
+            class="px-4 py-3  block hover:text-teal-400 text-gray-600"
+            href="#"
+            onclick="changeAtiveTab(event,'user-tab')"
+          >
+            <Heroicons.user_plus class="w-8 h-8" />
+          </a>
+        </li>
+        <li class="mt-0.5">
+          <a
+            class="px-4 py-3 block hover:text-teal-400 text-gray-600"
+            onclick="changeAtiveTab(event,'location')"
+          >
+            <Heroicons.map_pin class="w-8 h-8" />
+          </a>
+        </li>
+        <li class="mt-0.5">
+          <a
+            class="px-4 py-3 block hover:text-teal-400 text-gray-600"
+            onclick="changeAtiveTab(event,'tab-create')"
+          >
+            <Heroicons.plus_circle class="w-8 h-8" />
+          </a>
+        </li>
+        <li class="mt-0.5">
+          <a
+            class="px-4 py-3  block hover:text-teal-400 text-gray-600"
+            onclick="changeAtiveTab(event,'chat')"
+          >
+            <Heroicons.chat_bubble_oval_left class="w-8 h-8" />
+          </a>
+        </li>
+        <li class="mt-0.5">
+          <a
+            class="px-4 py-3 block hover:text-teal-400 text-gray-600"
+            onclick="changeAtiveTab(event,'user-profile')"
+          >
+            <Heroicons.plus class="w-8 h-8" />
+          </a>
+        </li>
+      </ul>
     </div>
     """
   end

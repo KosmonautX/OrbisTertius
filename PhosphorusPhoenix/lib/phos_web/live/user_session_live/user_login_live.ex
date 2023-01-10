@@ -3,7 +3,7 @@ defmodule PhosWeb.UserLoginLive do
 
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-sm">
+    <div class="flex flex-col h-screen justify-center items-center">
       <.header class="text-center">
         Sign in to account
         <:subtitle>
@@ -15,7 +15,7 @@ defmodule PhosWeb.UserLoginLive do
         </:subtitle>
       </.header>
 
-      <.simple_form
+      <.simple_form class="w-96 p-4"
         :let={f}
         id="login_form"
         for={:user}
