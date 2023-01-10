@@ -325,7 +325,7 @@ GET :ipAddress/memland/friends/:rel?page=1
 :auth-headers
 
 ## Show by specific relation_id through cursor
-GET :ipAddress/memland/friends/:rel?cursor=1673336224834
+GET :ipAddress/memland/friends/:rel?cursor=1673336452599&asc=true
 :auth-headers
 
 ## Show message by orbs within a relation

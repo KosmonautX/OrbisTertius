@@ -9,7 +9,7 @@ defmodule Phos.Repo.Filter do
      ]}
   end
 
-  for op <- [:<, :==, :>] do
+  for op <- [:!=, :<, :<=, :==, :>, :>=, :ilike, :in, :like] do
     def where(query, field_name, unquote(op), value) do
       query
       |> where([o], custom_where(o, field_name, value, unquote(op)))

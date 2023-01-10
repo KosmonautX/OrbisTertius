@@ -1,4 +1,4 @@
-defmodule Phos.Repo.Paginated do
+ defmodule Phos.Repo.Paginated do
   import Ecto.Query
 
   def query_builder(query, opts) do
