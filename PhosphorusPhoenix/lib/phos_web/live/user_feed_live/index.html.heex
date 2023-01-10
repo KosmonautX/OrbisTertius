@@ -2,7 +2,7 @@
   <%= for feed <- @feeds do %>
     <div class="flex">
     <h1 class="text-bold">
-      <%= live_patch to: Routes.orb_show_path(@socket, :show, feed.id) do %>
+      <%= live_patch to: ~p"/orb/#{feed.id}" do %>
         <%= feed.title %>
       <% end %>
     <%= if feed.initiator.username, do: "by #{feed.initiator.username}"%>

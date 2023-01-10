@@ -26,7 +26,7 @@ defmodule PhosWeb.API.EchoController do
   def show_orbs(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => orb_id, "page" => page}),
     do: render(conn, :paginated, reveries: Message.list_messages_by_orb({orb_id, your_id}, page))
 
-  def show(conn = %{assigns: %{current_user: user}}, %{"id" => id}) do
+  def show(conn = %{assigns: %{current_user: _user}}, %{"id" => id}) do
     with %Memory{} = memory <-  Message.get_memory!(id) do
       render(conn, "show.json", memory: memory)
     else
@@ -57,6 +57,7 @@ defmodule PhosWeb.API.EchoController do
       |> put_status(:created)
       |> put_resp_header("location", ~p"/api/memland/memories/#{memory.id}")
       |> render(:show, memory: memory)
+
     end
   end
 
@@ -77,7 +78,7 @@ defmodule PhosWeb.API.EchoController do
   def update_reverie(%Plug.Conn{assigns: %{current_user: %{id: user_id}}} = conn , %{"id" => id} = attrs) do
     reverie = Message.get_reverie!(id)
     with true <- reverie.user_destination_id == user_id,
-         {:ok, %Echo{} = memory} <- Message.update_reverie(reverie, attrs) do
+         {:ok, %Echo{} = reverie} <- Message.update_reverie(reverie, attrs) do
       conn
       |> put_status(:ok)
       #|> put_resp_header("location", ~p"/api/memland/reveries/#{reverie.id}")
@@ -97,7 +98,6 @@ defmodule PhosWeb.API.EchoController do
       send_resp(conn, :no_content, "")
     end
   end
-
 
   defp memory_constructor(user, params) do
     constructor = sanitize(params)

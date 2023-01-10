@@ -5,9 +5,8 @@ defmodule Phos.Action do
 
   import Ecto.Query, warn: false
 
-  alias Ecto.Multi
   alias Phos.Repo
-  alias Phos.Action.{Orb, Location, Orb_Location}
+  alias Phos.Action.{Orb, Orb_Location}
 
   @doc """
   Returns the list of orbs.
@@ -55,7 +54,7 @@ defmodule Phos.Action do
   #
 
   def get_orb(id) when is_binary(id) do
-    parent_path = "*.#{Phos.Utility.Encoder.encode_lpath(id)}.*"
+    # parent_path = "*.#{Phos.Utility.Encoder.encode_lpath(id)}.*"
     query = 
       from o in Orb,
         preload: [:locations, :initiator, :parent],
@@ -199,6 +198,8 @@ defmodule Phos.Action do
       |> IO.inspect()
   end
 
+
+  def orbs_by_initiators(user_ids, page, opts \\ %{})
   def orbs_by_initiators(user_ids, page, %{"traits" => traits} = opts) do
     sort_attribute = Map.get(opts, :sort_attribute, :inserted_at)
     limit = Map.get(opts, :limit, 12)
@@ -215,7 +216,7 @@ defmodule Phos.Action do
       |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
-  def orbs_by_initiators(user_ids, page, opts \\ %{}) do
+  def orbs_by_initiators(user_ids, page, opts) do
     sort_attribute = Map.get(opts, :sort_attribute, :inserted_at)
     limit = Map.get(opts, :limit, 12)
     from(o in Orb,
@@ -269,12 +270,9 @@ defmodule Phos.Action do
     |> Enum.filter(fn orb -> orb.active == true end)
   end
 
-  def get_orbs_by_trait(trait) do
-    query =
-      from p in Phos.Action.Orb, preload: [:initiator], where: fragment("? @> ?", p.traits, ^trait)
-
-    Repo.all(query, limit: 8)
-  end
+  @doc "Get list of orbs by given traits"
+  @deprecated "Use filter_orbs_by_traits/2 instead which is more cleaner api with paginated response"
+  def get_orbs_by_trait(trait), do: filter_orbs_by_traits(trait, limit: 8) |> Map.get(:data, [])
 
   def get_orb_by_trait_geo(geohashes, traits, options \\ [])
   def get_orb_by_trait_geo(geohashes, trait, options) when is_list(geohashes) do
@@ -354,13 +352,13 @@ defmodule Phos.Action do
        end
   end
 
-  defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
-    Phos.Folk.friends_lite(user_id)
-    |> Enum.each(fn user_id ->
-      # spawn(fn -> Phos.Cache.delete({Phos.Users.User, :feeds, user_id}) end)
-      spawn(fn -> Phos.PubSub.publish(orb, {:feeds, "new"}, "userfeed:#{user_id}") end)
-    end)
-  end
+  # defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
+  #   Phos.Folk.friends_lite(user_id)
+  #   |> Enum.each(fn user_id ->
+  #     # spawn(fn -> Phos.Cache.delete({Phos.Users.User, :feeds, user_id}) end)
+  #     spawn(fn -> Phos.PubSub.publish(orb, {:feeds, "new"}, "userfeed:#{user_id}") end)
+  #   end)
+  # end
 
   def create_orb_and_publish(attrs \\ %{})
   def create_orb_and_publish(list) when is_list(list) do

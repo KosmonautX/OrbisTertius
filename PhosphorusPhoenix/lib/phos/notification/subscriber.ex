@@ -34,11 +34,6 @@ defmodule Phos.Notification.Subscriber do
     {:reply, result, state}
   end
 
-  def handle_cast({:target, condition, notification, data}, state) do
-    result = Fcmex.push("", notification: notification, condition: condition, data: data)
-    {:noreply, state}
-  end
-
   @impl true
   def handle_call({:push, tokens, notification}, _from, state) do
     result =

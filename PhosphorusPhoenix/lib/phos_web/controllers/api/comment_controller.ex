@@ -42,7 +42,7 @@ defmodule PhosWeb.API.CommentController do
     with {:ok, %Comment{} = comment} <- Comments.create_comment(comment_params) do
           conn
           |> put_status(:created)
-          |> put_resp_header("location",  ~p"/orbland/comments/#{comment.id}")
+          |> put_resp_header("location",  ~p"/api/orbland/comments/#{comment.id}")
           |> render(:show, comment: comment)
     end
   end

@@ -19,11 +19,11 @@ defmodule PhosWeb.API.EchoJSON do
 
   def show(%{reverie: reverie}), do: %{data: reverie_json(reverie)}
 
-  defp reverie_json(reverie) do
-    PhosWeb.Util.Viewer.reverie_mapper(reverie)
-  end
 
-  defp memory_json(memory) do
-    PhosWeb.Util.Viewer.memory_mapper(memory)
-  end
+  defp reverie_json(reverie), do: PhosWeb.Util.Viewer.reverie_mapper(reverie)
+
+  defp memory_json(memory), do: PhosWeb.Util.Viewer.memory_mapper(memory)
+
+  defp echo_json(echo), do: PhosWeb.Util.Viewer.echo_mapper(echo)
+
 end

@@ -17,18 +17,17 @@ defmodule PhosWeb.UserSettingsController do
 
     case Users.apply_user_email(user, password, user_params) do
       {:ok, applied_user} ->
-        Users.deliver_update_email_instructions(
+        Users.deliver_user_update_email_instructions(
           applied_user,
           user.email,
-          &Routes.user_settings_url(conn, :confirm_email, &1)
-        )
+          fn token -> ~p"/users/settings/confirm_email/#{token}" end)
 
         conn
         |> put_flash(
           :info,
           "A link to confirm your email change has been sent to the new address."
         )
-        |> redirect(to: Routes.user_settings_path(conn, :edit))
+        |> redirect(to: ~p"/users/settings")
 
       {:error, changeset} ->
         render(conn, :edit, email_changeset: changeset)
@@ -43,7 +42,7 @@ defmodule PhosWeb.UserSettingsController do
       {:ok, user} ->
         conn
         |> put_flash(:info, "Password updated successfully.")
-        |> put_session(:user_return_to, Routes.user_settings_path(conn, :edit))
+        |> put_session(:user_return_to, ~p"/users/settings")
         |> UserAuth.log_in_user(user)
 
       {:error, changeset} ->
@@ -64,7 +63,7 @@ defmodule PhosWeb.UserSettingsController do
       {:ok, _user} ->
         conn
         |> put_flash(:info, "Username updated successfully.")
-        |> redirect(to: Routes.user_settings_path(conn, :edit))
+        |> redirect(to: ~p"/users/settings")
         # |> put_session(:user_return_to, Routes.orb_index_path(conn, :index))
         # |> UserAuth.log_in_user(user) # remember to implement token for oatuh temporary sol above
 
@@ -78,12 +77,12 @@ defmodule PhosWeb.UserSettingsController do
       :ok ->
         conn
         |> put_flash(:info, "Email changed successfully.")
-        |> redirect(to: Routes.user_settings_path(conn, :edit))
+        |> redirect(to: ~p"/users/settings")
 
       :error ->
         conn
         |> put_flash(:error, "Email change link is invalid or it has expired.")
-        |> redirect(to: Routes.user_settings_path(conn, :edit))
+        |> redirect(to: ~p"/users/settings")
     end
   end
 

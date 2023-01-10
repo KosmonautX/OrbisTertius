@@ -19,7 +19,7 @@ defmodule Phos.External.TelegramClient do
 
 
   defp send_message(chat_id, message) do
-    {:ok, resp = %HTTPoison.Response{}} = get(
+    {:ok, _resp = %HTTPoison.Response{}} = get(
       "sendMessage"
       |> URI.parse()
       |> Map.put(:query,

@@ -5,8 +5,7 @@ defmodule Phos.Folk do
 
   import Ecto.Query, warn: false
   use Nebulex.Caching
-  alias Phos.{Cache, Repo}
-  alias Phos.Users
+  alias Phos.Repo
   alias Phos.Users.{User, RelationBranch, RelationRoot}
 
   #@ttl :timer.hours(1)

@@ -7,7 +7,6 @@ defmodule Phos.Users do
 
   import Ecto.Query, warn: false
   alias Phos.Repo
-  alias Phos.Users
   alias Phos.Users.{User, Private_Profile, Auth}
   alias Phos.Cache
   alias Ecto.Multi
@@ -72,10 +71,11 @@ defmodule Phos.Users do
     Repo.get_by(User |> preload(:private_profile), fyr_id: id)
   end
 
-  def get_users_by_home(_id, locname) do
+  def get_users_by_home(id, _locname) do
     query = from u in User,
       join: p in assoc(u, :private_profile),
-      where: fragment("? <@ ANY(?)", ~s|{"id": "home"}|, p.geolocation)
+      where: fragment("? <@ ANY(?)", ~s|{"id": "home"}|, p.geolocation),
+      where: u.id == ^id
     # select: p.geolocation
 
     Repo.all(query |> preload(:private_profile))

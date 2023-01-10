@@ -1,7 +1,7 @@
 defmodule PhosWeb.PageController do
   use PhosWeb, :controller
 
-  def index(%{assigns: assigns} = conn, _params) do
+  def index(%{assigns: _assigns} = conn, _params) do
     render(conn, :index)
   end
 

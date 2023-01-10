@@ -267,7 +267,7 @@ defmodule Phos.Message do
 
   """
 
-    def create_message(%{"id" => mem_id, "user_source_id" => i_id, "rel_subject_id" => rel_id, "user_destination_id"=> a_id} = params) do
+    def create_message(%{"id" => mem_id, "user_source_id" => i_id, "rel_subject_id" => _rel_id, "user_destination_id"=> a_id} = params) do
       attrs = params
       |> Map.put("reveries", [%{"user_destination_id" => i_id, "memory_id" => mem_id},
                              %{"user_destination_id" => a_id, "memory_id" => mem_id}])
@@ -286,14 +286,14 @@ defmodule Phos.Message do
       {:error, %Ecto.Changeset{}}
 
   """
-
+  def create_memory(attrs \\ %{})
   def create_memory(%{"id" => _id} = attrs) do
     %Memory{}
     |> Memory.changeset(attrs)
     |> Repo.insert()
   end
 
-  def create_memory(attrs \\ %{}) do
+  def create_memory(attrs) do
     %Memory{}
     |> Memory.changeset(attrs |> Map.put(:id, Ecto.UUID.generate()))
     |> Repo.insert()
