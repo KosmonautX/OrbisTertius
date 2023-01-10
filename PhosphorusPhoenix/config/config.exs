@@ -101,7 +101,9 @@ config :fcmex,
   [json_library: Jason]
 
 config :phos, Phos.External.Notion,
-  token: {System, :get_env, "NOTION_TOKEN"}
+  token: {System, :get_env, "NOTION_TOKEN"},
+  database: {System, :get_env, "NOTION_DATABASE"},
+  notification_database: {System, :get_env, "NOTION_NOTIFICATION_DATABASE"}
 
 
 # Import environment specific config. This must remain at the bottom

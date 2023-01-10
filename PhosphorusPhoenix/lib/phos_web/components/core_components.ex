@@ -432,6 +432,7 @@ defmodule PhosWeb.CoreComponents do
   attr :id, :string, required: true
   attr :row_click, :any, default: nil
   attr :rows, :list, required: true
+  attr :row_class, :string, default: nil
 
   slot :col, required: true do
     attr :label, :string
@@ -453,7 +454,7 @@ defmodule PhosWeb.CoreComponents do
           <tr
             :for={row <- @rows}
             id={"#{@id}-#{Phoenix.Param.to_param(row)}"}
-            class="relative group hover:bg-zinc-50"
+            class={["relative group hover:bg-gray-100", @row_class]}
           >
             <td
               :for={{col, i} <- Enum.with_index(@col)}
@@ -571,6 +572,39 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  attr :title, :string, required: true
+  attr :home_path, :string, required: true
+  slot :item, required: true, doc: "the slot for form actions, such as a submit button" do
+    attr :to, :string, required: true
+    attr :title, :string, required: true
+    attr :icon, :string, required: true
+    attr :id, :string
+    attr :name, :string
+  end
+  def admin_navbar(assigns) do 
+    ~H"""
+    <nav class="md:left-0 md:block md:fixed md:top-0 md:bottom-0 md:overflow-y-auto md:flex-row md:flex-nowrap md:overflow-hidden shadow-xl bg-white flex flex-wrap items-center justify-between relative md:w-64 z-10 py-4 px-6">
+      <div class="md:flex-col md:items-stretch md:min-h-full md:flex-nowrap px-0 flex flex-wrap items-center w-full mx-auto">
+        <.link patch={@home_path} class="md:block text-left md:pb-2 text-blueGray-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0">
+          <%= @title %>
+        </.link>
+        <div>
+          <hr class="my-4 md:min-w-full">
+          <h6 class="md:min-w-full text-blueGray-500 text-xs uppercase font-bold block pt-1 pb-4 no-underline">Feature</h6>
+          <ul class="md:flex-col md:min-w-full flex flex-col list-none" id="navbar">
+            <li :for={item <- @item} class="items-center">
+              <.link navigate={item.to} class="text-xs uppercase py-3 font-bold block text-gray-500 hover:text-blue-400">
+                <i class={"fas mr-2 text-sm opacity-75 #{item.icon}"}></i>
+                <%= item.title %>
+              </.link>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    """
+  end
+
   ## JS Commands
 
   def show(js \\ %JS{}, selector) do
@@ -655,3 +689,4 @@ defmodule PhosWeb.CoreComponents do
     Phoenix.HTML.html_escape(val1) == Phoenix.HTML.html_escape(val2)
   end
 end
+
