@@ -870,13 +870,13 @@ defmodule PhosWeb.CoreComponents do
             href="#"
             class="hidden md:block block py-2 pl-3 pr-4 text-gray-700 rounded md:hover:bg-transparent md:hover:text-teal-400 md:p-0 hover:underline"
           >
-            Signup
+            Log out
           </a>
           <a
             href="#"
             class="hidden md:block block py-2 pl-3 pr-4 text-gray-700 rounded md:hover:bg-transparent md:hover:text-teal-400 md:p-0 hover:underline"
           >
-            Login
+            Settings
           </a>
 
           <button
@@ -945,93 +945,6 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  attr :current_user, :any
-
-  def dashboard(assigns) do
-    ~H"""
-    <aside class="flex flex-col w-64 border-r border-gray-200  pb-4">
-      <div class="items-center block w-auto max-h-screen overflow-auto h-sidenav grow basis-full">
-        <ul class="flex flex-col pl-0 mb-0">
-          <li>
-            <a
-              href="#"
-              class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100 "
-            >
-              <Heroicons.home class="mt-0.5 h-8 w-6" />
-              <span class="ml-3">Home</span>
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="#"
-              class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100"
-            >
-              <Heroicons.map_pin class="mt-0.5 h-8 w-6" />
-              <span class="ml-3">location</span>
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="#"
-              class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100"
-            >
-              <Heroicons.plus_circle class="mt-0.5 h-8 w-6" />
-              <span class="ml-3">Create</span>
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="#"
-              class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100 "
-            >
-              <Heroicons.chat_bubble_left class="mt-0.5 h-8 w-6" />
-              <span class="ml-3">Message</span>
-            </a>
-          </li>
-
-          <li class="w-full mt-4">
-            <h6 class="pl-6 ml-2 font-bold  uppercase text-sm opacity-60">
-              Account pages
-            </h6>
-          </li>
-
-          <li>
-            <a
-              href="#"
-              class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100"
-            >
-              <Heroicons.user class="mt-0.5 h-8 w-6" />
-              <span class="ml-3">Profile</span>
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="#"
-              class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100 "
-            >
-              <Heroicons.arrow_right_on_rectangle class="mt-0.5 h-8 w-6" />
-              <span class="ml-3">Sign in</span>
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="#"
-              class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100"
-            >
-              <Heroicons.arrow_left_on_rectangle class="mt-0.5 h-8 w-6" />
-              <span class="ml-3">Sign Up</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-    </aside>
-    """
-  end
 
   attr :id, :string, required: true
   attr :img_path, :string
@@ -1075,11 +988,11 @@ defmodule PhosWeb.CoreComponents do
             src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
             class=" h-48 w-48 border-4 border-white rounded-full object-cover"
           />
-          <span class="bottom-0 right-0 inline-block absolute w-12 h-12 bg-white border-2 border-white rounded-full">
-          <Heroicons.camera class="w-8 h-8 " />
+          <span class="bottom-0 right-0 inline-block absolute w-14 h-14 bg-transparent">
+            <Heroicons.camera class="w-12 h-12 fill-white" />
+            <%= render_slot(@inner_block) %>
           </span>
         </div>
-          <%= render_slot(@inner_block) %>
         <div class="flex-1 flex flex-col items-center md:mt-4 mt-2 md:px-8">
           <div class="flex items-center space-x-4">
             <%= for location <- @user.locations do %>

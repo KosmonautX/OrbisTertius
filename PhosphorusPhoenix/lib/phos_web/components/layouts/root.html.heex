@@ -16,13 +16,11 @@
   </head>
   <body class="overflow-hidden min-h-screen">
     <%= if @current_user do %>
-      <div class="hidden  md:block fixed left-0 ">
+      <!--<div class="">
         <.user_menu current_user={@current_user} />
-
-          <.banner></.banner>
-
+      </div>-->
+        <!--<.banner></.banner>-->
         <.tabs_mobile></.tabs_mobile>
-      </div>
     <% end %>
     <div class="h-screen w-full overflow-auto"><%= @inner_content %></div>
     <br />
