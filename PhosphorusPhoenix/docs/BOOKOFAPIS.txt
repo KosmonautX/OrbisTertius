@@ -2,8 +2,8 @@
 # Phos API Endpoint Documentation
 
 :ipAddress = http://localhost:4000/api
-#:ipAddress = https://nyx.scrb.ac/api
-:localipAddress = http://localhost:4000/api
+:ipAddress = https://nyx.scrb.ac/api
+#:localipAddress = http://localhost:4000/api
 :princeton=0b3gd5XUGtNP6lqQean4IAp7ogG3
 :satrio=BX1BxM9KkwdFmy2J4FNNkFxclpS2
 :owen=0ErhlIM10Maldn1qVMGOJMKu6J92
@@ -24,6 +24,7 @@
 :tate_id=5e7ed96c-f444-43e5-96e9-fe44bba1a664
 :fcm=dkoDy7FBSOybPE-juVQBHa:APA91bEdhNYKyZ75kG2ucjehb1Rqbfv69m2UiFGpve8bZS7ZAAMca3LiRmwg6g6JXPTgt35neGOQdGZcBJ_8Y5VVKNCMAIn0KHMJRfBiJZrcC-0VSazm3u6RTUecAUYxPQbLAZV0kRDA
 :prince_fcm=ewGVcsOAZ02gmzz9zbCLdo:APA91bGS6WbollBieIKBr9x7JvNzbHkTL2K-ukCbGDvjEYtJBqCoVC2U71jF3OAmwobRYocBGQZ-gVQr2-0Zk6ydjjlHuVf7EOjHdS2zA_TxUWIzvDkaZ0jvROqpLyOuMMqCTxqWs2UA
+:rel=9bb7ad28-3caa-49fa-a314-fc9ca8093f27
 :auth-headers = <<
 Authorization: :token
 Content-Type: application/json
@@ -38,7 +39,7 @@ User-Agent: Emacs27
 GET :localipAddress/devland/flameon?user=:lky_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 ## Generate Google Identity idToken for Firebase Auth
-GET :localipAddress/devland/lankaonfyr?fyr_id=:jean
+GET :localipAddress/devland/lankaonfyr?fyr_id=:owen
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 
@@ -325,7 +326,7 @@ GET :ipAddress/memland/friends/:rel?page=1
 :auth-headers
 
 ## Show by specific relation_id through cursor
-GET :ipAddress/memland/friends/:rel?cursor=1673494419947&asc=true
+GET :ipAddress/memland/friends/:rel?cursor=1673502948407&asc=true
 :auth-headers
 
 ## Show message by orbs within a relation
@@ -339,8 +340,8 @@ POST :ipAddress/memland/memories
 -> run-hook (restclient-set-var ":echo" (cdr (assq 'orb_uuid (assq 'data (json-read)))))
 :auth-headers
 {
-    "user_destination_id": ":satrio_id",
-    "message": "19",
+    "user_destination_id": ":brandon_id",
+    "message": "20",
     "rel_subject_id": ":rel",
     "orb_subject_id": ":orb"
 }
