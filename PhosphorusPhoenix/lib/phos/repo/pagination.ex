@@ -16,7 +16,7 @@
   defp maybe_ascend(query, attr, false), do: query |> order_by(desc: ^attr)
   defp maybe_ascend(query, attr, true), do: query |> order_by(asc: ^attr)
 
-  defp maybe_filter(query, attr, ascending, nil), do: query
+  defp maybe_filter(query, _attr, _ascending, nil), do: query
   defp maybe_filter(query, attr, false, filter), do: query |> Phos.Repo.Filter.where(attr, :<, filter)
   defp maybe_filter(query, attr, true, filter), do: query |> Phos.Repo.Filter.where(attr, :>, filter)
 
@@ -47,8 +47,8 @@
       meta: %{
       pagination: %{
         downstream: true,
-        count: length(dao),
-        cursor: Map.get(head, sort)
+        count: limit,
+        cursor: Map.get(head, sort) |> DateTime.to_unix(:millisecond)
      }}}
     else
       %{
