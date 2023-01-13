@@ -134,7 +134,7 @@ defmodule Phos.Notification.Scheduller do
     end)
   end
 
-  defp send_notification(%{regions: [_ | _] = region, title: title} = data) do
+  defp send_notification(%{regions: [_ | _], title: title} = data) do
     #expected_title = orb_title(title, orb)
     fetch_tokens(data)
     |> Phos.Notification.push(
@@ -214,5 +214,6 @@ defmodule Phos.Notification.Scheduller do
       _ -> title
     end
   end
+
   defp orb_title(title, _orb), do: title
 end

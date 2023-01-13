@@ -181,3 +181,13 @@ Phos.External.Sector.get()
 Phos.External.Notion.platform_notification()
 # Phos.Action.import_platform_notification()
 ```
+
+```elixir
+orb = List.first(Phos.Action.list_orbs())
+```
+
+```elixir
+Phos.Folk.notifiers_by_friends(orb.initiator_id)
+orb |>
+#Phos.Action.notifiers_by_geohashes()
+```
