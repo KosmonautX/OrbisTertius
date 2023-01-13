@@ -35,7 +35,7 @@ defmodule PhosWeb.API.OrbController do
   def create(conn = %{assigns: %{current_user: user}}, params = %{"media" => [_|_] = media}) do
 
     with {:ok, attrs} <- orb_constructor(user, params),
-         {:ok, media} <- Phos.Orbject.Structure.apply_orb_changeset(%{id: attrs["id"], archetype: "ORB", media: media}),
+         {:ok, media} <- Phos.Orbject.Structure.apply_media_changeset(%{id: attrs["id"], archetype: "ORB", media: media}),
          {:ok, %Orb{} = orb} <- Action.create_orb(%{attrs | "media" => true}) do
       conn
       |> put_status(:created)
@@ -89,6 +89,13 @@ defmodule PhosWeb.API.OrbController do
   end
   # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X GET 'http://localhost:4000/api/orbs/a4519fe0-70ec-42e7-86f3-fdab1ef8ca23'
   #
+  #
+
+  def show_history(conn, %{"id" => id, "page" => page, "traits" => traits}) do
+    orbs = Action.orbs_by_initiators([id], page, %{"traits" => traits})
+    render(conn, :paginated, orbs: orbs)
+  end
+
   def show_history(conn, %{"id" => id, "page" => page}) do
     orbs = Action.orbs_by_initiators([id], page)
     render(conn, :paginated, orbs: orbs)
@@ -145,7 +152,7 @@ defmodule PhosWeb.API.OrbController do
     orb = Action.get_orb!(id)
     with true <- orb.initiator.id == user.id,
          {:ok, attrs} <- orb_constructor(user, params),
-         {:ok, media} <- Phos.Orbject.Structure.apply_orb_changeset(%{id: id, archetype: "ORB", media: media}),
+         {:ok, media} <- Phos.Orbject.Structure.apply_media_changeset(%{id: id, archetype: "ORB", media: media}),
          {:ok, %Orb{} = orb} <- Action.update_orb(orb, %{attrs | "media" => true}) do
       conn
       |> put_status(:ok)

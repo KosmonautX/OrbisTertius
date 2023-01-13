@@ -86,7 +86,7 @@ PUT :ipAddress/userland/self/
     "profile_pic": 3
 }
 ## Read userdata of Others Profile
-GET :ipAddress/userland/others/:owentwo_id
+GET :ipAddress/userland/others/:lky_id
 :auth-headers
 ## Read all of User Orb History
 GET :ipAddress/userland/others/:satrio_id/history?page=1&traits=personalpin
@@ -133,6 +133,10 @@ GET :ipAddress/folkland/stream/self?page=1
 
 ## Orb Stream directed at yourself from friends
 GET :ipAddress/folkland/stream/discovery/614510498785787903,614510497487650815?page=1
+:auth-headers
+
+## Show Relation Resource
+GET :ipAddress/folkland/friends/17863710-b367-4914-b958-028dd1d8f097
 :auth-headers
 
 ## Send connection request
@@ -193,8 +197,7 @@ POST :ipAddress/orbland/orbs
     "media": [
         {
             "access": "public",
-            "essence": "banner",
-            "resolution": "lossless"
+            "essence": "banner"
         },
         {
             "access": "public",
@@ -373,6 +376,23 @@ POST :ipAddress/memland/memories
 }
 
 ### Medialand
+#POST :ipAddress/medialand/media/USR/:lky_id?wildcard=true
+POST :ipAddress/medialand/media/MEM/3408a6bc-eba4-4bdf-b14b-938bf206f2b4?wildcard=true
+:auth-headers
+{
+    "media": [
+        {
+            "access": "public",
+            "essence": "profile",
+            "resolution": "lossless"
+        },
+        {
+            "access": "public",
+            "essence": "profile",
+            "resolution": "lossy"
+        }
+        ]
+}
 
 
 

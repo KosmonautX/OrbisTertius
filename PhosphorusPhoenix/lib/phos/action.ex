@@ -142,7 +142,6 @@ defmodule Phos.Action do
   end
 
   def orbs_by_geotraits({hashes, your_id}, traits, page, opts \\ []) do
-
     sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
     limit = Keyword.get(opts, :limit, 12)
 
@@ -189,7 +188,7 @@ defmodule Phos.Action do
       where: not fragment("? @> ?", orbs.traits, ^["mirage"]),
       inner_join: initiator in assoc(orbs, :initiator),
       inner_join: branch in assoc(initiator, :relations),
-      on: branch.friend_id == ^your_id,
+      on: branch.friend_id == ^your_id and not is_nil(branch.completed_at),
       inner_join: root in assoc(branch, :root),
       select_merge: %{initiator: %{initiator | self_relation: root}},
       inner_lateral_join: c in subquery(
@@ -202,7 +201,25 @@ defmodule Phos.Action do
       |> IO.inspect()
   end
 
-  def orbs_by_initiators(user_ids, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+  def orbs_by_initiators(user_ids, page, %{"traits" => traits} = opts) do
+    sort_attribute = Map.get(opts, :sort_attribute, :inserted_at)
+    limit = Map.get(opts, :limit, 12)
+    from(o in Orb,
+      as: :o,
+      where: o.initiator_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]) and fragment("? @> ?", o.traits, ^traits),
+      preload: [:initiator],
+      inner_lateral_join: c in subquery(
+        from c in Phos.Comments.Comment,
+        where: c.orb_id == parent_as(:o).id,
+        select: %{count: count()}
+      ),
+      select_merge: %{comment_count: c.count})
+      |> Repo.Paginated.all(page, sort_attribute, limit)
+  end
+
+  def orbs_by_initiators(user_ids, page, opts \\ %{}) do
+    sort_attribute = Map.get(opts, :sort_attribute, :inserted_at)
+    limit = Map.get(opts, :limit, 12)
     from(o in Orb,
       as: :o,
       where: o.initiator_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]),
@@ -215,6 +232,7 @@ defmodule Phos.Action do
       select_merge: %{comment_count: c.count})
       |> Repo.Paginated.all(page, sort_attribute, limit)
   end
+
 
   def get_active_orbs_by_geohashes(ids) do
     query =

@@ -31,7 +31,7 @@ defmodule PhosWeb.API.EchoController do
   # # media support
   def create(conn = %{assigns: %{current_user: user}}, params = %{"media" => [_|_] = media}) do
     with {:ok, attrs} <- memory_constructor(user, params),
-         {:ok, media} <- Phos.Orbject.Structure.apply_memory_changeset(%{id: attrs["id"], archetype: "MEM", media: media}),
+         {:ok, media} <- Phos.Orbject.Structure.apply_media_changeset(%{id: attrs["id"], archetype: "MEM", media: media}),
          {:ok, %Memory{} = memory} <- Message.create_message(%{attrs | "media" => true}) do
 
       conn

@@ -4,6 +4,7 @@ defmodule PhosWeb.Router do
   import PhosWeb.Menshen.Gate
   import PhosWeb.Menshen.Plug
   import Phoenix.LiveDashboard.Router
+  import PhxLiveStorybook.Router
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -34,6 +35,10 @@ defmodule PhosWeb.Router do
     plug Phos.Admin.Plug
   end
 
+  scope "/" do
+    storybook_assets()
+  end
+
   ## Home Page & Public Pages
   scope "/", PhosWeb do
     pipe_through :browser
@@ -42,8 +47,8 @@ defmodule PhosWeb.Router do
     get "/", PageController, :home
     get "/welcome", PageController, :welcome
 
+    live_storybook "/storybook", backend_module: PhosWeb.Storybook
   end
-
 
   ## User Genesis Routes
   scope "/", PhosWeb do
@@ -198,6 +203,10 @@ defmodule PhosWeb.Router do
       get "/friends", EchoController, :index_relations
       get "/orbs/:id", EchoController, :show_orbs
       get "/friends/:id", EchoController, :show_relations
+    end
+
+    scope "/medialand" do
+      post "/media/:archetype/:id", MediaController, :show
     end
 
   end
