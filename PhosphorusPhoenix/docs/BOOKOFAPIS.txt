@@ -23,7 +23,7 @@
 :owen_id=233e50b1-5507-4a3c-96a7-b6339e8d27f4
 :tate_id=5e7ed96c-f444-43e5-96e9-fe44bba1a664
 :fcm=ea8-2OzeSbm2oOeZtHFP8z:APA91bH1rOtpzxu9VU4tpXLU_oVz_v6FkGccdTPeCe3msiQrjs9wm7ME0a2bRctB9_KswmFcTxjLVzaFa2-SNBb0x6K24X6dxDB5HlpQTOK5ibOLqvTzhAVQsTdgR_S535bNSuuFoKuG
-:prince_fcm=ewGVcsOAZ02gmzz9zbCLdo:APA91bGS6WbollBieIKBr9x7JvNzbHkTL2K-ukCbGDvjEYtJBqCoVC2U71jF3OAmwobRYocBGQZ-gVQr2-0Zk6ydjjlHuVf7EOjHdS2zA_TxUWIzvDkaZ0jvROqpLyOuMMqCTxqWs2UA
+:raiz_fcm=f3vM3sCxR76eSaJS0pYwFm:APA91bEqiK7GJvjdKoWWd3A7spQnJFLgJY8rRilnuW9d7IJZHzJ3f3VZbqDwgg5zlwidWw82PTZTeMhEDPc2CwpILM4OQK--6xxYAN1uhR1-5stVeCr5YOZSh0uNhKHdiEpRXtmC-58i
 :rel=9bb7ad28-3caa-49fa-a314-fc9ca8093f27
 :auth-headers = <<
 Authorization: :token
@@ -116,7 +116,7 @@ PUT :ipAddress/userland/self/territory
 PUT :ipAddress/userland/self/beacon
 :auth-headers
 {
-    "fcm_token": ":fcm"
+    "fcm_token": ":raiz_fcm"
 }
 
 ## ! Folkland Calls
