@@ -1,3 +1,4 @@
+<.link phx-click={JS.push("renew")} class="button button-xs bg-emerald-600">Renew</.link>
 <.card title="Notification">
   <p :if={length(@notifications) == 0} class="w-full text-center italic">Fetching the data or data not found</p>
   <.table :if={length(@notifications) > 0} id="notification-table" rows={@notifications}>
@@ -7,13 +8,11 @@
       <span :if={String.length(n.title) < 70}><%= n.title %></span>
       <span :if={String.length(n.title) > 70}><%= String.slice(n.title, 0..70) %> ...</span>
     </:col>
-    <:col let={n} label="Target Group"><%= inspect n.target_group %></:col>
     <:col let={n} label="Regions"><%= inspect n.regions %></:col>
     <:action let={n}>
-      <.link phx-click="execute" phx-value-id={n.id} class="button button-xs">Execute</.link>
+      <.button phx-click={JS.push("execute", value: %{id: n.id})} class="button button-xs">Execute</.button>
       <.link :if={n.active} phx-click="disable" phx-value-id={n.id} class="button button-xs button-danger">Disable</.link>
       <.link :if={!n.active} phx-click="enable" phx-value-id={n.id} class="button button-xs button-primary">Enable</.link>
     </:action>
   </.table>
 </.card>
-

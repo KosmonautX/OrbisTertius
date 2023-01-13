@@ -179,6 +179,17 @@ defmodule Phos.Action do
       |> (&(Map.put(&1, :data, &1.data |> Repo.Preloader.lateral(:orbs, [limit: 5])))).()
   end
 
+  def notifiers_by_geohashes(hashes) do
+    from(l in Orb_Location,
+      as: :l,
+      where: l.location_id in ^hashes,
+      left_join: orbs in assoc(l, :orbs),
+      inner_join: initiator in assoc(orbs, :initiator),
+      distinct: initiator.id,
+      select: initiator.integrations)
+      |> Repo.all()
+  end
+
   def orbs_by_friends(your_id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
     from(orbs in Orb,
       as: :o,
@@ -311,15 +322,12 @@ defmodule Phos.Action do
          {:ok, orb} = data ->
            orb = orb |> Repo.preload([:initiator])
            spawn(fn ->
-             case orb.initiator do
-               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("ORB.#{orb.id}", token)
-               _ -> nil
-             end
-             Phos.Notification.target("'FLK.#{orb.initiator_id}' in topics && !('USR.#{orb.initiator_id}' in topics)",
-               %{title: "#{orb.initiator.username} forged an orb ⚡",
-                 body: orb.title
-               }, PhosWeb.Util.Viewer.orb_mapper(orb))
-
+             Phos.Notification.push(
+               Phos.Folk.notifiers_by_friends(orb.initiator_id)
+               |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end),
+               %{title: "Hey! 👋 You’ve got to check out what #{orb.initiator.username} just posted 🌠",
+                 body: orb.title},
+               %{action_path: "/orbland/orbs/#{orb.id}"})
            end)
            #spawn(fn -> user_feeds_publisher(orb) end)
            data
@@ -487,7 +495,7 @@ defmodule Phos.Action do
 
   defp notion_get_values(%{"type" => "date", "date" => data}), do: data
   defp notion_get_values(%{"type" => "select", "select" => data}) when is_map(data), do: Map.get(data, "name")
-  defp notion_get_values(%{"type" => "select", "select" => _data}), do: "-"
+  defp notion_get_values(%{"type" => "select", "select" => data}), do: data
   defp notion_get_values(%{"type" => "multi_select", "multi_select" => data}), do: Enum.map(data, fn d -> Map.get(d, "name") end)
   defp notion_get_values(%{"type" => "files", "files" => files}) when is_list(files) and length(files) > 0, do: List.first(files)["file"]["url"]
   defp notion_get_values(%{"type" => type} = data), do: notion_get_values(Map.get(data, type))
@@ -511,19 +519,21 @@ defmodule Phos.Action do
     end
   end
 
-  defp notion_platform_parse_properties(%{"properties" => properties, "id" => id}), do: Enum.reduce(properties, %{}, fn {k, v}, acc ->
+  defp notion_platform_parse_properties(%{"properties" => properties, "id" => id}) do
+  Enum.reduce(properties, %{}, fn {k, v}, acc ->
     key = String.downcase(k) |> String.replace(" ", "_")
     value = notion_get_values(v)
     case key do
       "time_condition" -> Map.put(acc, key, notion_platform_time(value))
-      "" -> Map.merge(acc, %{
+      "name" -> Map.merge(acc, %{
         "id" => id,
-        "title" => value
+        "name" => value
       })
       k when k in ["id", "type"] -> acc
       _ -> Map.put(acc, key, value)
-    end
-  end)
+    end end)
+  |> IO.inspect()
+  end
 
   defp notion_platform_time(%{"start" => <<_date::bytes-size(10)>> <> "T" <> _rest = date}) do
     case Timex.parse(date, "{RFC3339}") do
@@ -593,7 +603,7 @@ defmodule Phos.Action do
       id: Ecto.UUID.generate(),
       username: "Administrator 👋",
       expires_in: expires_in,
-      info: notion_get_values(info) |> String.replace("[town]", name),
+      info: notion_get_values(info),
       done: notion_get_values(done),
       media: true,
       lossy: notion_get_values(lossy),

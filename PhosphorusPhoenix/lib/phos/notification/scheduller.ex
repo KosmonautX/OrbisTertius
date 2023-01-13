@@ -3,7 +3,7 @@ defmodule Phos.Notification.Scheduller do
 
   require Logger
 
-  defstruct [:action_type, :active, :archetype, :frequency, :id, :regions, :target_group, :text, :time_condition, :trigger]
+  defstruct [:action_path, :active, :archetype, :archetype_id, :frequency, :id, :regions, :target_group, :title, :body , :time_condition, :trigger]
 
   @one_minute :timer.minutes(1)
 
@@ -134,49 +134,35 @@ defmodule Phos.Notification.Scheduller do
     end)
   end
 
-  defp send_notification(%{archetype: archetype, title: title} = data) when archetype != "-" do
-    orb_decider(data)
-    |> Enum.each(fn orb ->
-      expected_title = orb_title(title, orb)
-      Phos.Notification.target(
-        "#{archetype}.*",
-        %{title: expected_title, body: orb.title},
-        PhosWeb.Util.Viewer.orb_mapper(orb))
-    end)
+  defp send_notification(%{regions: [_ | _], title: title} = data) do
+    #expected_title = orb_title(title, orb)
+    fetch_tokens(data)
+    |> Phos.Notification.push(
+      %{title: title, body: Map.get(data, :body, "")},
+    %{action_path: data.action_path <> "/" <> data.archetype_id})
   end
 
-  defp send_notification(%{title: title} = data) do
-    orb_decider(data)
-    |> Enum.each(fn orb ->
-      expected_title = orb_title(title, orb)
-      Phos.Notification.target(
-        "*",
-        %{title: expected_title, body: orb.title},
-        PhosWeb.Util.Viewer.orb_mapper(orb))
-    end)
-  end
-
-  defp orb_decider(%{regions: []}), do: Phos.Action.list_all_active_orbs()
-  defp orb_decider(%{regions: regions}) when is_list(regions) do
+  defp fetch_tokens(%{regions: regions}) when is_list(regions) do
     Phos.External.Sector.get()
     |> Map.take(regions)
     |> Map.values()
     |> List.flatten()
-    |> Enum.uniq()
-    |> Phos.Action.active_orbs_by_geohashes()
+    |> Phos.Action.notifiers_by_geohashes()
+    |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end)
   end
-  defp orb_decider(_), do: []
+
+  defp fetch_tokens(_), do: []
 
   defp run_notification_timer(notifications) do
-    time = current_time()
-    Logger.debug("Running notification timer at #{time}")
+    now_time = current_time()
+    Logger.debug("Running notification timer at #{now_time}")
     Enum.filter(notifications, fn {_id, %{time_condition: ntime, frequency: frequency}, _active} ->
       [date, time] = case ntime do
-        %DateTime{} -> [DateTime.to_date(ntime), DateTime.to_time(time)]
+        %DateTime{} -> [DateTime.to_date(ntime), DateTime.to_time(now_time)]
         %Time{} -> [Timex.today, ntime]
       end
 
-      diff = case should_execute?(frequency, date, time) do
+      diff = case should_execute?(frequency, date, now_time) do
         true -> Time.diff(time, ntime)
         _ -> -1
       end
@@ -191,6 +177,7 @@ defmodule Phos.Notification.Scheduller do
     |> case do
       "daily" -> true
       "now" -> true
+      "scheduled" -> Date.compare(date, DateTime.to_date(current_time)) == :eq
       "weekends" -> Timex.weekday(current_time) in [6, 7]
       "weekly" -> Timex.weekday(current_time) == 1
       _ -> Date.compare(date, DateTime.to_date(current_time)) == :eq
@@ -221,11 +208,12 @@ defmodule Phos.Notification.Scheduller do
   end
 
   defp orb_title(title, %Phos.Action.Orb{initiator: %{username: username}}) do
-    constraint = "[InitiaorName]"
+    constraint = "[InitiatorName]"
     case String.contains?(title, constraint) do
       true -> String.replace(title, constraint, username)
       _ -> title
     end
   end
+
   defp orb_title(title, _orb), do: title
 end

@@ -40,9 +40,7 @@ defmodule Phos.Notification do
 
   def target(condition, notification, data \\ %{}) do
     #`'${topic}' in topics && !('${me}' in topics)`, eg. "'ORB.1' in topics && !('USR.1' in topics)"
-
     GenServer.call(executor(), {:target, condition, notification, data}, 10_000)
-
   end
 
   defp executor do
