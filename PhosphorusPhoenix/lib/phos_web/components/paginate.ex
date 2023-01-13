@@ -12,7 +12,7 @@ defmodule PhosWeb.Components.Pagination do
       |> assign_new(:last, fn -> true end)
       |> assign_new(:route_path, fn -> :root_path end)
       |> assign_new(:route_method, fn -> :index end)
-      |> assign_new(:limit, fn -> 2 end)}
+      |> assign_new(:limit, fn -> 20 end)}
   end
 
   @impl true

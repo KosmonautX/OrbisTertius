@@ -21,6 +21,7 @@ defmodule PhosWeb.Admin.NotificationLive.Index do
 
   def handle_event("execute", %{"id" => id}, socket) do
     Phos.Notification.Scheduller.execute(id)
+    IO.inspect "executing"
     {:noreply, put_flash(socket, :info, "Notification with hash #{String.slice(id, 0..6)} was executed")}
   end
 

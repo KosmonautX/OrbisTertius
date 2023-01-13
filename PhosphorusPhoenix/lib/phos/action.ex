@@ -179,6 +179,17 @@ defmodule Phos.Action do
       |> (&(Map.put(&1, :data, &1.data |> Repo.Preloader.lateral(:orbs, [limit: 5])))).()
   end
 
+  def notifiers_by_geohashes(hashes) do
+    from(l in Orb_Location,
+      as: :l,
+      where: l.location_id in ^hashes,
+      left_join: orbs in assoc(l, :orbs),
+      inner_join: initiator in assoc(orbs, :initiator),
+      distinct: initiator.id,
+      select: initiator.integrations)
+      |> Repo.all()
+  end
+
   def orbs_by_friends(your_id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
     from(orbs in Orb,
       as: :o,
@@ -511,19 +522,21 @@ defmodule Phos.Action do
     end
   end
 
-  defp notion_platform_parse_properties(%{"properties" => properties, "id" => id}), do: Enum.reduce(properties, %{}, fn {k, v}, acc ->
+  defp notion_platform_parse_properties(%{"properties" => properties, "id" => id}) do
+  Enum.reduce(properties, %{}, fn {k, v}, acc ->
     key = String.downcase(k) |> String.replace(" ", "_")
     value = notion_get_values(v)
     case key do
       "time_condition" -> Map.put(acc, key, notion_platform_time(value))
-      "" -> Map.merge(acc, %{
+      "name" -> Map.merge(acc, %{
         "id" => id,
-        "title" => value
+        "name" => value
       })
       k when k in ["id", "type"] -> acc
       _ -> Map.put(acc, key, value)
-    end
-  end)
+    end end)
+  |> IO.inspect()
+  end
 
   defp notion_platform_time(%{"start" => <<_date::bytes-size(10)>> <> "T" <> _rest = date}) do
     case Timex.parse(date, "{RFC3339}") do
@@ -593,7 +606,7 @@ defmodule Phos.Action do
       id: Ecto.UUID.generate(),
       username: "Administrator 👋",
       expires_in: expires_in,
-      info: notion_get_values(info) |> String.replace("[town]", name),
+      info: notion_get_values(info),
       done: notion_get_values(done),
       media: true,
       lossy: notion_get_values(lossy),
