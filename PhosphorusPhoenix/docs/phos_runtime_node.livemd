@@ -157,8 +157,37 @@ Phos.Users.get_user_by_fyr("fFKlWcfV9RRavNZJUxt46BLYB5n1")
 
 <!-- livebook:{"branch_parent_index":0} -->
 
-## Notion
+## Notification
 
 ```elixir
-Phos.External.Notion.today_post()
+%{year: year, month: month, day: day} = Date.utc_today()
+sgt = Timex.timezone("Asia/Singapore", {year, month, day})
+
+DateTime.utc_now()
+|> Timex.Timezone.convert(sgt)
+|> DateTime.to_date()
+```
+
+```elixir
+Phos.External.Sector.get()
+|> Map.take(["Bukit Panjang"])
+|> Map.values()
+|> List.flatten()
+|> Phos.Action.notifiers_by_geohashes()
+|> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end)
+
+# :h3.from_string('8d6520cb0811b7f')
+
+Phos.External.Notion.platform_notification()
+# Phos.Action.import_platform_notification()
+```
+
+```elixir
+orb = List.first(Phos.Action.list_orbs())
+```
+
+```elixir
+Phos.Folk.notifiers_by_friends(orb.initiator_id)
+orb |>
+#Phos.Action.notifiers_by_geohashes()
 ```

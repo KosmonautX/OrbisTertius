@@ -1,9 +1,9 @@
 defmodule PhosWeb.UserAuth do
   import Plug.Conn
   import Phoenix.Controller
+  import Phoenix.VerifiedRoutes, only: [sigil_p: 2], warn: false
 
   alias Phos.Users
-  alias PhosWeb.Router.Helpers, as: Routes
 
   # Make the remember me cookie valid for 60 days.
   # If you want bump or reduce this value, also change
@@ -72,7 +72,7 @@ defmodule PhosWeb.UserAuth do
   """
   def log_out_user(conn) do
     user_token = get_session(conn, :user_token)
-    user_token && Users.delete_session_token(user_token)
+    user_token && Users.delete_user_session_token(user_token)
 
     if live_socket_id = get_session(conn, :live_socket_id) do
       PhosWeb.Endpoint.broadcast(live_socket_id, "disconnect", %{})
@@ -135,7 +135,7 @@ defmodule PhosWeb.UserAuth do
         conn
       |> put_flash(:error, "You must log in to access this page.")
       |> maybe_store_return_to()
-      |> redirect(to: Routes.user_session_path(conn, :new))
+      |> redirect(to: Phoenix.VerifiedRoutes.path(conn, PhosWeb.Router, ~p"/users/log_in"))
       |> halt()
     end
 

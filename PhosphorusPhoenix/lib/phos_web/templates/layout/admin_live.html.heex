@@ -29,9 +29,9 @@
           <hr class="my-4 md:min-w-full">
           <h6 class="md:min-w-full text-blueGray-500 text-xs uppercase font-bold block pt-1 pb-4 no-underline">Feature</h6>
           <ul class="md:flex-col md:min-w-full flex flex-col list-none" id="navbar">
-            <.live_component module={PhosWeb.Components.AdminSidebar} id="orb" to={~p"/admin/orbs"} icon="fa-dharmachakra" title="Orbs"/>
             <.live_component module={PhosWeb.Components.AdminSidebar} id="dashboard" to={Routes.admin_dashboard_path(@socket, :index)} icon="fa-tv" title="Dashboard"/>
-
+            <.live_component module={PhosWeb.Components.AdminSidebar} id="orb" to={~p"/admin/orbs"} icon="fa-dharmachakra" title="Orbs"/>
+            <.live_component module={PhosWeb.Components.AdminSidebar} id="notifications" to={~p"/admin/notifications"} icon="fa-clock-o" title="Notification"/>
           </ul>
         </div>
       </div>

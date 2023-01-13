@@ -5,12 +5,15 @@ defmodule Phos.Message.Memory do
 
   @primary_key {:id, :binary_id, autogenerate: false}
   @foreign_key_type :binary_id
+  @timestamps_opts [type: :utc_datetime_usec]
   schema "memories" do
     field :media, :boolean, default: false
     field :message, :string
+    field :action_path, :string, default: nil
     belongs_to :user_source, Phos.Users.User, references: :id, type: Ecto.UUID
     belongs_to :orb_subject, Phos.Action.Orb, references: :id, type: Ecto.UUID
     belongs_to :rel_subject, Phos.Users.RelationRoot, references: :id, type: Ecto.UUID
+    belongs_to :com_subject, Phos.Comments.Comment, references: :id, type: Ecto.UUID
 
     has_many :reveries, Reverie, references: :id, foreign_key: :memory_id, on_delete: :delete_all
 

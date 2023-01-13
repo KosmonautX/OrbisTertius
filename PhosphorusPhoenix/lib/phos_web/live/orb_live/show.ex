@@ -101,6 +101,33 @@ defmodule PhosWeb.OrbLive.Show do
     save_comment(socket, socket.assigns.live_action, comment_params)
   end
 
+  @impl true
+  def handle_event("delete", %{"id" => id}, socket) do
+    comment = Comments.get_comment!(id)
+    {:ok, comment} = Comments.update_comment(comment, %{active: false})
+    # comment = Map.put(comment, :has_child, !Enum.empty?(Comments.get_child_comments_by_orb(comment.orb_id, to_string(comment.path))))
+    updated_comment_index = Enum.find_index(socket.assigns.comments, fn c -> elem(c, 1).id == id end)
+    updated_comments = List.replace_at(socket.assigns.comments, updated_comment_index, {String.split(to_string(comment.path), ".") |> List.to_tuple(), comment})
+    # TODO: To populate child_count
+    {:noreply, socket
+    |> assign(:comments, updated_comments)}
+  end
+
+  @impl true
+  def handle_event("toggle_more_replies", %{"initmorecomments" => initmorecomments, "orb" => orb_id, "path" => path}, socket) do
+    updated_comments =
+      if initmorecomments == "true" do
+        comments = Comments.get_child_comments_by_orb(orb_id,path) |> decode_to_comment_tuple_structure()
+        socket.assigns.comments ++ comments
+      else
+        socket.assigns.comments
+      end
+
+    {:noreply, socket
+    |> assign(:comments, updated_comments)}
+  end
+
+
   defp save_comment(socket, :reply, comment_params) do
     case Comments.create_comment(comment_params) do
       {:ok, comment} ->
@@ -135,33 +162,6 @@ defmodule PhosWeb.OrbLive.Show do
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :changeset, changeset)}
     end
-  end
-
-
-  @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    comment = Comments.get_comment!(id)
-    {:ok, comment} = Comments.update_comment(comment, %{active: false})
-    # comment = Map.put(comment, :has_child, !Enum.empty?(Comments.get_child_comments_by_orb(comment.orb_id, to_string(comment.path))))
-    updated_comment_index = Enum.find_index(socket.assigns.comments, fn c -> elem(c, 1).id == id end)
-    updated_comments = List.replace_at(socket.assigns.comments, updated_comment_index, {String.split(to_string(comment.path), ".") |> List.to_tuple(), comment})
-    # TODO: To populate child_count
-    {:noreply, socket
-    |> assign(:comments, updated_comments)}
-  end
-
-  @impl true
-  def handle_event("toggle_more_replies", %{"initmorecomments" => initmorecomments, "orb" => orb_id, "path" => path}, socket) do
-    updated_comments =
-      if initmorecomments == "true" do
-        comments = Comments.get_child_comments_by_orb(orb_id,path) |> decode_to_comment_tuple_structure()
-        socket.assigns.comments ++ comments
-      else
-        socket.assigns.comments
-      end
-
-    {:noreply, socket
-    |> assign(:comments, updated_comments)}
   end
 
   def decode_to_comment_tuple_structure(comments) do

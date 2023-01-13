@@ -3,35 +3,43 @@ defmodule PhosWeb.OrbControllerTest do
 
   import Phos.ActionFixtures
 
-  alias Phos.Action
-
   @create_attrs_geohash_list %{
     id: "6304af82-088c-4383-ae23-e70ca7d9460d",
     title: "some title with geohash list",
     active: "true",
-    "geolocation": %{"geohashes": [623275816647884799, 623275816649424895, 623275816649293823, 623275816647753727, 623275816647688191, 623275816647819263, 623275816648835071]},
-    "active": "true",
-    "media": "false",
-    "expires_in": "10000"
+    geolocation: %{
+      geohashes: [
+        623275816647884799,
+        623275816649424895, 
+        623275816649293823,
+        623275816647753727,
+        623275816647688191,
+        623275816647819263,
+        623275816648835071
+      ]
+    },
+    media: "false",
+    expires_in: "10000"
   }
 
   @create_attrs_central_geohash %{
     id: "6304af82-088c-4383-ae23-e70ca7d9460d",
     title: "some title with central_geohash",
     active: "true",
-    "geolocation": %{"central_geohash": 623275816647884799},
-    "active": "true",
-    "media": "false",
-    "expires_in": "10000"
+    geolocation: %{
+      central_geohash: 623275816647884799
+    },
+    media: "false",
+    expires_in: "10000"
   }
 
   @update_attrs %{
-    "active": "false",
-    "title": "some updated title"
+    active: "false",
+    title: "some updated title"
   }
   @invalid_attrs %{
     id: "6304af82-088c-4383-ae23-e70ca7d9460d",
-    "media": "false",
+    media: "false",
   }
 
   setup %{conn: conn} do
@@ -42,22 +50,22 @@ defmodule PhosWeb.OrbControllerTest do
 
   ## TODO add thetests on territory, and history
 
-    describe "index" do
-      setup [:inject_user_token]
+  describe "index" do
+    setup [:inject_user_token]
 
-      test "lists all orbs", %{conn: conn, user: user} do
-        orb = orb_fixture(%{"initiator_id" => user.id})
-        conn = get(conn, ~p"/api/orbland/orbs")
+    test "lists all orbs", %{conn: conn, user: user} do
 
-        assert [%{"orb_uuid" => id}] = json_response(conn, 200)["data"]
+      orb = orb_fixture(%{"initiator_id" => user.id})
+      conn = get(conn, ~p"/api/orbland/orbs")
 
-        assert [%{
-          "orb_uuid" => ^id,
-          "active" => true,
-          "title" => "some title",
-        }] = json_response(conn, 200)["data"]
-      end
+      assert [%{
+        "orb_uuid" => id,
+        "active" => true,
+        "title" => "some title",
+      }] = json_response(conn, 200)["data"]
+      assert orb.id == id
     end
+  end
 
   describe "create orb with target geohash" do
     setup [:inject_user_token]
@@ -85,7 +93,7 @@ defmodule PhosWeb.OrbControllerTest do
 
   describe "create orb with geohash list" do
     setup [:inject_user_token]
-    test "renders orb when data is valid", %{conn: conn, user: user} do
+    test "renders orb when data is valid", %{conn: conn} do
       conn = post(conn, ~p"/api/orbland/orbs", @create_attrs_geohash_list)
       assert %{"orb_uuid" => id} = json_response(conn, 201)["data"]
 

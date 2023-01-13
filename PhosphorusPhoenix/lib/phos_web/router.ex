@@ -140,6 +140,8 @@ defmodule PhosWeb.Router do
     live "/orbs", OrbLive.Index, :index
     live "/orbs/import", OrbLive.Import, :import
     live "/orbs/:id", OrbLive.Show, :show
+
+    live "/notifications", NotificationLive.Index, :index
   end
 
   scope "/api", PhosWeb.API do
@@ -199,10 +201,11 @@ defmodule PhosWeb.Router do
 
     scope "/memland" do
       resources "/memories", EchoController, except: [:new, :edit]
-      get "/orbs", EchoController, :index_orbs
+      put "/reveries/:id", EchoController, :update_reverie
       get "/friends", EchoController, :index_relations
       get "/orbs/:id", EchoController, :show_orbs
       get "/friends/:id", EchoController, :show_relations
+      get "/friends/:id/orbs", EchoController, :show_relations_jump_orbs
     end
 
     scope "/medialand" do

@@ -5,7 +5,7 @@ defmodule PhosWeb.Admin.OrbLive.Index do
 
 
   def mount(_params, _session, socket) do
-    limit = 2
+    limit = 20
     page = 1
     %{data: orbs, meta: meta} = filter_by_traits("", limit: limit, page: page)
     {:ok, assign(socket, orbs: orbs, pagination: meta.pagination, traits: "", limit: limit, current: page)}

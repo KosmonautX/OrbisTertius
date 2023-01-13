@@ -15,6 +15,15 @@ defmodule Phos.ActionTest do
       assert Action.list_orbs() |> Phos.Repo.preload([:locations,:initiator]) == [orb]
     end
 
+    test "get_orb/1 return specific orb" do
+      %{id: id} = orb_fixture()
+
+      assert {:ok, %Orb{} = orb} = Action.get_orb(id)
+      assert orb.id == id
+      assert Map.get(orb, :number_of_repost)
+      assert Map.get(orb, :comment_count)
+    end
+
     test "get_orb!/1 returns the orb with given id" do
       orb = orb_fixture()
       assert Action.get_orb!(orb.id) == orb
@@ -61,6 +70,38 @@ defmodule Phos.ActionTest do
     test "change_orb/1 returns a orb changeset" do
       orb = orb_fixture()
       assert %Ecto.Changeset{} = Action.change_orb(orb)
+    end
+
+    test "get_orb_by_trait_geo/3 returns list orb location with included traits" do
+      orb = orb_fixture(%{
+        "traits" => ["sample", "test"],
+        "locations" => 
+          [12345678901234]
+          |> Enum.map(fn v -> %{"id" => v} end)})
+
+      assert orbs = Action.get_orb_by_trait_geo([12345678901234], ["sample"])
+      assert length(orbs) == 1
+      assert List.first(orbs).orb_id == orb.id
+    end
+
+    test "get_orb_by_trait_geo/3 returns list orb with one traits" do
+      orb = orb_fixture(%{
+        "traits" => ["sample", "test"],
+        "locations" => 
+          [12345678901234]
+          |> Enum.map(fn v -> %{"id" => v} end)})
+
+      assert orbs = Action.get_orb_by_trait_geo([12345678901234], "sample")
+      assert length(orbs) == 1
+      assert List.first(orbs).orb_id == orb.id
+    end
+
+    test "filter_orbs_by_traits/2 return list orbs filtered by tratis" do
+      orb = orb_fixture(%{"traits" => ["trait", "test"]})
+
+      assert orbs = Action.filter_orbs_by_traits(["test"])
+      assert length(orbs.data) == 1
+      assert List.first(orbs.data).id == orb.id
     end
   end
 

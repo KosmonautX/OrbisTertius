@@ -8,17 +8,6 @@ defmodule PhosWeb.Admin.OrbLive.Import do
   end
 
   @impl true
-  def handle_info(:live_orbs, socket) do
-    case Phos.Action.import_today_orb_from_notion() do
-      data when data == [] ->
-        {:noreply, assign(socket, [message: "No Orbs scheduled for Today 🔮", loading: false])}
-      data when is_list(data) ->
-        {:noreply, assign(socket, [loading: false, orbs: Enum.reject(data,&(&1.done))])}
-      _ -> {:noreply, assign(socket, [message: "Error fetching orbs", loading: false])}
-    end
-  end
-
-  @impl true
   def handle_event("set-selected-orb", %{"selected" => selected}, %{assigns: %{selected_orbs: selected_orbs}} = socket) do
     case Enum.member?(selected_orbs, selected) do
       true -> {:noreply, assign(socket, :selected_orbs, selected_orbs -- [selected])}
@@ -82,6 +71,16 @@ defmodule PhosWeb.Admin.OrbLive.Import do
   @impl true
   def handle_event("close-modal", _, socket), do: {:noreply, assign(socket, show_detail_id: nil, show_modal: false)}
 
+  @impl true
+  def handle_info(:live_orbs, socket) do
+    case Phos.Action.import_today_orb_from_notion() do
+      data when data == [] ->
+        {:noreply, assign(socket, [message: "No Orbs scheduled for Today 🔮", loading: false])}
+      data when is_list(data) ->
+        {:noreply, assign(socket, [loading: false, orbs: Enum.reject(data,&(&1.done))])}
+      _ -> {:noreply, assign(socket, [message: "Error fetching orbs", loading: false])}
+    end
+  end
 
   @impl true
   def handle_info(:boundaries_update, %{assigns: %{orbs: orbs, show_detail_id: id}} = socket) do
