@@ -3,7 +3,7 @@ defmodule Phos.Notification.Scheduller do
 
   require Logger
 
-  defstruct [:action_path, :active, :archetype, :frequency, :id, :regions, :target_group, :title, :message , :time_condition, :trigger]
+  defstruct [:action_path, :active, :archetype, :archetype_id, :frequency, :id, :regions, :target_group, :title, :body , :time_condition, :trigger]
 
   @one_minute :timer.minutes(1)
 
@@ -134,37 +134,24 @@ defmodule Phos.Notification.Scheduller do
     end)
   end
 
-  defp send_notification(%{region: [_ | _] = region, title: title} = data) do
-    dbg()
-    orb_decider(data)
-    |> Enum.each(fn orb ->
-      expected_title = orb_title(title, orb)
-      Phos.Notification.target(
-        "*",
-        %{title: expected_title, body: orb.title},
-        PhosWeb.Util.Viewer.orb_mapper(orb))
-    end)
+  defp send_notification(%{regions: [_ | _] = region, title: title} = data) do
+    #expected_title = orb_title(title, orb)
+    fetch_tokens(data)
+    |> Phos.Notification.push(
+      %{title: title, body: Map.get(data, :body, "")},
+    %{action_path: data.action_path <> "/" <> data.archetype_id})
   end
 
-  defp send_notification(%{title: title} = data) do
-    orb_decider(data)
-    |> Enum.each(fn orb ->
-      expected_title = orb_title(title, orb)
-      Phos.Notification.target(
-        "*",
-        %{title: expected_title, body: orb.title},
-        PhosWeb.Util.Viewer.orb_mapper(orb))
-    end)
-  end
-
-  defp orb_decider(%{regions: []}), do: Phos.Action.list_all_active_orbs()
-  defp orb_decider(%{regions: regions}) when is_list(regions) do
+  defp fetch_tokens(%{regions: regions}) when is_list(regions) do
     Phos.External.Sector.get()
     |> Map.take(regions)
     |> Map.values()
     |> List.flatten()
+    |> Phos.Action.notifiers_by_geohashes()
+    |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end)
   end
-  defp orb_decider(_), do: []
+
+  defp fetch_tokens(_), do: []
 
   defp run_notification_timer(notifications) do
     now_time = current_time()
@@ -221,7 +208,7 @@ defmodule Phos.Notification.Scheduller do
   end
 
   defp orb_title(title, %Phos.Action.Orb{initiator: %{username: username}}) do
-    constraint = "[InitiaorName]"
+    constraint = "[InitiatorName]"
     case String.contains?(title, constraint) do
       true -> String.replace(title, constraint, username)
       _ -> title

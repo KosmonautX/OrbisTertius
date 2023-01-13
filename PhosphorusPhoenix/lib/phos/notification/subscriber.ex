@@ -56,8 +56,8 @@ defmodule Phos.Notification.Subscriber do
       Fcmex.push(tokens, notification: notification, data: data)
       |> Enum.reduce(%{succeeded: 0, failed: 0}, fn x, %{succeeded: suc, failed: fail} = acc ->
         case elem(x, 0) do
-          :ok -> %{acc | succeeded: suc + Map.get(x, "success", 1)}
-          _ -> %{acc | failed: fail + Map.get(x, "failure", 1)}
+          :ok -> %{acc | succeeded: suc + Map.get(elem(x, 1), "success", 1)}
+          _ -> %{acc | failed: fail + Map.get(elem(x, 1), "failure", 1)}
         end
       end)
 

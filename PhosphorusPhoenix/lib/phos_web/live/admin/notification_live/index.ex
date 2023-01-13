@@ -19,6 +19,15 @@ defmodule PhosWeb.Admin.NotificationLive.Index do
     {:noreply, assign(socket, notifications: notifications)}
   end
 
+  def handle_event("renew", %{}, socket) do
+    Phos.Notification.Scheduller.renew()
+    {:noreply,
+     socket
+     |> put_flash(:info, "Renewing Notifications")
+     |> redirect(to: "/admin/notifications")
+    }
+  end
+
   def handle_event("execute", %{"id" => id}, socket) do
     Phos.Notification.Scheduller.execute(id)
     IO.inspect "executing"

@@ -2,8 +2,8 @@
 # Phos API Endpoint Documentation
 
 :ipAddress = http://localhost:4000/api
-:ipAddress = https://nyx.scrb.ac/api
-#:localipAddress = http://localhost:4000/api
+#:ipAddress = https://nyx.scrb.ac/api
+:localipAddress = http://localhost:4000/api
 :princeton=0b3gd5XUGtNP6lqQean4IAp7ogG3
 :satrio=BX1BxM9KkwdFmy2J4FNNkFxclpS2
 :owen=0ErhlIM10Maldn1qVMGOJMKu6J92
@@ -12,17 +12,17 @@
 :princeton_id=9bf9c443-f89b-460a-972d-6704ae66823d
 :owentwo_id=973da4ae-48a6-498d-b988-548af3af99f6
 :satrio_id=b3cd35ef-83e2-448e-831d-f5ded1c39692
-#:satrio_id=5c82aeea-7c2b-4a97-a80b-d5b728c4ee86
+:satrio_id=5c82aeea-7c2b-4a97-a80b-d5b728c4ee86
 :phong_id=f8ed10b7-147e-4864-9525-bcf49c457dfc
 :satrioremote_id=5972b8e6-319b-4bf4-95cf-f58fb2117e21
 :brandon_id=b556571a-362e-4017-9894-f1eed0b39794
-#:lky_id=3995c7f6-af54-4e31-85ee-3608e16ec00f
-:lky_id=4b2d6d8d-7781-4a20-b868-b0e0db245b85
+:lky_id=3995c7f6-af54-4e31-85ee-3608e16ec00f
+#:lky_id=4b2d6d8d-7781-4a20-b868-b0e0db245b85
 :aang_id=58c146d2-407f-49d5-a74d-0d9362e73be9
 :zuko_id=6f6c7d30-4447-4687-8fb9-f95a2de82957
 :owen_id=233e50b1-5507-4a3c-96a7-b6339e8d27f4
 :tate_id=5e7ed96c-f444-43e5-96e9-fe44bba1a664
-:fcm=dkoDy7FBSOybPE-juVQBHa:APA91bEdhNYKyZ75kG2ucjehb1Rqbfv69m2UiFGpve8bZS7ZAAMca3LiRmwg6g6JXPTgt35neGOQdGZcBJ_8Y5VVKNCMAIn0KHMJRfBiJZrcC-0VSazm3u6RTUecAUYxPQbLAZV0kRDA
+:fcm=ea8-2OzeSbm2oOeZtHFP8z:APA91bH1rOtpzxu9VU4tpXLU_oVz_v6FkGccdTPeCe3msiQrjs9wm7ME0a2bRctB9_KswmFcTxjLVzaFa2-SNBb0x6K24X6dxDB5HlpQTOK5ibOLqvTzhAVQsTdgR_S535bNSuuFoKuG
 :prince_fcm=ewGVcsOAZ02gmzz9zbCLdo:APA91bGS6WbollBieIKBr9x7JvNzbHkTL2K-ukCbGDvjEYtJBqCoVC2U71jF3OAmwobRYocBGQZ-gVQr2-0Zk6ydjjlHuVf7EOjHdS2zA_TxUWIzvDkaZ0jvROqpLyOuMMqCTxqWs2UA
 :rel=9bb7ad28-3caa-49fa-a314-fc9ca8093f27
 :auth-headers = <<
@@ -106,7 +106,8 @@ PUT :ipAddress/userland/self/territory
         },
         {
             "id": "work",
-            "geohash": 627986446952349695
+            "geohash": 636786611773840255,
+            "location_description": "Bukit Panjang"
         }
     ]
 }

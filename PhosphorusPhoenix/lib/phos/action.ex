@@ -498,7 +498,7 @@ defmodule Phos.Action do
 
   defp notion_get_values(%{"type" => "date", "date" => data}), do: data
   defp notion_get_values(%{"type" => "select", "select" => data}) when is_map(data), do: Map.get(data, "name")
-  defp notion_get_values(%{"type" => "select", "select" => _data}), do: "-"
+  defp notion_get_values(%{"type" => "select", "select" => data}), do: data
   defp notion_get_values(%{"type" => "multi_select", "multi_select" => data}), do: Enum.map(data, fn d -> Map.get(d, "name") end)
   defp notion_get_values(%{"type" => "files", "files" => files}) when is_list(files) and length(files) > 0, do: List.first(files)["file"]["url"]
   defp notion_get_values(%{"type" => type} = data), do: notion_get_values(Map.get(data, type))

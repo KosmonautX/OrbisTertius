@@ -167,3 +167,17 @@ DateTime.utc_now()
 |> Timex.Timezone.convert(sgt)
 |> DateTime.to_date()
 ```
+
+```elixir
+Phos.External.Sector.get()
+|> Map.take(["Bukit Panjang"])
+|> Map.values()
+|> List.flatten()
+|> Phos.Action.notifiers_by_geohashes()
+|> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end)
+
+# :h3.from_string('8d6520cb0811b7f')
+
+Phos.External.Notion.platform_notification()
+# Phos.Action.import_platform_notification()
+```
