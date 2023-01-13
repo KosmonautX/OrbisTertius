@@ -4,19 +4,6 @@ defmodule PhosWeb.CommentControllerTest do
   import Phos.CommentsFixtures
   import Phos.ActionFixtures
 
-  alias Phos.Comments.Comment
-
-  @create_root_attrs %{
-    body: "some root",
-    orb_id: "6304af82-088c-4383-ae23-e70ca7d9460d",
-    initiator_id: "a45bbc2c-22b8-42ca-9c11-77bf609e2d86",
-  }
-
-  @create__child_attrs %{
-    body: "some child",
-    parent_id: "7488a646-e31f-11e4-aace-600308960662"
-  }
-
   @update_attrs %{
     body: "some updated body",
     parent_id: "7488a646-e31f-11e4-aace-600308960668"
@@ -43,13 +30,12 @@ defmodule PhosWeb.CommentControllerTest do
       comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
       conn = get(conn, path(conn, ~p"/api/orbland/comments"))
 
-      assert [%{"id" => id}] = json_response(conn, 200)["data"]
-
       assert [%{
-        "id" => ^id,
+        "id" => id,
         "active" => true,
         "body" => "some body",
       }] = json_response(conn, 200)["data"]
+      assert comment.id == id
     end
 
     test "lists root comments of orb", %{conn: conn, orb: orb, user: user} do
@@ -59,10 +45,15 @@ defmodule PhosWeb.CommentControllerTest do
       conn = get(conn, path(conn, Router, ~p"/api/orbland/comments/root/#{orb.id}"))
 
       assert [%{
+        "id" => id,
         "body" => "root_comment",
         }, %{
+        "id" => id2,
         "body" => "root_comment_2",
       }] = json_response(conn, 200)["data"]
+
+      assert id == root_comment.id
+      assert id2 == root_comment2.id
     end
 
     test "lists ancestors of comment", %{conn: conn, orb: orb, user: user} do
@@ -115,7 +106,7 @@ defmodule PhosWeb.CommentControllerTest do
   describe "create child comment" do
     setup [:create_orb, :inject_user_token]
     test "renders comment when data is valid", %{conn: conn, orb: orb, user: user} do
-      %{id: parent_comment_id} = comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
+      %{id: parent_comment_id} = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
 
       child_comment = %{
         body: "some child",
@@ -132,12 +123,12 @@ defmodule PhosWeb.CommentControllerTest do
                "id" => ^id,
                "active" => true,
                "body" => "some child",
-               "parent_id" => parent_comment_id
+               "parent_id" => ^parent_comment_id
              } = json_response(conn, 200)["data"]
     end
 
     test "renders comment when data is invalid", %{conn: conn, orb: orb, user: user} do
-      %{id: parent_comment_id} = comment = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
+      %{id: parent_comment_id} = comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
 
       child_comment = %{
         body: "",

@@ -4,9 +4,10 @@ defmodule Phos.Comments do
   """
 
   import Ecto.Query, warn: false
-  import EctoLtree.Functions
+  import EctoLtree.Functions, only: [nlevel: 1]
+
   alias Phos.Repo
-  alias Phos.Comments.{Comment}
+  alias Phos.Comments.Comment
 
 
   @doc """
@@ -127,7 +128,6 @@ defmodule Phos.Comments do
       preload: [:initiator],
       inner_lateral_join: sc in subquery(
         from sc in Comment,
-        where: sc.parent_id == parent_as(:c).id,
         select: %{count: count()}
       ),
       select_merge: %{child_count: sc.count}
