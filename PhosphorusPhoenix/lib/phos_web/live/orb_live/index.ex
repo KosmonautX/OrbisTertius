@@ -11,7 +11,7 @@ defmodule PhosWeb.OrbLive.Index do
 
     {:ok,
      socket
-     |> assign(:geolocation, %{"all" => list_orbs()})
+     |> assign(:geolocation, %{"all" => Phos.Action.list_all_active_orbs()})
      |> assign(:addresses, %{"all" => ["all"]})}
   end
 
