@@ -21,7 +21,8 @@
       orb={@orb}
       current_user={@current_user}
       socket={@socket}
-      reply_comment={nil}
+      reply_comment={@reply_comment}
+      edit_comment={@edit_comment}
       phx-target={"#comment-#{elem(comment, 1).id}"}
       />
   </div>

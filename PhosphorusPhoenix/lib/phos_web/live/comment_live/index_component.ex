@@ -3,7 +3,5 @@ defmodule PhosWeb.CommentLive.IndexComponent do
 
   import Phos.Comments, only: [filter_root_comments_chrono: 1]
 
-  alias Phoenix.LiveView.JS
-
   def mount(_params, _session, socket), do: {:ok, socket}
 end

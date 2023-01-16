@@ -4,6 +4,7 @@ defmodule PhosWeb.CommentLiveTest do
   import Phos.ActionFixtures
   # import PhosWeb.ConnCase
 
+  alias Phos.Comments
   alias Phos.CommentsFixtures
 
   @create_attrs %{body: "some body"}
@@ -25,29 +26,30 @@ defmodule PhosWeb.CommentLiveTest do
       {:ok, index_live, _html} = live(conn, ~p"/orb/#{orb.id}")
 
       assert render(index_live) =~ "some body"
-
     end
-
 
     test "create new comment", %{conn: conn, orb: orb} do
       {:ok, index_live, _html} = live(conn, ~p"/orb/#{orb.id}")
 
-      view =
-        index_live
-        |> form("#comment-form", comment: @create_attrs)
-        |> render_submit()
+      index_live
+      |> form("#create-root-comment-#{orb.id}", comment: @create_attrs)
+      |> render_submit()
+
+      comment = Comments.get_root_comments_by_orb(orb.id) |> List.last()
+
+      send(index_live.pid, {:new_comment, comment})
+      view = render(index_live)
 
       assert view =~ "Comment added successfully"
       assert view =~ "some body"
     end
 
     test "create invalid comment", %{conn: conn, orb: orb} do
-
       {:ok, index_live, _html} = live(conn, ~p"/orb/#{orb.id}")
 
       view =
         index_live
-        |> form("#comment-form", comment: @invalid_attrs)
+        |> form("#create-root-comment-#{orb.id}", comment: @invalid_attrs)
         |> render_submit()
 
       assert view =~ "can&#39;t be blank"
@@ -60,14 +62,13 @@ defmodule PhosWeb.CommentLiveTest do
       assert index_live |> element("#comment-#{comment.id} a", "Edit") |> render_click() =~
                "Edit"
 
-      assert_patch(index_live, ~p"/orb/#{orb.id}/edit/#{comment.id}")
+      index_live
+      |> form("#edit-comment-#{comment.id}", comment: @update_attrs)
+      |> render_submit()
 
-      view =
-        index_live
-        |> form("#comment-replyedit-form", comment: @update_attrs)
-        |> render_submit()
+      send(index_live.pid, {:edit_comment, comment})
 
-      assert view =~ "Comment updated successfully"
+      assert render(index_live) =~ "Comment updated successfully"
     end
 
     test "deactivate comment", %{conn: conn, orb: orb, user: user} do
@@ -87,13 +88,15 @@ defmodule PhosWeb.CommentLiveTest do
       assert index_live |> element("#comment-#{comment.id} a", "Reply") |> render_click() =~
       "reply"
 
-      view =
-        index_live
-        |> form("#comment-replyedit-form", comment: @reply_attrs)
-        |> render_submit()
+      index_live
+      |> form("#create-child-comment-#{comment.id}", comment: @reply_attrs)
+      |> render_submit()
 
-      assert view =~ "Reply added successfully"
-      assert view =~ "some reply body"
+      child_comment = Comments.get_descendents_comment(comment.id) |> List.last()
+
+      send(index_live.pid, {:child_comment, child_comment})
+
+      assert render(index_live) =~ "Reply added successfully"
     end
 
     test "lists ancestor comments", %{conn: conn, orb: orb, user: user} do

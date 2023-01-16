@@ -29,7 +29,6 @@ defmodule PhosWeb.CommentLive.FormComponent do
 
         {:noreply, 
         socket
-        |> put_flash(:info, "Comment added successfully")
         |> assign(changeset: %Comments.Comment{} |> Ecto.Changeset.change())
       }
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -47,14 +46,27 @@ defmodule PhosWeb.CommentLive.FormComponent do
 
     case Comments.create_comment(comment_params) do
       {:ok, comment} ->
-        send(self(), {:new_comment, comment})
+        send(self(), {:child_comment, comment})
 
-        {:noreply,
-          socket
-          |> put_flash(:info, "Reply added successfully")}
+        {:noreply, socket}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, changeset: changeset)}
+    end
+  end
+
+  @impl true
+  def handle_event("edit", %{"comment" => %{"comment_id" => comment_id, "body" => body}}, socket) do
+    comment = Comments.get_comment!(comment_id)
+    case Comments.update_comment(comment, %{body: body}) do
+      {:ok, comment} ->
+        send(self(), {:edit_comment, comment})
+
+        {:noreply, 
+          socket
+          |> assign(changeset: %Comments.Comment{} |> Ecto.Changeset.change())}
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, :changeset, changeset)}
     end
   end
 end

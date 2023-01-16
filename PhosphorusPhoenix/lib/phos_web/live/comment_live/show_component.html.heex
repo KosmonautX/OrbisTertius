@@ -19,7 +19,7 @@
         orb={@orb}
         text="Edit comment"
         target={"#comment-#{elem(@comment, 1).id}"}
-        id={"create-child-comment-#{elem(@comment, 1).id}"}
+        id={"edit-comment-#{elem(@comment, 1).id}"}
         action={:edit} />
 
       <div :if={not elem(@comment, 1).active}>
