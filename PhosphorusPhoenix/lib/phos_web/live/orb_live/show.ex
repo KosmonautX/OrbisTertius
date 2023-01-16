@@ -30,6 +30,12 @@ defmodule PhosWeb.OrbLive.Show do
     #  |> assign(:image, {:ok, Phos.Orbject.S3.get("ORB", id, "150x150")})
   end
 
+  @impl true
+  def handle_info({:new_comment, %{orb_id: orb_id}}, socket) do
+    comments = Comments.get_root_comments_by_orb(orb_id) |> decode_to_comment_tuple_structure()
+    {:noreply, assign(socket, :comments, comments)}
+  end
+
   defp apply_action(socket, :reply, %{"id" => _orb_id, "cid" => cid} = _params) do
     socket
     |> assign(:comment, Comments.get_comment!(cid))
