@@ -599,7 +599,7 @@ defmodule Phos.Action do
                  })
   end
 
-  defp default_orb_populator({name, _hashes}, %{"Info" => info, "1920_1080 Image" => lossless, "200_150 Image" => lossy, "Done" => done} = _properties) do
+  defp default_orb_populator({_name, _hashes}, %{"Info" => info, "1920_1080 Image" => lossless, "200_150 Image" => lossy, "Done" => done} = _properties) do
     expires_in = 4 * 7 * 24 * 60 * 60 ## TODO let it be selected in Admin View instead
     %{
       id: Ecto.UUID.generate(),

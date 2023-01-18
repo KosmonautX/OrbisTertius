@@ -31,6 +31,30 @@ defmodule PhosWeb.OrbLive.Show do
     |> apply_action(socket.assigns.live_action, params)}
   end
 
+  @impl true
+  def handle_info({:new_comment, %{orb_id: orb_id}}, socket) do
+    comments = Comments.get_root_comments_by_orb(orb_id) |> decode_to_comment_tuple_structure()
+    {:noreply, 
+      assign(socket, :comments, comments) 
+      |> put_flash(:info, "Comment added successfully")}
+  end
+
+  @impl true
+  def handle_info({:child_comment, %{orb_id: orb_id}}, socket) do
+    comments = Comments.get_root_comments_by_orb(orb_id) |> decode_to_comment_tuple_structure()
+    {:noreply, 
+      assign(socket, :comments, comments) 
+      |> put_flash(:info, "Reply added successfully")}
+  end
+
+  @impl true
+  def handle_info({:edit_comment, %{orb_id: orb_id}}, socket) do
+    comments = Comments.get_root_comments_by_orb(orb_id) |> decode_to_comment_tuple_structure()
+    {:noreply, 
+      assign(socket, comments: comments, edit_comment: nil) 
+      |> put_flash(:info, "Comment updated successfully")}
+  end
+
   defp apply_action(socket, :reply, %{"id" => _orb_id, "cid" => cid} = _params) do
     socket
     |> assign(:comment, Comments.get_comment!(cid))
