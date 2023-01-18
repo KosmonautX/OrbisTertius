@@ -1,0 +1,26 @@
+<.header>
+  Reverie <%= @reverie.id %>
+  <:subtitle>This is a reverie record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/reveries/#{@reverie}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit reverie</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Read"><%= @reverie.read %></:item>
+</.list>
+
+<.back navigate={~p"/reveries"}>Back to reveries</.back>
+
+<.modal :if={@live_action == :edit} id="reverie-modal" show on_cancel={JS.patch(~p"/reveries/#{@reverie}")}>
+  <.live_component
+    module={PhosWeb.ReverieLive.FormComponent}
+    id={@reverie.id}
+    title={@page_title}
+    action={@live_action}
+    reverie={@reverie}
+    navigate={~p"/reveries/#{@reverie}"}
+  />
+</.modal>

@@ -56,12 +56,13 @@ defmodule PhosWeb.Components.List do
     end
   end
 
-  def editable_value(%{value: value, class: class, data: data} = assigns) do
+  def editable_value(%{value: value, class: _class, data: data} = assigns) do
     changeset = Ecto.Changeset.change(data)
+    assigns = assign(assigns, changeset: changeset, value: Map.get(data, value))
 
     ~H"""
-    <.form let={f} for={changeset} phx-submit="update" class="flex w-full items-center" phx-target={@myself}>
-      <%= text_input f, :value, value: Map.get(data, value), class: @class, disabled: @disabled, focus: true %>
+    <.form let={f} for={@changeset} phx-submit="update" class="flex w-full items-center" phx-target={@myself}>
+      <%= text_input f, :value, value: @value, class: @class, disabled: @disabled, focus: true %>
       <span phx-click="edit_value" phx-target={@myself} class={icon_class(@disabled)}>
         <i class="fa-solid fa-pencil cursor-pointer"></i>
       </span>

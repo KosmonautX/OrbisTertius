@@ -7,7 +7,137 @@ Mix.install([
 ])
 ```
 
-## Socket Initiliazation
+## Root
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## Memory
+
+## Socket Init
+
+```elixir
+defmodule Echolocation do
+  use Slipstream,
+    restart: :temporary
+
+  require Logger
+
+  @topic "memory:user:5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"
+
+  def start_link(args) do
+    Slipstream.start_link(__MODULE__, args, name: __MODULE__)
+  end
+
+  @impl Slipstream
+  def init(config) do
+    case connect(config) do
+      {:ok, socket} ->
+        {:ok, socket}
+
+      {:error, reason} ->
+        Logger.error(
+          "Could not start #{__MODULE__} because of " <>
+            "validation failure: #{inspect(reason)}"
+        )
+
+        :ignore
+    end
+  end
+
+  @impl Slipstream
+  def handle_connect(socket) do
+    {:ok, join(socket, @topic)}
+  end
+
+  @impl Slipstream
+  def handle_join(@topic, _join_response, socket) do
+    # an asynchronous push with no reply:
+    # push(socket, @topic, "ping", %{"hello" => "there"})
+
+    {:ok, socket}
+  end
+
+  @impl Slipstream
+  def handle_message(@topic, "memory_formation", message, socket) do
+    Logger.info(
+      # <>
+      "Memories Remembered"
+    )
+
+    IO.inspect(message)
+
+    {:ok, socket}
+  end
+
+  def handle_call({:say, goodbyein}, _from, socket) do
+    IO.puts("server going bye bye in T-#{inspect(goodbyein)}s")
+    :timer.send_interval(:timer.seconds(goodbyein), self(), :stop)
+    {:reply, {:ok, :saygoodbye}, socket}
+  end
+
+  def handle_call({:location_update, message}, _from, socket) do
+    # message format %{name: "live", geohash: 612321341243213}
+    IO.puts("location sent for update: #{inspect(message)}")
+    push(socket, @topic, "location_update", message)
+    {:reply, {:ok, :hao}, socket}
+  end
+
+  @impl Slipstream
+  def handle_message(@topic, event, message, socket) do
+    Logger.error(
+      "Was not expecting a push from the server. Heard: " <>
+        inspect({@topic, event, message})
+    )
+
+    {:ok, socket}
+  end
+
+  @impl Slipstream
+  def handle_disconnect(_reason, socket) do
+    {:stop, :normal, socket}
+  end
+
+  @impl Slipstream
+  def handle_info(:stop, socket) do
+    IO.puts("sayonara mai gud ser")
+    {:stop, :normal, socket}
+  end
+
+  @impl Slipstream
+  def handle_info(:request_metrics, socket), do: {:noreply, socket}
+
+  @impl Slipstream
+  def terminate(reason, socket) do
+    Logger.debug("shutting down: " <> inspect(reason))
+
+    disconnect(socket)
+  end
+end
+```
+
+```elixir
+token =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmeXJfaWQiOiJCWDFCeE05S2t3ZEZteTJKNEZOTmtGeGNscFMyIiwidGVycml0b3J5Ijp7ImhvbWUiOnsiaGFzaCI6NjI4MDIxMjk3NjY2MjI0MTI3LCJyYWRpdXMiOjE2NjY1MDE2OTJ9LCJ3b3JrIjp7Imhhc2giOjYyNzk4NjQ0Njk1MjM0OTY5NSwicmFkaXVzIjoxNjY2NTAxNjkyfX0sInVzZXJfaWQiOiI1YzgyYWVlYS03YzJiLTRhOTctYTgwYi1kNWI3MjhjNGVlODYiLCJ1c2VybmFtZSI6InNhdHJpbyIsImV4cCI6MTY3MTU0MzY2MSwiaWF0IjoxNjcxNTQyNDQ5LCJpc3MiOiJQcmluY2V0b24iLCJyb2xlIjoicGxlYiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.Z2Po3dTR_2vym4Z41t5z2-b5FIIR-_N6jGNhMUljCDs"
+
+domain = "ws://localhost:4000"
+
+config = [
+  uri: domain <> "/socket/websocket?token=" <> token,
+  reconnect_after_msec: [200, 500, 1_000, 2_000]
+]
+
+{:ok, pid} = Echolocation.start_link(config)
+```
+
+```elixir
+GenServer.call(pid, {:say, 1})
+```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## Discovery
+
+## Socket Initialization
 
 ```elixir
 defmodule BeluSocket do

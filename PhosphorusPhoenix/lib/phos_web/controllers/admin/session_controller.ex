@@ -1,12 +1,13 @@
-defmodule PhosWeb.Admin.SessionController do
+defmodule PhosWeb.AdminSessionController do
   use PhosWeb, :controller
+  use PhosWeb, :verified_routes
 
-  plug :put_root_layout, {PhosWeb.LayoutView, :admin_root}
-  plug :put_layout, {PhosWeb.LayoutView, :admin}
+  plug :put_root_layout, {PhosWeb.Layouts, :admin_root}
+  #plug :put_layout, {PhosWeb.LayoutView, :admin}
 
-  def index(conn, params) do
+  def index(conn, _params) do
     conn
-    |> redirect(to: Routes.admin_session_path(conn, :new, params))
+    |> redirect(to: ~p"/admin/sessions/new")
     |> halt()
   end
 
@@ -24,7 +25,7 @@ defmodule PhosWeb.Admin.SessionController do
       |> put_session(:admin_token, token)
       |> put_session(:live_socket_id, "admin_sessions:#{Base.url_encode64(token)}")
       |> put_flash(:info, String.capitalize("sike you are still in the matrix  🔵💊🔴"))
-      |> redirect(to: "/admin/orbs")
+      |> redirect(to: ~p"/admin/orbs")
       |> halt()
     else
       {_, msg} -> render_unauthenticate(conn, msg)
@@ -35,6 +36,7 @@ defmodule PhosWeb.Admin.SessionController do
   defp render_unauthenticate(conn, msg \\ "Invalid password") do
     conn
     |> put_flash(:error, String.capitalize(msg))
-    |> redirect(to: Routes.admin_session_path(conn, :new))
+    |> redirect(to: ~p"/admin/sessions/new")
+    |> halt()
   end
 end

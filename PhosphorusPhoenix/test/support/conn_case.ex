@@ -19,15 +19,18 @@ defmodule PhosWeb.ConnCase do
 
   using do
     quote do
+      # The default endpoint for testing
+      @endpoint PhosWeb.Endpoint
+
+      use PhosWeb, :verified_routes
+
       # Import conveniences for testing with connections
       import Plug.Conn
       import Phoenix.ConnTest
       import PhosWeb.ConnCase
 
-      alias PhosWeb.Router.Helpers, as: Routes
+      alias PhosWeb.Router
 
-      # The default endpoint for testing
-      @endpoint PhosWeb.Endpoint
     end
   end
 

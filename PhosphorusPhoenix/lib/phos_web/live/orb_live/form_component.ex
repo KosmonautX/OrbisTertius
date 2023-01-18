@@ -1,7 +1,6 @@
 defmodule PhosWeb.OrbLive.FormComponent do
   use PhosWeb, :live_component
 
-  alias PhosWeb.Util.{Viewer,ImageHandler}
   alias Phos.Action
 
   @impl true
@@ -96,7 +95,6 @@ defmodule PhosWeb.OrbLive.FormComponent do
          |> put_flash(:info, "Orb created successfully")
          |> push_redirect(to: socket.assigns.return_to)}
       {:error, %Ecto.Changeset{} = changeset} ->
-        IO.inspect(changeset)
         {:noreply, assign(socket, changeset: changeset)}
 
     end

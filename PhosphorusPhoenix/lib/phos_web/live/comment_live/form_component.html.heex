@@ -1,30 +1,20 @@
 <div>
   <h3><%=to_string(@action)%>: <%= @comment.body %></h3>
-  <.form
+  <.simple_form
     let={f}
     for={@changeset}
     id={"comment-replyedit-form"}
     phx-submit="reply">
 
-    <%= if @action == :reply do %>
-      <%= textarea f, :body %>
-    <% else %>
-      <%= textarea f, :body, value: @comment.body %>
-    <% end %>
+    <.input :if={@action == :reply} field={{f, :body}} type="textarea" />
+    <.input :if={@action != :reply} field={{f, :body}} type="textarea" value={@comment.body} />
+    <.input field={{f, :parent_path}} type="hidden" value={to_string(@comment.path)} />
+    <.input field={{f, :initiator_id}} type="hidden" value={@current_user.id} />
+    <.input field={{f, :orb_id}} type="hidden" value={@orb.id} />
+    <.input field={{f, :parent_id}} type="hidden" value={@comment.id} />
 
-    <%= error_tag f, :body %>
-
-    <%= hidden_input f, :parent_path, value: to_string(@comment.path) %>
-
-    <%= hidden_input f, :initiator_id, value: @current_user.id %>
-    <%= error_tag f, :initiator_id %>
-
-    <%= hidden_input f, :orb_id, value: @orb.id %>
-    <%= error_tag f, :orb_id %>
-
-    <%= hidden_input f, :parent_id, value: @comment.id %>
-    <%= error_tag f, :parent_id %>
-
-    <%= submit to_string(@action), phx_disable_with: "Saving..." %>
-  </.form>
+    <:actions>
+      <.button type="submit" phx-disable-with="Saving..."><%= @action %></.button>
+    </:actions>
+  </.simple_form>
 </div>
