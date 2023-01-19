@@ -148,7 +148,16 @@ defmodule Phos.Notification.Scheduller do
     |> Map.values()
     |> List.flatten()
     |> Phos.Action.notifiers_by_geohashes()
-    |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end)
+    |> Enum.map(fn n ->
+      cond do
+      is_map(n) == true ->
+          Map.get(n, :fcm_token, nil)
+
+      true ->
+          nil
+      end
+    end)
+    |> Enum.uniq()
   end
 
   defp fetch_tokens(_), do: []
