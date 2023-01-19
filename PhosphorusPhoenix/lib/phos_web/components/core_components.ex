@@ -36,10 +36,10 @@ defmodule PhosWeb.CoreComponents do
       </.modal>
   """
 
-  attr :id, :string, required: true
-  attr :show, :boolean, default: false
-  attr :on_cancel, JS, default: %JS{}, doc: "JS cancel action"
-  attr :on_confirm, JS, default: %JS{}, doc: "JS confirm action"
+  attr(:id, :string, required: true)
+  attr(:show, :boolean, default: false)
+  attr(:on_cancel, JS, default: %JS{}, doc: "JS cancel action")
+  attr(:on_confirm, JS, default: %JS{}, doc: "JS confirm action")
 
   slot(:inner_block, required: true)
   slot(:title)
@@ -57,8 +57,7 @@ defmodule PhosWeb.CoreComponents do
         aria-describedby={"#{@id}-description"}
         role="dialog"
         aria-modal="true"
-        tabindex="0"
-      >
+        tabindex="0">
         <div class="flex min-h-full items-center justify-center">
           <div class="w-full max-w-3xl p-4 sm:p-6 lg:py-8">
             <.focus_wrap
@@ -225,15 +224,17 @@ defmodule PhosWeb.CoreComponents do
       <.button phx-click="go" class="ml-2">Send!</.button>
   """
 
-  attr :tone, :atom,
+  attr(:tone, :atom,
     default: :primary,
     values: ~w(primary success warning danger)a,
     doc: "Theme of the button"
-  attr :type, :string, default: "button", values: ~w(button submit reset), doc: "Type of button"
-  attr :class, :string, default: ""
-  attr :rest, :global, include: ~w(disabled form name value), doc: "Rest of html attribute"
+  )
 
-  slot :inner_block, required: true
+  attr(:type, :string, default: "button", values: ~w(button submit reset), doc: "Type of button")
+  attr(:class, :string, default: "")
+  attr(:rest, :global, include: ~w(disabled form name value), doc: "Rest of html attribute")
+
+  slot(:inner_block, required: true)
 
   def button(assigns) do
     ~H"""
@@ -258,9 +259,17 @@ defmodule PhosWeb.CoreComponents do
 
   defp default_button_class do
     [
-      "phx-submit-loading:opacity-75", "rounded-lg", "py-2", "px-3",
-      "text-sm", "font-semibold", "leading-6", "text-white", "active:text-white/80",
-    ] |> Enum.join(" ")
+      "phx-submit-loading:opacity-75",
+      "rounded-lg",
+      "py-2",
+      "px-3",
+      "text-sm",
+      "font-semibold",
+      "leading-6",
+      "text-white",
+      "active:text-white/80"
+    ]
+    |> Enum.join(" ")
   end
 
   @doc """
@@ -462,10 +471,10 @@ defmodule PhosWeb.CoreComponents do
       </.table>
   """
 
-  attr :id, :string, required: true
-  attr :row_click, :any, default: nil
-  attr :rows, :list, required: true
-  attr :row_class, :string, default: nil
+  attr(:id, :string, required: true)
+  attr(:row_click, :any, default: nil)
+  attr(:rows, :list, required: true)
+  attr(:row_class, :string, default: nil)
 
   slot :col, required: true do
     attr(:label, :string)
@@ -532,7 +541,8 @@ defmodule PhosWeb.CoreComponents do
       </.list>
   """
 
-  attr :type, :string, default: "normal", values: ["normal", "stripped"], doc: "List type"
+  attr(:type, :string, default: "normal", values: ["normal", "stripped"], doc: "List type")
+
   slot :item, required: true do
     attr(:title, :string, required: true)
   end
@@ -609,15 +619,17 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  attr :title, :string, required: true
-  attr :home_path, :string, required: true
+  attr(:title, :string, required: true)
+  attr(:home_path, :string, required: true)
+
   slot :item, required: true, doc: "the slot for form actions, such as a submit button" do
-    attr :to, :string, required: true
-    attr :title, :string, required: true
-    attr :icon, :string, required: true
-    attr :id, :string
-    attr :name, :string
+    attr(:to, :string, required: true)
+    attr(:title, :string, required: true)
+    attr(:icon, :string, required: true)
+    attr(:id, :string)
+    attr(:name, :string)
   end
+
   def admin_navbar(assigns) do
     ~H"""
     <nav class="md:left-0 md:block md:fixed md:top-0 md:bottom-0 md:overflow-y-auto md:flex-row md:flex-nowrap md:overflow-hidden shadow-xl bg-white flex flex-wrap items-center justify-between relative md:w-64 z-10 py-4 px-6">
@@ -886,10 +898,9 @@ defmodule PhosWeb.CoreComponents do
   #   """
   # end
 
-
-  attr :img_path, :string
-  attr :comment, :any
-  slot :title
+  attr(:img_path, :string)
+  attr(:comment, :any)
+  slot(:title)
 
   def comments_card(assigns) do
     ~H"""
@@ -916,9 +927,9 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  attr :img_path, :string
-  attr :user, :map, required: true
-  attr :rest, :global, doc: "the arbitrary HTML attributes to add to the flash container"
+  attr(:img_path, :string)
+  attr(:user, :map, required: true)
+  attr(:rest, :global, doc: "the arbitrary HTML attributes to add to the flash container")
 
   def input_type(assigns) do
     ~H"""
@@ -1103,13 +1114,12 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-
-  attr :id, :string, required: true
-  attr :navigate, :any
-  attr :img_path, :string
-  slot :user_name
-  slot :inner_block, required: true
-  attr :user, :map, required: true
+  attr(:id, :string, required: true)
+  attr(:navigate, :any)
+  attr(:img_path, :string)
+  slot(:user_name)
+  slot(:inner_block, required: true)
+  attr(:user, :map, required: true)
 
   def user_profile(assigns) do
     ~H"""
@@ -1191,16 +1201,15 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-
-  slot :user_role
-  slot :user_bio
-  slot :user_public_name
-  attr :user, :any
-  attr :id, :string, required: true
-  attr :navigate, :any
-  attr :img_path, :string
-  slot :user_name
-  slot :inner_block, required: true
+  slot(:user_role)
+  slot(:user_bio)
+  slot(:user_public_name)
+  attr(:user, :any)
+  attr(:id, :string, required: true)
+  attr(:navigate, :any)
+  attr(:img_path, :string)
+  slot(:user_name)
+  slot(:inner_block, required: true)
 
   def user_information_card_md(assigns) do
     ~H"""

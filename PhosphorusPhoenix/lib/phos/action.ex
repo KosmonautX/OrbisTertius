@@ -55,7 +55,7 @@ defmodule Phos.Action do
 
   def get_orb(id) when is_binary(id) do
     # parent_path = "*.#{Phos.Utility.Encoder.encode_lpath(id)}.*"
-    query = 
+    query =
       from o in Orb,
         preload: [:locations, :initiator, :parent],
         where: o.id == ^id,
@@ -486,7 +486,7 @@ defmodule Phos.Action do
   defp notion_importer(data) when is_list(data), do: Enum.map(data, &notion_parse_properties/1) |> List.flatten()
   defp notion_importer(_), do: []
 
-  defp notion_platform_importer(data) when is_list(data) do 
+  defp notion_platform_importer(data) when is_list(data) do
     Enum.map(data, &notion_platform_parse_properties/1)
     |> List.flatten()
     |> Enum.reduce([], fn data, acc ->
@@ -598,7 +598,7 @@ defmodule Phos.Action do
                  })
   end
 
-  defp default_orb_populator({_name, _hashes}, %{"Info" => info, "1920_1080 Image" => lossless, "200_150 Image" => lossy, "Done" => done} = _properties) do
+  defp default_orb_populator({name, _hashes}, %{"Info" => info, "1920_1080 Image" => lossless, "200_150 Image" => lossy, "Done" => done} = _properties) do
     expires_in = 4 * 7 * 24 * 60 * 60 ## TODO let it be selected in Admin View instead
     %{
       id: Ecto.UUID.generate(),
@@ -665,7 +665,7 @@ defmodule Phos.Action do
       _ -> Phos.Utility.Encoder.encode_lpath(id, orb.id)
     end
 
-    attrs = 
+    attrs =
       Map.from_struct(orb)
       |> Map.take(~W(active central_geohash extinguish media)a)
       |> Map.merge(%{
