@@ -1,58 +1,129 @@
-<link rel="stylesheet"
-          href=
-"https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+  <!--desktop View -->
+<section class="container mx-auto">
+  <div
+    :if={not is_nil(@orb.initiator.public_profile) && @orb.initiator.public_profile}
+    class="flex md:flex-row flex-col items-start mt-6 gap-4"
+  >
 
-<h1>Show Orb</h1>
+    <div class="md:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full max-w-full px-3 md:w-3/12  md:flex-none">
+      <div class="border border-gray-200 rounded-3xl shadow-md">
+        <.post_related_user id="orb-initiator-username" user={@orb.initiator}>
+          <:user_name><%= @orb.initiator.username %></:user_name>
+        </.post_related_user>
+      </div>
+      <div class="border border-gray-200 rounded-3xl shadow-md">
+        <.user_information_card_md id="orb-initiator-public-profile" user={@orb.initiator}>
+          <:user_bio><%= @orb.initiator.public_profile.bio %></:user_bio>
+          <:user_public_name><%= @orb.initiator.public_profile.public_name %></:user_public_name>
+        </.user_information_card_md>
+      </div>
 
-<.modal 
-  id={"modal_for_#{@live_action}"}
-  :if={@live_action in [:edit]}
-  on_confirm={JS.navigate(~p"/orb/#{@orb.id}")}
-  on_cancel={JS.navigate(~p"/orb/#{@orb.id}")}>
-  <.live_component
-    module={PhosWeb.OrbLive.FormComponent}
-    id={@orb.id}
-    title={@page_title}
-    action={@live_action}
-    orb={@orb}
-    current_user={@current_user}
-    addresses={nil}
-    geolocation={nil}
-    return_to={~p"/orb/#{@orb.id}"} />
-</.modal>
+      <div class="border border-gray-200 rounded-3xl shadow-md">
+        <.explore_tag id="orb-initiator-explore-tag" user={@orb.initiator} />
+      </div>
+    </div>
 
-<.modal id={"modal_for_#{@live_action}"} :if={@live_action in [:reply, :edit_comment]}>
-  <.live_component
-    module={PhosWeb.CommentLive.FormComponent}
-    id={@comment.id}
-    action={@live_action}
-    comment={@comment}
-    changeset={@changeset}
-    orb={@orb}
-    current_user={@current_user}
-    return_to={~p"/orb/#{@orb.id}"}
-  />
-</.modal>
+    <div class="px-3 md:w-5/12  w-full mt-0 md:flex-none border justify-center items-center border-gray-200 md:rounded-3xl md:shadow-md shadow-sm">
+      <.profile_upload_path id="orb-initiator-profile-upload" user={@orb.initiator}>
+        <:user_name><%= @orb.initiator.username %></:user_name>
+        <:information>
+          <span>
+            <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
+          </span>
+          Chennai
+        </:information>
+      </.profile_upload_path>
+      <.post_image id="orb-image-upload" orb={@orb} />
+      <.post_information>
+        <%= @orb.payload.info %>
+      </.post_information>
+      <.comment_action></.comment_action>
+
+      <!--<.reply_post id="orb-reply-post" />-->
+      <.input_type id="orb-initiator-input-type" user={@orb.initiator} />
+    </div>
+    <!--Related Post -->
+    <div class="px-3 space-y-4 w-full lg:basis-1/4 md:basis-1/4  h-auto">
+      <div class="border border-gray-200 rounded-xl shadow-sm">
+        <.profile_upload_path user={@orb.initiator}>
+          <:user_name><%= @orb.initiator.username %></:user_name>
+          <:information>
+            <span>
+              <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
+            </span>
+            Chennai
+          </:information>
+        </.profile_upload_path>
+        <.video></.video>
+      </div>
+
+      <div class="border border-gray-200 rounded-xl shadow-sm">
+        <.profile_upload_path user={@orb.initiator}>
+          <:user_name><%= @orb.initiator.username %></:user_name>
+          <:information>
+            <span>
+              <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
+            </span>
+            Chennai
+          </:information>
+        </.profile_upload_path>
+        <.post_information>
+          <%= @orb.payload.info %>
+        </.post_information>
+        <.comment_action></.comment_action>
+      </div>
+
+      <div class="border border-gray-200 rounded-xl shadow-sm">
+        <.profile_upload_path user={@orb.initiator}>
+          <:user_name><%= @orb.initiator.username %></:user_name>
+          <:information>
+            <span>
+              <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
+            </span>
+            Chennai
+          </:information>
+        </.profile_upload_path>
+        <.post_image orb={@orb}></.post_image>
+        <.post_information>
+          <%= @orb.payload.info %>
+        </.post_information>
+        <.comment_action></.comment_action>
+      </div>
+    </div>
+  </div>
+</section>
+
 
 <.list>
   <:item title="Title"><%= @orb.title %></:item>
   <:item title="Central Geohash"><%= @orb.central_geohash %></:item>
   <:item title="Active"><%= @orb.active %></:item>
-  <:item title="Media" :if={@orb.media}>
-    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "150x150")} />
-    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "1920x1080")} />
+  <:item :if={@orb.media} title="Media">
+    <img src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossy")} />
+    <img src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless")} />
   </:item>
   <:item title="Extinguish"><%= @orb.extinguish %></:item>
   <:item title="When"><%= @orb.payload.when %></:item>
   <:item title="Where"><%= @orb.payload.where %></:item>
   <:item title="Tip"><%= @orb.payload.tip %></:item>
   <:item title="Info"><%= @orb.payload.info %></:item>
-  <:item title="Traits"><%= inspect @orb.traits %></:item>
+  <:item title="Traits"><%= inspect(@orb.traits) %></:item>
 </.list>
 
 <div class="mt-4">
-  <.link navigate={~p"/orb/#{@orb.id}/edit"} class="text-white px-4 py-2 bg-blue-300 hover:bg-blue-500 rounded hover:text-white">Edit</.link>
-  <.link navigate={~p"/orb"} replace={true} class="text-white px-4 py-2 bg-blue-300 hover:bg-blue-500 rounded hover:text-white">Back</.link>
+  <.link
+    navigate={~p"/orb/#{@orb.id}/edit"}
+    class="text-white px-4 py-2 bg-blue-300 hover:bg-blue-500 rounded hover:text-white"
+  >
+    Edit
+  </.link>
+  <.link
+    navigate={~p"/orb"}
+    replace={true}
+    class="text-white px-4 py-2 bg-blue-300 hover:bg-blue-500 rounded hover:text-white"
+  >
+    Back
+  </.link>
 </div>
 
 <div class="mt-4">
@@ -63,7 +134,10 @@
     action="new"
     orb={@orb}
     comments={@comments}
+    reply_comment={nil}
+    edit_comment={nil}
     current_user={@current_user}
     socket={@socket}
-    live_action={@live_action} />
+    live_action={@live_action}
+  />
 </div>

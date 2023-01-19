@@ -2,6 +2,7 @@
   <h2 class="text-2xl font-bold mt-6"><%= @title %></h2>
 
   <section phx-drop-target={@uploads.image.ref}>
+
     <.simple_form
       let={f}
       for={@changeset}
@@ -21,28 +22,47 @@
       <.input field={{f, :traits}} type="select" multiple={true} label="Traits" options={["Pinned": "pin", "Treasure Hunt": "treasurehunt"]} value="treasurehunt"/>
 
       <%= inputs_for f, :payload, fn ff -> %>
-        <%= label ff, :image %>
-        <img :if={@orb.media} src={ Phos.Orbject.S3.get!("ORB", @orb.id, "1920x1080") }>
-        <.live_file_input upload={@uploads.image} />
-        <%= for entry <- @uploads.image.entries do %>
-          <figure>
-            <%= live_img_preview entry %>
-          <figcaption><strong>New Image</strong></figcaption>
-          </figure>
-        <% end %>
-
-        <%= for err <- upload_errors(@uploads.image) do %>
-          <p class="alert alert-danger"><%= error_to_string(err) %></p>
-        <% end %>
-
         <.input field={{ff, :when}} label="When" />
         <.input field={{ff, :where}} label="Where" />
         <.input field={{ff, :tip}} label="Tip" />
         <.input field={{ff, :inner_title}} label="Inner Title" />
         <.input field={{ff, :info}} label="Info" />
-      <% end %>
+        <% end %>
 
+      <.input field={{f, :media}} type="hidden" />
+      <%= label f, :past_image %>
+      <%= if @orb.media do %>
+        <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless") }>
+      <% end%>
       <:actions>
+      <%= for entry <- @uploads.image.entries do %>
+              <article class="upload-entry">
+                   <figure>
+                     <.live_img_preview entry={entry} />
+                     <figcaption><%= entry.client_name %></figcaption>
+                   </figure>
+
+                   <%# entry.progress will update automatically for in-flight entries %>
+                   <progress value={entry.progress} max="100"> <%= entry.progress %>% </progress>
+
+                   <%# a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 %>
+                   <button type="button" phx-click="cancel-upload" phx-value-ref={entry.ref} aria-label="cancel">&times;</button>
+
+                   <%# Phoenix.Component.upload_errors/2 returns a list of error atoms %>
+                   <%= for err <- upload_errors(@uploads.image, entry) do %>
+                     <p class="alert alert-danger"><%= error_to_string(err) %></p>
+                   <% end %>
+               </article>
+           <% end %>
+
+           <%# Phoenix.Component.upload_errors/1 returns a list of error atoms %>
+           <%= for err <- upload_errors(@uploads.image) do %>
+             <p class="alert alert-danger"><%= error_to_string(err) %></p>
+      <% end %>
+      <form id="upload-form" phx-submit="save" phx-change="validate">
+           <.live_file_input upload={@uploads.image} />
+           <button type="submit">Upload</button>
+      </form>
         <.button type="submit" phx-disable-with="Saving...">Save</.button>
       </:actions>
     </.simple_form>

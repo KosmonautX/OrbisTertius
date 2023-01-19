@@ -22,6 +22,7 @@ defmodule Phos.Users.User do
     has_many :relations, RelationBranch, foreign_key: :user_id
 
     field :self_relation, :string, virtual: true
+    field :profile_image, :string, virtual: true
 
     # has_many :pending_relations, RelationBranch, foreign_key: :user_id, where: [completed_at: nil]
     # has_many :completed_relations, RelationBranch, foreign_key: :user_id, where: [completed_at: {:not, nil}]

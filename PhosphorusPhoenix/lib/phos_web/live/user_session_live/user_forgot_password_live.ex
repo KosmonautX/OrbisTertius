@@ -14,7 +14,7 @@ defmodule PhosWeb.UserForgotPasswordLive do
       <.simple_form :let={f} id="reset_password_form" for={:user} phx-submit="send_email">
         <.input field={{f, :email}} type="email" placeholder="Email" required />
         <:actions>
-          <.button phx-disable-with="Sending..." class="w-full">
+          <.button phx-disable-with="Sending..." class="w-full" type="submit">
             Send password reset instructions
           </.button>
         </:actions>

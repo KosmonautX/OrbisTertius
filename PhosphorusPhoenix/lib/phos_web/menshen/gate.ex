@@ -178,15 +178,28 @@ defmodule PhosWeb.Menshen.Gate do
       %{"user_token" => user_token} ->
         socket
         |> Phoenix.Component.assign_new(:current_user, fn ->
-          Users.get_user_by_session_token(user_token)
+          with %Users.User{} = user <- Users.get_user_by_session_token(user_token),
+               %Users.User{} = user <- hydrate_user_profile_image(user) do
+            user
+          else
+           _ -> nil
+          end
         end)
-        |> Phoenix.Component.assign_new(:guest, fn ->  false end)
 
       %{} ->
         socket
         |> Phoenix.Component.assign_new(:current_user, fn -> nil end)
-        |> Phoenix.Component.assign_new(:guest, fn ->  true end)
     end
+  end
+
+  defp hydrate_user_profile_image(user = %Users.User{}) do
+    user
+    |> Map.get(:media, false)
+    |> if do
+        %{ user | profile_image: Phos.Orbject.S3.get!("USR", user.id, "public/profile/lossy")}
+       else
+        user
+       end
   end
 
   @doc """
@@ -232,5 +245,5 @@ defmodule PhosWeb.Menshen.Gate do
 
   defp maybe_store_return_to(conn), do: conn
 
-  defp signed_in_path(_conn), do: ~p"/"
+  defp signed_in_path(_conn), do: ~p"/welcome"
 end

@@ -1,30 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script defer src="https://unpkg.com/alpinejs@3.2.3/dist/cdn.min.js">
+    </script>
     <meta name="csrf-token" content={get_csrf_token()} />
     <.live_title suffix=" · Phosphorus">
       <%= assigns[:page_title] || "Scratchbac" %>
     </.live_title>
-    <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"}/>
-    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}></script>
+    <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
+    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
+    </script>
   </head>
-  <body class="max-w-screen-xl m-auto w-full">
-    <header class="w-full flex justify-between px-6 flex-row-reverse items-center mt-2">
-      <nav>
-        <ul>
-          <li><.link href="https://www.scratchbac.com">Get Started</.link></li>
-        </ul>
+  <body class="h-screen w-full">
+    <%= if @current_user do %>
+      <div class="">
         <.user_menu current_user={@current_user} />
-      </nav>
-      <a href="/orb" class="phx-logo">
-        <img src={~p"/images/socrates.png"} alt="Scratchbac Phos"/>
-      </a>
-    </header>
-        <br>
-    <%= @inner_content %>
+      </div>
+      <!--<.banner></.banner>-->
+      <.tabs_mobile></.tabs_mobile>
+      <.bottom_banner></.bottom_banner>
+    <% end %>
+    <div class="w-full h-auto"><%= @inner_content %></div>
+    <br />
   </body>
 </html>
-

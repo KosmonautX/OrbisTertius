@@ -7,27 +7,52 @@ defmodule PhosWeb.OrbLive.Show do
   alias PhosWeb.Utility.Encoder
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, socket}
+  def mount(%{"id" => id} = _params, _session, socket = %{assigns: %{current_user: user}}) do
+    with %Action.Orb{} = orb <-  Action.get_orb(id, user.id) do
+      orb = orb
+            |> put_in([Access.key(:initiator), Access.key(:locations)], ["Singapore", "Vandavasi"])
+            |> put_in([Access.key(:initiator), Access.key(:traits)], ["frontend", "200wpm"])
+
+      comment = Comments.get_root_comments_by_orb(orb.id)
+      |> decode_to_comment_tuple_structure()
+
+      {:ok, socket
+      |> assign(:orb, orb)
+      |> assign(:comments, comment)}
+    end
   end
 
   @impl true
-  def handle_params(%{"id" => orb_id} = params, _, socket) do
-    comments =
-      case socket.assigns do
-        %{comments: [_ | _]} ->
-          socket.assigns.comments
-        %{} ->
-          Comments.get_root_comments_by_orb(orb_id) |> decode_to_comment_tuple_structure()
-      end
+  def handle_params(params, _, socket) do
 
     {:noreply,
      socket
     |> assign(:changeset, Comments.change_comment(%Comments.Comment{}))
-    |> assign(:comments, comments)
-    |> assign(:orb, Action.get_orb!(orb_id))
     |> apply_action(socket.assigns.live_action, params)}
-    #  |> assign(:image, {:ok, Phos.Orbject.S3.get("ORB", id, "150x150")})
+  end
+
+  @impl true
+  def handle_info({:new_comment, %{orb_id: orb_id}}, socket) do
+    comments = Comments.get_root_comments_by_orb(orb_id) |> decode_to_comment_tuple_structure()
+    {:noreply, 
+      assign(socket, :comments, comments) 
+      |> put_flash(:info, "Comment added successfully")}
+  end
+
+  @impl true
+  def handle_info({:child_comment, %{orb_id: orb_id}}, socket) do
+    comments = Comments.get_root_comments_by_orb(orb_id) |> decode_to_comment_tuple_structure()
+    {:noreply, 
+      assign(socket, :comments, comments) 
+      |> put_flash(:info, "Reply added successfully")}
+  end
+
+  @impl true
+  def handle_info({:edit_comment, %{orb_id: orb_id}}, socket) do
+    comments = Comments.get_root_comments_by_orb(orb_id) |> decode_to_comment_tuple_structure()
+    {:noreply, 
+      assign(socket, comments: comments, edit_comment: nil) 
+      |> put_flash(:info, "Comment updated successfully")}
   end
 
   defp apply_action(socket, :reply, %{"id" => _orb_id, "cid" => cid} = _params) do

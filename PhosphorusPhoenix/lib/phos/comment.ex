@@ -277,4 +277,19 @@ defmodule Phos.Comments do
     Comment.changeset(comment, attrs)
   end
 
+  def filter_root_comments_chrono(comments) do
+    comments
+    |> Enum.filter(&match?({{_}, _}, &1))
+    |> sort_comments_chrono()
+  end
+
+  def filter_child_comments_chrono(comments, comment) do
+    comments
+    |> Enum.filter(fn i -> elem(i, 1).parent_id == elem(comment, 1).id end)
+    |> sort_comments_chrono()
+  end
+
+  defp sort_comments_chrono(comments) do
+    Enum.sort_by(comments, &elem(&1, 1).inserted_at, :desc)
+  end
 end

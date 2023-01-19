@@ -4,6 +4,7 @@ defmodule PhosWeb.Router do
   import PhosWeb.Menshen.Gate
   import PhosWeb.Menshen.Plug
   import Phoenix.LiveDashboard.Router
+  import PhxLiveStorybook.Router
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -34,13 +35,20 @@ defmodule PhosWeb.Router do
     plug Phos.Admin.Plug
   end
 
+  scope "/" do
+    storybook_assets()
+  end
+
   ## Home Page & Public Pages
   scope "/", PhosWeb do
     pipe_through :browser
 
+    get "/firstpage", PageController, :home
     get "/", PageController, :home
-  end
+    get "/welcome", PageController, :welcome
 
+    live_storybook "/storybook", backend_module: PhosWeb.Storybook
+  end
 
   ## User Genesis Routes
   scope "/", PhosWeb do
@@ -75,10 +83,6 @@ defmodule PhosWeb.Router do
   scope "/", PhosWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    get "/archetype", ArchetypeController, :show do
-      resources "/archetype/usr", UserController, only: [:show]
-    end
-
     live_session :required_authenticated_user,
       on_mount: {PhosWeb.Menshen.Gate, :ensure_authenticated} do
       get "/", PageController, :index
@@ -101,8 +105,8 @@ defmodule PhosWeb.Router do
 
       live "/user/feeds", UserFeedLive.Index, :index
 
-      live "/user/:username/edit", UserProfileLive.Index, :edit
-      live "/user/:username", UserProfileLive.Index, :index
+      live "/user/:username/edit", UserProfileLive.Show, :edit
+      live "/user/:username", UserProfileLive.Show, :show
 
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email

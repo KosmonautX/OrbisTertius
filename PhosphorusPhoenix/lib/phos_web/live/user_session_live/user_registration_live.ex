@@ -6,19 +6,19 @@ defmodule PhosWeb.UserRegistrationLive do
 
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-sm">
+    <div class="flex flex-col h-screen  justify-center items-center">
       <.header class="text-center">
-        Register for an account
+      Join the Tribe!
         <:subtitle>
-          Already registered?
+        Already have an account?
           <.link navigate={~p"/users/log_in"} class="font-semibold text-brand hover:underline">
             Sign in
           </.link>
-          to your account now.
+          here.
         </:subtitle>
       </.header>
 
-      <.simple_form
+      <.simple_form class="w-96 p-4"
         :let={f}
         id="registration_form"
         for={@changeset}
@@ -38,7 +38,7 @@ defmodule PhosWeb.UserRegistrationLive do
         <.input field={{f, :password}} type="password" label="Password" required />
 
         <:actions>
-          <.button phx-disable-with="Creating account..." class="w-full">Create an account</.button>
+          <.button phx-disable-with="Creating account..." class="w-full">Create account</.button>
         </:actions>
       </.simple_form>
     </div>
