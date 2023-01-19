@@ -37,7 +37,7 @@ config :phos, Phos.Mailer, adapter: Swoosh.Adapters.Local
 config :esbuild,
   version: "0.14.0",
   default: [
-    args: ~w(js/app.js js/admin.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
+    args: ~w(js/app.js js/admin.js js/storybook.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
@@ -88,6 +88,14 @@ config :tailwind, version: "3.1.6",
       --output=../priv/static/assets/app.css
     ),
     cd: Path.expand("../assets", __DIR__)
+  ],
+  storybook: [
+    args: ~w(
+      --config=tailwind.config.js
+      --input=css/storybook.css
+      --output=../priv/static/assets/storybook.css
+    ),
+    cd: Path.expand("../assets", __DIR__)
   ]
 
 config :phos, Phos.Cache,
@@ -101,11 +109,10 @@ config :fcmex,
   [json_library: Jason]
 
 config :phos, Phos.External.Notion,
-  token: {System, :get_env, "NOTION_TOKEN"}
+  token: {System, :get_env, "NOTION_TOKEN"},
+  database: {System, :get_env, "NOTION_DATABASE"},
+  notification_database: {System, :get_env, "NOTION_NOTIFICATION_DATABASE"}
 
-config :phos, Phos.Admin,
-  password: System.get_env("ADMIN_TUNNEL"),
-  algorithm: :sha256
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

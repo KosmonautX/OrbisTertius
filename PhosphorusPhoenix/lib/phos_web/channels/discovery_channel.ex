@@ -19,7 +19,7 @@ defmodule PhosWeb.DiscoveryChannel do
     {:noreply, assign(socket, :orbs, orbs.data)}
   end
 
-  def handle_in("unsubscribe", %{"name" => name, "locations" => locs}, %{assigns: %{locations: locations}} = socket) do
+  def handle_in("unsubscribe", %{"name" => name, "locations" => _locs}, %{assigns: %{locations: locations}} = socket) do
     case Map.get(locations, name) do
       nil -> {:noreply, socket}
       locs ->

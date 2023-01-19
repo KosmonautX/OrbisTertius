@@ -1,19 +1,17 @@
 defmodule PhosWeb.OrbLive.Index do
   use PhosWeb, :live_view
 
-  alias Phos.Users
   alias Phos.Action
   alias Phos.Action.Orb
   alias Phos.PubSub
-  alias PhosWeb.Util.Viewer
 
   @impl true
-  def mount(params, _session, socket) do
+  def mount(_params, _session, socket) do
     #send(self(), :geoinitiation)
 
     {:ok,
      socket
-     |> assign(:geolocation, %{"all" => list_orbs()})
+     |> assign(:geolocation, %{"all" => Action.list_orbs()})
      |> assign(:addresses, %{"all" => ["all"]})}
   end
 
@@ -136,30 +134,6 @@ defmodule PhosWeb.OrbLive.Index do
   end
 
   @impl true
-  def handle_event(
-        "live_location_update",
-        %{"longitude" => longitude, "latitude" => latitude},
-        socket
-      ) do
-    send(
-      self(),
-      {:static_location_update,
-       %{"locname" => :live, "longitude" => longitude, "latitude" => latitude}}
-    )
-
-    {:noreply, socket}
-  end
-
-  @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    orb = Action.get_orb!(id)
-    orb_loc_publisher(orb, :deactivation, orb.locations |> Enum.map(fn orb -> orb.id end))
-    {:ok, _} = Action.delete_orb(orb)
-
-    {:noreply, socket}
-  end
-
-  @impl true
   def handle_info({PubSub, {:orb, :genesis}, message}, socket) do
     IO.puts("genesis #{inspect(message)}")
 
@@ -204,8 +178,19 @@ defmodule PhosWeb.OrbLive.Index do
      |> assign(:geolocation, updated_orblist)}
   end
 
-  defp list_orbs do
-    Action.list_orbs()
+  @impl true
+  def handle_event("live_location_update", %{"longitude" => longitude, "latitude" => latitude}, socket) do
+    send(self(), {:static_location_update, %{"locname" => :live, "longitude" => longitude, "latitude" => latitude}})
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("delete", %{"id" => id}, socket) do
+    orb = Action.get_orb!(id)
+    orb_loc_publisher(orb, :deactivation, orb.locations |> Enum.map(fn orb -> orb.id end))
+    {:ok, _} = Action.delete_orb(orb)
+
+    {:noreply, socket}
   end
 
   defp loc_subscriber(present, []) do
@@ -219,8 +204,6 @@ defmodule PhosWeb.OrbLive.Index do
     present
   end
 
-  defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"
-
   defp orb_loc_publisher(orb, event, to_locations) do
     to_locations
     |> Enum.map(fn loc ->
@@ -229,12 +212,6 @@ defmodule PhosWeb.OrbLive.Index do
   end
 
   defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"
-
-  defp loc_boundary(lat, lon) do
-    :h3.from_geo({lat, lon}, 8)
-    |> :h3.to_geo_boundary()
-    |> Enum.map(fn tuple -> Tuple.to_list(tuple) end)
-  end
 
   defp location_fetcher(value, geolocation) do
     value |> Enum.reduce([], fn hash, _acc -> geolocation[hash] end)

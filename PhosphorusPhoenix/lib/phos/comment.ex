@@ -4,9 +4,10 @@ defmodule Phos.Comments do
   """
 
   import Ecto.Query, warn: false
-  import EctoLtree.Functions
+  import EctoLtree.Functions, only: [nlevel: 1]
+
   alias Phos.Repo
-  alias Phos.Comments.{Comment}
+  alias Phos.Comments.Comment
 
 
   @doc """
@@ -40,31 +41,23 @@ defmodule Phos.Comments do
     |> Repo.insert()
     |> case do
          {:ok, %{parent_id: p_id} = comment} = data when not is_nil(p_id)->
-           comment = comment |> Repo.preload([:initiator])
+           comment = comment |> Repo.preload([:initiator, :parent])
            spawn(fn ->
-             case comment.initiator do
-               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("COM.#{comment.id}", token)
-               _ -> nil
-             end
-             Phos.Notification.target("'COM.#{p_id}' in topics && !('USR.#{comment.initiator_id}' in topics)",
-               %{title: "#{comment.initiator.username} commented on your comment",
+             Phos.Notification.target("'USR.#{comment.parent.initiator_id}' in topics",
+               %{title: "#{comment.initiator.username} replied",
                  body: comment.body
                },
-               PhosWeb.Util.Viewer.comment_mapper(comment))
+               %{action_path: "/comland/comments/root/#{comment.id}"})
             end)
            data
-        {:ok, %{orb_id: o_id} = comment} = data ->
-           comment = comment |> Repo.preload([:initiator])
+        {:ok, %{orb_id: _o_id} = comment} = data ->
+           comment = comment |> Repo.preload([:orb, :initiator])
            spawn(fn ->
-             case comment.initiator do
-               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("COM.#{comment.id}", token)
-               _ -> nil
-             end
-             Phos.Notification.target("'ORB.#{o_id}' in topics && !('USR.#{comment.initiator_id}' in topics)",
-               %{title: "#{comment.initiator.username} commented on your orb",
+             Phos.Notification.target("'USR.#{comment.orb.initiator_id}' in topics",
+               %{title: "#{comment.initiator.username} replied",
                  body: comment.body
                },
-               PhosWeb.Util.Viewer.comment_mapper(comment))
+               %{action_path: "/comland/comments/children/#{comment.id}"})
            end)
            data
          err -> err
@@ -135,7 +128,6 @@ defmodule Phos.Comments do
       preload: [:initiator],
       inner_lateral_join: sc in subquery(
         from sc in Comment,
-        where: sc.parent_id == parent_as(:c).id,
         select: %{count: count()}
       ),
       select_merge: %{child_count: sc.count}
@@ -285,4 +277,19 @@ defmodule Phos.Comments do
     Comment.changeset(comment, attrs)
   end
 
+  def filter_root_comments_chrono(comments) do
+    comments
+    |> Enum.filter(&match?({{_}, _}, &1))
+    |> sort_comments_chrono()
+  end
+
+  def filter_child_comments_chrono(comments, comment) do
+    comments
+    |> Enum.filter(fn i -> elem(i, 1).parent_id == elem(comment, 1).id end)
+    |> sort_comments_chrono()
+  end
+
+  defp sort_comments_chrono(comments) do
+    Enum.sort_by(comments, &elem(&1, 1).inserted_at, :desc)
+  end
 end

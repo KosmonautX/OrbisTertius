@@ -5,8 +5,7 @@ defmodule Phos.Folk do
 
   import Ecto.Query, warn: false
   use Nebulex.Caching
-  alias Phos.{Cache, Repo}
-  alias Phos.Users
+  alias Phos.Repo
   alias Phos.Users.{User, RelationBranch, RelationRoot}
 
   #@ttl :timer.hours(1)
@@ -25,7 +24,22 @@ defmodule Phos.Folk do
   #       ** (Ecto.NoResultsError)
 
   #   """
-  def get_relation!(id), do: Repo.get!(RelationRoot, id)
+  #
+  def get_relation!(id),
+    do: Repo.get!(RelationRoot, id)
+  def get_relation!(id, your_id),
+    do: Repo.get!(RelationRoot, id)
+    |> self_initiated_enricher(your_id)
+
+  defp self_initiated_enricher(%RelationRoot{} = rel_root, your_id) do
+    %{rel_root | self_initiated: your_id == rel_root.initiator_id}
+    |> case do
+         %{self_initiated: true} = rel ->
+           rel |> Repo.preload([:acceptor])
+         %{self_initiated: false} = rel ->
+           rel |> Repo.preload([:initiator])
+    end
+  end
 
   def get_relation_by_pair(self, other),
     do: Repo.get_by(RelationBranch, [user_id: self, friend_id: other])
@@ -58,8 +72,8 @@ defmodule Phos.Folk do
              end
 
              Phos.Notification.target("'USR.#{rel.acceptor_id}' in topics",
-               %{title: "#{rel.initiator.username} requested to be your ally"},
-               PhosWeb.Util.Viewer.user_relation_mapper(rel))
+               %{title: "#{rel.initiator.username} requested to be your ally 🤝"},
+               %{action_path: "/folkland/self/requests"})
            end)
            data
          err -> err
@@ -94,8 +108,8 @@ defmodule Phos.Folk do
              end
 
              Phos.Notification.target("'USR.#{rel.initiator_id}' in topics",
-               %{title: "#{rel.acceptor.username} has accepted your request to become your ally"},
-               PhosWeb.Util.Viewer.user_relation_mapper(rel))
+               %{title: "#{rel.acceptor.username} accepted your ally request ❤️"},
+               %{action_path: "/userland/others/#{rel.acceptor_id}"})
            end)
            data
          err -> err
@@ -245,7 +259,14 @@ defmodule Phos.Folk do
     Repo.all(query)
   end
 
+  def notifiers_by_friends(user_id) do
+    query = from r in RelationBranch,
+      where: not is_nil(r.completed_at) and r.user_id == ^user_id,
+      inner_join: friend in assoc(r, :friend),
+      select: friend.integrations
 
+    Repo.all(query)
+  end
 
   def feeds(%User{id: id} = _user), do: feeds(id)
 

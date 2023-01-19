@@ -1,7 +1,7 @@
 defmodule Phos.Notification do
   use Supervisor
 
-  alias Phos.Notification.{Poller, Counter}
+  alias Phos.Notification.{Poller, Counter, Scheduller}
 
   def start_link(opts) do
     Supervisor.start_link(__MODULE__, opts, name: __MODULE__)
@@ -11,6 +11,7 @@ defmodule Phos.Notification do
   def init(_opts) do
     children = [
       Poller,
+      Scheduller,
       {Counter, [initial_value: 0]},
     ]
 
@@ -39,7 +40,7 @@ defmodule Phos.Notification do
 
   def target(condition, notification, data \\ %{}) do
     #`'${topic}' in topics && !('${me}' in topics)`, eg. "'ORB.1' in topics && !('USR.1' in topics)"
-    GenServer.cast(executor(), {:target, condition, notification, data}, 10_000)
+    GenServer.call(executor(), {:target, condition, notification, data}, 10_000)
   end
 
   defp executor do

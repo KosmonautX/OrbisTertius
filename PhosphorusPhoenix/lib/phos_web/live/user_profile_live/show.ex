@@ -3,12 +3,9 @@ defmodule PhosWeb.UserProfileLive.Show do
 
   alias Phos.Users
   alias Phos.Action
-  alias Phos.Action.Orb
-  alias Phos.PubSub
-  alias PhosWeb.Util.Viewer
 
   @impl true
-  def mount(params, _session, socket) do
+  def mount(_params, _session, socket) do
     {:ok, socket}
   end
 

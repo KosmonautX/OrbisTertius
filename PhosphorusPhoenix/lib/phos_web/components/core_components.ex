@@ -10,7 +10,7 @@ defmodule PhosWeb.CoreComponents do
   [heroicons_elixir](https://github.com/mveytsman/heroicons_elixir) project.
   """
   use Phoenix.Component
-  import Phoenix.VerifiedRoutes
+  import Phoenix.VerifiedRoutes, warn: false
 
   alias Phoenix.LiveView.JS
   import PhosWeb.Gettext
@@ -35,10 +35,11 @@ defmodule PhosWeb.CoreComponents do
         <:cancel>Cancel</:cancel>
       </.modal>
   """
-  attr(:id, :string, required: true)
-  attr(:show, :boolean, default: false)
-  attr(:on_cancel, JS, default: %JS{})
-  attr(:on_confirm, JS, default: %JS{})
+
+  attr :id, :string, required: true
+  attr :show, :boolean, default: false
+  attr :on_cancel, JS, default: %JS{}, doc: "JS cancel action"
+  attr :on_confirm, JS, default: %JS{}, doc: "JS confirm action"
 
   slot(:inner_block, required: true)
   slot(:title)
@@ -66,9 +67,9 @@ defmodule PhosWeb.CoreComponents do
               phx-window-keydown={hide_modal(@on_cancel, @id)}
               phx-key="escape"
               phx-click-away={hide_modal(@on_cancel, @id)}
-              class="hidden relative rounded-2xl bg-white p-14 shadow-lg shadow-zinc-700/10 ring-1 ring-zinc-700/10 transition"
+              class="hidden relative rounded-2xl bg-white shadow-lg shadow-zinc-700/10 ring-1 ring-zinc-700/10 transition"
             >
-              <div class="absolute top-6 right-5">
+              <div class="absolute top-4 right-4">
                 <button
                   phx-click={hide_modal(@on_cancel, @id)}
                   type="button"
@@ -79,16 +80,18 @@ defmodule PhosWeb.CoreComponents do
                 </button>
               </div>
               <div id={"#{@id}-content"}>
-                <header :if={@title != []}>
+                <header :if={@title != []} class="p-2 pb-3 border-b">
                   <h1 id={"#{@id}-title"} class="text-lg font-semibold leading-8 text-zinc-800">
                     <%= render_slot(@title) %>
                   </h1>
-                  <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-zinc-600">
+                  <p :if={@subtitle != []} class="text-sm leading-4 text-zinc-600">
                     <%= render_slot(@subtitle) %>
                   </p>
                 </header>
-                <%= render_slot(@inner_block) %>
-                <div :if={@confirm != [] or @cancel != []} class="ml-6 mb-4 flex items-center gap-5">
+                <div id={"#{@id}-main"} class="p-4 w-full">
+                  <%= render_slot(@inner_block) %>
+                </div>
+                <div :if={@confirm != [] or @cancel != []} class="p-4 flex flex-row-reverse items-center gap-5">
                   <.button
                     :for={confirm <- @confirm}
                     id={"#{@id}-confirm"}
@@ -142,7 +145,7 @@ defmodule PhosWeb.CoreComponents do
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("#flash")}
       role="alert"
       class={[
-        "fixed hidden top-2 right-2 w-80 sm:w-96 z-50 rounded-lg p-3 shadow-md shadow-zinc-900/5 ring-1",
+        "absolute hidden top-2 right-2 w-80 sm:w-96 z-50 rounded-lg p-3 shadow-md shadow-zinc-900/5 ring-1",
         @kind == :info && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
         @kind == :error && "bg-rose-50 p-3 text-rose-900 shadow-md ring-rose-500 fill-rose-900"
       ]}
@@ -154,7 +157,7 @@ defmodule PhosWeb.CoreComponents do
         <%= @title %>
       </p>
       <p :if={@title} class="mt-2 text-[0.8125rem] leading-5"><%= msg %></p>
-      <p class="font-semibold text-[0.8125rem] leading-5"><%= msg %></p>
+      <p :if={is_nil(@title)} class="font-semibold text-[0.8125rem] leading-5"><%= msg %></p>
       <button
         :if={@close}
         type="button"
@@ -205,32 +208,59 @@ defmodule PhosWeb.CoreComponents do
   end
 
   @doc """
-  Renders a button.
+  Renders a button with predefined class
+
+  This button have several themes such as: :primary, :success, :warning and :danger
+
+  This button have several options such as
+  - tone: tone of the button. can be :primary, :success, :warning or :danger. Default is: :primary
+  - class: additional class if want to customize the button
+  - type: button type. can be "button" or "submit". Default is "button"
+
+  Rest of the options can be assigned in the element such as: disabled, name, value and phx-* binding
 
   ## Examples
 
-      <.button>Send!</.button>
+      <.button tone={:primary}>Send!</.button>
       <.button phx-click="go" class="ml-2">Send!</.button>
   """
-  attr(:type, :string, default: nil)
-  attr(:class, :string, default: nil)
-  attr(:rest, :global, include: ~w(disabled form name value))
-  slot(:inner_block, required: true)
+
+  attr :tone, :atom,
+    default: :primary,
+    values: ~w(primary success warning danger)a,
+    doc: "Theme of the button"
+  attr :type, :string, default: "button", values: ~w(button submit reset), doc: "Type of button"
+  attr :class, :string, default: ""
+  attr :rest, :global, include: ~w(disabled form name value), doc: "Rest of html attribute"
+
+  slot :inner_block, required: true
 
   def button(assigns) do
     ~H"""
     <button
       type={@type}
       class={[
-        "phx-submit-loading:opacity-75 rounded-lg bg-teal-500 hover:bg-teal-700 py-2 px-3",
-        "text-base font-semibold leading-6 text-white active:text-white/80",
-        @class
+        default_button_class(),
+        button_class(@tone)
+        | String.split(@class, " ")
       ]}
       {@rest}
     >
       <%= render_slot(@inner_block) %>
     </button>
     """
+  end
+
+  defp button_class(:danger), do: "bg-red-400 hover:bg-red-600"
+  defp button_class(:primary), do: "bg-blue-400 hover:bg-blue-600"
+  defp button_class(:warning), do: "bg-yellow-400 hover:bg-yellow-600"
+  defp button_class(:success), do: "bg-green-400 hover:bg-green-600"
+
+  defp default_button_class do
+    [
+      "phx-submit-loading:opacity-75", "rounded-lg", "py-2", "px-3",
+      "text-sm", "font-semibold", "leading-6", "text-white", "active:text-white/80",
+    ] |> Enum.join(" ")
   end
 
   @doc """
@@ -431,9 +461,11 @@ defmodule PhosWeb.CoreComponents do
         <:col :let={user} label="username"><%= user.username %></:col>
       </.table>
   """
-  attr(:id, :string, required: true)
-  attr(:row_click, :any, default: nil)
-  attr(:rows, :list, required: true)
+
+  attr :id, :string, required: true
+  attr :row_click, :any, default: nil
+  attr :rows, :list, required: true
+  attr :row_class, :string, default: nil
 
   slot :col, required: true do
     attr(:label, :string)
@@ -445,7 +477,7 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <div id={@id} class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
       <table class="mt-11 w-[40rem] sm:w-full">
-        <thead class="text-left text-[0.8125rem] leading-6 text-zinc-500">
+        <thead class="text text-[0.8125rem] leading-6 text-zinc-500">
           <tr>
             <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal"><%= col[:label] %></th>
             <th class="relative p-0 pb-4"><span class="sr-only"><%= gettext("Actions") %></span></th>
@@ -455,7 +487,7 @@ defmodule PhosWeb.CoreComponents do
           <tr
             :for={row <- @rows}
             id={"#{@id}-#{Phoenix.Param.to_param(row)}"}
-            class="relative group hover:bg-zinc-50"
+            class={["relative group hover:bg-gray-100", @row_class]}
           >
             <td
               :for={{col, i} <- Enum.with_index(@col)}
@@ -499,16 +531,18 @@ defmodule PhosWeb.CoreComponents do
         <:item title="Views"><%= @post.views %></:item>
       </.list>
   """
+
+  attr :type, :string, default: "normal", values: ["normal", "stripped"], doc: "List type"
   slot :item, required: true do
     attr(:title, :string, required: true)
   end
 
   def list(assigns) do
     ~H"""
-    <div class="mt-14">
-      <dl class="-my-4 divide-y divide-zinc-100">
-        <div :for={item <- @item} class="flex gap-4 py-4 sm:gap-8">
-          <dt class="w-1/4 flex-none text-[0.8125rem] leading-6 text-zinc-500"><%= item.title %></dt>
+    <div class="mt-14 mb-6">
+      <dl class={"-my-4 divide-y divide-zinc-100 #{if(@type == "stripped", do: "[&>*:nth-child(odd)]:bg-gray-200 border border-gray-200 rounded-md")}"}]>
+        <div :for={item <- @item} class="flex gap-4 py-4 sm:gap-8 rounded-md">
+          <dt class="pl-2 w-1/4 flex-none text-[0.8125rem] leading-6 text-zinc-500"><%= item.title %></dt>
           <dd class="text-sm leading-6 text-zinc-700"><%= render_slot(item) %></dd>
         </div>
       </dl>
@@ -568,10 +602,43 @@ defmodule PhosWeb.CoreComponents do
       <div class="block w-full overflow-none px-2 py-3">
         <%= render_slot(@inner_block) %>
       </div>
-      <div :for={action <- @actions} class="mt-2 mb-4 flex items-center justify-between gap-6">
+      <div :for={action <- @actions} class="px-2 mt-2 mb-4 flex items-center justify-between gap-6">
         <%= render_slot(action) %>
       </div>
     </div>
+    """
+  end
+
+  attr :title, :string, required: true
+  attr :home_path, :string, required: true
+  slot :item, required: true, doc: "the slot for form actions, such as a submit button" do
+    attr :to, :string, required: true
+    attr :title, :string, required: true
+    attr :icon, :string, required: true
+    attr :id, :string
+    attr :name, :string
+  end
+  def admin_navbar(assigns) do
+    ~H"""
+    <nav class="md:left-0 md:block md:fixed md:top-0 md:bottom-0 md:overflow-y-auto md:flex-row md:flex-nowrap md:overflow-hidden shadow-xl bg-white flex flex-wrap items-center justify-between relative md:w-64 z-10 py-4 px-6">
+      <div class="md:flex-col md:items-stretch md:min-h-full md:flex-nowrap px-0 flex flex-wrap items-center w-full mx-auto">
+        <.link patch={@home_path} class="md:block text-left md:pb-2 text-blueGray-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0">
+          <%= @title %>
+        </.link>
+        <div>
+          <hr class="my-4 md:min-w-full">
+          <h6 class="md:min-w-full text-blueGray-500 text-xs uppercase font-bold block pt-1 pb-4 no-underline">Feature</h6>
+          <ul class="md:flex-col md:min-w-full flex flex-col list-none" id="navbar">
+            <li :for={item <- @item} class="items-center">
+              <.link navigate={item.to} class="text-xs uppercase py-3 font-bold block text-gray-500 hover:text-blue-400">
+                <i class={"fas mr-2 text-sm opacity-75 #{item.icon}"}></i>
+                <%= item.title %>
+              </.link>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
     """
   end
 
@@ -747,85 +814,117 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  # def comments_card(assigns) do
+  #   ~H"""
+  #   <div class="flex flex-col md:inset-0 h-48 w-full overflow-y-auto">
+  #     <ul class="relative border-l border-gray-400 ml-4 mt-4">
+  #       <li id="reply" class="mb-4 ml-2">
+  #         <div class="flex">
+  #           <img
+  #             class="h-14 w-14 border-4 border-white rounded-full object-cover"
+  #             src="/images/IMG-20220404-WA0002.jpg"
+  #           />
+  #           <div class="flex flex-col">
+  #             <strong class="mx-2 text-gray-700 text-base">
+  #               Anu<span class="text-sm font-normal text-gray-500">
+  #        Ajith Kumar is an Indian actor who appears predominantly in Tamil films. In 1992, he started out in movies as a supporting actor in Telugu. In 1995, he got the lead role in the Tamil thriller Aasai. Up until the year 1998, Ajith usually played the role of a romantic hero.
+  #      </span>
+  #             </strong>
+  #             <time class="flex justify-between text-sm font-normal text-gray-700 my-2 mx-2">
+  #               10/12/2003
+  #               <span class="font-bold text-teal-700 hover:text-teal-400 hover:underline ">
+  #                 Reply
+  #               </span>
+  #             </time>
+  #           </div>
+  #         </div>
+  #       </li>
+  #       <li id="reply" class="mb-4 ml-2">
+  #         <div class="flex">
+  #           <img
+  #             class="h-14 w-14 border-4 border-white rounded-full object-cover"
+  #             src="/images/IMG-20220404-WA0002.jpg"
+  #           />
+  #           <div class="flex flex-col">
+  #             <strong class="mx-2 text-gray-700 text-base">
+  #               Anu<span class="text-sm font-normal text-gray-500">
+  #        After the success of the film ‘Billa,’ Ajith became one of the highest-paid actors in Indian film, and his remuneration increased.
+  #      </span>
+  #             </strong>
+  #             <time class="flex justify-between text-sm font-normal text-gray-700 my-2 mx-2">
+  #               10/12/2003
+  #               <span class="font-bold text-teal-700 hover:text-teal-400 hover:underline ">
+  #                 Reply
+  #               </span>
+  #             </time>
+  #           </div>
+  #         </div>
+  #       </li>
+  #       <li id="reply" class="mb-4 ml-2">
+  #         <div class="flex">
+  #           <img
+  #             class="h-14 w-14 border-4 border-white rounded-full object-cover"
+  #             src="/images/IMG-20220404-WA0002.jpg"
+  #           />
+  #           <div class="flex flex-col">
+  #             <strong class="mx-2 text-gray-700 text-base">
+  #               Anu<span class="text-sm font-normal text-gray-500">
+  #        After that, he started appearing in action movies like Amarkalam (1999), Dheena (2001), Villain (2002), Attagasam (2004), Varalaru (2006), Billa (2007), Mankatha (2011), and Billa II (2013). (2012).
+  #      </span>
+  #             </strong>
+  #             <time class="flex justify-between text-sm font-normal text-gray-700 my-2 mx-2">
+  #               10/12/2003
+  #               <span class="font-bold text-teal-700 hover:text-teal-400 hover:underline ">
+  #                 Reply
+  #               </span>
+  #             </time>
+  #           </div>
+  #         </div>
+  #       </li>
+  #     </ul>
+  #   </div>
+  #   """
+  # end
+
+
+  attr :img_path, :string
+  attr :comment, :any
+  slot :title
+
   def comments_card(assigns) do
     ~H"""
-    <div class="flex flex-col md:inset-0 h-48 w-full overflow-y-auto">
-      <ul class="relative border-l border-gray-400 ml-4 mt-4">
-        <li id="reply" class="mb-4 ml-2">
-          <div class="flex">
-            <img
-              class="h-14 w-14 border-4 border-white rounded-full object-cover"
-              src="/images/IMG-20220404-WA0002.jpg"
-            />
-            <div class="flex flex-col">
-              <strong class="mx-2 text-gray-700 text-base">
-                Anu<span class="text-sm font-normal text-gray-500">
-         Ajith Kumar is an Indian actor who appears predominantly in Tamil films. In 1992, he started out in movies as a supporting actor in Telugu. In 1995, he got the lead role in the Tamil thriller Aasai. Up until the year 1998, Ajith usually played the role of a romantic hero.
-       </span>
-              </strong>
-              <time class="flex justify-between text-sm font-normal text-gray-700 my-2 mx-2">
-                10/12/2003
-                <span class="font-bold text-teal-700 hover:text-teal-400 hover:underline ">
-                  Reply
-                </span>
-              </time>
-            </div>
-          </div>
-        </li>
-        <li id="reply" class="mb-4 ml-2">
-          <div class="flex">
-            <img
-              class="h-14 w-14 border-4 border-white rounded-full object-cover"
-              src="/images/IMG-20220404-WA0002.jpg"
-            />
-            <div class="flex flex-col">
-              <strong class="mx-2 text-gray-700 text-base">
-                Anu<span class="text-sm font-normal text-gray-500">
-         After the success of the film ‘Billa,’ Ajith became one of the highest-paid actors in Indian film, and his remuneration increased.
-       </span>
-              </strong>
-              <time class="flex justify-between text-sm font-normal text-gray-700 my-2 mx-2">
-                10/12/2003
-                <span class="font-bold text-teal-700 hover:text-teal-400 hover:underline ">
-                  Reply
-                </span>
-              </time>
-            </div>
-          </div>
-        </li>
-        <li id="reply" class="mb-4 ml-2">
-          <div class="flex">
-            <img
-              class="h-14 w-14 border-4 border-white rounded-full object-cover"
-              src="/images/IMG-20220404-WA0002.jpg"
-            />
-            <div class="flex flex-col">
-              <strong class="mx-2 text-gray-700 text-base">
-                Anu<span class="text-sm font-normal text-gray-500">
-         After that, he started appearing in action movies like Amarkalam (1999), Dheena (2001), Villain (2002), Attagasam (2004), Varalaru (2006), Billa (2007), Mankatha (2011), and Billa II (2013). (2012).
-       </span>
-              </strong>
-              <time class="flex justify-between text-sm font-normal text-gray-700 my-2 mx-2">
-                10/12/2003
-                <span class="font-bold text-teal-700 hover:text-teal-400 hover:underline ">
-                  Reply
-                </span>
-              </time>
-            </div>
-          </div>
-        </li>
-      </ul>
-    </div>
+    <ul class="relative border-l border-gray-200 mt-4">
+      <li id="reply" class="mb-4 ml-6">
+        <div class="mr-3 flex flex-cols space-x-2">
+          <img class="rounded-full w-10 h-10" src={@comment.profile_image} />
+          <strong><%= @comment.username %></strong>
+        </div>
+        <time class="block flex mt-2 text-sm font-normal leading-none text-gray-400 mb-4">
+          <%= @comment.time %>
+          <span class="ml-4 text-sm font-bold leading-none text-teal-700 hover:text-teal-400 hover:underline">
+            Reply
+          </span>
+        </time>
+        <p class="mb-4 text-base font-normal text-gray-500">
+          <%= @comment.message %>
+        </p>
+      </li>
+      <%= for comment <- @comment.reply_comments do %>
+        <.comments_card comment={comment}></.comments_card>
+      <% end %>
+    </ul>
     """
   end
 
-  attr(:img_path, :string)
+  attr :img_path, :string
+  attr :user, :map, required: true
+  attr :rest, :global, doc: "the arbitrary HTML attributes to add to the flash container"
 
   def input_type(assigns) do
     ~H"""
     <div class="flex p-2 gap-2 ml-2">
       <img
-        src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+        src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
         class=" h-14 w-14 border-4 border-white rounded-full object-cover"
       />
       <div class="flex-1 relative">
@@ -1004,12 +1103,13 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  attr(:id, :string, required: true)
-  attr(:navigate, :any, required: true)
-  attr(:img_path, :string)
-  slot(:user_name)
-  slot(:inner_block, required: true)
-  attr(:user, :any)
+
+  attr :id, :string, required: true
+  attr :navigate, :any
+  attr :img_path, :string
+  slot :user_name
+  slot :inner_block, required: true
+  attr :user, :map, required: true
 
   def user_profile(assigns) do
     ~H"""
@@ -1023,7 +1123,7 @@ defmodule PhosWeb.CoreComponents do
         <p class="md:text-2xl text-lg text-white font-bold md:mb-4"><%= render_slot(@user_name) %></p>
         <div class="relative flex justify-center items-center">
           <img
-            src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+            src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
             class=" h-48 w-48 border-4 border-white rounded-full object-cover"
           />
           <span class="bottom-0 right-0 inline-block absolute w-14 h-14 bg-transparent">
@@ -1032,12 +1132,10 @@ defmodule PhosWeb.CoreComponents do
         </div>
         <div class="flex-1 flex flex-col items-center md:mt-4 mt-2 md:px-8">
           <div class="flex items-center space-x-4">
-            <%= for location <- @user.locations do %>
-              <button class="flex items-center bg-white  text-black px-4 py-2 rounded-full md:text-base text-sm font-bold transition duration-100">
-                <Heroicons.map_pin class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4" />
-                <span><%= location %></span>
-              </button>
-            <% end %>
+            <button :for={location <- Map.get(@user, :locations, [])} class="flex items-center bg-white  text-black px-4 py-2 rounded-full md:text-base text-sm font-bold transition duration-100">
+              <Heroicons.map_pin class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4" />
+              <span><%= location %></span>
+            </button>
           </div>
         </div>
       </div>
@@ -1093,15 +1191,16 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  slot(:user_role)
-  slot(:user_bio)
-  slot(:user_public_name)
-  attr(:user, :any)
-  attr(:id, :string, required: true)
-  attr(:navigate, :any, required: true)
-  attr(:img_path, :string)
-  slot(:user_name)
-  slot(:inner_block, required: true)
+
+  slot :user_role
+  slot :user_bio
+  slot :user_public_name
+  attr :user, :any
+  attr :id, :string, required: true
+  attr :navigate, :any
+  attr :img_path, :string
+  slot :user_name
+  slot :inner_block, required: true
 
   def user_information_card_md(assigns) do
     ~H"""

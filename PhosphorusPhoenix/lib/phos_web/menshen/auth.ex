@@ -1,8 +1,8 @@
 defmodule PhosWeb.Menshen.Auth do
-  import Joken.Config
-
   alias PhosWeb.Menshen.Role
   alias Phos.Users.{Private_Profile}
+
+  def generate_user!(id), do: generate_boni!(id)
 
   def validate_user(token) do
     token
@@ -20,22 +20,9 @@ defmodule PhosWeb.Menshen.Auth do
     end
   end
 
-  def validate_fyr(token) do
-    case ExFirebaseAuth.Token.verify_token(token) do
-    {:ok, _fyr_id, %JOSE.JWT{fields: claims}} ->
-        {:ok, claims}
-    {:error, reason} ->
-        {:error, reason}
-    end
-  end
+  def validate_boni(token), do: Role.Boni.verify_and_validate(token)
 
-  def validate_boni(token) do
-    Role.Boni.verify_and_validate(token)
-  end
-
-  def generate_boni() do
-    Role.Boni.generate_and_sign()
-  end
+  def generate_boni, do: Role.Boni.generate_and_sign()
 
   def generate_boni!(user_id) do
     {:ok, jwt, _claims} = Role.Boni.generate_and_sign(%{user_id: user_id})
@@ -54,16 +41,6 @@ defmodule PhosWeb.Menshen.Auth do
       username: user.username}
     #|> Role.Boni.generate_claims
     |> Role.Pleb.generate_and_sign()
-  end
-
-  def generate_user!(user_id) do
-    {:ok, user} = Phos.Users.find_user_by_id(user_id)
-    %{user_id: user.id,
-      fyr_id: user.fyr_id,
-      territory: parse_territories(user),
-      username: user.username,
-    }
-    |> Role.Pleb.generate_and_sign!()
   end
 
   # geo utilities?

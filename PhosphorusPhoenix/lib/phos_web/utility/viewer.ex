@@ -26,27 +26,6 @@ defmodule PhosWeb.Util.Viewer do
           %{data: PhosWeb.Util.Viewer.orb_mapper(orbs),
           links: %{history: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{entity.id}/history")}}}
 
-
-
-
-      # {:friend, %Phos.Users.User{} = friend} ->
-
-      #   %{friend:
-      #     %{data: PhosWeb.Util.Viewer.user_mapper(friend),
-      #       links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{friend.id}")}}}
-
-      # {:initiator, %Phos.Users.User{} = initiator} ->
-
-      #   %{initiator:
-      #     %{data: PhosWeb.Util.Viewer.user_mapper(initiator),
-      #       links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{initiator.id}")}}}
-
-      # {:acceptor, %Phos.Users.User{} = acceptor} ->
-
-      #   %{acceptor:
-      #     %{data: PhosWeb.Util.Viewer.user_mapper(acceptor),
-      #       links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{acceptor.id}")}}}
-
       {k , %Phos.Users.User{} = user} ->
         Map.new([{k,
                   %{data: PhosWeb.Util.Viewer.user_mapper(user),
@@ -81,13 +60,23 @@ defmodule PhosWeb.Util.Viewer do
 
   def memory_mapper(memories = [%Phos.Message.Memory{} | _]), do: Enum.map(memories, &memory_mapper/1)
   def memory_mapper(memory) do
+      %{just_a_memory_mapper(memory) | relationships: relationship_reducer(memory)}
+  end
+
+  def just_a_memory_mapper(memory) do
       %{
         id: memory.id,
-        relationships: relationship_reducer(memory),
+        relationships: %{},
+        user_source_id: memory.user_source_id,
+        rel_subject_id: memory.rel_subject_id,
+        orb_subject_id: memory.orb_subject_id,
+        com_subject_id: memory.com_subject_id,
+        action_path: memory.action_path,
         message: memory.message,
-        creationtime: DateTime.from_naive!(memory.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
-        mutationtime: DateTime.from_naive!(memory.updated_at, "Etc/UTC") |> DateTime.to_unix(),
-        media: (if memory.media, do: S3.get_all!("MEM", memory.id, "public"))
+        creationtime: memory.inserted_at |> DateTime.to_unix(:millisecond),
+        mutationtime: memory.updated_at |> DateTime.to_unix(:millisecond),
+        media: (if memory.media, do: S3.get_all!("MEM", memory.id, "public")),
+        media_exists: memory.media
       }
   end
 
@@ -96,8 +85,8 @@ defmodule PhosWeb.Util.Viewer do
         id: reverie.id,
         relationships: relationship_reducer(reverie),
         read: reverie.read,
-        creationtime: DateTime.from_naive!(reverie.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
-        mutationtime: DateTime.from_naive!(reverie.updated_at, "Etc/UTC") |> DateTime.to_unix(),
+        creationtime: DateTime.from_naive!(reverie.inserted_at, "Etc/UTC") |> DateTime.to_unix(:millisecond),
+        mutationtime: DateTime.from_naive!(reverie.updated_at, "Etc/UTC") |> DateTime.to_unix(:millisecond),
       }
   end
 
@@ -333,11 +322,11 @@ defmodule PhosWeb.Util.Viewer do
   end
 
 
-  defp nested_put(nest) do
-    if nest do
-      nest
-    else
-      %{}
-    end
-  end
+  # defp nested_put(nest) do
+  #   if nest do
+  #     nest
+  #   else
+  #     %{}
+  #   end
+  # end
  end

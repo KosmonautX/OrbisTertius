@@ -11,8 +11,7 @@ defmodule PhosWeb.UserConfirmationController do
     if user = Users.get_user_by_email(email) do
       Users.deliver_user_confirmation_instructions(
         user,
-        &Routes.user_confirmation_url(conn, :edit, &1)
-      )
+        fn token -> ~p"/users/confirm/#{token}" end)
     end
 
     conn

@@ -8,7 +8,6 @@ defmodule PhosWeb.UserSessionController do
     render(conn, :new, error_message: nil, telegram: Phos.OAuthStrategy.telegram())
   end
 
-
   def create(conn, %{"_action" => "registered"} = params) do
     create(conn, params, "Welcome to Scratchbac!")
   end
@@ -19,11 +18,7 @@ defmodule PhosWeb.UserSessionController do
     |> create(params, "Password updated successfully!")
   end
 
-  def create(conn, params) do
-    create(conn, params, "Welcome back!")
-  end
-
-  defp create(conn, %{"user" => user_params}, info) do
+  def create(conn, %{"user" => user_params} = _params, info \\ "Welcome back!") do
     %{"email" => email, "password" => password} = user_params
 
     if user = Users.get_user_by_email_and_password(email, password) do
@@ -36,18 +31,6 @@ defmodule PhosWeb.UserSessionController do
       |> put_flash(:error, "Invalid email or password")
       |> put_flash(:email, String.slice(email, 0, 160))
       |> redirect(to: ~p"/users/log_in")
-    end
-  end
-
-  ## TODO Validate Telegram OAuth Behaviour
-  def create(conn, %{"user" => user_params}) do
-    %{"email" => email, "password" => password} = user_params
-
-    if user = Users.get_user_by_email_and_password(email, password) do
-      Gate.log_in_user(conn, user, user_params)
-    else
-      # In order to prevent user enumeration attacks, don't disclose whether the email is registered.
-      render(conn, "new.html", error_message: "Invalid email or password", telegram: Phos.OAuthStrategy.telegram())
     end
   end
 

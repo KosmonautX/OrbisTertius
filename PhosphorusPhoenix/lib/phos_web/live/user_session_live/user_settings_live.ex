@@ -65,7 +65,7 @@ defmodule PhosWeb.UserSettingsLive do
           required
         />
         <:actions>
-          <.button phx-disable-with="Changing...">Change Password</.button>
+          <.button phx-disable-with="Changing..." type="submit">Change Password</.button>
         </:actions>
       </.simple_form>
     </div>

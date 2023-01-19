@@ -33,7 +33,7 @@ defmodule PhosWeb.UserLoginLive do
           </.link>
         </:actions>
         <:actions>
-          <.button phx-disable-with="Sigining in..." class="w-full">
+          <.button phx-disable-with="Sigining in..." class="w-full" type="submit">
             Sign in <span aria-hidden="true">→</span>
           </.button>
         </:actions>

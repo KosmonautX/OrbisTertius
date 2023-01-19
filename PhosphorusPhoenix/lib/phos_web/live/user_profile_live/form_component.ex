@@ -1,9 +1,7 @@
 defmodule PhosWeb.UserProfileLive.FormComponent do
   use PhosWeb, :live_component
 
-  alias PhosWeb.Util.{Viewer,ImageHandler}
   alias Phos.Users
-  alias Phos.Users.{User}
 
   @impl true
   def update(%{user: user} = assigns, socket) do
@@ -58,7 +56,7 @@ defmodule PhosWeb.UserProfileLive.FormComponent do
 
   defp save_profile(socket, :edit, profile_params) do
     case Users.update_user(socket.assigns.user, profile_params) do
-      {:ok, user} ->
+      {:ok, _user} ->
         {:noreply,
          socket
          |> put_flash(:info, "Profile updated successfully")

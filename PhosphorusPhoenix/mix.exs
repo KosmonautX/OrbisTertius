@@ -36,7 +36,7 @@ defmodule Phos.MixProject do
       {:bcrypt_elixir, "~> 3.0"},
       {:phoenix, "~> 1.7.0-rc.0", override: true},
       {:phoenix_ecto, "~> 4.4"},
-      {:ecto_sql, "~> 3.6"},
+      {:ecto_sql, "~> 3.9"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
@@ -90,9 +90,10 @@ defmodule Phos.MixProject do
       #debugging
       {:rexbug, "~> 1.0"},
       {:poison, "4.0.1", override: true},
-      {:phoenix_view, "~> 2.0"} # for error warning removal
+      {:phoenix_view, "~> 2.0"}, # for error warning removal
       # { :uuid, "~> 1.1" },
       # {:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
+      {:phx_live_storybook, github: "phenixdigital/phx_live_storybook", runtime: Mix.env() == :dev }
     ]
   end
 

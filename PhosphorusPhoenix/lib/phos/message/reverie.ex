@@ -4,6 +4,7 @@ defmodule Phos.Message.Reverie do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
+  @timestamps_opts [type: :utc_datetime_usec]
   schema "reveries" do
     field :read, :utc_datetime
     belongs_to :user_destination, Phos.Users.User, references: :id, type: Ecto.UUID

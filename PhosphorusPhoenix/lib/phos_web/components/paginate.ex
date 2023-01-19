@@ -8,11 +8,13 @@ defmodule PhosWeb.Components.Pagination do
   def update(assigns, socket) do
     {:ok, 
       assign(socket, assigns)
+      |> assign_new(:active, fn -> false end)
+      |> assign_new(:number, fn -> 1 end)
       |> assign_new(:first, fn -> true end)
       |> assign_new(:last, fn -> true end)
       |> assign_new(:route_path, fn -> :root_path end)
       |> assign_new(:route_method, fn -> :index end)
-      |> assign_new(:limit, fn -> 2 end)}
+      |> assign_new(:limit, fn -> 20 end)}
   end
 
   @impl true
@@ -155,8 +157,8 @@ defmodule PhosWeb.Components.Pagination do
       <% end %>
     """
   end
-  def paginate_value(%{meta: %{start: start}}) when start == 0, do: paginate_child(%{number: 1, active: false})
-  def paginate_value(_assigns), do: paginate_child(%{number: 1, active: true})
+  def paginate_value(%{meta: %{start: start}} = assigns) when start == 0, do: paginate_child(%{assigns | number: 1, active: false})
+  def paginate_value(assigns), do: paginate_child(%{assigns | number: 1, active: true})
 
   def paginate_child(%{number: number, active: active, route_path: _route, route_method: _method} = assigns) when number != 0 do
     current_class = decide_active_class(active)
@@ -167,11 +169,10 @@ defmodule PhosWeb.Components.Pagination do
     """
   end
   def paginate_child(%{active: active} = assigns) do
-    current_class = decide_active_class(active)
-    # assigns = assign(assigns, current_class: current_class)
+    assigns = assign(assigns, current_class: decide_active_class(active))
 
     ~H"""
-      <.link href="#" class={current_class}>...</.link>
+      <.link href="#" class={@current_class}>...</.link>
     """
   end
 

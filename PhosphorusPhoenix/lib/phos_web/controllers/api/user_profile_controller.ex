@@ -24,7 +24,7 @@ defmodule PhosWeb.API.UserProfileController do
 
   def update_self(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"media" => [_|_] = media} = params) do
     user = Users.get_user!(id)
-    with {:ok, media} <- Orbject.Structure.apply_user_changeset(%{id: id, archetype: "USR", media: media}),
+    with {:ok, media} <- Orbject.Structure.apply_media_changeset(%{id: id, archetype: "USR", media: media}),
          {:ok, %User{} = user} <- Users.update_user(user, Map.put(profile_constructor(user, params),"media", true)) do
       render(conn, :show, user_profile: user, media: media)
     end
@@ -86,16 +86,20 @@ defmodule PhosWeb.API.UserProfileController do
 
   def update_beacon(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"fcm_token" => token}) do
     #subscribing to past fcm logic etc
+    # default global topic COUNTRY.SG
+    # resubscribe logic
     with true <- !Fcmex.unregistered?(token),
          {:ok, %{}} <- Fcmex.Subscription.subscribe("USR." <> user.id, token),
          {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => %{"fcm_token" => token}}) do
       render(conn, :show, integration: user_integration)
+    else
+      false -> render(conn, :show, integration: nil)
     end
   end
 
   defp purge_nil(map), do: map |> Enum.reject(fn {_, v} -> is_nil(v) end) |> Map.new()
 
-    defp profile_constructor(user, params) do
+  defp profile_constructor(user, params) do
     %{
       "username" => params["username"],
       "public_profile" => %{"birthday" => (if params["birthday"], do: params["birthday"]|> DateTime.from_unix!() |> DateTime.to_naive()),
@@ -110,15 +114,7 @@ defmodule PhosWeb.API.UserProfileController do
                           "userbound" => true,
                           "initiator_id" => user.id,
                           "traits" => params["traits"],
-                          "title" => (unless is_nil(params["traits"]), do: "Today is my first day 🐣 looking for allies 👀
-
-These are my defining traits 🎎: #{Enum.reduce_while(params["traits"], "", fn x, acc ->
-
-  if (String.length(acc) + String.length(x)) < 110, do: {:cont, acc <> " ##{x}"}, else: {:halt, acc}
-
-end)}
-
-Ask me anything in the comments 💬")
+                          "title" => (unless is_nil(params["traits"]), do: "Hello, It's my first day on Scratchbac! What's going on today?")
                          } |> purge_nil()
     } |> purge_nil()
   end
