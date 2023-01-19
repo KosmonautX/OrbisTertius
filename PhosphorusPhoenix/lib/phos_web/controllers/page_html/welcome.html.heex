@@ -1,76 +1,13 @@
-<!--<ul :if={not is_nil(Map.get(assigns, :current_user))} class="absolute inset-x-0 bottom-0">
-  <li :if={not is_nil(@current_user.username)}>
-    <span>Welcome</span>
-    <.link navigate={~p"/user/#{@current_user.username}"}>
-      <%= @current_user.username %>
-    </.link>
-  </li>
-  <li>
-    <.link navigate={~p"/users/settings"}>Settings</.link>
-  </li>
-  <li>
-    <.link href={~p"/users/log_out"} method="delete">Log out</.link>
-  </li>
-</ul>-->
 
-<nav class="bg-white  px-2 md:py-2 fixed w-full z-20 top-0 left-0 border-b border-gray-200  text-base font-bold">
-  <div class="flex flex-wrap items-center justify-between mx-auto">
-    <a href="#" class="flex items-center">
-      <img src="/images/banner_logo_white.png" class="h-6 ml-4 md:h-9" alt="" />
-    </a>
-    <div class="flex items-center md:order-2  flex-col p-2 mt-2 md:flex-row md:space-x-2 md:w-auto">
-      <ul class="flex flex-wrap  text-center text-gray-700">
-       <li class="mr-2 hidden md:block">
-          <span
-            class="inline-flex p-2 rounded-t-lg hover:text-teal-500 group">
-            <Heroicons.cog_8_tooth mini class="w-5 h-5 mr-2 text-gray-700 group-hover:text-teal-500" />
-            <.link navigate={~p"/users/settings"}>Settings</.link>
-          </span>
-        </li>
-        <li class="mr-2 hidden md:block">
-          <span
-            class="inline-flex p-2 rounded-t-lg hover:text-teal-500 group">
-            <Heroicons.arrow_left_on_rectangle mini class="w-5 h-5 mr-2 text-gray-700 group-hover:text-teal-500" />
-            <.link href={~p"/users/log_out"} method="delete">Log out</.link>
-          </span>
-        </li>
-          <li class="mr-2 hidden md:block">
-          <span
-            class="inline-flex p-2 rounded-t-lg hover:text-teal-500 group">
-            <Heroicons.user_circle mini class="w-6 h-6 mr-2 text-gray-700 group-hover:text-teal-500" />
-            <.link navigate={~p"/user/#{@current_user.username}"}>
-            <%= @current_user.username %></.link>
-          </span>
-        </li>
-      </ul>
-    </div>
-    <div class="hidden md:block items-center justify-between  w-full  md:w-auto">
-      <ul class="flex flex-col p-4 mt-2  md:flex-row md:space-x-6  text-gray-700">
-        <li>
-          <a
-            href="#"
-            class="block py-2 pl-3 pr-4 rounded md:hover:text-teal-500 md:p-0"
-          >
-            Pepole
-          </a>
-        </li>
-        <li>
-          <a
-            href="#"
-            class="block py-2 pl-3 pr-4 rounded md:hover:text-teal-500 md:p-0"
-          >
-            Explore
-          </a>
-        </li>
-        <li>
-          <a
-            href="#"
-            class="flex items-center justify-between py-2 pl-3 pr-4 md:hover:text-teal-500 md:p-0"
-          >
-            Chats <Heroicons.chevron_down solid class="h-4 w-4 stroke-current" />
-          </a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
+<div class="flex flex-col h-screen justify-center items-center space-y-4 text-gray-600 p-4">
+  <h2 class="md:text-3xl text-2xl font-bold max-w-md text-center">Welcome to the tribe!
+    You’re all set for now.</h2>
+  <img class="w-16 h-16 md:w-24 md:h-24" src="/images/Icon_logo_transparent_23x.png" />
+  <p class="max-w-md text-center text-base font-medium">
+    You’ll need to download the app to access all features. But for now, you’re set to do what you were about to do!
+  </p>
+  <.button type="submit">Download the Scratchbac app</.button>
+  <a class="hover:text-teal-400 text-base font-bold hover:underline">
+    Bring me back to what I was doing!
+  </a>
+</div>

@@ -14,15 +14,16 @@
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
   </head>
-  <body class="overflow-hidden min-h-screen">
+  <body class="h-screen w-full">
     <%= if @current_user do %>
-      <!--<div class="">
+      <div class="">
         <.user_menu current_user={@current_user} />
-      </div>-->
-        <!--<.banner></.banner>-->
-        <.tabs_mobile></.tabs_mobile>
+      </div>
+      <!--<.banner></.banner>-->
+      <.tabs_mobile></.tabs_mobile>
+      <.bottom_banner></.bottom_banner>
     <% end %>
-    <div class="h-screen w-full overflow-auto"><%= @inner_content %></div>
+    <div class="w-full h-auto"><%= @inner_content %></div>
     <br />
   </body>
 </html>

@@ -15,16 +15,17 @@
   />
 </.modal>
 <!--User Profile Image Uplodae-->
-<section class="min-w-full mx-auto flex flex-col items-center justify-center">
-  <div class="min-w-full">
+<section class="w-full flex flex-col items-center justify-center">
+  <div class="w-full">
     <.user_profile user={@user}>
       <:user_name><%= @user.username %></:user_name>
       <.link :if={@user.id == @current_user.id} patch={~p"/user/#{@current_user.username}/edit"}>
-        Edit profile
+        <Heroicons.camera class="w-12 h-12 fill-white" />
       </.link>
     </.user_profile>
   </div>
-  <div class="mt-4 md:w-[45rem] w-full mx-auto items-center justify-center mb-20">
+
+  <div class="mt-4 md:w-[45rem] w-full items-center justify-center mb-20">
     <.information_card :if={not is_nil(@user.public_profile)} user={@user}>
       <:user_role><%= @user.public_profile.occupation %></:user_role>
       <:user_bio><%= @user.public_profile.bio %></:user_bio>
@@ -32,6 +33,7 @@
     </.information_card>
     <.tabs_profile></.tabs_profile>
     <.video></.video>
-    <.reply_post></.reply_post>
+    <.input_type user={@user}></.input_type>
+
   </div>
 </section>
