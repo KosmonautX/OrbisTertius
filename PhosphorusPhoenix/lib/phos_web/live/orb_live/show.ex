@@ -7,7 +7,7 @@ defmodule PhosWeb.OrbLive.Show do
   alias PhosWeb.Utility.Encoder
 
   @impl true
-  def mount(%{"id" => id} = params, _session, socket = %{assigns: %{current_user: user}}) do
+  def mount(%{"id" => id} = _params, _session, socket = %{assigns: %{current_user: user}}) do
     with %Action.Orb{} = orb <-  Action.get_orb(id, user.id) do
       orb = orb
             |> put_in([Access.key(:initiator), Access.key(:locations)], ["Singapore", "Vandavasi"])

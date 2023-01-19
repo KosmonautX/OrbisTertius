@@ -39,23 +39,23 @@
   >
     <div class="md:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full max-w-full px-3 md:w-3/12  md:flex-none">
       <div class="border border-gray-200 rounded-3xl shadow-md">
-        <.post_related_user user={@orb.initiator}>
+        <.post_related_user id="orb-initiator-username" user={@orb.initiator}>
           <:user_name><%= @orb.initiator.username %></:user_name>
         </.post_related_user>
       </div>
       <div class="border border-gray-200 rounded-3xl shadow-md">
-        <.user_information_card_md user={@orb.initiator}>
+        <.user_information_card_md id="orb-initiator-public-profile" user={@orb.initiator}>
           <:user_bio><%= @orb.initiator.public_profile.bio %></:user_bio>
           <:user_public_name><%= @orb.initiator.public_profile.public_name %></:user_public_name>
         </.user_information_card_md>
       </div>
       <div class="border border-gray-200 rounded-3xl shadow-md">
-        <.explore_tag user={@orb.initiator}></.explore_tag>
+        <.explore_tag id="orb-initiator-explore-tag" user={@orb.initiator} />
       </div>
     </div>
 
     <div class="px-3 md:w-5/12  w-full mt-0 md:flex-none border justify-center items-center border-gray-200 md:rounded-3xl md:shadow-md shadow-sm">
-      <.profile_upload_path user={@orb.initiator}>
+      <.profile_upload_path id="orb-initiator-profile-upload" user={@orb.initiator}>
         <:user_name><%= @orb.initiator.username %></:user_name>
         <:information>
           <span>
@@ -64,13 +64,13 @@
           Chennai
         </:information>
       </.profile_upload_path>
-      <.post_image orb={@orb}></.post_image>
+      <.post_image id="orb-image-upload" orb={@orb} />
       <.post_information>
         <%= @orb.payload.info %>
       </.post_information>
       <.comment_action></.comment_action>
-      <.reply_post></.reply_post>
-      <.input_type user={@orb.initiator}></.input_type>
+      <.reply_post id="orb-reply-post" />
+      <.input_type id="orb-initiator-input-type" user={@orb.initiator} />
     </div>
   </div>
 </section>

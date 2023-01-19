@@ -10,7 +10,7 @@ defmodule PhosWeb.CoreComponents do
   [heroicons_elixir](https://github.com/mveytsman/heroicons_elixir) project.
   """
   use Phoenix.Component
-  import Phoenix.VerifiedRoutes
+  import Phoenix.VerifiedRoutes, warn: false
 
   alias Phoenix.LiveView.JS
   import PhosWeb.Gettext
@@ -226,7 +226,7 @@ defmodule PhosWeb.CoreComponents do
     default: :primary,
     values: ~w(primary success warning danger)a,
     doc: "Theme of the button"
-  attr :type, :string, default: "button", values: ~w(button submit), doc: "Type of button"
+  attr :type, :string, default: "button", values: ~w(button submit reset), doc: "Type of button"
   attr :class, :string, default: ""
   attr :rest, :global, include: ~w(disabled form name value), doc: "Rest of html attribute"
 
@@ -859,12 +859,14 @@ defmodule PhosWeb.CoreComponents do
   end
 
   attr :img_path, :string
+  attr :user, :map, required: true
+  attr :rest, :global, doc: "the arbitrary HTML attributes to add to the flash container"
 
   def input_type(assigns) do
     ~H"""
     <div class="flex p-2 gap-2 ml-2 mb-10">
       <img
-        src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+        src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
         class=" h-14 w-14 border-4 border-white rounded-full object-cover"
       />
       <div class="flex-1 relative">
@@ -1030,11 +1032,11 @@ defmodule PhosWeb.CoreComponents do
   end
 
   attr :id, :string, required: true
-  attr :navigate, :any, required: true
+  attr :navigate, :any
   attr :img_path, :string
   slot :user_name
   slot :inner_block, required: true
-  attr :user, :any
+  attr :user, :map, required: true
 
   def user_profile(assigns) do
     ~H"""
@@ -1048,7 +1050,7 @@ defmodule PhosWeb.CoreComponents do
         <p class="md:text-2xl text-lg text-white font-bold md:mb-4"><%= render_slot(@user_name) %></p>
         <div class="relative flex justify-center items-center">
           <img
-            src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+            src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
             class=" h-48 w-48 border-4 border-white rounded-full object-cover"
           />
           <span class="bottom-0 right-0 inline-block absolute w-14 h-14 bg-transparent">
@@ -1058,12 +1060,10 @@ defmodule PhosWeb.CoreComponents do
         </div>
         <div class="flex-1 flex flex-col items-center md:mt-4 mt-2 md:px-8">
           <div class="flex items-center space-x-4">
-            <%= for location <- @user.locations do %>
-              <button class="flex items-center bg-white  text-black px-4 py-2 rounded-full md:text-base text-sm font-bold transition duration-100">
-                <Heroicons.map_pin class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4" />
-                <span><%= location %></span>
-              </button>
-            <% end %>
+            <button :for={location <- Map.get(@user, :locations, [])} class="flex items-center bg-white  text-black px-4 py-2 rounded-full md:text-base text-sm font-bold transition duration-100">
+              <Heroicons.map_pin class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4" />
+              <span><%= location %></span>
+            </button>
           </div>
         </div>
       </div>
@@ -1124,7 +1124,7 @@ defmodule PhosWeb.CoreComponents do
   slot :user_public_name
   attr :user, :any
   attr :id, :string, required: true
-  attr :navigate, :any, required: true
+  attr :navigate, :any
   attr :img_path, :string
   slot :user_name
   slot :inner_block, required: true

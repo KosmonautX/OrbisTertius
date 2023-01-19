@@ -24,6 +24,6 @@ defmodule PhosWeb.API.EchoJSON do
 
   defp memory_json(memory), do: PhosWeb.Util.Viewer.memory_mapper(memory)
 
-  defp echo_json(echo), do: PhosWeb.Util.Viewer.echo_mapper(echo)
+  # defp echo_json(echo), do: PhosWeb.Util.Viewer.echo_mapper(echo)
 
 end

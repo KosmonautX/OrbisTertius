@@ -17,7 +17,7 @@
 <!--User Profile Image Uplodae-->
 <section class="min-w-full mx-auto flex flex-col items-center justify-center">
   <div class="min-w-full">
-    <.user_profile user={@user}>
+    <.user_profile id="orb-user-profile" user={@user}>
       <:user_name><%= @user.username %></:user_name>
       <.link :if={@user.id == @current_user.id} patch={~p"/user/#{@current_user.username}/edit"}>
         Edit profile
@@ -30,8 +30,8 @@
       <:user_bio><%= @user.public_profile.bio %></:user_bio>
       <:user_public_name><%= @user.public_profile.public_name %></:user_public_name>
     </.information_card>
-    <.tabs_profile></.tabs_profile>
-    <.video></.video>
-    <.reply_post></.reply_post>
+    <.tabs_profile id="orb-user-tabs-profile" />
+    <.video id="orb-user-video" />
+    <.reply_post id="orb-user-reply-post" />
   </div>
 </section>

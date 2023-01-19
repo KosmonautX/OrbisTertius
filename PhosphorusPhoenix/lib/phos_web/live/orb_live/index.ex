@@ -6,12 +6,12 @@ defmodule PhosWeb.OrbLive.Index do
   alias Phos.PubSub
 
   @impl true
-  def mount(params, _session, socket) do
+  def mount(_params, _session, socket) do
     #send(self(), :geoinitiation)
 
     {:ok,
      socket
-     |> assign(:geolocation, %{"all" => list_orbs()})
+     |> assign(:geolocation, %{"all" => Action.list_orbs()})
      |> assign(:addresses, %{"all" => ["all"]})}
   end
 
@@ -134,22 +134,6 @@ defmodule PhosWeb.OrbLive.Index do
   end
 
   @impl true
-  def handle_event("live_location_update", %{"longitude" => longitude, "latitude" => latitude}, socket) do
-    send(self(), {:static_location_update, %{"locname" => :live, "longitude" => longitude, "latitude" => latitude}})
-    {:noreply, socket}
-  end
-
-  @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    orb = Action.get_orb!(id)
-    orb_loc_publisher(orb, :deactivation, orb.locations |> Enum.map(fn orb -> orb.id end))
-    {:ok, _} = Action.delete_orb(orb)
-
-    {:noreply, socket}
-  end
-
-  @impl true
-
   def handle_info({PubSub, {:orb, :genesis}, message}, socket) do
     IO.puts("genesis #{inspect(message)}")
 
@@ -193,7 +177,6 @@ defmodule PhosWeb.OrbLive.Index do
      socket
      |> assign(:geolocation, updated_orblist)}
   end
-
 
   @impl true
   def handle_event("live_location_update", %{"longitude" => longitude, "latitude" => latitude}, socket) do
