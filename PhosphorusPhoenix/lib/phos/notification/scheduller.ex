@@ -157,6 +157,7 @@ defmodule Phos.Notification.Scheduller do
           nil
       end
     end)
+    |> Enum.uniq()
   end
 
   defp fetch_tokens(_), do: []
