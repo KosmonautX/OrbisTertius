@@ -31,9 +31,11 @@
       </div>
     </div>
     <div class="actions">
-      <.link href="#reply" phx-click="reply-comment" phx-value-comment-id={elem(@comment, 1).id} phx-target={"#comment-#{elem(@comment, 1).id}"}>Reply</.link>
-      <.link :if={elem(@comment, 1).active } href="#edit" phx-click="edit-comment" phx-value-comment-id={elem(@comment, 1).id} phx-target={"#comment-#{elem(@comment, 1).id}"}>Edit</.link>
-      <.link :if={elem(@comment, 1).active } phx-click={JS.push("delete", value: %{id: elem(@comment, 1).id})} data-confirm="Are you sure?">Delete</.link>
+      <div :if={not is_nil(@current_user)}>
+        <.link href="#reply" phx-click="reply-comment" phx-value-comment-id={elem(@comment, 1).id} phx-target={"#comment-#{elem(@comment, 1).id}"}>Reply</.link>
+        <.link :if={elem(@comment, 1).active and elem(@comment, 1).initiator_id == @current_user.id } href="#edit" phx-click="edit-comment" phx-value-comment-id={elem(@comment, 1).id} phx-target={"#comment-#{elem(@comment, 1).id}"}>Edit</.link>
+        <.link :if={elem(@comment, 1).active and elem(@comment, 1).initiator_id == @current_user.id } phx-click={JS.push("delete", value: %{id: elem(@comment, 1).id})} data-confirm="Are you sure?">Delete</.link>
+      </div>
 
       <div :if={elem(@comment, 1).child_count > 0}>
         <div id={"showreply-#{elem(@comment, 1).id}"} style="display: none">

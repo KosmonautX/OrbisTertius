@@ -36,7 +36,7 @@
       <.post_information>
         <%= @orb.payload.info %>
       </.post_information>
-      <.comment_action></.comment_action>
+      <.comment_action />
 
       <!--<.reply_post id="orb-reply-post" />-->
       <.input_type id="orb-initiator-input-type" user={@orb.initiator} />
@@ -44,7 +44,7 @@
     <!--Related Post -->
     <div class="px-3 space-y-4 w-full lg:basis-1/4 md:basis-1/4  h-auto">
       <div class="border border-gray-200 rounded-xl shadow-sm">
-        <.profile_upload_path user={@orb.initiator}>
+        <.profile_upload_path id="orb-initiator-profile-upload-2" user={@orb.initiator}>
           <:user_name><%= @orb.initiator.username %></:user_name>
           <:information>
             <span>
@@ -57,7 +57,7 @@
       </div>
 
       <div class="border border-gray-200 rounded-xl shadow-sm">
-        <.profile_upload_path user={@orb.initiator}>
+        <.profile_upload_path id="orb-initiator-profile-upload" user={@orb.initiator}>
           <:user_name><%= @orb.initiator.username %></:user_name>
           <:information>
             <span>
@@ -69,11 +69,11 @@
         <.post_information>
           <%= @orb.payload.info %>
         </.post_information>
-        <.comment_action></.comment_action>
+        <.comment_action />
       </div>
 
       <div class="border border-gray-200 rounded-xl shadow-sm">
-        <.profile_upload_path user={@orb.initiator}>
+        <.profile_upload_path id="orb-initiator-profile-upload-path" user={@orb.initiator}>
           <:user_name><%= @orb.initiator.username %></:user_name>
           <:information>
             <span>
@@ -82,7 +82,7 @@
             Chennai
           </:information>
         </.profile_upload_path>
-        <.post_image orb={@orb}></.post_image>
+        <.post_image orb={@orb} id="orb-post-image" />
         <.post_information>
           <%= @orb.payload.info %>
         </.post_information>
@@ -109,7 +109,7 @@
   <:item title="Traits"><%= inspect(@orb.traits) %></:item>
 </.list>
 
-<div class="mt-4">
+<div class="mt-4" :if={not is_nil(@current_user)}>
   <.link
     navigate={~p"/orb/#{@orb.id}/edit"}
     class="text-white px-4 py-2 bg-blue-300 hover:bg-blue-500 rounded hover:text-white"

@@ -149,17 +149,12 @@ defmodule PhosWeb.Menshen.Gate do
   end
 
   def on_mount(:ensure_authenticated, _params, session, socket) do
-    socket = mount_current_user(session, socket)
+    %{assigns: %{current_user: current_user}} = socket = mount_current_user(session, socket)
 
-    if socket.assigns.current_user do
-      {:cont, socket}
-    else
-      socket =
-        socket
-        |> Phoenix.LiveView.put_flash(:error, "You must log in to access this page.")
-        |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
-
-      {:halt, socket}
+    case current_user do
+      data when data in [true, false, nil] ->
+        {:cont, Phoenix.Component.assign(socket, :guest, true)}
+      _user -> {:cont, Phoenix.Component.assign(socket, :guest, false)}
     end
   end
 

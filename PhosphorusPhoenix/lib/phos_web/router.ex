@@ -77,6 +77,12 @@ defmodule PhosWeb.Router do
       live "/users/confirm/:token", UserConfirmationLive, :edit
       live "/users/confirm", UserConfirmationInstructionsLive, :new
     end
+
+    live_session :guest_if_not_logged_in,
+      on_mount: {PhosWeb.Menshen.Gate, :ensure_authenticated} do
+
+      live "/orb/:id", OrbLive.Show, :show
+    end
   end
 
 
@@ -96,8 +102,6 @@ defmodule PhosWeb.Router do
       live "/orb", OrbLive.Index, :index
       live "/orb/new", OrbLive.Index, :new
       live "/orb/:id/edit", OrbLive.Index, :edit
-
-      live "/orb/:id", OrbLive.Show, :show
       live "/orb/:id/show/edit", OrbLive.Show, :edit
       live "/orb/:id/show/:cid", OrbLive.Show, :show_ancestor
       live "/orb/:id/reply/:cid", OrbLive.Show, :reply
@@ -126,9 +130,6 @@ defmodule PhosWeb.Router do
 
       live "/reveries/:id", ReverieLive.Show, :show
       live "/reveries/:id/show/edit", ReverieLive.Show, :edit
-
-
-
     end
   end
 
@@ -265,7 +266,6 @@ defmodule PhosWeb.Router do
 
       get "/flameon", DevLandController, :new
       get "/lankaonfyr", DevLandController, :fyr
-
     end
   end
  end
