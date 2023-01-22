@@ -43,6 +43,7 @@ defmodule Phos.Users.User do
     |> cast_embed(:public_profile)
     |> cast_assoc(:private_profile)
     |> unique_constraint(:username, name: :unique_username)
+    |> unique_constraint(:fyr_id, name: :unique_fyr)
   end
 
   def personal_changeset(%Phos.Users.User{} = user, attrs) do
@@ -90,6 +91,7 @@ defmodule Phos.Users.User do
     |> cast_embed(:public_profile)
     |> cast_assoc(:private_profile)
     |> unique_constraint(:username, name: :unique_username)
+    |> unique_constraint(:fyr_id, name: :unique_fyr)
   end
 
   def fyr_registration_changeset(%Phos.Users.User{} = user, attrs) do
@@ -98,6 +100,7 @@ defmodule Phos.Users.User do
     |> validate_required(:fyr_id)
     |> cast_embed(:public_profile)
     |> unique_constraint(:username, name: :unique_username)
+    |> unique_constraint(:fyr_id, name: :unique_fyr)
   end
 
   def pub_profile_changeset(%Phos.Users.User{} = user, attrs) do

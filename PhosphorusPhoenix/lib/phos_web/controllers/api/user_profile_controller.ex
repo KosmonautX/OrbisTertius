@@ -93,7 +93,7 @@ defmodule PhosWeb.API.UserProfileController do
          {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => %{"fcm_token" => token}}) do
       render(conn, :show, integration: user_integration)
     else
-      false ->
+      false -> {:error, :unprocessable_entity}
     end
   end
 

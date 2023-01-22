@@ -39,7 +39,7 @@ User-Agent: Emacs27
 GET :localipAddress/devland/flameon?user=:lky_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 ## Generate Google Identity idToken for Firebase Auth
-GET :localipAddress/devland/lankaonfyr?fyr_id=:owen
+GET :localipAddress/devland/lankaonfyr?fyr_id=:tate
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 
@@ -109,6 +109,16 @@ PUT :ipAddress/userland/self/territory
             "geohash": 636786611773840255,
             "location_description": "Bukit Panjang"
         }
+    ]
+}
+
+## Report User
+PUT :ipAddress/userland/others/e4c01173-f944-4d78-993f-bf4c6fb7cb3a/report
+:auth-headers
+{
+    "message": [
+    "Inappropriate Content",
+    "Spam"
     ]
 }
 
@@ -260,6 +270,16 @@ PUT :ipAddress/orbland/orbs/:orb
         }],
     "expires_in": "10000",
     "traits": ["holy", "mooncakes"]
+}
+
+## Report Orbs
+PUT :ipAddress/orbland/orbs/e4c01173-f944-4d78-993f-bf4c6fb7cb3a/report
+:auth-headers
+{
+    "message": [
+    "Inappropriate COntent",
+    "Spam"
+    ]
 }
 ### ! Comments API
 ## List Comments
