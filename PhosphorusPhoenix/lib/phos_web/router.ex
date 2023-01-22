@@ -179,10 +179,12 @@ defmodule PhosWeb.Router do
     get "/userland/others/:id", UserProfileController, :show
 
     get "/userland/others/:id/history", OrbController, :show_history
+    put "/userland/others/:id/report", TribunalController, :report_user
 
 
     get "/orbland/stream/:id", OrbController, :show_territory
     resources "/orbland/orbs", OrbController, except: [:new, :edit]
+    put "/orbland/orbs/:id/report", TribunalController, :report_orb
 
     resources "/orbland/comments", CommentController, except: [:new, :edit]
     get "/orbland/comments/root/:id", CommentController, :show_root

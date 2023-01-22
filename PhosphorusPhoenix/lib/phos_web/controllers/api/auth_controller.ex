@@ -12,13 +12,16 @@ defmodule PhosWeb.API.FyrAuthController do
         user = %Users.User{} ->
           json(conn, %{payload: Auth.generate_user!(user.id)})
         nil ->
-          case PhosWeb.Util.Migrator.user_profile(fyr_id) do
-            {:ok, users} ->
-              conn
-              |> put_status(:created)
-              |> json(%{payload: Auth.generate_user!(List.first(users).id)})
-            {:error, _reason} -> {:error, :not_found}
-          end
+          {:error, :not_found}
+          # Migration Season Ended
+          # case PhosWeb.Util.Migrator.user_profile(fyr_id) do
+          #   {:ok, users} ->
+          #     conn
+          #     |> put_status(:created)
+          #     |> json(%{payload: Auth.generate_user!(List.first(users).id)})
+          #   {:error, _reason} -> {:error, :not_found}
+          # end
+        _ -> {:error, :not_found}
       end
     else
       {:error, _reason} -> {:error, :unprocessable_entity}

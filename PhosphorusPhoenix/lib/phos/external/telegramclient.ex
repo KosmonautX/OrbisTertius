@@ -3,17 +3,22 @@ defmodule Phos.External.TelegramClient do
 
   def report(user= %Phos.Users.User{}, report) do
     send_message("-1001258902545",
-      "Report was sent in by <b>#{user.username}</b>!
+      """
+      Report was sent in by <a href="https://app.scrb.ac/?apn=com.scratchbac.baladi&ibi=com.baladi.scratchbac&isi=1587462661&link=https%3A%2F%2Fapp.scrb.ac%3Fuuid%3D#{user.id}%26type%3Dusr"><b>#{user.username}</b></a>!
       Metadata:
-      " <>
-     case report.archetype do
+      """ <>
+     case report["archetype"] do
        "USR" ->
-         "Reported <b>User ID</b>: <code> #{report.id}</code>"
-
+         """
+         Reported <b>User ID</b>: <a href="https://app.scrb.ac/?apn=com.scratchbac.baladi&ibi=com.baladi.scratchbac&isi=1587462661&link=https%3A%2F%2Fapp.scrb.ac%3Fuuid%3D#{report["id"]}%26type%3Dusr">#{report["id"]}</a>
+         """
        "ORB" ->
-         "Reported <b>Orb UUID</b>: <code> #{report.id}</code>"
+         """
+         Reported <b>Orb UUID</b>: <a href="https://app.scrb.ac/?apn=com.scratchbac.baladi&ibi=com.baladi.scratchbac&isi=1587462661&link=https%3A%2F%2Fapp.scrb.ac%3Fuuid%3D#{report["id"]}%26type%3Dorb">#{report["id"]}</a>
+         """
      end
-     <> (report.message |> Enum.join(",")))
+      <> "Why? "
+      <> (report["message"] |> Enum.join(", ")))
    end
 
 
