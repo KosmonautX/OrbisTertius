@@ -12,12 +12,13 @@ defmodule PhosWeb.LayoutView do
     """
   end
 
-  defp parse_contents(contents) do
+  defp parse_contents(contents) when is_map(contents) do
     contents
     |> Enum.map(&define_name/1)
     |> List.flatten()
     |> Enum.into(%{})
   end
+  defp parse_contents(_contents), do: %{}
 
   defp define_name({k, v}) when is_map(v), do: Enum.map(v, &define_name(&1, k))
   defp define_name(data), do: define_name(data, "og")
