@@ -34,13 +34,13 @@ defmodule Phos.MixProject do
   defp deps do
     [
       {:bcrypt_elixir, "~> 3.0"},
-      {:phoenix, "~> 1.7.0-rc.0", override: true},
+      {:phoenix, "~> 1.7.0-rc.2", override: true},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.9"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 0.18.3"},
+      {:phoenix_live_view, "~> 0.18.11"},
       {:floki, ">= 0.30.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.7"},
       {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
