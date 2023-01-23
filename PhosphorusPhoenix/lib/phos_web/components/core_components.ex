@@ -260,6 +260,7 @@ defmodule PhosWeb.CoreComponents do
   defp button_class(:primary), do: "bg-teal-400 hover:bg-teal-600"
   defp button_class(:warning), do: "bg-yellow-400 hover:bg-yellow-600"
   defp button_class(:success), do: "bg-green-400 hover:bg-green-600"
+  defp button_class(:icons), do: "bg-transparent hover:bg-gray-100"
 
   defp default_button_class do
     [
@@ -755,261 +756,6 @@ defmodule PhosWeb.CoreComponents do
     Phoenix.HTML.html_escape(val1) == Phoenix.HTML.html_escape(val2)
   end
 
-  @doc """
-  User profile Image and User Name
-  """
-  attr(:id, :string, required: true)
-  attr(:img_path, :string)
-  slot(:user_name)
-  attr(:user, :any)
-  attr(:orb, :any)
-  slot(:information)
-
-  def profile_upload_path(assigns) do
-    ~H"""
-    <div class="flex justify-between p-2 border-b md:border-none">
-      <img
-        src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
-        class=" h-16 w-16 border-4 border-white rounded-full object-cover"
-      />
-
-      <div class="flex flex-col">
-        <span class="text-base md:text-lg font-bold ml-2"><%= render_slot(@user_name) %></span>
-        <span class="flex items-center text-sm md:text-base text-gray-500 ml-0.5">
-          <%= render_slot(@information) %>
-        </span>
-      </div>
-      <button
-        type="button"
-        class="text-gray-400 bg-transparent hover:bg-gray-200 rounded-lg text-sm p-1 ml-auto inline-flex items-center"
-      >
-        <Heroicons.ellipsis_vertical class="mt-0.5 h-6 w-6" />
-      </button>
-    </div>
-    """
-  end
-
-  @doc """
-   User Post Image
-   Desktop View
-  """
-  attr(:id, :string, required: true)
-  attr(:img_path, :string)
-  attr(:user, :any)
-  attr(:orb, :any)
-
-  def post_image(assigns) do
-    ~H"""
-    <section class="relative" id="m1" phx-hook="slider" phx-update="ignore">
-      <div class="relative overflow-hidden rounded-lg duration-700 ease-in-out">
-        <img
-          id={"media-" <> @orb.id}
-          class="object-cover md:inset-0 h-80 w-full"
-          src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless")}
-        />
-      </div>
-      <button
-        onclick="forward()"
-        type="button"
-        class="absolute top-0 left-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
-      >
-        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
-          <Heroicons.chevron_left class="mt-0.5 h-6 w-6" />
-        </span>
-      </button>
-      <button
-        onclick="backward()"
-        type="button"
-        class="absolute top-0 right-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
-      >
-        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
-          <Heroicons.chevron_right class="mt-0.5 h-6 w-6" />
-        </span>
-      </button>
-    </section>
-    """
-  end
-
-  @doc """
-   User Post Information
-  """
-
-  slot(:post_message)
-
-  def post_information(assigns) do
-    ~H"""
-    <p class="text-sm text-gray-900 font-normal p-2">
-      <%= render_slot(@inner_block) %>
-    </p>
-    """
-  end
-
-  # def comments_card(assigns) do
-  #   ~H"""
-  #   <div class="flex flex-col md:inset-0 h-48 w-full overflow-y-auto">
-  #     <ul class="relative border-l border-gray-400 ml-4 mt-4">
-  #       <li id="reply" class="mb-4 ml-2">
-  #         <div class="flex">
-  #           <img
-  #             class="h-14 w-14 border-4 border-white rounded-full object-cover"
-  #             src="/images/IMG-20220404-WA0002.jpg"
-  #           />
-  #           <div class="flex flex-col">
-  #             <strong class="mx-2 text-gray-700 text-base">
-  #               Anu<span class="text-sm font-normal text-gray-500">
-  #        Ajith Kumar is an Indian actor who appears predominantly in Tamil films. In 1992, he started out in movies as a supporting actor in Telugu. In 1995, he got the lead role in the Tamil thriller Aasai. Up until the year 1998, Ajith usually played the role of a romantic hero.
-  #      </span>
-  #             </strong>
-  #             <time class="flex justify-between text-sm font-normal text-gray-700 my-2 mx-2">
-  #               10/12/2003
-  #               <span class="font-bold text-teal-700 hover:text-teal-400 hover:underline ">
-  #                 Reply
-  #               </span>
-  #             </time>
-  #           </div>
-  #         </div>
-  #       </li>
-  #       <li id="reply" class="mb-4 ml-2">
-  #         <div class="flex">
-  #           <img
-  #             class="h-14 w-14 border-4 border-white rounded-full object-cover"
-  #             src="/images/IMG-20220404-WA0002.jpg"
-  #           />
-  #           <div class="flex flex-col">
-  #             <strong class="mx-2 text-gray-700 text-base">
-  #               Anu<span class="text-sm font-normal text-gray-500">
-  #        After the success of the film ‘Billa,’ Ajith became one of the highest-paid actors in Indian film, and his remuneration increased.
-  #      </span>
-  #             </strong>
-  #             <time class="flex justify-between text-sm font-normal text-gray-700 my-2 mx-2">
-  #               10/12/2003
-  #               <span class="font-bold text-teal-700 hover:text-teal-400 hover:underline ">
-  #                 Reply
-  #               </span>
-  #             </time>
-  #           </div>
-  #         </div>
-  #       </li>
-  #       <li id="reply" class="mb-4 ml-2">
-  #         <div class="flex">
-  #           <img
-  #             class="h-14 w-14 border-4 border-white rounded-full object-cover"
-  #             src="/images/IMG-20220404-WA0002.jpg"
-  #           />
-  #           <div class="flex flex-col">
-  #             <strong class="mx-2 text-gray-700 text-base">
-  #               Anu<span class="text-sm font-normal text-gray-500">
-  #        After that, he started appearing in action movies like Amarkalam (1999), Dheena (2001), Villain (2002), Attagasam (2004), Varalaru (2006), Billa (2007), Mankatha (2011), and Billa II (2013). (2012).
-  #      </span>
-  #             </strong>
-  #             <time class="flex justify-between text-sm font-normal text-gray-700 my-2 mx-2">
-  #               10/12/2003
-  #               <span class="font-bold text-teal-700 hover:text-teal-400 hover:underline ">
-  #                 Reply
-  #               </span>
-  #             </time>
-  #           </div>
-  #         </div>
-  #       </li>
-  #     </ul>
-  #   </div>
-  #   """
-  # end
-
-  attr(:img_path, :string)
-  attr(:comment, :any)
-  slot(:title)
-
-  def comments_card(assigns) do
-    ~H"""
-    <ul class="relative border-l border-gray-200 mt-4">
-      <li id="reply" class="mb-4 ml-6">
-        <div class="mr-3 flex flex-cols space-x-2">
-          <img class="rounded-full w-10 h-10" src={@comment.profile_image} />
-          <strong><%= @comment.username %></strong>
-        </div>
-        <time class="block flex mt-2 text-sm font-normal leading-none text-gray-400 mb-4">
-          <%= @comment.time %>
-          <span class="ml-4 text-sm font-bold leading-none text-teal-700 hover:text-teal-400 hover:underline">
-            Reply
-          </span>
-        </time>
-        <p class="mb-4 text-base font-normal text-gray-500">
-          <%= @comment.message %>
-        </p>
-      </li>
-      <%= for comment <- @comment.reply_comments do %>
-        <.comments_card comment={comment}></.comments_card>
-      <% end %>
-    </ul>
-    """
-  end
-
-  attr(:img_path, :string)
-  attr(:user, :map, required: true)
-  attr(:rest, :global, doc: "the arbitrary HTML attributes to add to the flash container")
-
-  def input_type(assigns) do
-    ~H"""
-    <div class="flex p-2 gap-2 ml-2">
-      <img
-        src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
-        class=" h-14 w-14 border-4 border-white rounded-full object-cover"
-      />
-      <div class="flex-1 relative">
-        <input
-          class="block w-full p-4 text-base text-gray-900 focus:ring-black focus:outline-none  rounded-lg border border-gray-200 focus:ring-2 focus:ring-gray-200"
-          placeholder="Any Comments..."
-          required
-        />
-        <button type="submit" class="absolute right-2.5 bottom-2.5 ">
-          <Heroicons.paper_airplane class="h-8 w-8 md:h-10 mr-2 text-teal-400 font-bold" />
-        </button>
-      </div>
-    </div>
-    """
-  end
-
-  def comment_action(assigns) do
-    ~H"""
-    <div class="flex justify-between p-2 w-full font-bold text-sm text-gray-600">
-      <div>
-        <span>10 Oct 2001</span>
-      </div>
-      <div class="flex flex-cols space-x-4">
-        <button class="text-center inline-flex items-center">
-          <Heroicons.share class="-ml-1 w-6 h-6" />15
-        </button>
-        <button class="text-center inline-flex items-center">
-          <Heroicons.chat_bubble_oval_left_ellipsis class="-ml-1 w-6 h-6" />15
-        </button>
-        <button class="text-center inline-flex items-center">
-          <Heroicons.heart class="-ml-1 w-6 h-6" />15
-        </button>
-      </div>
-    </div>
-    """
-  end
-
-  def ord_modal(assigns) do
-    ~H"""
-    <div class="text-base max-w-xs font-bold p-6 rounded-lg border border-gray-100 shadow-md">
-      <ul class="space-y-4">
-        <li>
-          <a href="#" class="flex gap-4 items-center text-gray-500 hover:text-teal-600">
-            <Heroicons.x_mark class="mt-0.5 h-8 w-6" />Deactivate
-          </a>
-        </li>
-        <li>
-          <a href="#" class="flex gap-4 items-center text-gray-500 hover:text-teal-600">
-            <Heroicons.no_symbol class="mt-0.5 h-8 w-6" />Destroy Post
-          </a>
-        </li>
-      </ul>
-    </div>
-    """
-  end
-
   attr(:navigate, :any, required: true)
   attr(:current_user, :any)
 
@@ -1079,287 +825,6 @@ defmodule PhosWeb.CoreComponents do
         </div>
       </div>
     </nav>
-    """
-  end
-
-  attr(:id, :string, required: true)
-  attr(:img_path, :string)
-  slot(:user_name)
-  attr(:user, :any)
-  attr(:orb, :any)
-
-  def redirect_mobile(assigns) do
-    ~H"""
-    <div class="relative bg-white max-w-sm md:max-w-md md:h-auto rounded-xl shadow-lg ">
-      <div class="flex flex-col justify-center items-center p-6 space-y-2 ">
-        <img
-          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
-          class=" h-16 w-16 lg:w-32 lg:h-32 border-4 border-white rounded-full object-cover"
-        />
-        <h1 class="text-lg font-bold">Hmm...You were saying?</h1>
-        <h3 class="text-base font-normal text-gray-500 text-center">
-          Join the tribe to share your thoughts with raizzypaizzy now!
-        </h3>
-        <.button>Download the Scratchbac app</.button>
-        <span class="text-sm text-gray-500">
-          <.link
-            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
-            class="text-sm text-teal-400 font-bold hover:underline"
-          >
-            Sign up
-          </.link>
-          Or
-          <.link
-            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/log_in")}
-            class="text-sm text-teal-400 font-bold hover:underline"
-          >
-            Sign in
-          </.link>
-          via Web
-        </span>
-      </div>
-    </div>
-    """
-  end
-
-  attr(:id, :string, required: true)
-  attr(:img_path, :string)
-  slot(:user_name)
-  attr(:user, :any)
-  attr(:orb, :any)
-
-  def post_related_user(assigns) do
-    ~H"""
-    <div class="overflow-hidden cursor-pointer">
-      <div class="px-6 py-4 flex flex-col items-center justify between bg-opacity-50">
-        <p class="md:text-2xl text-lg font-bold md:mb-4"><%= render_slot(@user_name) %></p>
-        <img
-          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
-          class=" h-52 w-52 border-4 border-white rounded-full object-cover"
-        />
-      </div>
-    </div>
-    """
-  end
-
-  attr(:id, :string, required: true)
-  attr(:navigate, :any)
-  attr(:img_path, :string)
-  slot(:user_name)
-  slot(:inner_block, required: true)
-  attr(:user, :map, required: true)
-
-  def user_profile(assigns) do
-    ~H"""
-    <div class="relative overflow-hidden cursor-pointer bg-white ">
-      <img
-        class="object-cover md:h-96 h-80 w-full border border-gray-200"
-        src="/images/lake-gce85e5120_1920.jpg"
-        alt="Emoji"
-      />
-      <div class="absolute inset-0 px-6 py-4 flex flex-col items-center bg-opacity-50">
-        <p class="md:text-2xl text-lg text-white font-bold md:mb-4"><%= render_slot(@user_name) %></p>
-        <div class="relative flex justify-center items-center">
-          <img
-            src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
-            class=" h-48 w-48 border-4 border-white rounded-full object-cover"
-          />
-          <span class="bottom-0 right-0 inline-block absolute w-14 h-14 bg-transparent">
-            <%= render_slot(@inner_block) %>
-          </span>
-        </div>
-        <div class="flex-1 flex flex-col items-center md:mt-4 mt-2 md:px-8">
-          <div class="flex items-center space-x-4">
-            <button
-              :for={location <- Map.get(@user, :locations, [])}
-              class="flex items-center bg-white  text-black px-4 py-2 rounded-full md:text-base text-sm font-bold transition duration-100"
-            >
-              <Heroicons.map_pin class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4" />
-              <span><%= location %></span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    """
-  end
-
-  slot(:user_role)
-  slot(:user_bio)
-  slot(:user_public_name)
-  attr(:user, :any)
-
-  @spec information_card(any) :: Phoenix.LiveView.Rendered.t()
-  def information_card(assigns) do
-    ~H"""
-    <div class="w-full lg:border lg:border-gray-200 lg:rounded-lg lg:shadow-md">
-      <div class="md:p-4 p-2">
-        <div class="flex justify-between">
-          <h5 class="lg:text-4xl md:text-3xl text-xl font-extrabold text-gray-900">
-            <%= render_slot(@user_public_name) %>
-          </h5>
-
-          <div class="flex gap-4">
-            <.button type="button" class="text-gray-700 hover:bg-gray-200 bg-transparent items-center">
-              <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6" />
-            </.button>
-
-            <.button class="flex items-center bg-black hover:bg-gray-700">
-              <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4" />
-              <span>Ally</span>
-            </.button>
-          </div>
-        </div>
-
-        <p class="md:text-lg text-gray-900 text-base font-semibold	mb-4">
-          <%= render_slot(@user_role) %>
-        </p>
-
-        <a href="#" class="text-blue-600 underline text-base font-medium">
-          www.scratchbac.com
-        </a>
-
-        <p class="text-gray-900 font-medium md:text-lg text-base mt-4 mb-4">
-          <%= render_slot(@user_bio) %>
-        </p>
-
-        <%= for traits <- @user.traits do %>
-          <span class="text-gray-500 md:text-lg text-base font-normal"><span>#</span>
-            <%= traits %></span>
-        <% end %>
-      </div>
-    </div>
-    """
-  end
-
-  slot(:user_role)
-  slot(:user_bio)
-  slot(:user_public_name)
-  attr(:user, :any)
-  attr(:id, :string, required: true)
-  attr(:navigate, :any)
-  attr(:img_path, :string)
-  slot(:user_name)
-  slot(:inner_block, required: true)
-
-  def user_information_card_md(assigns) do
-    ~H"""
-    <div class="flex flex-col items-center space-y-2 p-4">
-      <h5 class="md:text-3xl text-lg font-extrabold text-gray-900 text-center">
-        <%= render_slot(@user_public_name) %>
-      </h5>
-      <div class="flex  gap-4">
-        <button
-          type="button"
-          class="text-gray-400 bg-transparent bg-gray-200 p-2 rounded-lg text-sm ml-auto inline-flex items-center"
-        >
-          <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6" />
-        </button>
-        <button class="inline-flex items-center bg-yellow-400 hover:bg-gray-700 text-white px-4 py-2 text-center rounded md:text-base text-sm font-bold transition duration-100">
-          Chat
-        </button>
-      </div>
-      <div class="flex-1 flex flex-col items-center">
-        <div class="flex items-center">
-          <%= for location <- @user.locations do %>
-            <button class="flex items-center bg-white text-gray-800 px-4 py-2 rounded-full md:text-base text-sm font-bold transition duration-100">
-              <Heroicons.map_pin class="mr-2 -ml-1 w-6 h-6" />
-              <span><%= location %></span>
-            </button>
-          <% end %>
-        </div>
-      </div>
-      <p class="text-gray-900 font-medium text-base text-center">
-        <%= render_slot(@user_bio) %>
-      </p>
-    </div>
-    """
-  end
-
-  attr(:user, :any)
-  attr(:id, :string, required: true)
-
-  def explore_tag(assigns) do
-    ~H"""
-    <div class="items-center text-center p-2">
-      <h5 class="text-2xl font-extrabold text-gray-900 text-center mb-2">
-        Explore Tag
-      </h5>
-      <%= for traits <- @user.traits do %>
-        <span class="inline-block whitespace-nowrap  align-baseline font-bold leading-none text-teal-500 rounded-full border-2 border-teal-500 text-sm px-5 py-2.5 text-center mr-2 mb-2 ">
-          <span>#</span>
-          <%= traits %>
-        </span>
-      <% end %>
-    </div>
-    """
-  end
-
-  attr(:id, :string, required: true)
-  attr(:img_path, :string)
-  slot(:title)
-  slot(:location)
-
-  def tabs_profile(assigns) do
-    ~H"""
-    <div class="lg:border lg:border-gray-200 rounded-t-3xl mt-10 w-full z-20 top-0 left-0 border-b border-gray-200">
-      <div class="flex justify-center items-center border-b border-gray-200">
-        <ul class="flex flex-wrap md:gap-80 gap-20 -mb-px md:text-lg font-extrabold text-sm font-medium text-gray-500">
-          <li class="mr-2">
-            <a
-              href="#"
-              class="inline-flex p-4 text-blue-600 rounded-t-lg border-b-2 border-blue-600 active group"
-            >
-              Posts
-            </a>
-          </li>
-
-          <li class="mr-2">
-            <a
-              href="#"
-              class="inline-flex p-4 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 group"
-              md:w-8
-              md:h-8
-            >
-              Allies
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-    """
-  end
-
-  def video(assigns) do
-    ~H"""
-    <div class="w-full flex items-center justify-center ">
-      <div class="relative p-2">
-        <video class="object-cover object-fit h-96 w-96" autoplay loop muted>
-          <source src="/images/WhatsApp Video 2022-12-26 at 8.32.21 AM.mp4" type="video/mp4" />
-        </video>
-
-        <div class="absolute inset-y-0 bottom-0 p-4 space-y-2 flex items-end">
-          <p class="flex-1 text-white text-sm font-extrabold">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin quis turpis pretium
-          </p>
-
-          <div class="space-y-4 text-white font-extrabold text-center text-sm">
-            <div class="flex flex-col">
-              <Heroicons.heart class="stroke-white w-8 h-8" />
-              <span>2K</span>
-            </div>
-            <div class="flex flex-col">
-              <Heroicons.chat_bubble_oval_left_ellipsis class="stroke-white w-8 h-8" />
-              <span>226</span>
-            </div>
-            <div class="flex flex-col">
-              <Heroicons.share class="stroke-white w-8 h-8" />
-              <span>15</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
     """
   end
 
@@ -1438,6 +903,400 @@ defmodule PhosWeb.CoreComponents do
           <div class="-mt-1 font-sans text-sm font-semibold">Google Play</div>
         </div>
       </a>
+    </div>
+    """
+  end
+
+  @doc """
+  User profile Image and User Name
+  """
+
+  attr(:id, :string, required: true)
+  attr(:img_path, :string)
+  slot(:user_name)
+  attr(:user, :any)
+  attr(:orb, :any)
+  slot(:information)
+
+  def profile_upload_path(assigns) do
+    ~H"""
+    <div class="flex justify-between p-2 border-b md:border-none">
+      <img
+        src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+        class=" h-16 w-16 border-4 border-white rounded-full object-cover"/>
+
+      <div class="flex flex-col ml-2">
+        <span class="text-base md:text-lg font-bold ml-2"><%= render_slot(@user_name) %></span>
+        <span class="flex items-center text-sm md:text-base text-gray-500 ml-0.5">
+          <%= render_slot(@information) %>
+        </span>
+      </div>
+      <.button tone={:icons}>
+        <Heroicons.ellipsis_vertical class="mt-0.5 h-6 w-6 text-black" />
+      </.button>
+    </div>
+    """
+  end
+
+  @doc """
+   User Post Image
+   Desktop View
+  """
+  attr(:id, :string, required: true)
+  attr(:img_path, :string)
+  attr(:user, :any)
+  attr(:orb, :any)
+
+  def post_image(assigns) do
+    ~H"""
+    <section class="relative" id="m1" phx-hook="slider" phx-update="ignore">
+      <div class="relative overflow-hidden rounded-lg duration-700 ease-in-out">
+        <img
+          id={"media-" <> @orb.id}
+          class="object-cover md:inset-0 h-80 w-full"
+          src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless")}
+        />
+      </div>
+      <button
+        onclick="forward()"
+        type="button"
+        class="absolute top-0 left-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
+      >
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
+          <Heroicons.chevron_left class="mt-0.5 h-6 w-6" />
+        </span>
+      </button>
+
+      <button
+        onclick="backward()"
+        type="button"
+        class="absolute top-0 right-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
+      >
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
+          <Heroicons.chevron_right class="mt-0.5 h-6 w-6" />
+        </span>
+      </button>
+    </section>
+    """
+  end
+
+  @doc """
+   User Post Information
+  """
+
+  slot(:post_message)
+
+  def post_information(assigns) do
+    ~H"""
+    <p class="text-sm text-gray-900 font-normal p-2">
+      <%= render_slot(@inner_block) %>
+    </p>
+    """
+  end
+
+  def video(assigns) do
+    ~H"""
+    <div class="w-full flex items-center justify-center ">
+      <div class="relative p-2">
+        <video class="object-cover object-fit h-96 w-96" autoplay loop muted>
+          <source src="/images/WhatsApp Video 2022-12-26 at 8.32.21 AM.mp4" type="video/mp4" />
+        </video>
+
+        <div class="absolute inset-y-0 bottom-0 p-4 space-y-2 flex items-end">
+          <p class="flex-1 text-white text-sm font-extrabold">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin quis turpis pretium
+          </p>
+
+          <div class="space-y-4 text-white font-extrabold text-center text-sm">
+            <div class="flex flex-col">
+              <Heroicons.heart class="stroke-white w-8 h-8" />
+              <span>2K</span>
+            </div>
+            <div class="flex flex-col">
+              <Heroicons.chat_bubble_oval_left_ellipsis class="stroke-white w-8 h-8" />
+              <span>226</span>
+            </div>
+            <div class="flex flex-col">
+              <Heroicons.share class="stroke-white w-8 h-8" />
+              <span>15</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  attr(:img_path, :string)
+  attr(:user, :map, required: true)
+  attr(:rest, :global, doc: "the arbitrary HTML attributes to add to the flash container")
+
+  def input_type(assigns) do
+    ~H"""
+    <div class="flex p-2 gap-2 ml-2">
+      <img
+        src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
+        class=" h-14 w-14 border-4 border-white rounded-full object-cover"
+      />
+      <div class="flex-1 relative">
+        <input
+          class="block w-full p-4 text-base text-gray-900 focus:ring-black focus:outline-none  rounded-lg border border-gray-200 focus:ring-2 focus:ring-gray-200"
+          placeholder="Any Comments..."
+          required
+        />
+        <button type="submit" class="absolute right-2.5 bottom-2.5 ">
+          <Heroicons.paper_airplane class="h-8 w-8 md:h-10 mr-2 text-teal-400 font-bold" />
+        </button>
+      </div>
+    </div>
+    """
+  end
+
+  def comment_action(assigns) do
+    ~H"""
+    <div class="flex justify-between p-2 w-full font-bold text-sm text-gray-600">
+      <div>
+        <span>10 Oct 2001</span>
+      </div>
+      <div class="flex flex-cols space-x-4">
+        <button class="text-center inline-flex items-center">
+          <Heroicons.share class="-ml-1 w-6 h-6" />15
+        </button>
+        <button class="text-center inline-flex items-center">
+          <Heroicons.chat_bubble_oval_left_ellipsis class="-ml-1 w-6 h-6" />15
+        </button>
+        <button class="text-center inline-flex items-center">
+          <Heroicons.heart class="-ml-1 w-6 h-6" />15
+        </button>
+      </div>
+    </div>
+    """
+  end
+
+  attr(:id, :string, required: true)
+  attr(:img_path, :string)
+  slot(:user_name)
+  attr(:user, :any)
+  attr(:orb, :any)
+
+  def redirect_mobile(assigns) do
+    ~H"""
+    <div class="relative bg-white max-w-sm md:max-w-md md:h-auto rounded-xl shadow-lg ">
+      <div class="flex flex-col justify-center items-center p-6 space-y-2 ">
+        <img
+          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+          class=" h-16 w-16 lg:w-32 lg:h-32 border-4 border-white rounded-full object-cover"
+        />
+        <h1 class="text-lg font-bold">Hmm...You were saying?</h1>
+        <h3 class="text-base font-normal text-gray-500 text-center">
+          Join the tribe to share your thoughts with raizzypaizzy now!
+        </h3>
+        <.button>Download the Scratchbac app</.button>
+        <span class="text-sm text-gray-500">
+          <.link
+            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
+            class="text-sm text-teal-400 font-bold hover:underline"
+          >
+            Sign up
+          </.link>
+          Or
+          <.link
+            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/log_in")}
+            class="text-sm text-teal-400 font-bold hover:underline"
+          >
+            Sign in
+          </.link>
+          via Web
+        </span>
+      </div>
+    </div>
+    """
+  end
+
+  attr(:id, :string, required: true)
+  attr(:img_path, :string)
+  slot(:user_name)
+  attr(:user, :any)
+  attr(:orb, :any)
+
+  def post_related_user(assigns) do
+    ~H"""
+    <div class="overflow-hidden cursor-pointer">
+      <div class="px-6 py-4 flex flex-col items-center justify between bg-opacity-50">
+        <p class="md:text-2xl text-lg font-bold md:mb-4"><%= render_slot(@user_name) %></p>
+        <img
+          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+          class=" h-52 w-52 border-4 border-white rounded-full object-cover"
+        />
+      </div>
+    </div>
+    """
+  end
+
+  attr(:id, :string, required: true)
+  attr(:navigate, :any)
+  slot(:user_name)
+  slot(:inner_block, required: true)
+  attr(:user, :map, required: true)
+
+  def user_profile(assigns) do
+    ~H"""
+    <div class="relative overflow-hidden cursor-pointer bg-white ">
+      <img
+        class="object-cover md:h-96 h-80 w-full border border-gray-200"
+        src="/images/lake-gce85e5120_1920.jpg"
+        alt="Emoji"
+      />
+      <div class="absolute inset-0 px-6 py-4 flex flex-col items-center bg-opacity-50">
+        <p class="md:text-2xl text-lg text-white font-bold md:mb-4"><%= render_slot(@user_name) %></p>
+        <div class="relative flex justify-center items-center">
+          <img
+            src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
+            class=" h-48 w-48 border-4 border-white rounded-full object-cover"
+          />
+          <span class="bottom-0 right-0 inline-block absolute w-14 h-14 bg-transparent">
+            <%= render_slot(@inner_block) %>
+          </span>
+        </div>
+        <div class="flex-1 flex flex-col items-center md:mt-4 mt-2 md:px-8">
+          <div class="flex items-center space-x-4">
+            <button
+              :for={location <- Map.get(@user, :locations, [])}
+              class="flex items-center bg-white  text-black px-4 py-2 rounded-full md:text-base text-sm font-bold transition duration-100"
+            >
+              <Heroicons.map_pin class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4" />
+              <span><%= location %></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  slot(:user_role)
+  slot(:user_bio)
+  slot(:user_public_name)
+  attr(:user, :any)
+
+  @spec information_card(any) :: Phoenix.LiveView.Rendered.t()
+  def information_card(assigns) do
+    ~H"""
+    <div class="">
+      <div class="md:p-4 p-2">
+        <div class="flex justify-between">
+          <h5 class="lg:text-4xl md:text-3xl text-xl font-extrabold text-gray-900">
+          <%= @user.public_profile.public_name %>
+          </h5>
+
+          <div class="flex gap-4">
+            <.button tone={:icons}>
+            <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6 text-black" />
+            </.button>
+            <.button class="flex items-center">
+              <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
+              <span>Ally</span>
+            </.button>
+          </div>
+        </div>
+
+        <p class="md:text-lg text-gray-900 text-base font-semibold	mb-4">
+        <%= @user.public_profile.occupation %>
+        </p>
+
+        <p class="text-gray-900 font-medium md:text-lg text-base mt-4 mb-4">
+        <%= @user.public_profile.bio %>
+                </p>
+
+        <%= for traits <- @user.traits do %>
+          <span class="text-gray-500 md:text-lg text-base font-normal"><span>#</span>
+            <%= traits %></span>
+        <% end %>
+      </div>
+    </div>
+    """
+  end
+
+  attr(:user, :any)
+  attr(:id, :string, required: true)
+  attr(:navigate, :any)
+  attr(:location, :boolean)
+  slot(:user_name)
+  slot(:inner_block, required: true)
+
+  def user_information_card_md(assigns) do
+    ~H"""
+
+    <div class="flex flex-col items-center space-y-2 p-4">
+      <h5 class="md:text-3xl text-lg font-extrabold text-gray-900 text-center">
+          <%= @user.public_profile.public_name %>
+      </h5>
+
+      <h6 class="md:text-lg text-gray-900 text-base font-semibold	mb-4">
+      <%= @user.public_profile.occupation %>
+      </h6>
+
+      <div class="flex gap-4">
+      <.button tone={:icons}>
+      <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6 text-black" />
+      </.button>
+
+         <.button class="flex items-center">
+              <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
+              <span>Ally</span>
+            </.button>
+      </div>
+
+      <div :if={not is_nil(@location)} class="flex-1 flex flex-col items-center">
+        <div class="flex items-center">
+          <%= for location <- @user.locations do %>
+            <button class="flex items-center bg-white text-gray-800 px-4 py-2 rounded-full md:text-base text-sm font-bold transition duration-100">
+              <Heroicons.map_pin class="mr-2 -ml-1 w-6 h-6" />
+              <span><%= location %></span>
+            </button>
+          <% end %>
+        </div>
+      </div>
+
+      <p class="text-gray-900 font-medium text-base text-center">
+        <%= @user.public_profile.bio %>
+      </p>
+      <div>
+      <%= for traits <- @user.traits do %>
+      <span class="text-gray-500 md:text-lg text-base font-normal"><span>#</span>
+        <%= traits %></span>
+     <% end %>
+      </div>
+    </div>
+    """
+  end
+
+  def tabs_profile(assigns) do
+    ~H"""
+    <div class="lg:border lg:border-gray-200 rounded-t-3xl mt-10 w-full z-20 top-0 left-0 border-b border-gray-200">
+      <div class="flex justify-center items-center border-b border-gray-200">
+        <ul class="flex flex-wrap md:gap-80 gap-20 -mb-px md:text-lg font-extrabold text-sm font-medium text-gray-500">
+          <li class="mr-2">
+            <a
+              href="#"
+              class="inline-flex p-4 text-blue-600 rounded-t-lg border-b-2 border-blue-600 active group"
+            >
+              Posts
+            </a>
+          </li>
+
+          <li class="mr-2">
+            <a
+              href="#"
+              class="inline-flex p-4 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 group"
+              md:w-8
+              md:h-8
+            >
+              Allies
+            </a>
+          </li>
+        </ul>
+      </div>
     </div>
     """
   end

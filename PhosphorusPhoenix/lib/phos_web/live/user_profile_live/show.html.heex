@@ -25,12 +25,9 @@
     </.user_profile>
   </div>
 
-  <div class="mt-4 md:w-[45rem] w-full items-center justify-center mb-20">
-    <.information_card :if={not is_nil(@user.public_profile)} user={@user}>
-      <:user_role><%= @user.public_profile.occupation %></:user_role>
-      <:user_bio><%= @user.public_profile.bio %></:user_bio>
-      <:user_public_name><%= @user.public_profile.public_name %></:user_public_name>
-    </.information_card>
+  <div class="mt-4 md:w-[45rem] items-center justify-center mb-20 w-full lg:border lg:border-gray-200 lg:rounded-lg lg:shadow-md">
+    <.user_information_card_md :if={not is_nil(@user.public_profile)} location={} user={@user}>
+    </.user_information_card_md>
     <.tabs_profile id="orb-user-tabs-profile" />
     <.video id="orb-user-video" />
   </div>

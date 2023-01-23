@@ -8,10 +8,10 @@ defmodule PhosWeb.CommentLive.FormComponent do
   def update(assigns, socket) do
     changeset = Comments.change_comment(%Comments.Comment{})
     {:ok,
-      socket 
-      |> assign_new(:text, fn -> "Add comment" end)
+      socket
+      |> assign_new(:text, fn -> "" end)
       |> assign_new(:reply_comment, fn -> nil end)
-      |> assign(assigns) 
+      |> assign(assigns)
       |> assign(changeset: changeset)}
   end
 
@@ -24,10 +24,10 @@ defmodule PhosWeb.CommentLive.FormComponent do
       |> Map.put("path", Encoder.encode_lpath(comment_id))
 
     case Comments.create_comment(comment_params) do
-      {:ok, comment} -> 
+      {:ok, comment} ->
         send(self(), {:new_comment, comment})
 
-        {:noreply, 
+        {:noreply,
         socket
         |> assign(changeset: %Comments.Comment{} |> Ecto.Changeset.change())
       }
@@ -62,7 +62,7 @@ defmodule PhosWeb.CommentLive.FormComponent do
       {:ok, comment} ->
         send(self(), {:edit_comment, comment})
 
-        {:noreply, 
+        {:noreply,
           socket
           |> assign(changeset: %Comments.Comment{} |> Ecto.Changeset.change())}
       {:error, %Ecto.Changeset{} = changeset} ->
