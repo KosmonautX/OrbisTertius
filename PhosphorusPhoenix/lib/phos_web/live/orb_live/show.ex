@@ -10,7 +10,6 @@ defmodule PhosWeb.OrbLive.Show do
     with %Action.Orb{} = orb <-  Action.get_orb(id, user.id) do
       orb = orb
             |> put_in([Access.key(:initiator), Access.key(:locations)], ["Singapore", "Vandavasi"])
-            |> put_in([Access.key(:initiator), Access.key(:traits)], ["frontend", "200wpm"])
 
       comment = Comments.get_root_comments_by_orb(orb.id)
       |> decode_to_comment_tuple_structure()
@@ -27,7 +26,6 @@ defmodule PhosWeb.OrbLive.Show do
     with {:ok, orb} <-  Action.get_orb(id) do
       orb = orb
             |> put_in([Access.key(:initiator), Access.key(:locations)], ["Singapore", "Vandavasi"])
-            |> put_in([Access.key(:initiator), Access.key(:traits)], ["frontend", "200wpm"])
 
       comment = Comments.get_root_comments_by_orb(orb.id)
       |> decode_to_comment_tuple_structure()
@@ -75,7 +73,7 @@ defmodule PhosWeb.OrbLive.Show do
   defp apply_action(socket, :reply, %{"id" => _orb_id, "cid" => cid} = _params) do
     socket
     |> assign(:comment, Comments.get_comment!(cid))
-    |> assign(:page_title, "Reply")
+    |> assign(:page_title, "Replying")
 
   end
 
@@ -89,22 +87,23 @@ defmodule PhosWeb.OrbLive.Show do
   defp apply_action(socket, :edit_comment, %{"cid" => cid} = _params) do
     socket
     |> assign(:comment, Comments.get_comment!(cid))
-    |> assign(:page_title, "Edit")
+    |> assign(:page_title, "Editing Comments")
   end
 
   defp apply_action(socket, :show, %{"id" => _id} = _params) do
     socket
-    |> assign(:page_title, "Show")
+    |> assign(:page_title, "Scrying")
   end
 
   defp apply_action(socket, :edit, _params) do
     socket
-    |> assign(:page_title, "Edit")
+    |> assign(:page_title, "Editing")
   end
 
   defp assign_meta(socket, orb) do
     assign(socket, :meta, %{
-      title: orb.title,
+      title: "#{orb.title} by #{orb.initiator.username}",
+      description: orb.payload.inner_title,
       type: "website",
       image: Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless"),
       url: url(socket, ~p"/orbs/#{orb.id}")

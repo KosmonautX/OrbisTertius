@@ -208,7 +208,6 @@ defmodule Phos.Action do
       ),
       select_merge: %{comment_count: c.count})
       |> Repo.Paginated.all(page, sort_attribute, limit)
-      |> IO.inspect()
   end
 
 
@@ -533,7 +532,6 @@ defmodule Phos.Action do
       k when k in ["id", "type"] -> acc
       _ -> Map.put(acc, key, value)
     end end)
-  |> IO.inspect()
   end
 
   defp notion_platform_time(%{"start" => <<_date::bytes-size(10)>> <> "T" <> _rest = date}) do

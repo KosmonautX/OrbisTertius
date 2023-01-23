@@ -1192,7 +1192,7 @@ defmodule PhosWeb.CoreComponents do
           <%= render_slot(@user_bio) %>
         </p>
 
-        <%= for traits <- @user.traits do %>
+        <%= for traits <- @user.public_profile.traits do %>
           <span class="text-gray-500 md:text-lg text-base font-normal"><span>#</span>
             <%= traits %></span>
         <% end %>
@@ -1254,7 +1254,7 @@ defmodule PhosWeb.CoreComponents do
       <h5 class="text-2xl font-extrabold text-gray-900 text-center mb-2">
         Explore Tag
       </h5>
-      <%= for traits <- @user.traits do %>
+      <%= for traits <- @user.public_profile.traits do %>
         <span class="inline-block whitespace-nowrap  align-baseline font-bold leading-none text-teal-500 rounded-full border-2 border-teal-500 text-sm px-5 py-2.5 text-center mr-2 mb-2 ">
           <span>#</span>
           <%= traits %>
