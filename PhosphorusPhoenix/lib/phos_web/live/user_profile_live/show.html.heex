@@ -14,14 +14,13 @@
     return_to={~p"/user/#{@current_user.username}"}
   />
 </.modal>
-<!--User Profile Image Uplodae-->
 
-<section class="min-w-full mx-auto flex flex-col items-center justify-center">
+<section class="min-w-full mx-auto flex flex-col items-center justify-center md:mt-24 mt-14">
   <div class="min-w-full">
     <.user_profile id="orb-user-profile" user={@user}>
-+      <:user_name><%= @user.username %></:user_name>
+     <:user_name><%= @user.username %></:user_name>
       <.link :if={@user.id == @current_user.id} patch={~p"/user/#{@current_user.username}/edit"}>
-        <Heroicons.camera class="w-12 h-12 fill-white" />
+        <Heroicons.camera class="md:w-11 md:h-11 h-10 w-10 fill-white" />
       </.link>
     </.user_profile>
   </div>
@@ -34,6 +33,5 @@
     </.information_card>
     <.tabs_profile id="orb-user-tabs-profile" />
     <.video id="orb-user-video" />
-    <!--<.reply_post id="orb-user-reply-post" />-->
   </div>
 </section>

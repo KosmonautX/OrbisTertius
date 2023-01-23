@@ -1,28 +1,28 @@
   <!--desktop View -->
-<section class="container mx-auto">
+<section class="container mx-auto md:mt-28 mt-14">
   <div
     :if={not is_nil(@orb.initiator.public_profile) && @orb.initiator.public_profile}
     class="flex md:flex-row flex-col items-start mt-6 gap-4" >
 
     <div class="md:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full max-w-full px-3 md:w-3/12  md:flex-none">
-      <div class="border border-gray-200 rounded-3xl shadow-md">
+      <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md">
         <.post_related_user id="orb-initiator-username" user={@orb.initiator}>
           <:user_name><%= @orb.initiator.username %></:user_name>
         </.post_related_user>
       </div>
-      <div class="border border-gray-200 rounded-3xl shadow-md">
+      <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md">
         <.user_information_card_md id="orb-initiator-public-profile" user={@orb.initiator}>
           <:user_bio><%= @orb.initiator.public_profile.bio %></:user_bio>
           <:user_public_name><%= @orb.initiator.public_profile.public_name %></:user_public_name>
         </.user_information_card_md>
       </div>
 
-      <div class="border border-gray-200 rounded-3xl shadow-md">
+      <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md">
         <.explore_tag id="orb-initiator-explore-tag" user={@orb.initiator} />
       </div>
     </div>
 
-    <div class="px-3 md:w-5/12  w-full mt-0 md:flex-none border justify-center items-center border-gray-200 md:rounded-3xl md:shadow-md shadow-sm">
+    <div class="px-3 md:w-5/12  w-full mt-0 md:flex-none justify-center items-center lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
       <.profile_upload_path id="orb-initiator-profile-upload" user={@orb.initiator}>
         <:user_name><%= @orb.initiator.username %></:user_name>
         <:information>
@@ -43,7 +43,7 @@
     </div>
     <!--Related Post -->
     <div class="px-3 space-y-4 w-full lg:basis-1/4 md:basis-1/4  h-auto">
-      <div class="border border-gray-200 rounded-xl shadow-sm">
+      <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md">
         <.profile_upload_path user={@orb.initiator}>
           <:user_name><%= @orb.initiator.username %></:user_name>
           <:information>
@@ -56,7 +56,7 @@
         <.video></.video>
       </div>
 
-      <div class="border border-gray-200 rounded-xl shadow-sm">
+      <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md">
         <.profile_upload_path user={@orb.initiator}>
           <:user_name><%= @orb.initiator.username %></:user_name>
           <:information>
@@ -72,7 +72,7 @@
         <.comment_action></.comment_action>
       </div>
 
-      <div class="border border-gray-200 rounded-xl shadow-sm">
+      <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md">
         <.profile_upload_path user={@orb.initiator}>
           <:user_name><%= @orb.initiator.username %></:user_name>
           <:information>
@@ -90,6 +90,9 @@
       </div>
     </div>
   </div>
+  <.redirect_mobile user={@orb.initiator}>
+
+  </.redirect_mobile>
 </section>
 
 

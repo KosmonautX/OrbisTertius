@@ -57,7 +57,8 @@ defmodule PhosWeb.CoreComponents do
         aria-describedby={"#{@id}-description"}
         role="dialog"
         aria-modal="true"
-        tabindex="0">
+        tabindex="0"
+      >
         <div class="flex min-h-full items-center justify-center">
           <div class="w-full max-w-3xl p-4 sm:p-6 lg:py-8">
             <.focus_wrap
@@ -90,7 +91,10 @@ defmodule PhosWeb.CoreComponents do
                 <div id={"#{@id}-main"} class="p-4 w-full">
                   <%= render_slot(@inner_block) %>
                 </div>
-                <div :if={@confirm != [] or @cancel != []} class="p-4 flex flex-row-reverse items-center gap-5">
+                <div
+                  :if={@confirm != [] or @cancel != []}
+                  class="p-4 flex flex-row-reverse items-center gap-5"
+                >
                   <.button
                     :for={confirm <- @confirm}
                     id={"#{@id}-confirm"}
@@ -253,7 +257,7 @@ defmodule PhosWeb.CoreComponents do
   end
 
   defp button_class(:danger), do: "bg-red-400 hover:bg-red-600"
-  defp button_class(:primary), do: "bg-blue-400 hover:bg-blue-600"
+  defp button_class(:primary), do: "bg-teal-400 hover:bg-teal-600"
   defp button_class(:warning), do: "bg-yellow-400 hover:bg-yellow-600"
   defp button_class(:success), do: "bg-green-400 hover:bg-green-600"
 
@@ -550,9 +554,14 @@ defmodule PhosWeb.CoreComponents do
   def list(assigns) do
     ~H"""
     <div class="mt-14 mb-6">
-      <dl class={"-my-4 divide-y divide-zinc-100 #{if(@type == "stripped", do: "[&>*:nth-child(odd)]:bg-gray-200 border border-gray-200 rounded-md")}"}]>
+      <dl
+        class={"-my-4 divide-y divide-zinc-100 #{if(@type == "stripped", do: "[&>*:nth-child(odd)]:bg-gray-200 border border-gray-200 rounded-md")}"}
+        ]
+      >
         <div :for={item <- @item} class="flex gap-4 py-4 sm:gap-8 rounded-md">
-          <dt class="pl-2 w-1/4 flex-none text-[0.8125rem] leading-6 text-zinc-500"><%= item.title %></dt>
+          <dt class="pl-2 w-1/4 flex-none text-[0.8125rem] leading-6 text-zinc-500">
+            <%= item.title %>
+          </dt>
           <dd class="text-sm leading-6 text-zinc-700"><%= render_slot(item) %></dd>
         </div>
       </dl>
@@ -634,15 +643,23 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <nav class="md:left-0 md:block md:fixed md:top-0 md:bottom-0 md:overflow-y-auto md:flex-row md:flex-nowrap md:overflow-hidden shadow-xl bg-white flex flex-wrap items-center justify-between relative md:w-64 z-10 py-4 px-6">
       <div class="md:flex-col md:items-stretch md:min-h-full md:flex-nowrap px-0 flex flex-wrap items-center w-full mx-auto">
-        <.link patch={@home_path} class="md:block text-left md:pb-2 text-blueGray-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0">
+        <.link
+          patch={@home_path}
+          class="md:block text-left md:pb-2 text-blueGray-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0"
+        >
           <%= @title %>
         </.link>
         <div>
-          <hr class="my-4 md:min-w-full">
-          <h6 class="md:min-w-full text-blueGray-500 text-xs uppercase font-bold block pt-1 pb-4 no-underline">Feature</h6>
+          <hr class="my-4 md:min-w-full" />
+          <h6 class="md:min-w-full text-blueGray-500 text-xs uppercase font-bold block pt-1 pb-4 no-underline">
+            Feature
+          </h6>
           <ul class="md:flex-col md:min-w-full flex flex-col list-none" id="navbar">
             <li :for={item <- @item} class="items-center">
-              <.link navigate={item.to} class="text-xs uppercase py-3 font-bold block text-gray-500 hover:text-blue-400">
+              <.link
+                navigate={item.to}
+                class="text-xs uppercase py-3 font-bold block text-gray-500 hover:text-blue-400"
+              >
                 <i class={"fas mr-2 text-sm opacity-75 #{item.icon}"}></i>
                 <%= item.title %>
               </.link>
@@ -764,7 +781,8 @@ defmodule PhosWeb.CoreComponents do
       </div>
       <button
         type="button"
-        class="text-gray-400 bg-transparent hover:bg-gray-200 rounded-lg text-sm p-1 ml-auto inline-flex items-center">
+        class="text-gray-400 bg-transparent hover:bg-gray-200 rounded-lg text-sm p-1 ml-auto inline-flex items-center"
+      >
         <Heroicons.ellipsis_vertical class="mt-0.5 h-6 w-6" />
       </button>
     </div>
@@ -785,7 +803,7 @@ defmodule PhosWeb.CoreComponents do
     <section class="relative" id="m1" phx-hook="slider" phx-update="ignore">
       <div class="relative overflow-hidden rounded-lg duration-700 ease-in-out">
         <img
-          id="m1"
+          id={"media-" <> @orb.id}
           class="object-cover md:inset-0 h-80 w-full"
           src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless")}
         />
@@ -993,39 +1011,36 @@ defmodule PhosWeb.CoreComponents do
   end
 
   attr(:navigate, :any, required: true)
+  attr(:current_user, :any)
 
   def banner(assigns) do
     ~H"""
-    <nav class="bg-white p-4 md:p-2 fixed w-full z-20 top-0 left-0 border-b border-gray-200  text-base font-bold">
+    <nav class="bg-white px-2 fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold p-2">
       <div class="flex flex-wrap items-center justify-between mx-auto">
         <a href="#" class="flex items-center">
-          <img src="/images/banner_logo_white.png" class="h-7 ml-4 md:h-9" alt="" />
+          <img src="/images/banner_logo_white.png" class="h-7 ml-4" alt="" />
         </a>
-        <div class="flex items-center md:order-2  flex-col  mt-2 md:flex-row md:space-x-2 md:w-auto">
-          <ul
-            class="flex flex-wrap  text-center text-gray-700">
-            <!--<li :if={not is_nil(@current_user.username)} class="mr-2 hidden md:block">
+
+        <div class="flex items-center md:order-2  flex-col   md:flex-row md:space-x-2 md:w-auto">
+          <ul class="flex flex-wrap  text-center text-gray-700">
+            <li :if={not is_nil(@current_user.username)} class="mr-2 hidden md:block">
               <span class="p-2 rounded-t-lg hover:text-teal-500 group">
                 <.link navigate={
                   path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@current_user.username}")
                 }>
-                  <Heroicons.user_circle
-                    mini
-                    class="w-5 h-5 md:w-6 md:h-6 mr-2 text-gray-700 group-hover:text-teal-500"
-                  />
-                </.link>
-              </span>
-            </li>-->
-            <li class="mr-2 hidden md:block">
-              <span class="p-2 rounded-t-lg hover:text-teal-500 group">
-                <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/settings")}>
-                  <Heroicons.cog_8_tooth
-                    mini
-                    class="w-5 h-5 md:w-6 md:h-6 mr-2 text-gray-700 group-hover:text-teal-500"
-                  />
+                  <Heroicons.user_circle mini class="w-8 h-8 text-gray-700 group-hover:text-teal-500" />
                 </.link>
               </span>
             </li>
+
+            <li class="mr-2 hidden md:block">
+              <span class="p-2 rounded-t-lg hover:text-teal-500 group">
+                <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/settings")}>
+                  <Heroicons.cog_8_tooth mini class="w-8 h-8 text-gray-700 group-hover:text-teal-500" />
+                </.link>
+              </span>
+            </li>
+
             <li class="mr-2 hidden md:block">
               <span class="p-2 rounded-t-lg hover:text-teal-500 group">
                 <.link
@@ -1034,7 +1049,7 @@ defmodule PhosWeb.CoreComponents do
                 >
                   <Heroicons.arrow_left_on_rectangle
                     mini
-                    class="w-5 h-5 md:w-6 md:h-6 mr-2 text-gray-700 group-hover:text-teal-500"
+                    class="w-8 h-8 text-gray-700 group-hover:text-teal-500"
                   />
                 </.link>
               </span>
@@ -1042,23 +1057,22 @@ defmodule PhosWeb.CoreComponents do
           </ul>
           <.button type="submit">Open app</.button>
         </div>
-        <div class="hidden lg:block items-center justify-between  w-full  md:w-auto">
-          <ul class="flex flex-col p-4 mt-2  md:flex-row md:space-x-6  text-gray-700">
+
+        <div class="hidden lg:block items-center justify-between w-full  md:w-auto">
+          <ul class="flex flex-col md:flex-row md:space-x-6  text-gray-700">
             <li>
-              <a href="#" class="block py-2 pl-3 pr-4 rounded md:hover:text-teal-500 md:p-0">
+              <a href="#" class="block md:hover:text-teal-500">
                 Pepole
               </a>
             </li>
             <li>
-              <a href="#" class="block py-2 pl-3 pr-4 rounded md:hover:text-teal-500 md:p-0">
+              <a href="#" class="block md:hover:text-teal-500">
                 Explore
               </a>
             </li>
             <li>
-              <a
-                href="#"
-                class="flex items-center justify-between py-2 pl-3 pr-4 md:hover:text-teal-500 md:p-0">
-                Chats <Heroicons.chevron_down solid class="h-4 w-4 stroke-current" />
+              <a href="#" class="flex items-center justify-between md:hover:text-teal-500   ">
+                Chats <Heroicons.chevron_down solid class="w-4 h-4 ml-1 stroke-current" />
               </a>
             </li>
           </ul>
@@ -1068,28 +1082,42 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  attr(:id, :string, required: true)
+  attr(:img_path, :string)
+  slot(:user_name)
+  attr(:user, :any)
+  attr(:orb, :any)
+
   def redirect_mobile(assigns) do
     ~H"""
-    <div class="relative bg-white max-w-sm md:max-w-md md:h-auto rounded-xl shadow-lg">
-      <button
-        type="button"
-        class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
-      >
-        <Heroicons.x_mark class="mt-0.5 h-8 w-6" />
-        <span class="sr-only">Close modal</span>
-      </button>
-      <div class="text-center p-6">
-        <h1 class="text-lg font-bold">Find Your Tribe</h1>
-        <h3 class="mb-2 mt-2 text-base font-normal text-gray-500">
-          Find Out what is happening around you today
+    <div class="relative bg-white max-w-sm md:max-w-md md:h-auto rounded-xl shadow-lg ">
+      <div class="flex flex-col justify-center items-center p-6 space-y-2 ">
+        <img
+          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+          class=" h-16 w-16 lg:w-32 lg:h-32 border-4 border-white rounded-full object-cover"
+        />
+        <h1 class="text-lg font-bold">Hmm...You were saying?</h1>
+        <h3 class="text-base font-normal text-gray-500 text-center">
+          Join the tribe to share your thoughts with raizzypaizzy now!
         </h3>
+        <.button>Download the Scratchbac app</.button>
+        <span class="text-sm text-gray-500">
+          <.link
+            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
+            class="text-sm text-teal-400 font-bold hover:underline"
+          >
+            Sign up
+          </.link>
+          Or
+          <.link
+            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/log_in")}
+            class="text-sm text-teal-400 font-bold hover:underline"
+          >
+            Sign in
+          </.link>
+          via Web
+        </span>
       </div>
-      <button
-        type="button"
-        class="text-white h-16 bottom-0 w-full bg-teal-600 hover:bg-teal-800 focus:ring-4 focus:outline-none focus:ring-teal-300 font-bold rounded-b-lg  text-lg inline-flex items-center text-center justify-center"
-      >
-        Download Scratchbac now!
-      </button>
     </div>
     """
   end
@@ -1142,7 +1170,10 @@ defmodule PhosWeb.CoreComponents do
         </div>
         <div class="flex-1 flex flex-col items-center md:mt-4 mt-2 md:px-8">
           <div class="flex items-center space-x-4">
-            <button :for={location <- Map.get(@user, :locations, [])} class="flex items-center bg-white  text-black px-4 py-2 rounded-full md:text-base text-sm font-bold transition duration-100">
+            <button
+              :for={location <- Map.get(@user, :locations, [])}
+              class="flex items-center bg-white  text-black px-4 py-2 rounded-full md:text-base text-sm font-bold transition duration-100"
+            >
               <Heroicons.map_pin class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4" />
               <span><%= location %></span>
             </button>
@@ -1389,8 +1420,9 @@ defmodule PhosWeb.CoreComponents do
     <div class="hidden lg:block fixed z-20 bottom-0 right-0  px-2 py-2 w-full bg-gray-600 flex flex-col justify-items-end gap-2">
       <a
         href="#"
-        class="w-full sm:w-auto bg-gray-800 hover:bg-gray-700 focus:ring-2 focus:outline-none focus:ring-gray-300 text-white rounded-lg inline-flex items-center justify-center px-4 py-2.5">
-        <img class="mr-3 w-7 h-7" src="/images/5761429_apple_logo_mac_mac desktop_icon (1).png"/>
+        class="w-full sm:w-auto bg-gray-800 hover:bg-gray-700 focus:ring-2 focus:outline-none focus:ring-gray-300 text-white rounded-lg inline-flex items-center justify-center px-4 py-2.5"
+      >
+        <img class="mr-3 w-7 h-7" src="/images/5761429_apple_logo_mac_mac desktop_icon (1).png" />
         <div class="text-left">
           <div class="mb-1 text-xs">Download on the</div>
           <div class="-mt-1 font-sans text-sm font-semibold">Mac App Store</div>
@@ -1398,7 +1430,8 @@ defmodule PhosWeb.CoreComponents do
       </a>
       <a
         href="#"
-        class="w-full sm:w-auto bg-gray-800 hover:bg-gray-700 focus:ring-2 focus:outline-none focus:ring-gray-300 text-white rounded-lg inline-flex items-center justify-center px-4 py-2.5">
+        class="w-full sm:w-auto bg-gray-800 hover:bg-gray-700 focus:ring-2 focus:outline-none focus:ring-gray-300 text-white rounded-lg inline-flex items-center justify-center px-4 py-2.5"
+      >
         <img class="mr-3 w-7 h-7" src="/images/4373135_google_logo_logos_play_icon.png" />
         <div class="text-left">
           <div class="mb-1 text-xs">Get in on</div>

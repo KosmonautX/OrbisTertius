@@ -70,7 +70,7 @@ defmodule PhosWeb.Router do
 
     resources "/admin/sessions", AdminSessionController, only: [:new, :create, :index], as: :admin_session
 
-    delete "/users/log_out", UserSessionController, :delete
+    get "/users/log_out", UserSessionController, :delete
 
     live_session :current_user,
       on_mount: [{PhosWeb.Menshen.Gate, :mount_current_user}] do

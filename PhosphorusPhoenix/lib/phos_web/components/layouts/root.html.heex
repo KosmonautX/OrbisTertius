@@ -16,12 +16,9 @@
   </head>
   <body class="h-screen w-full">
     <%= if @current_user do %>
-      <div class="">
-        <.user_menu current_user={@current_user} />
-      </div>
-      <!--<.banner></.banner>-->
-      <.tabs_mobile></.tabs_mobile>
-      <.bottom_banner></.bottom_banner>
+      <.banner current_user={@current_user}> </.banner>
+      <!--<.tabs_mobile></.tabs_mobile>-->
+      <!--<.bottom_banner></.bottom_banner>-->
     <% end %>
     <div class="w-full h-auto"><%= @inner_content %></div>
     <br />

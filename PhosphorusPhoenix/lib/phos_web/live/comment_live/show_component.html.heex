@@ -1,6 +1,6 @@
 <div class="comment" id={"comment-#{elem(@comment, 1).id}"}>
   <a class="avatar">
-    <img src={ Phos.Orbject.S3.get!("USR", elem(@comment, 1).initiator_id, "150x150") }>
+    <img src={ Phos.Orbject.S3.get!("USR", elem(@comment, 1).initiator_id, "public/profile/lossy") }>
   </a>
   <div class="content">
     <a class="author"><%= elem(@comment, 1).initiator.username %></a>
@@ -37,7 +37,7 @@
 
       <div :if={elem(@comment, 1).child_count > 0}>
         <div id={"showreply-#{elem(@comment, 1).id}"} style="display: none">
-          <.link 
+          <.link
             href="#"
             phx-click={
               JS.push("toggle_more_replies")
@@ -52,7 +52,7 @@
           </.link>
         </div>
         <div id={"hidereply-#{elem(@comment, 1).id}"} style="display: none">
-          <.link 
+          <.link
             href="#"
             phx-click={
               JS.push("toggle_more_replies")
@@ -99,7 +99,7 @@
   </div>
 
   <div class="comments" id={"morereplies-#{elem(@comment, 1).id}"}>
-    <.live_component 
+    <.live_component
       :for={comment <- filter_child_comments_chrono(@comments, @comment)}
       module={__MODULE__}
       comment={comment}
