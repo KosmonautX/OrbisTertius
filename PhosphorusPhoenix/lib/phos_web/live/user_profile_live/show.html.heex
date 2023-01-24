@@ -15,20 +15,114 @@
   />
 </.modal>
 
-<section class="min-w-full mx-auto flex flex-col items-center justify-center md:mt-24 mt-14">
-  <div class="min-w-full">
+<section class="mx-auto w-full flex flex-col items-center mt-14 gap-4 justify-center lg:mt-24 ">
+  <div class="w-full">
     <.user_profile id="orb-user-profile" user={@user}>
-     <:user_name><%= @user.username %></:user_name>
+      <:user_name><%= @user.username %></:user_name>
       <.link :if={@user.id == @current_user.id} patch={~p"/user/#{@current_user.username}/edit"}>
-        <Heroicons.camera class="md:w-11 md:h-11 h-10 w-10 fill-white" />
+        <Heroicons.camera class="lg:w-11 lg:h-11 h-10 w-10 fill-white" />
       </.link>
     </.user_profile>
   </div>
 
-  <div class="mt-4 md:w-[45rem] items-center justify-center mb-20 w-full lg:border lg:border-gray-200 lg:rounded-lg lg:shadow-md">
-    <.user_information_card_md :if={not is_nil(@user.public_profile)} location={} user={@user}>
-    </.user_information_card_md>
+    <div class="p-4 lg:p-10 lg:mt-6 flex  items-start flex-col lg:flex-row gap-4 lg:gap-8">
+
+      <div class="flex-grow relative overflow-hidden rounded-sm">
+        <.user_information_card_md
+          :if={not is_nil(@user.public_profile)}
+          location={}
+          user={@user}
+          flex="flex"
+        >
+        </.user_information_card_md>
+         <h5 class="text-left font-semibold text-lg py-1 px-2">Posts</h5>
+        <hr class="h-px bg-transparent" />
+            <.video id="orb-user-video" />
+
+
+      </div>
+
+      <div class="">
+        <h5 class="text-left font-semibold text-lg py-1 px-2">Allies</h5>
+        <hr class="h-px bg-transparent" />
+        <.user_info_bar id="user-#{@user.id}-infobar" user={@user}>
+          <:user_name><%= @user.username %></:user_name>
+          <:information>
+            Members, 25
+          </:information>
+          <:actions>
+            <.button class="flex items-center p-0">
+              <Heroicons.plus class="mr-2 -ml-1 lg:w-6 lg:h-6 w-4 h-4 " />
+              <span>Ally</span>
+            </.button>
+          </:actions>
+        </.user_info_bar>
+
+        <.user_info_bar id="user-#{@user.id}-infobar" user={@user}>
+          <:user_name><%= @user.username %></:user_name>
+          <:information>
+            Members, 25
+          </:information>
+          <:actions>
+            <.button class="flex items-center p-0">
+              <Heroicons.plus class="mr-2 -ml-1 lg:w-6 lg:h-6 w-4 h-4 " />
+              <span>Ally</span>
+            </.button>
+          </:actions>
+        </.user_info_bar>
+        <.user_info_bar id="user-#{@user.id}-infobar" user={@user}>
+          <:user_name><%= @user.username %></:user_name>
+          <:information>
+            Members, 25
+          </:information>
+          <:actions>
+            <.button class="flex items-center p-0">
+              <Heroicons.plus class="mr-2 -ml-1 lg:w-6 lg:h-6 w-4 h-4 " />
+              <span>Ally</span>
+            </.button>
+          </:actions>
+        </.user_info_bar>
+        <.user_info_bar id="user-#{@user.id}-infobar" user={@user}>
+          <:user_name><%= @user.username %></:user_name>
+          <:information>
+            Members, 25
+          </:information>
+          <:actions>
+            <.button class="flex items-center p-0">
+              <Heroicons.plus class="mr-2 -ml-1 lg:w-6 lg:h-6 w-4 h-4 " />
+              <span>Ally</span>
+            </.button>
+          </:actions>
+        </.user_info_bar>
+        <.user_info_bar id="user-#{@user.id}-infobar" user={@user}>
+          <:user_name><%= @user.username %></:user_name>
+          <:information>
+            Members, 25
+          </:information>
+          <:actions>
+            <.button class="flex items-center p-0">
+              <Heroicons.plus class="mr-2 -ml-1 lg:w-6 lg:h-6 w-4 h-4 " />
+              <span>Ally</span>
+            </.button>
+          </:actions>
+        </.user_info_bar>
+        <.user_info_bar id="user-#{@user.id}-infobar" user={@user}>
+          <:user_name><%= @user.username %></:user_name>
+          <:information>
+            Members, 25
+          </:information>
+          <:actions>
+            <.button class="flex items-center p-0">
+              <Heroicons.plus class="mr-2 -ml-1 lg:w-6 lg:h-6 w-4 h-4 " />
+              <span>Ally</span>
+            </.button>
+          </:actions>
+        </.user_info_bar>
+      </div>
+
+    </div>
+
+  <div class="mt-4 lg:w-[45rem] w-full items-center justify-center">
     <.tabs_profile id="orb-user-tabs-profile" />
-    <.video id="orb-user-video" />
   </div>
 </section>

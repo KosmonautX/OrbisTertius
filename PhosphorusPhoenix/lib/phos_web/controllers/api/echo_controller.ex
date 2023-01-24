@@ -4,7 +4,6 @@ defmodule PhosWeb.API.EchoController do
     :id, :message, :user_source_id, :orb_subject_id, :user_destination_id, :rel_subject_id, :media
   ]
   alias Phos.Message
-  alias Phos.Message.Echo
   alias Phos.Message.Memory
   action_fallback PhosWeb.API.FallbackController
 
@@ -65,7 +64,7 @@ defmodule PhosWeb.API.EchoController do
     memory = Message.get_memory!(id)
     with true <- memory.initiator.id == user_id,
          {:ok, attrs} <- memory_constructor(user_id, params),
-         {:ok, %Echo{} = memory} <- Message.update_memory(memory, attrs) do
+         {:ok, %Memory{} = memory} <- Message.update_memory(memory, attrs) do
       conn
       |> put_status(:ok)
       |> put_resp_header("location", ~p"/api/memland/memories/#{memory.id}")
@@ -78,7 +77,7 @@ defmodule PhosWeb.API.EchoController do
   def update_reverie(%Plug.Conn{assigns: %{current_user: %{id: user_id}}} = conn , %{"id" => id} = attrs) do
     reverie = Message.get_reverie!(id)
     with true <- reverie.user_destination_id == user_id,
-         {:ok, %Echo{} = reverie} <- Message.update_reverie(reverie, attrs) do
+         {:ok, %Message.Reverie{} = reverie} <- Message.update_reverie(reverie, attrs) do
       conn
       |> put_status(:ok)
       #|> put_resp_header("location", ~p"/api/memland/reveries/#{reverie.id}")
@@ -94,7 +93,7 @@ defmodule PhosWeb.API.EchoController do
     memory = Message.get_memory!(id)
 
     with true <- memory.initiator.id == user_id,
-         {:ok, %Echo{}} <- Message.delete_memory(memory) do
+         {:ok, %Memory{}} <- Message.delete_memory(memory) do
       send_resp(conn, :no_content, "")
     end
   end

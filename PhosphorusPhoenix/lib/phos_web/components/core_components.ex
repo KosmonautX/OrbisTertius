@@ -912,28 +912,24 @@ defmodule PhosWeb.CoreComponents do
   """
 
   attr(:id, :string, required: true)
-  attr(:img_path, :string)
-  slot(:user_name)
   attr(:user, :any)
-  attr(:orb, :any)
   slot(:information)
+  slot(:actions)
 
-  def profile_upload_path(assigns) do
+  def user_info_bar(assigns) do
     ~H"""
-    <div class="flex justify-between p-2 border-b md:border-none">
-      <img
-        src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
-        class=" h-16 w-16 border-4 border-white rounded-full object-cover"/>
-
-      <div class="flex flex-col ml-2">
-        <span class="text-base md:text-lg font-bold ml-2"><%= render_slot(@user_name) %></span>
-        <span class="flex items-center text-sm md:text-base text-gray-500 ml-0.5">
-          <%= render_slot(@information) %>
-        </span>
+    <div class="flex flex-wrap items-center justify-between mx-auto">
+      <div class="flex items-start px-2 py-1.5">
+        <img
+          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+          class=" lg:h-16 lg:w-16 w-14 h-14 border-4 border-white rounded-full object-cover"
+        />
+        <div>
+          <h2 class="text-base font-bold text-gray-900 -mt-1"><%= @user.username %></h2>
+          <p class="flex items-center text-gray-700"><%= render_slot(@information) %></p>
+        </div>
+        <div class=""><%= render_slot(@actions) %></div>
       </div>
-      <.button tone={:icons}>
-        <Heroicons.ellipsis_vertical class="mt-0.5 h-6 w-6 text-black" />
-      </.button>
     </div>
     """
   end
@@ -1182,16 +1178,14 @@ defmodule PhosWeb.CoreComponents do
   @spec information_card(any) :: Phoenix.LiveView.Rendered.t()
   def information_card(assigns) do
     ~H"""
-    <div class="">
       <div class="md:p-4 p-2">
         <div class="flex justify-between">
           <h5 class="lg:text-4xl md:text-3xl text-xl font-extrabold text-gray-900">
-          <%= @user.public_profile.public_name %>
+            <%= @user.public_profile.public_name %>
           </h5>
-
-          <div class="flex gap-4">
+          <div class="flex items-center gap-4">
             <.button tone={:icons}>
-            <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6 text-black" />
+              <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6 text-black" />
             </.button>
             <.button class="flex items-center">
               <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
@@ -1201,23 +1195,23 @@ defmodule PhosWeb.CoreComponents do
         </div>
 
         <p class="md:text-lg text-gray-900 text-base font-semibold	mb-4">
-        <%= @user.public_profile.occupation %>
+          <%= @user.public_profile.occupation %>
         </p>
 
         <p class="text-gray-900 font-medium md:text-lg text-base mt-4 mb-4">
-        <%= @user.public_profile.bio %>
-                </p>
+          <%= @user.public_profile.bio %>
+        </p>
 
         <%= for traits <- @user.traits do %>
           <span class="text-gray-500 md:text-lg text-base font-normal"><span>#</span>
             <%= traits %></span>
         <% end %>
       </div>
-    </div>
     """
   end
 
   attr(:user, :any)
+  attr(:flex, :any, default: nil)
   attr(:id, :string, required: true)
   attr(:navigate, :any)
   attr(:location, :boolean)
@@ -1226,28 +1220,22 @@ defmodule PhosWeb.CoreComponents do
 
   def user_information_card_md(assigns) do
     ~H"""
-
-    <div class="flex flex-col items-center space-y-2 p-4">
-      <h5 class="md:text-3xl text-lg font-extrabold text-gray-900 text-center">
+    <div class="flex flex-col justify-between space-y-2 p-4 w-full">
+      <div class={["gap-4", @flex]}>
+        <h5 class="md:text-3xl text-lg font-extrabold text-gray-900">
           <%= @user.public_profile.public_name %>
-      </h5>
-
-      <h6 class="md:text-lg text-gray-900 text-base font-semibold	mb-4">
-      <%= @user.public_profile.occupation %>
-      </h6>
-
-      <div class="flex gap-4">
-      <.button tone={:icons}>
-      <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6 text-black" />
-      </.button>
-
-         <.button class="flex items-center">
-              <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
-              <span>Ally</span>
-            </.button>
+        </h5>
+        <div class="flex gap-4">
+          <.button tone={:icons}>
+            <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6 text-black" />
+          </.button>
+          <.button class="flex items-center p-0 items-start space-y-1">
+            <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
+            <span>Ally</span>
+          </.button>
+        </div>
       </div>
-
-      <div :if={not is_nil(@location)} class="flex-1 flex flex-col items-center">
+      <div :if={not is_nil(@location)} class="flex-1 flex flex-col">
         <div class="flex items-center">
           <%= for location <- @user.locations do %>
             <button class="flex items-center bg-white text-gray-800 px-4 py-2 rounded-full md:text-base text-sm font-bold transition duration-100">
@@ -1257,15 +1245,17 @@ defmodule PhosWeb.CoreComponents do
           <% end %>
         </div>
       </div>
-
-      <p class="text-gray-900 font-medium text-base text-center">
+      <p class="md:text-lg text-gray-900 text-base font-semibold	mb-4">
+        <%= @user.public_profile.occupation %>
+      </p>
+      <p class="text-gray-900 font-medium text-bas">
         <%= @user.public_profile.bio %>
       </p>
       <div>
-      <%= for traits <- @user.traits do %>
-      <span class="text-gray-500 md:text-lg text-base font-normal"><span>#</span>
-        <%= traits %></span>
-     <% end %>
+        <%= for traits <- @user.traits do %>
+          <span class="text-gray-500 md:text-lg text-base font-normal"><span>#</span>
+            <%= traits %></span>
+        <% end %>
       </div>
     </div>
     """

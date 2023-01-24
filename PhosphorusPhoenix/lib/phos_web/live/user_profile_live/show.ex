@@ -13,8 +13,8 @@ defmodule PhosWeb.UserProfileLive.Show do
   def handle_params(%{"username" => username} = params, _url, socket) do
     user = %{id: user_id} =
     Users.get_user_by_username(username)
-    |> Map.put(:locations, ["Chennai", "Vandavasi"])
     |> Map.put(:traits, ["frontend_dev", "farmergirl", "noseafood", "doglover", "tailwind"])
+    |> Map.put(:locations, ["Chennai", "Vandavasi"])
     {:noreply, socket
       |> assign(:params, params)
       |> assign(:user, user )

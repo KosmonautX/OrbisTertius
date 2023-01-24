@@ -185,12 +185,12 @@ defmodule PhosWeb.OrbLive.Index do
   end
 
   @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
+  def handle_event("delete", %{"id" => id}, %{assigns: assigns} = socket) do
     orb = Action.get_orb!(id)
     orb_loc_publisher(orb, :deactivation, orb.locations |> Enum.map(fn orb -> orb.id end))
     {:ok, _} = Action.delete_orb(orb)
 
-    {:noreply, socket}
+    {:noreply, push_redirect(socket, to: Map.get(assigns, :return_to, ~p"/orb"))}
   end
 
   defp loc_subscriber(present, []) do

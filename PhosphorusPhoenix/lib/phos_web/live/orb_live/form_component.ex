@@ -23,12 +23,12 @@ defmodule PhosWeb.OrbLive.FormComponent do
     {:noreply, assign(socket, :changeset, changeset)}
   end
 
-  def handle_event("save", %{"orb" => orb_params}, socket) do
+  def handle_event("save", %{"orb" => %{"location" => loc} = orb_params}, %{assigns: %{addresses: addrs}} = socket) do
     resolution = %{"150x150" => "lossy", "1920x1080" => "lossless"}
     orb_id = socket.assigns.orb.id || Ecto.UUID.generate()
     # Process latlon value to x7 h3 indexes
     orb_params = try do
-                     central_hash = List.last(socket.assigns.addresses[String.to_atom(orb_params["location"])])
+                     central_hash = List.last(Map.get(addrs, String.to_atom(loc), []))
                      |> :h3.parent(String.to_integer(orb_params["radius"]))
                      geohashes = central_hash
                      |> :h3.k_ring(1)

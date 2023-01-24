@@ -19,6 +19,12 @@ defmodule PhosWeb.UserForgotPasswordLive do
           </.button>
         </:actions>
       </.simple_form>
+
+      <p class="mt-2">
+        <.link patch={~p"/users/register"}>Sign up</.link>
+        <span> | </span>
+        <.link patch={~p"/users/log_in"}>Log in</.link>
+      </p>
     </div>
     """
   end
