@@ -940,15 +940,14 @@ defmodule PhosWeb.CoreComponents do
   """
   attr(:id, :string, required: true)
   attr(:img_path, :string)
-  attr(:user, :any)
   attr(:orb, :any)
 
   def post_image(assigns) do
     ~H"""
-    <section class="relative" id="m1" phx-hook="slider" phx-update="ignore">
+    <section class="relative" id={"#{@id}-media-carousell"}  phx-update="ignore">
       <div class="relative overflow-hidden rounded-lg">
         <img
-          id={"media-" <> @orb.id}
+          id={"#{@id}-media"}
           class="object-cover md:inset-0 h-80 w-full"
           src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless")}
         />

@@ -3,7 +3,8 @@ defmodule PhosWeb.Storybook do
     otp_app: :phos_web,
     content_path: Path.expand("../../storybook", __DIR__),
     # assets path are remote path, not local file-system paths
-    css_path: "/assets/storybook.css",
-    js_path: "/assets/storybook.js",
+    css_path: "assets/storybook.css",
+    js_path: "assets/storybook.js",
+    compilation_mode: :eager,
     sandbox_class: "phos-web"
 end

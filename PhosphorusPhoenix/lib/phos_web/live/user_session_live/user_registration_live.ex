@@ -38,7 +38,7 @@ defmodule PhosWeb.UserRegistrationLive do
         <.input field={{f, :password}} type="password" label="Password" required />
 
         <:actions>
-          <.button phx-disable-with="Creating account..." class="w-full">Create account</.button>
+          <.button phx-disable-with="Creating account..." class="w-full" type="submit">Create account</.button>
         </:actions>
       </.simple_form>
     </div>

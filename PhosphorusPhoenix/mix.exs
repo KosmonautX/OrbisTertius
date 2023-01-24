@@ -93,7 +93,7 @@ defmodule Phos.MixProject do
       {:phoenix_view, "~> 2.0"}, # for error warning removal
       # { :uuid, "~> 1.1" },
       # {:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
-      {:phx_live_storybook, github: "phenixdigital/phx_live_storybook", runtime: Mix.env() == :dev }
+      {:phx_live_storybook, github: "phenixdigital/phx_live_storybook", runtime: Mix.env() == :dev}
     ]
   end
 

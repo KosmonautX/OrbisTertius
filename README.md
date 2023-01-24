@@ -21,6 +21,17 @@ To start the Phos Service:
     Create and migrate your database with mix ecto.setup
     Migrate using mix ecto.migrate to update the repository that maps to Postgres data store
     Start Phoenix endpoint with mix phx.server OR iex -S mix phx.server
+    
+Running UI Components Storybook
+
+```
+mix dev.storybook
+mix assets.deploy
+iex -S mix phx.server
+```
+goto /storybook
+
+`
 
 Testing:
 
