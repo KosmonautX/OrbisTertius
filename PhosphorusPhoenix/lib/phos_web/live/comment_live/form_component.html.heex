@@ -17,7 +17,7 @@
       <.input field={{f, :parent_path}} type="hidden" value={to_string(@comment.path)} />
     </div>
 
-    <:actions class="">
+    <:actions>
       <button type="submit" phx-disable-with="Saving..." class="">
         <Heroicons.paper_airplane class="h-8 w-8 md:h-10 mr-2 text-teal-400 font-bold" /><%= @text %>
       </button>
