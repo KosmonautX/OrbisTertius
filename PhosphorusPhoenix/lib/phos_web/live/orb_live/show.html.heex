@@ -2,24 +2,25 @@
 <section class="container mx-auto md:mt-28 mt-14">
   <div
     :if={not is_nil(@orb.initiator.public_profile) && @orb.initiator.public_profile}
-    class="flex lg:flex-row flex-col items-start mt-6 gap-4">
+    class="flex lg:flex-row flex-col items-start mt-6 gap-4"
+  >
     <!-- Desktop View in Orb View Profile-->
     <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full max-w-full px-3 md:w-3/12  md:flex-none">
       <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md">
-        <.post_related_user id="orb-initiator-username" user={@orb.initiator}>
+        <.user_profile id="orb-initiator-username" user={@orb.initiator} location={}>
           <:user_name><%= @orb.initiator.username %></:user_name>
-        </.post_related_user>
+        </.user_profile>
       </div>
       <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md text-center">
-        <.user_information_card_md
+        <.user_information_card
           id="orb-initiator-public-profile"
           user={@orb.initiator}
           location={true}
-          flex="items-center">
-        </.user_information_card_md>
+          flex="items-center"
+        >
+        </.user_information_card>
       </div>
     </div>
-
     <!-- Post card and Comments-->
     <div class="px-3 lg:w-5/12  w-full mt-0 lg:flex-none justify-center items-center lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
       <.user_info_bar id="orb-initiator-profile-upload" user={@orb.initiator}>
@@ -65,18 +66,17 @@
             </span>
             Chennai
           </:information>
-             <:actions>
-          <.button tone={:icons}>
-            <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
-          </.button>
-        </:actions>
+          <:actions>
+            <.button tone={:icons}>
+              <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
+            </.button>
+          </:actions>
           <.button tone={:icons}>
             <Heroicons.share class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
           </.button>
         </.user_info_bar>
         <.video></.video>
       </div>
-
       <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
         <.user_info_bar id="orb-initiator-profile-upload" user={@orb.initiator}>
           <:user_name><%= @orb.initiator.username %></:user_name>
@@ -86,18 +86,17 @@
             </span>
             Chennai
           </:information>
-             <:actions>
-          <.button tone={:icons}>
-            <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
-          </.button>
-        </:actions>
+          <:actions>
+            <.button tone={:icons}>
+              <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
+            </.button>
+          </:actions>
         </.user_info_bar>
         <.post_information>
           <%= @orb.payload.info %>
         </.post_information>
         <.comment_action />
       </div>
-
       <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
         <.user_info_bar id="orb-initiator-profile-upload-path" user={@orb.initiator}>
           <:user_name><%= @orb.initiator.username %></:user_name>
@@ -107,11 +106,11 @@
             </span>
             Chennai
           </:information>
-             <:actions>
-          <.button tone={:icons}>
-            <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
-          </.button>
-        </:actions>
+          <:actions>
+            <.button tone={:icons}>
+              <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
+            </.button>
+          </:actions>
         </.user_info_bar>
         <.post_image orb={@orb} id="orb-post-image" />
         <.post_information>
@@ -119,7 +118,6 @@
         </.post_information>
         <.comment_action></.comment_action>
       </div>
-
     </div>
   </div>
 </section>
