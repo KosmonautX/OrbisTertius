@@ -8,7 +8,7 @@ defmodule PhosWeb.UserLoginLiveTest do
     test "renders log in page", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/log_in")
 
-      assert html =~ "Log in"
+      assert html =~ "Sign in"
       assert html =~ "Sign up"
       assert html =~ "Forgot your password?"
     end
@@ -18,7 +18,7 @@ defmodule PhosWeb.UserLoginLiveTest do
         conn
         |> log_in_user(user_fixture())
         |> live(~p"/users/log_in")
-        |> follow_redirect(conn, "/")
+        |> follow_redirect(conn, "/welcome")
 
       assert {:ok, _conn} = result
     end
@@ -36,7 +36,7 @@ defmodule PhosWeb.UserLoginLiveTest do
 
       conn = submit_form(form, conn)
 
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/welcome"
     end
 
     test "redirects to login page with a flash error if there are no valid credentials", %{
@@ -67,7 +67,7 @@ defmodule PhosWeb.UserLoginLiveTest do
         |> render_click()
         |> follow_redirect(conn, ~p"/users/register")
 
-      assert login_html =~ "Register"
+      assert login_html =~ "Create account"
     end
 
     test "redirects to forgot password page when the Forgot Password button is clicked", %{

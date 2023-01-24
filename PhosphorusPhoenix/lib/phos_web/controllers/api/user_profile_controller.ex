@@ -93,13 +93,13 @@ defmodule PhosWeb.API.UserProfileController do
          {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => %{"fcm_token" => token}}) do
       render(conn, :show, integration: user_integration)
     else
-      false ->
+      false -> {:error, :unprocessable_entity}
     end
   end
 
   defp purge_nil(map), do: map |> Enum.reject(fn {_, v} -> is_nil(v) end) |> Map.new()
 
-    defp profile_constructor(user, params) do
+  defp profile_constructor(user, params) do
     %{
       "username" => params["username"],
       "public_profile" => %{"birthday" => (if params["birthday"], do: params["birthday"]|> DateTime.from_unix!() |> DateTime.to_naive()),

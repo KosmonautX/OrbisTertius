@@ -9,6 +9,12 @@ export const InitIndexMap = {
         attribution: '© OpenStreetMap'
     }).addTo(map);
 
+        // detect changes to map size due to modal
+    setTimeout(function() {
+        map.invalidateSize();
+    }, 100);
+
+
     this.handleEvent("centre_marker", (latlng) => {
       L.marker([latlng.latitude, latlng.longitude]).addTo(map)
 

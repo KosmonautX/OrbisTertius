@@ -32,6 +32,13 @@ defmodule Storybook.Components.Button do
           tone: :danger,
         },
         slots: ["Danger"]
+      },
+      %Variation{
+        id: :icons,
+        attributes: %{
+          tone: :icons,
+        },
+        slots: ["Icons"]
       }
     ]
   end

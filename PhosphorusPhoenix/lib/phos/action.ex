@@ -55,7 +55,7 @@ defmodule Phos.Action do
 
   def get_orb(id) when is_binary(id) do
     # parent_path = "*.#{Phos.Utility.Encoder.encode_lpath(id)}.*"
-    query = 
+    query =
       from o in Orb,
         preload: [:locations, :initiator, :parent],
         where: o.id == ^id,
@@ -486,7 +486,7 @@ defmodule Phos.Action do
   defp notion_importer(data) when is_list(data), do: Enum.map(data, &notion_parse_properties/1) |> List.flatten()
   defp notion_importer(_), do: []
 
-  defp notion_platform_importer(data) when is_list(data) do 
+  defp notion_platform_importer(data) when is_list(data) do
     Enum.map(data, &notion_platform_parse_properties/1)
     |> List.flatten()
     |> Enum.reduce([], fn data, acc ->
@@ -504,8 +504,7 @@ defmodule Phos.Action do
   defp notion_get_values(%{"content" => data}), do: data
   defp notion_get_values(data) when is_boolean(data), do: data
   defp notion_get_values(data) when is_list(data) and length(data) > 0, do: Enum.reduce(data, "", fn val, acc -> Kernel.<>(acc, notion_get_values(val)) end)
-  defp notion_get_values([]), do: []
-  defp notion_get_values(_), do: "[town]" #TODO this is a terrible default state
+  defp notion_get_values(_), do: nil
 
   defp notion_parse_properties(%{"properties" => %{"Type" => type, "Regions" => region} = properties}) do
     sectors = Phos.External.Sector.get()
@@ -585,7 +584,7 @@ defmodule Phos.Action do
     default_orb_populator({ name, nil}, properties)
     |> Map.merge(%{
           where: notion_get_values(location) |> String.replace("[town]", name),
-          title: notion_get_values(inside_title) |> String.replace("[town]", title),
+          title: (if is_nil(notion_get_values(inside_title)), do: title, else: notion_get_values(inside_title)),
           geolocation: %{
             live: %{
               latlon: %{
@@ -605,7 +604,7 @@ defmodule Phos.Action do
       id: Ecto.UUID.generate(),
       username: "Administrator 👋",
       expires_in: expires_in,
-      info: notion_get_values(info),
+      info: (unless is_nil(notion_get_values(info)), do: notion_get_values(info) |> String.replace("[town]", name)),
       done: notion_get_values(done),
       media: true,
       lossy: notion_get_values(lossy),
@@ -666,7 +665,7 @@ defmodule Phos.Action do
       _ -> Phos.Utility.Encoder.encode_lpath(id, orb.id)
     end
 
-    attrs = 
+    attrs =
       Map.from_struct(orb)
       |> Map.take(~W(active central_geohash extinguish media)a)
       |> Map.merge(%{

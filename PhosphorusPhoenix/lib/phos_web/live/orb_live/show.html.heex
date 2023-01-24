@@ -1,122 +1,126 @@
-
-
-<.modal
-  :if={@live_action in [:edit]}
-  id={"modal_for_#{@live_action}"}
-  on_confirm={JS.navigate(~p"/orb/#{@orb.id}")}
-  on_cancel={JS.navigate(~p"/orb/#{@orb.id}")}
->
-  <.live_component
-    module={PhosWeb.OrbLive.FormComponent}
-    id={@orb.id}
-    title={@page_title}
-    action={@live_action}
-    orb={@orb}
-    current_user={@current_user}
-    addresses={nil}
-    geolocation={nil}
-    return_to={~p"/orb/#{@orb.id}"}
-  />
-</.modal>
-
-<.modal :if={@live_action in [:reply, :edit_comment]} id={"modal_for_#{@live_action}"}>
-  <.live_component
-    module={PhosWeb.CommentLive.FormComponent}
-    id={@comment.id}
-    action={@live_action}
-    comment={@comment}
-    changeset={@changeset}
-    orb={@orb}
-    current_user={@current_user}
-    return_to={~p"/orb/#{@orb.id}"}
-  />
-</.modal>
 <!--desktop View -->
-<section class="container max-auto mt-20">
+<section class="container mx-auto md:mt-28 mt-14">
   <div
     :if={not is_nil(@orb.initiator.public_profile) && @orb.initiator.public_profile}
-    class="flex flex-wrap mt-6 -mx-3"
-  >
-    <div class="md:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full max-w-full px-3 md:w-3/12  md:flex-none">
-      <div class="border border-gray-200 rounded-3xl shadow-md">
-        <.post_related_user user={@orb.initiator}>
+    class="flex lg:flex-row flex-col items-start mt-6 gap-4">
+    <!-- Desktop View in Orb View Profile-->
+    <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full max-w-full px-3 md:w-3/12  md:flex-none">
+      <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md">
+        <.post_related_user id="orb-initiator-username" user={@orb.initiator}>
           <:user_name><%= @orb.initiator.username %></:user_name>
         </.post_related_user>
       </div>
-      <div class="border border-gray-200 rounded-3xl shadow-md">
-        <.user_information_card_md user={@orb.initiator}>
-          <:user_bio><%= @orb.initiator.public_profile.bio %></:user_bio>
-          <:user_public_name><%= @orb.initiator.public_profile.public_name %></:user_public_name>
+      <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md text-center">
+        <.user_information_card_md
+          id="orb-initiator-public-profile"
+          user={@orb.initiator}
+          location={true}
+          flex="items-center">
         </.user_information_card_md>
-      </div>
-      <div class="border border-gray-200 rounded-3xl shadow-md">
-        <.explore_tag user={@orb.initiator}></.explore_tag>
       </div>
     </div>
 
-    <div class="px-3 md:w-5/12  w-full mt-0 md:flex-none border justify-center items-center border-gray-200 md:rounded-3xl md:shadow-md shadow-sm">
-      <.profile_upload_path user={@orb.initiator}>
+    <!-- Post card and Comments-->
+    <div class="px-3 lg:w-5/12  w-full mt-0 lg:flex-none justify-center items-center lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
+      <.user_info_bar id="orb-initiator-profile-upload" user={@orb.initiator}>
         <:user_name><%= @orb.initiator.username %></:user_name>
         <:information>
-          <span>
-            <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
-          </span>
-          Chennai
+          <span><Heroicons.map_pin class="mt-0.5 h-4 w-4" /></span>Chennai
         </:information>
-      </.profile_upload_path>
-      <.post_image orb={@orb}></.post_image>
+        <:actions>
+          <.button tone={:icons}>
+            <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
+          </.button>
+        </:actions>
+      </.user_info_bar>
+
+      <.post_image id="orb-image-upload" orb={@orb} />
       <.post_information>
         <%= @orb.payload.info %>
       </.post_information>
-      <.comment_action></.comment_action>
-      <.reply_post></.reply_post>
-      <.input_type user={@orb.initiator}></.input_type>
+      <.comment_action />
+      <.live_component
+        module={PhosWeb.CommentLive.IndexComponent}
+        id="commentindex"
+        changeset={@changeset}
+        action="new"
+        orb={@orb}
+        comments={@comments}
+        reply_comment={nil}
+        edit_comment={nil}
+        current_user={@current_user}
+        socket={@socket}
+        live_action={@live_action}
+      />
+      <.input_type id="orb-initiator-input-type" user={@orb.initiator} />
+    </div>
+    <!--Related Post-->
+    <div class="px-3 space-y-4 w-full lg:basis-1/4  h-auto">
+      <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
+        <.user_info_bar id="orb-initiator-profile-upload-2" user={@orb.initiator}>
+          <:user_name><%= @orb.initiator.username %></:user_name>
+          <:information>
+            <span>
+              <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
+            </span>
+            Chennai
+          </:information>
+             <:actions>
+          <.button tone={:icons}>
+            <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
+          </.button>
+        </:actions>
+          <.button tone={:icons}>
+            <Heroicons.share class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
+          </.button>
+        </.user_info_bar>
+        <.video></.video>
+      </div>
+
+      <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
+        <.user_info_bar id="orb-initiator-profile-upload" user={@orb.initiator}>
+          <:user_name><%= @orb.initiator.username %></:user_name>
+          <:information>
+            <span>
+              <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
+            </span>
+            Chennai
+          </:information>
+             <:actions>
+          <.button tone={:icons}>
+            <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
+          </.button>
+        </:actions>
+        </.user_info_bar>
+        <.post_information>
+          <%= @orb.payload.info %>
+        </.post_information>
+        <.comment_action />
+      </div>
+
+      <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
+        <.user_info_bar id="orb-initiator-profile-upload-path" user={@orb.initiator}>
+          <:user_name><%= @orb.initiator.username %></:user_name>
+          <:information>
+            <span>
+              <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
+            </span>
+            Chennai
+          </:information>
+             <:actions>
+          <.button tone={:icons}>
+            <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
+          </.button>
+        </:actions>
+        </.user_info_bar>
+        <.post_image orb={@orb} id="orb-post-image" />
+        <.post_information>
+          <%= @orb.payload.info %>
+        </.post_information>
+        <.comment_action></.comment_action>
+      </div>
+
     </div>
   </div>
 </section>
-
-<.list>
-  <:item title="Title"><%= @orb.title %></:item>
-  <:item title="Central Geohash"><%= @orb.central_geohash %></:item>
-  <:item title="Active"><%= @orb.active %></:item>
-  <:item :if={@orb.media} title="Media">
-    <img src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossy")} />
-    <img src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless")} />
-  </:item>
-  <:item title="Extinguish"><%= @orb.extinguish %></:item>
-  <:item title="When"><%= @orb.payload.when %></:item>
-  <:item title="Where"><%= @orb.payload.where %></:item>
-  <:item title="Tip"><%= @orb.payload.tip %></:item>
-  <:item title="Info"><%= @orb.payload.info %></:item>
-  <:item title="Traits"><%= inspect(@orb.traits) %></:item>
-</.list>
-
-<div class="mt-4">
-  <.link
-    navigate={~p"/orb/#{@orb.id}/edit"}
-    class="text-white px-4 py-2 bg-blue-300 hover:bg-blue-500 rounded hover:text-white"
-  >
-    Edit
-  </.link>
-  <.link
-    navigate={~p"/orb"}
-    replace={true}
-    class="text-white px-4 py-2 bg-blue-300 hover:bg-blue-500 rounded hover:text-white"
-  >
-    Back
-  </.link>
-</div>
-
-<div class="mt-4">
-  <.live_component
-    module={PhosWeb.CommentLive.IndexComponent}
-    id="commentindex"
-    changeset={@changeset}
-    action="new"
-    orb={@orb}
-    comments={@comments}
-    current_user={@current_user}
-    socket={@socket}
-    live_action={@live_action}
-  />
-</div>
+<.redirect_mobile user={@orb.initiator}></.redirect_mobile>

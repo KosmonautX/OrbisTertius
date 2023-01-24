@@ -31,7 +31,7 @@
   def all(query, opts) when is_list(opts) do
 
     limit = Keyword.get(opts, :limit, 12)
-    ascending? = Keyword.get(opts, :asc, false)
+    # ascending? = Keyword.get(opts, :asc, false)
     sort = Keyword.get(opts, :sort_attribute, :inserted_at)
 
     dao = query

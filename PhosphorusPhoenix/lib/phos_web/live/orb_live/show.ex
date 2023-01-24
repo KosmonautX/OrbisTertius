@@ -1,13 +1,12 @@
 defmodule PhosWeb.OrbLive.Show do
   use PhosWeb, :live_view
 
-  alias Phoenix.LiveView.JS
   alias Phos.Action
   alias Phos.Comments
   alias PhosWeb.Utility.Encoder
 
   @impl true
-  def mount(%{"id" => id} = params, _session, socket = %{assigns: %{current_user: user}}) do
+  def mount(%{"id" => id} = _params, _session, %{assigns: %{current_user: %Phos.Users.User{} = user}} = socket) do
     with %Action.Orb{} = orb <-  Action.get_orb(id, user.id) do
       orb = orb
             |> put_in([Access.key(:initiator), Access.key(:locations)], ["Singapore", "Vandavasi"])
@@ -17,8 +16,26 @@ defmodule PhosWeb.OrbLive.Show do
       |> decode_to_comment_tuple_structure()
 
       {:ok, socket
-      |> assign(:orb, orb)
-      |> assign(:comments, comment)}
+        |> assign(:orb, orb)
+        |> assign_meta(orb)
+        |> assign(:comments, comment)}
+    end
+  end
+
+  @impl true
+  def mount(%{"id" => id} = _parmas, _session, socket) do
+    with {:ok, orb} <-  Action.get_orb(id) do
+      orb = orb
+            |> put_in([Access.key(:initiator), Access.key(:locations)], ["Singapore", "Vandavasi"])
+            |> put_in([Access.key(:initiator), Access.key(:traits)], ["frontend", "200wpm"])
+
+      comment = Comments.get_root_comments_by_orb(orb.id)
+      |> decode_to_comment_tuple_structure()
+
+      {:ok, socket
+        |> assign(:orb, orb)
+        |> assign_meta(orb)
+        |> assign(:comments, comment)}
     end
   end
 
@@ -29,6 +46,30 @@ defmodule PhosWeb.OrbLive.Show do
      socket
     |> assign(:changeset, Comments.change_comment(%Comments.Comment{}))
     |> apply_action(socket.assigns.live_action, params)}
+  end
+
+  @impl true
+  def handle_info({:new_comment, %{orb_id: orb_id}}, socket) do
+    comments = Comments.get_root_comments_by_orb(orb_id) |> decode_to_comment_tuple_structure()
+    {:noreply, 
+      assign(socket, :comments, comments) 
+      |> put_flash(:info, "Comment added successfully")}
+  end
+
+  @impl true
+  def handle_info({:child_comment, %{orb_id: orb_id}}, socket) do
+    comments = Comments.get_root_comments_by_orb(orb_id) |> decode_to_comment_tuple_structure()
+    {:noreply, 
+      assign(socket, :comments, comments) 
+      |> put_flash(:info, "Reply added successfully")}
+  end
+
+  @impl true
+  def handle_info({:edit_comment, %{orb_id: orb_id}}, socket) do
+    comments = Comments.get_root_comments_by_orb(orb_id) |> decode_to_comment_tuple_structure()
+    {:noreply, 
+      assign(socket, comments: comments, edit_comment: nil) 
+      |> put_flash(:info, "Comment updated successfully")}
   end
 
   defp apply_action(socket, :reply, %{"id" => _orb_id, "cid" => cid} = _params) do
@@ -59,6 +100,15 @@ defmodule PhosWeb.OrbLive.Show do
   defp apply_action(socket, :edit, _params) do
     socket
     |> assign(:page_title, "Edit")
+  end
+
+  defp assign_meta(socket, orb) do
+    assign(socket, :meta, %{
+      title: orb.title,
+      type: "website",
+      image: Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless"),
+      url: url(socket, ~p"/orbs/#{orb.id}")
+    })
   end
 
   # Save comment flow
