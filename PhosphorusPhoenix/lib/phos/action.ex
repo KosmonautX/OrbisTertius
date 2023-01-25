@@ -572,7 +572,7 @@ defmodule Phos.Action do
           where: notion_get_values(location) |> String.replace("[town]", name),
           title: notion_get_values(inside_title) |> String.replace("[town]", name),
           outer_title: notion_get_values(outer_title) |> String.replace("[town]", name),
-          geolocation: %{ live: live_location_populator(hashes, radius) },
+          geolocation: %{ live: live_location_populator(hashes, radius)},
           traits: traits
                  })
   end

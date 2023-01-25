@@ -808,7 +808,7 @@ defmodule PhosWeb.CoreComponents do
           <ul class="flex flex-col md:flex-row md:space-x-6  text-gray-700">
             <li>
               <a href="#" class="block md:hover:text-teal-500">
-                Pepole
+                People
               </a>
             </li>
             <li>

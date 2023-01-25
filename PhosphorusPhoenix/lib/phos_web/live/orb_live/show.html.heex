@@ -53,6 +53,18 @@
         live_action={@live_action}
       />
 
+    <.live_component
+      module={PhosWeb.CommentLive.ReplyComponent}
+      id="comment-reply-outbox"
+      changeset={@changeset}
+      reply_comment={nil}
+      action="new"
+      edit_comment={nil}
+      current_user={@current_user}
+      orb={@orb}
+      live_action={@live_action}
+    />
+
     </div>
     <!--Related Post-->
     <div class="px-3 space-y-4 w-full lg:basis-1/4  h-auto">
