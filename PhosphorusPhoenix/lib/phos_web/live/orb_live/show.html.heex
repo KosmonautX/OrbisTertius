@@ -7,8 +7,7 @@
     <!-- Desktop View in Orb View Profile-->
     <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full max-w-full px-3 md:w-3/12  md:flex-none">
       <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md">
-        <.user_profile id="orb-initiator-username" user={@orb.initiator} location={}>
-          <:user_name><%= @orb.initiator.username %></:user_name>
+        <.user_profile id="orb-initiator-username" user={@orb.initiator}  location={}>
         </.user_profile>
       </div>
       <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md text-center">
@@ -24,9 +23,11 @@
     <!-- Post card and Comments-->
     <div class="px-3 lg:w-5/12  w-full mt-0 lg:flex-none justify-center items-center lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
       <.user_info_bar id="orb-initiator-profile-upload" user={@orb.initiator}>
-        <:user_name><%= @orb.initiator.username %></:user_name>
         <:information>
-          <span><Heroicons.map_pin class="mt-0.5 h-4 w-4" /></span>Chennai
+          <span>
+            <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
+          </span>
+          Chennai
         </:information>
         <:actions>
           <.button tone={:icons}>
@@ -36,9 +37,7 @@
       </.user_info_bar>
 
       <.post_image id="orb-image-upload" orb={@orb} />
-      <.post_information>
-        <%= @orb.payload.info %>
-      </.post_information>
+      <.post_information title={@orb.title} />
       <.comment_action />
       <.live_component
         module={PhosWeb.CommentLive.IndexComponent}
@@ -53,71 +52,18 @@
         socket={@socket}
         live_action={@live_action}
       />
-      <.input_type id="orb-initiator-input-type" user={@orb.initiator} />
+
     </div>
     <!--Related Post-->
     <div class="px-3 space-y-4 w-full lg:basis-1/4  h-auto">
-      <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
-        <.user_info_bar id="orb-initiator-profile-upload-2" user={@orb.initiator}>
-          <:user_name><%= @orb.initiator.username %></:user_name>
-          <:information>
-            <span>
-              <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
-            </span>
-            Chennai
-          </:information>
-          <:actions>
-            <.button tone={:icons}>
-              <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
-            </.button>
-          </:actions>
-          <.button tone={:icons}>
-            <Heroicons.share class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
-          </.button>
-        </.user_info_bar>
-        <.video></.video>
-      </div>
-      <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
-        <.user_info_bar id="orb-initiator-profile-upload" user={@orb.initiator}>
-          <:user_name><%= @orb.initiator.username %></:user_name>
-          <:information>
-            <span>
-              <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
-            </span>
-            Chennai
-          </:information>
-          <:actions>
-            <.button tone={:icons}>
-              <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
-            </.button>
-          </:actions>
-        </.user_info_bar>
-        <.post_information>
-          <%= @orb.payload.info %>
-        </.post_information>
-        <.comment_action />
-      </div>
-      <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
-        <.user_info_bar id="orb-initiator-profile-upload-path" user={@orb.initiator}>
-          <:user_name><%= @orb.initiator.username %></:user_name>
-          <:information>
-            <span>
-              <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
-            </span>
-            Chennai
-          </:information>
-          <:actions>
-            <.button tone={:icons}>
-              <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
-            </.button>
-          </:actions>
-        </.user_info_bar>
-        <.post_image orb={@orb} id="orb-post-image" />
-        <.post_information>
-          <%= @orb.payload.info %>
-        </.post_information>
-        <.comment_action></.comment_action>
-      </div>
+      <h5 class="text-left font-semibold text-lg py-1 px-2">Other Posts by Rais</h5>
+      <hr class="h-px bg-gray-900 border-2" />
+      <.live_component
+        module={PhosWeb.Components.ScrollOrb}
+        id="infinite-home"
+        orbs={@orbs}
+        page={@page}
+      />
     </div>
   </div>
 </section>

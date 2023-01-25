@@ -916,14 +916,14 @@ defmodule PhosWeb.CoreComponents do
   slot(:information)
   slot(:actions)
 
+
   def user_info_bar(assigns) do
     ~H"""
-    <div class="flex items-start justify-between w-full bg-white py-2">
+        <div id={@id} class="flex items-start justify-between w-full bg-white py-2">
       <div class="flex">
         <img
           src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
-          class=" lg:h-16 lg:w-16 w-14 h-14 border-4 border-white rounded-full object-cover"
-        />
+          class=" lg:h-16 lg:w-16 w-14 h-14 border-4 border-white rounded-full object-cover"/>
         <div>
           <h2 class="text-base font-bold text-gray-900 -mt-1"><%= @user.username %></h2>
           <p class="flex items-center text-gray-700"><%= render_slot(@information) %></p>
@@ -944,7 +944,7 @@ defmodule PhosWeb.CoreComponents do
 
   def post_image(assigns) do
     ~H"""
-    <section class="relative" id={"#{@id}-media-carousell"}  phx-update="ignore">
+    <section class="relative" id={"#{@id}-media-carousell"} phx-update="ignore">
       <div class="relative overflow-hidden rounded-lg">
         <img
           id={"#{@id}-media"}
@@ -975,16 +975,17 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  @spec post_information(map) :: Phoenix.LiveView.Rendered.t()
   @doc """
    User Post Information
   """
 
-  slot(:post_message)
+  attr(:title, :any)
 
   def post_information(assigns) do
     ~H"""
-    <p class="text-sm text-gray-900 font-normal p-2">
-      <%= render_slot(@inner_block) %>
+    <p id="info" class="text-sm text-gray-900 font-normal p-2">
+      <%= @title %>
     </p>
     """
   end
@@ -1049,7 +1050,7 @@ defmodule PhosWeb.CoreComponents do
 
   def comment_action(assigns) do
     ~H"""
-    <div class="flex justify-between p-2 w-full font-bold text-sm text-gray-600">
+    <div id="action" class="flex justify-between p-2 w-full font-bold text-sm text-gray-600">
       <div>
         <span>10 Oct 2001</span>
       </div>
