@@ -1,7 +1,7 @@
 <!--desktop View -->
 <section class="container mx-auto md:mt-28 mt-14">
   <div
-    :if={not is_nil(@orb.initiator.public_profile) && @orb.initiator.public_profile}
+    :if={not is_nil(@orb.initiator) && @orb.initiator}
     class="flex lg:flex-row flex-col items-start mt-6 gap-4"
   >
     <!-- Desktop View in Orb View Profile-->
@@ -14,10 +14,8 @@
         <.user_information_card
           id="orb-initiator-public-profile"
           user={@orb.initiator}
-          location={true}
           flex="items-center"
-        >
-        </.user_information_card>
+        />
       </div>
     </div>
     <!-- Post card and Comments-->
@@ -79,4 +77,4 @@
     </div>
   </div>
 </section>
-<.redirect_mobile user={@orb.initiator}></.redirect_mobile>
+<.redirect_mobile id="orb_redirect_to_mobile" user={@orb.initiator} />

@@ -230,7 +230,7 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:tone, :atom,
     default: :primary,
-    values: ~w(primary success warning danger)a,
+    values: ~w(primary success warning danger icons)a,
     doc: "Theme of the button"
   )
 
@@ -944,21 +944,28 @@ defmodule PhosWeb.CoreComponents do
    Desktop View
   """
   attr(:id, :string, required: true)
-  attr(:img_path, :string)
-  attr(:orb, :any)
+  attr(:orb, :map, required: true)
+  attr(:active, :integer, default: 1)
 
   def post_image(assigns) do
     ~H"""
-    <section class="relative" id={"#{@id}-media-carousell"} phx-update="ignore">
-      <div class="relative overflow-hidden rounded-lg">
-        <img
-          id={"#{@id}-media"}
-          class="object-cover md:inset-0 h-80 w-full"
-          src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless")}
-        />
+    <section class="relative carousel-container" id={"#{@id}-media-carousel"} phx-update="ignore">
+      <div id={"#{@id}-container"} class="carousel-inner relative flex overflow-hidden flex-nowrap rounded-lg">
+        <div :for={i <- [1,2,3]} id={"carousel-number-#{i}"} class={[
+          "flex-none relative w-full transition-all transform ease-out duration-400",
+          @active != i && "opacity-0",
+          @active == i && "opacity-100"
+          ]}>
+          <img
+            id={"#{@id}-media"}
+            class="object-cover md:inset-0 h-80 w-full"
+            src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless")}
+          />
+        </div>
       </div>
       <button
-        onclick="forward()"
+        id={"#{@id}-prev-hook"}
+        phx-hook="PrevCarousel"
         type="button"
         class="absolute top-0 left-0  flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
       >
@@ -968,7 +975,8 @@ defmodule PhosWeb.CoreComponents do
       </button>
 
       <button
-        onclick="backward()"
+        id={"#{@id}-next-hook"}
+        phx-hook="NextCarousel"
         type="button"
         class="absolute top-0 right-0 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
       >
@@ -1159,20 +1167,16 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  attr(:user, :any)
+  attr(:user, :map, required: true)
   attr(:flex, :any, default: nil)
   attr(:id, :string, required: true)
-  attr(:navigate, :any)
-  attr(:location, :boolean)
-  slot(:user_name)
-  slot(:inner_block, required: true)
 
   def user_information_card(assigns) do
     ~H"""
     <div class="flex flex-col justify-between p-4 w-full">
       <div class={["gap-4", @flex]}>
         <h5 class="lg:text-2xl text-lg font-extrabold text-gray-900">
-          <%= @user.public_profile.public_name %>
+          <%= Map.from_struct(@user) |> get_in([:public_profile, :public_name]) || "-" %>
         </h5>
         <div class="flex gap-4">
           <.button tone={:icons}>
@@ -1186,7 +1190,7 @@ defmodule PhosWeb.CoreComponents do
       </div>
 
       <div class="space-y-1">
-        <div :if={not is_nil(@location)}>
+        <div :if={not is_nil(@user.locations)}>
           <div class="flex justify-center	">
             <%= for location <- @user.locations do %>
               <button class="flex   bg-white text-gray-800 px-4 py-2 rounded-full text-base font-bold">
@@ -1198,17 +1202,17 @@ defmodule PhosWeb.CoreComponents do
         </div>
 
         <p class="md:text-lg text-gray-900 text-base font-semibold">
-          <%= @user.public_profile.occupation %>
+          <%= Map.from_struct(@user) |> get_in([:public_profile, :occupation]) || "-" %>
         </p>
         <p class="text-gray-900 font-medium text-base">
-          <%= @user.public_profile.bio %>
+          <%= Map.from_struct(@user) |> get_in([:public_profile, :bio]) || "-" %>
         </p>
 
         <div>
-          <%= for traits <- @user.traits do %>
-            <span class="text-gray-500 text-base font-medium"><span>#</span>
-              <%= traits %></span>
-          <% end %>
+          <span :for={trait <- Map.get(@user, :traits, [])} class="text-gray-500 text-base font-medium">
+            <span>#</span>
+            <%= trait %>
+          </span>
         </div>
       </div>
     </div>
@@ -1243,5 +1247,11 @@ defmodule PhosWeb.CoreComponents do
       </div>
     </div>
     """
+  end
+
+  def carousel_next(js \\ %JS{}, selector) do
+  end
+
+  def carousel_prev(js \\ %JS{}, selector) do
   end
 end
