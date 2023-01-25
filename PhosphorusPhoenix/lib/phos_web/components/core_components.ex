@@ -912,24 +912,29 @@ defmodule PhosWeb.CoreComponents do
   """
 
   attr(:id, :string, required: true)
+  attr(:navigate, :any, required: true)
   attr(:user, :any)
   slot(:information)
   slot(:actions)
 
-
   def user_info_bar(assigns) do
     ~H"""
-        <div id={@id} class="flex items-start justify-between w-full bg-white py-2">
-      <div class="flex">
-        <img
-          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
-          class=" lg:h-16 lg:w-16 w-14 h-14 border-4 border-white rounded-full object-cover"/>
-        <div>
-          <h2 class="text-base font-bold text-gray-900 -mt-1"><%= @user.username %></h2>
-          <p class="flex items-center text-gray-700"><%= render_slot(@information) %></p>
-        </div>
+    <div id={@id} class="w-full bg-white py-2">
+      <div class="flex items-start justify-between ">
+        <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}>
+          <div class="flex">
+            <img
+              src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+              class=" lg:h-16 lg:w-16 w-14 h-14 border-4 border-white rounded-full object-cover"
+            />
+            <div>
+              <h2 class="text-base font-bold text-gray-900 -mt-1"><%= @user.username %></h2>
+              <p class="flex items-center text-gray-700"><%= render_slot(@information) %></p>
+            </div>
+          </div>
+        </.link>
+        <div><%= render_slot(@actions) %></div>
       </div>
-      <div><%= render_slot(@actions) %></div>
     </div>
     """
   end
@@ -1111,7 +1116,6 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:id, :string, required: true)
   attr(:navigate, :any)
-  slot(:user_name)
   slot(:inner_block, required: true)
   attr(:user, :map, required: true)
   attr(:location, :boolean)
@@ -1126,7 +1130,7 @@ defmodule PhosWeb.CoreComponents do
         alt="Emoji"
       />
       <div class="absolute inset-0 px-6 py-4 flex flex-col items-center bg-opacity-50">
-        <p class="md:text-2xl text-lg text-white font-bold md:mb-4"><%= render_slot(@user_name) %></p>
+        <p class="md:text-2xl text-lg text-white font-bold md:mb-4"><%= "@#{@user.username}" %></p>
         <div class="relative flex justify-center items-center">
           <img
             src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
