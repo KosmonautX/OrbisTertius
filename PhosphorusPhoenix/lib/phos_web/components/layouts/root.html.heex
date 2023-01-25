@@ -17,11 +17,12 @@
   </head>
   <body class="h-screen w-full">
     <%= if @current_user do %>
-      <.banner current_user={@current_user}> </.banner>
+      <.banner current_user={@current_user} />
       <!--<.tabs_mobile></.tabs_mobile>-->
       <!--<.bottom_banner></.bottom_banner>-->
     <% end %>
     <div class="w-full h-auto"><%= @inner_content %></div>
     <br />
+    <.welcome_message id="welcome_message" user={@current_user} />
   </body>
 </html>
