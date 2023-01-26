@@ -8,23 +8,8 @@ defmodule PhosWeb.Components.ScrollOrb do
     <div>
       <div id="infinite-scroll-body" phx-update="append">
         <%= for orb <- @orbs do %>
-          <.user_info_bar id="orb-initiator-profile-upload" user={orb.initiator}>
-            <:information>
-              <span>
-                <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
-              </span>
-              Chennai
-            </:information>
-            <:actions>
-              <.button tone={:icons}>
-                <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
-              </.button>
-            </:actions>
-          </.user_info_bar>
-
-          <.post_image :if={orb.media} orb={orb} id="orb-post-image" />
-          <.post_information title={orb.title} />
-          <.comment_action />
+          <.scry_orb id={"orb-history-#{random_id()}"} orb={orb}>
+          </.scry_orb>
         <% end %>
       </div>
       <div id="infinite-scroll-marker" phx-hook="Scroll" data-page={@page}></div>

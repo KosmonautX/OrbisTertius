@@ -230,7 +230,7 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:tone, :atom,
     default: :primary,
-    values: ~w(primary success warning danger)a,
+    values: ~w(primary success warning danger info)a,
     doc: "Theme of the button"
   )
 
@@ -812,7 +812,7 @@ defmodule PhosWeb.CoreComponents do
               </a>
             </li>
             <li>
-              <a href="#" class="block md:hover:text-teal-500">
+              <a href="/orb" class="block md:hover:text-teal-500">
                 Explore
               </a>
             </li>
@@ -912,16 +912,15 @@ defmodule PhosWeb.CoreComponents do
   """
 
   attr(:id, :string, required: true)
-  attr(:navigate, :any, required: true)
   attr(:user, :any)
   slot(:information)
   slot(:actions)
 
   def user_info_bar(assigns) do
     ~H"""
-    <div id={@id} class="w-full bg-white py-2">
+    <div id={"#{@id}-user-info-#{@user.id}"} class="w-full bg-white py-2" :if={@user.username}>
       <div class="flex items-start justify-between ">
-        <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}>
+        <.link :if={@user.username} navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}>
           <div class="flex">
             <img
               src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
@@ -936,6 +935,38 @@ defmodule PhosWeb.CoreComponents do
         <div><%= render_slot(@actions) %></div>
       </div>
     </div>
+    """
+  end
+
+  @doc """
+   Orb Card View w user info bar
+  """
+  attr(:id, :string, required: true)
+  attr(:orb, :any)
+
+  def scry_orb(assigns) do
+
+    assigns = assign(assigns, :orb_location, assigns.orb.payload.where || assigns.orb.central_geohash |> Phos.Mainland.World.locate() || "Somewhere")
+
+    ~H"""
+    <.user_info_bar id={"#{@id}-scry-orb-#{@orb.id}"} user={@orb.initiator}>
+    <:information :if={!is_nil(@orb_location)}>
+    <span>
+      <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
+    </span>
+    <%= @orb_location %>
+    </:information>
+    <:actions>
+    <.button tone={:icons}>
+    <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
+    </.button>
+    </:actions>
+    </.user_info_bar>
+    <.link id={"#{@id}-scry-orb-#{@orb.id}-link"} navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}>
+    <.post_image :if={@orb.media} orb={@orb} id={"#{@id}-scry-orb-#{@orb.id}"} />
+    <.orb_information id={"#{@id}-scry-orb-#{@orb.id}"} title={@orb.title} />
+    </.link>
+    <.orb_action id={"#{@id}-scry-orb-#{@orb.id}"} />
     """
   end
 
@@ -980,16 +1011,16 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  @spec post_information(map) :: Phoenix.LiveView.Rendered.t()
+  @spec orb_information(map) :: Phoenix.LiveView.Rendered.t()
   @doc """
-   User Post Information
+   Orb Information Box
   """
+  attr(:id, :string, required: true)
+  attr(:title, :string)
 
-  attr(:title, :any)
-
-  def post_information(assigns) do
+  def orb_information(assigns) do
     ~H"""
-    <p id="info" class="text-sm text-gray-900 font-normal p-2">
+    <p id={"#{@id}-info"} class="text-sm text-gray-900 font-normal p-2">
       <%= @title %>
     </p>
     """
@@ -1028,34 +1059,11 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  attr(:img_path, :string)
-  attr(:user, :map, required: true)
-  attr(:rest, :global, doc: "the arbitrary HTML attributes to add to the flash container")
+  attr(:id, :string, required: true)
 
-  def input_type(assigns) do
+  def orb_action(assigns) do
     ~H"""
-    <div class="flex p-2 gap-2 ml-2">
-      <img
-        src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
-        class=" h-14 w-14 border-4 border-white rounded-full object-cover"
-      />
-      <div class="flex-1 relative">
-        <input
-          class="block w-full p-4 text-base text-gray-900 focus:ring-black focus:outline-none  rounded-lg border border-gray-200 focus:ring-2 focus:ring-gray-200"
-          placeholder="Any Comments..."
-          required
-        />
-        <button type="submit" class="absolute right-2.5 bottom-2.5 ">
-          <Heroicons.paper_airplane class="h-8 w-8 md:h-10 mr-2 text-teal-400 font-bold" />
-        </button>
-      </div>
-    </div>
-    """
-  end
-
-  def comment_action(assigns) do
-    ~H"""
-    <div id="action" class="flex justify-between p-2 w-full font-bold text-sm text-gray-600">
+    <div id={"#{@id}-actions"} class="flex justify-between p-2 w-full font-bold text-sm text-gray-600">
       <div>
         <span>10 Oct 2001</span>
       </div>

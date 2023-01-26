@@ -7,7 +7,7 @@ defmodule Phos.Mainland.World do
     Map.merge(acc, path |> File.read!() |> Jason.decode!() ) end)
 
   def locate(hash) when is_integer(hash) do
-    @world[to_string(hash)]
+    @world[to_string(:h3.parent(hash, 8))]
   end
 
   def locate(_), do: nil

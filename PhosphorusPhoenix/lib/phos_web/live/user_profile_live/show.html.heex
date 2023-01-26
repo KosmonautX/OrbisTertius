@@ -39,25 +39,8 @@
         <hr class="h-px bg-gray-900 border-2" />
         <ul :for={orb <- @orbs} class="p-2">
           <li class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
-            <.link patch={~p"/orb/#{orb.id}"}>
-              <.user_info_bar id="orb-initiator-profile-upload" user={orb.initiator}>
-                <:information>
-                  <span>
-                    <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
-                  </span>
-                  Chennai
-                </:information>
-                <:actions>
-                  <.button tone={:icons}>
-                    <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
-                  </.button>
-                </:actions>
-              </.user_info_bar>
-
-              <.post_image :if={orb.media} orb={orb} id="orb-post-image" />
-              <.post_information title={orb.title} />
-              <.comment_action />
-            </.link>
+            <.scry_orb id="orb-history" orb={orb}>
+            </.scry_orb>
           </li>
         </ul>
       </div>
