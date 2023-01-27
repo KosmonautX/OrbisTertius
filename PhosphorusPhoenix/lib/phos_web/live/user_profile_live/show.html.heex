@@ -2,8 +2,7 @@
   :if={@live_action in [:edit]}
   id="edit_profile_modal"
   show={@live_action in [:edit]}
-  on_cancel={JS.navigate(~p"/user/#{@current_user.username}")}
->
+  on_cancel={JS.navigate(~p"/user/#{@current_user.username}")}>
   <.live_component
     module={PhosWeb.UserProfileLive.FormComponent}
     id={@current_user.id}
@@ -11,8 +10,7 @@
     action={@live_action}
     user={@user}
     current_user={@current_user}
-    return_to={~p"/user/#{@current_user.username}"}
-  />
+    return_to={~p"/user/#{@current_user.username}"}/>
 </.modal>
 
 <section class="mx-auto w-full flex flex-col items-center mt-14 gap-4 justify-center lg:mt-24 ">
@@ -24,14 +22,13 @@
     </.user_profile>
   </div>
 
-  <div class="container mx-auto flex flex-col items-start gap-8 px-6 lg:flex-row lg:space-y-0">
+  <div class="container mx-auto flex flex-col items-start gap-8 lg:flex-row lg:space-y-0">
     <div class="flex flex-1 flex-col">
       <.user_information_card
         :if={not is_nil(@user.public_profile)}
-        location={}
+        show_location={false}
         user={@user}
-        flex="flex"
-      >
+        flex="flex">
       </.user_information_card>
 
       <div class="">
@@ -47,7 +44,7 @@
     </div>
 
     <div id="ally_list" class="flex-1 w-full">
-      <h5 class="text-left font-semibold text-lg py-1 px-2">Allies</h5>
+      <h5 class="text-left font-semibold text-lg py-1 px-2 p-4">Allies</h5>
       <hr class="h-px bg-gray-900 border-2" />
       <.live_component
         module={PhosWeb.Components.ScrollAlly}

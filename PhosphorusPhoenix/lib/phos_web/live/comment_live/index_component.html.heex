@@ -13,8 +13,7 @@
       socket={@socket}
       reply_comment={@reply_comment}
       edit_comment={@edit_comment}
-      phx-target={"#comment-#{elem(comment, 1).id}"}
-    />
+      phx-target={"#comment-#{elem(comment, 1).id}"}/>
   </div>
     <div :if={not is_nil(@current_user)}>
       <.live_component

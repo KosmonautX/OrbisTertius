@@ -895,8 +895,7 @@ defmodule PhosWeb.CoreComponents do
       <div class="flex w-full">
         <.link
           :if={@user.username}
-          navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}
-        >
+          navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}>
           <img
             src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
             class=" lg:h-16 lg:w-16 w-14 h-14 border-4 border-white rounded-full object-cover"
@@ -965,17 +964,13 @@ defmodule PhosWeb.CoreComponents do
     <section class="relative carousel-container" id={"#{@id}-media-carousel"} phx-update="ignore">
       <div
         id={"#{@id}-container"}
-        class="carousel-inner relative flex overflow-hidden flex-nowrap rounded-lg"
-      >
-        <div
-          :for={i <- [1, 2, 3]}
+        class="carousel-inner relative flex overflow-hidden flex-nowrap rounded-lg">
+        <div :for={i <- [1, 2, 3]}
           id={"carousel-number-#{i}"}
           class={[
             "flex-none relative w-full transition-all transform ease-out duration-400",
             @active != i && "opacity-0",
-            @active == i && "opacity-100"
-          ]}
-        >
+            @active == i && "opacity-100"]}>
           <img
             id={"#{@id}-media"}
             class="object-cover md:inset-0 h-80 w-full"
@@ -987,8 +982,7 @@ defmodule PhosWeb.CoreComponents do
         id={"#{@id}-prev-hook"}
         phx-hook="PrevCarousel"
         type="button"
-        class="absolute top-0 left-0  flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
-      >
+        class="absolute top-0 left-0  flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none">
         <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
           <Heroicons.chevron_left class="mt-0.5 h-6 w-6" />
         </span>
@@ -998,8 +992,7 @@ defmodule PhosWeb.CoreComponents do
         id={"#{@id}-next-hook"}
         phx-hook="NextCarousel"
         type="button"
-        class="absolute top-0 right-0 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
-      >
+        class="absolute top-0 right-0 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none">
         <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
           <Heroicons.chevron_right class="mt-0.5 h-6 w-6" />
         </span>
@@ -1127,10 +1120,11 @@ defmodule PhosWeb.CoreComponents do
   attr(:user, :map, required: true)
   attr(:flex, :any, default: nil)
   attr(:id, :string, required: true)
+  attr(:show_location, :boolean, default: true)
 
   def user_information_card(assigns) do
     ~H"""
-    <div class="flex flex-col justify-between p-4 w-full">
+    <div class="flex flex-col justify-between p-4 w-full space-y-2">
       <div class={["gap-4", @flex]}>
         <h5 class="lg:text-2xl text-lg font-extrabold text-gray-900">
           <%= @user.public_profile.public_name || "-" %>
@@ -1147,10 +1141,10 @@ defmodule PhosWeb.CoreComponents do
       </div>
 
       <div class="space-y-1">
-        <div :if={not is_nil(@user.locations)}>
+        <div :if={@show_location}>
           <div class="flex justify-center	">
             <%= for location <- @user.locations do %>
-              <button class="flex   bg-white text-gray-800 px-4 py-2 rounded-full text-base font-bold">
+              <button class="flex  bg-white text-gray-800 xl:px-4 lg:px-1 py-2 rounded-full text-base font-bold">
                 <Heroicons.map_pin class="mr-2 -ml-1 w-6 h-6" />
                 <span><%= location %></span>
               </button>
@@ -1227,6 +1221,7 @@ defmodule PhosWeb.CoreComponents do
           class="w-full flex flex-col items-center justify-center p-6 space-y-2"
         >
           <img
+          :if={not is_nil(@user)}
             src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
             class=" h-16 w-16 lg:w-32 lg:h-32 border-4 border-white rounded-full object-cover"
           />
