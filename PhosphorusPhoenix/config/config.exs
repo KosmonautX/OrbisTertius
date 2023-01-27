@@ -72,7 +72,7 @@ config :phos, Phos.OAuthStrategy,
     bot_id: {System, :get_env, ["TELEGRAM_BOT_ID"]},
   ]
 
-config :tailwind, version: "3.1.6",
+config :tailwind, version: "3.2.4",
   admin: [
     args: ~w(
       --config=tailwind.config.js

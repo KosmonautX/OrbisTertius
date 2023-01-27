@@ -755,9 +755,7 @@ defmodule PhosWeb.CoreComponents do
     Phoenix.HTML.html_escape(val1) == Phoenix.HTML.html_escape(val2)
   end
 
-  attr(:navigate, :any, required: true)
-  attr(:current_user, :any)
-
+  attr(:current_user, :map, required: true)
   def banner(assigns) do
     ~H"""
     <nav class="bg-white px-2 fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold p-2">
@@ -800,7 +798,7 @@ defmodule PhosWeb.CoreComponents do
               </span>
             </li>
           </ul>
-          <.button type="submit">Open app</.button>
+          <.button type="button" phx-click={show_welcome_message("welcome_message")}>Open app</.button>
         </div>
 
         <div class="hidden lg:block items-center justify-between w-full  md:w-auto">
@@ -1248,5 +1246,46 @@ defmodule PhosWeb.CoreComponents do
       </div>
     </div>
     """
+  end
+
+  attr :id, :string, required: true
+  attr :show, :boolean, default: false, doc: "Default value is not to show the message"
+  attr :user, :any, default: nil, doc: "User state to create session / to redirect in app"
+  def welcome_message(assigns) do
+    ~H"""
+    <div id={@id} phx-mounted={@show} class="absolute flex flex-col md:items-center justify-between md:justify-center inset-0 bg-black/50 z-50 hidden">
+      <div class="flex md:hidden" />
+      <div id={"#{@id}-bg"} class="h-[375px] bg-white flex items-center rounded-t-lg md:rounded-b-lg">
+        <div id={"#{@id}-content"} class="w-full flex flex-col items-center">
+          <div class="">
+          Welcome message
+          </div>
+          <p class="mt-3 font-semibold text-xl">Hmm...You were saying?</p>
+          <p class="mt-3 w-1/2 text-center text-gray-400">Join the tribe to share your thoughts with raizzy paizzy now!</p>
+          <div class="mt-3">
+            <.button type="button">Download the Scratchbac app</.button>
+          </div>
+          <div class="mt-3" :if={is_nil(@user)}>
+          </div>
+          <div class="mt-3" :if={not is_nil(@user)}>
+            <a class="hover:text-teal-400 text-base font-bold hover:underline hover:cursor-pointer">
+              Bring me back to what I was doing!
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+  
+  def show_welcome_message(js \\ %JS{}, id) when is_binary(id) do
+    js
+    |> JS.show(to: "##{id}", display: "flex")
+    |> JS.show(
+      to: "##{id}-bg",
+      transition: {"transition-all transform ease-out duration-300", "opacity-0", "opacity-100"},
+      display: "flex"
+    )
+    |> JS.focus_first(to: "##{id}-content")
   end
 end
