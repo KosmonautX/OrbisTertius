@@ -74,8 +74,7 @@ defmodule PhosWeb.CoreComponents do
                   phx-click={hide_modal(@on_cancel, @id)}
                   type="button"
                   class="-m-3 flex-none p-3 opacity-20 hover:opacity-40"
-                  aria-label={gettext("close")}
-                >
+                  aria-label={gettext("close")}>
                   <Heroicons.x_mark solid class="h-5 w-5 stroke-current" />
                 </button>
               </div>
@@ -919,22 +918,20 @@ defmodule PhosWeb.CoreComponents do
 
   def user_info_bar(assigns) do
     ~H"""
-    <div id={@id} class="w-full bg-white py-2">
-      <div class="flex items-start justify-between ">
-        <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}>
-          <div class="flex">
+    <div id={@id} class="w-full bg-white py-2 flex items-start justify-between ">
+      <div class="flex w-full">
+          <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}>
             <img
               src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
               class=" lg:h-16 lg:w-16 w-14 h-14 border-4 border-white rounded-full object-cover"
             />
+          </.link>
             <div>
               <h2 class="text-base font-bold text-gray-900 -mt-1"><%= @user.username %></h2>
               <p class="flex items-center text-gray-700"><%= render_slot(@information) %></p>
             </div>
-          </div>
-        </.link>
-        <div><%= render_slot(@actions) %></div>
       </div>
+      <div><%= render_slot(@actions) %></div>
     </div>
     """
   end
