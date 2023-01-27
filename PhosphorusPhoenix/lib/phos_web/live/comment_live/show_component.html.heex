@@ -30,7 +30,7 @@
       </div>
 
 
-    <div class="actions ">
+    <div class="actions">
       <div class="text-red-7  00 text-sm font-bold" :if={not is_nil(@current_user)}>
         <.link :if={elem(@comment, 1).active and elem(@comment, 1).initiator_id == @current_user.id } href="#edit" phx-click="edit-comment" phx-value-comment-id={elem(@comment, 1).id} phx-target={"#comment-#{elem(@comment, 1).id}"}>Edit</.link>
         <.link :if={elem(@comment, 1).active and elem(@comment, 1).initiator_id == @current_user.id } phx-click={JS.push("delete", value: %{id: elem(@comment, 1).id})} data-confirm="Are you sure?">Delete</.link>

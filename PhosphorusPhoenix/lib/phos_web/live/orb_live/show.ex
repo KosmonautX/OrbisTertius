@@ -17,7 +17,7 @@ defmodule PhosWeb.OrbLive.Show do
         |> put_in([Access.key(:initiator), Access.key(:locations)], ["Singapore", "Vandavasi"])
         |> put_in([Access.key(:initiator), Access.key(:traits)], ["frontend", "200wpm"])
 
-      comment =
+      comments =
         Comments.get_root_comments_by_orb(orb.id)
         |> decode_to_comment_tuple_structure()
 
@@ -26,7 +26,8 @@ defmodule PhosWeb.OrbLive.Show do
        socket
        |> assign(:orb, orb)
        |> assign_meta(orb)
-       |> assign(:comments, comment)
+       |> assign(:comments, comments)
+       |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
        temporary_assigns: [orbs: Action.get_active_orbs_by_initiator(orb.initiator.id)]}
     end

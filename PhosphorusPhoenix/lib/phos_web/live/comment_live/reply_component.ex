@@ -5,8 +5,8 @@ defmodule PhosWeb.CommentLive.ReplyComponent do
   alias PhosWeb.Utility.Encoder
 
   @impl true
-  def update(assigns, socket) do
-    changeset = Comments.change_comment(%Comments.Comment{})
+  def update(%{comment: comment} = assigns, socket) do
+    changeset = Comments.change_comment(comment)
 
     {:ok,
      socket
@@ -19,40 +19,35 @@ defmodule PhosWeb.CommentLive.ReplyComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="flex p-2 gap-2 ml-2">
-      <img
-        src={Phos.Orbject.S3.get!("USR", Map.get(@current_user, :id), "public/profile/lossy")}
-        class=" h-14 w-14 border-4 border-white rounded-full object-cover"
-      />
-      <div class="flex-1 relative">
-        <input
-          :if={@action == :edit and not is_nil(@comment)}
-          class="block w-full p-4 text-base text-gray-900 focus:ring-black focus:outline-none  rounded-lg border border-gray-200 focus:ring-2 focus:ring-gray-200"
-          placeholder={@action}
-          required
-          value="@comment.body"
-        />
-        <input
-          :if={@action != :edit}
-          class="block w-full p-4 text-base text-gray-900 focus:ring-black focus:outline-none  rounded-lg border border-gray-200 focus:ring-2 focus:ring-gray-200"
-          placeholder={@action}
-          required
-        />
-        <button type="submit" class="absolute right-2.5 bottom-2.5 ">
+    <div>
+      <.form
+      :let={f} for={@changeset}
+      phx-target={@myself}
+      phx-submit="save">
+      <div class="relative flex p-2 gap-2 ml-2">
+        <.error :for={msg <- Keyword.get_values(f.errors, :body)}><%= elem(msg, 0) %></.error>
+        <textarea type="textarea"
+               name="body"
+               class="block w-full p-4 text-base text-gray-900 focus:ring-black focus:outline-none  rounded-lg border border-gray-200 focus:ring-2 focus:ring-gray-200"
+               placeholder="In the beginning was the Word...">
+        </textarea>
+        <button type="submit" class="absolute right-2.5 bottom-2.5">
           <Heroicons.paper_airplane class="h-8 w-8 md:h-10 mr-2 text-teal-400 font-bold" />
         </button>
       </div>
+      </.form>
     </div>
     """
   end
-
-  def handle_event("new", %{"body" => body}, socket) do
+  #
+  def handle_event("save", %{"body" => body}, socket) do
     comment_id = Ecto.UUID.generate()
 
     comment_params = %{
       "id" => comment_id,
       "path" => Encoder.encode_lpath(comment_id),
       "initiator_id" => socket.assigns.current_user.id,
+      "orb_id" => socket.assigns.orb.id,
       "body" => body
     }
 
@@ -78,6 +73,7 @@ defmodule PhosWeb.CommentLive.ReplyComponent do
       "path" => Encoder.encode_lpath(comment_id, parent.path),
       "parent_id" => parent.id,
       "initiator_id" => socket.assigns.current_user.id,
+      "orb_id" => socket.assigns.orb.id,
       "body" => body
     }
 

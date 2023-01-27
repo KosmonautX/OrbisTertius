@@ -968,8 +968,8 @@ defmodule PhosWeb.CoreComponents do
         class="carousel-inner relative flex overflow-hidden flex-nowrap rounded-lg"
       >
         <div
-          :for={i <- [1, 2, 3]}
-          id={"carousel-number-#{i}"}
+          :for={i <- [1]}
+          id={"#{@id}-carousel-number-#{i}"}
           class={[
             "flex-none relative w-full transition-all transform ease-out duration-400",
             @active != i && "opacity-0",
