@@ -4,16 +4,19 @@ defmodule PhosWeb.CommentLive.ReplyComponent do
   alias Phos.Comments
   alias PhosWeb.Utility.Encoder
 
+  @impl true
   def update(assigns, socket) do
     changeset = Comments.change_comment(%Comments.Comment{})
+
     {:ok,
-      socket
-      |> assign_new(:text, fn -> "" end)
-      |> assign_new(:reply_comment, fn -> nil end)
-      |> assign(assigns)
-      |> assign(changeset: changeset)}
+     socket
+     |> assign_new(:text, fn -> "" end)
+     |> assign_new(:reply_comment, fn -> nil end)
+     |> assign(assigns)
+     |> assign(changeset: changeset)}
   end
 
+  @impl true
   def render(assigns) do
     ~H"""
     <div class="flex p-2 gap-2 ml-2">
@@ -45,6 +48,7 @@ defmodule PhosWeb.CommentLive.ReplyComponent do
 
   def handle_event("new", %{"body" => body}, socket) do
     comment_id = Ecto.UUID.generate()
+
     comment_params = %{
       "id" => comment_id,
       "path" => Encoder.encode_lpath(comment_id),
@@ -57,8 +61,8 @@ defmodule PhosWeb.CommentLive.ReplyComponent do
         send(self(), {:new_comment, comment})
 
         {:noreply,
-        socket
-        |> assign(changeset: %Comments.Comment{} |> Ecto.Changeset.change())}
+         socket
+         |> assign(changeset: %Comments.Comment{} |> Ecto.Changeset.change())}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, changeset: changeset)}
@@ -68,6 +72,7 @@ defmodule PhosWeb.CommentLive.ReplyComponent do
   @impl true
   def handle_event("reply", %{"parent_comment" => parent, "body" => body}, socket) do
     comment_id = Ecto.UUID.generate()
+
     comment_params = %{
       "id" => comment_id,
       "path" => Encoder.encode_lpath(comment_id, parent.path),
@@ -90,17 +95,17 @@ defmodule PhosWeb.CommentLive.ReplyComponent do
   @impl true
   def handle_event("edit", %{"comment" => %{"comment_id" => comment_id, "body" => body}}, socket) do
     comment = Comments.get_comment!(comment_id)
+
     case Comments.update_comment(comment, %{body: body}) do
       {:ok, comment} ->
         send(self(), {:edit_comment, comment})
 
         {:noreply,
-          socket
-          |> assign(changeset: %Comments.Comment{} |> Ecto.Changeset.change())}
+         socket
+         |> assign(changeset: %Comments.Comment{} |> Ecto.Changeset.change())}
+
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :changeset, changeset)}
     end
   end
-
-
 end

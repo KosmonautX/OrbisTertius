@@ -2,12 +2,12 @@
 <section class="container mx-auto md:mt-28 mt-14">
   <div
     :if={not is_nil(@orb.initiator) && @orb.initiator}
-    class="flex lg:flex-row flex-col items-start mt-6 gap-4"
-  >
+    class="flex lg:flex-row flex-col items-start mt-6 gap-4">
+
     <!-- Desktop View in Orb View Profile-->
     <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full max-w-full px-3 md:w-3/12  md:flex-none">
       <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md">
-        <.user_profile id="orb-initiator-username" user={@orb.initiator}  location={}>
+        <.user_profile id="orb-initiator-username" user={@orb.initiator} location={}>
         </.user_profile>
       </div>
       <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md text-center">
@@ -20,8 +20,7 @@
     </div>
     <!-- Post card and Comments-->
     <div class="px-3 lg:w-5/12  w-full mt-0 lg:flex-none justify-center items-center lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
-      <.scry_orb id="orb" orb={@orb}>
-      </.scry_orb>
+      <.scry_orb id="orb" orb={@orb}></.scry_orb>
       <.live_component
         module={PhosWeb.CommentLive.IndexComponent}
         id="commentindex"
@@ -36,18 +35,17 @@
         live_action={@live_action}
       />
 
-    <.live_component
-      module={PhosWeb.CommentLive.ReplyComponent}
-      id="comment-reply-outbox"
-      changeset={@changeset}
-      reply_comment={nil}
-      action="new"
-      edit_comment={nil}
-      current_user={@current_user}
-      orb={@orb}
-      live_action={@live_action}
-    />
-
+      <.live_component
+        module={PhosWeb.CommentLive.ReplyComponent}
+        id="comment-reply-outbox"
+        changeset={@changeset}
+        reply_comment={nil}
+        action="new"
+        edit_comment={nil}
+        current_user={@current_user}
+        orb={@orb}
+        live_action={@live_action}
+      />
     </div>
     <!--Related Post-->
     <div class="px-3 space-y-4 w-full lg:basis-1/4  h-auto">
@@ -62,4 +60,3 @@
     </div>
   </div>
 </section>
-<.redirect_mobile id="orb_redirect_to_mobile" user={@orb.initiator} />

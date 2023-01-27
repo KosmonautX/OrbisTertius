@@ -8,8 +8,7 @@ defmodule PhosWeb.Components.ScrollOrb do
     <div>
       <div id="infinite-scroll-body" phx-update="append">
         <%= for orb <- @orbs do %>
-          <.scry_orb id={"orb-history-#{random_id()}"} orb={orb}>
-          </.scry_orb>
+          <.scry_orb id={"orb-history-#{random_id()}"} orb={orb}></.scry_orb>
         <% end %>
       </div>
       <div id="infinite-scroll-marker" phx-hook="Scroll" data-page={@page}></div>

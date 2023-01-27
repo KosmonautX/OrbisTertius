@@ -1,7 +1,9 @@
 <div class="flex flex-col md:inset-0 w-full mt-4" id={"comment-#{elem(@comment, 1).id}"}>
   <div class="flex">
     <img  class="w-14 h-14 rounded-full" src={ Phos.Orbject.S3.get!("USR", elem(@comment, 1).initiator_id, "public/profile/lossy") }>
-    <div class="flex flex-col"><strong class="mx-2 text-gray-700 text-base"><%= elem(@comment, 1).initiator.username %> <span class="text-base font-normal text-gray-500" :if={elem(@comment, 1).active and is_nil(@edit_comment)}><%= elem(@comment, 1).body %></span></strong>
+    <div class="flex flex-col">
+    <strong class="mx-2 text-gray-700 text-base"><%= elem(@comment, 1).initiator.username %>   <span class="text-base font-normal text-gray-500" :if={elem(@comment, 1).active and is_nil(@edit_comment)}><%= elem(@comment, 1).body %></span>
+    </strong>
 
       <.live_component :if={not is_nil(@edit_comment)} module={PhosWeb.CommentLive.FormComponent}
         changeset={@changeset}
@@ -23,7 +25,7 @@
   <div class="content">
         <div :if={not is_nil(@current_user)}>
 
-      <span class="flex justify-between text-sm font-bold text-gray-700 my-2 mx-2"><%= elem(@comment, 1).inserted_at %>
+      <span class="flex justify-between text-sm font-bold text-gray-600 my-2 mx-2"><%= elem(@comment, 1).inserted_at %>
       <span class="font-bold text-teal-700 hover:text-teal-400 hover:underline "> <.link href="#reply" phx-click="reply-comment" phx-value-comment-id={elem(@comment, 1).id} phx-target={"#comment-#{elem(@comment, 1).id}"}>Reply</.link></span></span>
       </div>
 

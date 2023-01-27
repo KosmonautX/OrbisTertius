@@ -74,7 +74,8 @@ defmodule PhosWeb.CoreComponents do
                   phx-click={hide_modal(@on_cancel, @id)}
                   type="button"
                   class="-m-3 flex-none p-3 opacity-20 hover:opacity-40"
-                  aria-label={gettext("close")}>
+                  aria-label={gettext("close")}
+                >
                   <Heroicons.x_mark solid class="h-5 w-5 stroke-current" />
                 </button>
               </div>
@@ -756,6 +757,7 @@ defmodule PhosWeb.CoreComponents do
   end
 
   attr(:current_user, :map, required: true)
+
   def banner(assigns) do
     ~H"""
     <nav class="bg-white px-2 fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold p-2">
@@ -798,9 +800,10 @@ defmodule PhosWeb.CoreComponents do
               </span>
             </li>
           </ul>
-          <.button type="button" phx-click={show_welcome_message("welcome_message")}>Open app</.button>
+          <.button type="button" phx-click={show_welcome_message("welcome_message")}>
+            Open app
+          </.button>
         </div>
-
         <div class="hidden lg:block items-center justify-between w-full  md:w-auto">
           <ul class="flex flex-col md:flex-row md:space-x-6  text-gray-700">
             <li>
@@ -877,33 +880,6 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  def bottom_banner(assigns) do
-    ~H"""
-    <div class="hidden lg:block fixed z-20 bottom-0 right-0  px-2 py-2 w-full bg-gray-600 flex flex-col justify-items-end gap-2">
-      <a
-        href="#"
-        class="w-full sm:w-auto bg-gray-800 hover:bg-gray-700 focus:ring-2 focus:outline-none focus:ring-gray-300 text-white rounded-lg inline-flex items-center justify-center px-4 py-2.5"
-      >
-        <img class="mr-3 w-7 h-7" src="/images/5761429_apple_logo_mac_mac desktop_icon (1).png" />
-        <div class="text-left">
-          <div class="mb-1 text-xs">Download on the</div>
-          <div class="-mt-1 font-sans text-sm font-semibold">Mac App Store</div>
-        </div>
-      </a>
-      <a
-        href="#"
-        class="w-full sm:w-auto bg-gray-800 hover:bg-gray-700 focus:ring-2 focus:outline-none focus:ring-gray-300 text-white rounded-lg inline-flex items-center justify-center px-4 py-2.5"
-      >
-        <img class="mr-3 w-7 h-7" src="/images/4373135_google_logo_logos_play_icon.png" />
-        <div class="text-left">
-          <div class="mb-1 text-xs">Get in on</div>
-          <div class="-mt-1 font-sans text-sm font-semibold">Google Play</div>
-        </div>
-      </a>
-    </div>
-    """
-  end
-
   @doc """
   User profile Image and User Name
   """
@@ -917,16 +893,19 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <div id={@id} class="w-full bg-white py-2 flex items-start justify-between ">
       <div class="flex w-full">
-          <.link :if={@user.username} navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}>
-            <img
-              src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
-              class=" lg:h-16 lg:w-16 w-14 h-14 border-4 border-white rounded-full object-cover"
-            />
-          </.link>
-            <div>
-              <h2 class="text-base font-bold text-gray-900 -mt-1"><%= @user.username %></h2>
-              <p class="flex items-center text-gray-700"><%= render_slot(@information) %></p>
-            </div>
+        <.link
+          :if={@user.username}
+          navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}
+        >
+          <img
+            src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+            class=" lg:h-16 lg:w-16 w-14 h-14 border-4 border-white rounded-full object-cover"
+          />
+        </.link>
+        <div>
+          <h2 class="text-base font-bold text-gray-900 -mt-1"><%= @user.username %></h2>
+          <p class="flex items-center text-gray-700"><%= render_slot(@information) %></p>
+        </div>
       </div>
       <div><%= render_slot(@actions) %></div>
     </div>
@@ -940,26 +919,34 @@ defmodule PhosWeb.CoreComponents do
   attr(:orb, :any)
 
   def scry_orb(assigns) do
-
-    assigns = assign(assigns, :orb_location, assigns.orb.payload.where || assigns.orb.central_geohash |> Phos.Mainland.World.locate() || "Somewhere")
+    assigns =
+      assign(
+        assigns,
+        :orb_location,
+        assigns.orb.payload.where || assigns.orb.central_geohash |> Phos.Mainland.World.locate() ||
+          "Somewhere"
+      )
 
     ~H"""
     <.user_info_bar id={"#{@id}-scry-orb-#{@orb.id}"} user={@orb.initiator}>
-    <:information :if={!is_nil(@orb_location)}>
-    <span>
-      <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
-    </span>
-    <%= @orb_location %>
-    </:information>
-    <:actions>
-    <.button tone={:icons}>
-    <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
-    </.button>
-    </:actions>
+      <:information :if={!is_nil(@orb_location)}>
+        <span>
+          <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
+        </span>
+        <%= @orb_location %>
+      </:information>
+      <:actions>
+        <.button tone={:icons}>
+          <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
+        </.button>
+      </:actions>
     </.user_info_bar>
-    <.link id={"#{@id}-scry-orb-#{@orb.id}-link"} navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}>
-    <.post_image :if={@orb.media} orb={@orb} id={"#{@id}-scry-orb-#{@orb.id}"} />
-    <.orb_information id={"#{@id}-scry-orb-#{@orb.id}"} title={@orb.title} />
+    <.link
+      id={"#{@id}-scry-orb-#{@orb.id}-link"}
+      navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
+    >
+      <.post_image :if={@orb.media} orb={@orb} id={"#{@id}-scry-orb-#{@orb.id}"} />
+      <.orb_information id={"#{@id}-scry-orb-#{@orb.id}"} title={@orb.title} />
     </.link>
     <.orb_action id={"#{@id}-scry-orb-#{@orb.id}"} />
     """
@@ -976,12 +963,19 @@ defmodule PhosWeb.CoreComponents do
   def post_image(assigns) do
     ~H"""
     <section class="relative carousel-container" id={"#{@id}-media-carousel"} phx-update="ignore">
-      <div id={"#{@id}-container"} class="carousel-inner relative flex overflow-hidden flex-nowrap rounded-lg">
-        <div :for={i <- [1,2,3]} id={"carousel-number-#{i}"} class={[
-          "flex-none relative w-full transition-all transform ease-out duration-400",
-          @active != i && "opacity-0",
-          @active == i && "opacity-100"
-          ]}>
+      <div
+        id={"#{@id}-container"}
+        class="carousel-inner relative flex overflow-hidden flex-nowrap rounded-lg"
+      >
+        <div
+          :for={i <- [1, 2, 3]}
+          id={"carousel-number-#{i}"}
+          class={[
+            "flex-none relative w-full transition-all transform ease-out duration-400",
+            @active != i && "opacity-0",
+            @active == i && "opacity-100"
+          ]}
+        >
           <img
             id={"#{@id}-media"}
             class="object-cover md:inset-0 h-80 w-full"
@@ -1086,46 +1080,6 @@ defmodule PhosWeb.CoreComponents do
   end
 
   attr(:id, :string, required: true)
-  attr(:img_path, :string)
-  slot(:user_name)
-  attr(:user, :any)
-  attr(:orb, :any)
-
-  def redirect_mobile(assigns) do
-    ~H"""
-    <div class="relative bg-white max-w-sm md:max-w-md md:h-auto rounded-xl shadow-lg ">
-      <div class="flex flex-col justify-center items-center p-6 space-y-2 ">
-        <img
-          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
-          class=" h-16 w-16 lg:w-32 lg:h-32 border-4 border-white rounded-full object-cover"
-        />
-        <h1 class="text-lg font-bold">Hmm...You were saying?</h1>
-        <h3 class="text-base font-normal text-gray-500 text-center">
-          Join the tribe to share your thoughts with raizzypaizzy now!
-        </h3>
-        <.button>Download the Scratchbac app</.button>
-        <span class="text-sm text-gray-500">
-          <.link
-            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
-            class="text-sm text-teal-400 font-bold hover:underline"
-          >
-            Sign up
-          </.link>
-          Or
-          <.link
-            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/log_in")}
-            class="text-sm text-teal-400 font-bold hover:underline"
-          >
-            Sign in
-          </.link>
-          via Web
-        </span>
-      </div>
-    </div>
-    """
-  end
-
-  attr(:id, :string, required: true)
   attr(:navigate, :any)
   slot(:inner_block, required: true)
   attr(:user, :map, required: true)
@@ -1179,7 +1133,7 @@ defmodule PhosWeb.CoreComponents do
     <div class="flex flex-col justify-between p-4 w-full">
       <div class={["gap-4", @flex]}>
         <h5 class="lg:text-2xl text-lg font-extrabold text-gray-900">
-          <%= Map.from_struct(@user) |> get_in([:public_profile, :public_name]) || "-" %>
+          <%= @user.public_profile.public_name || "-" %>
         </h5>
         <div class="flex gap-4">
           <.button tone={:icons}>
@@ -1205,14 +1159,17 @@ defmodule PhosWeb.CoreComponents do
         </div>
 
         <p class="md:text-lg text-gray-900 text-base font-semibold">
-          <%= Map.from_struct(@user) |> get_in([:public_profile, :occupation]) || "-" %>
+          <%= @user.public_profile.occupation || "-" %>
         </p>
         <p class="text-gray-900 font-medium text-base">
-          <%= Map.from_struct(@user) |> get_in([:public_profile, :bio]) || "-" %>
+          <%= @user.public_profile.bio || "-" %>
         </p>
 
         <div>
-          <span :for={trait <- Map.get(@user, :traits, [])} class="text-gray-500 text-base font-medium">
+          <span
+            :for={trait <- Map.get(@user, :traits, [])}
+            class="text-gray-500 text-base font-medium"
+          >
             <span>#</span>
             <%= trait %>
           </span>
@@ -1255,23 +1212,46 @@ defmodule PhosWeb.CoreComponents do
   attr :id, :string, required: true
   attr :show, :boolean, default: false, doc: "Default value is not to show the message"
   attr :user, :any, default: nil, doc: "User state to create session / to redirect in app"
+
   def welcome_message(assigns) do
     ~H"""
-    <div id={@id} phx-mounted={@show} class="absolute flex flex-col md:items-center justify-between md:justify-center inset-0 bg-black/50 z-50 hidden">
+    <div
+      id={@id}
+      phx-mounted={@show}
+      class="absolute flex flex-col md:items-center md:justify-center md:inset-0 inset-x-0 bottom-0 bg-black/50 z-50 hidden"
+    >
       <div class="flex md:hidden" />
       <div id={"#{@id}-bg"} class="h-[375px] bg-white flex items-center rounded-t-lg md:rounded-b-lg">
-        <div id={"#{@id}-content"} class="w-full flex flex-col items-center">
-          <div class="">
-          Welcome message
-          </div>
-          <p class="mt-3 font-semibold text-xl">Hmm...You were saying?</p>
-          <p class="mt-3 w-1/2 text-center text-gray-400">Join the tribe to share your thoughts with raizzy paizzy now!</p>
-          <div class="mt-3">
-            <.button type="button">Download the Scratchbac app</.button>
-          </div>
-          <div class="mt-3" :if={is_nil(@user)}>
-          </div>
-          <div class="mt-3" :if={not is_nil(@user)}>
+        <div
+          id={"#{@id}-content"}
+          class="w-full flex flex-col items-center justify-center p-6 space-y-2"
+        >
+          <img
+            src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+            class=" h-16 w-16 lg:w-32 lg:h-32 border-4 border-white rounded-full object-cover"
+          />
+          <h1 class="text-lg font-bold">Hmm...You were saying?</h1>
+          <h3 class="text-base font-normal text-gray-500 text-center">
+            Join the tribe to share your thoughts with raizzypaizzy now!
+          </h3>
+          <.button>Download the Scratchbac app</.button>
+          <span class="text-sm text-gray-500">
+            <.link
+              navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
+              class="text-sm text-teal-400 font-bold hover:underline"
+            >
+              Sign up
+            </.link>
+            Or
+            <.link
+              navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/log_in")}
+              class="text-sm text-teal-400 font-bold hover:underline"
+            >
+              Sign in
+            </.link>
+            via Web
+          </span>
+          <div :if={not is_nil(@user)} class="mt-3">
             <a class="hover:text-teal-400 text-base font-bold hover:underline hover:cursor-pointer">
               Bring me back to what I was doing!
             </a>
@@ -1291,6 +1271,7 @@ defmodule PhosWeb.CoreComponents do
       display: "flex"
     )
     |> JS.focus_first(to: "##{id}-content")
+  end
 
   def carousel_next(js \\ %JS{}, selector) do
   end

@@ -36,6 +36,7 @@ defmodule PhosWeb.UserProfileLive.Show do
      |> apply_action(socket.assigns.live_action, params)}
   end
 
+  @impl true
   def handle_event("load-more", _, %{assigns: assigns} = socket) do
     {:noreply, assign(socket, page: assigns.page + 1) |> get_ally()}
   end
