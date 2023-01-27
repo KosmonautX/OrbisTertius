@@ -24,14 +24,13 @@ defmodule PhosWeb.CommentLive.ReplyComponent do
       :let={f} for={@changeset}
       phx-target={@myself}
       phx-submit="save">
-      <div class="relative flex p-2 gap-2 ml-2">
+      <div class="relative flex flex-col justify-center gap-2 mb-2">
         <.error :for={msg <- Keyword.get_values(f.errors, :body)}><%= elem(msg, 0) %></.error>
         <textarea type="textarea"
                name="body"
-               class="block w-full p-4 text-base text-gray-900 focus:ring-black focus:outline-none  rounded-lg border border-gray-200 focus:ring-2 focus:ring-gray-200"
-               placeholder="In the beginning was the Word...">
-        </textarea>
-        <button type="submit" class="absolute right-2.5 bottom-2.5">
+               class="block w-full text-base text-gray-900 rounded-lg border border-gray-400"
+               placeholder="In the beginning was the Word..."></textarea>
+        <button type="submit" class="absolute right-1.5 bottom-3.5">
           <Heroicons.paper_airplane class="h-8 w-8 md:h-10 mr-2 text-teal-400 font-bold" />
         </button>
       </div>
@@ -39,6 +38,7 @@ defmodule PhosWeb.CommentLive.ReplyComponent do
     </div>
     """
   end
+
   #
   def handle_event("save", %{"body" => body}, socket) do
     comment_id = Ecto.UUID.generate()

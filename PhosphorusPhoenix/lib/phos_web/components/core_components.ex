@@ -828,6 +828,21 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  def guest_banner(assigns) do
+    ~H"""
+    <nav class="bg-white px-2 fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold p-2">
+      <div class="flex flex-wrap items-center justify-between mx-auto">
+        <a href="#" class="flex items-center">
+          <img src="/images/banner_logo_white.png" class="h-7 ml-4" alt="" />
+        </a>
+          <.button type="button" phx-click={show_welcome_message("welcome_message")}>
+            Open app
+          </.button>
+      </div>
+    </nav>
+    """
+  end
+
   def tabs_mobile(assigns) do
     ~H"""
     <div class="w-full border-gray-400 border-t-2 rounded-t-2xl bg-white lg:hidden block fixed z-10 bottom-0 px-2 py-2">
@@ -1154,10 +1169,10 @@ defmodule PhosWeb.CoreComponents do
           </div>
         </div>
 
-        <p class="md:text-lg text-gray-900 text-base font-semibold">
+        <p class="md:text-base text-gray-700 text-base font-semibold">
           <%= @user.public_profile.occupation || "-" %>
         </p>
-        <p class="text-gray-900 font-medium text-base">
+        <p class="text-gray-700 font-medium text-base">
           <%= @user.public_profile.bio || "-" %>
         </p>
 
@@ -1205,9 +1220,9 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  attr :id, :string, required: true
-  attr :show, :boolean, default: false, doc: "Default value is not to show the message"
-  attr :user, :any, default: nil, doc: "User state to create session / to redirect in app"
+  attr(:id, :string, required: true)
+  attr(:show, :boolean, default: false, doc: "Default value is not to show the message")
+  attr(:user, :any, default: nil, doc: "User state to create session / to redirect in app")
 
   def welcome_message(assigns) do
     ~H"""

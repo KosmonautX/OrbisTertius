@@ -50,6 +50,7 @@ defmodule PhosWeb.OrbLive.Show do
        |> assign(:orb, orb)
        |> assign_meta(orb)
        |> assign(:comments, comment)
+       |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
        temporary_assigns: [orbs: Action.get_active_orbs_by_initiator(orb.initiator.id)]}
     end
