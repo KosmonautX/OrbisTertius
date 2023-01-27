@@ -40,3 +40,5 @@ window.liveSocket = liveSocket
 //
 //     import "some-package"
 //
+
+window.addEventListener("NextCarousel", e => console.log("clicked!", e.detail))

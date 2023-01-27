@@ -146,6 +146,15 @@ defmodule PhosWeb.OrbLive.Show do
     {:noreply, assign(socket, page: assigns.page + 1) |> get_orbs()}
   end
 
+  def handle_event("next", _, %{assigns: %{active_image: active}} = socket) do
+    {:noreply, assign(socket, active_image: active + 1)}
+  end
+
+  def handle_event("prev", _, %{assigns: %{active_image: active}} = socket) do
+    IO.inspect(active)
+    {:noreply, assign(socket, active_image: active - 1)}
+  end
+
   # Save comment flow
   @impl true
   def handle_event("save", %{"comment" => comment_params}, socket) do
