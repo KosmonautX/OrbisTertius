@@ -955,11 +955,13 @@ defmodule PhosWeb.CoreComponents do
         </.button>
       </:actions>
     </.user_info_bar>
+
+    <.post_image :if={@orb.media} orb={@orb} id={"#{@id}-scry-orb-#{@orb.id}"} />
     <.link
       id={"#{@id}-scry-orb-#{@orb.id}-link"}
+      class="relative"
       navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
     >
-      <.post_image :if={@orb.media} orb={@orb} id={"#{@id}-scry-orb-#{@orb.id}"} />
       <.orb_information id={"#{@id}-scry-orb-#{@orb.id}"} title={@orb.title} />
     </.link>
     <.orb_action id={"#{@id}-scry-orb-#{@orb.id}"} />
@@ -972,48 +974,47 @@ defmodule PhosWeb.CoreComponents do
   """
   attr(:id, :string, required: true)
   attr(:orb, :map, required: true)
-  attr(:active, :integer, default: 1)
-
   def post_image(assigns) do
     ~H"""
-    <section class="relative carousel-container" id={"#{@id}-media-carousel"} phx-update="ignore">
+    <section class="glide" id={"#{@id}-carousel"} phx-update="ignore" phx-hook="Carousel">
       <div
         id={"#{@id}-container"}
-        class="carousel-inner relative flex overflow-hidden flex-nowrap rounded-lg">
-        <div
-          :for={i <- [1]}
-          id={"#{@id}-carousel-number-#{i}"}
-
-          class={[
-            "flex-none relative w-full transition-all transform ease-out duration-400",
-            @active != i && "opacity-0",
-            @active == i && "opacity-100"]}>
-          <img
-            id={"#{@id}-media"}
-            class="object-cover md:inset-0 h-80 w-full"
-            src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless")}
-          />
+        data-glide-el="track"
+        class="glide__track">
+        <div class="glide__slides">
+          <div
+            :for={i <- [1, 2, 3]}
+            id={"#{@id}-carousel-number-#{i}-#{:rand.uniform()}"}
+            class="glide__slide">
+            <img
+              id={"#{@id}-media-#{:rand.uniform()}"}
+              class="object-cover md:inset-0 h-80 w-full"
+              src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless")}
+            />
+          </div>
         </div>
       </div>
-      <button
-        id={"#{@id}-prev-hook"}
-        phx-hook="PrevCarousel"
-        type="button"
-        class="absolute top-0 left-0  flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none">
-        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
-          <Heroicons.chevron_left class="mt-0.5 h-6 w-6" />
-        </span>
-      </button>
+      <div data-glide-el="controls">
+        <button
+          id={"#{@id}-carousel-prev"}
+          type="button"
+          data-glide-dir="<"
+          class="absolute top-0 left-0 z-20 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none">
+          <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
+            <Heroicons.chevron_left class="mt-0.5 h-6 w-6" />
+          </span>
+        </button>
 
-      <button
-        id={"#{@id}-next-hook"}
-        phx-hook="NextCarousel"
-        type="button"
-        class="absolute top-0 right-0 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none">
-        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
-          <Heroicons.chevron_right class="mt-0.5 h-6 w-6" />
-        </span>
-      </button>
+        <button
+          id={"#{@id}-carousel-next"}
+          type="button"
+          data-glide-dir=">"
+          class="absolute top-0 right-0 z-20 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none">
+          <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
+            <Heroicons.chevron_right class="mt-0.5 h-6 w-6" />
+          </span>
+        </button>
+      </div>
     </section>
     """
   end
@@ -1144,7 +1145,7 @@ defmodule PhosWeb.CoreComponents do
     <div class="flex flex-col justify-between p-4 w-full space-y-2">
       <div class={["gap-4", @flex]}>
         <h5 class="lg:text-2xl text-lg font-extrabold text-gray-900">
-          <%= @user.public_profile.public_name || "-" %>
+          <%= Map.from_struct(@user) |> get_in([:public_profile, :public_name]) || "-" %>
         </h5>
         <div class="flex gap-4">
           <.button tone={:icons}>
@@ -1170,10 +1171,10 @@ defmodule PhosWeb.CoreComponents do
         </div>
 
         <p class="md:text-base text-gray-700 text-base font-semibold">
-          <%= @user.public_profile.occupation || "-" %>
+          <%= Map.from_struct(@user) |> get_in([:public_profile, :occupation]) || "-" %>
         </p>
         <p class="text-gray-700 font-medium text-base">
-          <%= @user.public_profile.bio || "-" %>
+          <%= Map.from_struct(@user) |> get_in([:public_profile, :bio]) || "-" %>
         </p>
 
         <div>
@@ -1283,11 +1284,5 @@ defmodule PhosWeb.CoreComponents do
       display: "flex"
     )
     |> JS.focus_first(to: "##{id}-content")
-  end
-
-  def carousel_next(js \\ %JS{}, selector) do
-  end
-
-  def carousel_prev(js \\ %JS{}, selector) do
   end
 end

@@ -19,7 +19,7 @@
     <.guest_banner if={is_nil(@current_user)} current_user={@current_user} />
 
     <%= if @current_user do %>
-      <.banner if={@current_user}current_user={@current_user} />
+      <.banner :if={@current_user} current_user={@current_user} />
       <!--<.tabs_mobile></.tabs_mobile>-->
       <!--<.bottom_banner></.bottom_banner>-->
     <% end %>

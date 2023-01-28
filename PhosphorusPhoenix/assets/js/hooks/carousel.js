@@ -1,53 +1,11 @@
-const findContainer = el => {
-  if(el.localName == "section" && el.classList.contains("carousel-container")) {
-    return el
-  } else {
-    return findContainer(el.parentElement)
-  }
-}
+import Glide, { Controls, Breakpoints } from "../../vendor/glide.modular.esm"
 
-const shouldChangeElement = (el, selector) => {
-  if (selector == "next" && el.nextElementSibling) return el.nextElementSibling
-  if (selector == "prev" && el.previousElementSibling) return el.previousElementSibling
-  return null
-}
-
-const toggle = (el, selector) => {
-  if (!el) return
-
-  const changedElement = shouldChangeElement(el, selector)
-
-  if (!changedElement) return toggle(el.nextElementSibling, selector)
-  if (changedElement.classList.contains("opacity-0") && el.classList.contains("opacity-100")) {
-    changedElement.classList.remove("opacity-0", "hidden")
-    changedElement.classList.add("opacity-100")
-      el.classList.add("opacity-0", "hidden")
-      el.classList.remove("opacity-100")
-
-    return
-  }
-
-  return toggle(el.nextElementSibling, selector)
-}
-
-export const NextCarousel = {
+const Carousel = {
   mounted() {
-    this.el.addEventListener("click", e => {
-      const container = findContainer(e.target)
-      if (container.firstElementChild.localName == "div"  && container.firstElementChild.classList.contains("carousel-inner")) {
-        return toggle(container.firstElementChild.firstElementChild, "next")
-      }
-    })
+    const glide = new Glide(`#${this.el.id}`, { perView: 1, type: 'carousel' })
+    console.log({glide})
+    glide.mount({ Controls, Breakpoints })
   }
 }
 
-export const PrevCarousel = {
-  mounted() {
-    this.el.addEventListener("click", e => {
-      const container = findContainer(e.target)
-      if (container.firstElementChild.localName == "div"  && container.firstElementChild.classList.contains("carousel-inner")) {
-        return toggle(container.firstElementChild.firstElementChild, "prev")
-      }
-    })
-  }
-}
+export default Carousel
