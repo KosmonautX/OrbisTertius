@@ -20,14 +20,14 @@ defmodule Storybook.Components.Card do
         attributes: %{
           title: "Some card title"
         },
-        slots: default_body
+        slots: default_body()
       },
       %Variation{
         id: :with_actions,
         attributes: %{
           title: "Some title"
         },
-        slots: List.flatten(default_body, [
+        slots: List.flatten(default_body(), [
           """
           <:actions>
             <button class="bg-blue-400 text-white rounded px-4 py-2">Save</button>

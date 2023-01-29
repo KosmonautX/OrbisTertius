@@ -13,18 +13,15 @@ defmodule PhosWeb.UserProfileLive.Show do
 
   @impl true
   def handle_params(%{"username" => username} = params, _url, socket) do
-    user =
-      %{id: user_id} =
-      Users.get_user_by_username(username)
-      |> Map.put(:traits, ["frontend_dev", "farmergirl", "noseafood", "doglover", "tailwind"])
-      |> Map.put(:locations, ["Chennai", "Vandavasi"])
-
-    {:noreply,
-     socket
-     |> assign(:params, params)
-     |> assign(:user, user)
-     |> assign(:orbs, Action.get_active_orbs_by_initiator(user_id))
-     |> apply_action(socket.assigns.live_action, params)}
+    user = %{id: user_id} =
+    Users.get_user_by_username(username)
+    |> Map.put(:locations, ["Chennai", "Vandavasi"])
+    {:noreply, socket
+      |> assign(:params, params)
+      |> assign(:user, user)
+      |> assign_meta(user)
+      |> assign(:orbs, Action.orbs_by_initiators([user_id], 1))
+      |> apply_action(socket.assigns.live_action, params)}
   end
 
   def handle_params(%{"user_id" => user_id} = params, _url, socket) do
@@ -43,18 +40,22 @@ defmodule PhosWeb.UserProfileLive.Show do
 
   defp apply_action(socket, :show, _params) do
     socket
-    |> assign(:page_title, "User Profile")
+    |> assign(:page_title, "")
   end
 
   defp apply_action(socket, :edit, _params) do
     socket
-    |> assign(:page_title, "Edit User Profile")
+    |> assign(:page_title, "Updating Profile")
   end
 
-  defp apply_action(socket, :sethome, _params) do
-    socket
-    |> assign(:page_title, "Set Home Location")
-    |> assign(:setloc, :home)
+  defp assign_meta(socket, user) do
+    assign(socket, :meta, %{
+      title: "#{user.username} aka #{user.public_profile.public_name}",
+      description: user.public_profile.bio,
+      type: "website",
+      image: Phos.Orbject.S3.get!("USR", user.id, "public/banner/lossless"),
+      url: url(socket, ~p"/user/#{user.id}")
+    })
   end
 
   defp ally_list do
@@ -69,4 +70,5 @@ defmodule PhosWeb.UserProfileLive.Show do
     |> assign(page: page)
     |> assign(ally_list: socket.assigns.ally_list ++ ally_list())
   end
+
 end

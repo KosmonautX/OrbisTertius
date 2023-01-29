@@ -16,6 +16,7 @@
         <.input field={{ff, :occupation}} label="Role" />
         <.input field={{ff, :birthday}} type="datetime-local" label="Birthday" />
         <.input field={{ff, :public_name}} label="Name" />
+        <.input field={{ff, :traits}} type="select" multiple={true} label="Traits" options={["Dog": "dogs", "Cat": "cats"]} value="dogs"/>
       <% end %>
 
       <.input field={{f, :user_id}} type="hidden" value={@current_user.id} />

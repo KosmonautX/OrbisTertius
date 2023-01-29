@@ -4,12 +4,10 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script defer src="https://unpkg.com/alpinejs@3.2.3/dist/cdn.min.js">
-    </script>
     <meta name="csrf-token" content={get_csrf_token()} />
-    <.live_title suffix=" · Phosphorus">
-      <%= assigns[:page_title] || "Scratchbac" %>
+    <.live_title prefix={"👋 Scratchbac "} suffix={"- #{assigns[:meta][:title]}"} >
     </.live_title>
+    <meta property="og:site_name" content="Scratchbac" />
     <.meta_tags contents={assigns[:meta]} />
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>

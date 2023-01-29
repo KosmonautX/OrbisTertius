@@ -44,7 +44,6 @@ defmodule PhosWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-    get "/firstpage", PageController, :home
     get "/welcome", PageController, :welcome
 
     live_storybook "/storybook", backend_module: PhosWeb.Storybook
@@ -70,10 +69,6 @@ defmodule PhosWeb.Router do
 
     live_session :required_authenticated_user,
       on_mount: {PhosWeb.Menshen.Gate, :ensure_authenticated} do
-      get "/", PageController, :index
-      # get "/orb/sethome", OrbLiveController, :set_home
-      # get "/orb/setwork", OrbLiveController, :set_work
-      # resources "/orb", OrbLiveController, only: [:index, :show]
 
       live "/orb", OrbLive.Index, :index
       live "/orb/new", OrbLive.Index, :new
@@ -89,7 +84,6 @@ defmodule PhosWeb.Router do
       live "/user/feeds", UserFeedLive.Index, :index
 
       live "/user/:username/edit", UserProfileLive.Show, :edit
-      live "/user/:username", UserProfileLive.Show, :show
 
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
@@ -129,6 +123,8 @@ defmodule PhosWeb.Router do
       on_mount: {PhosWeb.Menshen.Gate, :ensure_authenticated} do
 
       live "/orb/:id", OrbLive.Show, :show
+      live "/user/:username", UserProfileLive.Show, :show
+
     end
   end
 
