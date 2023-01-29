@@ -107,7 +107,7 @@ defmodule PhosWeb.CommentLiveTest do
 
       assert html =~ root_comment.body
 
-      new_html = index_live |> element("#initshowreply-#{root_comment.id} a", "Show replies [1]") |> render_click()
+      new_html = index_live |> element("#initshowreply-#{root_comment.id} a", "View replies [1]") |> render_click()
       assert new_html =~ second_level_comment.body
     end
   end

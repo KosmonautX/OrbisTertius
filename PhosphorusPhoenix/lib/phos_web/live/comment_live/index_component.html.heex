@@ -15,4 +15,14 @@
       edit_comment={@edit_comment}
       phx-target={"#comment-#{elem(comment, 1).id}"}/>
   </div>
+
+  <div :if={not is_nil(@current_user)}>
+      <.live_component module={PhosWeb.CommentLive.FormComponent}
+        changeset={@changeset}
+        current_user={@current_user}
+        orb={@orb}
+        id={"create-root-comment-#{@orb.id}"}
+        target={nil}
+        action={:new} />
+  </div>
 </div>

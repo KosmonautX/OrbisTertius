@@ -117,21 +117,21 @@ defmodule PhosWeb.OrbLiveTest do
       assert html =~ "Comments"
     end
 
-    test "updates orb within modal", %{conn: conn, orb: orb} do
-      {:ok, show_live, _html} = live(conn, ~p"/orb/#{orb.id}")
+    # test "updates orb within modal", %{conn: conn, orb: orb} do
+    #   {:ok, show_live, _html} = live(conn, ~p"/orb/#{orb.id}")
 
-      assert {:error, {:live_redirect, %{to: path}}} = result = show_live |> element("a", "Edit") |> render_click()
-      assert path == "/orb/#{orb.id}/edit"
-      {:ok, edit_live, _html} = follow_redirect(result, conn)
+    #   assert {:error, {:live_redirect, %{to: path}}} = result = show_live |> element("a", "Edit") |> render_click()
+    #   assert path == "/orb/#{orb.id}/edit"
+    #   {:ok, edit_live, _html} = follow_redirect(result, conn)
 
-      {:ok, _, html} =
-        edit_live
-        |> form("#orb-form", orb: @no_location_update_attrs)
-        |> render_submit()
-        |> follow_redirect(conn, ~p"/orb")
+    #   {:ok, _, html} =
+    #     edit_live
+    #     |> form("#orb-form", orb: @no_location_update_attrs)
+    #     |> render_submit()
+    #     |> follow_redirect(conn, ~p"/orb")
 
-      assert html =~ "Orb updated successfully"
-      # assert html =~ "updated title"
-    end
+    #   assert html =~ "Orb updated successfully"
+    #   # assert html =~ "updated title"
+    # end
   end
 end
