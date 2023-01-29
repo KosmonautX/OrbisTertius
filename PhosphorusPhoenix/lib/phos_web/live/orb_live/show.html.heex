@@ -20,6 +20,7 @@
     </div>
     <!-- Post card and Comments-->
     <div class="px-3 lg:w-5/12  w-full mt-0 lg:flex-none justify-center items-center lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
+      <.link :if={@current_user.id == @orb.initiator} navigate={~p"/orb/#{@orb.id}/show/edit"}>Edit</.link>
       <.scry_orb id="orb" orb={@orb} />
       <.live_component
         module={PhosWeb.CommentLive.IndexComponent}
@@ -49,7 +50,8 @@
     </div>
     <!--Related Post-->
     <div class="px-3 space-y-4 w-full lg:w-4/12 h-auto">
-      <h5 class="text-left font-semibold text-lg py-1 px-2">Other Posts by Rais</h5>
+      <h5 class="text-left font-semibold text-lg py-1 px-2">
+    <%= "Other Posts by #{@orb.initiator}" %> </h5>
       <hr class="h-px bg-gray-900 border-2" />
       <.live_component
         module={PhosWeb.Components.ScrollOrb}

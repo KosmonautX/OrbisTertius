@@ -22,7 +22,8 @@
     </.user_profile>
   </div>
 
-  <div class="container mx-auto flex flex-col items-start gap-8 lg:flex-row lg:space-y-0">
+
+  <div class="px-3 space-y-4 w-full lg:w-4/12 h-auto">
     <div class="flex flex-1 flex-col">
       <.user_information_card
         :if={not is_nil(@user.public_profile)}
@@ -30,8 +31,14 @@
         user={@user}
         flex="flex">
       </.user_information_card>
+    </div>
 
-      <div class="">
+    <div class="mt-4 w-full items-center justify-center">
+    <.tabs_profile id="orb-user-tabs-profile" action={@live_action} username={@user.username} />
+  </div>
+
+
+    <div class="flex flex-1 flex-col" :if={@live_action != :allies}>
         <h5 class="text-left font-semibold text-lg py-1 px-2">Posts</h5>
         <hr class="h-px bg-gray-900 border-2" />
         <ul :for={orb <- @orbs} class="p-2">
@@ -41,7 +48,6 @@
           </li>
         </ul>
       </div>
-    </div>
 
     <div id="ally_list" class="flex-1 w-full">
       <h5 class="text-left font-semibold text-lg py-1 px-2 p-4">Allies</h5>
@@ -53,9 +59,5 @@
         page={@page}
       />
     </div>
-  </div>
-
-  <div class="lg:hidden mt-4 w-full items-center justify-center">
-    <.tabs_profile id="orb-user-tabs-profile" />
   </div>
 </section>

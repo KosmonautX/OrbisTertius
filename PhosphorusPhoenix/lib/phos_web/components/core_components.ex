@@ -1223,29 +1223,28 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  attr(:action, :atom)
+  attr(:username, :string)
+
   def tabs_profile(assigns) do
     ~H"""
     <div class="lg:border lg:border-gray-200 rounded-t-3xl mt-10 w-full z-20 top-0 left-0 border-b border-gray-200">
       <div class="flex justify-center items-center border-b border-gray-200">
         <ul class="flex flex-wrap md:gap-80 gap-20 -mb-px md:text-lg font-extrabold text-sm font-medium text-gray-500">
           <li class="mr-2">
-            <a
-              href="#"
-              class="inline-flex p-4 text-blue-600 rounded-t-lg border-b-2 border-blue-600 active group"
-            >
-              Posts
-            </a>
+          <.link
+            patch={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@username}")}
+           class={[@action == :show && "text-blue-600 border-blue-600 active" || "border-transparent hover:text-gray-600 hover:border-gray-300", "inline-flex p-4 rounded-t-lg border-b-2 GROUP"]}>
+          Orbs
+          </.link>
           </li>
 
           <li class="mr-2">
-            <a
-              href="#"
-              class="inline-flex p-4 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 group"
-              md:w-8
-              md:h-8
-            >
-              Allies
-            </a>
+            <.link
+          patch={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@username}/allies")}
+          class={[@action == :allies && "text-blue-600 border-blue-600 active" || "border-transparent hover:text-gray-600 hover:border-gray-300", "inline-flex p-4 rounded-t-lg border-b-2 GROUP"]}>
+          Allies
+          </.link>
           </li>
         </ul>
       </div>
@@ -1317,4 +1316,5 @@ defmodule PhosWeb.CoreComponents do
     )
     |> JS.focus_first(to: "##{id}-content")
   end
+
 end

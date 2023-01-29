@@ -44,7 +44,6 @@ defmodule PhosWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-    get "/welcome", PageController, :welcome
 
     live_storybook "/storybook", backend_module: PhosWeb.Storybook
   end
@@ -69,6 +68,8 @@ defmodule PhosWeb.Router do
 
     live_session :required_authenticated_user,
       on_mount: {PhosWeb.Menshen.Gate, :ensure_authenticated} do
+
+      get "/welcome", PageController, :welcome
 
       live "/orb", OrbLive.Index, :index
       live "/orb/new", OrbLive.Index, :new
@@ -124,6 +125,7 @@ defmodule PhosWeb.Router do
 
       live "/orb/:id", OrbLive.Show, :show
       live "/user/:username", UserProfileLive.Show, :show
+      live "/user/:username/allies", UserProfileLive.Show, :allies
 
     end
   end

@@ -16,7 +16,6 @@ defmodule PhosWeb.UserSessionControllerTest do
 
       assert get_session(conn, :user_token)
       assert redirected_to(conn) == ~p"/welcome"
-      dbg()
       # Now do a logged in request and assert on the menu
       conn = get(conn, ~p"/welcome")
       response = html_response(conn, 200)

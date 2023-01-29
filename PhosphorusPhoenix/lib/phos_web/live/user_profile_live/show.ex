@@ -20,7 +20,7 @@ defmodule PhosWeb.UserProfileLive.Show do
       |> assign(:params, params)
       |> assign(:user, user)
       |> assign_meta(user)
-      |> assign(:orbs, Action.orbs_by_initiators([user_id], 1))
+      |> assign(:orbs, Action.orbs_by_initiators([user_id], 1).data)
       |> apply_action(socket.assigns.live_action, params)}
   end
 
@@ -40,7 +40,7 @@ defmodule PhosWeb.UserProfileLive.Show do
 
   defp apply_action(socket, :show, _params) do
     socket
-    |> assign(:page_title, "")
+    |> assign(:page_title, "Viewing Profile")
   end
 
   defp apply_action(socket, :edit, _params) do
@@ -48,9 +48,14 @@ defmodule PhosWeb.UserProfileLive.Show do
     |> assign(:page_title, "Updating Profile")
   end
 
+  defp apply_action(socket, :allies, _params) do
+    socket
+    |> assign(:page_title, "Viewing Allies")
+  end
+
   defp assign_meta(socket, user) do
     assign(socket, :meta, %{
-      title: "#{user.username} aka #{user.public_profile.public_name}",
+      title: "@#{user.username}",
       description: user.public_profile.bio,
       type: "website",
       image: Phos.Orbject.S3.get!("USR", user.id, "public/banner/lossless"),
@@ -59,9 +64,7 @@ defmodule PhosWeb.UserProfileLive.Show do
   end
 
   defp ally_list do
-    Phos.Users.list_users()
-    # |> List.duplicate(10)
-    # |> :lists.concat()
+    Phos.Users.list_users(5)
     |> Enum.shuffle()
   end
 

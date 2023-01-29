@@ -51,8 +51,8 @@ defmodule PhosWeb.UserRegistrationLiveTest do
       conn = get(conn, "/")
       response = html_response(conn, 200)
       assert response =~ conn.assigns.current_user.username
-      assert response =~ "Settings"
-      assert response =~ "Log out"
+      assert response =~ "/settings"
+      assert response =~ "/log_out"
     end
 
     test "renders errors for duplicated email", %{conn: conn} do
