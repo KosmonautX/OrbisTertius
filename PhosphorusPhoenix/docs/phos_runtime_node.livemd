@@ -191,3 +191,17 @@ Phos.Folk.notifiers_by_friends(orb.initiator_id)
 orb |>
 #Phos.Action.notifiers_by_geohashes()
 ```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## 📸 Multimedia Support
+
+```elixir
+Phos.Orbject.S3.get_all!("ORB", "5db9d048-f3b2-4d35-89cd-f242155d79db", "public/banner")
+|> Enum.group_by(fn {path, _url} ->
+  String.split(path, ".")
+  |> List.first()
+  |> String.split("/")
+  |> List.last()
+end)
+```

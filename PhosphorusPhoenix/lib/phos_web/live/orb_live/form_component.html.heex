@@ -35,7 +35,9 @@
         <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless") }>
       <% end%>
       <:actions>
+    <div class="container grid grid-cols-2 gap-2 mx-auto">
       <%= for entry <- @uploads.image.entries do %>
+        <div class="w-full rounded">
               <article class="upload-entry">
                    <figure>
                      <.live_img_preview entry={entry} />
@@ -53,12 +55,14 @@
                      <p class="alert alert-danger"><%= error_to_string(err) %></p>
                    <% end %>
                </article>
+        </div>
            <% end %>
 
            <%# Phoenix.Component.upload_errors/1 returns a list of error atoms %>
            <%= for err <- upload_errors(@uploads.image) do %>
              <p class="alert alert-danger"><%= error_to_string(err) %></p>
       <% end %>
+    </div>
       <form id="upload-form" phx-submit="save" phx-change="validate">
            <.live_file_input upload={@uploads.image} />
            <button type="submit">Upload</button>

@@ -11,7 +11,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
      socket
      |> assign(assigns)
      |> assign(:changeset, changeset)
-     |> allow_upload(:image, accept: ~w(.jpg .jpeg .png), max_entries: 1, max_file_size: 8_888_888)}
+     |> allow_upload(:image, accept: ~w(.jpg .jpeg .png), max_entries: 5, max_file_size: 8_888_888)}
   end
 
   @impl true
@@ -29,7 +29,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
         %{"orb" => %{"location" => loc} = orb_params},
         %{assigns: %{addresses: addrs}} = socket
       ) do
-    resolution = %{"150x150" => "lossy", "1920x1080" => "lossless"}
+    compression = %{"200x200" => "lossy", "1920x1080" => "lossless"}
     orb_id = socket.assigns.orb.id || Ecto.UUID.generate()
     # Process latlon value to x7 h3 indexes
     orb_params =
@@ -53,9 +53,20 @@ defmodule PhosWeb.OrbLive.FormComponent do
     orb_params = Map.put(orb_params, "id", orb_id)
 
     file_uploaded =
-      consume_uploaded_entries(socket, :image, fn %{path: path}, _entry ->
-        for res <- ["150x150", "1920x1080"] do
-          {:ok, dest} = Phos.Orbject.S3.put("ORB", orb_id, "public/banner/#{resolution[res]}")
+      consume_uploaded_entries(socket, :image, fn %{path: path}, %{ref: count, client_type: type} ->
+        for {res, resolution} <- compression do
+
+          {:ok, media} = Phos.Orbject.Structure.apply_media_changeset(
+            %{id: orb_id,
+              archetype: "ORB",
+              media: [%{access: "public",
+                      essence: "banner",
+                      resolution: resolution,
+                      count: String.to_integer(count) + 1,
+                      ext: List.first(MIME.extensions(type))
+                      }]})
+
+          [dest | _] = Map.values(Phos.Orbject.S3.put_all!(media))
 
           compressed_image =
             path

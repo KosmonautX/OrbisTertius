@@ -762,7 +762,7 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <nav class="bg-white px-2 fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold p-2">
       <div class="flex flex-wrap items-center justify-between mx-auto">
-        <a href="#" class="flex items-center">
+        <a href="/" class="flex items-center">
           <img src="/images/banner_logo_white.png" class="h-7 ml-4" alt="" />
         </a>
 
@@ -956,7 +956,7 @@ defmodule PhosWeb.CoreComponents do
       </:actions>
     </.user_info_bar>
 
-    <.post_image :if={@orb.media} orb={@orb} id={"#{@id}-scry-orb-#{@orb.id}"} />
+    <.media_carousel :if={@orb.media} archetype="ORB" uuid={@orb.id} path="public/banner" id={"#{@id}-scry-orb-#{@orb.id}"} />
     <.link
       id={"#{@id}-scry-orb-#{@orb.id}-link"}
       class="relative"
@@ -973,9 +973,29 @@ defmodule PhosWeb.CoreComponents do
    Desktop View
   """
   attr(:id, :string, required: true)
-  attr(:orb, :map, required: true)
-  def post_image(assigns) do
+  attr(:archetype, :string, required: true)
+  attr(:uuid, :string, required: true)
+  attr(:path, :string)
+
+  def media_carousel(assigns) do
+    assigns = assigns
+    |> assign(:media,
+      Phos.Orbject.S3.get_all!(assigns.archetype, assigns.uuid, assigns.path || "")
+      |> then(fn x -> if is_map(x) do
+        Enum.group_by(x, fn
+          {path, _url} ->
+            String.split(path, ".")
+            |> List.first()
+            |> String.split("/")
+            |> List.last() end)
+            |> Map.get("lossless", nil) end end))
+
+
+    #TODO implement lossless lazyloading logic
+
+
     ~H"""
+    <div :if={!is_nil(@media)} id={"#{@id}-carousel-wrapper"}>
     <section class="glide" id={"#{@id}-carousel"} phx-update="ignore" phx-hook="Carousel">
       <div
         id={"#{@id}-container"}
@@ -983,18 +1003,23 @@ defmodule PhosWeb.CoreComponents do
         class="glide__track">
         <div class="glide__slides">
           <div
-            :for={i <- [1, 2, 3]}
-            id={"#{@id}-carousel-number-#{i}-#{:rand.uniform()}"}
+            :for={{path, src} <- @media}
             class="glide__slide">
             <img
-              id={"#{@id}-media-#{:rand.uniform()}"}
+              id={"#{@id}-carousell-media-#{path}"}
               class="object-cover md:inset-0 h-80 w-full"
-              src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless")}
+              src={src}
+              loading="lazy"
             />
           </div>
         </div>
       </div>
-      <div data-glide-el="controls">
+      <div :if={length(@media) > 1} data-glide-el="controls">
+        <div data-glide-el="controls[nav]" class="flex w-full items-center">
+          <button :for={count <- Enum.to_list(1 .. length(@media))}
+                  class={"sm:flex w-full h-2 border-solid border-2 border-x-4 bg-teal-500 border-white"}
+                  data-glide-dir={"=#{count}"}/>
+        </div>
         <button
           id={"#{@id}-carousel-prev"}
           type="button"
@@ -1016,6 +1041,7 @@ defmodule PhosWeb.CoreComponents do
         </button>
       </div>
     </section>
+    </div>
     """
   end
 
@@ -1141,11 +1167,17 @@ defmodule PhosWeb.CoreComponents do
   attr(:show_location, :boolean, default: true)
 
   def user_information_card(assigns) do
+    assigns =
+      assign(
+        assigns,
+        :user,
+        Map.from_struct(assigns.user)
+      )
     ~H"""
     <div class="flex flex-col justify-between p-4 w-full space-y-2">
       <div class={["gap-4", @flex]}>
         <h5 class="lg:text-2xl text-lg font-extrabold text-gray-900">
-          <%= Map.from_struct(@user) |> get_in([:public_profile, :public_name]) || "-" %>
+          <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
         </h5>
         <div class="flex gap-4">
           <.button tone={:icons}>
@@ -1171,10 +1203,10 @@ defmodule PhosWeb.CoreComponents do
         </div>
 
         <p class="md:text-base text-gray-700 text-base font-semibold">
-          <%= Map.from_struct(@user) |> get_in([:public_profile, :occupation]) || "-" %>
+          <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
         </p>
         <p class="text-gray-700 font-medium text-base">
-          <%= Map.from_struct(@user) |> get_in([:public_profile, :bio]) || "-" %>
+          <%= @user |> get_in([:public_profile, Access.key(:bio, "-")]) %>
         </p>
 
         <div>
