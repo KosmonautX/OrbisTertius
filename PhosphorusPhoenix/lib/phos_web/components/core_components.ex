@@ -1255,7 +1255,7 @@ defmodule PhosWeb.CoreComponents do
           <div class="mt-3">
             <.button type="button">Download the Scratchbac app</.button>
           </div>
-          <div class="mt-3 text-sm text-gray-500 " :if={not is_nil(@user)}>
+          <div class="mt-3 text-sm text-gray-500 " :if={is_nil(@user)}>
             <.link
               navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
               class="text-sm text-teal-400 font-bold hover:underline"
@@ -1271,7 +1271,7 @@ defmodule PhosWeb.CoreComponents do
             </.link>
             via Web
           </div>
-          <div class="mt-3" :if={is_nil(@user)}>
+          <div class="mt-3" :if={not is_nil(@user)}>
             <a class="hover:text-teal-400 text-base font-bold hover:underline hover:cursor-pointer">
               Bring me back to what I was doing!
             </a>
