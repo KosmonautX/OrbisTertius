@@ -56,7 +56,7 @@ defmodule PhosWeb.UserProfileLive.Show do
   defp assign_meta(socket, user) do
     assign(socket, :meta, %{
       title: "@#{user.username}",
-      description: user.public_profile.bio,
+      description: user |> get_in([Access.key(:public_profile, %{}), Access.key(:bio, "-")]),
       type: "website",
       image: Phos.Orbject.S3.get!("USR", user.id, "public/banner/lossless"),
       url: url(socket, ~p"/user/#{user.id}")
