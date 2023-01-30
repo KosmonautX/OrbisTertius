@@ -25,7 +25,7 @@ defmodule PhosWeb.UserLoginLive do
       >
         <.input field={{f, :email}} type="email" label="Email" required />
         <.input field={{f, :password}} type="password" label="Password" required />
-        <.input field={{f, :return_to}} type="hidden" label="return_to" value={@return_to} />
+        <.input field={{f, :return_to}} type="hidden" value={@return_to} />
     
 
         <:actions :let={f}>

@@ -22,6 +22,8 @@ window.addEventListener("phx:page-loading-stop", () => {
   ModalApplication()
 })
 
+window.addEventListener("DOMContentLoaded", ModalApplication)
+
 // connect if there are any LiveViews on the page
 liveSocket.connect()
 liveSocket.enableDebug()

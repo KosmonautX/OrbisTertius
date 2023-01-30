@@ -823,7 +823,7 @@ defmodule PhosWeb.CoreComponents do
               </span>
             </li>
           </ul>
-          <.button id="welcome-button" type="button" phx-hook="ModalApplication" phx-click={show_welcome_message("welcome_message")}>Open app</.button>
+          <.button id="welcome-button" type="button" phx-click={show_welcome_message("welcome_message")}>Open app</.button>
         </div>
         <div class="hidden lg:block items-center justify-between w-full  md:w-auto">
           <ul class="flex flex-col md:flex-row md:space-x-6  text-gray-700">
