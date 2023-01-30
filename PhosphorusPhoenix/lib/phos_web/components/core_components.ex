@@ -799,7 +799,7 @@ defmodule PhosWeb.CoreComponents do
               </span>
             </li>
           </ul>
-          <.button type="button" phx-click={show_welcome_message("welcome_message")}>Open app</.button>
+          <.button type="button" phx-hook="ModalApplication" phx-click={show_welcome_message("welcome_message")}>Open app</.button>
         </div>
 
         <div class="hidden lg:block items-center justify-between w-full  md:w-auto">
@@ -1074,7 +1074,7 @@ defmodule PhosWeb.CoreComponents do
 
   def redirect_mobile(assigns) do
     ~H"""
-    <div class="relative bg-white max-w-sm md:max-w-md md:h-auto rounded-xl shadow-lg ">
+    <div data-selector="phos_modal_message" class="relative bg-white max-w-sm md:max-w-md md:h-auto rounded-xl shadow-lg ">
       <div class="flex flex-col justify-center items-center p-6 space-y-2 ">
         <img
           src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
@@ -1243,7 +1243,7 @@ defmodule PhosWeb.CoreComponents do
   attr :user, :any, default: nil, doc: "User state to create session / to redirect in app"
   def welcome_message(assigns) do
     ~H"""
-    <div id={@id} phx-mounted={@show} class="absolute flex flex-col md:items-center justify-between md:justify-center inset-0 bg-black/50 z-50 hidden">
+    <div id={@id} data-selector="phos_modal_message" phx-mounted={@show} class="absolute flex flex-col md:items-center justify-between md:justify-center inset-0 bg-black/50 z-50 hidden">
       <div class="flex md:hidden" />
       <div id={"#{@id}-bg"} class="h-[375px] bg-white flex items-center rounded-t-lg md:rounded-b-lg">
         <div id={"#{@id}-content"} class="w-full flex flex-col items-center">
@@ -1255,9 +1255,23 @@ defmodule PhosWeb.CoreComponents do
           <div class="mt-3">
             <.button type="button">Download the Scratchbac app</.button>
           </div>
-          <div class="mt-3" :if={is_nil(@user)}>
+          <div class="mt-3 text-sm text-gray-500 " :if={not is_nil(@user)}>
+            <.link
+              navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
+              class="text-sm text-teal-400 font-bold hover:underline"
+            >
+              Sign up
+            </.link>
+            Or
+            <.link
+              navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/log_in")}
+              class="text-sm text-teal-400 font-bold hover:underline"
+            >
+              Sign in
+            </.link>
+            via Web
           </div>
-          <div class="mt-3" :if={not is_nil(@user)}>
+          <div class="mt-3" :if={is_nil(@user)}>
             <a class="hover:text-teal-400 text-base font-bold hover:underline hover:cursor-pointer">
               Bring me back to what I was doing!
             </a>
