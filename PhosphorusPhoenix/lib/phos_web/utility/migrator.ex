@@ -74,13 +74,17 @@ defmodule PhosWeb.Util.Migrator do
       {:ok, %{"fyr_id" => data["localId"], "email" => email_provider(providers)}}
     end)
     |> Multi.run(:user, fn _repo, %{payload: payload} ->
-      case Users.get_user_by_fyr(data["localId"]) do
+      dbg()
+      case Users.get_user_by_email(payload["email"]) do
         %Users.User{} = user -> {:ok, user}
         nil ->
-          Users.create_user(payload)
+          case Users.get_user_by_fyr(data["localId"]) do
+            %Users.User{} = user -> {:ok, user}
+            nil -> Users.create_user(payload)
+          end
       end
     end)
-    |> Multi.insert_all(:registered_providers, Users.Auth, &insert_with_provider/1, on_conflict: :replace_all, conflict_target: [:auth_id, :user_id, :auth_provider])
+    |> Multi.insert_all(:registered_providers, Users.Auth, &insert_with_provider/1, on_conflict: :replace_all, conflict_target: [:user_id, :auth_id, :auth_provider])
     |> Phos.Repo.transaction()
     |> case do
       {:ok, data} -> data

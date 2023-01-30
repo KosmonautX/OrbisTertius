@@ -7,6 +7,7 @@
 :princeton=0b3gd5XUGtNP6lqQean4IAp7ogG3
 :satrio=BX1BxM9KkwdFmy2J4FNNkFxclpS2
 :owen=0ErhlIM10Maldn1qVMGOJMKu6J92
+:bala=fFKlWcfV9RRavNZJUxt46BLYB5n1
 :tate=FbXQKufaWFOUNIsVYsn5tdW1qUc2
 :jean=HMhn3DPO71h0cMYFh52vM1tBacX2
 :princeton_id=9bf9c443-f89b-460a-972d-6704ae66823d
@@ -39,7 +40,7 @@ User-Agent: Emacs27
 GET :localipAddress/devland/flameon?user=:lky_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 ## Generate Google Identity idToken for Firebase Auth
-GET :localipAddress/devland/lankaonfyr?fyr_id=:tate
+GET :localipAddress/devland/lankaonfyr?fyr_id=:bala
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 

@@ -8,9 +8,9 @@ defmodule PhosWeb.Components.ScrollAlly do
     <div>
       <div id="infinite-scroll-body" phx-update="append">
         <%= for ally <- @ally_list do %>
-          <.user_info_bar id={"user-#{random_id()}-infobar"} user={ally}>
+          <.user_info_bar  :if={!is_nil(ally.username)} id={"user-#{random_id()}-infobar"} user={ally}>
             <:information>
-              Members, 25
+              <%= ally |> get_in([Access.key(:public_profile, %{}), Access.key(:occupation, "-")])%>
             </:information>
             <:actions>
               <.button class="flex items-center p-0">

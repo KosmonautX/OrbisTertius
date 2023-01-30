@@ -45,6 +45,7 @@ defmodule Phos.Users.User do
     |> cast_assoc(:private_profile)
     |> unique_constraint(:username, name: :unique_username)
     |> unique_constraint(:fyr_id, name: :unique_fyr)
+    |> unique_constraint(:email, name: :unique_email)
   end
 
   def personal_changeset(%Phos.Users.User{} = user, attrs) do

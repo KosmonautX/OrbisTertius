@@ -973,6 +973,7 @@ defmodule PhosWeb.CoreComponents do
           <img
             src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
             class=" lg:h-16 lg:w-16 w-14 h-14 border-4 border-white rounded-full object-cover"
+            onerror="this.src='/images/default_hand.jpg';"
           />
         </.link>
         <div>
@@ -996,7 +997,7 @@ defmodule PhosWeb.CoreComponents do
       assign(
         assigns,
         :orb_location,
-        assigns.orb.payload.where || assigns.orb.central_geohash |> Phos.Mainland.World.locate() ||
+        assigns.orb |> get_in([Access.key(:payload, %{}), Access.key(:where, "-")]) || assigns.orb.central_geohash |> Phos.Mainland.World.locate() ||
           "Somewhere"
       )
 
@@ -1167,6 +1168,7 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:id, :string, required: true)
 
+  #TODO orb_actions wiring with data
   def orb_action(assigns) do
     ~H"""
     <div id={"#{@id}-actions"} class="flex justify-between p-2 w-full font-bold text-sm text-gray-600">
@@ -1179,9 +1181,6 @@ defmodule PhosWeb.CoreComponents do
         </button>
         <button class="text-center inline-flex items-center">
           <Heroicons.chat_bubble_oval_left_ellipsis class="-ml-1 w-6 h-6" />15
-        </button>
-        <button class="text-center inline-flex items-center">
-          <Heroicons.heart class="-ml-1 w-6 h-6" />15
         </button>
       </div>
     </div>
@@ -1209,6 +1208,7 @@ defmodule PhosWeb.CoreComponents do
           <img
             src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
             class=" h-48 w-48 border-4 border-white rounded-full object-cover"
+            onerror="this.src='/images/default_hand.jpg';this.onerror='';"
           />
           <span class="bottom-0 right-0 inline-block absolute w-14 h-14 bg-transparent">
             <%= render_slot(@inner_block) %>
@@ -1373,6 +1373,7 @@ defmodule PhosWeb.CoreComponents do
             :if={not is_nil(@user)}
             src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
             class=" h-16 w-16 lg:w-32 lg:h-32 border-4 border-white rounded-full object-cover"
+            onerror="this.src='/images/default_hand.jpg';this.onerror='';"
           />
           <h1 class="text-lg font-bold">Hmm...You were saying?</h1>
           <h3 class="text-base font-normal text-gray-500 text-center">

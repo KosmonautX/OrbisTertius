@@ -121,7 +121,7 @@ defmodule PhosWeb.OrbLive.Show do
   defp assign_meta(socket, orb) do
     assign(socket, :meta, %{
       title: "#{orb.title} by #{orb.initiator.username}",
-      description: orb.payload.inner_title,
+      description: "#{get_in(orb, [Access.key(:payload, %{}), Access.key(:info, "")])} #{(orb |> get_in([Access.key(:payload, %{}), Access.key(:inner_title, "-")]))}",
       type: "website",
       image: Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless"),
       url: url(socket, ~p"/orbs/#{orb.id}")
