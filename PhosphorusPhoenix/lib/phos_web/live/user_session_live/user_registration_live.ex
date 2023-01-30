@@ -33,6 +33,7 @@ defmodule PhosWeb.UserRegistrationLive do
           Oops, something went wrong! Please check the errors below.
         </.error>
 
+        <.input field={{f, :return_to}} type="hidden" label="return_to" value={@return_to} />
         <.input field={{f, :email}} type="email" label="Email" required />
         <.input field={{f, :username}} label="Username" required />
         <.input field={{f, :password}} type="password" label="Password" required />
@@ -45,9 +46,11 @@ defmodule PhosWeb.UserRegistrationLive do
     """
   end
 
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     changeset = Users.change_user_registration(%User{})
-    socket = assign(socket, changeset: changeset, trigger_submit: false)
+    socket = 
+      assign(socket, changeset: changeset, trigger_submit: false)
+      |> assign_new(:return_to, fn -> Map.get(params, "return_to") end)
     {:ok, socket, temporary_assigns: [changeset: nil]}
   end
 

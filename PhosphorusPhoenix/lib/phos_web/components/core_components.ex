@@ -823,9 +823,7 @@ defmodule PhosWeb.CoreComponents do
               </span>
             </li>
           </ul>
-          <.button type="button" phx-click={show_welcome_message("welcome_message")}>
-            Open app
-          </.button>
+          <.button id="welcome-button" type="button" phx-hook="ModalApplication" phx-click={show_welcome_message("welcome_message")}>Open app</.button>
         </div>
         <div class="hidden lg:block items-center justify-between w-full  md:w-auto">
           <ul class="flex flex-col md:flex-row md:space-x-6  text-gray-700">
@@ -1182,6 +1180,49 @@ defmodule PhosWeb.CoreComponents do
         <button class="text-center inline-flex items-center">
           <Heroicons.chat_bubble_oval_left_ellipsis class="-ml-1 w-6 h-6" />15
         </button>
+        <button class="text-center inline-flex items-center">
+          <Heroicons.heart class="-ml-1 w-6 h-6" />15
+        </button>
+      </div>
+    </div>
+    """
+  end
+
+  attr(:id, :string, required: true)
+  attr(:img_path, :string)
+  slot(:user_name)
+  attr(:user, :any)
+  attr(:orb, :any)
+
+  def redirect_mobile(assigns) do
+    ~H"""
+    <div data-selector="phos_modal_message" class="relative bg-white max-w-sm md:max-w-md md:h-auto rounded-xl shadow-lg ">
+      <div class="flex flex-col justify-center items-center p-6 space-y-2 ">
+        <img
+          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+          class=" h-16 w-16 lg:w-32 lg:h-32 border-4 border-white rounded-full object-cover"
+        />
+        <h1 class="text-lg font-bold">Hmm...You were saying?</h1>
+        <h3 class="text-base font-normal text-gray-500 text-center">
+          Join the tribe to share your thoughts with raizzypaizzy now!
+        </h3>
+        <.button>Download the Scratchbac app</.button>
+        <span class="text-sm text-gray-500">
+          <.link
+            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
+            class="text-sm text-teal-400 font-bold hover:underline"
+          >
+            Sign up
+          </.link>
+          Or
+          <.link
+            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/log_in")}
+            class="text-sm text-teal-400 font-bold hover:underline"
+          >
+            Sign in
+          </.link>
+          via Web
+        </span>
       </div>
     </div>
     """
@@ -1355,38 +1396,19 @@ defmodule PhosWeb.CoreComponents do
 
   def welcome_message(assigns) do
     ~H"""
-    <div
-      id={@id}
-      phx-mounted={@show}
-      class="absolute flex flex-col md:items-center md:justify-center md:inset-0 inset-x-0 bottom-0 bg-black/50 z-50 hidden"
-    >
+    <div id={@id} data-selector="phos_modal_message" phx-mounted={@show} class="absolute flex flex-col md:items-center justify-between md:justify-center inset-0 bg-black/50 z-50 hidden">
       <div class="flex md:hidden" />
-      <div
-        id={"#{@id}-bg"}
-        class="h-[375px] bg-white flex items-center rounded-t-lg           md:rounded-b-lg relative"
-      >
-        <div
-          id={"#{@id}-content"}
-          class="w-full flex flex-col items-center justify-center p-6 space-y-2"
-        >
-          <img
-            :if={not is_nil(@user)}
-            src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
-            class=" h-16 w-16 lg:w-32 lg:h-32 border-4 border-white rounded-full object-cover"
-            onerror="this.src='/images/default_hand.jpg';this.onerror='';"
-          />
-          <h1 class="text-lg font-bold">Hmm...You were saying?</h1>
-          <h3 class="text-base font-normal text-gray-500 text-center">
-            Join the tribe to share your thoughts with raizzypaizzy now!
-          </h3>
-          <a
-            href="https://play.google.com/store/apps/details?id=com.scratchbac.baladi"
-            target="_blank"
-          >
-            <.button type="submit">Download the Scratchbac app</.button>
-          </a>
-
-          <span class="text-sm text-gray-500">
+      <div id={"#{@id}-bg"} class="h-[375px] bg-white flex items-center rounded-t-lg md:rounded-b-lg">
+        <div id={"#{@id}-content"} class="w-full flex flex-col items-center">
+          <div class="">
+          Welcome message
+          </div>
+          <p class="mt-3 font-semibold text-xl">Hmm...You were saying?</p>
+          <p class="mt-3 w-1/2 text-center text-gray-400">Join the tribe to share your thoughts with raizzy paizzy now!</p>
+          <div class="mt-3">
+            <.button type="button">Download the Scratchbac app</.button>
+          </div>
+          <div class="mt-3 text-sm text-gray-500 " :if={is_nil(@user)}>
             <.link
               navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
               class="text-sm text-teal-400 font-bold hover:underline"
@@ -1401,8 +1423,8 @@ defmodule PhosWeb.CoreComponents do
               Sign in
             </.link>
             via Web
-          </span>
-          <div :if={not is_nil(@user)} class="mt-3">
+          </div>
+          <div class="mt-3" :if={not is_nil(@user)}>
             <a class="hover:text-teal-400 text-base font-bold hover:underline hover:cursor-pointer">
               Bring me back to what I was doing!
             </a>

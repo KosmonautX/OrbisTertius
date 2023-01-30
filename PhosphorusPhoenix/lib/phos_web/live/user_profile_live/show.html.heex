@@ -16,7 +16,7 @@
 <section class="w-full flex flex-col items-center mt-14 gap-4 justify-center lg:mt-24 ">
     <div class="w-full h-80">
     <.user_profile id="orb-user-profile" user={@user} location={true}>
-      <.link :if={@user.id == @current_user.id} patch={~p"/user/#{@current_user.username}/edit"}>
+      <.link :if={@current_user && @user.id == @current_user.id} patch={~p"/user/#{@current_user.username}/edit"}>
         <Heroicons.camera class="lg:w-11 lg:h-11 h-10 w-10 fill-white" />
       </.link>
     </.user_profile>

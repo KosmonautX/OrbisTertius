@@ -27,7 +27,10 @@ defmodule PhosWeb.Menshen.Gate do
   """
   def log_in_user(conn, user, params \\ %{}) do
     token = Users.generate_user_session_token(user)
-    user_return_to = get_session(conn, :user_return_to)
+    user_return_to = case get_session(conn, :user_return_to) do
+      nil -> Map.get(params, "return_to") |> URI.decode()
+      path -> path
+    end
 
     conn
     |> renew_session()

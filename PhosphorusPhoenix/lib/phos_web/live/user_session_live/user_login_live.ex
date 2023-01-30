@@ -25,6 +25,8 @@ defmodule PhosWeb.UserLoginLive do
       >
         <.input field={{f, :email}} type="email" label="Email" required />
         <.input field={{f, :password}} type="password" label="Password" required />
+        <.input field={{f, :return_to}} type="hidden" label="return_to" value={@return_to} />
+    
 
         <:actions :let={f}>
           <.input field={{f, :remember_me}} type="checkbox" label="Keep me logged in" />
@@ -42,8 +44,12 @@ defmodule PhosWeb.UserLoginLive do
     """
   end
 
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     email = live_flash(socket.assigns.flash, :email)
-    {:ok, assign(socket, email: email), temporary_assigns: [email: nil]}
+    IO.inspect(params)
+    {:ok,
+      assign(socket, email: email)
+      |> assign_new(:return_to, fn -> Map.get(params, "return_to") end),
+      temporary_assigns: [email: nil]}
   end
 end
