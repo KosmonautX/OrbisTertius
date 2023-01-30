@@ -20,20 +20,19 @@ defmodule PhosWeb.CommentLive.ReplyComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <.form
-      :let={f} for={@changeset}
-      phx-target={@myself}
-      phx-submit="save">
-      <div class="relative flex flex-col justify-center gap-2 mb-2">
-        <.error :for={msg <- Keyword.get_values(f.errors, :body)}><%= elem(msg, 0) %></.error>
-        <textarea type="textarea"
-               name="body"
-               class="block w-full text-base text-gray-900 rounded-lg border border-gray-400"
-               placeholder="In the beginning was the Word..."></textarea>
-        <button type="submit" class="absolute right-1.5 bottom-3.5">
-          <Heroicons.paper_airplane class="h-8 w-8 md:h-10 mr-2 text-teal-400 font-bold" />
-        </button>
-      </div>
+      <.form :let={f} for={@changeset} phx-target={@myself} phx-submit="save">
+        <div class="relative flex flex-col justify-center gap-2">
+          <.error :for={msg <- Keyword.get_values(f.errors, :body)}><%= elem(msg, 0) %></.error>
+          <textarea
+            type="textarea"
+            name="body"
+            class="block w-full h-4 text-base text-gray-900 rounded-lg border border-gray-400"
+            placeholder="In the beginning was the Word...">
+          </textarea>
+          <button type="submit" class="absolute right-2.5 bottom-2.5">
+            <Heroicons.paper_airplane class="h-8 w-8 mr-2 text-teal-400 font-bold" />
+          </button>
+        </div>
       </.form>
     </div>
     """

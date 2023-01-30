@@ -5,7 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content={get_csrf_token()} />
-    <.live_title prefix={"Scratchbac -"} suffix={"#{assigns[:meta][:title] || "Awareness in Nearness"}"} >
+    <.live_title
+      prefix="Scratchbac -"
+      suffix={"#{assigns[:meta][:title] || "Awareness in Nearness"}"}>
     </.live_title>
     <meta property="og:site_name" content="Scratchbac" />
     <.meta_tags contents={assigns[:meta]} />
@@ -13,15 +15,14 @@
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
   </head>
-  <body class="h-full w-full">
+  <body class="h-screen w-full">
     <.guest_banner if={is_nil(@current_user)} current_user={@current_user} />
 
     <%= if @current_user do %>
       <.banner :if={@current_user} current_user={@current_user} />
-      <!--<.tabs_mobile></.tabs_mobile>-->
-      <!--<.bottom_banner></.bottom_banner>-->
+      <.tabs_mobile/>
     <% end %>
-    <div class="w-full h-full"><%= @inner_content %></div>
+    <div class="w-full h-screen"><%= @inner_content %></div>
     <.welcome_message id="welcome_message" user={@current_user} />
   </body>
 </html>

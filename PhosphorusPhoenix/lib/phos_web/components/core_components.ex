@@ -372,7 +372,7 @@ defmodule PhosWeb.CoreComponents do
         placeholder={@placeholder}
         class={[
           input_border(@errors),
-           class,
+          class,
           "text-zinc-900 focus:border-zinc-400 focus:outline-none focus:ring-4 focus:ring-zinc-800/5 sm:text-sm sm:leading-6",
           "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400 phx-no-feedback:focus:ring-zinc-800/5"
         ]}
@@ -858,9 +858,9 @@ defmodule PhosWeb.CoreComponents do
         <a href="#" class="flex items-center">
           <img src="/images/banner_logo_white.png" class="h-7 ml-4" alt="" />
         </a>
-          <.button type="button" phx-click={show_welcome_message("welcome_message")}>
-            Open app
-          </.button>
+        <.button type="button" phx-click={show_welcome_message("welcome_message")}>
+          Open app
+        </.button>
       </div>
     </nav>
     """
@@ -868,7 +868,7 @@ defmodule PhosWeb.CoreComponents do
 
   def tabs_mobile(assigns) do
     ~H"""
-    <div class="w-full border-gray-400 border-t-2 rounded-t-2xl bg-white lg:hidden block fixed z-10 bottom-0 px-2 py-2">
+    <div class="w-full border-gray-400 border-t-2 rounded-t-2xl bg-white lg:hidden block fixed z-10 bottom-0 px-4 py-2">
       <ul class="flex flex-wrap items-center justify-between mx-auto">
         <li>
           <a
@@ -880,6 +880,7 @@ defmodule PhosWeb.CoreComponents do
         </li>
         <li>
           <a
+            href="/orb"
             class="block hover:text-teal-400 text-gray-600"
             onclick="changeAtiveTab(event,'location')"
           >
@@ -887,12 +888,9 @@ defmodule PhosWeb.CoreComponents do
           </a>
         </li>
         <li>
-          <a
-            class="block hover:text-teal-400 text-gray-600"
-            onclick="changeAtiveTab(event,'tab-create')"
-          >
-            <Heroicons.plus_circle class="w-8 h-8" />
-          </a>
+          <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/new")}>
+            <Heroicons.plus_circle class="hover:text-teal-400 text-gray-600 w-8 h-8" />
+          </.link>
         </li>
         <li>
           <a
@@ -906,14 +904,51 @@ defmodule PhosWeb.CoreComponents do
           </a>
         </li>
         <li>
-          <a
-            class="block hover:text-teal-400 text-gray-600"
-            onclick="changeAtiveTab(event,'user-profile')"
-          >
-            <Heroicons.plus class="w-8 h-8" />
-          </a>
+          <img
+            src="/images/IMG-20220404-WA0002.jpg"
+            class="w-10 h-10 border-4 border-white rounded-full object-cover"
+          />
         </li>
       </ul>
+    </div>
+    """
+  end
+
+  attr(:action, :atom)
+  attr(:username, :string)
+
+  def tabs_profile(assigns) do
+    ~H"""
+    <div class=" rounded-t-3xl w-full sticky top-0 left-0 right-0 border-b border-gray-200">
+      <div class="flex justify-center items-center border-b border-gray-200">
+        <ul class="flex flex-wrap gap-20 md:gap-40 -mb-px font-extrabold text-sm  text-gray-500">
+          <li class="mr-2">
+            <.link
+              patch={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@username}")}
+              class={[
+                (@action == :show && "text-blue-600 border-blue-600 active") ||
+                  "border-transparent hover:text-gray-600 hover:border-gray-300",
+                "inline-flex p-4 rounded-t-lg border-b-2 GROUP"
+              ]}
+            >
+              Orbs
+            </.link>
+          </li>
+
+          <li class="mr-2">
+            <.link
+              patch={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@username}/allies")}
+              class={[
+                (@action == :allies && "text-blue-600 border-blue-600 active") ||
+                  "border-transparent hover:text-gray-600 hover:border-gray-300",
+                "inline-flex p-4 rounded-t-lg border-b-2 GROUP"
+              ]}
+            >
+              Allies
+            </.link>
+          </li>
+        </ul>
+      </div>
     </div>
     """
   end
@@ -933,7 +968,8 @@ defmodule PhosWeb.CoreComponents do
       <div class="flex w-full">
         <.link
           :if={@user.username}
-          navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}>
+          navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}
+        >
           <img
             src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
             class=" lg:h-16 lg:w-16 w-14 h-14 border-4 border-white rounded-full object-cover"
@@ -979,7 +1015,13 @@ defmodule PhosWeb.CoreComponents do
       </:actions>
     </.user_info_bar>
 
-    <.media_carousel :if={@orb.media} archetype="ORB" uuid={@orb.id} path="public/banner" id={"#{@id}-scry-orb-#{@orb.id}"} />
+    <.media_carousel
+      :if={@orb.media}
+      archetype="ORB"
+      uuid={@orb.id}
+      path="public/banner"
+      id={"#{@id}-scry-orb-#{@orb.id}"}
+    />
     <.link
       id={"#{@id}-scry-orb-#{@orb.id}-link"}
       class="relative"
@@ -1001,69 +1043,76 @@ defmodule PhosWeb.CoreComponents do
   attr(:path, :string)
 
   def media_carousel(assigns) do
-    assigns = assigns
-    |> assign(:media,
-      Phos.Orbject.S3.get_all!(assigns.archetype, assigns.uuid, assigns.path || "")
-      |> then(fn x -> if is_map(x) do
-        Enum.group_by(x, fn
-          {path, _url} ->
-            String.split(path, ".")
-            |> List.first()
-            |> String.split("/")
-            |> List.last() end)
-            |> Map.get("lossless", nil) end end))
+    assigns =
+      assigns
+      |> assign(
+        :media,
+        Phos.Orbject.S3.get_all!(assigns.archetype, assigns.uuid, assigns.path || "")
+        |> then(fn x ->
+          if is_map(x) do
+            Enum.group_by(x, fn
+              {path, _url} ->
+                String.split(path, ".")
+                |> List.first()
+                |> String.split("/")
+                |> List.last()
+            end)
+            |> Map.get("lossless", nil)
+          end
+        end)
+      )
 
-
-    #TODO implement lossless lazyloading logic
-
+    # TODO implement lossless lazyloading logic
 
     ~H"""
     <div :if={!is_nil(@media)} id={"#{@id}-carousel-wrapper"}>
-    <section class="glide" id={"#{@id}-carousel"} phx-update="ignore" phx-hook="Carousel">
-      <div
-        id={"#{@id}-container"}
-        data-glide-el="track"
-        class="glide__track">
-        <div class="glide__slides">
-          <div
-            :for={{path, src} <- @media}
-            class="glide__slide">
-            <img
-              id={"#{@id}-carousell-media-#{path}"}
-              class="object-cover md:inset-0 h-80 w-full"
-              src={src}
-              loading="lazy"
-            />
+      <section class="glide" id={"#{@id}-carousel"} phx-update="ignore" phx-hook="Carousel">
+        <div id={"#{@id}-container"} data-glide-el="track" class="glide__track relative">
+          <div class="glide__slides">
+            <div :for={{path, src} <- @media} class="glide__slide">
+              <img
+                id={"#{@id}-carousell-media-#{path}"}
+                class="object-cover md:inset-0 h-80 w-full"
+                src={src}
+                loading="lazy"
+              />
+            </div>
           </div>
         </div>
-      </div>
-      <div :if={length(@media) > 1} data-glide-el="controls">
-        <div data-glide-el="controls[nav]" class="flex w-full items-center">
-          <button :for={count <- Enum.to_list(1 .. length(@media))}
-                  class={"sm:flex w-full h-2 border-solid border-2 border-x-4 bg-teal-500 border-white"}
-                  data-glide-dir={"=#{count}"}/>
-        </div>
-        <button
-          id={"#{@id}-carousel-prev"}
-          type="button"
-          data-glide-dir="<"
-          class="absolute top-0 left-0 z-20 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none">
-          <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
-            <Heroicons.chevron_left class="mt-0.5 h-6 w-6" />
-          </span>
-        </button>
+        <div :if={length(@media) > 1} data-glide-el="controls">
+          <div
+            data-glide-el="controls[nav]"
+            class="absolute flex space-x-3 -translate-x-1/2 bottom-2 left-1/2"
+          >
+            <button
+              :for={count <- Enum.to_list(1..length(@media))}
+              class="w-3 h-3 rounded-full bg-gray-500 hover:bg-gray-200"
+              data-glide-dir={"=#{count}"}
+            />
+          </div>
+          <button
+            id={"#{@id}-carousel-prev"}
+            type="button"
+            data-glide-dir="<"
+            class="absolute top-0 left-0  flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
+          >
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
+              <Heroicons.chevron_left class="mt-0.5 h-6 w-6" />
+            </span>
+          </button>
 
-        <button
-          id={"#{@id}-carousel-next"}
-          type="button"
-          data-glide-dir=">"
-          class="absolute top-0 right-0 z-20 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none">
-          <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
-            <Heroicons.chevron_right class="mt-0.5 h-6 w-6" />
-          </span>
-        </button>
-      </div>
-    </section>
+          <button
+            id={"#{@id}-carousel-next"}
+            type="button"
+            data-glide-dir=">"
+            class="absolute top-0 right-0 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
+          >
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
+              <Heroicons.chevron_right class="mt-0.5 h-6 w-6" />
+            </span>
+          </button>
+        </div>
+      </section>
     </div>
     """
   end
@@ -1196,13 +1245,14 @@ defmodule PhosWeb.CoreComponents do
         :user,
         Map.from_struct(assigns.user)
       )
+
     ~H"""
     <div class="flex flex-col justify-between p-4 w-full space-y-2">
-      <div class={["gap-4", @flex]}>
-        <h5 class="lg:text-2xl text-lg font-extrabold text-gray-900">
+      <div class={["gap-4 flex justify-between", @flex]}>
+        <h5 class="lg:text-xl xl:text-2xl text-lg font-extrabold text-gray-900">
           <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
         </h5>
-        <div class="flex gap-4">
+        <div class="flex gap-6">
           <.button tone={:icons}>
             <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6 text-black" />
           </.button>
@@ -1212,7 +1262,6 @@ defmodule PhosWeb.CoreComponents do
           </.button>
         </div>
       </div>
-
       <div class="space-y-1">
         <div :if={@show_location}>
           <div class="flex justify-center	">
@@ -1224,7 +1273,6 @@ defmodule PhosWeb.CoreComponents do
             <% end %>
           </div>
         </div>
-
         <p class="md:text-base text-gray-700 text-base font-semibold">
           <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
         </p>
@@ -1246,30 +1294,56 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  attr(:action, :atom)
-  attr(:username, :string)
+  attr(:user, :map, required: true)
+  attr(:flex, :any, default: nil)
+  attr(:id, :string, required: true)
+  attr(:show_location, :boolean, default: true)
 
-  def tabs_profile(assigns) do
+  def user_information_card_orb(assigns) do
+    assigns = assign(assigns, :user, Map.from_struct(assigns.user))
+
     ~H"""
-    <div class="lg:border lg:border-gray-200 rounded-t-3xl mt-10 w-full z-20 top-0 left-0 border-b border-gray-200">
-      <div class="flex justify-center items-center border-b border-gray-200">
-        <ul class="flex flex-wrap md:gap-80 gap-20 -mb-px md:text-lg font-extrabold text-sm font-medium text-gray-500">
-          <li class="mr-2">
-          <.link
-            patch={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@username}")}
-           class={[@action == :show && "text-blue-600 border-blue-600 active" || "border-transparent hover:text-gray-600 hover:border-gray-300", "inline-flex p-4 rounded-t-lg border-b-2 GROUP"]}>
-          Orbs
-          </.link>
-          </li>
+    <div class="flex flex-col p-4 w-full space-y-2">
+      <h5 class="lg:text-xl xl:text-2xl text-lg font-extrabold text-gray-900">
+        <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
+      </h5>
+      <div class="flex gap-6 items-center justify-center">
+        <.button tone={:icons}>
+          <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6 text-black" />
+        </.button>
+        <.button class="flex items-center p-0 items-start space-y-1">
+          <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
+          <span>Ally</span>
+        </.button>
+      </div>
 
-          <li class="mr-2">
-            <.link
-          patch={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@username}/allies")}
-          class={[@action == :allies && "text-blue-600 border-blue-600 active" || "border-transparent hover:text-gray-600 hover:border-gray-300", "inline-flex p-4 rounded-t-lg border-b-2 GROUP"]}>
-          Allies
-          </.link>
-          </li>
-        </ul>
+      <div class="space-y-1">
+        <div :if={@show_location}>
+          <div class="flex justify-center	">
+            <%= for location <- @user.locations do %>
+              <button class="flex  bg-white text-gray-800 xl:px-4 lg:px-1 py-2 rounded-full text-base font-bold">
+                <Heroicons.map_pin class="mr-2 -ml-1 w-6 h-6" />
+                <span><%= location %></span>
+              </button>
+            <% end %>
+          </div>
+        </div>
+        <p class="text-gray-700 text-base font-semibold">
+          <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
+        </p>
+        <p class="text-gray-700 font-medium text-base">
+          <%= @user |> get_in([:public_profile, Access.key(:bio, "-")]) %>
+        </p>
+
+        <div>
+          <span
+            :for={trait <- Map.get(@user, :traits, [])}
+            class="text-gray-500 text-base font-medium"
+          >
+            <span>#</span>
+            <%= trait %>
+          </span>
+        </div>
       </div>
     </div>
     """
@@ -1287,13 +1361,16 @@ defmodule PhosWeb.CoreComponents do
       class="absolute flex flex-col md:items-center md:justify-center md:inset-0 inset-x-0 bottom-0 bg-black/50 z-50 hidden"
     >
       <div class="flex md:hidden" />
-      <div id={"#{@id}-bg"} class="h-[375px] bg-white flex items-center rounded-t-lg md:rounded-b-lg">
+      <div
+        id={"#{@id}-bg"}
+        class="h-[375px] bg-white flex items-center rounded-t-lg           md:rounded-b-lg relative"
+      >
         <div
           id={"#{@id}-content"}
           class="w-full flex flex-col items-center justify-center p-6 space-y-2"
         >
           <img
-          :if={not is_nil(@user)}
+            :if={not is_nil(@user)}
             src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
             class=" h-16 w-16 lg:w-32 lg:h-32 border-4 border-white rounded-full object-cover"
           />
@@ -1301,7 +1378,13 @@ defmodule PhosWeb.CoreComponents do
           <h3 class="text-base font-normal text-gray-500 text-center">
             Join the tribe to share your thoughts with raizzypaizzy now!
           </h3>
-          <.button>Download the Scratchbac app</.button>
+          <a
+            href="https://play.google.com/store/apps/details?id=com.scratchbac.baladi"
+            target="_blank"
+          >
+            <.button type="submit">Download the Scratchbac app</.button>
+          </a>
+
           <span class="text-sm text-gray-500">
             <.link
               navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
@@ -1339,5 +1422,4 @@ defmodule PhosWeb.CoreComponents do
     )
     |> JS.focus_first(to: "##{id}-content")
   end
-
 end

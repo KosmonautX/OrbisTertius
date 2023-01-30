@@ -1,5 +1,5 @@
 <!--desktop View -->
-<section class=" container mx-auto md:mt-28 mt-14">
+<section class="container mx-auto md:mt-28 mt-14">
   <div
     :if={not is_nil(@orb.initiator) && @orb.initiator}
     class="flex lg:flex-row flex-col items-start mt-6 gap-4">
@@ -11,7 +11,7 @@
         </.user_profile>
       </div>
       <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md text-center">
-        <.user_information_card
+        <.user_information_card_orb
           id="orb-initiator-public-profile"
           user={@orb.initiator}
           flex=""
@@ -19,7 +19,7 @@
       </div>
     </div>
     <!-- Post card and Comments-->
-    <div class="px-3 lg:w-5/12  w-full mt-0 lg:flex-none justify-center items-center lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
+    <div class="px-3 lg:w-5/12  w-full mt-0 lg:flex-none justify-center items-center border border-gray-200 lg:rounded-xl shadow-sm mb-28">
       <.scry_orb id="orb" orb={@orb} />
       <.live_component
         module={PhosWeb.CommentLive.IndexComponent}
@@ -34,23 +34,11 @@
         socket={@socket}
         live_action={@live_action}
       />
-
-    <!--<.live_component
-      module={PhosWeb.CommentLive.ReplyComponent}
-      id="comment-reply-outbox"
-      changeset={@changeset}
-      action="new"
-      current_user={@current_user}
-      orb={@orb}
-      comment={@comment}
-      live_action={@live_action}
-    />-->
-
     </div>
-    <!--Related Post-->
-    <div class="px-3 space-y-4 w-full lg:w-4/12 h-auto">
+    <!--Desktop Related Post-->
+    <div class="hidden lg:block px-3 space-y-4 w-full lg:w-4/12 h-auto">
       <h5 class="text-left font-semibold text-lg py-1 px-2">
-    <%= "Other Posts by #{@orb.initiator.username}" %> </h5>
+      <%= "Other Posts by #{@orb.initiator.username}" %> </h5>
       <hr class="h-px bg-gray-900 border-2" />
       <.live_component
         module={PhosWeb.Components.ScrollOrb}
