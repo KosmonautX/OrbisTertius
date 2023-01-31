@@ -49,7 +49,7 @@ defmodule PhosWeb.UserLoginLive do
     IO.inspect(params)
     {:ok,
       assign(socket, email: email)
-      |> assign_new(:return_to, fn -> Map.get(params, "return_to") end),
+      |> assign_new(:return_to, fn -> Map.get(params, "return_to", "/welcome") end),
       temporary_assigns: [email: nil]}
   end
 end
