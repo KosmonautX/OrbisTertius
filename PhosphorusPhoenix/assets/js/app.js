@@ -6,16 +6,16 @@ import Hooks from "./hooks";
 // Include phoenix_html to handle method=PUT/DELETE in forms and buttons.
 //
 // Establish Phoenix Socket and LiveView configuration.
-import {Socket} from "phoenix"
-import {LiveSocket} from "phoenix_live_view"
+import { Socket } from "phoenix"
+import { LiveSocket } from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 import ModalApplication from "./modal_application"
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-let liveSocket = new LiveSocket("/live", Socket, {hooks: Hooks, params: {_csrf_token: csrfToken}})
+let liveSocket = new LiveSocket("/live", Socket, { hooks: Hooks, params: { _csrf_token: csrfToken } })
 
 // Show progress bar on live navigation and form submits
-topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
+topbar.config({ barColors: { 0: "#29d" }, shadowColor: "rgba(0, 0, 0, .3)" })
 window.addEventListener("phx:page-loading-start", info => topbar.delayedShow(200))
 window.addEventListener("phx:page-loading-stop", () => {
   topbar.hide()
@@ -23,6 +23,20 @@ window.addEventListener("phx:page-loading-stop", () => {
 })
 
 window.addEventListener("DOMContentLoaded", ModalApplication)
+
+
+window.addEventListener("phos:clipcopy", (event) => {
+  console.log(event.target);
+  if ("clipboard" in navigator) {
+    const text = event.target.textContent;
+    navigator.clipboard.writeText(text);
+    alert(`Copy link to Scratchbac : ${text}`);
+
+  } else {
+    alert("Sorry, your browser does not support clipboard copy.");
+  }
+});
+
 
 // connect if there are any LiveViews on the page
 liveSocket.connect()
@@ -48,3 +62,5 @@ window.liveSocket = liveSocket
 //
 
 window.addEventListener("NextCarousel", e => console.log("clicked!", e.detail))
+
+

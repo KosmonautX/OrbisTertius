@@ -5,7 +5,7 @@ defmodule PhosWeb.UserForgotPasswordLive do
 
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-sm">
+    <div class="w-full flex flex-col justify-center h-screen items-center">
       <.header class="text-center">
         Forgot your password?
         <:subtitle>We'll send a password reset link to your inbox</:subtitle>
@@ -19,12 +19,16 @@ defmodule PhosWeb.UserForgotPasswordLive do
           </.button>
         </:actions>
       </.simple_form>
-
-      <p class="mt-2">
-        <.link patch={~p"/users/register"}>Sign up</.link>
-        <span> | </span>
-        <.link patch={~p"/users/log_in"}>Log in</.link>
-      </p>
+      <div class="mt-3 text-sm text-gray-500 ">
+        <.link patch={~p"/users/register"} )} class="text-sm text-teal-400 font-bold hover:underline">
+          Sign up
+        </.link>
+        Or
+        <.link patch={~p"/users/log_in"} class="text-sm text-teal-400 font-bold hover:underline">
+          Sign in
+        </.link>
+        via Web
+      </div>
     </div>
     """
   end

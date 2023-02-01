@@ -2,7 +2,8 @@
   :if={@live_action in [:edit]}
   id="edit_profile_modal"
   show={@live_action in [:edit]}
-  on_cancel={JS.navigate(~p"/user/#{@current_user.username}")}>
+  on_cancel={JS.navigate(~p"/user/#{@current_user.username}")}
+>
   <.live_component
     module={PhosWeb.UserProfileLive.FormComponent}
     id={@current_user.id}
@@ -10,49 +11,54 @@
     action={@live_action}
     user={@user}
     current_user={@current_user}
-    return_to={~p"/user/#{@current_user.username}"}/>
+    return_to={~p"/user/#{@current_user.username}"}
+  />
 </.modal>
 
 <section class="w-full flex flex-col items-center mt-14 gap-4 justify-center lg:mt-24 ">
-    <div class="w-full h-80">
+  <div class="w-full h-80">
     <.user_profile id="orb-user-profile" user={@user} location={true}>
-      <.link :if={@current_user && @user.id == @current_user.id} patch={~p"/user/#{@current_user.username}/edit"}>
+      <.link
+        :if={@current_user && @user.id == @current_user.id}
+        patch={~p"/user/#{@current_user.username}/edit"}
+      >
         <Heroicons.camera class="lg:w-11 lg:h-11 h-10 w-10 fill-white" />
       </.link>
     </.user_profile>
-    </div>
+  </div>
 
-    <div class="lg:hidden block w-full">
-        <.user_information_card
-        :if={not is_nil(@user.public_profile)}
-        show_location={false}
-        user={@user}
-        flex="flex">
-        </.user_information_card>
-    </div>
+  <div class="lg:hidden block w-full">
+    <.user_information_card
+      :if={not is_nil(@user.public_profile)}
+      show_location={false}
+      user={@user}
+      flex="flex"
+    >
+    </.user_information_card>
+  </div>
 
-    <div class="lg:hidden block mt-4 w-full items-center justify-center">
-      <.tabs_profile id="orb-user-tabs-profile" action={@live_action} username={@user.username} />
-    </div>
+  <div class="lg:hidden block sticky top-12 md:top-16 bg-white z-10 left-0 w-full items-center justify-center">
+    <.tabs_profile id="orb-user-tabs-profile" action={@live_action} username={@user.username} />
+  </div>
 
-    <div class="w-full h-auto container mx-auto lg:flex lg:flex-row gap-8 mb-14">
-    <div class="flex lg:flex-1 flex-col lg:w-4/12 w-full" :if={@live_action != :allies}>
+  <div class="w-full h-auto container mx-auto lg:flex lg:flex-row gap-8 mb-14">
+    <div :if={@live_action != :allies} class="flex lg:flex-1 flex-col lg:w-4/12 w-full">
       <div class="hidden lg:block">
         <.user_information_card
-        :if={not is_nil(@user.public_profile)}
-        show_location={false}
-        user={@user}
-        flex="flex">
-      </.user_information_card>
+          :if={not is_nil(@user.public_profile)}
+          show_location={false}
+          user={@user}
+          flex="flex"
+        >
+        </.user_information_card>
       </div>
-        <h5 class="lg:block hidden text-left font-semibold text-lg py-1 px-2">Posts</h5>
-        <hr class="lg:block hidden h-px bg-gray-900 border-2" />
-        <ul :for={orb <- @orbs} class="p-2">
-          <li class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
-            <.scry_orb id="orb-history" orb={orb}>
-            </.scry_orb>
-          </li>
-        </ul>
+      <h5 class="lg:block hidden text-left font-semibold text-lg py-1 px-2">Posts</h5>
+      <hr class="lg:block hidden h-px bg-gray-900 border-2" />
+      <ul :for={orb <- @orbs} class="p-2">
+        <li class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
+          <.scry_orb id="orb-history" orb={orb}></.scry_orb>
+        </li>
+      </ul>
     </div>
 
     <div id="ally_list" class="lg:flex-1 w-full">
@@ -60,12 +66,12 @@
       <hr class="lg:block hidden h-px bg-gray-900 border-2" />
       <div class="px-2">
         <.live_component
-        module={PhosWeb.Components.ScrollAlly}
-        id="infinite-home"
-        ally_list={@ally_list}
-        page={@page}
-      />
+          module={PhosWeb.Components.ScrollAlly}
+          id="infinite-home"
+          ally_list={@ally_list}
+          page={@page}
+        />
       </div>
-     </div>
     </div>
+  </div>
 </section>

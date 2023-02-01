@@ -11,5 +11,5 @@ export default {
   InitModalMap,
   Scroll,
   Carousel,
-  ModalApplication
+  ModalApplication,
 }
