@@ -15,11 +15,21 @@ defmodule PhosWeb.OrbLive.Show do
         Comments.get_root_comments_by_orb(orb.id)
         |> decode_to_comment_tuple_structure()
 
+      ally = case Phos.Folk.get_relation_by_pair(user.id, orb.initiator_id) do
+        %Phos.Users.RelationBranch{root: root} = _branch ->
+          case user.id == root.initiator_id do
+            true -> root.state
+            _ -> "Requesting"
+          end
+        _ -> false
+      end
+      IO.inspect(ally)
 
       {:ok,
        socket
        |> assign(:orb, orb)
        |> assign_meta(orb)
+       |> assign(:ally, ally)
        |> assign(:comments, comments)
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
@@ -40,6 +50,7 @@ defmodule PhosWeb.OrbLive.Show do
       {:ok,
        socket
        |> assign(:orb, orb)
+       |> assign(:ally, false)
        |> assign_meta(orb)
        |> assign(:comments, comment)
        |> assign(:comment, %Comments.Comment{})
@@ -149,6 +160,34 @@ defmodule PhosWeb.OrbLive.Show do
   def handle_event("prev", _, %{assigns: %{active_image: active}} = socket) do
     IO.inspect(active)
     {:noreply, assign(socket, active_image: active - 1)}
+  end
+
+  def handle_event("add_ally", %{"ally-id" => acceptor_id}, %{assigns: %{current_user: user}} = socket) do
+    case Phos.Folk.add_friend(user.id, acceptor_id) do
+      {:ok, %Phos.Users.RelationRoot{} = _relation} -> 
+        {:noreply, 
+          socket
+          |> put_flash(:info, "Ally request sent!")
+          |> assign(:ally, "requested")}
+      _ -> {:noreply, socket}
+    end
+  end
+
+  def handle_event("delete_ally_request", %{"ally-id" => acceptor_id}, %{assigns: %{current_user: user}} = socket) do
+    with %Phos.Users.RelationBranch{root: root} <- Phos.Folk.get_relation_by_pair(user.id, acceptor_id),
+         {:ok, _rel} <- Phos.Folk.update_relation(root, %{"state" => "blocked"}) do
+      {:noreply, 
+        socket
+        |> put_flash(:info, "Ally request updated.")
+        |> assign(:ally, "blocked")}
+    else
+      {:error, changeset} ->
+        {:noreply, 
+          Enum.reduce(changeset.errors, socket, fn soc, {field, error} ->
+            put_flash(soc, :error, to_string(field) <> " " <> translate_error(error))
+          end)}
+      _ -> {:noreply, socket}
+    end
   end
 
   # Save comment flow

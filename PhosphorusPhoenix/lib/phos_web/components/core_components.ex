@@ -1229,10 +1229,10 @@ defmodule PhosWeb.CoreComponents do
   end
 
   attr(:id, :string, required: true)
-  attr(:navigate, :any)
-  slot(:inner_block, required: true)
   attr(:user, :map, required: true)
+  attr(:navigate, :any)
   attr(:location, :boolean)
+  slot(:inner_block)
 
   @spec user_profile(map) :: Phoenix.LiveView.Rendered.t()
   def user_profile(assigns) do
@@ -1257,13 +1257,11 @@ defmodule PhosWeb.CoreComponents do
         </div>
         <div
           :if={not is_nil(@location)}
-          class="flex-1 flex flex-col items-center md:mt-4 mt-2 md:px-8"
-        >
+          class="flex-1 flex flex-col items-center md:mt-4 mt-2 md:px-8">
           <div class="flex items-center space-x-4">
             <button
               :for={location <- Map.get(@user, :locations, [])}
-              class="flex items-center bg-white  text-black px-4 py-2 rounded-full md:text-base text-sm font-bold transition duration-100"
-            >
+              class="flex items-center bg-white  text-black px-4 py-2 rounded-full md:text-base text-sm font-bold transition duration-100" >
               <Heroicons.map_pin class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4" />
               <span><%= location %></span>
             </button>
@@ -1339,9 +1337,16 @@ defmodule PhosWeb.CoreComponents do
   attr(:flex, :any, default: nil)
   attr(:id, :string, required: true)
   attr(:show_location, :boolean, default: true)
+  attr(:current_user, :map, default: %{})
+  attr(:ally, :any, default: false)
 
   def user_information_card_orb(assigns) do
-    assigns = assign(assigns, :user, Map.from_struct(assigns.user))
+    current_user = assigns.current_user || %{}
+    myself = case Map.get(current_user, :id) do
+      nil -> false
+      id -> id == assigns.user.id
+    end
+    assigns = assign(assigns, user: Map.from_struct(assigns.user), current_user: current_user, myself: myself)
 
     ~H"""
     <div class="flex flex-col p-4 w-full space-y-2">
@@ -1352,10 +1357,48 @@ defmodule PhosWeb.CoreComponents do
         <.button tone={:icons}>
           <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6 text-black" />
         </.button>
-        <.button class="flex items-center p-0 items-start space-y-1">
-          <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
-          <span>Ally</span>
-        </.button>
+        <div :if={is_nil(Map.get(@current_user, :id, nil))}>
+          <.button :if={is_nil(Map.get(@current_user, :id, nil))} 
+            class="flex items-center p-0 items-start align-center"
+            phx-click={show_welcome_message("welcome_message")}>
+            <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
+            <span>Ally</span>
+          </.button>
+        </div>
+
+        <div :if={not is_nil(Map.get(@current_user, :id, nil))}>
+          <.button :if={is_boolean(@ally) and not @ally and not @myself} 
+            class="flex items-center p-0 items-start align-center"
+            phx-click="add_ally"
+            phx-value-ally-id={@user.id}>
+            <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
+            <span>Ally</span>
+          </.button>
+          <div :if={is_bitstring(@ally)}>
+            <div :if={@ally == "requested"}>
+              <.button class="flex items-center p-0 items-start align-center"
+                phx-click={show_modal("delete_friend_request")}>
+                <span><%= @ally %></span>
+              </.button>
+              <.modal id="delete_friend_request" on_confirm={JS.push("delete_ally_request", value: %{"ally-id" => @user.id}) |> hide_modal("delete_friend_request")}>
+                <:title>Delete friend request confirmation ?</:title>
+                <div>
+                  Are you sure want to delete your friend request to <%= @user.username %> ?
+                </div>
+                <:confirm>Yes, delete</:confirm>
+                <:cancel>No, keep requesting</:cancel>
+              </.modal>
+            </div>
+          </div>
+
+          <.button :if={@ally == "blocked"} tone={:danger} class="flex items-center p-0 items-start align-center">
+            <span><%= String.capitalize(@ally) %></span>
+          </.button>
+
+          <.button :if={@ally == "completed"} tone={:success} class="flex items-center p-0 items-start align-center">
+            <span>Friend</span>
+          </.button>
+        </div>
       </div>
 
       <div class="space-y-1">
@@ -1411,6 +1454,7 @@ defmodule PhosWeb.CoreComponents do
           <div class="mt-3 text-sm text-gray-500 " :if={is_nil(@user)}>
             <.link
               navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
+              phx-click={hide_welcome_modal(@id)}
               class="text-sm text-teal-400 font-bold hover:underline"
             >
               Sign up
@@ -1418,6 +1462,7 @@ defmodule PhosWeb.CoreComponents do
             Or
             <.link
               navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/log_in")}
+              phx-click={hide_welcome_modal(@id)}
               class="text-sm text-teal-400 font-bold hover:underline"
             >
               Sign in
@@ -1444,5 +1489,16 @@ defmodule PhosWeb.CoreComponents do
       display: "flex"
     )
     |> JS.focus_first(to: "##{id}-content")
+  end
+
+  def hide_welcome_modal(js \\ %JS{}, id) do
+    js
+    |> JS.hide(
+      to: "##{id}-bg",
+      transition: {"transition-all transform ease-in duration-200", "opacity-100", "opacity-0"}
+    )
+    |> hide("##{id}-container")
+    |> JS.hide(to: "##{id}", transition: {"block", "block", "hidden"})
+    |> JS.pop_focus()
   end
 end
