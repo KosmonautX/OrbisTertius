@@ -67,7 +67,7 @@ defmodule PhosWeb.Router do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :required_authenticated_user,
-      on_mount: {PhosWeb.Menshen.Gate, :ensure_authenticated} do
+      on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated},{PhosWeb.Timezone, :timezone}] do
 
       get "/welcome", PageController, :welcome
 
@@ -121,7 +121,7 @@ defmodule PhosWeb.Router do
     end
 
     live_session :guest_if_not_logged_in,
-      on_mount: {PhosWeb.Menshen.Gate, :ensure_authenticated} do
+      on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Timezone, :timezone}] do
 
       live "/orb/:id", OrbLive.Show, :show
       live "/user/:username", UserProfileLive.Show, :show

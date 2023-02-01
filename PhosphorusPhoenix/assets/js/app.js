@@ -12,7 +12,27 @@ import topbar from "../vendor/topbar"
 import ModalApplication from "./modal_application"
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-let liveSocket = new LiveSocket("/live", Socket, { hooks: Hooks, params: { _csrf_token: csrfToken } })
+let liveSocket = new LiveSocket("/live", Socket, {
+  params:
+  {
+    _csrf_token: csrfToken,
+    locale: Intl.NumberFormat().resolvedOptions().locale,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    timezone_offset: -(new Date().getTimezoneOffset())
+  },
+  metadata:
+  {
+    keyup: (e, el) => {
+      return {
+        key: e.key,
+        metaKey: e.metaKey,
+        repeat: e.repeat
+      }
+    }
+  },
+  hooks: Hooks
+}
+)
 
 // Show progress bar on live navigation and form submits
 topbar.config({ barColors: { 0: "#29d" }, shadowColor: "rgba(0, 0, 0, .3)" })
@@ -36,6 +56,9 @@ window.addEventListener("phos:clipcopy", (event) => {
     alert("Sorry, your browser does not support clipboard copy.");
   }
 });
+
+
+
 
 
 // connect if there are any LiveViews on the page

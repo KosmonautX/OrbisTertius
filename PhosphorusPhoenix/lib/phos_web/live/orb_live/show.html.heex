@@ -20,10 +20,10 @@
     </div>
     <!-- Post card and Comments-->
     <div class="px-3 lg:w-5/12  w-full mt-0 lg:flex-none justify-center items-center border border-gray-200 lg:rounded-xl shadow-sm mb-28">
-      <.scry_orb id="Orb" orb={@orb} />
+      <.scry_orb id="Orb" orb={@orb} timezone={@timezone} />
       <.live_component
         module={PhosWeb.CommentLive.IndexComponent}
-        id="commentindex"
+        id="cotimezone1={@timezone} mmentindex"
         changeset={@changeset}
         action="new"
         orb={@orb}
@@ -46,6 +46,7 @@
         id="infinite-home"
         orbs={@orbs}
         page={@page}
+        timezone1={@timezone}
       />
     </div>
   </div>

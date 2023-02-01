@@ -6,15 +6,19 @@ defmodule PhosWeb.OrbLive.Show do
   alias PhosWeb.Utility.Encoder
 
   @impl true
-  def mount(%{"id" => id} = _params, _session, %{assigns: %{current_user: %Phos.Users.User{} = user}} = socket) do
-    with %Action.Orb{} = orb <-  Action.get_orb(id, user.id) do
-      orb = orb
-            |> put_in([Access.key(:initiator), Access.key(:locations)], ["Singapore", "Vandavasi"])
+  def mount(
+        %{"id" => id} = _params,
+        _session,
+        %{assigns: %{current_user: %Phos.Users.User{} = user}} = socket
+      ) do
+    with %Action.Orb{} = orb <- Action.get_orb(id, user.id) do
+      orb =
+        orb
+        |> put_in([Access.key(:initiator), Access.key(:locations)], ["Singapore", "Vandavasi"])
 
       comments =
         Comments.get_root_comments_by_orb(orb.id)
         |> decode_to_comment_tuple_structure()
-
 
       {:ok,
        socket
@@ -29,9 +33,10 @@ defmodule PhosWeb.OrbLive.Show do
 
   @impl true
   def mount(%{"id" => id} = _parmas, _session, socket) do
-    with {:ok, orb} <-  Action.get_orb(id) do
-      orb = orb
-            |> put_in([Access.key(:initiator), Access.key(:locations)], ["Singapore", "Vandavasi"])
+    with {:ok, orb} <- Action.get_orb(id) do
+      orb =
+        orb
+        |> put_in([Access.key(:initiator), Access.key(:locations)], ["Singapore", "Vandavasi"])
 
       comment =
         Comments.get_root_comments_by_orb(orb.id)
@@ -87,7 +92,6 @@ defmodule PhosWeb.OrbLive.Show do
     socket
     |> assign(:comment, Comments.get_comment!(cid))
     |> assign(:page_title, "Replying")
-
   end
 
   defp apply_action(socket, :show_ancestor, %{"id" => orb_id, "cid" => cid} = _params) do
@@ -121,7 +125,8 @@ defmodule PhosWeb.OrbLive.Show do
   defp assign_meta(socket, orb) do
     assign(socket, :meta, %{
       title: "#{orb.title} by #{orb.initiator.username}",
-      description: "#{get_in(orb, [Access.key(:payload, %{}), Access.key(:info, "")])} #{(orb |> get_in([Access.key(:payload, %{}), Access.key(:inner_title, "-")]))}",
+      description:
+        "#{get_in(orb, [Access.key(:payload, %{}), Access.key(:info, "")])} #{orb |> get_in([Access.key(:payload, %{}), Access.key(:inner_title, "-")])}",
       type: "website",
       image: Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless"),
       url: url(socket, ~p"/orbs/#{orb.id}")
@@ -147,7 +152,6 @@ defmodule PhosWeb.OrbLive.Show do
   end
 
   def handle_event("prev", _, %{assigns: %{active_image: active}} = socket) do
-    IO.inspect(active)
     {:noreply, assign(socket, active_image: active - 1)}
   end
 
@@ -259,34 +263,6 @@ defmodule PhosWeb.OrbLive.Show do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, changeset: changeset)}
-    end
-  end
-
-  defp save_comment(socket, :edit_comment, comment_params) do
-    case Comments.update_comment(socket.assigns.comment, %{body: comment_params["body"]}) do
-      {:ok, comment} ->
-        comment = comment |> Phos.Repo.preload([:initiator, :orb])
-
-        updated_comment_index =
-          Enum.find_index(socket.assigns.comments, fn c ->
-            elem(c, 1).id == socket.assigns.comment.id
-          end)
-
-        updated_comments =
-          List.replace_at(
-            socket.assigns.comments,
-            updated_comment_index,
-            {String.split(to_string(comment.path), ".") |> List.to_tuple(), comment}
-          )
-
-        {:noreply,
-         socket
-         |> put_flash(:info, "Comment updated successfully")
-         |> push_patch(to: ~p"/orb/#{comment.orb_id}")
-         |> assign(:comments, updated_comments)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :changeset, changeset)}
     end
   end
 

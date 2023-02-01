@@ -995,6 +995,7 @@ defmodule PhosWeb.CoreComponents do
   """
   attr(:id, :string, required: true)
   attr(:orb, :any)
+  attr(:timezone, :string)
 
   def scry_orb(assigns) do
     assigns =
@@ -1005,6 +1006,8 @@ defmodule PhosWeb.CoreComponents do
           assigns.orb.central_geohash |> Phos.Mainland.World.locate() ||
           "Somewhere"
       )
+
+    IO.inspect("Inside Scry Orb timezone")
 
     ~H"""
     <.user_info_bar id={"#{@id}-scry-orb-#{@orb.id}"} user={@orb.initiator}>
@@ -1035,10 +1038,11 @@ defmodule PhosWeb.CoreComponents do
     >
       <.orb_information id={"#{@id}-scry-orb-#{@orb.id}"} title={@orb.title} />
     </.link>
-    <.orb_action id={"#{@id}-scry-orb-#{@orb.id}"} orb={@orb} />
+    <.orb_action id={"#{@id}-scry-orb-#{@orb.id}"} orb={@orb} date={@timezone} />
     """
   end
 
+  @spec media_carousel(map) :: Phoenix.LiveView.Rendered.t()
   @doc """
    User Post Image
    Desktop View
@@ -1173,17 +1177,18 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:id, :string, required: true)
   attr(:orb, :any)
+  attr(:date, :string)
 
   # TODO orb_actions wiring with data
   def orb_action(assigns) do
     ~H"""
     <div id={"#{@id}-actions"} class="flex justify-between p-2 w-full font-bold text-sm text-gray-600">
       <div>
-        <span>10 Oct 2001</span>
+        <span><%= get_date(@orb.inserted_at,@date) %></span>
       </div>
       <div class="flex flex-cols space-x-4">
         <button class="text-center inline-flex items-center">
-          <Heroicons.chat_bubble_oval_left_ellipsis class="-ml-1 w-6 h-6" />15
+          <Heroicons.chat_bubble_oval_left_ellipsis class="-ml-1 w-6 h-6" /><%= @orb.comment_count %>
         </button>
 
         <button
@@ -1460,5 +1465,13 @@ defmodule PhosWeb.CoreComponents do
       display: "flex"
     )
     |> JS.focus_first(to: "##{id}-content")
+  end
+
+  defp get_date(time, timezone) do
+    time
+    |> DateTime.from_naive!(timezone.timezone)
+    |> Timex.shift(minutes: trunc(timezone.timezone_offset))
+    |> Timex.format("{D}-{0M}-{YYYY}")
+    |> elem(1)
   end
 end

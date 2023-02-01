@@ -74,7 +74,7 @@ defmodule PhosWeb.Util.Migrator do
       {:ok, %{"fyr_id" => data["localId"], "email" => email_provider(providers)}}
     end)
     |> Multi.run(:user, fn _repo, %{payload: payload} ->
-      dbg()
+
       case Users.get_user_by_email(payload["email"]) do
         %Users.User{} = user -> {:ok, user}
         nil ->
