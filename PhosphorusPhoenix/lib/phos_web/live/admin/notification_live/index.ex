@@ -20,7 +20,7 @@ defmodule PhosWeb.Admin.NotificationLive.Index do
   end
 
   def handle_event("renew", %{}, socket) do
-    Phos.Notification.Scheduller.renew()
+    reload_notification(self())
     {:noreply,
      socket
      |> put_flash(:info, "Renewing Notifications")

@@ -1023,8 +1023,6 @@ defmodule PhosWeb.CoreComponents do
           "Somewhere"
       )
 
-    IO.inspect("Inside Scry Orb timezone")
-
     ~H"""
     <.user_info_bar id={"#{@id}-scry-orb-#{@orb.id}"} user={@orb.initiator}>
       <:information :if={!is_nil(@orb_location)}>
