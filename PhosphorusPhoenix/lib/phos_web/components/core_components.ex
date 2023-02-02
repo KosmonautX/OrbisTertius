@@ -44,7 +44,9 @@ defmodule PhosWeb.CoreComponents do
   slot(:inner_block, required: true)
   slot(:title)
   slot(:subtitle)
-  slot(:confirm)
+  slot(:confirm, doc: "Default button for slot") do
+    attr :tone, :atom
+  end
   slot(:cancel)
 
   def modal(assigns) do
@@ -97,6 +99,7 @@ defmodule PhosWeb.CoreComponents do
                 >
                   <.button
                     :for={confirm <- @confirm}
+                    tone={Map.get(confirm, :tone, :primary)}
                     id={"#{@id}-confirm"}
                     phx-click={@on_confirm}
                     phx-disable-with
@@ -230,7 +233,7 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:tone, :atom,
     default: :primary,
-    values: ~w(primary success warning danger icons)a,
+    values: ~w(primary success warning danger icons dark)a,
     doc: "Theme of the button"
   )
 
@@ -260,6 +263,7 @@ defmodule PhosWeb.CoreComponents do
   defp button_class(:primary), do: "bg-teal-400 hover:bg-teal-600"
   defp button_class(:warning), do: "bg-yellow-400 hover:bg-yellow-600"
   defp button_class(:success), do: "bg-green-400 hover:bg-green-600"
+  defp button_class(:dark), do: "text-gray-900 hover:text-white border-gray-800 hover:bg-gray-900 border"
   defp button_class(:icons), do: "bg-transparent hover:bg-gray-100"
 
   defp default_button_class do
@@ -1333,6 +1337,77 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  attr :user_id, :string, required: true
+  attr :username, :string, required: true
+  attr :current_user_id, :string
+  attr :ally, :any, default: false
+  def ally_button(assigns) do
+    assigns = assign(assigns, myself: assigns.current_user_id == assigns.user_id)
+
+    ~H"""
+    <div class="flex gap-6 items-center justify-center">
+      <.button tone={:icons}>
+        <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6 text-black" />
+      </.button>
+      <div :if={@current_user_id == ""}>
+        <.button class="flex items-center p-0 items-start align-center"
+          phx-click={show_welcome_message("welcome_message")}>
+          <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
+          <span>Ally</span>
+        </.button>
+      </div>
+
+      <div :if={@current_user_id != ""}>
+        <.button :if={is_boolean(@ally) and not @ally and not @myself} 
+          class="flex items-center p-0 items-start align-center"
+          phx-click="add_ally"
+          phx-value-ally-id={@user_id}>
+          <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
+          <span>Ally</span>
+        </.button>
+
+        <div :if={is_bitstring(@ally)}>
+          <div :if={@ally == "requested"}>
+            <.button class="flex items-center p-0 items-start align-center"
+              phx-click={show_modal("delete_friend_request")}>
+              <span><%= String.capitalize(@ally) %></span>
+            </.button>
+            <.modal id="delete_friend_request" on_confirm={JS.push("delete_ally_request", value: %{"ally-id" => @user_id}) |> hide_modal("delete_friend_request")}>
+              <:title>Delete friend request confirmation ?</:title>
+              <div>
+                Are you sure want to delete your friend request to <%= @username %> ?
+              </div>
+              <:confirm tone={:danger}>Yes, delete</:confirm>
+              <:cancel>No, keep requesting</:cancel>
+            </.modal>
+          </div>
+        </div>
+
+        <.button :if={@ally == "blocked"} tone={:danger} class="flex items-center p-0 items-start align-center">
+          <span><%= String.capitalize(@ally) %></span>
+        </.button>
+
+        <.button :if={@ally == "completed"} tone={:success} class="flex items-center p-0 items-start align-center">
+          <span>Chat</span>
+        </.button>
+
+        <div :if={@ally == "requesting"} class="flex">
+          <.button tone={:success}
+            phx-click={JS.push("accept_ally_request", value: %{"ally-id" => @user_id})}
+            class="flex items-center p-0 items-start align-center">
+            <span>Accept</span>
+          </.button>
+          <.button tone={:dark}
+            phx-click={JS.push("reject_ally_request", value: %{"ally-id" => @user_id})}
+            class="flex items-center p-0 items-start align-center ml-2">
+            <span>Reject</span>
+          </.button>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
   attr(:user, :map, required: true)
   attr(:flex, :any, default: nil)
   attr(:id, :string, required: true)
@@ -1353,53 +1428,7 @@ defmodule PhosWeb.CoreComponents do
       <h5 class="lg:text-xl xl:text-2xl text-lg font-extrabold text-gray-900">
         <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
       </h5>
-      <div class="flex gap-6 items-center justify-center">
-        <.button tone={:icons}>
-          <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6 text-black" />
-        </.button>
-        <div :if={is_nil(Map.get(@current_user, :id, nil))}>
-          <.button :if={is_nil(Map.get(@current_user, :id, nil))} 
-            class="flex items-center p-0 items-start align-center"
-            phx-click={show_welcome_message("welcome_message")}>
-            <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
-            <span>Ally</span>
-          </.button>
-        </div>
-
-        <div :if={not is_nil(Map.get(@current_user, :id, nil))}>
-          <.button :if={is_boolean(@ally) and not @ally and not @myself} 
-            class="flex items-center p-0 items-start align-center"
-            phx-click="add_ally"
-            phx-value-ally-id={@user.id}>
-            <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
-            <span>Ally</span>
-          </.button>
-          <div :if={is_bitstring(@ally)}>
-            <div :if={@ally == "requested"}>
-              <.button class="flex items-center p-0 items-start align-center"
-                phx-click={show_modal("delete_friend_request")}>
-                <span><%= @ally %></span>
-              </.button>
-              <.modal id="delete_friend_request" on_confirm={JS.push("delete_ally_request", value: %{"ally-id" => @user.id}) |> hide_modal("delete_friend_request")}>
-                <:title>Delete friend request confirmation ?</:title>
-                <div>
-                  Are you sure want to delete your friend request to <%= @user.username %> ?
-                </div>
-                <:confirm>Yes, delete</:confirm>
-                <:cancel>No, keep requesting</:cancel>
-              </.modal>
-            </div>
-          </div>
-
-          <.button :if={@ally == "blocked"} tone={:danger} class="flex items-center p-0 items-start align-center">
-            <span><%= String.capitalize(@ally) %></span>
-          </.button>
-
-          <.button :if={@ally == "completed"} tone={:success} class="flex items-center p-0 items-start align-center">
-            <span>Friend</span>
-          </.button>
-        </div>
-      </div>
+      <.ally_button current_user_id={Map.get(@current_user, :id, "")} user_id={@user.id} ally={@ally} username={@user.username} />
 
       <div class="space-y-1">
         <div :if={@show_location}>
