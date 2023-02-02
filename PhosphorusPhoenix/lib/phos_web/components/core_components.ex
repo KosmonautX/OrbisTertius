@@ -830,6 +830,14 @@ defmodule PhosWeb.CoreComponents do
           >
             Open app
           </.button>
+          <button
+            id="theme-toggle"
+            type="button"
+            class=" text-gray-500 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5"
+          >
+            <Heroicons.moon solid id="theme-toggle-dark-icon" class="hidden w-4 h-4" />
+            <Heroicons.sun solid id="theme-toggle-light-icon" class="hidden w-4 h-4" />
+          </button>
         </div>
         <div class="hidden lg:block items-center justify-between w-full  md:w-auto">
           <ul class="flex flex-col md:flex-row md:space-x-6  text-gray-700">
@@ -1184,7 +1192,7 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <div id={"#{@id}-actions"} class="flex justify-between p-2 w-full font-bold text-sm text-gray-600">
       <div>
-        <span><%= get_date(@orb.inserted_at,@date) %></span>
+        <span><%= get_date(@orb.inserted_at, @date) %></span>
       </div>
       <div class="flex flex-cols space-x-4">
         <button class="text-center inline-flex items-center">
