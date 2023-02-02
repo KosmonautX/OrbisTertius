@@ -1,24 +1,21 @@
 <div class="w-half p-2">
-  <.card title="Detail orb">
+  <.card title="Scrying orb">
     <.list>
       <:item title="ID"><%= @orb.id %></:item>
       <:item title="Title"><%= @orb.title %></:item>
       <:item title="Extinguish"><%= @orb.extinguish %></:item>
       <:item title="Source"><%= @orb.source %></:item>
       <:item title="Status">
-        <div :if={@orb.active} class="flex">
-          <div class="flex items-center">
-            <span class="h-2 w-2 flex rounded-full bg-green-500 mr-2" />
-            Active
-          </div>
-          <button phx-click="take-down" type="button" class="ml-6 button button-xs button-danger">
-          Take down
-          </button>
-        </div>
-        <div :if={not @orb.active}>
+      <div :if={not @orb.active} class="flex">
           <span class="h-2 w-2 flex rounded-full bg-red-500 mr-2" />
           Inactive
+      </div>
+        <div :if={@orb.active} class="flex">
+            <span class="h-2 w-2 flex rounded-full bg-green-500 mr-2" />
+            Active
         </div>
+        <.button phx-click="active" tone={:warning}>Flip Active</.button>
+        <.button phx-click="destroy" tone={:danger}> Destroy</.button>
       </:item>
       <:item title="Last update"><%= Timex.format!(@orb.updated_at, "{D} {Mshort} {YY} {h24}:{m}") %></:item>
       <:item title="Created at"><%= Timex.format!(@orb.inserted_at, "{D} {Mshort} {YY} {h24}:{m}") %></:item>

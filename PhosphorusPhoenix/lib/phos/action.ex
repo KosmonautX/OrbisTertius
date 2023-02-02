@@ -444,6 +444,22 @@ defmodule Phos.Action do
 
   #   """
   def delete_orb(%Orb{} = orb) do
+    from(o in Phos.Comments.Comment,
+          as: :o,
+          where: o.orb_id == ^orb.id,
+        )
+        |> Phos.Repo.all()
+        |> Enum.map(fn com -> Phos.Comments.delete_comment(com)
+      end)
+
+      from(o in Phos.Message.Memory,
+          as: :o,
+          where: o.orb_subject_id == ^orb.id
+        )
+        |> Phos.Repo.all()
+        |> Enum.map(fn mem -> Phos.Message.delete_memory(mem)
+      end)
+
     Repo.delete(orb)
   end
 
