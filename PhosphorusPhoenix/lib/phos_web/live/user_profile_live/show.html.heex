@@ -50,7 +50,7 @@
           user={@user}>
         </.user_information_card>
       </div>
-      <h5 class="lg:block hidden text-left font-semibold text-lg py-1 px-2">Posts</h5>
+      <h5 class="lg:block hidden text-left font-semibold text-lg py-1 px-2 dark:text-white">Posts</h5>
       <hr class="lg:block hidden h-px bg-gray-900 border-2" />
       <ul :for={orb <- @orbs} class="p-2">
         <li class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
@@ -60,8 +60,8 @@
     </div>
 
     <div id="ally_list" class="lg:flex-1 w-full">
-      <h5 class="lg:block hidden text-left font-semibold text-lg py-1 px-2 p-4">Allies</h5>
-      <hr class="lg:block hidden h-px bg-gray-900 border-2" />
+      <h5 class="lg:block hidden text-left font-semibold text-lg py-1 px-2 p-4 dark:text-white">Allies</h5>
+      <hr class="lg:block hidden h-px bg-gray-900 border-2 mb-2" />
       <div class="px-2">
         <.live_component
           module={PhosWeb.Components.ScrollAlly}

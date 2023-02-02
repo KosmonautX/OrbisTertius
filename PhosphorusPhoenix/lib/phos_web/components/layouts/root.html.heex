@@ -16,7 +16,7 @@
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
   </head>
-  <body class="h-screen w-full">
+  <body class="h-screen w-full dark:bg-gray-900">
     <.guest_banner if={is_nil(@current_user)} current_user={@current_user} />
 
     <%= if @current_user do %>

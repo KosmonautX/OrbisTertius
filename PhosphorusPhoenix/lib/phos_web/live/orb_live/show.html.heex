@@ -1,9 +1,8 @@
 <!--desktop View -->
-<section class="container mx-auto md:mt-28 mt-14">
+<section class="container mx-auto lg:mt-28 md:mt-16 mt-14">
   <div
     :if={not is_nil(@orb.initiator) && @orb.initiator}
-    class="flex lg:flex-row flex-col items-start mt-6 gap-4"
-  >
+    class="flex lg:flex-row flex-col items-start mt-6 gap-4">
     <!-- Desktop View in Orb View Profile-->
     <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full max-w-full px-3 lg:w-3/12  md:flex-none">
       <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md">
@@ -21,7 +20,7 @@
     </div>
 
     <!-- Post card and Comments-->
-    <div class="px-3 lg:w-5/12  w-full mt-0 lg:flex-none justify-center items-center border border-gray-200 lg:rounded-xl shadow-sm mb-28">
+    <div class="px-3 lg:w-5/12  w-full md:mt-2 mt-0 lg:flex-none justify-center items-center border border-gray-200 lg:rounded-xl shadow-sm mb-28 ">
       <.scry_orb id="Orb" orb={@orb} timezone={@timezone} />
       <.live_component
         module={PhosWeb.CommentLive.IndexComponent}
@@ -39,7 +38,7 @@
     </div>
     <!--Desktop Related Post-->
     <div class="hidden lg:block px-3 space-y-4 w-full lg:w-4/12 h-auto">
-      <h5 class="text-left font-semibold text-lg py-1 px-2">
+      <h5 class="text-left font-semibold text-lg py-1 px-2 dark:text-white">
         <%= "Other Posts by #{@orb.initiator.username}" %>
       </h5>
       <hr class="h-px bg-gray-900 border-2" />
