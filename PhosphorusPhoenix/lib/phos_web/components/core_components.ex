@@ -1385,7 +1385,14 @@ defmodule PhosWeb.CoreComponents do
   attr(:show_location, :boolean, default: true)
 
   def user_information_card_orb(assigns) do
-    assigns = assign(assigns, :user, Map.from_struct(assigns.user))
+    assigns = assigns
+    |> assign(:user, Map.from_struct(assigns.user))
+    |> then(
+    fn
+      %{show_location: true, user: %{public_profile: %{territories: terr}}} = state ->
+        assign(state, :locations, Phos.Utility.Geo.top_occuring(terr, 2))
+      state  -> assign(state, :show_location, false)
+    end)
 
     ~H"""
     <div class="flex flex-col p-4 w-full space-y-4 lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md lg:dark:bg-gray-700 dark:border-gray-700">
@@ -1405,7 +1412,7 @@ defmodule PhosWeb.CoreComponents do
       <div class="space-y-1">
         <div :if={@show_location}>
           <div class="flex justify-center gap-4">
-            <%= for location <- @user.locations do %>
+            <%= for location <- @locations do %>
               <button class="flex  bg-white text-gray-800 xl:px-4 lg:px-1 py-2 rounded-full text-base font-bold">
                 <Heroicons.map_pin class="mr-2 -ml-1 w-6 h-6" />
                 <span><%= location %></span>
