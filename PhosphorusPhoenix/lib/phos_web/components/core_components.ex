@@ -11,6 +11,7 @@ defmodule PhosWeb.CoreComponents do
   """
   use Phoenix.Component
   import Phoenix.VerifiedRoutes, warn: false
+  import PhosWeb.SVG
 
   alias Phoenix.LiveView.JS
   import PhosWeb.Gettext
@@ -789,7 +790,7 @@ defmodule PhosWeb.CoreComponents do
     <nav class="bg-white px-2 fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold p-2 dark:bg-gray-900">
       <div class="flex flex-wrap items-center justify-between mx-auto">
         <a href="/" class="flex items-center">
-          <img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/d9af2e5f-ece4-4dee-923f-2cdc43019157/Full_logo_transparent_23x.svg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20230202%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20230202T094152Z&X-Amz-Expires=86400&X-Amz-Signature=200a5435459dada12b1046c11e3655a7fd369d140e5a82b36b2290e67b450aaa&X-Amz-SignedHeaders=host&response-content-disposition=filename%3D%22Full%2520logo%2520transparent_23x.svg%22&x-id=GetObject" class="h-7 ml-4 dark:text-white"/>
+          <.logo type="banner" class="h-7 ml-4 dark:fill-white"></.logo>
         </a>
         <div class="flex items-center md:order-2  flex-col   md:flex-row     md:space-x-2 md:w-auto">
           <ul class="flex flex-wrap text-center text-gray-700">
@@ -867,12 +868,19 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <nav class="bg-white px-2 fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold p-2 dark:bg-gray-900">
       <div class="flex flex-wrap items-center justify-between mx-auto">
-        <a href="#" class="flex items-center">
-          <img src="/images/banner_logo_white.png" class="h-7 ml-4" alt="" />
+        <a href="/" class="flex items-center">
+          <.logo type="banner" class="h-7 ml-4 dark:fill-white"></.logo>
         </a>
-        <.button type="button" phx-click={show_welcome_message("welcome_message")}>
+        <div class="flex gap-2">
+          <.button  type="button" phx-click={show_welcome_message("welcome_message")}>
           Open app
-        </.button>
+          </.button>
+          <button id="theme-toggle" type="button" class="text-gray-700    dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm p-1">
+            <Heroicons.moon mini id="theme-toggle-dark-icon" class="hidden w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"/>
+            <Heroicons.sun mini id="theme-toggle-light-icon" class="hidden w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"/>
+          </button>
+
+        </div>
       </div>
     </nav>
     """
