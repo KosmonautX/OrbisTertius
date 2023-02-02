@@ -12,10 +12,6 @@ defmodule PhosWeb.OrbLive.Show do
         %{assigns: %{current_user: %Phos.Users.User{} = user}} = socket
       ) do
     with %Action.Orb{} = orb <- Action.get_orb(id, user.id) do
-      orb =
-        orb
-        |> put_in([Access.key(:initiator), Access.key(:locations)], ["Singapore", "Vandavasi"])
-
       comments =
         Comments.get_root_comments_by_orb(orb.id)
         |> decode_to_comment_tuple_structure()
@@ -28,16 +24,14 @@ defmodule PhosWeb.OrbLive.Show do
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
        temporary_assigns: [orbs: Action.get_active_orbs_by_initiator(orb.initiator.id)]}
+      else
+        {:error, :not_found} -> raise PhosWeb.ErrorLive, message: "Orb Not Found"
     end
   end
 
   @impl true
   def mount(%{"id" => id} = _parmas, _session, socket) do
     with {:ok, orb} <- Action.get_orb(id) do
-      orb =
-        orb
-        |> put_in([Access.key(:initiator), Access.key(:locations)], ["Singapore", "Vandavasi"])
-
       comment =
         Comments.get_root_comments_by_orb(orb.id)
         |> decode_to_comment_tuple_structure()
@@ -50,7 +44,10 @@ defmodule PhosWeb.OrbLive.Show do
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
        temporary_assigns: [orbs: Action.get_active_orbs_by_initiator(orb.initiator.id)]}
+      else
+        {:error, :not_found} -> raise PhosWeb.ErrorLive, message: "Orb Not Found"
     end
+    
   end
 
   @impl true

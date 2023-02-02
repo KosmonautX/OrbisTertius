@@ -13,15 +13,16 @@ defmodule PhosWeb.UserProfileLive.Show do
 
   @impl true
   def handle_params(%{"username" => username} = params, _url, socket) do
-    user = %{id: user_id} =
-    Users.get_user_by_username(username)
-    |> Map.put(:locations, ["Chennai", "Vandavasi"])
+    with %Users.User{} = user <- Users.get_user_by_username(username) do
     {:noreply, socket
       |> assign(:params, params)
       |> assign(:user, user)
       |> assign_meta(user)
-      |> assign(:orbs, Action.orbs_by_initiators([user_id], 1).data)
+      |> assign(:orbs, Action.orbs_by_initiators([user.id], 1).data)
       |> apply_action(socket.assigns.live_action, params)}
+    else
+      nil -> raise PhosWeb.ErrorLive, message: "User Not Found"
+    end
   end
 
   def handle_params(%{"user_id" => user_id} = params, _url, socket) do
