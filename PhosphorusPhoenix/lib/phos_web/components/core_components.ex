@@ -1340,9 +1340,16 @@ defmodule PhosWeb.CoreComponents do
         </h5>
         <div class="flex gap-6">
 
-          <.button tone={:icons}>
-            <Heroicons.share class="md:h=10 md:w-10 h-6 w-6 text-black dark:text-white" />
-          </.button>
+        <button
+        id={"#{@id}-sharebtn"}
+        phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
+        class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold"
+      >
+        <div id={"#{@id}-copylink"} class="hidden">
+          <%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
+        </div>
+        <Heroicons.share class="-ml-1 w-6 h-6 dark:text-white" />15
+      </button>
 
           <.button class="flex items-center p-0 items-start space-y-1">
             <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
