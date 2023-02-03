@@ -127,7 +127,16 @@ defmodule PhosWeb.Util.Viewer do
   def user_integration_mapper(%{integrations: profile}) do
     (if Ecto.assoc_loaded?(profile) do
       %{data: %{
+           fcm_token: profile.fcm_token
+        }}
+    end)
+  end
+
+  def integration_mapper(%{integrations: profile}) do
+    (if Ecto.assoc_loaded?(profile) do
+      %{data: %{
            fcm_token: profile.fcm_token,
+           fcm_topics: (if !is_nil(profile.fcm_token), do: elem(Fcmex.Subscription.get(profile.fcm_token), 1)["rel"]["topics"])
         }}
     end)
   end
