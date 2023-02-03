@@ -50,7 +50,7 @@ defmodule PhosWeb.CoreComponents do
 
   def modal(assigns) do
     ~H"""
-    <div id={@id} phx-mounted={@show && show_modal(@id)} class="relative z-50 hidden">
+    <div id={@id} phx-mounted={@show && show_modal(@id)} class="relative z-50 hidden dark:bg-gray-400">
       <div id={"#{@id}-bg"} class="fixed inset-0 bg-zinc-50/90 transition-opacity" aria-hidden="true" />
       <div
         class="fixed inset-0 overflow-y-auto"
@@ -82,10 +82,10 @@ defmodule PhosWeb.CoreComponents do
               </div>
               <div id={"#{@id}-content"}>
                 <header :if={@title != []} class="p-2 pb-3 border-b">
-                  <h1 id={"#{@id}-title"} class="text-lg font-semibold leading-8 text-zinc-800">
+                  <h1 id={"#{@id}-title"} class="text-lg font-semibold leading-8 text-zinc-800 dark:text-white">
                     <%= render_slot(@title) %>
                   </h1>
-                  <p :if={@subtitle != []} class="text-sm leading-4 text-zinc-600">
+                  <p :if={@subtitle != []} class="text-sm leading-4 text-zinc-600 dark:text-gray-400">
                     <%= render_slot(@subtitle) %>
                   </p>
                 </header>
@@ -201,7 +201,7 @@ defmodule PhosWeb.CoreComponents do
   def simple_form(assigns) do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
-      <div class="space-y-4 bg-white mt-4 dark:bg-gray-800 p-4">
+      <div class="space-y-4 bg-white mt-4  dark:bg-gray-800 dark:border-gray-700 p-4">
         <%= render_slot(@inner_block, f) %>
         <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-4">
           <%= render_slot(action, f) %>
@@ -422,7 +422,7 @@ defmodule PhosWeb.CoreComponents do
         value={@value}
         class={[
           input_border(@errors),
-          "mt-2 block w-full rounded-lg border-zinc-300 py-[7px] px-[11px]",
+          "mt-2 block w-full rounded-lg border-zinc-300 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white py-[7px] px-[11px]",
           "text-zinc-900 focus:outline-none focus:ring-4 sm:text-sm sm:leading-6",
           "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400 phx-no-feedback:focus:ring-zinc-800/5"
         ]}
@@ -447,7 +447,7 @@ defmodule PhosWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800">
+    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800 dark:text-white">
       <%= render_slot(@inner_block) %>
     </label>
     """
@@ -480,10 +480,10 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <header class={[@actions != [] && "flex items-center justify-between gap-6", @class]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8">
+        <h1 class="text-lg font-semibold leading-8 dark:text-white">
           <%= render_slot(@inner_block) %>
         </h1>
-        <p :if={@subtitle != []} class="leading-6">
+        <p :if={@subtitle != []} class="leading-6 dark:text-gray-400">
           <%= render_slot(@subtitle) %>
         </p>
       </div>
@@ -517,18 +517,18 @@ defmodule PhosWeb.CoreComponents do
   def table(assigns) do
     ~H"""
     <div id={@id} class="overflow-y-auto px-4 scm:overflow-visible sm:px-0">
-      <table class="mt-11 w-[40rem] sm:w-full">
-        <thead class="text text-[0.8125rem] leading-6 text-zinc-500">
+      <table class="mt-11 w-[40rem] sm:w-full dark:text-gray-400">
+        <thead class="text text-[0.8125rem] leading-6 text-zinc-500 dark:bg-gray-700 dark:text-gray-400">
           <tr>
             <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal"><%= col[:label] %></th>
             <th class="relative p-0 pb-4"><span class="sr-only"><%= gettext("Actions") %></span></th>
           </tr>
         </thead>
-        <tbody class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700">
+        <tbody class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
           <tr
             :for={row <- @rows}
             id={"#{@id}-#{Phoenix.Param.to_param(row)}"}
-            class={["relative group hover:bg-gray-100", @row_class]}
+            class={["relative group hover:bg-gray-100 dark:bg-gray-800 dark:text-white", @row_class]}
           >
             <td
               :for={{col, i} <- Enum.with_index(@col)}
@@ -833,11 +833,11 @@ defmodule PhosWeb.CoreComponents do
               phx-click={show_welcome_message("welcome_message")}>
               Open app
             </.button>
-      <button id="theme-toggle" type="button" class="text-gray-700    dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm p-1">
+            <button id="theme-toggle" type="button" class="text-gray-700       dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm p-2 ">
 
-          <Heroicons.moon mini id="theme-toggle-dark-icon" class="hidden w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"/>
-          <Heroicons.sun mini id="theme-toggle-light-icon" class="hidden w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"/>
-     </button>
+            <Heroicons.moon mini id="theme-toggle-dark-icon" class="hidden w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"/>
+            <Heroicons.sun mini id="theme-toggle-light-icon" class="hidden w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"/>
+       </button>
         </div>
         </div>
         <div class="hidden lg:block items-center justify-between w-full  md:w-auto">
@@ -875,11 +875,6 @@ defmodule PhosWeb.CoreComponents do
           <.button  type="button" phx-click={show_welcome_message("welcome_message")}>
           Open app
           </.button>
-          <button id="theme-toggle" type="button" class="text-gray-700    dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm p-1">
-            <Heroicons.moon mini id="theme-toggle-dark-icon" class="hidden w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"/>
-            <Heroicons.sun mini id="theme-toggle-light-icon" class="hidden w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"/>
-          </button>
-
         </div>
       </div>
     </nav>
