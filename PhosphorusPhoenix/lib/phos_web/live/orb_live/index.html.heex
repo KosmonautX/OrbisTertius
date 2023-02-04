@@ -13,11 +13,11 @@
   </script>
 </head>
 
-<h1 class="text-2xl font-bold md:mt-24 mt-14">Listing Orbs</h1>
+<h1 class="text-2xl font-bold md:mt-24 mt-14 dark:text-white">Listing Orbs</h1>
 
 <div :if={not is_nil(@current_user)}>
-  <.link patch={~p"/orb/sethome"}>Set Home</.link>
-  <.link patch={~p"/orb/setwork"}>Set Work</.link>
+  <.link class="dark:text-white" patch={~p"/orb/sethome"}>Set Home</.link>
+  <.link class="dark:text-white" patch={~p"/orb/setwork"}>Set Work</.link>
 </div>
 
 <div id="gps" phx-hook="InitPosition" phx-update="ignore" />
@@ -84,5 +84,5 @@
 </div>
 
 <div :if={not is_nil(@current_user)} class="my-6">
-  <.link patch={~p"/orb/new"}>New Orb</.link>
+  <.link class="dark:text-white text-base font-medium" patch={~p"/orb/new"}>New Orb</.link>
 </div>

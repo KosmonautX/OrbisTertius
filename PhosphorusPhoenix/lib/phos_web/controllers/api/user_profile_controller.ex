@@ -119,4 +119,16 @@ defmodule PhosWeb.API.UserProfileController do
     } |> purge_nil()
   end
 
-end
+  # defp resubscribe(present_fcm, %{integrations: %{fcm_token: past_fcm}}) do
+  #   with true <- !Fcmex.unregistered?(present_fcm),
+  #        {:ok, %{}} <- Fc,
+  #        {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => %{"fcm_token" => token}}) do
+
+
+  # end
+
+  defp resubscribe(present_fcm, user) do
+    Fcmex.Subscription.subscribe("USR." <> user.id, present_fcm)
+  end
+
+ end

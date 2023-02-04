@@ -11,6 +11,7 @@ defmodule PhosWeb.CoreComponents do
   """
   use Phoenix.Component
   import Phoenix.VerifiedRoutes, warn: false
+  import PhosWeb.SVG
 
   alias Phoenix.LiveView.JS
   import PhosWeb.Gettext
@@ -51,7 +52,7 @@ defmodule PhosWeb.CoreComponents do
 
   def modal(assigns) do
     ~H"""
-    <div id={@id} phx-mounted={@show && show_modal(@id)} class="relative z-50 hidden">
+    <div id={@id} phx-mounted={@show && show_modal(@id)} class="relative z-50 hidden dark:bg-gray-400">
       <div id={"#{@id}-bg"} class="fixed inset-0 bg-zinc-50/90 transition-opacity" aria-hidden="true" />
       <div
         class="fixed inset-0 overflow-y-auto"
@@ -83,10 +84,10 @@ defmodule PhosWeb.CoreComponents do
               </div>
               <div id={"#{@id}-content"}>
                 <header :if={@title != []} class="p-2 pb-3 border-b">
-                  <h1 id={"#{@id}-title"} class="text-lg font-semibold leading-8 text-zinc-800">
+                  <h1 id={"#{@id}-title"} class="text-lg font-semibold leading-8 text-zinc-800 dark:text-white">
                     <%= render_slot(@title) %>
                   </h1>
-                  <p :if={@subtitle != []} class="text-sm leading-4 text-zinc-600">
+                  <p :if={@subtitle != []} class="text-sm leading-4 text-zinc-600 dark:text-gray-400">
                     <%= render_slot(@subtitle) %>
                   </p>
                 </header>
@@ -203,7 +204,7 @@ defmodule PhosWeb.CoreComponents do
   def simple_form(assigns) do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
-      <div class="space-y-4 bg-white mt-4">
+      <div class="space-y-4 bg-white mt-4  dark:bg-gray-800 dark:border-gray-700 p-4">
         <%= render_slot(@inner_block, f) %>
         <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-4">
           <%= render_slot(action, f) %>
@@ -264,7 +265,9 @@ defmodule PhosWeb.CoreComponents do
   defp button_class(:warning), do: "bg-yellow-400 hover:bg-yellow-600 text-white"
   defp button_class(:success), do: "bg-green-400 hover:bg-green-600 text-white"
   defp button_class(:dark), do: "text-gray-900 hover:text-white border-gray-800 hover:bg-gray-900 border"
-  defp button_class(:icons), do: "bg-transparent hover:bg-gray-100 text-white"
+  defp button_class(:icons),
+    do:
+      "inline-block text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm"
 
   defp default_button_class do
     [
@@ -421,7 +424,7 @@ defmodule PhosWeb.CoreComponents do
         value={@value}
         class={[
           input_border(@errors),
-          "mt-2 block w-full rounded-lg border-zinc-300 py-[7px] px-[11px]",
+          "mt-2 block w-full rounded-lg border-zinc-300 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white py-[7px] px-[11px]",
           "text-zinc-900 focus:outline-none focus:ring-4 sm:text-sm sm:leading-6",
           "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400 phx-no-feedback:focus:ring-zinc-800/5"
         ]}
@@ -446,7 +449,7 @@ defmodule PhosWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800">
+    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800 dark:text-white">
       <%= render_slot(@inner_block) %>
     </label>
     """
@@ -479,10 +482,10 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <header class={[@actions != [] && "flex items-center justify-between gap-6", @class]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8">
+        <h1 class="text-lg font-semibold leading-8 dark:text-white">
           <%= render_slot(@inner_block) %>
         </h1>
-        <p :if={@subtitle != []} class="leading-6">
+        <p :if={@subtitle != []} class="leading-6 dark:text-gray-400">
           <%= render_slot(@subtitle) %>
         </p>
       </div>
@@ -515,19 +518,19 @@ defmodule PhosWeb.CoreComponents do
 
   def table(assigns) do
     ~H"""
-    <div id={@id} class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
-      <table class="mt-11 w-[40rem] sm:w-full">
-        <thead class="text text-[0.8125rem] leading-6 text-zinc-500">
+    <div id={@id} class="overflow-y-auto px-4 scm:overflow-visible sm:px-0">
+      <table class="mt-11 w-[40rem] sm:w-full dark:text-gray-400">
+        <thead class="text text-[0.8125rem] leading-6 text-zinc-500 dark:bg-gray-700 dark:text-gray-400">
           <tr>
             <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal"><%= col[:label] %></th>
             <th class="relative p-0 pb-4"><span class="sr-only"><%= gettext("Actions") %></span></th>
           </tr>
         </thead>
-        <tbody class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700">
+        <tbody class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
           <tr
             :for={row <- @rows}
             id={"#{@id}-#{Phoenix.Param.to_param(row)}"}
-            class={["relative group hover:bg-gray-100", @row_class]}
+            class={["relative group hover:bg-gray-100 dark:bg-gray-800 dark:text-white", @row_class]}
           >
             <td
               :for={{col, i} <- Enum.with_index(@col)}
@@ -786,33 +789,32 @@ defmodule PhosWeb.CoreComponents do
 
   def banner(assigns) do
     ~H"""
-    <nav class="bg-white px-2 fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold p-2">
+    <nav class="bg-white px-2 fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold p-2 dark:bg-gray-900">
       <div class="flex flex-wrap items-center justify-between mx-auto">
         <a href="/" class="flex items-center">
-          <img src="/images/banner_logo_white.png" class="h-7 ml-4" alt="" />
+          <.logo type="banner" class="h-7 ml-4 dark:fill-white"></.logo>
         </a>
-
-        <div class="flex items-center md:order-2  flex-col   md:flex-row md:space-x-2 md:w-auto">
-          <ul class="flex flex-wrap  text-center text-gray-700">
-            <li :if={not is_nil(@current_user.username)} class="mr-2 hidden md:block">
+        <div class="flex items-center md:order-2  flex-col   md:flex-row     md:space-x-2 md:w-auto">
+          <ul class="flex flex-wrap text-center text-gray-700">
+            <li :if={not is_nil(@current_user.username)} class="mr-2 hidden lg:block">
               <span class="p-2 rounded-t-lg hover:text-teal-500 group">
                 <.link navigate={
                   path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@current_user.username}")
                 }>
-                  <Heroicons.user_circle mini class="w-8 h-8 text-gray-700 group-hover:text-teal-500" />
+                  <Heroicons.user_circle mini class="w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white" />
                 </.link>
               </span>
             </li>
 
-            <li class="mr-2 hidden md:block">
+            <li class="mr-2 hidden lg:block">
               <span class="p-2 rounded-t-lg hover:text-teal-500 group">
                 <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/settings")}>
-                  <Heroicons.cog_8_tooth mini class="w-8 h-8 text-gray-700 group-hover:text-teal-500" />
+                  <Heroicons.cog_8_tooth mini class="w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white" />
                 </.link>
               </span>
             </li>
 
-            <li class="mr-2 hidden md:block">
+            <li class="mr-2 hidden lg:block">
               <span class="p-2 rounded-t-lg hover:text-teal-500 group">
                 <.link
                   href={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/log_out")}
@@ -820,16 +822,28 @@ defmodule PhosWeb.CoreComponents do
                 >
                   <Heroicons.arrow_left_on_rectangle
                     mini
-                    class="w-8 h-8 text-gray-700 group-hover:text-teal-500"
+                    class="w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"
                   />
                 </.link>
               </span>
             </li>
           </ul>
-          <.button id="welcome-button" type="button" phx-click={show_welcome_message("welcome_message")}>Open app</.button>
+      <div class="flex gap-2">
+            <.button
+              id="welcome-button"
+              type="button"
+              phx-click={show_welcome_message("welcome_message")}>
+              Open app
+            </.button>
+            <button id="theme-toggle" type="button" class="text-gray-700       dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm p-2 ">
+
+            <Heroicons.moon mini id="theme-toggle-dark-icon" class="hidden w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"/>
+            <Heroicons.sun mini id="theme-toggle-light-icon" class="hidden w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"/>
+       </button>
+        </div>
         </div>
         <div class="hidden lg:block items-center justify-between w-full  md:w-auto">
-          <ul class="flex flex-col md:flex-row md:space-x-6  text-gray-700">
+          <ul class="flex flex-col md:flex-row md:space-x-6  text-gray-700 dark:text-gray-400 md:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">
             <li>
               <a href="#" class="block md:hover:text-teal-500">
                 People
@@ -842,7 +856,7 @@ defmodule PhosWeb.CoreComponents do
             </li>
             <li>
               <a href="#" class="flex items-center justify-between md:hover:text-teal-500   ">
-                Chats <Heroicons.chevron_down solid class="w-4 h-4 ml-1 stroke-current" />
+                Chats <Heroicons.chevron_down solid class="w-4 h-4 ml-1 stroke-current dark:text-white" />
               </a>
             </li>
           </ul>
@@ -854,14 +868,16 @@ defmodule PhosWeb.CoreComponents do
 
   def guest_banner(assigns) do
     ~H"""
-    <nav class="bg-white px-2 fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold p-2">
+    <nav class="bg-white px-2 fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold p-2 dark:bg-gray-900">
       <div class="flex flex-wrap items-center justify-between mx-auto">
-        <a href="#" class="flex items-center">
-          <img src="/images/banner_logo_white.png" class="h-7 ml-4" alt="" />
+        <a href="/" class="flex items-center">
+          <.logo type="banner" class="h-7 ml-4 dark:fill-white"></.logo>
         </a>
-        <.button type="button" phx-click={show_welcome_message("welcome_message")}>
+        <div class="flex gap-2">
+          <.button  type="button" phx-click={show_welcome_message("welcome_message")}>
           Open app
-        </.button>
+          </.button>
+        </div>
       </div>
     </nav>
     """
@@ -869,14 +885,14 @@ defmodule PhosWeb.CoreComponents do
 
   def tabs_mobile(assigns) do
     ~H"""
-    <div class="w-full border-gray-400 border-t-2 rounded-t-2xl bg-white lg:hidden block fixed z-10 bottom-0 px-4 py-2">
+    <div class="w-full border-gray-400 border-t-2 rounded-t-2xl bg-white lg:hidden block fixed z-10 bottom-0 px-4 py-2 dark:bg-gray-900">
       <ul class="flex flex-wrap items-center justify-between mx-auto">
         <li>
           <a
             class="block hover:text-teal-400 text-gray-600"
             onclick="changeAtiveTab(event,'user-tab')"
           >
-            <Heroicons.user_plus class="w-8 h-8" />
+            <Heroicons.user_plus class="w-8 h-8 dark:text-white" />
           </a>
         </li>
         <li>
@@ -885,12 +901,12 @@ defmodule PhosWeb.CoreComponents do
             class="block hover:text-teal-400 text-gray-600"
             onclick="changeAtiveTab(event,'location')"
           >
-            <Heroicons.map_pin class="w-8 h-8" />
+            <Heroicons.map_pin class="w-8 h-8 dark:text-white" />
           </a>
         </li>
         <li>
           <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/new")}>
-            <Heroicons.plus_circle class="hover:text-teal-400 text-gray-600 w-8 h-8" />
+            <Heroicons.plus_circle class="hover:text-teal-400 text-gray-600 w-8 h-8 dark:text-white" />
           </.link>
         </li>
         <li>
@@ -898,7 +914,7 @@ defmodule PhosWeb.CoreComponents do
             class="block hover:text-teal-400 text-gray-600 relative inline-block"
             onclick="changeAtiveTab(event,'chat')"
           >
-            <Heroicons.chat_bubble_oval_left class="w-8 h-8" />
+            <Heroicons.chat_bubble_oval_left class="w-8 h-8 dark:text-white" />
             <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
               99
             </span>
@@ -920,14 +936,14 @@ defmodule PhosWeb.CoreComponents do
 
   def tabs_profile(assigns) do
     ~H"""
-    <div class=" rounded-t-3xl w-full sticky top-0 left-0 right-0 border-b border-gray-200">
-      <div class="flex justify-center items-center border-b border-gray-200">
+    <div class="w-full sticky top-0 left-0 right-0 border   border-gray-200 dark:bg-gray-900">
+      <div class="flex justify-center items-center border border-gray-200">
         <ul class="flex flex-wrap gap-20 md:gap-40 -mb-px font-extrabold text-sm  text-gray-500">
           <li class="mr-2">
             <.link
               patch={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@username}")}
               class={[
-                (@action == :show && "text-blue-600 border-blue-600 active") ||
+                (@action == :show && "text-teal-600 border-teal-600 active") ||
                   "border-transparent hover:text-gray-600 hover:border-gray-300",
                 "inline-flex p-4 rounded-t-lg border-b-2 GROUP"
               ]}
@@ -940,7 +956,7 @@ defmodule PhosWeb.CoreComponents do
             <.link
               patch={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@username}/allies")}
               class={[
-                (@action == :allies && "text-blue-600 border-blue-600 active") ||
+                (@action == :allies && "text-teal-600 border-teal-600 active") ||
                   "border-transparent hover:text-gray-600 hover:border-gray-300",
                 "inline-flex p-4 rounded-t-lg border-b-2 GROUP"
               ]}
@@ -965,8 +981,8 @@ defmodule PhosWeb.CoreComponents do
 
   def user_info_bar(assigns) do
     ~H"""
-    <div id={@id} class="w-full bg-white py-2 flex items-start justify-between ">
-      <div class="flex w-full">
+    <div id={@id} class="w-full bg-white py-2 flex items-start justify-between dark:bg-gray-900 ">
+      <div class="flex w-full ">
         <.link
           :if={@user.username}
           navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}
@@ -978,8 +994,8 @@ defmodule PhosWeb.CoreComponents do
           />
         </.link>
         <div>
-          <h2 class="text-base font-bold text-gray-900 -mt-1"><%= @user.username %></h2>
-          <p class="flex items-center text-gray-700"><%= render_slot(@information) %></p>
+          <h2 class="text-base font-bold text-gray-900 -mt-2 dark:text-white lg:text-lg"><%= @user.username %></h2>
+          <p class="flex items-center lg:text-base text-gray-700 dark:text-gray-400 ml-1"><%= render_slot(@information) %></p>
         </div>
       </div>
       <div><%= render_slot(@actions) %></div>
@@ -992,13 +1008,15 @@ defmodule PhosWeb.CoreComponents do
   """
   attr(:id, :string, required: true)
   attr(:orb, :any)
+  attr(:timezone, :string)
 
   def scry_orb(assigns) do
     assigns =
       assign(
         assigns,
         :orb_location,
-        assigns.orb |> get_in([Access.key(:payload, %{}), Access.key(:where, "-")]) || assigns.orb.central_geohash |> Phos.Mainland.World.locate() ||
+        assigns.orb |> get_in([Access.key(:payload, %{}), Access.key(:where, "-")]) ||
+          assigns.orb.central_geohash |> Phos.Mainland.World.locate() ||
           "Somewhere"
       )
 
@@ -1006,13 +1024,13 @@ defmodule PhosWeb.CoreComponents do
     <.user_info_bar id={"#{@id}-scry-orb-#{@orb.id}"} user={@orb.initiator}>
       <:information :if={!is_nil(@orb_location)}>
         <span>
-          <Heroicons.map_pin class="mt-0.5 h-4 w-4" />
+          <Heroicons.map_pin class="mt-0.5 h-4 w-4 dark:text-white" />
         </span>
         <%= @orb_location %>
       </:information>
       <:actions>
         <.button tone={:icons}>
-          <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black" />
+          <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black dark:text-white" />
         </.button>
       </:actions>
     </.user_info_bar>
@@ -1022,19 +1040,18 @@ defmodule PhosWeb.CoreComponents do
       archetype="ORB"
       uuid={@orb.id}
       path="public/banner"
-      id={"#{@id}-scry-orb-#{@orb.id}"}
-    />
+      id={"#{@id}-scry-orb-#{@orb.id}"}/>
     <.link
       id={"#{@id}-scry-orb-#{@orb.id}-link"}
       class="relative"
-      navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
-    >
+      navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}>
       <.orb_information id={"#{@id}-scry-orb-#{@orb.id}"} title={@orb.title} />
     </.link>
-    <.orb_action id={"#{@id}-scry-orb-#{@orb.id}"} />
+    <.orb_action id={"#{@id}-scry-orb-#{@orb.id}"} orb={@orb} date={@timezone} />
     """
   end
 
+  @spec media_carousel(map) :: Phoenix.LiveView.Rendered.t()
   @doc """
    User Post Image
    Desktop View
@@ -1088,7 +1105,7 @@ defmodule PhosWeb.CoreComponents do
           >
             <button
               :for={count <- Enum.to_list(1..length(@media))}
-              class="w-3 h-3 rounded-full bg-gray-500 hover:bg-gray-200"
+              class="w-3 h-3 rounded-full bg-white/70 group-hover:bg-white/90 focus:ring-4 focus:ring-white group-focus:outline-none"
               data-glide-dir={"=#{count}"}
             />
           </div>
@@ -1128,39 +1145,54 @@ defmodule PhosWeb.CoreComponents do
 
   def orb_information(assigns) do
     ~H"""
-    <p id={"#{@id}-info"} class="text-sm text-gray-900 font-normal p-2">
+    <p id={"#{@id}-info"} class="text-sm text-gray-900 font-normal p-2 dark:text-white lg:text-lg lg:font:medium">
       <%= @title %>
     </p>
     """
   end
 
-  def video(assigns) do
+  attr(:orb, :any)
+  attr(:id, :string, required: true)
+
+  def orb_video(assigns) do
     ~H"""
-    <div class="w-full flex items-center justify-center ">
-      <div class="relative p-2">
-        <video class="object-cover object-fit h-96 w-96" autoplay loop muted>
+    <div class="w-full flex items-center justify-center lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md lg:dark:bg-gray-700 dark:border-gray-700">
+      <div class="relative">
+        <video class="object-cover object-fit lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md lg:dark:bg-gray-700 dark:border-gray-700" autoplay muted>
           <source src="/images/WhatsApp Video 2022-12-26 at 8.32.21 AM.mp4" type="video/mp4" />
         </video>
 
-        <div class="absolute inset-y-0 bottom-0 p-4 space-y-2 flex items-end">
+        <div class="absolute inset-y-0 bottom-0 p-2 w-full flex items-end ">
           <p class="flex-1 text-white text-sm font-extrabold">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin quis turpis pretium
+          <%= "#{@orb.title}" %>
           </p>
 
-          <div class="space-y-4 text-white font-extrabold text-center text-sm">
+          <div id={"#{@id}-actions"} class="space-y-4 text-white font-extrabold  text-center text-sm">
+
             <div class="flex flex-col">
               <Heroicons.heart class="stroke-white w-8 h-8" />
               <span>2K</span>
             </div>
+
             <div class="flex flex-col">
               <Heroicons.chat_bubble_oval_left_ellipsis class="stroke-white w-8 h-8" />
-              <span>226</span>
+              <span><%= @orb.comment_count %></span>
             </div>
+
             <div class="flex flex-col">
-              <Heroicons.share class="stroke-white w-8 h-8" />
-              <span>15</span>
+              <button
+                id={"#{@id}-sharebtn"}
+                phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
+                class="text-center inline-flex items-center">
+                <div id={"#{@id}-copylink"} class="hidden">
+                  <%= PhosWeb.Endpoint.url() <>
+                    path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %>
+                </div>
+                <Heroicons.share class="-ml-1 w-6 h-6" />
+              </button>
             </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -1168,23 +1200,33 @@ defmodule PhosWeb.CoreComponents do
   end
 
   attr(:id, :string, required: true)
+  attr(:orb, :any)
+  attr(:date, :string)
 
-  #TODO orb_actions wiring with data
+  # TODO orb_actions wiring with data
   def orb_action(assigns) do
     ~H"""
-    <div id={"#{@id}-actions"} class="flex justify-between p-2 w-full font-bold text-sm text-gray-600">
+    <div id={"#{@id}-actions"} class="flex justify-between p-2 w-full font-bold text-sm text-gray-600 ">
       <div>
-        <span>10 Oct 2001</span>
+        <span class="dark:text-white lg:text-base lg:font-bold"><%= get_date(@orb.inserted_at, @date) %></span>
       </div>
       <div class="flex flex-cols space-x-4">
-        <button class="text-center inline-flex items-center">
-          <Heroicons.share class="-ml-1 w-6 h-6" />15
+        <button class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold">
+          <Heroicons.chat_bubble_oval_left_ellipsis class="-ml-1 w-6 h-6 dark:text-white"/><%= @orb.comment_count %>
         </button>
-        <button class="text-center inline-flex items-center">
-          <Heroicons.chat_bubble_oval_left_ellipsis class="-ml-1 w-6 h-6" />15
+
+        <button
+          id={"#{@id}-sharebtn"}
+          phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
+          class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold"
+        >
+          <div id={"#{@id}-copylink"} class="hidden">
+            <%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %>
+          </div>
+          <Heroicons.share class="-ml-1 w-6 h-6 dark:text-white" />15
         </button>
-        <button class="text-center inline-flex items-center">
-          <Heroicons.heart class="-ml-1 w-6 h-6" />15
+        <button class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold">
+          <Heroicons.heart class="-ml-1 w-6 h-6 dark:text-white" />15
         </button>
       </div>
     </div>
@@ -1199,7 +1241,10 @@ defmodule PhosWeb.CoreComponents do
 
   def redirect_mobile(assigns) do
     ~H"""
-    <div data-selector="phos_modal_message" class="relative bg-white max-w-sm md:max-w-md md:h-auto rounded-xl shadow-lg ">
+    <div
+      data-selector="phos_modal_message"
+      class="relative bg-white max-w-sm md:max-w-md md:h-auto rounded-xl shadow-lg "
+    >
       <div class="flex flex-col justify-center items-center p-6 space-y-2 ">
         <img
           src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
@@ -1278,7 +1323,6 @@ defmodule PhosWeb.CoreComponents do
   attr(:user, :map, required: true)
   attr(:flex, :any, default: nil)
   attr(:id, :string, required: true)
-  attr(:show_location, :boolean, default: true)
 
   def user_information_card(assigns) do
     assigns =
@@ -1289,15 +1333,24 @@ defmodule PhosWeb.CoreComponents do
       )
 
     ~H"""
-    <div class="flex flex-col justify-between p-4 w-full space-y-2">
-      <div class={["gap-4 flex justify-between", @flex]}>
-        <h5 class="lg:text-xl xl:text-2xl text-lg font-extrabold text-gray-900">
+    <div class="flex flex-col justify-between p-4 w-full space-y-2 lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md lg:dark:bg-gray-700 dark:border-gray-700">
+      <div class="gap-4 flex justify-between">
+        <h5 class="lg:text-xl xl:text-2xl text-lg font-extrabold text-gray-900  dark:text-white">
           <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
         </h5>
         <div class="flex gap-6">
-          <.button tone={:icons}>
-            <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6 text-black" />
-          </.button>
+
+        <button
+        id={"#{@id}-sharebtn"}
+        phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
+        class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold"
+      >
+        <div id={"#{@id}-copylink"} class="hidden">
+          <%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
+        </div>
+        <Heroicons.share class="-ml-1 w-6 h-6 dark:text-white" />15
+      </button>
+
           <.button class="flex items-center p-0 items-start space-y-1">
             <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
             <span>Ally</span>
@@ -1305,27 +1358,17 @@ defmodule PhosWeb.CoreComponents do
         </div>
       </div>
       <div class="space-y-1">
-        <div :if={@show_location}>
-          <div class="flex justify-center	">
-            <%= for location <- @user.locations do %>
-              <button class="flex  bg-white text-gray-800 xl:px-4 lg:px-1 py-2 rounded-full text-base font-bold">
-                <Heroicons.map_pin class="mr-2 -ml-1 w-6 h-6" />
-                <span><%= location %></span>
-              </button>
-            <% end %>
-          </div>
-        </div>
-        <p class="md:text-base text-gray-700 text-base font-semibold">
+        <p class="md:text-base text-gray-700 text-base font-semibold dark:text-gray-400">
           <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
         </p>
-        <p class="text-gray-700 font-medium text-base">
+        <p class="text-gray-700 font-medium text-base dark:text-gray-400">
           <%= @user |> get_in([:public_profile, Access.key(:bio, "-")]) %>
         </p>
 
         <div>
           <span
             :for={trait <- Map.get(@user, :traits, [])}
-            class="text-gray-500 text-base font-medium"
+            class="text-gray-500 text-base font-medium dark:text-gray-400"
           >
             <span>#</span>
             <%= trait %>
@@ -1419,17 +1462,24 @@ defmodule PhosWeb.CoreComponents do
   end
 
   def user_information_card_orb(assigns) do
-    assigns = assign(assigns, user: Map.from_struct(assigns.user))
+    assigns = assigns
+    |> assign(:user, Map.from_struct(assigns.user))
+    |> then(
+    fn
+      %{show_location: true, user: %{public_profile: %{territories: terr}}} = state ->
+        assign(state, :locations, Phos.Utility.Geo.top_occuring(terr, 2))
+      state  -> assign(state, :show_location, false)
+    end)
 
     ~H"""
-    <div class="flex flex-col p-4 w-full space-y-2">
-      <h5 class="lg:text-xl xl:text-2xl text-lg font-extrabold text-gray-900">
+    <div class="flex flex-col p-4 w-full space-y-4 lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md lg:dark:bg-gray-700 dark:border-gray-700">
+      <h5 class="lg:text-xl xl:text-2xl text-lg font-extrabold text-gray-900 dark:text-white">
         <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
       </h5>
 
       <div class="flex gap-6 items-center justify-center">
         <.button tone={:icons}>
-          <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6 text-black" />
+          <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6 text-black dark:text-white" />
         </.button>
         <div :if={@ally_button != []} :for={ally <- @ally_button}>
           <.live_component 
@@ -1442,8 +1492,8 @@ defmodule PhosWeb.CoreComponents do
       </div>
       <div class="space-y-1">
         <div :if={@show_location}>
-          <div class="flex justify-center	">
-            <%= for location <- @user.locations do %>
+          <div class="flex justify-center gap-4">
+            <%= for location <- @locations do %>
               <button class="flex  bg-white text-gray-800 xl:px-4 lg:px-1 py-2 rounded-full text-base font-bold">
                 <Heroicons.map_pin class="mr-2 -ml-1 w-6 h-6" />
                 <span><%= location %></span>
@@ -1451,17 +1501,17 @@ defmodule PhosWeb.CoreComponents do
             <% end %>
           </div>
         </div>
-        <p class="text-gray-700 text-base font-semibold">
+        <p class="text-gray-700 text-base font-semibold dark:text-gray-400">
           <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
         </p>
-        <p class="text-gray-700 font-medium text-base">
+        <p class="text-gray-700 font-medium text-base dark:text-gray-400">
           <%= @user |> get_in([:public_profile, Access.key(:bio, "-")]) %>
         </p>
 
         <div>
           <span
             :for={trait <- Map.get(@user, :traits, [])}
-            class="text-gray-500 text-base font-medium"
+            class="text-gray-500 text-base font-medium dark:text-gray-400"
           >
             <span>#</span>
             <%= trait %>
@@ -1478,19 +1528,26 @@ defmodule PhosWeb.CoreComponents do
 
   def welcome_message(assigns) do
     ~H"""
-    <div id={@id} data-selector="phos_modal_message" phx-mounted={@show} class="absolute flex flex-col md:items-center justify-between md:justify-center inset-0 bg-black/50 z-50 hidden">
+    <div
+      id={@id}
+      data-selector="phos_modal_message"
+      phx-mounted={@show}
+      class="absolute flex flex-col md:items-center justify-between md:justify-center inset-0 bg-black/50 z-50 hidden"
+    >
       <div class="flex md:hidden" />
       <div id={"#{@id}-bg"} class="h-[375px] bg-white flex items-center rounded-t-lg md:rounded-b-lg">
         <div id={"#{@id}-content"} class="w-full flex flex-col items-center">
           <div class="">
-          Welcome message
+            Welcome message
           </div>
           <p class="mt-3 font-semibold text-xl">Hmm...You were saying?</p>
-          <p class="mt-3 w-1/2 text-center text-gray-400">Join the tribe to share your thoughts with raizzy paizzy now!</p>
+          <p class="mt-3 w-1/2 text-center text-gray-400">
+            Join the tribe to share your thoughts with raizzy paizzy now!
+          </p>
           <div class="mt-3">
             <.button type="button">Download the Scratchbac app</.button>
           </div>
-          <div class="mt-3 text-sm text-gray-500 " :if={is_nil(@user)}>
+          <div :if={is_nil(@user)} class="mt-3 text-sm text-gray-500 ">
             <.link
               navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
               phx-click={hide_welcome_modal(@id)}
@@ -1508,7 +1565,7 @@ defmodule PhosWeb.CoreComponents do
             </.link>
             via Web
           </div>
-          <div class="mt-3" :if={not is_nil(@user)}>
+          <div :if={not is_nil(@user)} class="mt-3">
             <a class="hover:text-teal-400 text-base font-bold hover:underline hover:cursor-pointer">
               Bring me back to what I was doing!
             </a>
@@ -1539,5 +1596,13 @@ defmodule PhosWeb.CoreComponents do
     |> hide("##{id}-container")
     |> JS.hide(to: "##{id}", transition: {"block", "block", "hidden"})
     |> JS.pop_focus()
+  end
+
+  defp get_date(time, timezone) do
+    time
+    |> DateTime.from_naive!(timezone.timezone)
+    |> Timex.shift(minutes: trunc(timezone.timezone_offset))
+    |> Timex.format("{D}-{0M}-{YYYY}")
+    |> elem(1)
   end
 end

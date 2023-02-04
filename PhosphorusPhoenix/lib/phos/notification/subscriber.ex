@@ -37,7 +37,7 @@ defmodule Phos.Notification.Subscriber do
   @impl true
   def handle_call({:push, tokens, notification}, _from, state) do
     result =
-      Fcmex.push(tokens, notification: notification)
+      Fcmex.push(Enum.uniq(tokens), notification: notification)
       |> Enum.reduce(%{succeeded: 0, failed: 0}, fn x, %{succeeded: suc, failed: fail} = acc ->
         case elem(x, 0) do
           :ok ->
@@ -53,7 +53,7 @@ defmodule Phos.Notification.Subscriber do
   @impl true
   def handle_call({:push, tokens, notification, data}, _from, state) do
     result =
-      Fcmex.push(tokens, notification: notification, data: data)
+      Fcmex.push(Enum.uniq(tokens), notification: notification, data: data)
       |> Enum.reduce(%{succeeded: 0, failed: 0}, fn x, %{succeeded: suc, failed: fail} = acc ->
         case elem(x, 0) do
           :ok -> %{acc | succeeded: suc + Map.get(elem(x, 1), "success", 1)}

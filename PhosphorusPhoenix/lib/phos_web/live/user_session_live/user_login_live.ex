@@ -26,17 +26,17 @@ defmodule PhosWeb.UserLoginLive do
         <.input field={{f, :email}} type="email" label="Email" required />
         <.input field={{f, :password}} type="password" label="Password" required />
         <.input field={{f, :return_to}} type="hidden" value={@return_to} />
-    
+
 
         <:actions :let={f}>
           <.input field={{f, :remember_me}} type="checkbox" label="Keep me logged in" />
-          <.link href={~p"/users/reset_password"} class="text-sm font-semibold">
+          <.link href={~p"/users/reset_password"} class="text-sm font-semibold dark:text-white">
             Forgot your password?
           </.link>
         </:actions>
         <:actions>
           <.button phx-disable-with="Sigining in..." class="w-full" type="submit">
-            Sign in <span aria-hidden="true">→</span>
+            Sign in <span aria-hidden="true"></span>
           </.button>
         </:actions>
       </.simple_form>

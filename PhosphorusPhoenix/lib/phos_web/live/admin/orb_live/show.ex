@@ -10,7 +10,7 @@ defmodule PhosWeb.Admin.OrbLive.Show do
       {:ok, orb} ->
         {:ok,
           assign(socket, orb: orb, traits_form: [], changeset: Ecto.Changeset.change(orb))}
-      _ -> {:ok, assign(socket, :orb, nil)}
+      _ -> raise PhosWeb.ErrorLive, message: "Orb Not Found Nomore"
     end
   end
 
@@ -19,12 +19,25 @@ defmodule PhosWeb.Admin.OrbLive.Show do
   end
 
   @impl true
-  def handle_event("take-down", _params, %{assigns: %{orb: orb}} = socket) do
-    case Action.update_orb(orb, %{active: false}) do
+  def handle_event("active", _params, %{assigns: %{orb: orb}} = socket) do
+    case Action.update_orb(orb, %{active: !orb.active}) do
       {:ok, orb} ->
         {:noreply, socket
         |> assign(orb: orb)
-        |> put_flash(:info, "orb status updated.")}
+        |> put_flash(:info, "Active Toggle Switched")}
+      _ ->
+        {:noreply, socket
+        |> put_flash(:error, "orb status failed to update")}
+    end
+  end
+
+  @impl true
+  def handle_event("destroy", _params, %{assigns: %{orb: orb}} = socket) do
+    case Action.delete_orb(orb) do
+      {:ok, orb} ->
+        {:noreply, socket
+        |> put_flash(:info, "orb is now dead 💀")
+        |> push_redirect(to: ~p"/admin/orbs")}
       _ ->
         {:noreply, socket
         |> put_flash(:error, "orb status failed to update")}

@@ -184,8 +184,6 @@ defmodule Phos.Notification.Scheduller do
   defp should_execute?(freq, date, current_time) do
     String.downcase(freq)
     |> case do
-      "daily" -> true
-      "now" -> true
       "scheduled" -> Date.compare(date, DateTime.to_date(current_time)) == :eq
       "weekends" -> Timex.weekday(current_time) in [6, 7]
       "weekly" -> Timex.weekday(current_time) == 1
