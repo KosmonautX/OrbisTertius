@@ -259,12 +259,12 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  defp button_class(:danger), do: "bg-red-400 hover:bg-red-600"
-  defp button_class(:primary), do: "bg-teal-400 hover:bg-teal-600"
-  defp button_class(:warning), do: "bg-yellow-400 hover:bg-yellow-600"
-  defp button_class(:success), do: "bg-green-400 hover:bg-green-600"
+  defp button_class(:danger), do: "bg-red-400 hover:bg-red-600 text-white"
+  defp button_class(:primary), do: "bg-teal-400 hover:bg-teal-600 text-white"
+  defp button_class(:warning), do: "bg-yellow-400 hover:bg-yellow-600 text-white"
+  defp button_class(:success), do: "bg-green-400 hover:bg-green-600 text-white"
   defp button_class(:dark), do: "text-gray-900 hover:text-white border-gray-800 hover:bg-gray-900 border"
-  defp button_class(:icons), do: "bg-transparent hover:bg-gray-100"
+  defp button_class(:icons), do: "bg-transparent hover:bg-gray-100 text-white"
 
   defp default_button_class do
     [
@@ -275,7 +275,6 @@ defmodule PhosWeb.CoreComponents do
       "text-sm",
       "font-semibold",
       "leading-6",
-      "text-white",
       "active:text-white/80"
     ]
     |> Enum.join(" ")
@@ -1412,24 +1411,35 @@ defmodule PhosWeb.CoreComponents do
   attr(:flex, :any, default: nil)
   attr(:id, :string, required: true)
   attr(:show_location, :boolean, default: true)
-  attr(:current_user, :map, default: %{})
-  attr(:ally, :any, default: false)
+  slot :ally_button, doc: "Ally button" do
+    attr :ally, :any
+    attr :current_user, :map
+    attr :user, :map, required: true
+    attr :socket, :any, required: true
+  end
 
   def user_information_card_orb(assigns) do
-    current_user = assigns.current_user || %{}
-    myself = case Map.get(current_user, :id) do
-      nil -> false
-      id -> id == assigns.user.id
-    end
-    assigns = assign(assigns, user: Map.from_struct(assigns.user), current_user: current_user, myself: myself)
+    assigns = assign(assigns, user: Map.from_struct(assigns.user))
 
     ~H"""
     <div class="flex flex-col p-4 w-full space-y-2">
       <h5 class="lg:text-xl xl:text-2xl text-lg font-extrabold text-gray-900">
         <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
       </h5>
-      <.ally_button current_user_id={Map.get(@current_user, :id, "")} user_id={@user.id} ally={@ally} username={@user.username} />
 
+      <div class="flex gap-6 items-center justify-center">
+        <.button tone={:icons}>
+          <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6 text-black" />
+        </.button>
+        <div :if={@ally_button != []} :for={ally <- @ally_button}>
+          <.live_component 
+            id="user_information_card_ally"
+            module={PhosWeb.AllyButton} 
+            current_user={ally.current_user}
+            socket={ally.socket}
+            user={ally.user} />
+        </div>
+      </div>
       <div class="space-y-1">
         <div :if={@show_location}>
           <div class="flex justify-center	">
