@@ -12,9 +12,11 @@ config :phos,
 
 # Configures the endpoint
 config :phos, PhosWeb.Endpoint,
-  # change to "127.0.0.1" to work on privelleged port 80
-  url: [host: "localhost"],
-  render_errors: [view: PhosWeb.ErrorView, accepts: ~w(html json), layout: false],
+  url: [host: "localhost"], #change to "127.0.0.1" to work on privelleged port 80
+  render_errors: [
+    formats: [html: PhosWeb.ErrorHTML, json: PhosWeb.ErrorJSON],
+    layout: false
+  ],
   pubsub_server: Phos.PubSub,
   live_view: [signing_salt: "r193MsgJ"]
 
@@ -73,14 +75,21 @@ config :phos, Phos.OAuthStrategy,
     bot_id: {System, :get_env, ["TELEGRAM_BOT_ID"]}
   ]
 
-config :tailwind,
-  version: "3.1.6",
+config :tailwind, version: "3.1.6",
+  admin: [
+    args: ~w(
+      --config=tailwind.config.js
+      --input=css/admin.css
+      --output=../priv/static/assets/admin.css
+    ),
+    cd: Path.expand("../assets", __DIR__)
+  ],
   default: [
     args: ~w(
-    --config=tailwind.config.js
-    --input=css/admin.css
-    --output=../priv/static/assets/admin.css
-  ),
+      --config=tailwind.config.js
+      --input=css/app.css
+      --output=../priv/static/assets/app.css
+    ),
     cd: Path.expand("../assets", __DIR__)
   ]
 
@@ -94,11 +103,14 @@ config :phos, Phos.Cache,
 config :fcmex,
   json_library: Jason
 
-config :phos, Phos.External.Notion, token: {System, :get_env, "NOTION_TOKEN"}
-
 config :phos, Phos.TeleBot,
   callback_url: {PhosWeb.Router.Helpers, :telegram_url, [PhosWeb.Endpoint, :create]},
   bot_username: {System, :get_env, ["TELEGRAM_BOT_NAME"]}
+
+config :phos, Phos.External.Notion,
+  token: {System, :get_env, "NOTION_TOKEN"},
+  database: {System, :get_env, "NOTION_DATABASE"},
+  notification_database: {System, :get_env, "NOTION_NOTIFICATION_DATABASE"}
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

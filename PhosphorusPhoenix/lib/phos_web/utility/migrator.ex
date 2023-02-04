@@ -13,10 +13,11 @@ defmodule PhosWeb.Util.Migrator do
   def user_profile(id) do
     with {:ok, response} <- do_get_user_profile(id),
          true <- response.status_code >= 200 and response.status_code < 300,
-         users <- user_migration(response.body, id) do
+           users <- user_migration(response.body, id) do
       {:ok, users}
     else
       {:error, err} -> {:error, err}
+    _ -> {:error, :unknown}
     end
   end
 
@@ -26,14 +27,15 @@ defmodule PhosWeb.Util.Migrator do
     after
       {:ok, _result} = response -> response
     else
-      err -> err
+      err ->
+        err
     end
   end
 
   def fyr_profile(token) do
     with {:ok, response} <- do_get_account_info(token),
          true <- response.status_code >= 200 and response.status_code < 300,
-         users <- insert_or_update_user(response.body) do
+           users <- insert_or_update_user(response.body) do
       {:ok, users}
     else
       {:error, err} -> {:error, err}

@@ -4,15 +4,14 @@ defmodule PhosWeb.UserConfirmationController do
   alias Phos.Users
 
   def new(conn, _params) do
-    render(conn, "new.html")
+    render(conn, :new)
   end
 
   def create(conn, %{"user" => %{"email" => email}}) do
     if user = Users.get_user_by_email(email) do
       Users.deliver_user_confirmation_instructions(
         user,
-        &Routes.user_confirmation_url(conn, :edit, &1)
-      )
+        fn token -> ~p"/users/confirm/#{token}" end)
     end
 
     conn
@@ -25,7 +24,7 @@ defmodule PhosWeb.UserConfirmationController do
   end
 
   def edit(conn, %{"token" => token}) do
-    render(conn, "edit.html", token: token)
+    render(conn, :edit, token: token)
   end
 
   # Do not log in the user after confirmation to avoid a

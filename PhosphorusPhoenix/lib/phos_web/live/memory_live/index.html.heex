@@ -1,0 +1,40 @@
+<.header>
+  Listing Memories
+  <:actions>
+    <.link patch={~p"/memories/new"}>
+      <.button>New Memory</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table id="memories" rows={@memories} row_click={&JS.navigate(~p"/memories/#{&1}")}>
+  <:col :let={memory} label="Message"><%= memory.message %></:col>
+  <:col :let={memory} label="Media"><%= memory.media %></:col>
+  <:action :let={memory}>
+    <div class="sr-only">
+      <.link navigate={~p"/memories/#{memory}"}>Show</.link>
+    </div>
+    <.link patch={~p"/memories/#{memory}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={memory}>
+    <.link phx-click={JS.push("delete", value: %{id: memory.id})} data-confirm="Are you sure?">
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="memory-modal"
+  show
+  on_cancel={JS.navigate(~p"/memories")}
+>
+  <.live_component
+    module={PhosWeb.MemoryLive.FormComponent}
+    id={@memory.id || :new}
+    title={@page_title}
+    action={@live_action}
+    memory={@memory}
+    navigate={~p"/memories"}
+  />
+</.modal>

@@ -9,6 +9,12 @@ export const InitIndexMap = {
         attribution: '© OpenStreetMap'
     }).addTo(map);
 
+        // detect changes to map size due to modal
+    setTimeout(function() {
+        map.invalidateSize();
+    }, 100);
+
+
     this.handleEvent("centre_marker", (latlng) => {
       L.marker([latlng.latitude, latlng.longitude]).addTo(map)
 
@@ -29,13 +35,19 @@ export const InitIndexMap = {
 export const InitModalMap  = {
   mounted() {
     const mapid = this.el.id;
-    var map = L.map(mapid, { center: [1.3521, 103.8198], zoom: 12 })
+    var map = L.map(mapid, { center: [1.3521, 103.8198], zoom: 12})
     var currMarker = new L.Marker([1.3521, 103.8198]).addTo(map);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
     }).addTo(map);
+
+
+    // detect changes to map size due to modal
+    setTimeout(function() {
+        map.invalidateSize();
+    }, 100);
 
     const view = this;
     map.on("click", function (e) {

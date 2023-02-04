@@ -1,185 +1,133 @@
 <style>
-  /* Sidenav */
-.sidenav {
-    background-color: #fff;
-    color: #333;
-    border-bottom-right-radius: 25px;
-    height: 86%;
-    left: 0;
-    overflow-x: hidden;
-    padding-top: 20px;
-    position: absolute;
-    top: 70px;
-    width: 250px;
-}
+  .sidenav {
+  background-color: #fff;
+  color: #333;
+  border-bottom-right-radius: 25px;
+  height: 86%;
+  left: 0;
+  overflow-x: hidden;
+  padding-top: 20px;
+  position: absolute;
+  top: 70px;
+  width: 250px;
+  }
 
-.profile {
-    margin-bottom: 20px;
-    margin-top: -12px;
-    text-align: center;
-}
+  .profile {
+  margin-bottom: 20px;
+  margin-top: -12px;
+  text-align: center;
+  }
 
-.profile img {
-    border-radius: 50%;
-    box-shadow: 0px 0px 5px 1px grey;
-}
+  .profile img {
+  border-radius: 50%;
+  box-shadow: 0px 0px 5px 1px grey;
+  }
 
-.name {
-    font-weight: bold;
-    padding-top: 20px;
-}
+  .name {
+  font-weight: bold;
+  padding-top: 20px;
+  }
 
-.job {
-    font-weight: bold;
-    padding-top: 10px;
-}
+  .job {
+  font-weight: bold;
+  padding-top: 10px;
+  }
 
-.url, hr {
-    text-align: center;
-}
+  .url, hr {
+  text-align: center;
+  }
 
-.url hr {
-    margin-left: 20%;
-    width: 60%;
-}
+  .url hr {
+  margin-left: 20%;
+  width: 60%;
+  }
 
-.url a {
-    color: #818181;
-    display: block;
-    margin: 10px 0;
-    padding: 6px 8px;
-    text-decoration: none;
-}
+  .url a {
+  color: #818181;
+  display: block;
+  margin: 10px 0;
+  padding: 6px 8px;
+  text-decoration: none;
+  }
 
-.url a:hover, .url .active {
-    background-color: #e8f5ff;
-    border-radius: 28px;
-    color: #000;
-    margin-left: 14%;
-    width: 65%;
-}
+  .url a:hover, .url .active {
+  background-color: #e8f5ff;
+  border-radius: 28px;
+  color: #000;
+  margin-left: 14%;
+  width: 65%;
+  }
 
-/* End */
-
-/* Main */
-.main {
-    margin-top: 2%;
-    margin-left: 29%;
-    padding: 0 10px;
-    width: 58%;
-}
+  /* End */
 </style>
 
-<%= unless @guest do %>
+<.modal 
+  :if={ @live_action in [:edit]}
+  id="edit_profile_modal"
+  show={@live_action in [:edit]}
+  on_cancel={JS.navigate(~p"/user/#{@current_user.username}")}>
+  <.live_component
+    module={PhosWeb.UserProfileLive.FormComponent}
+    id={@current_user.id}
+    title={@page_title}
+    action={@live_action}
+    user={@user}
+    current_user={@current_user}
+    return_to={ ~p"/user/#{@current_user.username}" } />
+</.modal>
 
-<% end %>
+<div class="w-3/4 m-auto relative flex justify-between mt-12 items-center">
 
-<%= if @live_action in [:edit] do %>
-  <.modal return_to={Routes.user_profile_index_path(@socket, :index, @current_user.username)}>
-    <.live_component
-      module={PhosWeb.UserProfileLive.FormComponent}
-      id={@current_user.id}
-      title={@page_title}
-      action={@live_action}
-      user={@user}
-      current_user={@current_user}
-      return_to={Routes.user_profile_index_path(@socket, :index, @current_user.username)}
-    />
-  </.modal>
-<% end %>
-
-    <%= unless @guest do %>
-      <%= live_patch "Edit Profile", to: Routes.user_profile_index_path(@socket, :edit, @user.username) %>
-    <% end %>
-
-    <!-- Sidenav -->
-    <div class="sidenav">
-        <div class="profile">
-        <%= if @user.media do %>
-          <img src={ Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossy") } alt="" width="100" height="100">
-        <% else %>
-          <img src="https://imdezcode.files.wordpress.com/2020/02/imdezcode-logo.png" alt="" width="100" height="100">
-        <% end %>
-
-
-            <div class="name">
-              <%= @user.username %>
-            </div>
-            <div class="job">
-                <%= @user.public_profile.bio %>
-            </div>
-        </div>
+  <div class="w-1/4">
+    <div :if={not is_nil(@user.media) && @user.media} class="p-2 flex justify-center">
+      <img 
+        src={ Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossy") }
+        alt=""
+        class="w-20 h-20 p-2 rounded-full border border-solid border-black shadow-lg" />
     </div>
-    <!-- End -->
 
-    <!-- Main -->
-    <div class="main">
-        <div class="card">
-            <div class="card-body">
-                <table>
-                  <tbody>
-                    <tr>
-                      <td>Honorific</td>
-                      <td><%= @user.public_profile.honorific %></td>
-                    </tr>
-                    <tr>
-                      <td>Email</td>
-                      <td><%= @user.email %></td>
-                    </tr>
-                    <tr>
-                      <td>Occupation</td>
-                      <td><%= @user.public_profile.occupation %></td>
-                    </tr>
-                    <tr>
-                      <td>Birthday</td>
-                      <td><%= @user.public_profile.birthday %></td>
-                    </tr>
-                  </tbody>
-                </table>
-            </div>
-        </div>
 
-        <h2><%= @user.username%>'s Orbs</h2>
-        <div class="card">
-            <div class="card-body">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Title</th>
-                      <th>Media</th>
-                      <th>Extinguish</th>
-                      <th>Time</th>
-                      <th>Tip</th>
-                      <th>Info</th>
-                      <th>Comments</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-
-                    <%= for orb <- @orbs do %>
-                          <tr id={"orb-#{orb.id}"}>
-                            <td><%= orb.title %></td>
-                            <td><%= orb.media %></td>
-                            <td><%= orb.extinguish %></td>
-                            <td><%= orb.payload.when %></td>
-                            <td><%= orb.payload.tip %></td>
-                            <td><%= orb.payload.info %></td>
-                            <td><%= orb.comment_count %></td>
-
-                            <td>
-                              <span><%= live_redirect "Show", to: Routes.orb_show_path(@socket, :show, orb) %></span>
-                              <span><%= live_patch "Edit", to: Routes.orb_index_path(@socket, :edit, orb) %></span>
-                              <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: orb.id, data: [confirm: "Are you sure?"] %></span>
-                            </td>
-                          </tr>
-
-                      <% end %>
-
-                  </tbody>
-                </table>
-
-            </div>
-        </div>
+    <div :if={is_nil(@user.media) || !@user.media} class="p-2 flex justify-center">
+      <img 
+        src="https://imdezcode.files.wordpress.com/2020/02/imdezcode-logo.png"
+        alt=""
+        class="w-20 h-20 p-2 rounded-full border border-solid border-black shadow-xl" />
     </div>
-    <!-- End -->
+
+    <div class="mt-2 font-bold text-md flex flex-col">
+      <.link :if={is_nil(@guest) || !@guest} class="underline" patch={~p"/user/#{@current_user.username}/edit"}>Edit profile</.link>
+
+      <span class="text-lg"><%= @user.username %></span>
+      <span><%= @user.public_profile.bio %></span>
+    </div>
+  </div>
+
+  <div class="px-4 py-2">
+    <.list>
+      <:item title="Honorific"><%= @user.public_profile.honorific || "-" %></:item>
+      <:item title="Email"><%= @user.email %></:item>
+      <:item title="Occupation"><%= @user.public_profile.occupation %></:item>
+      <:item title="Birthday"><%= @user.public_profile.birthday || "-" %></:item>
+    </.list>
+
+    <div class="mt-6">
+      <.card title={"#{@user.username}'s Orbs"}>
+        <.table id="orbs" rows={@orbs}>
+          <:col :let={orb} label="Title"><%= orb.title %></:col>
+          <:col :let={orb} label="Media"><%= orb.media %></:col>
+          <:col :let={orb} label="Extinguish"><%= orb.extinguish %></:col>
+          <:col :let={orb} label="Time"><%= orb.payload.when %></:col>
+          <:col :let={orb} label="Tip"><%= orb.payload.tip %></:col>
+          <:col :let={orb} label="Info"><%= orb.payload.info %></:col>
+          <:col :let={orb} label="Comments"><%= orb.comment_count %></:col>
+
+          <:action :let={orb}>
+            <.link navigate={~p"/orb/#{orb.id}"}>Show</.link>
+            <.link navigate={~p"/orb/#{orb.id}/edit"}>Edit</.link>
+            <.link href={~p"/orb/#{orb.id}"} method="delete" data-confirm="Are you sure?">Delete</.link>
+          </:action>
+        </.table>
+      </.card>
+    </div>
+  </div>
+</div>

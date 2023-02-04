@@ -17,46 +17,37 @@ defmodule PhosWeb do
   and import those modules here.
   """
 
+  def static_paths(), do: ~w(assets fonts images favicon.ico robots.txt)
+
   def controller do
     quote do
-      use Phoenix.Controller, namespace: PhosWeb
+      use Phoenix.Controller,
+        namespace: PhosWeb,
+        formats: [:html, :json],
+        layouts: [html: PhosWeb.Layouts]
 
       import Plug.Conn
       import PhosWeb.Gettext
-      alias PhosWeb.Router.Helpers, as: Routes
-    end
-  end
 
-  def view do
-    quote do
-      use Phoenix.View,
-        root: "lib/phos_web/templates",
-        namespace: PhosWeb
-
-      # Import convenience functions from controllers
-      import Phoenix.Controller,
-        only: [get_flash: 1, get_flash: 2, view_module: 1, view_template: 1]
-
-      # Include shared imports and aliases for views
-      unquote(view_helpers())
+      unquote(verified_routes())
     end
   end
 
   def live_view do
     quote do
       use Phoenix.LiveView,
-        layout: {PhosWeb.LayoutView, "live.html"}
+        layout: {PhosWeb.Layouts, :app}
 
-      unquote(view_helpers())
+      unquote(html_helpers())
     end
   end
 
   def admin_view do
     quote do
       use Phoenix.LiveView,
-        layout: {PhosWeb.LayoutView, "admin_live.html"}
+        layout: {PhosWeb.Layouts, :admin}
 
-      unquote(view_helpers())
+      unquote(html_helpers())
     end
   end
 
@@ -64,21 +55,13 @@ defmodule PhosWeb do
     quote do
       use Phoenix.LiveComponent
 
-      unquote(view_helpers())
-    end
-  end
-
-  def component do
-    quote do
-      use Phoenix.Component
-
-      unquote(view_helpers())
+      unquote(html_helpers())
     end
   end
 
   def router do
     quote do
-      use Phoenix.Router
+      use Phoenix.Router, helpers: false
 
       import Plug.Conn
       import Phoenix.Controller
@@ -89,28 +72,64 @@ defmodule PhosWeb do
   def channel do
     quote do
       use Phoenix.Channel
-      import PhosWeb.Gettext
       import PhosWeb.Util.Authorization
     end
   end
 
-  defp view_helpers do
+  def html do
+    quote do
+      use Phoenix.Component
+
+      import Phoenix.Controller, only: [get_csrf_token: 0, view_module: 1, view_template: 1]
+
+      unquote(html_helpers())
+    end
+  end
+
+  def view do
+    quote do
+      use Phoenix.Component
+
+      # Import convenience functions from controllers
+      import Phoenix.Controller,
+        only: [get_flash: 1, get_flash: 2, view_module: 1, view_template: 1]
+
+      # Include shared imports and aliases for views
+      unquote(html_helpers())
+    end
+  end
+
+  defp html_helpers do
     quote do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
 
       # Import LiveView and .heex helpers (live_render, live_patch, <.form>, etc)
-      import Phoenix.LiveView.Helpers
-      import PhosWeb.LiveHelpers
+      import Phoenix.Component
+      # import PhosWeb.LiveHelpers
 
       # Import basic rendering functionality (render, render_layout, etc)
       import Phoenix.View
 
-      import PhosWeb.ErrorHelpers
+      import PhosWeb.CoreComponents
       import PhosWeb.Gettext
-      alias PhosWeb.Router.Helpers, as: Routes
+
+      alias Phoenix.LiveView.JS
+
+      unquote(verified_routes())
     end
   end
+
+  def verified_routes do
+    quote do
+      use Phoenix.VerifiedRoutes,
+        endpoint: PhosWeb.Endpoint,
+        router: PhosWeb.Router,
+        statics: PhosWeb.static_paths()
+    end
+  end
+
+
 
   @doc """
   When used, dispatch to the appropriate controller/view/etc.

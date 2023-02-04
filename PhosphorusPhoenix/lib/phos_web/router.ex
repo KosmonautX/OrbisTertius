@@ -1,24 +1,26 @@
 defmodule PhosWeb.Router do
   use PhosWeb, :router
 
-  import PhosWeb.UserAuth
+  import PhosWeb.Menshen.Gate
   import PhosWeb.Menshen.Plug
+  import Phoenix.LiveDashboard.Router
 
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_live_flash
-    plug :put_root_layout, {PhosWeb.LayoutView, :root}
+    plug :put_root_layout, {PhosWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_user
+    #plug PhosWeb.Menshen.Mounter, :pleb
   end
 
   pipeline :apple_callback do
     plug :accepts, ["html", "json"]
     plug :fetch_session
     plug :fetch_live_flash
-    plug :put_root_layout, {PhosWeb.LayoutView, :root}
+    plug :put_root_layout, {PhosWeb.Layouts, :root}
     plug :put_secure_browser_headers
     plug :fetch_current_user
   end
@@ -27,16 +29,51 @@ defmodule PhosWeb.Router do
     plug :accepts, ["json"]
   end
 
-  pipeline :authentication do
+  pipeline :admin do
+    plug :put_root_layout, {PhosWeb.Layouts, :admin_root}
+    plug Phos.Admin.Plug
   end
 
-  pipeline :admin do
-    plug :put_root_layout, {PhosWeb.LayoutView, :admin_root}
-    plug Phos.Admin.Plug
+  ## Home Page & Public Pages
+  scope "/", PhosWeb do
+    pipe_through :browser
+
+    get "/", PageController, :home
+  end
+
+
+  ## User Genesis Routes
+  scope "/", PhosWeb do
+    pipe_through [:browser, :redirect_if_user_is_authenticated]
+
+    live_session :redirect_if_user_is_authenticated,
+      on_mount: [{PhosWeb.Menshen.Gate, :redirect_if_user_is_authenticated}] do
+      live "/users/register", UserRegistrationLive, :new
+      live "/users/log_in", UserLoginLive, :new
+      live "/users/reset_password", UserForgotPasswordLive, :new
+      live "/users/reset_password/:token", UserResetPasswordLive, :edit
+    end
+
+    post "/users/log_in", UserSessionController, :create
   end
 
   scope "/", PhosWeb do
     pipe_through [:browser]
+
+    resources "/admin/sessions", AdminSessionController, only: [:new, :create, :index], as: :admin_session
+
+    delete "/users/log_out", UserSessionController, :delete
+
+    live_session :current_user,
+      on_mount: [{PhosWeb.Menshen.Gate, :mount_current_user}] do
+      live "/users/confirm/:token", UserConfirmationLive, :edit
+      live "/users/confirm", UserConfirmationInstructionsLive, :new
+    end
+  end
+
+
+  scope "/", PhosWeb do
+    pipe_through [:browser, :require_authenticated_user]
 
     get "/archetype", ArchetypeController, :show do
       resources "/archetype/usr", UserController, only: [:show]
@@ -44,8 +81,12 @@ defmodule PhosWeb.Router do
 
     get "/telegram_signup", TelegramController, :create
 
-    live_session :authenticated, on_mount: {PhosWeb.Menshen.Mounter, :pleb} do
+    live_session :required_authenticated_user,
+      on_mount: {PhosWeb.Menshen.Gate, :ensure_authenticated} do
       get "/", PageController, :index
+      # get "/orb/sethome", OrbLiveController, :set_home
+      # get "/orb/setwork", OrbLiveController, :set_work
+      # resources "/orb", OrbLiveController, only: [:index, :show]
 
       live "/orb/sethome", OrbLive.Index, :sethome
       live "/orb/setwork", OrbLive.Index, :setwork
@@ -64,16 +105,41 @@ defmodule PhosWeb.Router do
 
       live "/user/:username/edit", UserProfileLive.Index, :edit
       live "/user/:username", UserProfileLive.Index, :index
+
+      live "/users/settings", UserSettingsLive, :edit
+      live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
+
+
+      live "/memories", MemoryLive.Index, :index
+      live "/memories/new", MemoryLive.Index, :new
+      live "/memories/:id/edit", MemoryLive.Index, :edit
+
+      live "/memories/:id", MemoryLive.Show, :show
+      live "/memories/:id/show/edit", MemoryLive.Show, :edit
+
+
+      live "/reveries", ReverieLive.Index, :index
+      live "/reveries/new", ReverieLive.Index, :new
+      live "/reveries/:id/edit", ReverieLive.Index, :edit
+
+      live "/reveries/:id", ReverieLive.Show, :show
+      live "/reveries/:id/show/edit", ReverieLive.Show, :edit
+
+
+
     end
   end
 
   scope "/admin", PhosWeb.Admin, as: :admin, on_mount: {Phos.Admin.Mounter, :admin} do
     pipe_through [:browser, :admin]
 
+    live_dashboard "/dashboard", metrics: PhosWeb.Telemetry
     live "/", DashboardLive, :index
     live "/orbs", OrbLive.Index, :index
     live "/orbs/import", OrbLive.Import, :import
     live "/orbs/:id", OrbLive.Show, :show
+
+    live "/notifications", NotificationLive.Index, :index
   end
 
   scope "/api", PhosWeb.API do
@@ -100,7 +166,7 @@ defmodule PhosWeb.Router do
   end
 
   scope "/api", PhosWeb.API do
-    pipe_through [:api, :authorize_user]
+    pipe_through [:api, :authorized_user]
 
 
     get "/userland/self", UserProfileController, :show_self
@@ -110,10 +176,12 @@ defmodule PhosWeb.Router do
     get "/userland/others/:id", UserProfileController, :show
 
     get "/userland/others/:id/history", OrbController, :show_history
+    put "/userland/others/:id/report", TribunalController, :report_user
 
 
     get "/orbland/stream/:id", OrbController, :show_territory
     resources "/orbland/orbs", OrbController, except: [:new, :edit]
+    put "/orbland/orbs/:id/report", TribunalController, :report_orb
 
     resources "/orbland/comments", CommentController, except: [:new, :edit]
     get "/orbland/comments/root/:id", CommentController, :show_root
@@ -123,12 +191,25 @@ defmodule PhosWeb.Router do
     scope "/folkland" do
       get "/stream/self", OrbController, :show_friends
       get "/stream/discovery/:id", FriendController, :show_discovery
-      resources "/friends", FriendController, except: [:new, :edit, :update]
       get "/others/:id", FriendController, :show_others
       put "/friends/block", FriendController, :block
       put "/friends/accept", FriendController, :accept
       get "/self/requests", FriendController, :requests
       get "/self/pending", FriendController, :pending
+      resources "/friends", FriendController, except: [:new, :edit, :update]
+    end
+
+    scope "/memland" do
+      resources "/memories", EchoController, except: [:new, :edit]
+      put "/reveries/:id", EchoController, :update_reverie
+      get "/friends", EchoController, :index_relations
+      get "/orbs/:id", EchoController, :show_orbs
+      get "/friends/:id", EchoController, :show_relations
+      get "/friends/:id/orbs", EchoController, :show_relations_jump_orbs
+    end
+
+    scope "/medialand" do
+      post "/media/:archetype/:id", MediaController, :show
     end
 
   end
@@ -157,15 +238,16 @@ defmodule PhosWeb.Router do
   # If your application does not have an admins-only section yet,
   # you can use Plug.BasicAuth to set up some basic authentication
   # as long as you are also using SSL (which you should anyway).
-  if Mix.env() in [:dev, :test] do
-    import Phoenix.LiveDashboard.Router
 
-    scope "/" do
-      pipe_through :browser
+  # if Mix.env() in [:dev, :test] do
+  #   import Phoenix.LiveDashboard.Router
 
-      live_dashboard "/dashboard", metrics: PhosWeb.Telemetry
-    end
-  end
+  #   scope "/" do
+  #     pipe_through :browser
+
+  #     live_dashboard "/dashboard", metrics: PhosWeb.Telemetry
+  #   end
+  # end
 
   # Enables the Swoosh mailbox preview in development.
   #
@@ -185,40 +267,5 @@ defmodule PhosWeb.Router do
       get "/lankaonfyr", DevLandController, :fyr
 
     end
-  end
-
-  ## Authentication routes
-
-  scope "/", PhosWeb do
-    pipe_through [:browser, :redirect_if_user_is_authenticated]
-
-    get "/users/register", UserRegistrationController, :new
-    post "/users/register", UserRegistrationController, :create
-    get "/users/log_in", UserSessionController, :new
-    post "/users/log_in", UserSessionController, :create
-    get "/users/reset_password", UserResetPasswordController, :new
-    post "/users/reset_password", UserResetPasswordController, :create
-    get "/users/reset_password/:token", UserResetPasswordController, :edit
-    put "/users/reset_password/:token", UserResetPasswordController, :update
-  end
-
-  scope "/", PhosWeb do
-    pipe_through [:browser, :require_authenticated_user]
-
-    get "/users/settings", UserSettingsController, :edit
-    put "/users/settings", UserSettingsController, :update
-    get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
-  end
-
-  scope "/", PhosWeb do
-    pipe_through [:browser]
-
-    resources "/admin/sessions", Admin.SessionController, only: [:new, :create, :index], as: :admin_session
-
-    delete "/users/log_out", UserSessionController, :delete
-    get "/users/confirm", UserConfirmationController, :new
-    post "/users/confirm", UserConfirmationController, :create
-    get "/users/confirm/:token", UserConfirmationController, :edit
-    post "/users/confirm/:token", UserConfirmationController, :update
   end
  end

@@ -1,0 +1,39 @@
+<.header>
+  Listing Reveries
+  <:actions>
+    <.link patch={~p"/reveries/new"}>
+      <.button>New Reverie</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table id="reveries" rows={@reveries} row_click={&JS.navigate(~p"/reveries/#{&1}")}>
+  <:col :let={reverie} label="Read"><%= reverie.read %></:col>
+  <:action :let={reverie}>
+    <div class="sr-only">
+      <.link navigate={~p"/reveries/#{reverie}"}>Show</.link>
+    </div>
+    <.link patch={~p"/reveries/#{reverie}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={reverie}>
+    <.link phx-click={JS.push("delete", value: %{id: reverie.id})} data-confirm="Are you sure?">
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="reverie-modal"
+  show
+  on_cancel={JS.navigate(~p"/reveries")}
+>
+  <.live_component
+    module={PhosWeb.ReverieLive.FormComponent}
+    id={@reverie.id || :new}
+    title={@page_title}
+    action={@live_action}
+    reverie={@reverie}
+    navigate={~p"/reveries"}
+  />
+</.modal>

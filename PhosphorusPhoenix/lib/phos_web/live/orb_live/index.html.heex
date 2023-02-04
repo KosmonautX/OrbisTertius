@@ -1,100 +1,81 @@
 <head>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ==" crossorigin="" />
-<script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ==" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>
 </head>
 
-<h1>Listing Orbs</h1>
+<h1 class="text-2xl font-bold mt-6">Listing Orbs</h1>
 
-<%= unless @guest do %>
-  <div>
-    <%= live_patch "Set Home", to: Routes.orb_index_path(@socket, :sethome) %>
-    <%= live_patch "Set Work", to: Routes.orb_index_path(@socket, :setwork) %>
-  </div>
-<% end %>
+<div :if={is_nil(@guest) or !@guest}>
+  <.link patch={~p"/orb/sethome"}>Set Home</.link>
+  <.link patch={~p"/orb/setwork"}>Set Work</.link>
+</div>
 
-<div id="gps"
-     phx-hook="InitPosition"
-     phx-update="ignore"></div>
+<div id="gps" phx-hook="InitPosition" phx-update="ignore" />
 
-<%= if @live_action in [:sethome, :setwork] do %>
-  <.modal return_to={Routes.orb_index_path(@socket, :index)}>
-    <.live_component
-      id={:setlocation}
-      module={PhosWeb.OrbLive.MapComponent}
-      title={@page_title}
-      setloc={@setloc}
-      current_user={@current_user}
-      addresses={@addresses}
-      return_to={Routes.orb_index_path(@socket, :index)}
-    />
-  </.modal>
-<% end %>
+<.modal
+  id={"modal_for_#{@live_action}"}
+  :if={@live_action in [:setwork, :sethome]}
+  show={@live_action in [:sethome, :setwork]}
+  on_cancel={JS.navigate(~p"/orb")}
+  on_confirm={JS.navigate(~p"/orb")}>
+  <.live_component
+    id={:setlocation}
+    module={PhosWeb.OrbLive.MapComponent}
+    title={@page_title}
+    setloc={@setloc}
+    current_user={@current_user}
+    addresses={@addresses}
+    return_to={~p"/orb"}
+  />
+</.modal>
 
-<%= if @live_action in [:new, :edit] do %>
-  <.modal return_to={Routes.orb_index_path(@socket, :index)}>
-    <.live_component
-      module={PhosWeb.OrbLive.FormComponent}
-      id={@orb.id || :new}
-      title={@page_title}
-      action={@live_action}
-      orb={@orb}
-      current_user={@current_user}
-      addresses={@addresses}
-      return_to={Routes.orb_index_path(@socket, :index)}
-    />
-  </.modal>
-<% end %>
+<.modal
+  id={"modal_for_#{@live_action}"}
+  :if={@live_action in [:new, :edit]}
+  show={@live_action in [:edit, :new]}
+  on_cancel={JS.navigate(~p"/orb")}
+  on_confirm={JS.navigate(~p"/orb")}>
+  <.live_component
+    module={PhosWeb.OrbLive.FormComponent}
+    id={@orb.id || :new}
+    title={@page_title}
+    action={@live_action}
+    orb={@orb}
+    current_user={@current_user}
+    addresses={@addresses}
+    return_to={~p"/orb"}
+  />
+</.modal>
 
 <div id="wrapper" phx-update="ignore">
   <div id="map"
-      phx-hook="InitIndexMap"
-      style="height: 400px; z-index: -1"></div>
-      <%# z-index: -1 will disable "map interaction" %>
+    phx-hook="InitIndexMap"
+    style="height: 400px; z-index: -1"></div>
+  <%# z-index: -1 will disable "map interaction" %>
 </div>
 
-<%= for {key, value} <- @addresses do %>
+<div :for={{key, value} <- @addresses}>
   <h2><%= String.capitalize(to_string(key))%> Orbs</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Title</th>
-        <th>Active</th>
-        <th>Media</th>
-        <th>Extinguish</th>
-        <th>Time</th>
-        <th>Tip</th>
-        <th>Info</th>
-        <th>Comments</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody id={"#{key}orbs"}>
-      <%= unless location_fetcher(value, @geolocation) == nil do %>
-      <%= for orb <- location_fetcher(value, @geolocation) do %>
-            <tr id={"#{key}orb-#{orb.id}"}>
-              <td><%= orb.title %></td>
-              <td><%= orb.active %></td>
-              <td><%= orb.media %></td>
-              <td><%= orb.extinguish %></td>
-              <td><%= orb.payload.when %></td>
-              <td><%= orb.payload.tip %></td>
-              <td><%= orb.payload.info %></td>
-              <td><%= orb.comment_count %></td>
+  <.table id={"table_for_#{key}"} rows={location_fetcher(value, @geolocation)}>
+    <:col :let={orb} label="Title"><%= orb.title %></:col>
+    <:col :let={orb} label="Active"><%= orb.active %></:col>
+    <:col :let={orb} label="Extinguish"><%= orb.extinguish %></:col>
+    <:col :let={orb} label="Tip"><%= orb.payload.tip %></:col>
+    <:col :let={orb} label="Info"><%= orb.payload.info %></:col>
+    <:col :let={orb} label="Comments"><%= orb.comment_count %></:col>
 
-              <td>
-                <span><%= live_redirect "Show", to: Routes.orb_show_path(@socket, :show, orb) %></span>
-                <span><%= live_patch "Edit", to: Routes.orb_index_path(@socket, :edit, orb) %></span>
-                <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: orb.id, data: [confirm: "Are you sure?"] %></span>
-              </td>
-            </tr>
-
-        <% end %>
-      <% end %>
-    </tbody>
-  </table>
-<% end %>
+    <:action :let={orb}>
+      <div id={"#{key}orb-#{orb.id}"}>
+        <.link href={~p"/orb/#{orb.id}"}>Show</.link>
+        <.link navigate={~p"/orb/#{orb.id}/edit"}>Edit</.link>
+        <.link phx-click={JS.push("delete", value: %{id: orb.id})} data-confirm="Are you sure?">Delete</.link>
+      </div>
+    </:action>
+  </.table>
+</div>
 
 
-<%= unless @guest do %>
-<span><%= live_patch "New Orb", to: Routes.orb_index_path(@socket, :new) %></span>
-<% end %>
+
+<div :if={is_nil(@guest) or !@guest } class="my-6">
+  <.link patch={~p"/orb/new"}>New Orb</.link>
+</div>

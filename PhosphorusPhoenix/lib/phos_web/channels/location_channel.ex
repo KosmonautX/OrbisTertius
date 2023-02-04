@@ -1,11 +1,8 @@
 defmodule PhosWeb.UserLocationChannel do
   use PhosWeb, :channel
-  alias PhosWeb.Menshen.Auth
   alias PhosWeb.Util.Viewer
   alias Phos.Action
-  alias Phos.Users
   alias Phos.PubSub
-  alias Phos.Geographer
 
 
   @impl true
@@ -71,9 +68,7 @@ defmodule PhosWeb.UserLocationChannel do
     {:noreply, socket}
   end
 
-  def handle_info(event, socket) do
-    {:noreply, socket}
-  end
+  def handle_info(_event, socket), do: {:noreply, socket}
 
   defp loc_subscriber(present, nil) do
     #IO.puts("subscribe #{inspect(present)}")
@@ -96,9 +91,9 @@ defmodule PhosWeb.UserLocationChannel do
     %{"subscribed" => present, "data" => present -- past |> Action.active_orbs_by_geohashes() |> Viewer.orb_mapper()}
   end
 
-  defp loc_listener(topic, orb) do
-    %{"subscribed" => topic, "data" => orb|> Viewer.orb_mapper()}
-  end
+  # defp loc_listener(topic, orb) do
+  #   %{"subscribed" => topic, "data" => orb|> Viewer.orb_mapper()}
+  # end
 
   defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"
 
