@@ -833,7 +833,7 @@ defmodule PhosWeb.CoreComponents do
               phx-click={show_welcome_message("welcome_message")}>
               Open app
             </.button>
-            <button id="theme-toggle" type="button" class="text-gray-700       dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm p-2 ">
+            <button id="theme-toggle" type="button" class="text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm p-2 ">
 
             <Heroicons.moon mini id="theme-toggle-dark-icon" class="hidden w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"/>
             <Heroicons.sun mini id="theme-toggle-light-icon" class="hidden w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"/>
@@ -875,6 +875,10 @@ defmodule PhosWeb.CoreComponents do
           <.button  type="button" phx-click={show_welcome_message("welcome_message")}>
           Open app
           </.button>
+          <button id="theme-toggle" type="button" class="text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm p-2 ">
+            <Heroicons.moon mini id="theme-toggle-dark-icon" class="hidden w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"/>
+            <Heroicons.sun mini id="theme-toggle-light-icon" class="hidden w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"/>
+          </button>
         </div>
       </div>
     </nav>
@@ -914,13 +918,13 @@ defmodule PhosWeb.CoreComponents do
           >
             <Heroicons.chat_bubble_oval_left class="w-8 h-8 dark:text-white" />
             <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
-              99
+              0
             </span>
           </a>
         </li>
         <li>
           <img
-            src="/images/IMG-20220404-WA0002.jpg"
+            src="/images/default_hand.jpg"
             class="w-10 h-10 border-4 border-white rounded-full object-cover"
           />
         </li>
@@ -1182,10 +1186,7 @@ defmodule PhosWeb.CoreComponents do
                 id={"#{@id}-sharebtn"}
                 phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
                 class="text-center inline-flex items-center">
-                <div id={"#{@id}-copylink"} class="hidden">
-                  <%= PhosWeb.Endpoint.url() <>
-                    path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %>
-                </div>
+                <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %></div>
                 <Heroicons.share class="-ml-1 w-6 h-6" />
               </button>
             </div>
@@ -1286,8 +1287,8 @@ defmodule PhosWeb.CoreComponents do
     <div class="relative">
       <img
         class="object-cover h-80 w-full border border-gray-200 lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md"
-        src="/images/lake-gce85e5120_1920.jpg"
-        alt="Emoji"
+        src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/banner/lossless")}
+        onerror="this.src='/images/default_banner.jpg';"
       />
       <div class="absolute inset-0 px-6 py-4 flex flex-col items-center bg-opacity-50">
         <p class="md:text-2xl text-lg text-white font-bold md:mb-4"><%= "@#{@user.username}" %></p>
@@ -1295,7 +1296,7 @@ defmodule PhosWeb.CoreComponents do
           <img
             src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
             class=" h-48 w-48 border-4 border-white rounded-full object-cover"
-            onerror="this.src='/images/default_hand.jpg';this.onerror='';"
+            onerror="this.src='/images/default_hand.jpg';"
           />
           <span class="bottom-0 right-0 inline-block absolute w-14 h-14 bg-transparent">
             <%= render_slot(@inner_block) %>
@@ -1345,10 +1346,8 @@ defmodule PhosWeb.CoreComponents do
         phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
         class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold"
       >
-        <div id={"#{@id}-copylink"} class="hidden">
-          <%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
-        </div>
-        <Heroicons.share class="-ml-1 w-6 h-6 dark:text-white" />15
+        <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %></div>
+        <Heroicons.share class="-ml-1 w-6 h-6 dark:text-white" />
       </button>
 
           <.button class="flex items-center p-0 items-start space-y-1">
