@@ -1219,9 +1219,7 @@ defmodule PhosWeb.CoreComponents do
           phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
           class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold"
         >
-          <div id={"#{@id}-copylink"} class="hidden">
-            <%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %>
-          </div>
+          <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %></div>
           <Heroicons.share class="-ml-1 w-6 h-6 dark:text-white" />15
         </button>
         <button class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold">
