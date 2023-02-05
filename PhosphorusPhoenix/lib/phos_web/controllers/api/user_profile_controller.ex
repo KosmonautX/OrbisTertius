@@ -84,13 +84,13 @@ defmodule PhosWeb.API.UserProfileController do
     end
   end
 
-  def update_beacon(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"fcm_token" => token}) do
+  def update_beacon(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"fcm_token" => token} = params) do
     #subscribing to past fcm logic etc
     # default global topic COUNTRY.SG
     # resubscribe logic
     with true <- !Fcmex.unregistered?(token),
          {:ok, %{}} <- Fcmex.Subscription.subscribe("USR." <> user.id, token),
-         {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => %{"fcm_token" => token}}) do
+         {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => params}) do
       render(conn, :show, integration: user_integration)
     else
       false -> {:error, :unprocessable_entity}
@@ -117,18 +117,6 @@ defmodule PhosWeb.API.UserProfileController do
                           "title" => (unless is_nil(params["traits"]), do: "Hello, It's my first day on Scratchbac! What's going on today?")
                          } |> purge_nil()
     } |> purge_nil()
-  end
-
-  # defp resubscribe(present_fcm, %{integrations: %{fcm_token: past_fcm}}) do
-  #   with true <- !Fcmex.unregistered?(present_fcm),
-  #        {:ok, %{}} <- Fc,
-  #        {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => %{"fcm_token" => token}}) do
-
-
-  # end
-
-  defp resubscribe(present_fcm, user) do
-    Fcmex.Subscription.subscribe("USR." <> user.id, present_fcm)
   end
 
  end

@@ -17,13 +17,13 @@
 :phong_id=f8ed10b7-147e-4864-9525-bcf49c457dfc
 :satrioremote_id=5972b8e6-319b-4bf4-95cf-f58fb2117e21
 :brandon_id=b556571a-362e-4017-9894-f1eed0b39794
-:lky_id=3995c7f6-af54-4e31-85ee-3608e16ec00f
+:lky_id=6d7b0e7c-a633-4a8a-8d85-b8a493109bd4
 #:lky_id=4b2d6d8d-7781-4a20-b868-b0e0db245b85
 :aang_id=58c146d2-407f-49d5-a74d-0d9362e73be9
 :zuko_id=6f6c7d30-4447-4687-8fb9-f95a2de82957
 :owen_id=233e50b1-5507-4a3c-96a7-b6339e8d27f4
 :tate_id=5e7ed96c-f444-43e5-96e9-fe44bba1a664
-:fcm=ea8-2OzeSbm2oOeZtHFP8z:APA91bH1rOtpzxu9VU4tpXLU_oVz_v6FkGccdTPeCe3msiQrjs9wm7ME0a2bRctB9_KswmFcTxjLVzaFa2-SNBb0x6K24X6dxDB5HlpQTOK5ibOLqvTzhAVQsTdgR_S535bNSuuFoKuG
+:fcm=djMNQPoHR_6l5FlC3x_91Y:APA91bFPf8PiG7a0A0zwb9jKJD5JNFogFdPseKOyzyF9htiyM4HQhfl4NVo9j1C4dHnPuWFpR6qIYpGn13ABaKlB7EvI62U4l5ug_TlM-dwFRTETJKPhBVeNiC0Kn46uBSeut9_FIKOo
 :raiz_fcm=f3vM3sCxR76eSaJS0pYwFm:APA91bEqiK7GJvjdKoWWd3A7spQnJFLgJY8rRilnuW9d7IJZHzJ3f3VZbqDwgg5zlwidWw82PTZTeMhEDPc2CwpILM4OQK--6xxYAN1uhR1-5stVeCr5YOZSh0uNhKHdiEpRXtmC-58i
 :rel=9bb7ad28-3caa-49fa-a314-fc9ca8093f27
 :auth-headers = <<
@@ -127,8 +127,12 @@ PUT :ipAddress/userland/others/e4c01173-f944-4d78-993f-bf4c6fb7cb3a/report
 PUT :ipAddress/userland/self/beacon
 :auth-headers
 {
-    "fcm_token": ":raiz_fcm"
-}
+    "fcm_token": ":fcm",
+    "beacon":{
+    "location": {
+    "scope": false,
+    "subscribe": [636786611773840255 , 636786611773840255]
+}}}
 
 ## ! Folkland Calls
 ## View others Profile

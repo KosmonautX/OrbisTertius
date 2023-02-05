@@ -220,13 +220,22 @@ from(l in Phos.Action.Orb_Location,
   where: l.location_id in ^hashes,
   left_join: orbs in assoc(l, :orbs),
   inner_join: initiator in assoc(orbs, :initiator),
+  on: initiator.integrations["beacon"]["location"]["scope"] == true,
   distinct: initiator.id,
   select: initiator.integrations
 )
 |> Repo.all()
+
+# |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end)
 ```
 
 ```elixir
-# user |> Phos.Users.update_integrations_user(%{"integrations" => %{"beacon" =>%{}}})
+Phos.Users.get_user_by_username("lky")
+|> Phos.Users.update_integrations_user(%{
+  "integrations" => %{
+    "beacon" => %{"location" => %{"scope" => true, "subscribe" => [1, 2, "2", "4"]}}
+  }
+})
+
 # Phos.Users.get_user_by_username("lky")
 ```

@@ -187,6 +187,7 @@ defmodule Phos.Action do
       where: l.location_id in ^hashes,
       left_join: orbs in assoc(l, :orbs),
       inner_join: initiator in assoc(orbs, :initiator),
+      on: initiator.integrations["beacon"]["location"]["scope"] == true,
       distinct: initiator.id,
       select: initiator.integrations)
       |> Repo.all()
@@ -329,6 +330,7 @@ defmodule Phos.Action do
                %{title: "Hey! 👋 You’ve got to check out what #{orb.initiator.username} just posted 🌠",
                  body: orb.title},
                %{action_path: "/orbland/orbs/#{orb.id}"})
+
              Phos.Notification.push(
                notifiers_by_geohashes([orb.central_geohash])
                |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end),

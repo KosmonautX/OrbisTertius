@@ -12,5 +12,5 @@ defmodule PhosWeb.API.UserProfileJSON do
   def show(%{integration: integration}), do: user_integration_json(integration)
 
   defp user_profile_json(profile), do: Viewer.user_mapper(profile)
-  defp user_integration_json(profile), do: Viewer.integration_mapper(profile)
+  defp user_integration_json(profile), do: Viewer.user_integration_mapper(profile)
 end
