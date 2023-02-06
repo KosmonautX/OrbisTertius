@@ -13,6 +13,12 @@ defmodule PhosWeb.API.EchoController do
   def show_relations_jump_orbs(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => rel_id, "page" => page}),
     do: render(conn, :paginated, reveries: Message.last_messages_by_orb_within_relation({rel_id, your_id}, page))
 
+  def show_relations_jump_orbs(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => rel_id, "cursor" => cursor, "asc" => "true"}),
+    do: render(conn, :paginated, reveries: Message.last_messages_by_orb_within_relation({rel_id, your_id}, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond), asc: true]))
+
+  def show_relations_jump_orbs(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => rel_id, "cursor" => cursor}),
+    do: render(conn, :paginated, reveries: Message.last_messages_by_orb_within_relation({rel_id, your_id}, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond)]))
+
   def show_relations(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => rel_id, "page" => page}),
     do: render(conn, :paginated, reveries: Message.list_messages_by_relation({rel_id, your_id}, page))
 

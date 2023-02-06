@@ -27,16 +27,26 @@ defmodule Phos.Message do
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
+  def last_messages_by_orb_within_relation({rel_id, yours}, opts) when is_list(opts) do
+    Phos.Message.Reverie
+    |> where([r], r.user_destination_id == ^yours)
+    |> join(:inner, [r], m in Phos.Message.Memory, on: r.memory_id == m.id and not is_nil(m.orb_subject_id) and m.rel_subject_id == ^rel_id)
+    |> select_merge([r, m], %{memory: m})
+    |> distinct([r, m], m.orb_subject_id)
+    |> preload([memory: [:orb_subject]])
+    |> Repo.Paginated.all(opts)
+  end
+
   def last_messages_by_orb_within_relation({rel_id, yours}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
     Phos.Message.Reverie
     |> where([r], r.user_destination_id == ^yours)
     |> join(:inner, [r], m in Phos.Message.Memory, on: r.memory_id == m.id and not is_nil(m.orb_subject_id) and m.rel_subject_id == ^rel_id)
     |> select_merge([r, m], %{memory: m})
     |> distinct([r, m], m.orb_subject_id)
-    |> order_by([e], asc: e.inserted_at)
     |> preload([memory: [:orb_subject]])
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
+
 
 
   @doc """
@@ -54,8 +64,8 @@ defmodule Phos.Message do
     |> where([r], r.user_destination_id == ^yours)
     |> join(:inner, [r], m in Phos.Message.Memory, on: m.rel_subject_id == ^rel_id and r.memory_id == m.id)
     |> select_merge([r, m], %{memory: m})
-    |> preload([memory: [:user_source, :orb_subject]])
     |> Repo.Paginated.all(opts)
+    |> preload([memory: [:user_source, :orb_subject]])
   end
 
   @doc """
