@@ -370,7 +370,7 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <div phx-feedback-for={@name}>
       <.label for={@id}><%= @label %></.label>
-      <textarea
+      <textarea rows="2"
         id={@id || @name}
         name={@name}
         placeholder={@placeholder}
@@ -787,7 +787,7 @@ defmodule PhosWeb.CoreComponents do
 
   def banner(assigns) do
     ~H"""
-    <nav class="bg-white px-2 fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold p-2 dark:bg-gray-900">
+    <nav class="bg-white fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold dark:bg-gray-900 p-2">
       <div class="flex flex-wrap items-center justify-between mx-auto">
         <a href="/" class="flex items-center">
           <.logo type="banner" class="h-7 ml-4 dark:fill-white"></.logo>
@@ -826,14 +826,15 @@ defmodule PhosWeb.CoreComponents do
               </span>
             </li>
           </ul>
-      <div class="flex gap-2">
+           <div class="flex gap-2">
             <.button
               id="welcome-button"
               type="button"
               phx-click={show_welcome_message("welcome_message")}>
               Open app
             </.button>
-            <button id="theme-toggle" type="button" class="text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm p-2 ">
+
+            <button id="theme-toggle" type="button" class="text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm p-2">
 
             <Heroicons.moon mini id="theme-toggle-dark-icon" class="hidden w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"/>
             <Heroicons.sun mini id="theme-toggle-light-icon" class="hidden w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"/>
@@ -885,9 +886,11 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  attr(:current_user, :map, required: true)
+
   def tabs_mobile(assigns) do
     ~H"""
-    <div class="w-full border-gray-400 border-t-2 rounded-t-2xl bg-white lg:hidden block fixed z-10 bottom-0 px-4 py-2 dark:bg-gray-900">
+    <div class="w-full border-gray-400 border-t-2 rounded-t-2xl bg-white lg:hidden block fixed z-10 bottom-0 px-2 py-1 dark:bg-gray-900">
       <ul class="flex flex-wrap items-center justify-between mx-auto">
         <li>
           <a
@@ -923,10 +926,15 @@ defmodule PhosWeb.CoreComponents do
           </a>
         </li>
         <li>
+        <.link
+        :if={not is_nil(@current_user.username)}
+                  navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@current_user.username}")}>
           <img
-            src="/images/default_hand.jpg"
-            class="w-10 h-10 border-4 border-white rounded-full object-cover"
-          />
+          class="h-10 w-10 border-4 border-white rounded-full object-cover"
+          src={Phos.Orbject.S3.get!("USR", Map.get(@current_user, :id), "public/banner/lossless")}
+          onerror="this.src='/images/default_banner.jpg';"
+        />
+        </.link>
         </li>
       </ul>
     </div>
@@ -935,6 +943,7 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:action, :atom)
   attr(:username, :string)
+
 
   def tabs_profile(assigns) do
     ~H"""
@@ -1093,7 +1102,7 @@ defmodule PhosWeb.CoreComponents do
             <div :for={{path, src} <- @media} class="glide__slide">
               <img
                 id={"#{@id}-carousell-media-#{path}"}
-                class="object-cover md:inset-0 h-80 w-full"
+                class="object-cover md:inset-0 lg:h-80 md:h-72 h-60 w-full"
                 src={src}
                 loading="lazy"
               />
@@ -1284,7 +1293,7 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <div class="relative">
       <img
-        class="object-cover h-80 w-full border border-gray-200 lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md"
+        class="object-cover lg:h-80 md:h-72 h-64 w-full border border-gray-200 lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md"
         src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/banner/lossless")}
         onerror="this.src='/images/default_banner.jpg';"
       />
@@ -1293,7 +1302,7 @@ defmodule PhosWeb.CoreComponents do
         <div class="relative flex justify-center items-center">
           <img
             src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
-            class=" h-48 w-48 border-4 border-white rounded-full object-cover"
+            class="h-48 w-48 lg:h-52 lg:w-52 border-4 border-white rounded-full object-cover"
             onerror="this.src='/images/default_hand.jpg';"
           />
           <span class="bottom-0 right-0 inline-block absolute w-14 h-14 bg-transparent">
@@ -1332,8 +1341,8 @@ defmodule PhosWeb.CoreComponents do
       )
 
     ~H"""
-    <div class="flex flex-col justify-between p-4 w-full space-y-2 lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md lg:dark:bg-gray-700 dark:border-gray-700">
-      <div class="gap-4 flex justify-between">
+    <div class="flex flex-col justify-between p-4 w-full space-y-1 lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md lg:dark:bg-gray-700 dark:border-gray-700">
+      <div class="gap-4 flex justify-between w-full px-2">
         <h5 class="lg:text-xl xl:text-2xl text-lg font-extrabold text-gray-900  dark:text-white">
           <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
         </h5>
@@ -1397,9 +1406,14 @@ defmodule PhosWeb.CoreComponents do
         <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
       </h5>
       <div class="flex gap-6 items-center justify-center">
-        <.button tone={:icons}>
-          <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6 text-black dark:text-white" />
-        </.button>
+      <button
+      id={"#{@id}-sharebtn"}
+      phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
+      class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold"
+    >
+      <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %></div>
+      <Heroicons.share class="-ml-1 w-6 h-6 dark:text-white" />
+    </button>
         <.button class="flex items-center p-0 items-start space-y-1">
           <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
           <span>Ally</span>

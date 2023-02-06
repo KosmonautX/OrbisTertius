@@ -16,11 +16,11 @@
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
   </head>
-  <body class="h-screen w-full dark:bg-gray-900">
+  <body class="h-screen w-full mx-auto dark:bg-gray-900">
     <%= # take username of initiator through meta tags %>
     <%= if @current_user do %>
       <.banner :if={@current_user} current_user={@current_user} />
-      <.tabs_mobile />
+      <.tabs_mobile current_user={@current_user}/>
     <% else %>
       <.guest_banner if={is_nil(@current_user)} current_user={@current_user} />
     <% end %>
