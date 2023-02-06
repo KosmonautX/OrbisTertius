@@ -129,6 +129,7 @@ PUT :ipAddress/userland/self/beacon
 {
     "fcm_token": ":fcm",
     "beacon":{
+    "scope": true,
     "location": {
     "scope": false,
     "subscribe": [636786611773840255 , 636786611773840255]

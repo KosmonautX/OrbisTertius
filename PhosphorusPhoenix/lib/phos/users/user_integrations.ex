@@ -6,6 +6,7 @@ defmodule Phos.Users.Integrations do
   embedded_schema do
     field(:fcm_token, :string)
     embeds_one :beacon, Beacon, on_replace: :update, primary_key: false do
+      field :scope, :boolean, default: true
       embeds_one :location, Location, on_replace: :update, primary_key: false do
         field :scope, :boolean
         field :unsubscribe, Phos.Ecto.Mapset, of: :integer # {:array, :integer}
@@ -24,7 +25,7 @@ defmodule Phos.Users.Integrations do
 
   def beacon_changeset(beacon, attrs) do
     beacon
-    |> cast(attrs, [])
+    |> cast(attrs, [:scope])
     |> cast_embed(:location, with: &location_beacon_changeset/2)
   end
 
