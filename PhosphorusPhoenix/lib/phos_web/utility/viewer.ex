@@ -128,7 +128,8 @@ defmodule PhosWeb.Util.Viewer do
     (if profile && !is_nil(profile) && Ecto.assoc_loaded?(profile) do
       %{data: %{
            fcm_token: profile.fcm_token,
-           beacon: for {k , v}  <- Map.from_struct(profile.beacon), into: %{} do
+           beacon: (if profile.beacon do
+             for {k , v}  <- Map.from_struct(profile.beacon), into: %{} do
                      case k do
                        :scope ->
                          {:scope, v}
@@ -139,8 +140,8 @@ defmodule PhosWeb.Util.Viewer do
                           }}
                     end
                   end
-        }}
-     end)
+           end)}}
+      end)
   end
 
   def user_public_mapper(user) do

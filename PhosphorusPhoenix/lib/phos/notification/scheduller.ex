@@ -135,11 +135,10 @@ defmodule Phos.Notification.Scheduller do
   end
 
   defp send_notification(%{regions: [_ | _], title: title} = data) do
-    #expected_title = orb_title(title, orb)
     fetch_tokens(data)
     |> Phos.Notification.push(
       %{title: title, body: Map.get(data, :body, "")},
-    %{action_path: data.action_path <> "/" <> data.archetype_id})
+    %{action_path: "#{data.action_path}/#{data.archetype_id}"})
   end
 
   defp fetch_tokens(%{regions: regions}) when is_list(regions) do
