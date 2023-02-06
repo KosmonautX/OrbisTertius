@@ -64,8 +64,8 @@ defmodule Phos.Message do
     |> where([r], r.user_destination_id == ^yours)
     |> join(:inner, [r], m in Phos.Message.Memory, on: m.rel_subject_id == ^rel_id and r.memory_id == m.id)
     |> select_merge([r, m], %{memory: m})
-    |> Repo.Paginated.all(opts)
     |> preload([memory: [:user_source, :orb_subject]])
+    |> Repo.Paginated.all(opts)
   end
 
   @doc """
