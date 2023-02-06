@@ -84,10 +84,17 @@ defmodule PhosWeb.API.UserProfileController do
     end
   end
 
+  def update_beacon(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"fcm_token" => token, "beacon" => %{"scope" => false}} = params) do
+    with true <- !Fcmex.unregistered?(token),
+         {:ok, %{}} <- Fcmex.Subscription.unsubscribe("USR." <> user.id, token),
+         {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => params}) do
+      render(conn, :show, integration: user_integration)
+    else
+      false -> {:error, :unprocessable_entity}
+    end
+  end
+
   def update_beacon(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"fcm_token" => token} = params) do
-    #subscribing to past fcm logic etc
-    # default global topic COUNTRY.SG
-    # resubscribe logic
     with true <- !Fcmex.unregistered?(token),
          {:ok, %{}} <- Fcmex.Subscription.subscribe("USR." <> user.id, token),
          {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => params}) do

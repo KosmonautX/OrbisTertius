@@ -129,11 +129,16 @@ defmodule PhosWeb.Util.Viewer do
       %{data: %{
            fcm_token: profile.fcm_token,
            beacon: for {k , v}  <- Map.from_struct(profile.beacon), into: %{} do
+                     case k do
+                       :scope ->
+                         {:scope, v}
+                       _ ->
                      {k, %{scope: v.scope,
                            subscribe: v.subscribe,
                            unsubscribe: v.unsubscribe
                           }}
-                   end
+                    end
+                  end
         }}
      end)
   end

@@ -33,7 +33,7 @@ defmodule Phos.Message do
     |> join(:inner, [r], m in Phos.Message.Memory, on: r.memory_id == m.id and not is_nil(m.orb_subject_id) and m.rel_subject_id == ^rel_id)
     |> select_merge([r, m], %{memory: m})
     |> distinct([r, m], m.orb_subject_id)
-    |> order_by([e], desc: e.inserted_at)
+    |> order_by([e], asc: e.inserted_at)
     |> preload([memory: [:orb_subject]])
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
