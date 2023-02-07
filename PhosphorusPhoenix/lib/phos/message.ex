@@ -32,7 +32,6 @@ defmodule Phos.Message do
     |> where([r], r.user_destination_id == ^yours)
     |> join(:inner, [r], m in Phos.Message.Memory, on: r.memory_id == m.id and not is_nil(m.orb_subject_id) and m.rel_subject_id == ^rel_id)
     |> select_merge([r, m], %{memory: m})
-    |> distinct([r, m], m.orb_subject_id)
     |> preload([memory: [:orb_subject]])
     |> Repo.Paginated.all(opts)
   end
@@ -42,7 +41,6 @@ defmodule Phos.Message do
     |> where([r], r.user_destination_id == ^yours)
     |> join(:inner, [r], m in Phos.Message.Memory, on: r.memory_id == m.id and not is_nil(m.orb_subject_id) and m.rel_subject_id == ^rel_id)
     |> select_merge([r, m], %{memory: m})
-    |> distinct([r, m], m.orb_subject_id)
     |> preload([memory: [:orb_subject]])
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
