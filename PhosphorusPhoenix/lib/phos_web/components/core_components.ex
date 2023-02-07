@@ -53,7 +53,7 @@ defmodule PhosWeb.CoreComponents do
 
   def modal(assigns) do
     ~H"""
-    <div id={@id} phx-mounted={@show && show_modal(@id)} class="relative z-50 hidden dark:bg-gray-400">
+    <div id={@id} phx-mounted={@show && show_modal(@id)} class="relative z-50 hidden bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-400 dark:border-gray-700 dark:hover:bg-gray-700">
       <div id={"#{@id}-bg"} class={["fixed inset-0 bg-zinc-50/90 transition-opacity", @background]} aria-hidden="true" />
       <div
         class="fixed inset-0 overflow-y-auto"
@@ -92,7 +92,7 @@ defmodule PhosWeb.CoreComponents do
                     <%= render_slot(@subtitle) %>
                   </p>
                 </header>
-                <div id={"#{@id}-main"} class="p-4 w-full">
+                <div id={"#{@id}-main"} class="w-full">
                   <%= render_slot(@inner_block) %>
                 </div>
                 <div
@@ -947,6 +947,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:action, :atom)
   attr(:username, :string)
   attr(:id, :string)
+
   def tabs_profile(assigns) do
     ~H"""
     <div id={@id} class="w-full sticky top-0 left-0 right-0 border   border-gray-200 dark:bg-gray-900">
@@ -1396,14 +1397,16 @@ defmodule PhosWeb.CoreComponents do
   attr(:show_location, :boolean, default: true)
 
   def user_information_card_orb(assigns) do
-    assigns = assigns
-    |> assign(:user, Map.from_struct(assigns.user))
-    |> then(
-    fn
-      %{show_location: true, user: %{public_profile: %{territories: terr}}} = state ->
-        assign(state, :locations, Phos.Utility.Geo.top_occuring(terr, 2))
-      state  -> assign(state, :show_location, false)
-    end)
+    assigns =
+      assigns
+      |> assign(:user, Map.from_struct(assigns.user))
+      |> then(fn
+        %{show_location: true, user: %{public_profile: %{territories: terr}}} = state ->
+          assign(state, :locations, Phos.Utility.Geo.top_occuring(terr, 2))
+
+        state ->
+          assign(state, :show_location, false)
+      end)
 
     ~H"""
     <div class="flex flex-col p-4 w-full space-y-4 lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md lg:dark:bg-gray-700 dark:border-gray-700">
@@ -1463,13 +1466,13 @@ defmodule PhosWeb.CoreComponents do
 
   def welcome_message(assigns) do
     ~H"""
-    <.modal id={@id} background="bg-black/50" close_button={false} main_width="w-1/3">
-      <div id={"#{@id}-main-content"} data-selector="phos_modal_message" class="w-full flex flex-col items-center">
-        <div class="">
+    <.modal id={@id} background="bg-black/50" close_button={false} main_width="max-w-xl">
+      <div id={"#{@id}-main-content"} data-selector="phos_modal_message" class="w-full flex flex-col items-center bg-white border border-gray-200 rounded-2xl shadow-2xl hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 p-2">
+        <div class="dark:text-white">
           Welcome message
         </div>
-        <p class="mt-3 font-semibold text-xl">Hmm...You were saying?</p>
-        <p class="mt-3 w-1/2 text-center text-gray-400">
+        <p class="mt-3 font-semibold text-xl dark:text-white">Hmm...You were saying?</p>
+        <p class="mt-3 w-1/2 text-center text-gray-400 dark:text-gray-400">
           Join the tribe to share your thoughts with raizzy paizzy now!
         </p>
         <div class="mt-3">
@@ -1492,7 +1495,7 @@ defmodule PhosWeb.CoreComponents do
           via Web
         </div>
         <div :if={not is_nil(@user)} class="mt-3">
-          <a class="hover:text-teal-400 text-base font-bold hover:underline hover:cursor-pointer">
+          <a class="hover:text-teal-400 text-base font-bold hover:underline hover:cursor-pointer dark:text-white">
             Bring me back to what I was doing!
           </a>
         </div>
