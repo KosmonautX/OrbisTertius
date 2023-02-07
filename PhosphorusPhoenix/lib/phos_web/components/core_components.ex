@@ -41,6 +41,9 @@ defmodule PhosWeb.CoreComponents do
   attr(:show, :boolean, default: false)
   attr(:on_cancel, JS, default: %JS{}, doc: "JS cancel action")
   attr(:on_confirm, JS, default: %JS{}, doc: "JS confirm action")
+  attr(:background, :string, default: "bg-white")
+  attr(:close_button, :boolean, default: true)
+  attr(:main_width, :string, default: "w-full")
 
   slot(:inner_block, required: true)
   slot(:title)
@@ -51,7 +54,7 @@ defmodule PhosWeb.CoreComponents do
   def modal(assigns) do
     ~H"""
     <div id={@id} phx-mounted={@show && show_modal(@id)} class="relative z-50 hidden dark:bg-gray-400">
-      <div id={"#{@id}-bg"} class="fixed inset-0 bg-zinc-50/90 transition-opacity" aria-hidden="true" />
+      <div id={"#{@id}-bg"} class={["fixed inset-0 bg-zinc-50/90 transition-opacity", @background]} aria-hidden="true" />
       <div
         class="fixed inset-0 overflow-y-auto"
         aria-labelledby={"#{@id}-title"}
@@ -61,16 +64,16 @@ defmodule PhosWeb.CoreComponents do
         tabindex="0"
       >
         <div class="flex min-h-full items-center justify-center">
-          <div class="w-full max-w-3xl p-4 sm:p-6 lg:py-8">
+          <div class={["max-w-3xl p-4 sm:p-6 lg:py-8", @main_width]}>
             <.focus_wrap
               id={"#{@id}-container"}
               phx-mounted={@show && show_modal(@id)}
               phx-window-keydown={hide_modal(@on_cancel, @id)}
               phx-key="escape"
               phx-click-away={hide_modal(@on_cancel, @id)}
-              class="hidden relative rounded-2xl bg-white shadow-lg shadow-zinc-700/10 ring-1 ring-zinc-700/10 transition"
+              class="hidden relative rounded-2xl shadow-lg bg-white shadow-zinc-700/10 ring-1 ring-zinc-700/10 transition"
             >
-              <div class="absolute top-4 right-4">
+              <div class="absolute top-4 right-4" :if={@close_button}>
                 <button
                   phx-click={hide_modal(@on_cancel, @id)}
                   type="button"
@@ -830,7 +833,7 @@ defmodule PhosWeb.CoreComponents do
             <.button
               id="welcome-button"
               type="button"
-              phx-click={show_welcome_message("welcome_message")}>
+              phx-click={show_modal("welcome_message")}>
               Open app
             </.button>
 
@@ -873,7 +876,7 @@ defmodule PhosWeb.CoreComponents do
           <.logo type="banner" class="h-7 ml-4 dark:fill-white"></.logo>
         </a>
         <div class="flex gap-2">
-          <.button  type="button" phx-click={show_welcome_message("welcome_message")}>
+          <.button  type="button" phx-click={show_modal("welcome_message")}>
           Open app
           </.button>
           <button id="theme-toggle" type="button" class="text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm p-2 ">
@@ -1458,61 +1461,42 @@ defmodule PhosWeb.CoreComponents do
 
   def welcome_message(assigns) do
     ~H"""
-    <div
-      id={@id}
-      data-selector="phos_modal_message"
-      phx-mounted={@show}
-      class="absolute flex flex-col md:items-center justify-between md:justify-center inset-0 bg-black/50 z-50 hidden"
-    >
-      <div class="flex md:hidden" />
-      <div id={"#{@id}-bg"} class="h-[375px] bg-white flex items-center rounded-t-lg md:rounded-b-lg">
-        <div id={"#{@id}-content"} class="w-full flex flex-col items-center">
-          <div class="">
-            Welcome message
-          </div>
-          <p class="mt-3 font-semibold text-xl">Hmm...You were saying?</p>
-          <p class="mt-3 w-1/2 text-center text-gray-400">
-            Join the tribe to share your thoughts with raizzy paizzy now!
-          </p>
-          <div class="mt-3">
-            <.button type="button">Download the Scratchbac app</.button>
-          </div>
-          <div :if={is_nil(@user)} class="mt-3 text-sm text-gray-500 ">
-            <.link
-              navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
-              class="text-sm text-teal-400 font-bold hover:underline"
-            >
-              Sign up
-            </.link>
-            Or
-            <.link
-              navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/log_in")}
-              class="text-sm text-teal-400 font-bold hover:underline"
-            >
-              Sign in
-            </.link>
-            via Web
-          </div>
-          <div :if={not is_nil(@user)} class="mt-3">
-            <a class="hover:text-teal-400 text-base font-bold hover:underline hover:cursor-pointer">
-              Bring me back to what I was doing!
-            </a>
-          </div>
+    <.modal id={@id} background="bg-black/50" close_button={false} main_width="w-1/3">
+      <div id={"#{@id}-main-content"} data-selector="phos_modal_message" class="w-full flex flex-col items-center">
+        <div class="">
+          Welcome message
+        </div>
+        <p class="mt-3 font-semibold text-xl">Hmm...You were saying?</p>
+        <p class="mt-3 w-1/2 text-center text-gray-400">
+          Join the tribe to share your thoughts with raizzy paizzy now!
+        </p>
+        <div class="mt-3">
+          <.button type="button">Download the Scratchbac app</.button>
+        </div>
+        <div :if={is_nil(@user)} class="mt-3 text-sm text-gray-500 ">
+          <.link
+            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
+            class="text-sm text-teal-400 font-bold hover:underline"
+          >
+            Sign up
+          </.link>
+          Or
+          <.link
+            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/log_in")}
+            class="text-sm text-teal-400 font-bold hover:underline"
+          >
+            Sign in
+          </.link>
+          via Web
+        </div>
+        <div :if={not is_nil(@user)} class="mt-3">
+          <a class="hover:text-teal-400 text-base font-bold hover:underline hover:cursor-pointer">
+            Bring me back to what I was doing!
+          </a>
         </div>
       </div>
-    </div>
+    </.modal>
     """
-  end
-
-  def show_welcome_message(js \\ %JS{}, id) when is_binary(id) do
-    js
-    |> JS.show(to: "##{id}", display: "flex")
-    |> JS.show(
-      to: "##{id}-bg",
-      transition: {"transition-all transform ease-out duration-300", "opacity-0", "opacity-100"},
-      display: "flex"
-    )
-    |> JS.focus_first(to: "##{id}-content")
   end
 
   defp get_date(time, timezone) do
