@@ -27,11 +27,13 @@ defmodule Phos.UsersFixtures do
 
   def user_pte_prof_fixture(attrs \\ %{}) do
     {:ok, user_created} = valid_user_attributes() |> Phos.Users.register_user()
+
     {:ok, user} =
       %Phos.Users.Private_Profile{}
-        |> Phos.Users.Private_Profile.changeset(%{user_id: user_created.id})
-        |> Ecto.Changeset.put_embed(:geolocation, [attrs])
-        |> Phos.Repo.insert()
+      |> Phos.Users.Private_Profile.changeset(%{user_id: user_created.id})
+      |> Ecto.Changeset.put_embed(:geolocation, [attrs])
+      |> Phos.Repo.insert()
+
     user
   end
 

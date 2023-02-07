@@ -20,7 +20,7 @@ defmodule PhosWeb.UserForgotPasswordLive do
         </:actions>
       </.simple_form>
       <div class="mt-3 text-sm text-gray-500 dark:text-white">
-        <.link patch={~p"/users/register"} )} class="text-sm text-teal-400 font-bold hover:underline">
+        <.link patch={~p"/users/register"} class="text-sm text-teal-400 font-bold hover:underline">
           Sign up
         </.link>
         Or

@@ -26,7 +26,7 @@
 <div class="w-full p-2 mt-4">
   <.card title="Orb traits">
     <div class="px-4 py-2">
-      <.form :if={length(@traits_form) > 0} let={f} for={@changeset} phx-submit="save_trait" phx-change="trait_change" id="traits_form">
+      <.form :if={length(@traits_form) > 0} :let={f} for={@changeset} phx-submit="save_trait" phx-change="trait_change" id="traits_form">
         <div>
          <button type="button" phx-click="trait_management" phx-value-method="add" class="ml-2 button button-sm" id="button_add_trait_orb">
            <i class="fa-solid fa-plus cursor-pointer mr-1"></i>
@@ -57,7 +57,7 @@
 <div class="w-full p-2 mt-4">
   <.card title="Image preview">
     <div class="container" phx-drop-target={@uploads.image.ref}>
-      <.form let={_} for={@changeset} phx-submit="change_image" id="change_image_form" class="px-2 py-3">
+      <.form :let={_} for={@changeset} phx-submit="change_image" id="change_image_form" class="px-2 py-3">
         <.live_file_input upload={@uploads.image} class="my-2" />
         <div :for={entry <- @uploads.image.entries}>
           <figure class="my-2">

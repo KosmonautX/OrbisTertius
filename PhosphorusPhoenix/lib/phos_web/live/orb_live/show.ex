@@ -44,10 +44,9 @@ defmodule PhosWeb.OrbLive.Show do
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
        temporary_assigns: [orbs: Action.get_active_orbs_by_initiator(orb.initiator.id)]}
-      else
-        {:error, :not_found} -> raise PhosWeb.ErrorLive, message: "Orb Not Found"
+    else
+      {:error, :not_found} -> raise PhosWeb.ErrorLive, message: "Orb Not Found"
     end
-    
   end
 
   @impl true

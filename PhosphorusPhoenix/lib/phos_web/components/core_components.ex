@@ -790,7 +790,7 @@ defmodule PhosWeb.CoreComponents do
 
   def banner(assigns) do
     ~H"""
-    <nav class="bg-white fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold dark:bg-gray-900 p-2">
+    <nav class="bg-white fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold dark:bg-gray-900 lg:p-2 py-2">
       <div class="flex flex-wrap items-center justify-between mx-auto">
         <a href="/" class="flex items-center">
           <.logo type="banner" class="h-7 ml-4 dark:fill-white"></.logo>
@@ -946,11 +946,10 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:action, :atom)
   attr(:username, :string)
-
-
+  attr(:id, :string)
   def tabs_profile(assigns) do
     ~H"""
-    <div class="w-full sticky top-0 left-0 right-0 border   border-gray-200 dark:bg-gray-900">
+    <div id={@id} class="w-full sticky top-0 left-0 right-0 border   border-gray-200 dark:bg-gray-900">
       <div class="flex justify-center items-center border border-gray-200">
         <ul class="flex flex-wrap gap-20 md:gap-40 -mb-px font-extrabold text-sm  text-gray-500">
           <li class="mr-2">
@@ -1055,12 +1054,14 @@ defmodule PhosWeb.CoreComponents do
       uuid={@orb.id}
       path="public/banner"
       id={"#{@id}-scry-orb-#{@orb.id}"}/>
+
     <.link
       id={"#{@id}-scry-orb-#{@orb.id}-link"}
       class="relative"
       navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}>
       <.orb_information id={"#{@id}-scry-orb-#{@orb.id}"} title={@orb.title} />
     </.link>
+
     <.orb_action id={"#{@id}-scry-orb-#{@orb.id}"} orb={@orb} date={@timezone} />
     """
   end
@@ -1123,6 +1124,7 @@ defmodule PhosWeb.CoreComponents do
               data-glide-dir={"=#{count}"}
             />
           </div>
+
           <button
             id={"#{@id}-carousel-prev"}
             type="button"
@@ -1345,7 +1347,7 @@ defmodule PhosWeb.CoreComponents do
 
     ~H"""
     <div class="flex flex-col justify-between p-4 w-full space-y-1 lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md lg:dark:bg-gray-700 dark:border-gray-700">
-      <div class="gap-4 flex justify-between w-full px-2">
+      <div class="gap-4 flex justify-between w-full">
         <h5 class="lg:text-xl xl:text-2xl text-lg font-extrabold text-gray-900  dark:text-white">
           <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
         </h5>

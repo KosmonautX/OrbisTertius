@@ -28,14 +28,7 @@
   </div>
 
   <div class="lg:hidden block w-full">
-    <.user_information_card
-      :if={not is_nil(@user.public_profile)}
-      show_location={false}
-      id="user_info"
-      user={@user}
-      flex="flex"
-    >
-    </.user_information_card>
+    <.user_information_card :if={not is_nil(@user.public_profile)} id="user_info" user={@user} />
   </div>
 
   <div class="lg:hidden block sticky top-12 md:top-16 bg-white z-10 left-0 w-full items-center justify-center">
@@ -47,22 +40,26 @@
       <div class="hidden lg:block">
         <.user_information_card
           :if={not is_nil(@user.public_profile)}
-          show_location={false}
           id="user-details"
-          user={@user}>
-        </.user_information_card>
+          user={@user}
+        />
+
       </div>
-      <h5 class="lg:block hidden text-left font-semibold text-lg py-1 px-2 dark:text-white">Posts</h5>
+      <h5 class="lg:block hidden text-left font-semibold text-lg py-1 px-2 dark:text-white">
+        Posts
+      </h5>
       <hr class="lg:block hidden h-px bg-gray-900 border-2" />
       <ul :for={orb <- @orbs} class="p-2">
         <li class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
-          <.scry_orb id="orb-history" orb={orb} timezone={@timezone}></.scry_orb>
+          <.scry_orb id="orb-history" orb={orb} timezone={@timezone} />
         </li>
       </ul>
     </div>
 
     <div id="ally_list" class="lg:flex-1 w-full">
-      <h5 class="lg:block hidden text-left font-semibold text-lg py-1 px-2 p-4 dark:text-white">Allies</h5>
+      <h5 class="lg:block hidden text-left font-semibold text-lg py-1 px-2 p-4 dark:text-white">
+        Allies
+      </h5>
       <hr class="lg:block hidden h-px bg-gray-900 border-2 mb-2" />
       <div class="px-2">
         <.live_component
@@ -74,5 +71,4 @@
       </div>
     </div>
   </div>
-
 </section>

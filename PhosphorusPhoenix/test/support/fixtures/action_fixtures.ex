@@ -10,6 +10,7 @@ defmodule Phos.ActionFixtures do
   """
   def orb_fixture(attrs \\ %{}) do
     %{id: user_id} = user = user_fixture()
+
     {:ok, orb} =
       attrs
       |> Enum.into(%{"id" => Ecto.UUID.generate(), "locations" => ([623276216934563839] |> Enum.map(fn hash -> %{"id" => hash} end)),
@@ -18,12 +19,14 @@ defmodule Phos.ActionFixtures do
                         "extinguish" => %{day: 21, hour: 7, minute: 22, month: 5, year: 2022},
                         "source" => :web,
                         "initiator_id" => user_id,
-                        "payload" => %{"info" => "some info", "tip" => "some tip", "when" => "some when", "where" => "some where"}})
+                        "payload" => %{"info" => "some info", "tip" => "some tip", "when" => "some when", "where" => "Singapore"}})
       |> Phos.Action.create_orb()
 
       orb |> Phos.Repo.preload([:locations,:initiator])
   end
 
+  @spec orb_fixture_no_location(any) ::
+          nil | [%{optional(atom) => any}] | %{optional(atom) => any}
   def orb_fixture_no_location(attrs \\ %{}) do
     %{id: user_id} = user = user_fixture()
     {:ok, orb} =

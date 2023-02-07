@@ -77,7 +77,10 @@ defmodule PhosWeb.OrbLiveTest do
         |> Phos.Repo.insert()
       {:ok, index_live, _html} = live(conn, ~p"/orb")
 
-      assert {:error, {:live_redirect, %{to: path}}} = result = index_live |> element("#allorb-#{orb.id} a", "Edit") |> render_click()
+      assert {:error, {:live_redirect, %{to: path}}} = result
+      = index_live
+      |> element("#allorb-#{orb.id} a", "Edit")
+      |> render_click()
       assert path == "/orb/#{orb.id}/edit"
 
       {:ok, edit_live, _html} = follow_redirect(result, conn)
