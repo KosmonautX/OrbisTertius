@@ -47,13 +47,17 @@ window.addEventListener("DOMContentLoaded", ModalApplication)
 
 window.addEventListener("phos:clipcopy", (event) => {
   console.log(event.target);
-  if ("clipboard" in navigator) {
+  if ("share" in navigator) {
+    const text = event.target.textContent;
+    navigator.share({ title: document.getElementsByName('og:title')[0].getAttribute('content'), url: text});
+  }
+  else if ("clipboard" in navigator) {
     const text = event.target.textContent;
     navigator.clipboard.writeText(text);
     alert(`Copy link to Scratchbac : ${text}`);
 
   } else {
-    alert("Sorry, your browser does not support clipboard copy.");
+    alert("Sorry, your browser does not support clipboard copy or sharing functions.");
   }
 });
 

@@ -24,13 +24,13 @@ defmodule PhosWeb.CommentLive.ReplyComponent do
         <div class="relative flex flex-col justify-center gap-2">
           <.error :for={msg <- Keyword.get_values(f.errors, :body)}><%= elem(msg, 0) %></.error>
           <textarea
-            type="textarea"
+            type="textarea" rows="2"
             name="body"
-            class="block w-full h-4 text-base text-gray-900 rounded-lg border border-gray-400"
+            class="block w-full h-px text-base text-gray-900 rounded-lg border border-gray-400 bg-red-400"
             placeholder="In the beginning was the Word..."
           >
           </textarea>
-          <button type="submit" class="absolute right-2.5 bottom-2.5">
+          <button type="submit" class="absolute right-1.5 bottom-1.5">
             <Heroicons.paper_airplane class="h-8 w-8 mr-2 text-teal-400 font-bold" />
           </button>
         </div>

@@ -187,6 +187,7 @@ defmodule Phos.Action do
       where: l.location_id in ^hashes,
       left_join: orbs in assoc(l, :orbs),
       inner_join: initiator in assoc(orbs, :initiator),
+      on: initiator.integrations["beacon"]["location"]["scope"] == true,
       distinct: initiator.id,
       select: initiator.integrations)
       |> Repo.all()
@@ -329,6 +330,13 @@ defmodule Phos.Action do
                %{title: "Hey! 👋 You’ve got to check out what #{orb.initiator.username} just posted 🌠",
                  body: orb.title},
                %{action_path: "/orbland/orbs/#{orb.id}"})
+
+             Phos.Notification.push(
+               notifiers_by_geohashes([orb.central_geohash])
+               |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end),
+               %{title: "#{orb.initiator.username} just posted across your street 🧭",
+                 body: orb.title},
+               %{action_path: "/orbland/orbs/#{orb.id}"})
            end)
            #spawn(fn -> user_feeds_publisher(orb) end)
            data
@@ -344,15 +352,13 @@ defmodule Phos.Action do
          {:ok, orb} = data ->
            orb = orb |> Repo.preload([:initiator])
            spawn(fn ->
-             case orb.initiator do
-               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("ORB.#{orb.id}", token)
-               _ -> nil
-             end
              unless(Enum.member?(orb.traits, "mirage")) do
-               # Phos.Notification.target("'FLK.#{orb.initiator_id}' in topics && !('USR.#{orb.initiator_id}' in topics)",
-               #   %{title: "#{orb.initiator.username} forged an orb ⚡",
-               #     body: orb.title
-               #   }, PhosWeb.Util.Viewer.orb_mapper(orb))
+               Phos.Notification.push(
+               Phos.Folk.notifiers_by_friends(orb.initiator_id)
+               |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end),
+               %{title: "Hey! 👋 You’ve got to check out what #{orb.initiator.username} just posted 🌠",
+                 body: orb.title},
+               %{action_path: "/orbland/orbs/#{orb.id}"})
              end
              #spawn(fn -> user_feeds_publisher(orb) end)
            end)

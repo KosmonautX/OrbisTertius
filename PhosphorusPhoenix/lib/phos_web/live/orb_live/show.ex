@@ -136,7 +136,7 @@ defmodule PhosWeb.OrbLive.Show do
 
   defp apply_action(socket, :show, %{"id" => _id} = _params) do
     socket
-    |> assign(:page_title, "Scrying")
+    |> assign(:page_title, "")
   end
 
   defp apply_action(socket, :edit, _params) do
@@ -146,7 +146,7 @@ defmodule PhosWeb.OrbLive.Show do
 
   defp assign_meta(socket, orb) do
     assign(socket, :meta, %{
-      title: "#{orb.title} by #{orb.initiator.username}",
+      title: " #{orb.title} by #{orb.initiator.username}",
       description:
         "#{get_in(orb, [Access.key(:payload, %{}), Access.key(:info, "")])} #{orb |> get_in([Access.key(:payload, %{}), Access.key(:inner_title, "-")])}",
       type: "website",
