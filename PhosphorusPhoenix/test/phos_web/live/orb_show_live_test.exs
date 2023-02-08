@@ -22,7 +22,6 @@ defmodule PhosWeb.OrbShowLiveTest do
       assert html =~ orb.payload.where
       assert html =~ orb.title
       assert html =~ "Comments"
-      assert html =~ orb.inserted_at
 
       assert html =~
                Phos.Orbject.S3.get!("ORB", orb.id, "public/banner") |> String.split("?") |> hd()

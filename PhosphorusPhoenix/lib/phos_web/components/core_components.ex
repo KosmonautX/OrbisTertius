@@ -1398,13 +1398,13 @@ defmodule PhosWeb.CoreComponents do
         </div>
         <div :if={@show_location} class="flex-1 flex flex-col items-center md:mt-4 mt-2 md:px-8">
           <div class="flex items-center space-x-4">
-            <button
+            <div
               :for={location <- @locations}
               class="flex items-center bg-white  text-black px-4 py-2 rounded-full md:text-base text-sm font-bold transition duration-100"
             >
               <Heroicons.map_pin class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4" />
               <span><%= location %></span>
-            </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1511,13 +1511,13 @@ defmodule PhosWeb.CoreComponents do
         </.button>
       </div>
 
-      <div class="space-y-1">
+      <div :if={@show_location} class="space-y-1">
         <div class="flex justify-center gap-2">
           <%= for location <- @locations do %>
-            <button class="flex text-gray-800 lg:px-1 py-2 rounded-full text-base font-bold dark:text-white">
+            <div class="flex text-gray-800 lg:px-1 py-2 rounded-full text-base font-bold dark:text-white">
               <Heroicons.map_pin class="w-6 h-6"/>
               <span><%= location %></span>
-            </button>
+            </div>
           <% end %>
         </div>
         <p class="text-gray-700 text-base font-semibold dark:text-gray-400">
