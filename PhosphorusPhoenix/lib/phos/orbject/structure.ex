@@ -60,30 +60,33 @@ defmodule Phos.Orbject.Structure do
 
   def user_media_changeset(structure, attrs) do
     structure
-    |> cast(attrs, [:access, :essence, :resolution, :height, :width, :ext])
+    |> cast(attrs, [:access, :essence, :resolution, :ext])
     |> validate_inclusion(:access, ["protected", "public"])
     |> validate_inclusion(:essence, ["banner", "profile"])
     |> validate_inclusion(:resolution, ["lossy", "lossless"])
+    |> validate_inclusion(:ext, ["jpeg", "jpg", "png", "gif"])
     |> validate_required([:access, :essence])
   end
 
   def orb_media_changeset(structure, attrs) do
     structure
-    |> cast(attrs, [:access, :essence, :count, :resolution, :height, :width, :ext])
+    |> cast(attrs, [:access, :essence, :count, :resolution, :ext])
     |> validate_inclusion(:access, ["public"])
     |> validate_inclusion(:essence, ["banner"])
     |> validate_number(:count, greater_than: 0, less_than: 6)
     |> validate_inclusion(:resolution, ["lossy", "lossless"])
+    |> validate_inclusion(:ext, ["jpeg", "jpg", "png", "gif", "mp4", "mov", "mp3"])
     |> validate_required([:access, :essence])
   end
 
   def memory_media_changeset(structure, attrs) do
     structure
-    |> cast(attrs, [:access, :essence, :count, :resolution, :height, :width, :ext])
+    |> cast(attrs, [:access, :essence, :count, :resolution, :ext])
     |> validate_inclusion(:access, ["public"])
     |> validate_inclusion(:essence, ["profile"])
     |> validate_number(:count, greater_than: 0, less_than: 6)
     |> validate_inclusion(:resolution, ["lossy", "lossless"])
+    |> validate_inclusion(:ext, ["jpeg", "jpg", "png", "gif", "mp4", "mov", "mp3"])
     |> validate_required([:access, :essence])
   end
  end
