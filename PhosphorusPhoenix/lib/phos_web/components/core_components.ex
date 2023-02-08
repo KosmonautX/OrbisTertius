@@ -380,7 +380,7 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  def input(%{type: "textarea", class: class} = assigns) do
+  def input(%{type: "textarea", class: _class} = assigns) do
     ~H"""
     <div phx-feedback-for={@name}>
       <.label for={@id}><%= @label %></.label>
@@ -391,8 +391,8 @@ defmodule PhosWeb.CoreComponents do
         placeholder={@placeholder}
         class={[
           input_border(@errors),
-          class,
-          "w-full text-zinc-900 focus:border-zinc-400 focus:outline-none focus:ring-4 focus:ring-zinc-800/5 text-3xl sm:leading-6",
+          @class,
+          "text-zinc-900 focus:border-zinc-400 focus:outline-none focus:ring-4 focus:ring-zinc-800/5 sm:text-sm sm:leading-6",
           "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400 phx-no-feedback:focus:ring-zinc-800/5"
         ]}
         {@rest}
@@ -1104,6 +1104,7 @@ defmodule PhosWeb.CoreComponents do
     />
 
     <.link
+      :if={@orb.media}
       id={"#{@id}-scry-orb-#{@orb.id}-link"}
       class="relative"
       navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
@@ -1111,7 +1112,7 @@ defmodule PhosWeb.CoreComponents do
       <.orb_information id={"#{@id}-scry-orb-#{@orb.id}"} title={@orb.title} />
     </.link>
 
-    <.orb_action id={"#{@id}-scry-orb-#{@orb.id}"} orb={@orb} date={@timezone} />
+    <.orb_action :if={@orb.media} id={"#{@id}-scry-orb-#{@orb.id}"} orb={@orb} date={@timezone}/>
     """
   end
 
@@ -1254,12 +1255,8 @@ defmodule PhosWeb.CoreComponents do
               <button
                 id={"#{@id}-sharebtn"}
                 phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
-                class="text-center inline-flex items-center"
-              >
-                <div id={"#{@id}-copylink"} class="hidden">
-                  <%= PhosWeb.Endpoint.url() <>
-                    path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %>
-                </div>
+                class="text-center inline-flex items-center">
+                <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.host() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %></div>
                 <Heroicons.share class="-ml-1 w-6 h-6" />
               </button>
             </div>
@@ -1302,7 +1299,14 @@ defmodule PhosWeb.CoreComponents do
           <Heroicons.chat_bubble_oval_left_ellipsis class="-ml-1 w-6 h-6 dark:text-white" /><%= @orb.comment_count %>
         </button>
 
-
+        <button
+          id={"#{@id}-sharebtn"}
+          phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
+          class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold"
+        >
+          <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.host() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %></div>
+          <Heroicons.share class="-ml-1 w-6 h-6 dark:text-white" />15
+        </button>
         <button class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold">
           <Heroicons.heart class="-ml-1 w-6 h-6 dark:text-white" />15
         </button>
@@ -1431,17 +1435,15 @@ defmodule PhosWeb.CoreComponents do
           <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
         </h5>
         <div class="flex gap-6">
-          <button
-            id={"#{@id}-sharebtn"}
-            phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
-            class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold"
-          >
-            <div id={"#{@id}-copylink"} class="hidden">
-              <%= PhosWeb.Endpoint.url() <>
-                path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
-            </div>
-            <Heroicons.share class="-ml-1 w-6 h-6 dark:text-white" />
-          </button>
+
+        <button
+        id={"#{@id}-sharebtn"}
+        phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
+        class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold"
+      >
+        <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.host() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %></div>
+        <Heroicons.share class="-ml-1 w-6 h-6 dark:text-white" />
+      </button>
 
           <.button class="flex items-center p-0 items-start space-y-1">
             <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
@@ -1494,17 +1496,14 @@ defmodule PhosWeb.CoreComponents do
         <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
       </h5>
       <div class="flex gap-6 items-center justify-center">
-        <button
-          id={"#{@id}-sharebtn"}
-          phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
-          class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold"
-        >
-          <div id={"#{@id}-copylink"} class="hidden">
-            <%= PhosWeb.Endpoint.url() <>
-              path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
-          </div>
-          <Heroicons.share class="-ml-1 w-6 h-6 dark:text-white" />
-        </button>
+      <button
+      id={"#{@id}-sharebtn"}
+      phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
+      class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold"
+    >
+      <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.host() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %></div>
+      <Heroicons.share class="-ml-1 w-6 h-6 dark:text-white" />
+    </button>
         <.button class="flex items-center p-0 items-start space-y-1">
           <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
           <span>Ally</span>

@@ -25,7 +25,7 @@ defmodule PhosWeb.OrbLive.Show do
        |> assign(page: 1),
        temporary_assigns: [orbs: Action.get_active_orbs_by_initiator(orb.initiator.id)]}
       else
-        {:error, :not_found} -> raise PhosWeb.ErrorLive, message: "Orb Not Found"
+        nil -> raise PhosWeb.ErrorLive, message: "Orb Not Found"
     end
   end
 
@@ -125,7 +125,7 @@ defmodule PhosWeb.OrbLive.Show do
         "#{get_in(orb, [Access.key(:payload, %{}), Access.key(:info, "")])} #{orb |> get_in([Access.key(:payload, %{}), Access.key(:inner_title, "-")])}",
       type: "website",
       image: Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless"),
-      url: url(socket, ~p"/orbs/#{orb.id}")
+      url: url(socket, ~p"/orb/#{orb}")
     })
   end
 

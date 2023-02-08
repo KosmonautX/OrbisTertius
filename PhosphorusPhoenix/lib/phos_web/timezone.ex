@@ -16,18 +16,4 @@ defmodule PhosWeb.Timezone do
      |> assign(:timezone, %{timezone: timezone, timezone_offset: timezone_offset})}
   end
 
-  defp get_current_end_date(socket, timezone) do
-    current_date =
-      timezone
-      # in UTC time
-      |> Timex.today()
-      |> Timex.to_naive_datetime()
-      |> Timex.shift(hours: -1 * socket.assigns.timezone_offset)
-
-    end_date =
-      current_date
-      |> Timex.shift(days: 1)
-
-    assign(socket, current_date: current_date, end_date: end_date)
-  end
 end
