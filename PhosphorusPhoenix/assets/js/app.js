@@ -54,8 +54,6 @@ window.addEventListener("phos:clipcopy", (event) => {
   else if ("clipboard" in navigator) {
     const text = event.target.textContent;
     navigator.clipboard.writeText(text);
-    alert(`Copy link to Scratchbac : ${text}`);
-
   } else {
     alert("Sorry, your browser does not support clipboard copy or sharing functions.");
   }

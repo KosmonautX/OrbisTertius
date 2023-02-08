@@ -1,10 +1,10 @@
 <div class="flex flex-col md:inset-0 w-full mt-4" id={"comment-#{elem(@comment, 1).id}"}>
   <div class="flex">
-    <img  class="w-12 h-12 border-4 border-white rounded-full object-cover"
+    <img  class="w-14 h-14 border-4 border-white rounded-full object-cover"
 src={ Phos.Orbject.S3.get!("USR", elem(@comment, 1).initiator_id, "public/profile/lossy") }
 onerror="this.src='/images/default_hand.jpg';">
     <div class="flex flex-col">
-    <strong class="text-base font-bold text-gray-900 -mt-2 dark:text-white lg:text-lg"><%= elem(@comment, 1).initiator.username %>   <span class="lg:text-base text-gray-700 dark:text-gray-400 ml-1" :if={elem(@comment, 1).active and is_nil(@edit_comment)}><%= elem(@comment, 1).body %></span>
+    <strong class="text-base font-bold text-gray-900 ml-1 dark:text-white lg:text-lg"><%= elem(@comment, 1).initiator.username %>   <span class="lg:text-base text-gray-700 dark:text-gray-400 ml-1" :if={elem(@comment, 1).active and is_nil(@edit_comment)}><%= elem(@comment, 1).body %></span>
     </strong>
 
       <.live_component :if={not is_nil(@edit_comment)} module={PhosWeb.CommentLive.FormComponent}

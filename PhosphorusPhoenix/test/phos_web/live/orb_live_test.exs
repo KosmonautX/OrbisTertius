@@ -54,7 +54,8 @@ defmodule PhosWeb.OrbLiveTest do
         |> Phos.Repo.insert()
 
       {:ok, index_live, _html} = live(conn, ~p"/orb")
-      assert index_live |> element("a", "New Orb") |> render_click() =~
+      assert index_live |> element("a", "New Orb")
+      |> render_click() =~
                "New Orb"
 
       assert_patch(index_live, ~p"/orb/new")
@@ -102,7 +103,9 @@ defmodule PhosWeb.OrbLiveTest do
         |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623276216934563839, chronolock: 1653079771, location_description: nil}])
         |> Phos.Repo.insert()
       {:ok, index_live, _html} = live(conn, ~p"/orb")
-      assert index_live |> element("#allorb-#{orb.id} a", "Delete") |> render_click()
+      assert index_live
+      |> element("#allorb-#{orb.id} a", "Delete")
+      |> render_click()
 
       {:ok, index_live, _html} = live(conn, ~p"/orb")
       refute has_element?(index_live, "#allorb-#{orb.id}")

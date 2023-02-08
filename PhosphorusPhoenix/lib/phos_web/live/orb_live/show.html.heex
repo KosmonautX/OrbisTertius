@@ -1,13 +1,13 @@
 <!--desktop View -->
-<section class="container mx-auto lg:mt-28 mt-16">
+<section class="container mx-auto lg:mt-20 mt-14">
   <div
     :if={not is_nil(@orb.initiator) && @orb.initiator}
     class="flex lg:flex-row flex-col items-start mt-6 gap-4">
     <!-- Desktop View in Orb View Profile-->
     <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full max-w-full px-3 lg:w-3/12  md:flex-none">
       <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md">
-        <.user_profile id="orb-initiator-username" user={@orb.initiator} location={}>
-        </.user_profile>
+        <.user_profile_banner id="orb-initiator-username" user={@orb.initiator} show_location={false} main_height="lg:h-64">
+        </.user_profile_banner>
       </div>
       <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md text-center">
         <.user_information_card_orb
@@ -16,11 +16,10 @@
           flex=""
         />
       </div>
-      <.orb_video id="video" orb={@orb} />
     </div>
 
     <!-- Post card and Comments-->
-    <div class="px-3 lg:w-5/12  w-full md:mt-2 lg:flex-none justify-center items-center border border-gray-200 lg:rounded-xl shadow-sm mb-28 ">
+    <div class="px-3 lg:w-5/12  w-full md:mt-2 lg:flex-none justify-center items-center lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
       <.scry_orb id="Orb" orb={@orb} timezone={@timezone} />
       <.live_component
         module={PhosWeb.CommentLive.IndexComponent}

@@ -5,6 +5,7 @@ defmodule Phos.ActionFixtures do
   """
 
   import Phos.UsersFixtures
+
   @doc """
   Generate a orb.
   """
@@ -13,22 +14,31 @@ defmodule Phos.ActionFixtures do
 
     {:ok, orb} =
       attrs
-      |> Enum.into(%{"id" => Ecto.UUID.generate(), "locations" => ([623276216934563839] |> Enum.map(fn hash -> %{"id" => hash} end)),
-                        "title" => "some title",
-                        "active" => true,
-                        "extinguish" => %{day: 21, hour: 7, minute: 22, month: 5, year: 2022},
-                        "source" => :web,
-                        "initiator_id" => user_id,
-                        "payload" => %{"info" => "some info", "tip" => "some tip", "when" => "some when", "where" => "Singapore"}})
+      |> Enum.into(%{
+        "id" => Ecto.UUID.generate(),
+        "locations" => [623_276_216_934_563_839] |> Enum.map(fn hash -> %{"id" => hash} end),
+        "title" => "some title",
+        "active" => true,
+        "extinguish" => %{day: 21, hour: 7, minute: 22, month: 5, year: 2022},
+        "source" => :web,
+        "initiator_id" => user_id,
+        "payload" => %{
+          "info" => "some info",
+          "tip" => "some tip",
+          "when" => "some when",
+          "where" => "Singapore"
+        }
+      })
       |> Phos.Action.create_orb()
 
-      orb |> Phos.Repo.preload([:locations,:initiator])
+    orb |> Phos.Repo.preload([:locations, :initiator])
   end
 
   @spec orb_fixture_no_location(any) ::
           nil | [%{optional(atom) => any}] | %{optional(atom) => any}
   def orb_fixture_no_location(attrs \\ %{}) do
     %{id: user_id} = user = user_fixture()
+
     {:ok, orb} =
       attrs
       |> Enum.into(%{
@@ -41,6 +51,6 @@ defmodule Phos.ActionFixtures do
       })
       |> Phos.Action.create_orb()
 
-      orb |> Phos.Repo.preload([:locations,:initiator])
+    orb |> Phos.Repo.preload([:locations, :initiator])
   end
 end

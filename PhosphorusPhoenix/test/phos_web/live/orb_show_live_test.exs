@@ -13,7 +13,7 @@ defmodule PhosWeb.OrbShowLiveTest do
     %{orb: orb}
   end
 
-  describe "Index" do
+  describe "testing show orb with location" do
     setup [:create_orb, :register_and_log_in_user]
 
     test "show_orb_profile", %{conn: conn, orb: orb} do
@@ -22,13 +22,22 @@ defmodule PhosWeb.OrbShowLiveTest do
       assert html =~ orb.payload.where
       assert html =~ orb.title
       assert html =~ "Comments"
+      assert html =~ orb.inserted_at
 
       assert html =~
                Phos.Orbject.S3.get!("ORB", orb.id, "public/banner") |> String.split("?") |> hd()
     end
+
+    # test "Copyclip", %{conn: conn, orb: orb} do
+    #   {:ok, view, _html} = live(conn, ~p"/orb/#{orb.id}")
+
+    #   assert view
+    #          |> element("#scry_orb-#{orb.id}-sharebtn")
+    #          |> render_click() =~ "Copy link to Scratchbac"
+    # end
   end
 
-  describe "orb_location" do
+  describe "testing show orb without location" do
     setup [:create_orb_no_loc, :register_and_log_in_user]
 
     test "without_orb_location", %{conn: conn, orb: orb} do
