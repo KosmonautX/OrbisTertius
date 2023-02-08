@@ -47,7 +47,7 @@ defmodule PhosWeb.Admin.OrbLive.Show do
       {:ok, orb} ->
         {:noreply,
          socket
-         |> put_flash(:info, "orb is now dead 💀")
+         |> put_flash(:info, "orb #{orb.title} is now dead 💀")
          |> push_redirect(to: ~p"/admin/orbs")}
 
       _ ->
