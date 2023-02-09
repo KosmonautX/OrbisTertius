@@ -1,16 +1,21 @@
 defmodule PhosWeb.AllyButton do
   use PhosWeb, :live_component
 
-  def update(%{current_user: curr, user: user} = assigns, socket) do
+  def update(%{current_user: curr, user: user} = assigns, socket) when not is_nil(curr) do
     {:ok, 
       assign(socket, assigns)
       |> assign_new(:self, fn ->
-        case Map.get(assigns.current_user, :id) do
+        case Map.get(curr, :id) do
           nil -> false
           _ -> assigns.user.id == assigns.current_user.id
         end
       end)
-      |> assign_new(:ally, fn -> ally_status(Map.get(curr, :id), user.id) end)
+      |> assign_new(:ally, fn ->
+        IO.inspect(curr)
+        IO.inspect(user)
+        ally_status(Map.get(curr, :id), user.id)
+        |> IO.inspect()
+      end)
     }
   end
 
@@ -22,7 +27,7 @@ defmodule PhosWeb.AllyButton do
     {:ok, assign(socket, :ally, ally)}
   end
 
-  def update(%{related_users: _} = _assigns, socket), do: {:ok, assign(socket, :ally, false)}
+  def update(_assigns, socket), do: {:ok, assign(socket, ally: false, current_user: nil)}
 
   def handle_event("add_ally", _, %{assigns: %{user: acceptor, current_user: user, socket: foreign_socket}} = socket) do
     case Phos.Folk.add_friend(user.id, acceptor.id) do
@@ -99,7 +104,7 @@ defmodule PhosWeb.AllyButton do
     ~H"""
     <div class="flex">
       <.button class="flex items-center p-0 items-start align-center"
-        phx-click={show_welcome_message("welcome_message")}>
+        phx-click={show_modal("welcome_message")}>
         <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
         <span>Ally</span>
       </.button>
@@ -112,19 +117,6 @@ defmodule PhosWeb.AllyButton do
     <div class="flex hidden">
       <.button class="hidden">
         button
-      </.button>
-    </div>
-    """
-  end
-
-  def render(%{ally: false} = assigns) do
-    ~H"""
-    <div class="flex">
-      <.button class="flex items-center p-0 items-start align-center"
-        phx-target={@myself}
-        phx-click="add_ally">
-        <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
-        <span>Ally</span>
       </.button>
     </div>
     """
@@ -168,13 +160,27 @@ defmodule PhosWeb.AllyButton do
     """
   end
 
+  def render(%{ally: false} = assigns) do
+    ~H"""
+    <div class="flex">
+      <.button class="flex items-center p-0 items-start align-center"
+        phx-target={@myself}
+        phx-click="add_ally">
+        <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
+        <span>Ally</span>
+      </.button>
+    </div>
+    """
+  end
+
+
   def render(assigns) do
     ~H"""
     <div class="flex">
       <.button class="flex items-center p-0 items-start align-center"
         phx-target={@myself}
         tone={if(@ally == "completed", do: :warning, else: :primary)}
-        phx-click="add_ally">
+        phx-click="chat_ally">
         <span class="capitalize"><%= if(@ally == "completed", do: "Chat", else: @ally) %></span>
       </.button>
     </div>

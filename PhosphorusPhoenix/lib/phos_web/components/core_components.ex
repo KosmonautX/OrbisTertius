@@ -1450,7 +1450,7 @@ defmodule PhosWeb.CoreComponents do
           </span>
         </div>
         <div
-          :if={not is_nil(@location)}
+          :if={@show_location}
           class="flex-1 flex flex-col items-center md:mt-4 mt-2 md:px-8">
           <div class="flex items-center space-x-4">
             <button
@@ -1524,76 +1524,6 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  attr :user_id, :string, required: true
-  attr :username, :string, required: true
-  attr :current_user_id, :string
-  attr :ally, :any, default: false
-  def ally_button(assigns) do
-    assigns = assign(assigns, myself: assigns.current_user_id == assigns.user_id)
-
-    ~H"""
-    <div class="flex gap-6 items-center justify-center">
-      <.button tone={:icons}>
-        <Heroicons.share class="mt-0.5 md:h=10 md:w-10 h-6 w-6 text-black" />
-      </.button>
-      <div :if={@current_user_id == ""}>
-        <.button class="flex items-center p-0 items-start align-center"
-          phx-click={show_welcome_message("welcome_message")}>
-          <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
-          <span>Ally</span>
-        </.button>
-      </div>
-
-      <div :if={@current_user_id != ""}>
-        <.button :if={is_boolean(@ally) and not @ally and not @myself} 
-          class="flex items-center p-0 items-start align-center"
-          phx-click="add_ally"
-          phx-value-ally-id={@user_id}>
-          <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
-          <span>Ally</span>
-        </.button>
-
-        <div :if={is_bitstring(@ally)}>
-          <div :if={@ally == "requested"}>
-            <.button class="flex items-center p-0 items-start align-center"
-              phx-click={show_modal("delete_friend_request")}>
-              <span><%= String.capitalize(@ally) %></span>
-            </.button>
-            <.modal id="delete_friend_request" on_confirm={JS.push("delete_ally_request", value: %{"ally-id" => @user_id}) |> hide_modal("delete_friend_request")}>
-              <:title>Delete friend request confirmation ?</:title>
-              <div>
-                Are you sure want to delete your friend request to <%= @username %> ?
-              </div>
-              <:confirm tone={:danger}>Yes, delete</:confirm>
-              <:cancel>No, keep requesting</:cancel>
-            </.modal>
-          </div>
-        </div>
-
-        <.button :if={@ally == "blocked"} tone={:danger} class="flex items-center p-0 items-start align-center">
-          <span><%= String.capitalize(@ally) %></span>
-        </.button>
-
-        <.button :if={@ally == "completed"} tone={:success} class="flex items-center p-0 items-start align-center">
-          <span>Chat</span>
-        </.button>
-
-        <div :if={@ally == "requesting"} class="flex">
-          <.button tone={:success}
-            phx-click={JS.push("accept_ally_request", value: %{"ally-id" => @user_id})}
-            class="flex items-center p-0 items-start align-center">
-            <span>Accept</span>
-          </.button>
-          <.button tone={:dark}
-            phx-click={JS.push("reject_ally_request", value: %{"ally-id" => @user_id})}
-            class="flex items-center p-0 items-start align-center ml-2">
-            <span>Reject</span>
-          </.button>
-        </div>
-      </div>
-    </div>
-    """
-  end
 
   attr(:user, :map, required: true)
   attr(:flex, :any, default: nil)
@@ -1637,7 +1567,14 @@ defmodule PhosWeb.CoreComponents do
           </div>
            <.share_btn type="button" class="h-8 ml-4 dark:fill-white"></.share_btn>
         </a>
-        <.ally_btn type="button" class="h-8 ml-4 dark:fill-white"></.ally_btn>
+        <div :if={@ally_button != []} :for={ally <- @ally_button}>
+           <.live_component 
+             id="user_information_card_ally"
+             module={PhosWeb.AllyButton} 
+             current_user={ally.current_user}
+             socket={ally.socket}
+             user={ally.user} />
+         </div>
       </div>
 
       <div :if={@show_location} class="space-y-1">

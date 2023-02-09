@@ -22,7 +22,7 @@ defmodule PhosWeb.OrbLive.Show do
        socket
        |> assign(:orb, orb)
        |> assign_meta(orb)
-       |> assign(:ally, ally_status(user.id, orb.initiator.id))
+       |> assign(:ally, false)
        |> assign(:comments, comments)
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
@@ -292,20 +292,4 @@ defmodule PhosWeb.OrbLive.Show do
       {String.split(to_string(c.path), ".") |> List.to_tuple(), c}
     end
   end
-
-  defp ally_status(%Phos.Users.RelationBranch{root: root}, user_id), do: ally_status(root, user_id)
-  defp ally_status(%Phos.Users.RelationRoot{acceptor_id: acc_id, state: state} = _root, user_id) when acc_id == user_id do
-    case state do
-      "requested" -> "requesting"
-      _ -> state
-    end
-  end
-  defp ally_status(%Phos.Users.RelationRoot{} = root, _user_id), do: root.state
-  defp ally_status(user_id, acceptor_id) when is_bitstring(user_id) and is_bitstring(acceptor_id) do
-    case Phos.Folk.get_relation_by_pair(user_id, acceptor_id) do
-      %Phos.Users.RelationBranch{} = data -> ally_status(data, user_id)
-      _ -> ally_status(nil, nil)
-    end
-  end
-  defp ally_status(_, _), do: false
 end
