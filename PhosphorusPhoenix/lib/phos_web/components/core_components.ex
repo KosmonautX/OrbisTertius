@@ -204,6 +204,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:for, :any, default: nil, doc: "the datastructure for the form")
   attr(:as, :any, default: nil, doc: "the server side parameter to collect all input under")
   attr(:class, :string, default: nil, doc: "simple form class overide")
+
   attr(:rest, :global,
     include: ~w(autocomplete name rel action enctype method novalidate target),
     doc: "the arbitrary HTML attributes to apply to the form tag"
@@ -215,9 +216,9 @@ defmodule PhosWeb.CoreComponents do
   def simple_form(assigns) do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
-      <div class={["space-y-4 bg-white mt-4 dark:bg-gray-900 dark:border-gray-700", @class]}>
+      <div class={["space-y-4 bg-white mt-4 dark:bg-gray-900 dark:border-gray-700 w-full", @class]}>
         <%= render_slot(@inner_block, f) %>
-        <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-4">
+        <div :for={action <- @actions}>
           <%= render_slot(action, f) %>
         </div>
       </div>
@@ -392,7 +393,7 @@ defmodule PhosWeb.CoreComponents do
         class={[
           input_border(@errors),
           @class,
-          "text-zinc-900 focus:border-zinc-400 focus:outline-none focus:ring-4 focus:ring-zinc-800/5 sm:text-sm sm:leading-6",
+          "text-zinc-900 w-full focus:border-zinc-400 focus:outline-none focus:ring-4 focus:ring-zinc-800/5 sm:text-sm sm:leading-6",
           "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400 phx-no-feedback:focus:ring-zinc-800/5"
         ]}
         {@rest}
@@ -414,13 +415,13 @@ defmodule PhosWeb.CoreComponents do
         name={@name}
         class={[
           input_border(@errors),
-          "block p-2.5 w-full text-base text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-teal-500 focus:border-teal-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500"
+          "mx-6 w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 focus:border-teal-500 focus:ring-teal-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-teal-500 dark:focus:ring-teal-500
+          "
         ]}
         {@rest}
       >
 
     <%= @value %></textarea>
-      <.error :for={msg <- @errors}><%= msg %></.error>
     </div>
     """
   end
@@ -719,8 +720,7 @@ defmodule PhosWeb.CoreComponents do
     JS.show(js,
       to: selector,
       transition:
-        {"transition-all transform ease-out duration-300",
-         "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95",
+        {"transition-all transform ease-out duration-300", "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95",
          "opacity-100 translate-y-0 sm:scale-100"}
     )
   end
@@ -730,8 +730,7 @@ defmodule PhosWeb.CoreComponents do
       to: selector,
       time: 200,
       transition:
-        {"transition-all transform ease-in duration-200",
-         "opacity-100 translate-y-0 sm:scale-100",
+        {"transition-all transform ease-in duration-200", "opacity-100 translate-y-0 sm:scale-100",
          "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"}
     )
   end
@@ -927,6 +926,59 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  def bottom_banner(assigns) do
+    ~H"""
+    <div class="hidden lg:block fixed z-10 bottom-0 w-full border border-gray-200 rounded-lg shadow bg-gray-800 dark:border-gray-700 p-2">
+      <div class="flex gap-4 items-end justify-end ">
+        <button class="w-full sm:w-auto bg-gray-800 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 text-white rounded-lg inline-flex items-center justify-center px-4 py-2.5 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 border-2 border-white">
+          <svg
+            class="mr-3 w-7 h-7"
+            aria-hidden="true"
+            focusable="false"
+            data-prefix="fab"
+            data-icon="apple"
+            role="img"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 384 512"
+          >
+            <path
+              fill="currentColor"
+              d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"
+            >
+            </path>
+          </svg>
+          <div class="text-left">
+            <div class="mb-1 text-xs">Download on the</div>
+            <div class="-mt-1 font-sans text-sm font-semibold">Mac App Store</div>
+          </div>
+        </button>
+        <button class="w-full sm:w-auto bg-gray-800 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 text-white rounded-lg inline-flex items-center justify-center px-4 py-2.5 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 border-2 border-white">
+          <svg
+            class="mr-3 w-7 h-7"
+            aria-hidden="true"
+            focusable="false"
+            data-prefix="fab"
+            data-icon="google-play"
+            role="img"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 512 512"
+          >
+            <path
+              fill="currentColor"
+              d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"
+            >
+            </path>
+          </svg>
+          <div class="text-left">
+            <div class="mb-1 text-xs">Get in on</div>
+            <div class="-mt-1 font-sans text-sm font-semibold">Google Play</div>
+          </div>
+        </button>
+      </div>
+    </div>
+    """
+  end
+
   attr(:current_user, :map, required: true)
 
   def tabs_mobile(assigns) do
@@ -1004,7 +1056,7 @@ defmodule PhosWeb.CoreComponents do
                 "inline-flex p-4 rounded-t-lg border-b-2 GROUP"
               ]}
             >
-              Orbs
+              Posts
             </.link>
           </li>
 
@@ -1058,7 +1110,7 @@ defmodule PhosWeb.CoreComponents do
           </p>
         </div>
       </div>
-      <div><%= render_slot(@actions) %></div>
+      <div class="px-2 i"><%= render_slot(@actions) %></div>
     </div>
     """
   end
@@ -1089,9 +1141,9 @@ defmodule PhosWeb.CoreComponents do
         <%= @orb_location %>
       </:information>
       <:actions>
-        <.button tone={:icons}>
-          <Heroicons.ellipsis_vertical class="mt-0.5 lg:h=10 lg:w-10 h-6 w-6 text-black dark:text-white" />
-        </.button>
+        <button class="inline-block text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-1.5">
+          <Heroicons.ellipsis_horizontal class="lg:h=10 lg:w-10 h-6 w-6 text-black dark:text-white" />
+        </button>
       </:actions>
     </.user_info_bar>
 
@@ -1112,7 +1164,7 @@ defmodule PhosWeb.CoreComponents do
       <.orb_information id={"#{@id}-scry-orb-#{@orb.id}"} title={@orb.title} />
     </.link>
 
-    <.orb_action :if={@orb.media} id={"#{@id}-scry-orb-#{@orb.id}"} orb={@orb} date={@timezone}/>
+    <.orb_action :if={@orb.media} id={"#{@id}-scry-orb-#{@orb.id}"} orb={@orb} date={@timezone} />
     """
   end
 
@@ -1255,8 +1307,12 @@ defmodule PhosWeb.CoreComponents do
               <button
                 id={"#{@id}-sharebtn"}
                 phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
-                class="text-center inline-flex items-center">
-                <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.host() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %></div>
+                class="text-center inline-flex items-center"
+              >
+                <div id={"#{@id}-copylink"} class="hidden">
+                  <%= PhosWeb.Endpoint.host() <>
+                    path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %>
+                </div>
                 <Heroicons.share class="-ml-1 w-6 h-6" />
               </button>
             </div>
@@ -1284,16 +1340,16 @@ defmodule PhosWeb.CoreComponents do
         </span>
       </div>
       <div class="flex flex-cols space-x-4">
-
-      <button
-      id={"#{@id}-sharebtn"}
-      phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
-      class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold">
-      <div id={"#{@id}-copylink"} class="hidden">
-        <%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %>
-      </div>
-      <Heroicons.share class="-ml-1 w-6 h-6 dark:text-white" />
-    </button>
+        <button
+          id={"#{@id}-sharebtn"}
+          phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
+          class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold"
+        >
+          <div id={"#{@id}-copylink"} class="hidden">
+            <%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %>
+          </div>
+          <Heroicons.share class="-ml-1 w-6 h-6 dark:text-white" />
+        </button>
 
         <button class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold">
           <Heroicons.chat_bubble_oval_left_ellipsis class="-ml-1 w-6 h-6 dark:text-white" /><%= @orb.comment_count %>
@@ -1304,7 +1360,9 @@ defmodule PhosWeb.CoreComponents do
           phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
           class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold"
         >
-          <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.host() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %></div>
+          <div id={"#{@id}-copylink"} class="hidden">
+            <%= PhosWeb.Endpoint.host() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %>
+          </div>
           <Heroicons.share class="-ml-1 w-6 h-6 dark:text-white" />15
         </button>
         <button class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold">
@@ -1429,45 +1487,70 @@ defmodule PhosWeb.CoreComponents do
       )
 
     ~H"""
-    <div class="flex flex-col justify-between p-2 w-full ">
+    <div class="flex flex-col justify-between p-4 w-full ">
       <div class="gap-4 flex justify-between w-full space-y-1">
-        <h5 class="lg:text-xl xl:text-2xl text-lg font-extrabold text-gray-900  dark:text-white">
+      <h2 class="flex flex-col gap-1 ">
+        <span class="lg:text-xl xl:text-2xl text-lg font-extrabold text-gray-900  dark:text-white">
           <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
-        </h5>
+        </span>
+          <span class="text-base text-gray-500 font-bold dark:text-gray-400">
+          <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
+          </span>
+        </h2>
+
         <div class="flex gap-6">
-
-        <button
-        id={"#{@id}-sharebtn"}
-        phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
-        class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold"
-      >
-        <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.host() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %></div>
-        <Heroicons.share class="-ml-1 w-6 h-6 dark:text-white" />
-      </button>
-
-          <.button class="flex items-center p-0 items-start space-y-1">
-            <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
-            <span>Ally</span>
-          </.button>
+          <button
+            id={"#{@id}-sharebtn"}
+            phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
+          >
+            <div id={"#{@id}-copylink"} class="hidden">
+              <%= PhosWeb.Endpoint.host() <>
+                path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
+            </div>
+            <svg
+              width="45"
+              height="45"
+              viewBox="0 0 45 45"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect width="45" height="45" rx="15" fill="#F4F4F4" />
+              <path
+                d="M18.6844 20.6578L25.3125 17.3438M25.3156 26.6578L18.6938 23.3469M31 16C31 17.6569 29.6569 19 28 19C26.3431 19 25 17.6569 25 16C25 14.3431 26.3431 13 28 13C29.6569 13 31 14.3431 31 16ZM19 22C19 23.6569 17.6569 25 16 25C14.3431 25 13 23.6569 13 22C13 20.3431 14.3431 19 16 19C17.6569 19 19 20.3431 19 22ZM31 28C31 29.6569 29.6569 31 28 31C26.3431 31 25 29.6569 25 28C25 26.3431 26.3431 25 28 25C29.6569 25 31 26.3431 31 28Z"
+                stroke="#404252"
+                stroke-width="1.5"
+              />
+            </svg>
+          </button>
+          <svg
+            width="81"
+            height="45"
+            viewBox="0 0 81 45"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect width="81" height="45" rx="15" fill="#00BFB2" />
+            <path
+              d="M24.336 18.224V21.328H21.312V23.28H24.336V26.384H26.448V23.28H29.472V21.328H26.448V18.224H24.336ZM39.4693 28H41.8373L37.8213 16.816H35.2133L31.1973 28H33.5493L34.2853 25.872H38.7333L39.4693 28ZM38.1253 24.08H34.8932L36.5093 19.408L38.1253 24.08ZM43.3384 28H45.5784V16.16H43.3384V28ZM47.7915 28H50.0315V16.16H47.7915V28ZM56.0206 25.328L53.7326 19.136H51.2206L54.7726 27.776L52.8526 32.192H55.2366L60.7246 19.136H58.3406L56.0206 25.328Z"
+              fill="white"
+            />
+          </svg>
         </div>
       </div>
       <div class="space-y-1">
-        <p class="md:text-base text-gray-700 text-base font-semibold dark:text-gray-400">
-          <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
-        </p>
-        <p class="text-gray-700 font-medium text-base dark:text-gray-400">
-          <%= @user |> get_in([:public_profile, Access.key(:bio, "-")]) %>
+        <p class="text-gray-700 font-medium text-base dark:text-gray-400 mt-1">
+        <%= @user |> get_in([:public_profile, Access.key(:bio, "-")]) %>
         </p>
 
         <div>
-          <span
-            :for={trait <- Map.get(@user, :traits, [])}
-            class="text-gray-500 text-base font-medium dark:text-gray-400"
-          >
-            <span>#</span>
-            <%= trait %>
-          </span>
-        </div>
+        <span
+          :for={trait <- @user |> get_in([:public_profile, Access.key(:traits, "-")])}
+          class="text-gray-500 text-base font-medium dark:text-gray-400"
+        >
+          <span>#</span>
+          <%= trait %>
+        </span>
+      </div>
       </div>
     </div>
     """
@@ -1491,37 +1574,56 @@ defmodule PhosWeb.CoreComponents do
       end)
 
     ~H"""
-    <div class="flex flex-col p-4 w-full space-y-4 lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md lg:dark:bg-gray-700 dark:border-gray-700">
+    <div class="flex flex-col p-4 w-full space-y-2 lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md lg:dark:bg-gray-700 dark:border-gray-700">
       <h5 class="lg:text-xl xl:text-2xl text-lg font-extrabold text-gray-900 dark:text-white">
         <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
       </h5>
+      <p class="text-gray-700 text-base font-semibold dark:text-gray-400">
+        <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
+      </p>
       <div class="flex gap-6 items-center justify-center">
-      <button
-      id={"#{@id}-sharebtn"}
-      phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
-      class="text-center inline-flex items-center dark:text-white lg:text-base lg:font-bold"
-    >
-      <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.host() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %></div>
-      <Heroicons.share class="-ml-1 w-6 h-6 dark:text-white" />
-    </button>
-        <.button class="flex items-center p-0 items-start space-y-1">
-          <Heroicons.plus class="mr-2 -ml-1 md:w-6 md:h-6 w-4 h-4 " />
-          <span>Ally</span>
-        </.button>
+        <button
+          id={"#{@id}-sharebtn"}
+          phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
+        >
+          <div id={"#{@id}-copylink"} class="hidden">
+            <%= PhosWeb.Endpoint.host() <>
+              path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
+          </div>
+          <svg
+            width="45"
+            height="45"
+            viewBox="0 0 45 45"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect width="45" height="45" rx="15" fill="#F4F4F4" />
+            <path
+              d="M18.6844 20.6578L25.3125 17.3438M25.3156 26.6578L18.6938 23.3469M31 16C31 17.6569 29.6569 19 28 19C26.3431 19 25 17.6569 25 16C25 14.3431 26.3431 13 28 13C29.6569 13 31 14.3431 31 16ZM19 22C19 23.6569 17.6569 25 16 25C14.3431 25 13 23.6569 13 22C13 20.3431 14.3431 19 16 19C17.6569 19 19 20.3431 19 22ZM31 28C31 29.6569 29.6569 31 28 31C26.3431 31 25 29.6569 25 28C25 26.3431 26.3431 25 28 25C29.6569 25 31 26.3431 31 28Z"
+              stroke="#404252"
+              stroke-width="1.5"
+            />
+          </svg>
+        </button>
+
+        <svg width="81" height="45" viewBox="0 0 81 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="81" height="45" rx="15" fill="#00BFB2" />
+          <path
+            d="M24.336 18.224V21.328H21.312V23.28H24.336V26.384H26.448V23.28H29.472V21.328H26.448V18.224H24.336ZM39.4693 28H41.8373L37.8213 16.816H35.2133L31.1973 28H33.5493L34.2853 25.872H38.7333L39.4693 28ZM38.1253 24.08H34.8932L36.5093 19.408L38.1253 24.08ZM43.3384 28H45.5784V16.16H43.3384V28ZM47.7915 28H50.0315V16.16H47.7915V28ZM56.0206 25.328L53.7326 19.136H51.2206L54.7726 27.776L52.8526 32.192H55.2366L60.7246 19.136H58.3406L56.0206 25.328Z"
+            fill="white"
+          />
+        </svg>
       </div>
 
       <div :if={@show_location} class="space-y-1">
         <div class="flex justify-center gap-2">
           <%= for location <- @locations do %>
             <div class="flex text-gray-800 lg:px-1 py-2 rounded-full text-base font-bold dark:text-white">
-              <Heroicons.map_pin class="w-6 h-6"/>
+              <Heroicons.map_pin class="w-6 h-6" />
               <span><%= location %></span>
             </div>
           <% end %>
         </div>
-        <p class="text-gray-700 text-base font-semibold dark:text-gray-400">
-          <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
-        </p>
         <p class="text-gray-700 font-medium text-base dark:text-gray-400">
           <%= @user |> get_in([:public_profile, Access.key(:bio, "-")]) %>
         </p>

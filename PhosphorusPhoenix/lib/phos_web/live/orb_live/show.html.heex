@@ -2,11 +2,17 @@
 <section class="container mx-auto lg:mt-20 mt-14">
   <div
     :if={not is_nil(@orb.initiator) && @orb.initiator}
-    class="flex lg:flex-row flex-col items-start mt-6 gap-4">
+    class="flex lg:flex-row flex-col items-start mt-6 gap-4"
+  >
     <!-- Desktop View in Orb View Profile-->
     <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full max-w-full px-3 lg:w-3/12  md:flex-none">
       <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md">
-        <.user_profile_banner id="orb-initiator-username" user={@orb.initiator} show_location={false} main_height="lg:h-64">
+        <.user_profile_banner
+          id="orb-initiator-username"
+          user={@orb.initiator}
+          show_location={false}
+          main_height="lg:h-64"
+        >
         </.user_profile_banner>
       </div>
       <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md text-center">
@@ -17,7 +23,6 @@
         />
       </div>
     </div>
-
     <!-- Post card and Comments-->
     <div class="px-3 lg:w-5/12  w-full md:mt-2 lg:flex-none justify-center items-center lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
       <.scry_orb id="Orb" orb={@orb} timezone={@timezone} />
@@ -35,7 +40,6 @@
         live_action={@live_action}
       />
     </div>
-
     <!--Desktop Related Post-->
     <div class="hidden lg:block px-3 space-y-4 w-full lg:w-4/12 h-auto">
       <h5 class="text-left font-semibold text-lg py-1 px-2 dark:text-white">
