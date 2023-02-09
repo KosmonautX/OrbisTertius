@@ -1,6 +1,6 @@
 <h1>Confirm account</h1>
 
-<.simple_form let={_f} for={:user} action={~p"/users/confirm/#{@token}"}>
+<.simple_form :let={_f} for={:user} action={~p"/users/confirm/#{@token}"}>
   <:actions>
     <.button type="submit">Confirm my account</.button>
   </:actions>

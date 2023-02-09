@@ -58,7 +58,9 @@ defmodule PhosWeb.CommentControllerTest do
 
     test "lists ancestors of comment", %{conn: conn, orb: orb, user: user} do
       root_comment = comment_fixture(%{orb_id: orb.id, body: "root_comment", initiator_id: user.id})
+
       second_level_comment = comment_fixture(%{orb_id: orb.id, body: "second_level_comment", initiator_id: user.id, parent_id: root_comment.id, parent_path: to_string(root_comment.path)})
+
       third_level_comment = comment_fixture(%{orb_id: orb.id, body: "third_level_comment", initiator_id: user.id, parent_id: second_level_comment.id, parent_path: to_string(second_level_comment.path)})
 
       conn = get(conn, path(conn, Router, ~p"/api/orbland/comments/ancestor/#{third_level_comment.id}"))
@@ -195,7 +197,7 @@ defmodule PhosWeb.CommentControllerTest do
       conn = put(conn, path(conn, Router, ~p"/api/orbland/comments/#{second_level_comment.id}"), @invalid_attrs)
 
       assert %{
-        "body" => ["can't be blank"],
+        "body" => ["cblankan't be "],
       } = json_response(conn, 422)["errors"]
     end
   end

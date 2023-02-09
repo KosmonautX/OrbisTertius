@@ -34,11 +34,13 @@ defmodule Phos.Notification do
   def push([_ | _] = tokens, notification) do
     GenServer.call(executor(), {:push, tokens, notification})
   end
+  def push(_, _not), do: :ok
 
   def push(token, notification, data) when is_bitstring(token), do: push([token], notification, data)
   def push([_ | _] = tokens, notification, data) do
     GenServer.call(executor(), {:push, tokens, notification, data})
   end
+  def push(_, _not, _data), do: :ok
 
   def target(condition, notification, data \\ %{}) do
     #`'${topic}' in topics && !('${me}' in topics)`, eg. "'ORB.1' in topics && !('USR.1' in topics)"

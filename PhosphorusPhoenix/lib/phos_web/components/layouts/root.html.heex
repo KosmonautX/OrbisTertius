@@ -21,10 +21,11 @@
     <%= if @current_user do %>
       <.banner :if={@current_user} current_user={@current_user} />
       <.tabs_mobile current_user={@current_user}/>
+      <.bottom_banner/>
     <% else %>
       <.guest_banner if={is_nil(@current_user)} current_user={@current_user} />
     <% end %>
     <div class="w-full h-screen"><%= @inner_content %></div>
-    <.welcome_message id="welcome_message" user={@current_user} author={} />
+    <.welcome_message id="welcome_message" user={@current_user} />
   </body>
 </html>

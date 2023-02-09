@@ -4,7 +4,7 @@
   <div id="change_email">
     <h3 class="text-lg font-bold lg:text-2xl dark:text-white">Change email</h3>
 
-    <.simple_form let={f} for={@email_changeset} action={~p"/users/settings"} id="update_email">
+    <.simple_form :let={f} for={@email_changeset} action={~p"/users/settings"} id="update_email">
       <div class="alert alert-danger" :if={@email_changeset.action}>
         <p>Oops, something went wrong! Please check the errors below.</p>
       </div>
@@ -22,7 +22,7 @@
   <div id="change_password">
     <h3 class="text-lg font-bold mt-6">Change password</h3>
 
-    <.simple_form let={f} for={@email_changeset} action={~p"/users/settings"} id="update_password">
+    <.simple_form :let={f} for={@email_changeset} action={~p"/users/settings"} id="update_password">
       <div class="alert alert-danger" :if={@email_changeset.action}>
         <p>Oops, something went wrong! Please check the errors below.</p>
       </div>
@@ -41,7 +41,7 @@
 
 <div>
   <h3 class="text-lg font-bold mt-6">Set Username</h3>
-  <.simple_form let={f} for={@pub_profile_changeset} action={~p"/users/settings"} id="update_username">
+  <.simple_form :let={f} for={@pub_profile_changeset} action={~p"/users/settings"} id="update_username">
     <div class="alert alert-danger" :if={@pub_profile_changeset.action}>
       <p>Oops, something went wrong! Please check the errors below.</p>
     </div>

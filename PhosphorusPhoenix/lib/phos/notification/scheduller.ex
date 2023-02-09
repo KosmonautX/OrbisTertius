@@ -213,13 +213,4 @@ defmodule Phos.Notification.Scheduller do
     |> Timex.Timezone.convert(singapore_timezone())
   end
 
-  defp orb_title(title, %Phos.Action.Orb{initiator: %{username: username}}) do
-    constraint = "[InitiatorName]"
-    case String.contains?(title, constraint) do
-      true -> String.replace(title, constraint, username)
-      _ -> title
-    end
-  end
-
-  defp orb_title(title, _orb), do: title
 end

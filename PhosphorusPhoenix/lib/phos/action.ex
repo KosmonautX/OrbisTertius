@@ -18,7 +18,7 @@ defmodule Phos.Action do
 
   """
   def list_orbs(filters \\ []) do
-    default_query = from o in Orb, preload: [:initiator], order_by: [desc: o.inserted_at]
+    default_query = from o in Orb, preload: [:initiator], order_by: [desc: o.inserted_at], limit: 12
     query = case Kernel.length(filters) do
               0 -> default_query
               _ -> advanced_orb_listing(filters, default_query)
@@ -452,10 +452,32 @@ defmodule Phos.Action do
   def delete_orb(%Orb{} = orb) do
     from(o in Phos.Comments.Comment,
           as: :o,
-          where: o.orb_id == ^orb.id,
+          where: o.orb_id == ^orb.id
         )
         |> Phos.Repo.all()
         |> Enum.map(fn com -> Phos.Comments.delete_comment(com)
+      end)
+
+      from(o in Phos.Message.Memory,
+          as: :o,
+          where: o.orb_subject_id == ^orb.id
+        )
+        |> Phos.Repo.all()
+        |> Enum.map(fn mem -> Phos.Message.delete_memory(mem)
+      end)
+
+    Repo.delete(orb)
+  end
+
+  def admin_delete_orb(%Orb{} = orb) do
+    from(o in Phos.Comments.Comment,
+          as: :o,
+          where: o.orb_id == ^orb.id
+        )
+        |> Phos.Repo.all()
+        |> Enum.map(fn com ->
+      unless (is_nil(com.parent_id)), do: Phos.Comments.delete_comment(Phos.Comments.get_comment(com.parent_id))
+      Phos.Comments.delete_comment(com)
       end)
 
       from(o in Phos.Message.Memory,

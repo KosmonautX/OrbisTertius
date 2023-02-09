@@ -32,4 +32,30 @@ defmodule PhosWeb.SVG do
     """
   end
 
+  def location(assigns) do
+    ~H"""
+    <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M7 9C8.24264 9 9.25 7.99264 9.25 6.75C9.25 5.50736 8.24264 4.5 7 4.5C5.75736 4.5 4.75 5.50736 4.75 6.75C4.75 7.99264 5.75736 9 7 9Z" stroke="#404252" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M7 14.25C10.3137 12.75 13 10.0637 13 6.75C13 3.43629 10.3137 0.75 7 0.75C3.68629 0.75 1 3.43629 1 6.75C1 10.0637 3.68629 12.75 7 14.25Z" stroke="#404252" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    """
+  end
+
+  def ally_btn(assigns) do
+    ~H"""
+    <svg width="81" height="45" viewBox="0 0 81 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="81" height="45" rx="15" fill="#00BFB2"/>
+    <path d="M24.336 18.224V21.328H21.312V23.28H24.336V26.384H26.448V23.28H29.472V21.328H26.448V18.224H24.336ZM39.4693 28H41.8373L37.8213 16.816H35.2133L31.1973 28H33.5493L34.2853 25.872H38.7333L39.4693 28ZM38.1253 24.08H34.8932L36.5093 19.408L38.1253 24.08ZM43.3384 28H45.5784V16.16H43.3384V28ZM47.7915 28H50.0315V16.16H47.7915V28ZM56.0206 25.328L53.7326 19.136H51.2206L54.7726 27.776L52.8526 32.192H55.2366L60.7246 19.136H58.3406L56.0206 25.328Z" fill="white"/>
+    </svg>
+    """
+  end
+
+  def share_btn(assigns) do
+    ~H"""
+    <svg width="45" height="45" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="45" height="45" rx="15" fill="#F4F4F4"/>
+    <path d="M18.6844 20.6578L25.3125 17.3438M25.3156 26.6578L18.6938 23.3469M31 16C31 17.6569 29.6569 19 28 19C26.3431 19 25 17.6569 25 16C25 14.3431 26.3431 13 28 13C29.6569 13 31 14.3431 31 16ZM19 22C19 23.6569 17.6569 25 16 25C14.3431 25 13 23.6569 13 22C13 20.3431 14.3431 19 16 19C17.6569 19 19 20.3431 19 22ZM31 28C31 29.6569 29.6569 31 28 31C26.3431 31 25 29.6569 25 28C25 26.3431 26.3431 25 28 25C29.6569 25 31 26.3431 31 28Z" stroke="#404252" stroke-width="1.5"/>
+    </svg>
+    """
+  end
 end
