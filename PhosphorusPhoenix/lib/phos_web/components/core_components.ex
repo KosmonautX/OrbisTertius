@@ -1092,8 +1092,7 @@ defmodule PhosWeb.CoreComponents do
       <div class="flex w-full ">
         <.link
           :if={@user.username}
-          navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}
-        >
+          navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}>
           <img
             src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
             class=" lg:h-16 lg:w-16 w-14 h-14 border-4 border-white rounded-full object-cover"
@@ -1217,8 +1216,7 @@ defmodule PhosWeb.CoreComponents do
         <div :if={length(@media) > 1} data-glide-el="controls">
           <div
             data-glide-el="controls[nav]"
-            class="absolute flex space-x-3 -translate-x-1/2 bottom-2 left-1/2"
-          >
+            class="absolute flex space-x-3 -translate-x-1/2 bottom-2 left-1/2">
             <button
               :for={count <- Enum.to_list(1..length(@media))}
               class="w-3 h-3 rounded-full bg-white/70 group-hover:bg-white/90 focus:ring-4 focus:ring-white group-focus:outline-none"

@@ -24,9 +24,18 @@
       </div>
     </div>
     <!-- Post card and Comments-->
-    <div class="px-3 lg:w-5/12  w-full md:mt-2 lg:flex-none justify-center items-center lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
+    <div class="lg:hidden block container mx-auto">
+      <div class=" flex flex-wrap items-center justify-center p-2 border-b border-gray-300">
+         <Heroicons.chevron_left class="w-6 h-6 dark:text-white font-semibold" />
+        <span class="text-center text-xl font-semibold text-gray-800 dark:text-white flex-1 items-center justify-center"><%= "#{@orb.initiator.username} Post" %></span>
+      </div>
+    </div>
+    <div class="px-3 lg:w-5/12 w-full md:mt-2 lg:flex-none justify-center items-center lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
+    <div>
       <.scry_orb id="Orb" orb={@orb} timezone={@timezone} />
-      <.live_component
+    </div>
+      <div>
+        <.live_component
         module={PhosWeb.CommentLive.IndexComponent}
         id="cotimezone1={@timezone} mmentindex"
         changeset={@changeset}
@@ -39,7 +48,10 @@
         socket={@socket}
         live_action={@live_action}
       />
+      </div>
     </div>
+
+
     <!--Desktop Related Post-->
     <div class="hidden lg:block px-3 space-y-4 w-full lg:w-4/12 h-auto">
       <h5 class="text-left font-semibold text-lg py-1 px-2 dark:text-white">

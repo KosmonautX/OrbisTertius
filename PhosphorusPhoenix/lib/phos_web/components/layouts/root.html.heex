@@ -20,7 +20,6 @@
     <%= # take username of initiator through meta tags %>
     <%= if @current_user do %>
       <.banner :if={@current_user} current_user={@current_user} />
-      <.tabs_mobile current_user={@current_user}/>
       <.bottom_banner/>
     <% else %>
       <.guest_banner if={is_nil(@current_user)} current_user={@current_user} />
