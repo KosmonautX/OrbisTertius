@@ -197,7 +197,7 @@ defmodule PhosWeb.CommentControllerTest do
       conn = put(conn, path(conn, Router, ~p"/api/orbland/comments/#{second_level_comment.id}"), @invalid_attrs)
 
       assert %{
-        "body" => ["can't be blank"],
+        "body" => ["cblankan't be "],
       } = json_response(conn, 422)["errors"]
     end
   end

@@ -2,7 +2,7 @@
   <h3 :if={not is_nil(@reply_comment)}>
     <%= to_string(@action) %>: <%= @comment.body %>
   </h3>
-  <div class="flex flex-col w-full justify-between">
+  <div class="relative flex flex-col w-full justify-between">
     <.simple_form
       :let={f}
       class="flex justify-between w-full"
@@ -25,7 +25,7 @@
       />
 
       <:actions>
-        <button type="submit" phx-disable-with="Saving...">
+        <button type="submit" phx-disable-with="Saving..." class="absolute right-2.5 bottom-2">
           <Heroicons.paper_airplane class="h-8 w-8 md:h-10 text-teal-400 font-bold" />
         </button>
         <.button
