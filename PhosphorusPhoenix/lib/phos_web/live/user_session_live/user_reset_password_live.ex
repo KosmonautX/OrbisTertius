@@ -26,7 +26,7 @@ defmodule PhosWeb.UserResetPasswordLive do
         required
       />
       <:actions>
-        <.button phx-disable-with="Resetting...">Reset Password</.button>
+        <.button phx-disable-with="Resetting..." type="submit">Reset Password</.button>
       </:actions>
     </.simple_form>
 

@@ -65,7 +65,7 @@ defmodule Phos.Orbject.S3 do
       {:ok, addresses}
     else
       [] -> {:ok, nil}
-      {:error, err} -> {:ok, nil}  #TODO better error parsing
+      {:error, _err} -> {:ok, nil}  #TODO better error parsing
     end
   end
 

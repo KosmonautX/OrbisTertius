@@ -1,6 +1,6 @@
 <h1>Resend confirmation instructions</h1>
 
-<.simple_form let={f} for={:user} action={~p"/users/confirm"}>
+<.simple_form :let={f} for={:user} action={~p"/users/confirm"}>
   <.input field={{f, :email}} type="email" label="Email" required={true} />
 
   <:actions>

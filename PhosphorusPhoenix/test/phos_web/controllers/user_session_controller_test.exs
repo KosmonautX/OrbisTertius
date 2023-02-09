@@ -15,14 +15,13 @@ defmodule PhosWeb.UserSessionControllerTest do
         })
 
       assert get_session(conn, :user_token)
-      assert redirected_to(conn) == ~p"/"
-
+      assert redirected_to(conn) == ~p"/welcome"
       # Now do a logged in request and assert on the menu
-      conn = get(conn, ~p"/")
+      conn = get(conn, ~p"/welcome")
       response = html_response(conn, 200)
       assert response =~ user.username
-      assert response =~ "Settings</a>"
-      assert response =~ "Log out</a>"
+      assert response =~ "settings"
+      assert response =~ "log_out"
     end
 
     test "logs the user in with remember me", %{conn: conn, user: user} do
@@ -36,7 +35,7 @@ defmodule PhosWeb.UserSessionControllerTest do
         })
 
       assert conn.resp_cookies["_phos_web_user_remember_me"]
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/welcome"
     end
 
     test "logs the user in with return to", %{conn: conn, user: user} do
@@ -65,7 +64,7 @@ defmodule PhosWeb.UserSessionControllerTest do
           }
         })
 
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/welcome"
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Welcome to Scratchbac!"
     end
 
@@ -97,14 +96,14 @@ defmodule PhosWeb.UserSessionControllerTest do
 
   describe "DELETE /users/log_out" do
     test "logs the user out", %{conn: conn, user: user} do
-      conn = conn |> log_in_user(user) |> delete(~p"/users/log_out")
+      conn = conn |> log_in_user(user) |> get(~p"/users/log_out")
       assert redirected_to(conn) == ~p"/"
       refute get_session(conn, :user_token)
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Logged out successfully"
     end
 
     test "succeeds even if the user is not logged in", %{conn: conn} do
-      conn = delete(conn, ~p"/users/log_out")
+      conn = get(conn, ~p"/users/log_out")
       assert redirected_to(conn) == ~p"/"
       refute get_session(conn, :user_token)
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Logged out successfully"

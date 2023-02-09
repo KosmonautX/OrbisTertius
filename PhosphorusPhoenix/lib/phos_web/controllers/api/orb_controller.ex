@@ -182,11 +182,13 @@ defmodule PhosWeb.API.OrbController do
 
   # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X PUT -d '{"active": "false"}' http://localhost:4000/api/orbs/fe1ac6b5-3db3-49e2-89b2-8aa30fad2578
 
-  def delete(conn, %{"id" => id}) do
+  def delete(conn = %{assigns: %{current_user: user}}, %{"id" => id}) do
     orb = Action.get_orb!(id)
-
-    with {:ok, %Orb{}} <- Action.delete_orb(orb) do
+    with true <- orb.initiator.id == user.id,
+         {:ok, %Orb{}} <- Action.delete_orb(orb) do
       send_resp(conn, :no_content, "")
+    else
+      false -> {:error, :unauthorized}
     end
   end
 

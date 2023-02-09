@@ -12,8 +12,8 @@ defmodule PhosWeb.UserForgotPasswordLiveTest do
       {:ok, _lv, html} = live(conn, ~p"/users/reset_password")
 
       assert html =~ "Forgot your password?"
-      assert html =~ "Sign up</a>"
-      assert html =~ "Log in</a>"
+      assert html =~ "/register"
+      assert html =~ "/log_in"
     end
 
     test "redirects if already logged in", %{conn: conn} do
@@ -21,7 +21,7 @@ defmodule PhosWeb.UserForgotPasswordLiveTest do
         conn
         |> log_in_user(user_fixture())
         |> live(~p"/users/reset_password")
-        |> follow_redirect(conn, ~p"/")
+        |> follow_redirect(conn, ~p"/welcome")
 
       assert {:ok, _conn} = result
     end

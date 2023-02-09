@@ -113,13 +113,13 @@ defmodule Phos.OAuthStrategy do
 
 
   defp redirect_uri(provider, "json") do
-    path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/auth/#{provider}/callback.json")
+    PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/auth/#{provider}/callback.json")
     |> https_auth()
   end
-  defp redirect_uri(:telegram, _), do: path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/auth/telegram/callback") |> https_auth()
+  defp redirect_uri(:telegram, _), do: PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/auth/telegram/callback") |> https_auth()
 
   defp redirect_uri(provider, _) do
-    path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/auth/#{provider}/callback")
+    PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/auth/#{provider}/callback")
     |> https_auth()
   end
 end

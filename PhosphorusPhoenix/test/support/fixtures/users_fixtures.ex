@@ -6,7 +6,7 @@ defmodule Phos.UsersFixtures do
 
   def unique_user_email, do: "user#{System.unique_integer()}@example.com"
   def valid_user_password, do: "hello world!"
-  def unique_user_name, do: "Bruce Lee#{System.unique_integer()}"
+  def unique_user_name, do: "brucelee#{:erlang.phash2(:erlang.unique_integer(), 99999999)}"
 
   def valid_user_attributes(attrs \\ %{}) do
     Enum.into(attrs, %{
@@ -27,11 +27,13 @@ defmodule Phos.UsersFixtures do
 
   def user_pte_prof_fixture(attrs \\ %{}) do
     {:ok, user_created} = valid_user_attributes() |> Phos.Users.register_user()
+
     {:ok, user} =
       %Phos.Users.Private_Profile{}
-        |> Phos.Users.Private_Profile.changeset(%{user_id: user_created.id})
-        |> Ecto.Changeset.put_embed(:geolocation, [attrs])
-        |> Phos.Repo.insert()
+      |> Phos.Users.Private_Profile.changeset(%{user_id: user_created.id})
+      |> Ecto.Changeset.put_embed(:geolocation, [attrs])
+      |> Phos.Repo.insert()
+
     user
   end
 

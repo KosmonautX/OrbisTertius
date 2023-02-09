@@ -28,6 +28,11 @@ defmodule Phos.Users do
     Repo.all(query)
   end
 
+  def list_users(limit) do
+    query = from u in User, limit: ^limit
+    Repo.all(query)
+  end
+
   # def list_users_pub do
   #   query = from u in User, preload: [:public_profile]
   #   Repo.all(query)
@@ -554,7 +559,8 @@ defmodule Phos.Users do
   """
   def get_user_by_session_token(token) do
     {:ok, query} = UserToken.verify_session_token_query(token)
-    Repo.one(query) |> Repo.preload([:private_profile])
+    Repo.one(query)
+    |> Repo.preload([:private_profile])
   end
 
   @doc """

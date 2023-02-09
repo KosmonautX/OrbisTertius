@@ -272,7 +272,7 @@ defmodule Phos.Folk do
 
   def feeds(user_id) do
     friends_lite(user_id)
-    #|> Kernel.++([user_id])
+    |> Kernel.++([user_id])
     |> do_get_feeds()
   end
 

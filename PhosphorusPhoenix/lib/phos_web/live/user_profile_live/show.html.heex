@@ -1,0 +1,75 @@
+<.modal
+  :if={@live_action in [:edit]}
+  id="edit_profile_modal"
+  show={@live_action in [:edit]}
+  on_cancel={JS.navigate(~p"/user/#{@current_user.username}")}
+>
+  <.live_component
+    module={PhosWeb.UserProfileLive.FormComponent}
+    id={@current_user.id}
+    title={@page_title}
+    action={@live_action}
+    user={@user}
+    current_user={@current_user}
+    return_to={~p"/user/#{@current_user.username}"}
+  />
+</.modal>
+
+<section class="w-full flex flex-col items-center mt-14 gap-4 justify-center lg:mt-18 ">
+  <div class="w-full">
+    <.user_profile_banner id="orb-user-profile" user={@user} show_location={true}>
+      <.link
+        :if={@current_user && @user.id == @current_user.id}
+        patch={~p"/user/#{@current_user.username}/edit"}
+      >
+        <Heroicons.camera class="lg:w-11 lg:h-11 h-10 w-10 fill-white" />
+      </.link>
+    </.user_profile_banner>
+  </div>
+
+  <div class="lg:hidden block w-full">
+    <.user_information_card :if={not is_nil(@user.public_profile)} id="user_info" user={@user} />
+  </div>
+
+  <div class="lg:hidden block sticky top-12 bg-white z-10 left-0 w-full items-center justify-center">
+    <.tabs_profile id="orb-user-tabs-profile" action={@live_action} username={@user.username} />
+  </div>
+
+    <div class="w-full h-auto container mx-auto lg:flex lg:flex-row gap-8 mb-14 lg:px-14">
+      <div
+        :if={@live_action != :allies}
+        class="flex flex-col w-full max-w-full px-3 mt-2 lg:w-7/12 lg:flex-none">
+        <div class="hidden lg:block">
+          <.user_information_card
+            :if={not is_nil(@user.public_profile)}
+            id="user-details"
+            user={@user}
+          />
+        </div>
+        <h5 class="lg:block hidden text-left font-semibold text-lg py-1 px-2 dark:text-white">
+          Posts
+        </h5>
+        <hr class="lg:block hidden h-px bg-gray-900 border-2" />
+        <ul :for={orb <- @orbs} class="lg:p-2">
+          <li class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm border-b-2 lg:p-1">
+            <.scry_orb id="orb-history" orb={orb} timezone={@timezone} />
+          </li>
+        </ul>
+      </div>
+
+      <div id="ally_list" class=" w-full max-w-full px-3 mt-2 lg:w-5/12 lg:flex-none">
+        <h5 class="lg:block hidden text-left font-semibold text-lg py-1 px-2 p-4 dark:text-white">
+          Allies
+        </h5>
+        <hr class="lg:block hidden h-px bg-gray-900 border-2 mb-2" />
+        <div class="px-2">
+          <.live_component
+            module={PhosWeb.Components.ScrollAlly}
+            id="infinite-home"
+            ally_list={@ally_list}
+            page={@page}
+          />
+        </div>
+      </div>
+  </div>
+</section>

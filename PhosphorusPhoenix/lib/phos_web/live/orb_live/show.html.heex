@@ -1,69 +1,54 @@
-<link rel="stylesheet"
-          href=
-"https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+<!--desktop View -->
+<section class="container mx-auto lg:mt-20 mt-14">
+  <div
+    :if={not is_nil(@orb.initiator) && @orb.initiator}
+    class="flex lg:flex-row flex-col items-start mt-6 gap-4">
+    <!-- Desktop View in Orb View Profile-->
+    <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full max-w-full px-3 lg:w-3/12  md:flex-none">
+      <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md">
+        <.user_profile_banner id="orb-initiator-username" user={@orb.initiator} show_location={false} main_height="lg:h-64">
+        </.user_profile_banner>
+      </div>
+      <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md text-center">
+        <.user_information_card_orb
+          id="orb-initiator-public-profile"
+          user={@orb.initiator}
+          flex=""
+        />
+      </div>
+    </div>
 
-<h1>Show Orb</h1>
+    <!-- Post card and Comments-->
+    <div class="px-3 lg:w-5/12  w-full md:mt-2 lg:flex-none justify-center items-center lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
+      <.scry_orb id="Orb" orb={@orb} timezone={@timezone} />
+      <.live_component
+        module={PhosWeb.CommentLive.IndexComponent}
+        id="cotimezone1={@timezone} mmentindex"
+        changeset={@changeset}
+        action="new"
+        orb={@orb}
+        comments={@comments}
+        reply_comment={nil}
+        edit_comment={nil}
+        current_user={@current_user}
+        socket={@socket}
+        live_action={@live_action}
+      />
+    </div>
 
-<.modal 
-  id={"modal_for_#{@live_action}"}
-  :if={@live_action in [:edit]}
-  on_confirm={JS.navigate(~p"/orb/#{@orb.id}")}
-  on_cancel={JS.navigate(~p"/orb/#{@orb.id}")}>
-  <.live_component
-    module={PhosWeb.OrbLive.FormComponent}
-    id={@orb.id}
-    title={@page_title}
-    action={@live_action}
-    orb={@orb}
-    current_user={@current_user}
-    addresses={nil}
-    geolocation={nil}
-    return_to={~p"/orb/#{@orb.id}"} />
-</.modal>
-
-<.modal id={"modal_for_#{@live_action}"} :if={@live_action in [:reply, :edit_comment]}>
-  <.live_component
-    module={PhosWeb.CommentLive.FormComponent}
-    id={@comment.id}
-    action={@live_action}
-    comment={@comment}
-    changeset={@changeset}
-    orb={@orb}
-    current_user={@current_user}
-    return_to={~p"/orb/#{@orb.id}"}
-  />
-</.modal>
-
-<.list>
-  <:item title="Title"><%= @orb.title %></:item>
-  <:item title="Central Geohash"><%= @orb.central_geohash %></:item>
-  <:item title="Active"><%= @orb.active %></:item>
-  <:item title="Media" :if={@orb.media}>
-    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "150x150")} />
-    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "1920x1080")} />
-  </:item>
-  <:item title="Extinguish"><%= @orb.extinguish %></:item>
-  <:item title="When"><%= @orb.payload.when %></:item>
-  <:item title="Where"><%= @orb.payload.where %></:item>
-  <:item title="Tip"><%= @orb.payload.tip %></:item>
-  <:item title="Info"><%= @orb.payload.info %></:item>
-  <:item title="Traits"><%= inspect @orb.traits %></:item>
-</.list>
-
-<div class="mt-4">
-  <.link navigate={~p"/orb/#{@orb.id}/edit"} class="text-white px-4 py-2 bg-blue-300 hover:bg-blue-500 rounded hover:text-white">Edit</.link>
-  <.link navigate={~p"/orb"} replace={true} class="text-white px-4 py-2 bg-blue-300 hover:bg-blue-500 rounded hover:text-white">Back</.link>
-</div>
-
-<div class="mt-4">
-  <.live_component
-    module={PhosWeb.CommentLive.IndexComponent}
-    id="commentindex"
-    changeset={@changeset}
-    action="new"
-    orb={@orb}
-    comments={@comments}
-    current_user={@current_user}
-    socket={@socket}
-    live_action={@live_action} />
-</div>
+    <!--Desktop Related Post-->
+    <div class="hidden lg:block px-3 space-y-4 w-full lg:w-4/12 h-auto">
+      <h5 class="text-left font-semibold text-lg py-1 px-2 dark:text-white">
+        <%= "Other Posts by #{@orb.initiator.username}" %>
+      </h5>
+      <hr class="h-px bg-gray-900 border-2" />
+      <.live_component
+        module={PhosWeb.Components.ScrollOrb}
+        id="infinite-home"
+        orbs={@orbs}
+        page={@page}
+        timezone1={@timezone}
+      />
+    </div>
+  </div>
+</section>

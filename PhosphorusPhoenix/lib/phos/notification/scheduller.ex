@@ -135,11 +135,10 @@ defmodule Phos.Notification.Scheduller do
   end
 
   defp send_notification(%{regions: [_ | _], title: title} = data) do
-    #expected_title = orb_title(title, orb)
     fetch_tokens(data)
     |> Phos.Notification.push(
       %{title: title, body: Map.get(data, :body, "")},
-    %{action_path: data.action_path <> "/" <> data.archetype_id})
+    %{action_path: "#{data.action_path}/#{data.archetype_id}"})
   end
 
   defp fetch_tokens(%{regions: regions}) when is_list(regions) do
@@ -184,8 +183,6 @@ defmodule Phos.Notification.Scheduller do
   defp should_execute?(freq, date, current_time) do
     String.downcase(freq)
     |> case do
-      "daily" -> true
-      "now" -> true
       "scheduled" -> Date.compare(date, DateTime.to_date(current_time)) == :eq
       "weekends" -> Timex.weekday(current_time) in [6, 7]
       "weekly" -> Timex.weekday(current_time) == 1
@@ -216,13 +213,4 @@ defmodule Phos.Notification.Scheduller do
     |> Timex.Timezone.convert(singapore_timezone())
   end
 
-  defp orb_title(title, %Phos.Action.Orb{initiator: %{username: username}}) do
-    constraint = "[InitiatorName]"
-    case String.contains?(title, constraint) do
-      true -> String.replace(title, constraint, username)
-      _ -> title
-    end
-  end
-
-  defp orb_title(title, _orb), do: title
 end

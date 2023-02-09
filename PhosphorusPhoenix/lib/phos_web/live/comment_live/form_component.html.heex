@@ -1,20 +1,40 @@
 <div>
-  <h3><%=to_string(@action)%>: <%= @comment.body %></h3>
-  <.simple_form
-    let={f}
-    for={@changeset}
-    id={"comment-replyedit-form"}
-    phx-submit="reply">
+  <h3 :if={not is_nil(@reply_comment)}>
+    <%= to_string(@action) %>: <%= @comment.body %>
+  </h3>
+  <div class="flex justify-between w-full gap-2">
+    <.simple_form class="flex" :let={f} for={@changeset} id={@id} phx-target={@myself} phx-submit={@action}>
+      <div :if={@action == :edit and not is_nil(@comment)}>
+        <.input field={{f, :body}} type="textarea"  value={@comment.body} />
+        <.input field={{f, :comment_id}} type="hidden" value={@comment.id} />
+      </div>
 
-    <.input :if={@action == :reply} field={{f, :body}} type="textarea" />
-    <.input :if={@action != :reply} field={{f, :body}} type="textarea" value={@comment.body} />
-    <.input field={{f, :parent_path}} type="hidden" value={to_string(@comment.path)} />
-    <.input field={{f, :initiator_id}} type="hidden" value={@current_user.id} />
-    <.input field={{f, :orb_id}} type="hidden" value={@orb.id} />
-    <.input field={{f, :parent_id}} type="hidden" value={@comment.id} />
+      <.input
+        :if={@action != :edit}
+        field={{f, :body}}
+        type="textarea"
+        placeholder="In the beginning was the Word..."
+      />
+      <.input field={{f, :initiator_id}} type="hidden" value={@current_user.id} />
+      <.input field={{f, :orb_id}} type="hidden" value={@orb.id} />
+      <div :if={@action == :reply}>
+        <.input field={{f, :parent_id}} type="hidden" value={@comment.id} />
+        <.input field={{f, :parent_path}} type="hidden" value={to_string(@comment.path)} />
+      </div>
 
-    <:actions>
-      <.button type="submit" phx-disable-with="Saving..."><%= @action %></.button>
-    </:actions>
-  </.simple_form>
+      <:actions>
+        <button type="submit" phx-disable-with="Saving..." class="">
+          <Heroicons.paper_airplane class="h-8 w-8 md:h-10 mr-2 text-teal-400 font-bold" />
+        </button>
+        <.button
+          :if={@action in [:reply, :edit]}
+          type="reset"
+          phx-click={"cancel-#{@action}"}
+          phx-target={"#comment-#{@comment.id}"}
+        >
+          Cancel
+        </.button>
+      </:actions>
+    </.simple_form>
+</div>
 </div>
