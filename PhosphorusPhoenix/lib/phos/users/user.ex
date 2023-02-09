@@ -45,7 +45,8 @@ defmodule Phos.Users.User do
     |> cast_assoc(:private_profile)
     |> validate_username()
     |> unique_constraint(:fyr_id, name: :unique_fyr)
-    |> validate_email()
+    |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
+    |> validate_length(:email, max: 160)
   end
 
   def personal_changeset(%Phos.Users.User{} = user, attrs) do
@@ -146,9 +147,8 @@ defmodule Phos.Users.User do
     |> maybe_validate_unique_email(opts)
   end
 
-  defp validate_username(changeset, opts \\ []) do
+  defp validate_username(changeset, _opts \\ []) do
     changeset
-    |> validate_required([:username])
     |> validate_format(:username, ~r/^\w+$/, message: "letters and numbers only")
     |> validate_length(:username, min: 5, max: 16)
     |> unique_constraint(:username, name: :unique_username)
