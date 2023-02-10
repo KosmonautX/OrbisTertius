@@ -31,12 +31,14 @@ defmodule Phos.Notification do
 
 
   def push(token, notification) when is_bitstring(token), do: push([token], notification)
+  def push(%MapSet{} = tokens, notification), do: push(MapSet.to_list(tokens), notification)
   def push([_ | _] = tokens, notification) do
     GenServer.call(executor(), {:push, tokens, notification})
   end
   def push(_, _not), do: :ok
 
   def push(token, notification, data) when is_bitstring(token), do: push([token], notification, data)
+  def push(%MapSet{} = tokens, notification, data), do: push(MapSet.to_list(tokens), notification, data)
   def push([_ | _] = tokens, notification, data) do
     GenServer.call(executor(), {:push, tokens, notification, data})
   end
