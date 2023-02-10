@@ -1,23 +1,19 @@
-<div>
-  <h2>Comments</h2>
-
-  <div class="ui threaded comments">
-    <div :if={not is_nil(@current_user)}>
-      <.simple_form
-        let={f}
-        for={@changeset}
-        id="comment-form"
-        phx-submit="save">
-
-        <.input field={{f, :body}} type="textarea" />
-        <.input field={{f, :initiator_id}} type="hidden" value={@current_user.id} />
-        <.input field={{f, :orb_id}} type="hidden" value={@orb.id} />
-
-        <:actions>
-          <.button type="submit" phx-disable-with="Saving...">Add comment</.button>
-        </:actions>
-      </.simple_form>
-    </div>
-    <.xcard :for={comment <- filter_root_comments_chrono(@comments)} comment={comment} comments={@comments} changeset={@changeset} orb={@orb} current_user={@current_user} socket={@socket} live_action={@live_action} />
+<div class="w-full ">
+  <h2 class="text-base text-gray-900 font-bold lg:text-lg dark:text-white">Comments</h2>
+  <hr class="h-px bg-gray-900 border" />
+  <div class="ui threaded comments overflow-y-auto lg:h-60 h-96 ">
+    <.live_component
+      :for={comment <- filter_root_comments_chrono(@comments)}
+      module={PhosWeb.CommentLive.ShowComponent}
+      comment={comment}
+      comments={@comments}
+      changeset={@changeset}
+      id={"comment-#{elem(comment, 1).id}"}
+      orb={@orb}
+      current_user={@current_user}
+      socket={@socket}
+      reply_comment={@reply_comment}
+      edit_comment={@edit_comment}
+      phx-target={"#comment-#{elem(comment, 1).id}"}/>
   </div>
 </div>

@@ -1,7 +1,7 @@
 <h1 class="text-2xl font-bold mt-6">Register</h1>
 
 <div class="flex w-full mt-4 justify-evenly">
-  <.link 
+  <.link
     class="bg-blue-300 px-4 py-2 rounded flex items-center hover:text-white"
     href={~p"/auth/google"}>
     <img
@@ -12,7 +12,7 @@
         height="12px" />
     <span>Continue with Google</span>
   </.link>
-  <.link 
+  <.link
     class="bg-blue-300 px-4 py-2 rounded flex items-center hover:text-white"
     href={~p"/auth/apple"}>
     <img
@@ -70,12 +70,11 @@
     }
   </script>
 </div>
-<br>
+
 <div style="width: 100%; height: 1px; visibility: visible; border-bottom: 1px solid rgba(55, 53, 47, 0.16);"></div>
-<br>
 
 <div class="w-1/2 m-auto">
-  <.simple_form let={f} for={@changeset} action={~p"/users/register"}>
+  <.simple_form :let={f} for={@changeset} action={~p"/users/register"}>
     <div class="alert alert-danger" :if={@changeset.action}>
       <p>Oops, something went wrong! Please check the errors below.</p>
     </div>

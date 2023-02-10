@@ -6,19 +6,19 @@ defmodule PhosWeb.UserRegistrationLive do
 
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-sm">
+    <div class="flex flex-col h-screen  justify-center items-center">
       <.header class="text-center">
-        Register for an account
+      Join the Tribe!
         <:subtitle>
-          Already registered?
+        Already have an account?
           <.link navigate={~p"/users/log_in"} class="font-semibold text-brand hover:underline">
             Sign in
           </.link>
-          to your account now.
+          here.
         </:subtitle>
       </.header>
 
-      <.simple_form
+      <.simple_form class="w-96 p-4"
         :let={f}
         id="registration_form"
         for={@changeset}
@@ -33,21 +33,24 @@ defmodule PhosWeb.UserRegistrationLive do
           Oops, something went wrong! Please check the errors below.
         </.error>
 
+        <.input field={{f, :return_to}} type="hidden" value={@return_to} />
         <.input field={{f, :email}} type="email" label="Email" required />
         <.input field={{f, :username}} label="Username" required />
         <.input field={{f, :password}} type="password" label="Password" required />
 
         <:actions>
-          <.button phx-disable-with="Creating account..." class="w-full">Create an account</.button>
+          <.button phx-disable-with="Creating account..." class="w-full" type="submit">Create account</.button>
         </:actions>
       </.simple_form>
     </div>
     """
   end
 
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     changeset = Users.change_user_registration(%User{})
-    socket = assign(socket, changeset: changeset, trigger_submit: false)
+    socket = 
+      assign(socket, changeset: changeset, trigger_submit: false)
+      |> assign_new(:return_to, fn -> Map.get(params, "return_to") end)
     {:ok, socket, temporary_assigns: [changeset: nil]}
   end
 

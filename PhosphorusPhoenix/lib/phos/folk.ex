@@ -263,6 +263,7 @@ defmodule Phos.Folk do
     query = from r in RelationBranch,
       where: not is_nil(r.completed_at) and r.user_id == ^user_id,
       inner_join: friend in assoc(r, :friend),
+      distinct: friend.integrations["fcm_token"],
       select: friend.integrations
 
     Repo.all(query)
@@ -272,7 +273,7 @@ defmodule Phos.Folk do
 
   def feeds(user_id) do
     friends_lite(user_id)
-    #|> Kernel.++([user_id])
+    |> Kernel.++([user_id])
     |> do_get_feeds()
   end
 

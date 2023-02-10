@@ -31,7 +31,7 @@
         <%= Timex.format!(orb.inserted_at, "{D} {Mshort} {YY} {h24}:{m}") %>
       </:col>
     </.table>
-    <!--<div class="hidden px-4 py-3 w-full sm:flex sm:flex-1 sm:items-center sm:justify-between">
+    <div class="hidden px-4 py-3 w-full sm:flex sm:flex-1 sm:items-center sm:justify-between">
       <.live_component
         module={PhosWeb.Components.Pagination}
         limit={@limit}
@@ -40,6 +40,6 @@
         route_path={~p"/admin/orbs"}
         current={@current}
       />
-    </div>-->
+    </div>
   </.card>
 </div>

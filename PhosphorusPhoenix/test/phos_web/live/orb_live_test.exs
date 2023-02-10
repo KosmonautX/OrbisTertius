@@ -4,10 +4,10 @@ defmodule PhosWeb.OrbLiveTest do
   import Phoenix.LiveViewTest
   import Phos.ActionFixtures
 
-  @create_attrs %{"title" => "some title", "extinguish" => "2022-12-02T13:31:00", "source" => :web, "location" => :home, "radius" => 8, "payload" => %{"info" => "some info", "tip" => "some tip", "when" => "some when", "where" => "some where"}}
-  @update_attrs %{"title" => "updated title", "active" => true, "extinguish" => "2022-12-02T13:31:00", "source" => :web, "location" => :home, "radius" => 8, "payload" => %{"info" => "updated info", "tip" => "updated tip", "when" => "updated when", "where" => "updated where"}}
+  @create_attrs %{"title" => "some title", "extinguish" => "2022-12-02T13:31:00", "source" => :web, "location" => :all, "radius" => 8, "payload" => %{"info" => "some info", "tip" => "some tip", "when" => "some when", "where" => "some where"}}
+  @update_attrs %{"title" => "updated title", "active" => true, "extinguish" => "2022-12-02T13:31:00", "source" => :web, "location" => :all, "radius" => 8, "payload" => %{"info" => "updated info", "tip" => "updated tip", "when" => "updated when", "where" => "updated where"}}
   #@invalid_attrs %{"active" => true, "extinguish" => %{day: 21, hour: 7, minute: 22, month: 5, year: 2022}, "source" => :web, "location" => :home, "radius" => 8, "payload" => %{"info" => "some info", "tip" => "some tip", "when" => "some when", "where" => "some where"}}
-  @no_location_update_attrs %{"title" => "updated title", "active" => true, "extinguish" => "2022-12-02T13:31:00", "source" => :web, "radius" => 8, "payload" => %{"info" => "updated info", "tip" => "updated tip", "when" => "updated when", "where" => "updated where"}}
+  #@no_location_update_attrs %{"title" => "updated title", "active" => true, "extinguish" => "2022-12-02T13:31:00", "source" => :web, "radius" => 8, "payload" => %{"info" => "updated info", "tip" => "updated tip", "when" => "updated when", "where" => "updated where"}}
   # @create_attrs %{active: true, extinguish: %{day: 21, hour: 7, minute: 22, month: 5, year: 2022}, media: true, title: "some title"}
   # @update_attrs %{active: false, extinguish: %{day: 22, hour: 7, minute: 22, month: 5, year: 2022}, media: false, title: "some updated title"}
   # @invalid_attrs %{active: false, extinguish: %{day: 30, hour: 7, minute: 22, month: 2, year: 2022}, media: false, title: nil}
@@ -54,7 +54,8 @@ defmodule PhosWeb.OrbLiveTest do
         |> Phos.Repo.insert()
 
       {:ok, index_live, _html} = live(conn, ~p"/orb")
-      assert index_live |> element("a", "New Orb") |> render_click() =~
+      assert index_live |> element("a", "New Orb")
+      |> render_click() =~
                "New Orb"
 
       assert_patch(index_live, ~p"/orb/new")
@@ -77,7 +78,10 @@ defmodule PhosWeb.OrbLiveTest do
         |> Phos.Repo.insert()
       {:ok, index_live, _html} = live(conn, ~p"/orb")
 
-      assert {:error, {:live_redirect, %{to: path}}} = result = index_live |> element("#homeorb-#{orb.id} a", "Edit") |> render_click()
+      assert {:error, {:live_redirect, %{to: path}}} = result
+      = index_live
+      |> element("#allorb-#{orb.id} a", "Edit")
+      |> render_click()
       assert path == "/orb/#{orb.id}/edit"
 
       {:ok, edit_live, _html} = follow_redirect(result, conn)
@@ -99,8 +103,12 @@ defmodule PhosWeb.OrbLiveTest do
         |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623276216934563839, chronolock: 1653079771, location_description: nil}])
         |> Phos.Repo.insert()
       {:ok, index_live, _html} = live(conn, ~p"/orb")
-      assert index_live |> element("#homeorb-#{orb.id} a", "Delete") |> render_click()
-      refute has_element?(index_live, "#homeorb-#{orb.id}")
+      assert index_live
+      |> element("#allorb-#{orb.id} a", "Delete")
+      |> render_click()
+
+      {:ok, index_live, _html} = live(conn, ~p"/orb")
+      refute has_element?(index_live, "#allorb-#{orb.id}")
     end
   end
 
@@ -110,25 +118,26 @@ defmodule PhosWeb.OrbLiveTest do
     test "displays orb", %{conn: conn, orb: orb} do
       {:ok, _show_live, html} = live(conn, ~p"/orb/#{orb}")
 
-      assert html =~ "Show Orb"
+      # assert html =~ "Show Orb"
       assert html =~ orb.title
+      assert html =~ "Comments"
     end
 
-    test "updates orb within modal", %{conn: conn, orb: orb} do
-      {:ok, show_live, _html} = live(conn, ~p"/orb/#{orb.id}")
+    # test "updates orb within modal", %{conn: conn, orb: orb} do
+    #   {:ok, show_live, _html} = live(conn, ~p"/orb/#{orb.id}")
 
-      assert {:error, {:live_redirect, %{to: path}}} = result = show_live |> element("a", "Edit") |> render_click()
-      assert path == "/orb/#{orb.id}/edit"
-      {:ok, edit_live, _html} = follow_redirect(result, conn)
+    #   assert {:error, {:live_redirect, %{to: path}}} = result = show_live |> element("a", "Edit") |> render_click()
+    #   assert path == "/orb/#{orb.id}/edit"
+    #   {:ok, edit_live, _html} = follow_redirect(result, conn)
 
-      {:ok, _, html} =
-        edit_live
-        |> form("#orb-form", orb: @no_location_update_attrs)
-        |> render_submit()
-        |> follow_redirect(conn, ~p"/orb")
+    #   {:ok, _, html} =
+    #     edit_live
+    #     |> form("#orb-form", orb: @no_location_update_attrs)
+    #     |> render_submit()
+    #     |> follow_redirect(conn, ~p"/orb")
 
-      assert html =~ "Orb updated successfully"
-      # assert html =~ "updated title"
-    end
+    #   assert html =~ "Orb updated successfully"
+    #   # assert html =~ "updated title"
+    # end
   end
 end

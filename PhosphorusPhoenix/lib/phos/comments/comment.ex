@@ -25,12 +25,14 @@ defmodule Phos.Comments.Comment do
     comment
       |> cast(attrs, [:id, :body, :path, :active, :orb_id, :initiator_id, :parent_id])
       |> validate_required([:id, :body, :path, :orb_id, :initiator_id])
+      |> validate_length(:body, min: 1)
   end
 
   def changeset_edit(comment, attrs) do
     comment
     |> cast(attrs, [:id, :body, :path, :active])
     |> validate_required([:id, :body, :path, :orb_id, :initiator_id])
+    |> validate_length(:body, min: 1)
   end
 
 end

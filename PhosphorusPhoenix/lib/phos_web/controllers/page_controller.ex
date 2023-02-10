@@ -14,4 +14,8 @@ defmodule PhosWeb.PageController do
   def agent(conn, _params) do
     render(conn, :agent)
   end
+
+  def welcome(conn, _params) do
+    render(conn, :welcome)
+  end
 end

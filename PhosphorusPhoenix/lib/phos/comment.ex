@@ -41,24 +41,38 @@ defmodule Phos.Comments do
     |> Repo.insert()
     |> case do
          {:ok, %{parent_id: p_id} = comment} = data when not is_nil(p_id)->
-           comment = comment |> Repo.preload([:initiator, :parent])
-           spawn(fn ->
-             Phos.Notification.target("'USR.#{comment.parent.initiator_id}' in topics",
-               %{title: "#{comment.initiator.username} replied",
-                 body: comment.body
-               },
-               %{action_path: "/comland/comments/root/#{comment.id}"})
-            end)
+           comment = comment |> Repo.preload([:initiator, :parent, :orb])
+           if comment.parent.initiator_id !== comment.initiator.id do
+             spawn(fn ->
+               Phos.Notification.target("'USR.#{comment.parent.initiator_id}' in topics",
+                 %{title: "#{comment.initiator.username} replied",
+                   body: comment.body
+                 },
+                 %{action_path: "/comland/comments/children/#{comment.id}"})
+             end)
+           end
+
+           if comment.orb.initiator_id not in [comment.initiator.id, comment.parent.initiator_id] do
+             spawn(fn ->
+               Phos.Notification.target("'USR.#{comment.orb.initiator_id}' in topics",
+                 %{title: "#{comment.initiator.username} replied to a comment within your post",
+                   body: comment.body
+                 },
+                 %{action_path: "/comland/comments/children/#{comment.id}"})
+             end)
+           end
            data
-        {:ok, %{orb_id: _o_id} = comment} = data ->
+         {:ok, %{orb_id: _o_id} = comment} = data ->
            comment = comment |> Repo.preload([:orb, :initiator])
-           spawn(fn ->
-             Phos.Notification.target("'USR.#{comment.orb.initiator_id}' in topics",
-               %{title: "#{comment.initiator.username} replied",
-                 body: comment.body
-               },
-               %{action_path: "/comland/comments/children/#{comment.id}"})
-           end)
+           if comment.orb.initiator_id !== comment.initiator.id do
+             spawn(fn ->
+               Phos.Notification.target("'USR.#{comment.orb.initiator_id}' in topics",
+                 %{title: "#{comment.initiator.username} replied",
+                   body: comment.body
+                 },
+                 %{action_path: "/comland/comments/root/#{comment.id}"})
+             end)
+           end
            data
          err -> err
        end
@@ -277,4 +291,19 @@ defmodule Phos.Comments do
     Comment.changeset(comment, attrs)
   end
 
+  def filter_root_comments_chrono(comments) do
+    comments
+    |> Enum.filter(&match?({{_}, _}, &1))
+    |> sort_comments_chrono()
+  end
+
+  def filter_child_comments_chrono(comments, comment) do
+    comments
+    |> Enum.filter(fn i -> elem(i, 1).parent_id == elem(comment, 1).id end)
+    |> sort_comments_chrono()
+  end
+
+  defp sort_comments_chrono(comments) do
+    Enum.sort_by(comments, &elem(&1, 1).inserted_at, :desc)
+  end
 end

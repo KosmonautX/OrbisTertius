@@ -13,7 +13,7 @@ services:
     env_file:
       - .env
     environment:
-      PGDOMAIN="postgres"
+      PGDOMAIN: postgres
     networks:
       - postgres
     depends_on:
