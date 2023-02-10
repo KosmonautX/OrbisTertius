@@ -1261,20 +1261,22 @@ defmodule PhosWeb.CoreComponents do
   """
   attr(:id, :string, required: true)
   attr(:title, :string)
+  attr(:info_color, :string, default: "text-gray-900")
 
   def orb_information(assigns) do
     ~H"""
     <p
       id={"#{@id}-info"}
-      class="text-sm text-gray-900 font-normal p-2 dark:text-white lg:text-lg lg:font:medium"
+      class={["text-sm font-normal p-2 dark:text-white lg:text-lg lg:font:medium", @info_color]}
     >
       <%= @title %>
     </p>
     """
   end
 
-  attr(:orb, :any)
   attr(:id, :string, required: true)
+  attr(:orb, :any)
+  attr(:timezone, :string)
 
   def orb_video(assigns) do
     ~H"""
@@ -1288,35 +1290,59 @@ defmodule PhosWeb.CoreComponents do
           <source src="/images/WhatsApp Video 2022-12-26 at 8.32.21 AM.mp4" type="video/mp4" />
         </video>
 
-        <div class="absolute inset-y-0 bottom-0 p-2 w-full flex items-end ">
-          <p class="flex-1 text-white text-sm font-extrabold">
-            <%= "#{@orb.title}" %>
-          </p>
+        <div class="absolute bottom-0 p-2 w-full flex flex-col ">
+          <.orb_information
+            id={"#{@id}-scry-orb-#{@orb.id}"}
+            title={@orb.title}
+            info_color="text-white"
+          />
+          <div class="items-end">
+            <.orb_action
+              :if={@orb.media}
+              id={"#{@id}-scry-orb-#{@orb.id}"}
+              orb={@orb}
+              date={@timezone}
+              main_color="text-white"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
 
-          <div id={"#{@id}-actions"} class="space-y-4 text-white font-extrabold  text-center text-sm">
-            <div class="flex flex-col">
-              <Heroicons.heart class="stroke-white w-8 h-8" />
-              <span>2K</span>
-            </div>
+  attr(:id, :string, required: true)
+  attr(:orb, :any)
+  attr(:timezone, :string)
 
-            <div class="flex flex-col">
-              <Heroicons.chat_bubble_oval_left_ellipsis class="stroke-white w-8 h-8" />
-              <span><%= @orb.comment_count %></span>
-            </div>
+  def orb_image(assigns) do
+    ~H"""
+    <div class="w-full flex items-center justify-center lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md lg:dark:bg-gray-700 dark:border-gray-700">
+      <div class="relative">
+        <img src="/images/default_banner.jpg" />
 
-            <div class="flex flex-col">
-              <button
-                id={"#{@id}-sharebtn"}
-                phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
-                class="text-center inline-flex items-center"
-              >
-                <div id={"#{@id}-copylink"} class="hidden">
-                  <%= PhosWeb.Endpoint.host() <>
-                    path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %>
-                </div>
-                <Heroicons.share class="-ml-1 w-6 h-6" />
-              </button>
-            </div>
+        <div class="absolute bottom-0 p-2 w-full flex flex-col ">
+          <.link
+            :if={@orb.media}
+            id={"#{@id}-scry-orb-#{@orb.id}-link"}
+            class="relative"
+            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
+          >
+            <.orb_information
+              id={"#{@id}-scry-orb-#{@orb.id}"}
+              title={@orb.title}
+              info_color="text-white"
+            />
+          </.link>
+
+          <div class="items-end">
+            <.orb_action
+              :if={@orb.media}
+              id={"#{@id}-scry-orb-#{@orb.id}"}
+              orb={@orb}
+              date={@timezone}
+              main_color="text-white"
+            />
           </div>
         </div>
       </div>
@@ -1327,13 +1353,14 @@ defmodule PhosWeb.CoreComponents do
   attr(:id, :string, required: true)
   attr(:orb, :any)
   attr(:date, :string)
+  attr(:main_color, :string, default: "text-gray-600")
 
   # TODO orb_actions wiring with data
   def orb_action(assigns) do
     ~H"""
     <div
       id={"#{@id}-actions"}
-      class="flex justify-between p-2 w-full font-bold text-sm text-gray-600 "
+      class={["flex justify-between p-2 w-full font-bold text-sm", @main_color]}
     >
       <div>
         <span class="dark:text-white lg:text-base lg:font-bold">
