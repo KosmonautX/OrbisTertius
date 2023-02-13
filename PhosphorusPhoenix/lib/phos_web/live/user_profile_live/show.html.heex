@@ -58,7 +58,11 @@
       </ul>
     </div>
 
-    <div id="ally_list" class=" w-full max-w-full px-3 mt-2 lg:w-5/12 lg:flex-none">
+    <div id="ally_list" class={[
+      "w-full max-w-full px-3 mt-2 lg:w-5/12 lg:flex-none",
+      @live_action == :allies && "block",
+      @live_action != :allies && "hidden md:block"
+    ]}>
       <h5 class="lg:block hidden text-left font-semibold text-lg py-1 px-2 p-4 dark:text-white">
         Allies
       </h5>
@@ -68,8 +72,7 @@
           module={PhosWeb.Components.ScrollAlly}
           id="infinite-home"
           ally_list={@ally_list}
-          page={@page}
-        />
+          page={@page} />
       </div>
     </div>
   </div>
