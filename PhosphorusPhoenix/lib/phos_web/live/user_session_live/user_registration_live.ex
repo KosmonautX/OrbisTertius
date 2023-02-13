@@ -50,7 +50,7 @@ defmodule PhosWeb.UserRegistrationLive do
     changeset = Users.change_user_registration(%User{})
     socket = 
       assign(socket, changeset: changeset, trigger_submit: false)
-      |> assign_new(:return_to, fn -> Map.get(params, "return_to") end)
+      |> assign_new(:return_to, fn -> Map.get(params, "return_to", ~p"/welcome") end)
     {:ok, socket, temporary_assigns: [changeset: nil]}
   end
 

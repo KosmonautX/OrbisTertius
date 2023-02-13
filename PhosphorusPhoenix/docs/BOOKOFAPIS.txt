@@ -62,6 +62,50 @@ POST :ipAddress/userland/auth/fyr/genesis
 GET :ipAddress/userland/self/
 :auth-headers
 
+## Register User via Email
+POST :ipAddress/userland/auth/email/register
+:auth-headers
+
+{
+    "email": "owenthe@bo.wen",
+    "password": "1234567890-="
+}
+
+## Login User via Email
+POST :ipAddress/userland/auth/email/login
+:auth-headers
+
+{
+    "email": "owenthe@bo.wen",
+    "password": "1234567890-="
+}
+
+## Login User via Email
+POST :ipAddress/userland/auth/email/confirm_email
+:auth-headers
+
+{
+    "token": "owenthe@bo.wen"
+}
+
+## Forgot password for bobos
+POST :ipAddress/userland/auth/email/forgot_password
+:auth-headers
+
+{
+    "email": "owenthe@bo.wen"
+}
+
+## Reset Password
+POST :ipAddress/userland/auth/email/reset_password
+:auth-headers
+
+{
+    "token": "I2PwCl1k0haElOuvaJSLCAuTpRQpguHCm0HeeHftghw",
+    "password": "1234567890-++",
+    "password_confirmation": "1234567890-++"
+}
+
 ## Update userdata of self
 PUT :ipAddress/userland/self/
 :auth-headers
