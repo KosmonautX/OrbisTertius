@@ -1085,8 +1085,8 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:id, :string, required: true)
   attr(:user, :any)
-  slot(:information)
   slot(:actions)
+  slot(:information)
 
   def user_info_bar(assigns) do
     ~H"""
@@ -1156,10 +1156,13 @@ defmodule PhosWeb.CoreComponents do
       uuid={@orb.id}
       path="public/banner"
       id={"#{@id}-scry-orb-#{@orb.id}"}
-    />
+      orb={@orb}
+      timezone={@timezone}
+        />
+
 
     <.link
-      :if={@orb.media}
+      :if={!@orb.media}
       id={"#{@id}-scry-orb-#{@orb.id}-link"}
       class="relative"
       navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
@@ -1167,7 +1170,7 @@ defmodule PhosWeb.CoreComponents do
       <.orb_information id={"#{@id}-scry-orb-#{@orb.id}"} title={@orb.title} />
     </.link>
 
-    <.orb_action :if={@orb.media} id={"#{@id}-scry-orb-#{@orb.id}"} orb={@orb} date={@timezone} />
+    <.orb_action :if={!@orb.media} id={"#{@id}-scry-orb-#{@orb.id}"} orb={@orb} date={@timezone} />
     </div>
     """
   end
@@ -1177,10 +1180,13 @@ defmodule PhosWeb.CoreComponents do
    User Post Image
    Desktop View
   """
+
   attr(:id, :string, required: true)
   attr(:archetype, :string, required: true)
   attr(:uuid, :string, required: true)
   attr(:path, :string)
+  attr(:orb, :any)
+  attr(:timezone, :string)
 
   def media_carousel(assigns) do
     assigns =
@@ -1188,33 +1194,60 @@ defmodule PhosWeb.CoreComponents do
       |> assign(
         :media,
         Phos.Orbject.S3.get_all!(assigns.archetype, assigns.uuid, assigns.path || "")
-        |> then(fn x ->
-          if is_map(x) do
-            Enum.group_by(x, fn
-              {path, _url} ->
-                String.split(path, ".")
-                |> List.first()
-                |> String.split("/")
-                |> List.last()
-            end)
-            |> Map.get("lossless", nil)
-          end
-        end)
-      )
-
-    # TODO implement lossless lazyloading logic
+        |> (fn media ->
+        (for {path, url} <- media do
+        %Phos.Orbject.Structure.Media{
+        ext: MIME.from_path(path),
+        path: path,
+        url: url,
+        resolution: path |> String.split(".") |> hd() |> String.split("/") |> List.last()
+        } end) end).()
+        |> Enum.filter(fn m -> m.resolution == "lossless" end))
 
     ~H"""
     <div :if={!is_nil(@media)} id={"#{@id}-carousel-wrapper"}>
       <section class="glide" id={"#{@id}-carousel"} phx-update="ignore" phx-hook="Carousel">
         <div id={"#{@id}-container"} data-glide-el="track" class="glide__track relative">
           <div class="glide__slides">
-            <div :for={{path, src} <- @media} class="glide__slide">
-              <img
-                id={"#{@id}-carousell-media-#{path}"}
-                class="object-cover md:inset-0 md:h-96 h-80 w-full"
-                src={src}
-                loading="lazy"
+            <div :for={m <- @media} class="glide__slide">
+              <div  class="w-full flex items-center justify-center lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md lg:dark:bg-gray-700 dark:border-gray-700 ">
+                <div class="relative bg-gradient-to-b from-gray-50 to-stone-400 opacity-80">
+                  <img :if={(m.ext |> String.split("/") |> hd) in ["image", "application"]}
+                       src={m.url}
+                       loading="lazy"/>
+                  <video
+                    :if={(m.ext |> String.split("/") |> hd) in ["video"]}
+                    class="object-cover object-fit lg:dark:bg-gray-700 dark:border-gray-700"
+                    autoplay
+                    loop
+                  >
+                    <source src={m.url}
+                            type={m.ext} />
+                  </video>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="absolute bottom-0 p-2 w-full flex flex-col ">
+            <.link
+            :if={@orb.media}
+            id={"#{@id}-link-#{@orb.id}"}
+            class="relative"
+            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}>
+            <.orb_information
+            id={"#{@id}-orb-info-#{@orb.id}"}
+            title={@orb.title}
+            info_color="text-white"
+            />
+            </.link>
+            <.chip emoji={[%{sticker: "😊", count: "20"}, %{sticker: "❤️", count: "60"},%{sticker: "🥹", count: "50"}, %{sticker: "🫠", count: "30"}, ]}/>
+            <div class="items-end">
+              <.orb_action
+              :if={@orb.media}
+              id={"#{@id}-scry-orb-#{@orb.id}"}
+              orb={@orb}
+              date={@timezone}
+              main_color="text-white"
               />
             </div>
           </div>
@@ -1279,82 +1312,6 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:id, :string, required: true)
   attr(:orb, :any)
-  attr(:timezone, :string)
-
-  def orb_video(assigns) do
-    ~H"""
-    <div class="w-full flex items-center justify-cente lg:dark:bg-gray-700 dark:border-gray-700">
-      <div class="relative bg-gradient-to-b from-gray-50 to-stone-400 opacity-80">
-        <video
-          class="object-cover object-fit lg:dark:bg-gray-700 dark:border-gray-700   "
-          autoplay
-          muted>
-          <source src="/images/WhatsApp Video 2022-12-26 at 8.32.21 AM.mp4" type="video/mp4" />
-        </video>
-
-        <div class="absolute bottom-0 w-full flex flex-col ">
-          <.orb_information
-            id={"#{@id}-scry-orb-#{@orb.id}"}
-            title={@orb.title}
-            info_color="text-white"
-          />
-
-
-          <.chip emoji={[%{sticker: "😊", count: "20"}, %{sticker: "❤️", count: "60"},%{sticker: "🥹", count: "50"}, %{sticker: "🫠", count: "30"}, ]}/>
-          <div class="items-end">
-            <.orb_action
-              :if={@orb.media}
-              id={"#{@id}-scry-orb-#{@orb.id}"}
-              orb={@orb}
-              date={@timezone}
-              main_color="text-white"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-    """
-  end
-
-  attr(:id, :string, required: true)
-  attr(:orb, :any)
-  attr(:timezone, :string)
-
-  def orb_image(assigns) do
-    ~H"""
-    <div class="w-full flex items-center justify-center lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md lg:dark:bg-gray-700 dark:border-gray-700 ">
-      <div class="relative bg-gradient-to-b from-gray-50 to-stone-400 opacity-80">
-        <img src="https://assets.ajio.com/medias/sys_master/root/20220523/by45/628b9b8daeb26921afc8d106/-473Wx593H-461344541-white-MODEL.jpg" />
-
-        <div class="absolute bottom-0 p-2 w-full flex flex-col ">
-          <.link
-            :if={@orb.media}
-            id={"#{@id}-scry-orb-#{@orb.id}-link"}
-            class="relative"
-            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}>
-            <.orb_information
-              id={"#{@id}-scry-orb-#{@orb.id}"}
-              title={@orb.title}
-              info_color="text-white"
-            />
-          </.link>
-          <.chip emoji={[%{sticker: "😊", count: "20"}, %{sticker: "❤️", count: "60"},%{sticker: "🥹", count: "50"}, %{sticker: "🫠", count: "30"}, ]}/>          <div class="items-end">
-            <.orb_action
-              :if={@orb.media}
-              id={"#{@id}-scry-orb-#{@orb.id}"}
-              orb={@orb}
-              date={@timezone}
-              main_color="text-white"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-    """
-  end
-
-  attr(:id, :string, required: true)
-  attr(:orb, :any)
   attr(:date, :string)
   attr(:main_color, :string, default: "text-gray-600")
 
@@ -1381,7 +1338,6 @@ defmodule PhosWeb.CoreComponents do
           </div>
           <.comment_share type="share" class="ml-2 fill-white"></.comment_share> <span class="ml-1">11</span></button>
         <.link
-          :if={@orb.media}
           id={"#{@id}-scry-orb-#{@orb.id}-link"}
           class="relative"
           navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
@@ -1590,11 +1546,9 @@ defmodule PhosWeb.CoreComponents do
       </div>
 
       <div :if={@show_location} class="space-y-1">
-        <div class="flex items-center space-x-2">
-          <div
-            :for={location <- @locations}
-            class="flex items-center bg-white  text-black px-2 py-2 rounded-full md:text-base text-sm font-bold transition duration-100"
-          >
+        <div class="flex justify-evenly">
+          <div :for={location <- @locations}
+            class="flex items-center bg-white  text-black px-2 py-2 rounded-full md:text-base text-sm font-bold transition duration-100">
             <.location type="button" class="h-8 ml-4 dark:fill-white"></.location>
             <span class="ml-1"><%= location %></span>
           </div>

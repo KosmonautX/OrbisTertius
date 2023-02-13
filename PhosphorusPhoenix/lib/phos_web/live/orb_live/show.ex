@@ -119,12 +119,23 @@ defmodule PhosWeb.OrbLive.Show do
   end
 
   defp assign_meta(socket, orb) do
+
+    media = Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless")
+        |> (fn media ->
+        (for {path, url} <- media || [] do
+        %Phos.Orbject.Structure.Media{
+        ext: MIME.from_path(path) |> String.split("/") |> hd,
+        url: url
+        } end) end).()
+        |> List.first()
+
     assign(socket, :meta, %{
       title: " #{orb.title} by #{orb.initiator.username}",
       description:
         "#{get_in(orb, [Access.key(:payload, %{}), Access.key(:info, "")])} #{orb |> get_in([Access.key(:payload, %{}), Access.key(:inner_title, "-")])}",
       type: "website",
-      image: Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless"),
+      image: (if (!is_nil(media) && media.ext in ["application", "image"]), do: media.url),
+      video: (if (!is_nil(media) && media.ext in ["video"]), do: media.url),
       url: url(socket, ~p"/orb/#{orb}")
     })
   end

@@ -18,6 +18,7 @@ defmodule Phos.Orbject.Structure do
       field(:count, :integer)
       field(:ext, :string)
       field(:path, :string)
+      field(:url, :string)
     end
   end
 
