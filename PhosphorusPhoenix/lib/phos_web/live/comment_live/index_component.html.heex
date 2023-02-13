@@ -1,7 +1,7 @@
-<div class="w-full">
+<div class="w-full ">
   <h2 class="text-base text-gray-900 font-bold lg:text-lg dark:text-white">Comments</h2>
   <hr class="h-px bg-gray-900 border" />
-  <div class="ui threaded comments overflow-y-auto md:h-44 h-52">
+  <div class="ui threaded comments overflow-y-auto lg:h-60 h-96 ">
     <.live_component
       :for={comment <- filter_root_comments_chrono(@comments)}
       module={PhosWeb.CommentLive.ShowComponent}
@@ -15,15 +15,5 @@
       reply_comment={@reply_comment}
       edit_comment={@edit_comment}
       phx-target={"#comment-#{elem(comment, 1).id}"}/>
-  </div>
-
-  <div :if={not is_nil(@current_user)}>
-      <.live_component module={PhosWeb.CommentLive.FormComponent}
-        changeset={@changeset}
-        current_user={@current_user}
-        orb={@orb}
-        id={"create-root-comment-#{@orb.id}"}
-        target={nil}
-        action={:new} />
   </div>
 </div>
