@@ -11,10 +11,7 @@ defmodule PhosWeb.AllyButton do
         end
       end)
       |> assign_new(:ally, fn ->
-        IO.inspect(curr)
-        IO.inspect(user)
         ally_status(Map.get(curr, :id), user.id)
-        |> IO.inspect()
       end)
     }
   end
