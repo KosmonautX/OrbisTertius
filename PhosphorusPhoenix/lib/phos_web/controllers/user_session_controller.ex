@@ -18,13 +18,11 @@ defmodule PhosWeb.UserSessionController do
     |> create(params, "Password updated successfully!")
   end
 
-  def create(conn, %{"user" => user_params} = _params, info \\ "Welcome back!") do
-    %{"email" => email, "password" => password} = user_params
-
+  def create(conn, %{"user" => %{"email" => email, "password" => password} = emailnpassword} = _params, info \\ "Welcome back!") do
     if user = Users.get_user_by_email_and_password(email, password) do
       conn
       |> put_flash(:info, info)
-      |> Gate.log_in_user(user, user_params)
+      |> Gate.log_in_user(user, emailnpassword)
     else
       # In order to prevent user enumeration attacks, don't disclose whether the email is registered.
       conn

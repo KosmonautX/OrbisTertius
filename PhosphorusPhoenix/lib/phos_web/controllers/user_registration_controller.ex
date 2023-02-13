@@ -3,7 +3,6 @@ defmodule PhosWeb.UserRegistrationController do
 
   alias Phos.Users
   alias Phos.Users.User
-  alias PhosWeb.UserAuth
 
   def new(conn, _params) do
     changeset = Users.change_user_registration(%User{})
@@ -21,7 +20,7 @@ defmodule PhosWeb.UserRegistrationController do
 
         conn
         |> put_flash(:info, "User created successfully.")
-        |> UserAuth.log_in_user(user)
+        |> PhosWeb.Menshen.Gate.log_in_user(user)
 
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, :new, changeset: changeset, telegram: Phos.OAuthStrategy.telegram())
