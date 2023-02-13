@@ -5,7 +5,7 @@ defmodule PhosWeb.API.AuthNEmailController do
 
   plug :put_view, json: PhosWeb.API.AuthNEmailJSON
 
-  def login(%Plug.Conn{assigns: %{current_user: anon}} = conn, %{"email" => email, "password" => password}) do
+  def login(%Plug.Conn{assigns: %{current_user: _anon}} = conn, %{"email" => email, "password" => password}) do
     with %Users.User{fyr_id: fyr_id} = user <- Users.get_user_by_email_and_password(email, password),
          token <- Phos.External.GoogleIdentity.gen_customToken(fyr_id) do
 
@@ -34,7 +34,11 @@ defmodule PhosWeb.API.AuthNEmailController do
   def forgot_password(conn, %{"email" => email}) do
     if user = Users.get_user_by_email(email) do
       # Build your token url here...
-      Users.deliver_user_reset_password_instructions(user, fn token -> "#{token}" end)
+      Users.deliver_user_reset_password_instructions(
+        user,
+        &url(~p"/users/reset_password/#{&1}")
+      )
+      #Users.deliver_user_reset_password_instructions(user, fn token -> "#{token}" end)
     end
 
     # Render the same view to prevent enumeration attacks.
@@ -42,15 +46,18 @@ defmodule PhosWeb.API.AuthNEmailController do
   end
 
   def reset_password(conn, %{
+        "token" => token,
         "password" => password,
         "password_confirmation" => password_confirmation
       }) do
-    Users.reset_user_password(conn.assigns.user, %{
-      password: password,
-      password_confirmation: password_confirmation
-    })
 
-    render(conn, "reset_password.json")
+    with user = %Users.User{id: _} <- Users.get_user_by_reset_password_token(token),
+         {:ok, _} <- Users.reset_user_password(user, %{password: password, password_confirmation: password_confirmation}) do
+      render(conn, "reset_password.json")
+    else
+      {:error, reason} -> {:error, reason}
+      _ -> {:error, :unprocessable_entity}
+    end
   end
 
   def confirm_email(conn, %{"token" => token}) do

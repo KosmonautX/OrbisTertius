@@ -9,7 +9,9 @@ defmodule PhosWeb.UserSessionController do
   end
 
   def create(conn, %{"_action" => "registered"} = params) do
-    create(conn, params, "Welcome to Scratchbac!")
+    conn
+    #|> put_session(:user_return_to, ~p"/welcome")
+    |> create(params, "Welcome to Scratchbac!")
   end
 
   def create(conn, %{"_action" => "password_updated"} = params) do
