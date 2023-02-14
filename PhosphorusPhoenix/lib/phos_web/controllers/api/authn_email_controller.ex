@@ -5,23 +5,26 @@ defmodule PhosWeb.API.AuthNEmailController do
 
   plug :put_view, json: PhosWeb.API.AuthNEmailJSON
 
-  def login(%Plug.Conn{assigns: %{current_user: _anon}} = conn, %{"email" => email, "password" => password}) do
-    with %Users.User{fyr_id: fyr_id} = user <- Users.get_user_by_email_and_password(email, password),
+  def login(%Plug.Conn{assigns: %{current_user: anon}} = conn, %{"email" => email, "password" => password}) do
+    with %Users.User{fyr_id: fyr_id} = user when not is_nil(fyr_id) <- Users.get_user_by_email_and_password(email, password),
          token <- Phos.External.GoogleIdentity.gen_customToken(fyr_id) do
 
       render(conn, :login, user: user, token: token)
     else
-      %Users.User{email: ^email} = _user ->
-        # no fyr_id yet path
-        IO.inspect("Untie his fyr_id from current_user")
+      %Users.User{email: ^email} = fyring_user ->
+        with %Users.User{email: nil, fyr_id: fyr_id} <- anon,
+             :ok <- Users.migrate_fyr_user(anon, fyring_user),
+               token <- Phos.External.GoogleIdentity.gen_customToken(fyr_id) do
+          render(conn, :login, user: fyring_user, token: token)
+        end
 
       _ -> {:error, :unprocessable_entity}
     end
   end
 
-  def register(%Plug.Conn{assigns: %{current_user: anon}} = conn, %{"email" => email, "password" => _password} =params) do
+  def register(%Plug.Conn{assigns: %{current_user: anon}} = conn, %{"email" => email, "password" => _password} = params) do
     with {:ok, user} <- Users.claim_anon_user(anon, params),
-      Phos.External.GoogleIdentity.link_email(anon.fyr_id, email) do
+         Phos.External.GoogleIdentity.link_email(anon.fyr_id, email) do
 
       Users.deliver_user_confirmation_instructions(user, fn token -> "#{token}" end)
 

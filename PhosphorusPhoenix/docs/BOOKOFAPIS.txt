@@ -77,7 +77,7 @@ POST :ipAddress/userland/auth/email/login
 
 {
     "email": "owenthe@bo.wen",
-    "password": "1234567890-="
+    "password": "1234567890-++"
 }
 
 ## Login User via Email
