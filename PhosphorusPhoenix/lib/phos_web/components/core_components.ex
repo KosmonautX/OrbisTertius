@@ -1209,16 +1209,15 @@ defmodule PhosWeb.CoreComponents do
       )
 
     ~H"""
-    <div :if={!is_nil(@media)} id={"#{@id}-carousel-wrapper"} class="w-full">
+    <div :if={!is_nil(@media)} id={"#{@id}-carousel-wrapper"}>
       <section class="glide" id={"#{@id}-carousel"} phx-update="ignore" phx-hook="Carousel">
         <div id={"#{@id}-container"} data-glide-el="track" class="glide__track relative">
           <div class="glide__slides">
             <div :for={m <- @media} class="glide__slide">
-              <div class="w-full flex border border-gray-200 rounded-xl shadow-md dark:border-gray-700 items-center justify-center bg-red-200">
                 <div class="relative">
                   <img
                     :if={(m.ext |> String.split("/") |> hd) in ["image", "application"]}
-                    class=" w-full h-96  object-cover border-gray-200 border-b-0 rounded-b-xl shadow-md dark:border-gray-700"
+                    class="h-96 w-full object-cover border-gray-200 border-b-0 rounded-b-xl shadow-md dark:border-gray-700"
                     src={m.url}
                     loading="lazy"
                   />
@@ -1231,7 +1230,6 @@ defmodule PhosWeb.CoreComponents do
                     <source src={m.url} type={m.ext} />
                   </video>
                 </div>
-              </div>
             </div>
           </div>
           <div class="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-black/0 w-full flex flex-col border-b-0 rounded-b-xl border-gray-200 dark:border-gray-700
