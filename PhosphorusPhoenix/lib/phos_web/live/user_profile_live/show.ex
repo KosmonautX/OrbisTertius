@@ -13,7 +13,7 @@ defmodule PhosWeb.UserProfileLive.Show do
   end
 
   @impl true
-  def handle_params(%{"username" => username} = params, _url, %{assigns: %{current_user: current_user} = assigns} = socket) do
+  def handle_params(%{"username" => username} = params, _url, %{assigns: %{current_user: current_user}} = socket) do
     with %Users.User{} = user <- Users.get_user_by_username(username) do
     {:noreply, socket
       |> assign(:params, params)
@@ -39,7 +39,7 @@ defmodule PhosWeb.UserProfileLive.Show do
   end
 
   @impl true
-  def handle_event("load-more", _, %{assigns: %{current_user: user, page: page, ally_list: ally_list, user: friend} = assigns} = socket) do
+  def handle_event("load-more", _, %{assigns: %{current_user: user, page: page, ally_list: ally_list, user: friend}} = socket) do
     expected_page = page + 1
     {:noreply, assign(socket, page: expected_page, ally_list: ally_list ++ ally_list(user, friend, expected_page))}
   end
@@ -105,5 +105,6 @@ defmodule PhosWeb.UserProfileLive.Show do
         |> Enum.map(&Map.get(&1, :friend))
     end
   end
+  defp ally_list(nil, friend_id, page), do: Phos.Folk.friends(friend_id, page) |> Map.get(:data, []) |> Enum.map(&Map.get(&1, :friend))
   defp ally_list(_, _, _), do: []
 end
