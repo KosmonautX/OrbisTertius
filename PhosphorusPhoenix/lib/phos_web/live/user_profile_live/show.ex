@@ -58,59 +58,13 @@ defmodule PhosWeb.UserProfileLive.Show do
     end
   end
 
-  def handle_event("delete_ally_request", _, %{assigns: %{current_user: user, user: acceptor, socket: foreign_socket}} = socket) do
-    with %Phos.Users.RelationBranch{root: root} <- Phos.Folk.get_relation_by_pair(user.id, acceptor.id),
-         {:ok, _rel} <- Phos.Folk.delete_relation(root) do
-      PhosWeb.Endpoint.broadcast_from(foreign_socket.transport_pid, "folks", "delete", {user.id, acceptor.id})
-      {:noreply, 
-        socket
-        |> assign(ally: false)
-        |> put_flash(:danger, "Ally request deleted")}
-    else
-      {:error, changeset} ->
-        {:noreply, 
-          Enum.reduce(changeset.errors, socket, fn soc, {field, error} ->
-            put_flash(soc, :error, to_string(field) <> " " <> translate_error(error))
-          end)}
-      _ -> {:noreply, socket}
-    end
-  end
-
-  def handle_event("reject_ally_request", _, %{assigns: %{current_user: curr, user: user, socket: foreign_socket}} = socket) do
-    with %Phos.Users.RelationBranch{root: root} <- Phos.Folk.get_relation_by_pair(curr.id, user.id),
-         true <- root.acceptor_id == curr.id,
-         {:ok, _rel} <- Phos.Folk.update_relation(root, %{"state" => "blocked"}) do
-      PhosWeb.Endpoint.broadcast_from(foreign_socket.transport_pid, "folks", "reject", root.id)
-      {:noreply, 
-        socket
-        |> put_flash(:danger, "Success rejecting ally")}
-    else
-      {:error, changeset} ->
-        {:noreply, 
-          Enum.reduce(changeset.errors, socket, fn soc, {field, error} ->
-            put_flash(soc, :error, to_string(field) <> " " <> translate_error(error))
-          end)}
-      false -> {:noreply, put_flash(socket, :error, "Only acceptor can reject ally request")}
-      _ -> {:noreply, socket}
-    end
-  end
-
-  def handle_event("accept_ally_request", _, %{assigns: %{current_user: curr, user: user, socket: foreign_socket}} = socket) do
-    with %Phos.Users.RelationBranch{root: root} <- Phos.Folk.get_relation_by_pair(curr.id, user.id),
-         true <- root.acceptor_id == curr.id,
-         {:ok, _rel} <- Phos.Folk.update_relation(root, %{"state" => "completed"}) do
-      PhosWeb.Endpoint.broadcast_from(foreign_socket.transport_pid, "folks", "accept", root.id)
-      {:noreply, 
-        socket
-        |> put_flash(:info, "Success accepting ally")}
-    else
-      {:error, changeset} ->
-        {:noreply, 
-          Enum.reduce(changeset.errors, socket, fn soc, {field, error} ->
-            put_flash(soc, :error, to_string(field) <> " " <> translate_error(error))
-          end)}
-      false -> {:noreply, put_flash(socket, :error, "Only acceptor can reject ally request")}
-      _ -> {:noreply, socket}
+  @impl true
+  def handle_info(%Phoenix.Socket.Broadcast{topic: "folks", event: "delete", payload: {init_id, acc_id}}, %{assigns: %{current_user: user}} = socket) do
+    case init_id == user.id or acc_id == user.id do
+      true -> 
+        send_update(PhosWeb.AllyButton, id: "user_information_card_ally", related_users: %{receiver_id: init_id, sender_id: user.id})
+        {:noreply, put_flash(socket, :error, "Ally request is deleted") }
+        _ -> {:noreply, put_flash(socket, :info, "handle info not matched")}
     end
   end
 
