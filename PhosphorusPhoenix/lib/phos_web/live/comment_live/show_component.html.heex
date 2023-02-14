@@ -41,7 +41,7 @@
   <div class="content">
     <div :if={not is_nil(@current_user)}>
       <span class="flex justify-between text-sm font-bold text-gray-600 my-2 mx-2 dark:text-white">
-        <%= elem(@comment, 1).inserted_at %>
+        <%= Timex.from_now(elem(@comment, 1).inserted_at) %>
         <span class="text-sm font-bold text-teal-500 hover:text-teal-400 hover:underline lg:text-base">
           <.link
             href="#reply"
