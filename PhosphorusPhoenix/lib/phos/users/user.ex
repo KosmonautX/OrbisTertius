@@ -99,10 +99,8 @@ defmodule Phos.Users.User do
 
   def fyr_registration_changeset(%Phos.Users.User{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :fyr_id])
+    |> cast(attrs, [:fyr_id])
     |> validate_required(:fyr_id)
-    |> cast_embed(:public_profile)
-    |> validate_username()
     |> unique_constraint(:fyr_id, name: :unique_fyr)
   end
 
@@ -133,7 +131,6 @@ defmodule Phos.Users.User do
   def registration_changeset(user, attrs, opts \\ []) do
     user
     |> cast(attrs, [:email, :password, :username])
-    |> cast_embed(:public_profile)
     |> validate_email(opts)
     |> validate_password(opts)
     |> validate_username(opts)

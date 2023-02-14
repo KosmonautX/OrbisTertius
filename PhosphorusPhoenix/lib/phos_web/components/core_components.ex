@@ -48,7 +48,9 @@ defmodule PhosWeb.CoreComponents do
   slot(:inner_block, required: true)
   slot(:title)
   slot(:subtitle)
-  slot(:confirm)
+  slot(:confirm, doc: "Default button for slot") do
+    attr :tone, :atom
+  end
   slot(:cancel)
 
   def modal(assigns) do
@@ -112,6 +114,7 @@ defmodule PhosWeb.CoreComponents do
                 >
                   <.button
                     :for={confirm <- @confirm}
+                    tone={Map.get(confirm, :tone, :primary)}
                     id={"#{@id}-confirm"}
                     phx-click={@on_confirm}
                     phx-disable-with
@@ -246,7 +249,7 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:tone, :atom,
     default: :primary,
-    values: ~w(primary success warning danger icons)a,
+    values: ~w(primary success warning danger icons dark)a,
     doc: "Theme of the button"
   )
 
@@ -272,11 +275,11 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  defp button_class(:danger), do: "bg-red-400 hover:bg-red-600"
-  defp button_class(:primary), do: "bg-teal-400 hover:bg-teal-600"
-  defp button_class(:warning), do: "bg-yellow-400 hover:bg-yellow-600"
-  defp button_class(:success), do: "bg-green-400 hover:bg-green-600"
-
+  defp button_class(:danger), do: "bg-red-400 hover:bg-red-600 text-white"
+  defp button_class(:primary), do: "bg-teal-400 hover:bg-teal-600 text-white"
+  defp button_class(:warning), do: "bg-yellow-400 hover:bg-yellow-600 text-white"
+  defp button_class(:success), do: "bg-green-400 hover:bg-green-600 text-white"
+  defp button_class(:dark), do: "text-gray-900 hover:text-white border-gray-800 hover:bg-gray-900 border"
   defp button_class(:icons),
     do:
       "inline-block text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm"
@@ -290,7 +293,6 @@ defmodule PhosWeb.CoreComponents do
       "text-sm",
       "font-bold",
       "leading-6",
-      "text-white",
       "active:text-white/80"
     ]
     |> Enum.join(" ")
@@ -1413,9 +1415,10 @@ defmodule PhosWeb.CoreComponents do
   end
 
   attr(:id, :string, required: true)
-  attr(:navigate, :any)
-  slot(:inner_block, required: true)
   attr(:user, :map, required: true)
+  attr(:navigate, :any)
+  attr(:location, :boolean)
+  slot(:inner_block)
   attr(:show_location, :boolean)
   attr(:main_height, :string, default: "lg:h-80")
 
@@ -1454,7 +1457,9 @@ defmodule PhosWeb.CoreComponents do
             <%= render_slot(@inner_block) %>
           </span>
         </div>
-        <div :if={@show_location} class="flex-1 flex flex-col items-center md:mt-4 mt-2 md:px-8">
+        <div
+          :if={@show_location}
+          class="flex-1 flex flex-col items-center md:mt-4 mt-2 md:px-8">
           <div class="flex items-center space-x-4">
             <div
               :for={location <- @locations}
@@ -1524,10 +1529,17 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+
   attr(:user, :map, required: true)
   attr(:flex, :any, default: nil)
   attr(:id, :string, required: true)
   attr(:show_location, :boolean, default: true)
+  slot :ally_button, doc: "Ally button" do
+    attr :ally, :any
+    attr :current_user, :map
+    attr :user, :map, required: true
+    attr :socket, :any, required: true
+  end
 
   def user_information_card_orb(assigns) do
     assigns =
@@ -1555,9 +1567,17 @@ defmodule PhosWeb.CoreComponents do
             <%= PhosWeb.Endpoint.host() <>
               path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
           </div>
-          <.share_btn type="button" class="h-8 ml-4 dark:fill-white"></.share_btn>
+          <.share_btn type="button" class="h-8 ml-4 dark:fill-white" />
         </a>
-        <.ally_btn type="button" class="h-4 ml-4 dark:fill-white"></.ally_btn>
+
+        <div :if={@ally_button != []} :for={ally <- @ally_button}>
+           <.live_component 
+             id="user_information_card_ally"
+             module={PhosWeb.AllyButton} 
+             current_user={ally.current_user}
+             socket={ally.socket}
+             user={ally.user} />
+        </div>
       </div>
 
       <div :if={@show_location} class="space-y-1">
@@ -1570,7 +1590,6 @@ defmodule PhosWeb.CoreComponents do
             <span class="ml-1"><%= location %></span>
           </div>
         </div>
-
         <p class="text-gray-700 font-medium text-base dark:text-gray-400">
           <%= @user |> get_in([:public_profile, Access.key(:bio, "-")]) %>
         </p>

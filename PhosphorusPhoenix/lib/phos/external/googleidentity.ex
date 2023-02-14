@@ -1,6 +1,16 @@
 defmodule Phos.External.GoogleIdentity do
   use HTTPoison.Base
 
+  def link_email(fyr_id, email) do
+    {:ok, resp = %HTTPoison.Response{}} = post("setAccountInfo", %{idToken: gen_idToken(fyr_id), email: email})
+
+    resp.body["email"]
+  end
+
+  def gen_customToken(fyr_id) do
+    create_custom_token(fyr_id)
+  end
+
   def gen_idToken(fyr_id) do
     #break into with
     {:ok, resp = %HTTPoison.Response{}} = post("verifyCustomToken", %{token: create_custom_token(fyr_id),
