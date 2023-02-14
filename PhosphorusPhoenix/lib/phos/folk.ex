@@ -66,11 +66,6 @@ defmodule Phos.Folk do
          {:ok, rel} = data ->
            rel = rel |> Repo.preload([:initiator])
            spawn(fn ->
-             case rel.initiator do
-               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("FLK.#{rel.acceptor_id}", token)
-               _ -> nil
-             end
-
              Phos.Notification.target("'USR.#{rel.acceptor_id}' in topics",
                %{title: "#{rel.initiator.username} requested to be your ally 🤝"},
                %{action_path: "/folkland/self/requests"})
@@ -101,12 +96,6 @@ defmodule Phos.Folk do
          {:ok, rel} = data ->
            rel = rel |> Repo.preload([:acceptor])
            spawn(fn ->
-
-             case rel.acceptor do
-               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("FLK.#{rel.initiator_id}", token)
-               _ -> nil
-             end
-
              Phos.Notification.target("'USR.#{rel.initiator_id}' in topics",
                %{title: "#{rel.acceptor.username} accepted your ally request ❤️"},
                %{action_path: "/userland/others/#{rel.acceptor_id}"})

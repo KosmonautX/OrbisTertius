@@ -59,7 +59,7 @@ defmodule PhosWeb.UserProfileLive.Show do
       title: "@#{user.username}",
       description: user |> get_in([Access.key(:public_profile, %{}), Access.key(:bio, "-")]),
       type: "website",
-      image: Phos.Orbject.S3.get!("USR", user.id, "public/banner/lossless"), #TODO fetch from media
+      image: Phos.Orbject.S3.get!("USR", user.id, "public/profile/lossless"), #TODO fetch from media
       url: url(socket, ~p"/user/#{user.id}")
     })
   end
