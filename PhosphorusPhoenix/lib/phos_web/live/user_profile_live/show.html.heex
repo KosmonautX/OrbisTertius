@@ -63,7 +63,6 @@
       @live_action == :allies && "block",
       @live_action != :allies && "hidden md:block"
     ]}>
-     <div id="ally_list" class="hidden lg:block w-full max-w-full px-3 mt-2 lg:w-5/12 lg:flex-none">
       <h5 class="lg:block hidden text-left font-semibold text-lg py-1 px-2 p-4 dark:text-white">
         Allies
       </h5>
@@ -73,8 +72,8 @@
           module={PhosWeb.Components.ScrollAlly}
           id="infinite-home-desktop"
           ally_list={@ally_list}
-          page={@page}
-        />
+          current_user={@current_user}
+          page={@page} />
       </div>
     </div>
   </div>

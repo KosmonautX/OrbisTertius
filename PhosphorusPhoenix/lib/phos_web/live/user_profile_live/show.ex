@@ -6,6 +6,7 @@ defmodule PhosWeb.UserProfileLive.Show do
 
   @impl true
   def mount(_params, _session, socket) do
+    Phos.PubSub.subscribe("folks")
     {:ok,
      socket
      |> assign(page: 1), temporary_assigns: [ally_list: []]}
@@ -45,6 +46,75 @@ defmodule PhosWeb.UserProfileLive.Show do
 
   @impl true
   def handle_event("load-more", _, %{assigns: %{current_user: user}} = socket) when is_nil(user), do: {:noreply, socket}
+
+  @impl true
+  def handle_info(%Phoenix.Socket.Broadcast{topic: "folks", event: action, payload: root_id}, %{assigns: %{current_user: user}} = socket) when action in ["add", "reject", "accept"] do
+    %{initiator_id: init_id, acceptor_id: acc_id} = root = Phos.Folk.get_relation!(root_id)
+    case init_id == user.id or acc_id == user.id do
+      true ->
+        send_update(PhosWeb.AllyButton, id: "ally_component_infinite_scroll_#{acc_id}", root_id: root.id)
+        {:noreply, put_flash(socket, :info, "Relation updated")}
+        _ -> {:noreply, put_flash(socket, :info, "no change on relation")}
+    end
+  end
+
+  def handle_event("delete_ally_request", _, %{assigns: %{current_user: user, user: acceptor, socket: foreign_socket}} = socket) do
+    with %Phos.Users.RelationBranch{root: root} <- Phos.Folk.get_relation_by_pair(user.id, acceptor.id),
+         {:ok, _rel} <- Phos.Folk.delete_relation(root) do
+      PhosWeb.Endpoint.broadcast_from(foreign_socket.transport_pid, "folks", "delete", {user.id, acceptor.id})
+      {:noreply, 
+        socket
+        |> assign(ally: false)
+        |> put_flash(:danger, "Ally request deleted")}
+    else
+      {:error, changeset} ->
+        {:noreply, 
+          Enum.reduce(changeset.errors, socket, fn soc, {field, error} ->
+            put_flash(soc, :error, to_string(field) <> " " <> translate_error(error))
+          end)}
+      _ -> {:noreply, socket}
+    end
+  end
+
+  def handle_event("reject_ally_request", _, %{assigns: %{current_user: curr, user: user, socket: foreign_socket}} = socket) do
+    with %Phos.Users.RelationBranch{root: root} <- Phos.Folk.get_relation_by_pair(curr.id, user.id),
+         true <- root.acceptor_id == curr.id,
+         {:ok, _rel} <- Phos.Folk.update_relation(root, %{"state" => "blocked"}) do
+      PhosWeb.Endpoint.broadcast_from(foreign_socket.transport_pid, "folks", "reject", root.id)
+      {:noreply, 
+        socket
+        |> put_flash(:danger, "Success rejecting ally")
+        |> assign(:ally, ally_status(root, curr.id))}
+    else
+      {:error, changeset} ->
+        {:noreply, 
+          Enum.reduce(changeset.errors, socket, fn soc, {field, error} ->
+            put_flash(soc, :error, to_string(field) <> " " <> translate_error(error))
+          end)}
+      false -> {:noreply, put_flash(socket, :error, "Only acceptor can reject ally request")}
+      _ -> {:noreply, socket}
+    end
+  end
+
+  def handle_event("accept_ally_request", _, %{assigns: %{current_user: curr, user: user, socket: foreign_socket}} = socket) do
+    with %Phos.Users.RelationBranch{root: root} <- Phos.Folk.get_relation_by_pair(curr.id, user.id),
+         true <- root.acceptor_id == curr.id,
+         {:ok, _rel} <- Phos.Folk.update_relation(root, %{"state" => "completed"}) do
+      PhosWeb.Endpoint.broadcast_from(foreign_socket.transport_pid, "folks", "accept", root.id)
+      {:noreply, 
+        socket
+        |> put_flash(:info, "Success accepting ally")
+        |> assign(:ally, ally_status(root, curr.id))}
+    else
+      {:error, changeset} ->
+        {:noreply, 
+          Enum.reduce(changeset.errors, socket, fn soc, {field, error} ->
+            put_flash(soc, :error, to_string(field) <> " " <> translate_error(error))
+          end)}
+      false -> {:noreply, put_flash(socket, :error, "Only acceptor can reject ally request")}
+      _ -> {:noreply, socket}
+    end
+  end
 
   defp apply_action(socket, :show, _params) do
     socket
