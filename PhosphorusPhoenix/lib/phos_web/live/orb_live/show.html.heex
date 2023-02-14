@@ -12,16 +12,19 @@
           user={@orb.initiator}
           show_location={false}
           main_height="lg:h-64"
-        >
-        </.user_profile_banner>
+        />
       </div>
       <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md text-center">
         <.user_information_card_orb
           id="orb-initiator-public-profile"
           user={@orb.initiator}
-          flex=""
-        />
+          flex="">
+          <:ally_button current_user={@current_user} user={@orb.initiator} socket={@socket} />
+        </.user_information_card_orb>
       </div>
+      <.orb_video id="Orb" orb={@orb} timezone={@timezone} />
+      <.orb_image id="Orb" orb={@orb} timezone={@timezone} />
+
     </div>
     <!-- Post card and Comments-->
     <div class="lg:hidden block w-full  bg-white dark:bg-gray-900 ">
@@ -35,58 +38,58 @@
       </div>
     </div>
 
-   <div class="lg:w-5/12 w-full">
-    <div class="hidden lg:block">
-     <div class="flex mb-1">
-       <.link patch={~p"/user/#{@orb.initiator.username}"}>
-        <Heroicons.chevron_left class="w-6 h-6 dark:text-white font-semibold" />
-      </.link>
-      <span class="text-gray-600 dark:text-white text-base font-bold ml-3">Back</span>
-     </div>
-    </div>
-    <div class="px-3 w-full h-full lg :mt-2 lg:flex-none justify-center items-center lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
-      <.scry_orb id="Orb" orb={@orb} timezone={@timezone} />
+    <div class="lg:w-5/12 w-full">
+      <div class="hidden lg:block">
+        <div class="flex mb-1">
+          <.link patch={~p"/user/#{@orb.initiator.username}"}>
+            <Heroicons.chevron_left class="w-6 h-6 dark:text-white font-semibold" />
+          </.link>
+          <span class="text-gray-600 dark:text-white text-base font-bold ml-3">Back</span>
+        </div>
+      </div>
+      <div class="px-3 w-full h-full lg :mt-2 lg:flex-none justify-center items-center lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm">
+        <.scry_orb id="Orb" orb={@orb} timezone={@timezone} />
 
-      <.live_component
-        module={PhosWeb.CommentLive.IndexComponent}
-        id="cotimezone1={@timezone} mmentindex"
-        changeset={@changeset}
-        action="new"
-        orb={@orb}
-        comments={@comments}
-        reply_comment={nil}
-        edit_comment={nil}
-        current_user={@current_user}
-        socket={@socket}
-        live_action={@live_action}
-      />
-      <div :if={not is_nil(@current_user)} class="hidden lg:block">
         <.live_component
-          module={PhosWeb.CommentLive.FormComponent}
+          module={PhosWeb.CommentLive.IndexComponent}
+          id="cotimezone1={@timezone} mmentindex"
           changeset={@changeset}
-          current_user={@current_user}
+          action="new"
           orb={@orb}
-          id={"create-root-comment-desktop-#{@orb.id}"}
-          target={nil}
-          action={:new}
-        />
-      </div>
-      <div
-        :if={not is_nil(@current_user)}
-        class="lg:hidden  block bottom-0 left-0 z-10 fixed w-full px-4 bg-white dark:bg-gray-900 "
-      >
-        <.live_component
-          module={PhosWeb.CommentLive.FormComponent}
-          changeset={@changeset}
+          comments={@comments}
+          reply_comment={nil}
+          edit_comment={nil}
           current_user={@current_user}
-          orb={@orb}
-          id={"create-root-comment-#{@orb.id}"}
-          target={nil}
-          action={:new}
+          socket={@socket}
+          live_action={@live_action}
         />
+        <div :if={not is_nil(@current_user)} class="hidden lg:block">
+          <.live_component
+            module={PhosWeb.CommentLive.FormComponent}
+            changeset={@changeset}
+            current_user={@current_user}
+            orb={@orb}
+            id={"create-root-comment-desktop-#{@orb.id}"}
+            target={nil}
+            action={:new}
+          />
+        </div>
+        <div
+          :if={not is_nil(@current_user)}
+          class="lg:hidden  block bottom-0 left-0 z-10 fixed w-full px-4 bg-white dark:bg-gray-900 "
+        >
+          <.live_component
+            module={PhosWeb.CommentLive.FormComponent}
+            changeset={@changeset}
+            current_user={@current_user}
+            orb={@orb}
+            id={"create-root-comment-#{@orb.id}"}
+            target={nil}
+            action={:new}
+          />
+        </div>
       </div>
     </div>
-   </div>
     <!--Desktop Related Post-->
     <div class="hidden lg:block px-3 space-y-4 w-full lg:w-4/12 h-auto">
       <h5 class="text-left font-semibold text-lg py-1 px-2 dark:text-white">
