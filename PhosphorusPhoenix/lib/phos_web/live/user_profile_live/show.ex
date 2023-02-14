@@ -83,8 +83,7 @@ defmodule PhosWeb.UserProfileLive.Show do
       PhosWeb.Endpoint.broadcast_from(foreign_socket.transport_pid, "folks", "reject", root.id)
       {:noreply, 
         socket
-        |> put_flash(:danger, "Success rejecting ally")
-        |> assign(:ally, ally_status(root, curr.id))}
+        |> put_flash(:danger, "Success rejecting ally")}
     else
       {:error, changeset} ->
         {:noreply, 
@@ -103,8 +102,7 @@ defmodule PhosWeb.UserProfileLive.Show do
       PhosWeb.Endpoint.broadcast_from(foreign_socket.transport_pid, "folks", "accept", root.id)
       {:noreply, 
         socket
-        |> put_flash(:info, "Success accepting ally")
-        |> assign(:ally, ally_status(root, curr.id))}
+        |> put_flash(:info, "Success accepting ally")}
     else
       {:error, changeset} ->
         {:noreply, 
