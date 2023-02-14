@@ -1194,7 +1194,9 @@ defmodule PhosWeb.CoreComponents do
       |> assign(
         :media,
         Phos.Orbject.S3.get_all!(assigns.archetype, assigns.uuid, assigns.path || "")
-        |> (fn media ->
+        |> (fn
+          nil -> []
+          media ->
               for {path, url} <- media do
                 %Phos.Orbject.Structure.Media{
                   ext: MIME.from_path(path),
