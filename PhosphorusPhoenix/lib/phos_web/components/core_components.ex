@@ -205,6 +205,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:as, :any, default: nil, doc: "the server side parameter to collect all input under")
   attr(:class, :string, default: nil, doc: "simple form class overide")
 
+
   attr(:rest, :global,
     include: ~w(autocomplete name rel action enctype method novalidate target),
     doc: "the arbitrary HTML attributes to apply to the form tag"
@@ -218,7 +219,7 @@ defmodule PhosWeb.CoreComponents do
     <.form :let={f} for={@for} as={@as} {@rest}>
       <div class={["space-y-4 bg-white mt-4 dark:bg-gray-900 dark:border-gray-700 w-full", @class]}>
         <%= render_slot(@inner_block, f) %>
-        <div :for={action <- @actions}>
+        <div :for={action <- @actions} , @class>
           <%= render_slot(action, f) %>
         </div>
       </div>
@@ -1134,7 +1135,7 @@ defmodule PhosWeb.CoreComponents do
       )
 
     ~H"""
-    <div class="space-y-1 w-full mb-1">
+    <div class="w-full">
       <.user_info_bar id={"#{@id}-scry-orb-#{@orb.id}"} user={@orb.initiator}>
         <:information :if={!is_nil(@orb_location)}>
           <span class="mr-1">
@@ -1214,22 +1215,22 @@ defmodule PhosWeb.CoreComponents do
         <div id={"#{@id}-container"} data-glide-el="track" class="glide__track relative">
           <div class="glide__slides">
             <div :for={m <- @media} class="glide__slide">
-                <div class="relative">
-                  <img
-                    :if={(m.ext |> String.split("/") |> hd) in ["image", "application"]}
-                    class="h-96 w-full object-cover border-gray-200 border-b-0 rounded-b-xl shadow-md dark:border-gray-700"
-                    src={m.url}
-                    loading="lazy"
-                  />
-                  <video
-                    :if={(m.ext |> String.split("/") |> hd) in ["video"]}
-                    class="w-full h-96 object-fill border-gray-200 border-b-0 rounded-b-xl shadow-md dark:border-gray-700"
-                    autoplay
-                    loop
-                  >
-                    <source src={m.url} type={m.ext} />
-                  </video>
-                </div>
+              <div class="relative">
+                <img
+                  :if={(m.ext |> String.split("/") |> hd) in ["image", "application"]}
+                  class="md:h-96 h-72 w-full object-cover border-gray-200 border-b-0 rounded-b-xl shadow-md dark:border-gray-700"
+                  src={m.url}
+                  loading="lazy"
+                />
+                <video
+                  :if={(m.ext |> String.split("/") |> hd) in ["video"]}
+                  class="w-full h-96 aspect-video hover:aspect-square object-fill border-gray-200 border-b-0 rounded-b-xl shadow-md dark:border-gray-700"
+                  autoplay
+                  loop
+                >
+                  <source src={m.url} type={m.ext} />
+                </video>
+              </div>
             </div>
           </div>
           <div class="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-black/0 w-full flex flex-col border-b-0 rounded-b-xl border-gray-200 dark:border-gray-700
@@ -1270,7 +1271,7 @@ defmodule PhosWeb.CoreComponents do
           >
             <button
               :for={count <- Enum.to_list(1..length(@media))}
-              class="w-3 h-3 rounded-full bg-white/70 group-hover:bg-white/90 focus:ring-4 focus:ring-white group-focus:outline-none"
+              class="lg:w-3 lg:h-3 h-2 w-2 rounded-full bg-white/70 group-hover:bg-white/90 focus:ring-4 focus:ring-white group-focus:outline-none"
               data-glide-dir={"=#{count}"}
             />
           </div>
@@ -1312,7 +1313,7 @@ defmodule PhosWeb.CoreComponents do
 
   def orb_information(assigns) do
     ~H"""
-    <p id={"#{@id}-info"} class={["text-lg  font-bold px-2 dark:text-white", @info_color]}>
+    <p id={"#{@id}-info"} class={["lg:text-lg text-base font-bold px-2 dark:text-white", @info_color]}>
       <%= @title %>
     </p>
     """
@@ -1331,7 +1332,7 @@ defmodule PhosWeb.CoreComponents do
       class={["flex justify-between w-full font-bold text-base px-2", @main_color]}
     >
       <div>
-        <span class="dark:text-white">
+        <span class="dark:text-white lg:text-lg text-base">
           <%= get_date(@orb.inserted_at, @date) %>
         </span>
       </div>
