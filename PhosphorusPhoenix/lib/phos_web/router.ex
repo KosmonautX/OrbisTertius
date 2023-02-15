@@ -149,34 +149,37 @@ defmodule PhosWeb.Router do
     get "/version/:version", FyrAuthController, :semver
 
     scope "/userland" do
-
       scope "/auth/fyr" do
         get "/", FyrAuthController, :transmute
         post "/genesis", FyrAuthController, :genesis # Create User
       end
     end
-    # get "/", AuthController, :index
-    # patch "/", AuthController, :update
-    # post "/login", AuthController, :login
-    # post "/register", AuthController, :register
-    # post "/confirm_email", AuthController, :confirm_email
-    # post "/forgot_password", AuthController, :forgot_password
-    # post "/reset_password", AuthController, :reset_password
-
   end
 
   scope "/api", PhosWeb.API do
     pipe_through [:api, :authorized_user]
 
+    scope "/userland" do
+      get "/self", UserProfileController, :show_self
+      put "/self", UserProfileController, :update_self
+      put "/self/territory", UserProfileController, :update_territory
+      put "/self/beacon", UserProfileController, :update_beacon
+      get "/others/:id", UserProfileController, :show
 
-    get "/userland/self", UserProfileController, :show_self
-    put "/userland/self", UserProfileController, :update_self
-    put "/userland/self/territory", UserProfileController, :update_territory
-    put "/userland/self/beacon", UserProfileController, :update_beacon
-    get "/userland/others/:id", UserProfileController, :show
+      get "/others/:id/history", OrbController, :show_history
+      put "/others/:id/report", TribunalController, :report_user
 
-    get "/userland/others/:id/history", OrbController, :show_history
-    put "/userland/others/:id/report", TribunalController, :report_user
+      scope "/auth/email" do
+        post "/login", AuthNEmailController, :login
+        post "/register", AuthNEmailController, :register
+        post "/confirm_email", AuthNEmailController, :confirm_email
+        post "/forgot_password", AuthNEmailController, :forgot_password
+        post "/reset_password", AuthNEmailController, :reset_password
+      end
+    end
+
+
+
 
 
     get "/orbland/stream/:id", OrbController, :show_territory

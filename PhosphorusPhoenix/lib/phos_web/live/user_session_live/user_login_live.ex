@@ -35,7 +35,7 @@ defmodule PhosWeb.UserLoginLive do
           </.link>
         </:actions>
         <:actions>
-          <.button phx-disable-with="Sigining in..." class="w-full" type="submit">
+          <.button phx-disable-with="Signing in..." class="w-full" type="submit">
             Sign in <span aria-hidden="true"></span>
           </.button>
         </:actions>
@@ -46,7 +46,6 @@ defmodule PhosWeb.UserLoginLive do
 
   def mount(params, _session, socket) do
     email = live_flash(socket.assigns.flash, :email)
-    IO.inspect(params)
     {:ok,
       assign(socket, email: email)
       |> assign_new(:return_to, fn -> Map.get(params, "return_to", "/welcome") end),
