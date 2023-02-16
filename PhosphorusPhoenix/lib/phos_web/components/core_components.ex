@@ -201,10 +201,10 @@ defmodule PhosWeb.CoreComponents do
         </:actions>
       </.simple_form>
   """
+
   attr(:for, :any, default: nil, doc: "the datastructure for the form")
   attr(:as, :any, default: nil, doc: "the server side parameter to collect all input under")
   attr(:class, :string, default: nil, doc: "simple form class overide")
-
 
   attr(:rest, :global,
     include: ~w(autocomplete name rel action enctype method novalidate target),
@@ -212,14 +212,17 @@ defmodule PhosWeb.CoreComponents do
   )
 
   slot(:inner_block, required: true)
-  slot(:actions, doc: "the slot for form actions, such as a submit button")
+
+  slot(:actions, doc: "the slot for form actions, such as a submit button") do
+    attr(:classes, :string, doc: "simple form class overide")
+  end
 
   def simple_form(assigns) do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
       <div class={["space-y-4 bg-white mt-4 dark:bg-gray-900 dark:border-gray-700 w-full", @class]}>
         <%= render_slot(@inner_block, f) %>
-        <div :for={action <- @actions} , @class>
+        <div :for={action <- @actions} class={"#{Map.get(action, :classes, "")}"}>
           <%= render_slot(action, f) %>
         </div>
       </div>
@@ -355,7 +358,7 @@ defmodule PhosWeb.CoreComponents do
         name={@name}
         value="true"
         checked={@checked}
-        class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+        class="rounded text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 focus:ring-teal-900 dark:focus:ring-teal-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
         {@rest}
       />
       <%= @label %>
@@ -1139,7 +1142,7 @@ defmodule PhosWeb.CoreComponents do
       <.user_info_bar id={"#{@id}-scry-orb-#{@orb.id}"} user={@orb.initiator}>
         <:information :if={!is_nil(@orb_location)}>
           <span class="mr-1">
-            <.location type="button" class="h-8 ml-4 dark:fill-white"></.location>
+            <.location type="button" class="h-8 dark:fill-white"></.location>
           </span>
           <%= @orb_location %>
         </:information>
