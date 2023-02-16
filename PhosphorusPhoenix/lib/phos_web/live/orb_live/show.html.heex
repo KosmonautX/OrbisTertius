@@ -2,7 +2,7 @@
 <section class="lg:container mx-auto h-screen lg:mt-20 mt-14 ">
   <div
     :if={not is_nil(@orb.initiator) && @orb.initiator}
-    class="flex lg:flex-row flex-col items-start mt-6 gap-4"
+    class="flex lg:flex-row flex-col items-start mt-6 lg:gap-4"
   >
     <!-- Desktop View in Orb View Profile-->
     <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full max-w-full px-3 lg:w-3/12  lg:flex-none">
@@ -29,7 +29,7 @@
 
     <!-- Post card and Comments-->
     <div class="lg:hidden block w-full dark:bg-gray-900 ">
-      <div class=" flex flex-wrap items-center justify-center p-2 border-b border-gray-300">
+      <div class="flex flex-wrap items-center justify-center p-2 border-b border-gray-300">
         <.link patch={~p"/user/#{@orb.initiator.username}"}>
           <Heroicons.chevron_left class="w-6 h-6 dark:text-white font-semibold" />
         </.link>
@@ -92,6 +92,7 @@
           />
         </div>
       </div>
+
     </div>
 
 
