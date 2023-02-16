@@ -201,6 +201,7 @@ defmodule PhosWeb.CoreComponents do
         </:actions>
       </.simple_form>
   """
+
   attr(:for, :any, default: nil, doc: "the datastructure for the form")
   attr(:as, :any, default: nil, doc: "the server side parameter to collect all input under")
   attr(:class, :string, default: nil, doc: "simple form class overide")
@@ -211,14 +212,17 @@ defmodule PhosWeb.CoreComponents do
   )
 
   slot(:inner_block, required: true)
-  slot(:actions, doc: "the slot for form actions, such as a submit button")
+
+  slot(:actions, doc: "the slot for form actions, such as a submit button") do
+    attr(:classes, :string, doc: "simple form class overide")
+  end
 
   def simple_form(assigns) do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
       <div class={["space-y-4 bg-white mt-4 dark:bg-gray-900 dark:border-gray-700 w-full", @class]}>
         <%= render_slot(@inner_block, f) %>
-        <div :for={action <- @actions}>
+        <div :for={action <- @actions} class={"#{Map.get(action, :classes, "")}"}>
           <%= render_slot(action, f) %>
         </div>
       </div>
@@ -354,7 +358,7 @@ defmodule PhosWeb.CoreComponents do
         name={@name}
         value="true"
         checked={@checked}
-        class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+        class="rounded text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 focus:ring-teal-900 dark:focus:ring-teal-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
         {@rest}
       />
       <%= @label %>
@@ -1151,11 +1155,11 @@ defmodule PhosWeb.CoreComponents do
 
 
     ~H"""
-    <div class="space-y-1 w-full mb-1">
+    <div class="w-full">
       <.user_info_bar id={"#{@id}-scry-orb-#{@orb.id}"} user={@orb.initiator}>
         <:information :if={!is_nil(@orb_location)}>
           <span class="mr-1">
-            <.location type="button" class="h-8 ml-4 dark:fill-white"></.location>
+            <.location type="button" class="h-8 dark:fill-white"></.location>
           </span>
           <%= @orb_location %>
         </:information>
@@ -1222,7 +1226,7 @@ defmodule PhosWeb.CoreComponents do
                   />
                   <video
                     :if={(m.ext |> String.split("/") |> hd) in ["video"]}
-                    class="w-full h-96 object-fill border-gray-200 border-b-0 rounded-b-xl shadow-md dark:border-gray-700"
+                    class="w-full h-96 aspect-video hover:aspect-square object-fill border-gray-200 border-b-0 rounded-b-xl shadow-md dark:border-gray-700"
                     loop
                     playsinline
                     muted
@@ -1230,6 +1234,7 @@ defmodule PhosWeb.CoreComponents do
                     <source src={m.url} type={m.ext} />
                   </video>
                 </div>
+
             </div>
           </div>
           <div class="absolute pointer-events-none inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-black/0 w-full flex flex-col border-b-0 rounded-b-xl border-gray-200 dark:border-gray-700
@@ -1270,7 +1275,7 @@ defmodule PhosWeb.CoreComponents do
           >
             <button
               :for={count <- Enum.to_list(1..length(@media))}
-              class="w-3 h-3 rounded-full bg-white/70 group-hover:bg-white/90 focus:ring-4 focus:ring-white group-focus:outline-none"
+              class="lg:w-3 lg:h-3 h-2 w-2 rounded-full bg-white/70 group-hover:bg-white/90 focus:ring-4 focus:ring-white group-focus:outline-none"
               data-glide-dir={"=#{count}"}
             />
           </div>
@@ -1312,7 +1317,7 @@ defmodule PhosWeb.CoreComponents do
 
   def orb_information(assigns) do
     ~H"""
-    <p id={"#{@id}-info"} class={["text-lg  font-bold px-2 dark:text-white", @info_color]}>
+    <p id={"#{@id}-info"} class={["lg:text-lg text-base font-bold px-2 dark:text-white", @info_color]}>
       <%= @title %>
     </p>
     """
@@ -1331,7 +1336,7 @@ defmodule PhosWeb.CoreComponents do
       class={["flex justify-between w-full font-bold text-base px-2", @main_color]}
     >
       <div>
-        <span class="dark:text-white">
+        <span class="dark:text-white lg:text-lg text-base">
           <%= get_date(@orb.inserted_at, @date) %>
         </span>
       </div>
