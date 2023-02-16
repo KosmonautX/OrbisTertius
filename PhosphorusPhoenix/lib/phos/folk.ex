@@ -66,11 +66,6 @@ defmodule Phos.Folk do
          {:ok, rel} = data ->
            rel = rel |> Repo.preload([:initiator])
            spawn(fn ->
-             case rel.initiator do
-               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("FLK.#{rel.acceptor_id}", token)
-               _ -> nil
-             end
-
              Phos.Notification.target("'USR.#{rel.acceptor_id}' in topics",
                %{title: "#{rel.initiator.username} requested to be your ally 🤝"},
                %{action_path: "/folkland/self/requests"})
@@ -101,12 +96,6 @@ defmodule Phos.Folk do
          {:ok, rel} = data ->
            rel = rel |> Repo.preload([:acceptor])
            spawn(fn ->
-
-             case rel.acceptor do
-               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("FLK.#{rel.initiator_id}", token)
-               _ -> nil
-             end
-
              Phos.Notification.target("'USR.#{rel.initiator_id}' in topics",
                %{title: "#{rel.acceptor.username} accepted your ally request ❤️"},
                %{action_path: "/userland/others/#{rel.acceptor_id}"})
@@ -210,15 +199,66 @@ defmodule Phos.Folk do
   @doc """
   List of friends
 
-  This contains of user data
+  This contains of user data. This actually friends/4
+  if you've seen friends/1, friends/2 and friends/3 is the default version of friends/4. Default options are listed below:
+    - page: an integer and have default: 1
+    - sort_attribute: an atom, default: :completed_at
+    - limit: an integer, default: 15
+
+  friends/1 can take first argument as %User{id: id} (a user id), which means is a string or {friend_id, user_id} which is pair of bitstring
+
+  friends/2 take first argument as same as friends/1, and second argument is page
+
+  friends/3 take first argument as same as friends/2, and second argument is sort_attribute
+
+  friends/4 take first argument as same as friends/3, and second argument is limit
 
   ## Examples:
 
-      iex> pending_requests(user_id_with_no_friends)
-      []
+      iex> friends(user_id)
+      %{
+        data: [],
+        meta: %{
+          pagination: %{
+            current: 1,
+            downstream: false,
+            end: 0,
+            start: 0,
+            total: 0,
+            upstream: false
+          }
+        }
+      }
 
-      iex> pending_requests(user_id)
-      [%User{}, %User{}]
+      iex> friends(user_id)
+      %{
+        data: [%RelationBranch{}, %RelationBranch{}],
+        meta: %{
+          pagination: %{
+            current: 1,
+            downstream: false,
+            end: 0,
+            start: 0,
+            total: 0,
+            upstream: false
+          }
+        }
+      }
+
+      iex> friends({friend_id, user_id})
+      %{
+        data: [%RelationBranch{}, %RelationBranch{}],
+        meta: %{
+          pagination: %{
+            current: 1,
+            downstream: false,
+            end: 0,
+            start: 0,
+            total: 0,
+            upstream: false
+          }
+        }
+      }
 
   """
   def friends(user_id, page \\ 1, sort_attribute \\ :completed_at, limit \\ 15)
@@ -239,7 +279,6 @@ defmodule Phos.Folk do
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
   end
-
 
   def friends(user_id, page, sort_attribute, limit) do
     query = from r in RelationBranch,
@@ -263,6 +302,7 @@ defmodule Phos.Folk do
     query = from r in RelationBranch,
       where: not is_nil(r.completed_at) and r.user_id == ^user_id,
       inner_join: friend in assoc(r, :friend),
+      distinct: friend.integrations["fcm_token"],
       select: friend.integrations
 
     Repo.all(query)

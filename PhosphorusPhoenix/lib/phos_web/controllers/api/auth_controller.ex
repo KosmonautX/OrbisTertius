@@ -4,8 +4,6 @@ defmodule PhosWeb.API.FyrAuthController do
   alias Phos.Users
   action_fallback PhosWeb.API.FallbackController
 
-  plug :put_view, json: PhosWeb.Api.AuthJSON
-
   def transmute(conn, %{"fyr" => fyr_token}) do
     with {:ok, %{"sub" => fyr_id, "email" => email}} <- Auth.validate_fyr(fyr_token) do
       case Users.get_user_by_email(email) do

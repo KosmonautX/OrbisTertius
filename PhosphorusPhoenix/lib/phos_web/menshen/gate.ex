@@ -28,9 +28,7 @@ defmodule PhosWeb.Menshen.Gate do
   def log_in_user(conn, user, params \\ %{}) do
     token = Users.generate_user_session_token(user)
     user_return_to = case get_session(conn, :user_return_to) do
-      nil -> Map.get(params, "return_to", nil)
-      |> then(fn nil -> nil
-                  uri -> URI.decode(uri) end)
+      nil -> get_return_to_path(conn, params)
       path -> path
     end
 
@@ -39,6 +37,13 @@ defmodule PhosWeb.Menshen.Gate do
     |> put_token_in_session(token)
     |> maybe_write_remember_me_cookie(token, params)
     |> redirect(to: user_return_to || signed_in_path(conn))
+  end
+
+  defp get_return_to_path(conn, params) do
+    case Map.get(params, "return_to", nil) do
+      uri when is_binary(uri) and uri != "" -> URI.decode(uri)
+      _ -> signed_in_path(conn)
+    end
   end
 
   defp maybe_write_remember_me_cookie(conn, token, %{"remember_me" => "true"}) do

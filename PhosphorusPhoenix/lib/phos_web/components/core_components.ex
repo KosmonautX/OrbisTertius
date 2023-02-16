@@ -1129,13 +1129,30 @@ defmodule PhosWeb.CoreComponents do
 
   def scry_orb(assigns) do
     assigns =
-      assign(
-        assigns,
-        :orb_location,
-        assigns.orb |> get_in([Access.key(:payload, %{}), Access.key(:where, "-")]) ||
-          assigns.orb.central_geohash |> Phos.Mainland.World.locate() ||
-          "Somewhere"
-      )
+      assigns
+      |> assign(
+      :orb_location,
+    assigns.orb |> get_in([Access.key(:payload, %{}), Access.key(:where, "-")]) ||
+      assigns.orb.central_geohash |> Phos.Mainland.World.locate() ||
+      "Somewhere")
+      |> assign(
+        :media,
+      Phos.Orbject.S3.get_all!("ORB", assigns.orb.id, "public/banner")
+      |> (fn
+        nil -> []
+        media ->
+          for {path, url} <- media do
+            %Phos.Orbject.Structure.Media{
+              ext: MIME.from_path(path),
+              path: path,
+              url: url,
+              resolution:
+              path |> String.split(".") |> hd() |> String.split("/") |> List.last()
+            }
+          end
+      end).()
+      |> Enum.filter(fn m -> m.resolution == "lossless" end))
+
 
     ~H"""
     <div class="w-full">
@@ -1156,25 +1173,25 @@ defmodule PhosWeb.CoreComponents do
       </.user_info_bar>
 
       <.media_carousel
-        :if={@orb.media}
+        :if={@media != []}
         archetype="ORB"
         uuid={@orb.id}
         path="public/banner"
         id={"#{@id}-scry-orb-#{@orb.id}"}
         orb={@orb}
         timezone={@timezone}
+        media={@media}
       />
 
       <.link
-        :if={!@orb.media}
+        :if={@media == []}
         id={"#{@id}-scry-orb-#{@orb.id}-link"}
         class="relative"
-        navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
-      >
+        navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}>
         <.orb_information id={"#{@id}-scry-orb-#{@orb.id}"} title={@orb.title} />
       </.link>
 
-      <.orb_action :if={!@orb.media} id={"#{@id}-scry-orb-#{@orb.id}"} orb={@orb} date={@timezone} />
+      <.orb_action :if={@media == []} id={"#{@id}-scry-orb-#{@orb.id}"} orb={@orb} date={@timezone} />
     </div>
     """
   end
@@ -1191,52 +1208,36 @@ defmodule PhosWeb.CoreComponents do
   attr(:path, :string)
   attr(:orb, :any)
   attr(:timezone, :string)
+  attr(:media, :any)
 
   def media_carousel(assigns) do
-    assigns =
-      assigns
-      |> assign(
-        :media,
-        Phos.Orbject.S3.get_all!(assigns.archetype, assigns.uuid, assigns.path || "")
-        |> (fn media ->
-              for {path, url} <- media do
-                %Phos.Orbject.Structure.Media{
-                  ext: MIME.from_path(path),
-                  path: path,
-                  url: url,
-                  resolution:
-                    path |> String.split(".") |> hd() |> String.split("/") |> List.last()
-                }
-              end
-            end).()
-        |> Enum.filter(fn m -> m.resolution == "lossless" end)
-      )
-
     ~H"""
     <div :if={!is_nil(@media)} id={"#{@id}-carousel-wrapper"}>
       <section class="glide" id={"#{@id}-carousel"} phx-update="ignore" phx-hook="Carousel">
         <div id={"#{@id}-container"} data-glide-el="track" class="glide__track relative">
           <div class="glide__slides">
             <div :for={m <- @media} class="glide__slide">
-              <div class="relative">
-                <img
-                  :if={(m.ext |> String.split("/") |> hd) in ["image", "application"]}
-                  class="md:h-96 h-72 w-full object-cover border-gray-200 border-b-0 rounded-b-xl shadow-md dark:border-gray-700"
-                  src={m.url}
-                  loading="lazy"
-                />
-                <video
-                  :if={(m.ext |> String.split("/") |> hd) in ["video"]}
-                  class="w-full h-96 aspect-video hover:aspect-square object-fill border-gray-200 border-b-0 rounded-b-xl shadow-md dark:border-gray-700"
-                  autoplay
-                  loop
-                >
-                  <source src={m.url} type={m.ext} />
-                </video>
-              </div>
+                <div class="relative">
+                  <img
+                    :if={(m.ext |> String.split("/") |> hd) in ["image", "application"]}
+                    class="h-96 w-full object-cover border-gray-200 border-b-0 rounded-b-xl shadow-md dark:border-gray-700"
+                    src={m.url}
+                    loading="lazy"
+                  />
+                  <video
+                    :if={(m.ext |> String.split("/") |> hd) in ["video"]}
+                    class="w-full h-96 aspect-video hover:aspect-square object-fill border-gray-200 border-b-0 rounded-b-xl shadow-md dark:border-gray-700"
+                    loop
+                    playsinline
+                    muted
+                  >
+                    <source src={m.url} type={m.ext} />
+                  </video>
+                </div>
+
             </div>
           </div>
-          <div class="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-black/0 w-full flex flex-col border-b-0 rounded-b-xl border-gray-200 dark:border-gray-700
+          <div class="absolute pointer-events-none inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-black/0 w-full flex flex-col border-b-0 rounded-b-xl border-gray-200 dark:border-gray-700
           ">
             <.link
               :if={@orb.media}
@@ -1416,7 +1417,7 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:id, :string, required: true)
   attr(:navigate, :any)
-  slot(:inner_block, required: true)
+  #slot(:inner_block, required: true)
   attr(:user, :map, required: true)
   attr(:show_location, :boolean)
   attr(:main_height, :string, default: "lg:h-80")
@@ -1446,6 +1447,9 @@ defmodule PhosWeb.CoreComponents do
       />
       <div class="absolute inset-0 px-6 py-4 flex flex-col items-center bg-opacity-50">
         <p class="md:text-2xl text-lg text-white font-bold md:mb-2"><%= "@#{@user.username}" %></p>
+        <.link
+          :if={@user.username}
+          navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}>
         <div class="relative flex justify-center items-center">
           <img
             src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
@@ -1456,6 +1460,7 @@ defmodule PhosWeb.CoreComponents do
             <%= render_slot(@inner_block) %>
           </span>
         </div>
+        </.link>
         <div :if={@show_location} class="flex-1 flex flex-col items-center md:mt-4 mt-2 md:px-8">
           <div class="flex items-center space-x-4">
             <div
@@ -1517,8 +1522,7 @@ defmodule PhosWeb.CoreComponents do
             :for={trait <- @user |> get_in([:public_profile, Access.key(:traits, "-")])}
             class="text-gray-500 text-base font-medium dark:text-gray-400"
           >
-            <span>#</span>
-            <%= trait %>
+            <%= "##{trait}" %>
           </span>
         </div>
       </div>
@@ -1582,8 +1586,7 @@ defmodule PhosWeb.CoreComponents do
             :for={trait <- @user |> get_in([:public_profile, Access.key(:traits, "-")])}
             class="text-gray-500 text-base font-medium dark:text-gray-400"
           >
-            <span>#</span>
-            <%= trait %>
+            <%= "##{trait}" %>
           </span>
         </div>
       </div>

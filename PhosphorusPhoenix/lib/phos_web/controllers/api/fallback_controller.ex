@@ -43,7 +43,6 @@ defmodule PhosWeb.API.FallbackController do
   end
 
   def call(conn, opts) do
-    IO.inspect(opts)
     conn
     |> put_status(:unprocessable_entity)
     |> put_view(PhosWeb.API.ChangesetView)
