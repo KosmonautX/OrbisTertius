@@ -121,7 +121,8 @@ defmodule PhosWeb.API.UserProfileController do
                           "userbound" => true,
                           "initiator_id" => user.id,
                           "traits" => params["traits"],
-                          "title" => (unless is_nil(params["traits"]), do: "Hello, It's my first day on Scratchbac! What's going on today?")
+                          "title" => (if !is_nil(params["soulorb"]), do: params["soulorb"]["title"]),
+                          "payload" => (if !is_nil(params["soulorb"]), do: params["soulorb"]["payload"])
                          } |> purge_nil()
     } |> purge_nil()
   end

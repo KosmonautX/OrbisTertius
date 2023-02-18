@@ -111,7 +111,7 @@ PUT :ipAddress/userland/self/
 :auth-headers
 {
     "bio": "alberto robotos",
-    "username": "albert",
+    "username": "lkyiii",
     "public_name": "Albert the Robot",
     "birthday": 16123442423,
     "media": [
@@ -130,6 +130,11 @@ PUT :ipAddress/userland/self/
         "aikido",
         "matrix"
     ],
+    "soulorb": {
+        "title": "wow",
+        "payload": {
+            "inner_title": "longer wow"
+}},
     "occupation": "bloatwarengingeer",
     "profile_pic": 3
 }
