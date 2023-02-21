@@ -12,12 +12,12 @@ defmodule Storybook.Components.Card do
       """
     ]
   end
-  
+
   def variations do
     [
       %Variation{
         id: :default,
-        attributes: %{
+        attributes: %{default_body
           title: "Some card title"
         },
         slots: default_body()
