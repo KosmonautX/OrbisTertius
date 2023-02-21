@@ -22,6 +22,8 @@ defmodule PhosWeb.MemoryLive.FormComponent do
       >
         <.input field={{f, :message}} type="text" label="message" />
         <.input field={{f, :media}} type="checkbox" label="media" />
+        <.input field={{f, :user_source_id}} type="hidden" value={@initiator.id}/>
+        <.input field={{f, :orb_subject_id}} type="hidden" value={"791313df-6d46-4661-a8e2-04747a75f395"}/>
         <:actions>
           <.button phx-disable-with="Saving..." type="submit" >Save Memory</.button>
         </:actions>

@@ -128,6 +128,9 @@ defmodule PhosWeb.Router do
       live "/user/:username/allies", UserProfileLive.Show, :allies
 
     end
+
+    live "/dev/orbs", Admin.OrbLive.Index, :index
+
   end
 
   scope "/admin", PhosWeb.Admin, as: :admin, on_mount: {Phos.Admin.Mounter, :admin} do
