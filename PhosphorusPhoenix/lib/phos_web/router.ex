@@ -173,14 +173,12 @@ defmodule PhosWeb.Router do
         post "/login", AuthNEmailController, :login
         post "/register", AuthNEmailController, :register
         post "/confirm_email", AuthNEmailController, :confirm_email
+        get "/resend_confirmation", AuthNEmailController, :resend_confirmation
         post "/forgot_password", AuthNEmailController, :forgot_password
         post "/reset_password", AuthNEmailController, :reset_password
       end
+
     end
-
-
-
-
 
     get "/orbland/stream/:id", OrbController, :show_territory
     resources "/orbland/orbs", OrbController, except: [:new, :edit]

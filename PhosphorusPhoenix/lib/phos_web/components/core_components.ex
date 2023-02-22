@@ -1610,13 +1610,16 @@ defmodule PhosWeb.CoreComponents do
         data-selector="phos_modal_message"
         class="w-full flex flex-col items-center bg-white border border-gray-200 rounded-2xl shadow-2xl hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 p-2"
       >
-        <div class="dark:text-white">
-          Welcome message
-        </div>
+        <div :if={@user} class="flex flex-col justify-center items-center p-6 space-y-2 ">
+        <img
+          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+          class=" h-16 w-16 lg:w-32 lg:h-32 border-4 border-white rounded-full object-cover"
+        />
         <p class="mt-3 font-semibold text-xl dark:text-white">Hmm...You were saying?</p>
-        <p class="mt-3 w-1/2 text-center text-gray-400 dark:text-gray-400">
-          Join the tribe to share your thoughts with raizzy paizzy now!
+        <p :if={@user.username} class="mt-3 w-1/2 text-center text-gray-400 dark:text-gray-400">
+          Join the tribe to share your thoughts with #{@user.username} now!
         </p>
+        </div>
         <div class="mt-3">
           <.button type="button">Download the Scratchbac app</.button>
         </div>
