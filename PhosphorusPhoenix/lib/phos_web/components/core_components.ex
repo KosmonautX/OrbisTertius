@@ -15,6 +15,7 @@ defmodule PhosWeb.CoreComponents do
 
   alias Phoenix.LiveView.JS
   import PhosWeb.Gettext
+  import Phoenix.HTML
 
   @doc """
   Renders a modal.
@@ -1232,7 +1233,7 @@ defmodule PhosWeb.CoreComponents do
                 </div>
             </div>
           </div>
-          <div class="absolute pointer-events-none inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-black/0 w-full flex flex-col border-b-0 rounded-b-xl border-gray-200 dark:border-gray-700
+          <div class="absolute pointer-events-auto inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-black/0 w-full flex flex-col border-b-0 rounded-b-xl border-gray-200 dark:border-gray-700
           ">
             <.link
               :if={@orb.media}
@@ -1243,7 +1244,7 @@ defmodule PhosWeb.CoreComponents do
               <.orb_information
                 id={"#{@id}-orb-info-#{@orb.id}"}
                 title={@orb.title}
-                info_color="text-white"
+                info_color="prose-invert text-white"
               />
             </.link>
             <.chip emoji={[
@@ -1308,14 +1309,22 @@ defmodule PhosWeb.CoreComponents do
   """
   attr(:id, :string, required: true)
   attr(:title, :string)
-  attr(:info_color, :string, default: "text-gray-600")
+  attr(:info_color, :string, default: "prose-zinc text-gray-600")
 
   def orb_information(assigns) do
-    ~H"""
-    <p id={"#{@id}-info"} class={["text-lg  font-bold px-2 dark:text-white", @info_color]}>
-      <%= @title %>
-    </p>
-    """
+    assigns =
+      assigns
+      |> assign(:title,
+    case Earmark.as_html(assigns.title) do
+      {:ok, result, _} -> HtmlSanitizeEx.html5(result) |> raw()
+      _ -> "-"
+    end)
+      ## if contains a link opengraph scrape that mofo
+      ~H"""
+      <section id={"#{@id}-info"} class={["prose prose-a:text-blue-500 text-lg  font-bold px-2 dark:prose-invert", @info_color]}>
+        <%= @title %>
+      </section>
+      """
   end
 
   attr(:id, :string, required: true)
