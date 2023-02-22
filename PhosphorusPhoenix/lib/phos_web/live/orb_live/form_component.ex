@@ -122,6 +122,8 @@ defmodule PhosWeb.OrbLive.FormComponent do
 
     orb_params = unless Enum.empty?(file_uploaded) do
       Map.replace(orb_params, "media", true)
+      else
+        orb_params
     end
 
     save_orb(socket, socket.assigns.action, orb_params)
