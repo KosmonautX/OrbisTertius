@@ -11,7 +11,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
      socket
      |> assign(assigns)
      |> assign(:changeset, changeset)
-     |> allow_upload(:image, accept: ~w(.jpg .jpeg .png .mp4), max_entries: 5, max_file_size: 8_888_888)}
+     |> allow_upload(:image, accept: ~w(.jpg .jpeg .png .mp4 .gif), max_entries: 5, max_file_size: 8_888_888)}
   end
 
   @impl true
@@ -64,7 +64,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
                   media: [%{access: "public",
                             essence: "banner",
                             resolution: resolution,
-                            count: String.to_integer(count) + 1,
+                            count: String.to_integer(count),
                             ext: List.first(MIME.extensions(type))
                            }]})
 
@@ -95,7 +95,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
                   media: [%{access: "public",
                             essence: "banner",
                             resolution: "lossy",
-                            count: String.to_integer(count) + 1,
+                            count: String.to_integer(count),
                             ext: "jpeg"
                            }]})
 
@@ -109,7 +109,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
                   media: [%{access: "public",
                             essence: "banner",
                             resolution: "lossless",
-                            count: String.to_integer(count) + 1,
+                            count: String.to_integer(count),
                             ext: ext
                            }]})
 
@@ -120,13 +120,13 @@ defmodule PhosWeb.OrbLive.FormComponent do
         {:ok, path}
        end)
 
-    if Enum.empty?(file_uploaded) do
-      orb_params = Map.replace(orb_params, "media", false)
-      save_orb(socket, socket.assigns.action, orb_params)
-    else
-      orb_params = Map.replace(orb_params, "media", true)
-      save_orb(socket, socket.assigns.action, orb_params)
+    orb_params = unless Enum.empty?(file_uploaded) do
+      Map.replace(orb_params, "media", true)
+      else
+        orb_params
     end
+
+    save_orb(socket, socket.assigns.action, orb_params)
   end
 
   defp error_to_string(:too_large), do: "Image too large"
