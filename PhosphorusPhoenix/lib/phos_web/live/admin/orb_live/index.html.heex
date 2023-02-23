@@ -52,16 +52,6 @@
 
     <:col :let={orb} label="Traits"><%= inspect(orb.traits) %></:col>
   </.table>
-  <div class="hidden px-4 py-3 w-full sm:flex sm:flex-1 sm:items-center sm:justify-between">
-    <.live_component
-      module={PhosWeb.Components.Pagination}
-      limit={@limit}
-      meta={@pagination}
-      id="paginate"
-      route_path={~p"/admin/orbs"}
-      current={@current}
-    />
-  </div>
 </div>
 
 <div class="lg:hidden block">
@@ -73,3 +63,14 @@
     <% end %>
   </div>
 </div>
+
+<div class="px-4 py-3 w-full sm:flex sm:flex-1 sm:items-center sm:justify-between">
+    <.live_component
+      module={PhosWeb.Components.Pagination}
+      limit={@limit}
+      meta={@pagination}
+      id="paginate"
+      route_path={~p"/admin/orbs"}
+      current={@current}
+    />
+  </div>
