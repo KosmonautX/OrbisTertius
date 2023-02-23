@@ -12,9 +12,9 @@ defmodule PhosWeb.Components.ScrollAlly do
             <%= ally |> get_in([Access.key(:public_profile, %{}), Access.key(:occupation, "-")])%>
           </:information>
           <:actions>
-           <.live_component 
+           <.live_component
              id={"ally_component_infinite_scroll_#{ally.id}"}
-             module={PhosWeb.AllyButton} 
+             module={PhosWeb.AllyButton}
              current_user={@current_user}
              socket={@socket}
              user={ally} />

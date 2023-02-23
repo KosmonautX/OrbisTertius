@@ -119,6 +119,7 @@ defmodule Phos.Message do
   """
   def list_memories do
     Repo.all(Memory)
+    |> Repo.preload([:orb_subject, :user_source, :rel_subject])
   end
 
   @doc """
