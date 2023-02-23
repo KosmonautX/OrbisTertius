@@ -9,7 +9,7 @@ defmodule PhosWeb.Layouts do
   attr(:contents, :map, required: true)
   def meta_tags(assigns) do
     ~H"""
-    <meta :for={{name, value} <- parse_contents(@contents)} name={name} content={value} />
+    <meta :for={{name, value} <- parse_contents(@contents)} property={name} content={value} />
     """
   end
 

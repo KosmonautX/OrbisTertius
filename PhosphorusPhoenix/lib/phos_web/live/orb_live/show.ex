@@ -144,7 +144,6 @@ defmodule PhosWeb.OrbLive.Show do
   end
 
   defp assign_meta(socket, orb) do
-
     media = Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless")
         |> (fn media ->
         (for {path, url} <- media || [] do

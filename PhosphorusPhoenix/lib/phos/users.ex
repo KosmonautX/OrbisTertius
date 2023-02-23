@@ -409,6 +409,10 @@ defmodule Phos.Users do
     |> Repo.update()
   end
 
+  def claim_anon_user(user, attrs) do
+    {:error, "email already registered for user"}
+  end
+
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking user changes.
 
