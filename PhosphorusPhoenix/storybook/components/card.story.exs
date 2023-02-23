@@ -17,7 +17,7 @@ defmodule Storybook.Components.Card do
     [
       %Variation{
         id: :default,
-        attributes: %{default_body
+        attributes: %{
           title: "Some card title"
         },
         slots: default_body()

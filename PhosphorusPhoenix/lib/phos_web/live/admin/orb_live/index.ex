@@ -16,7 +16,7 @@ defmodule PhosWeb.Admin.OrbLive.Index do
 
     case expected_page == pagination.current do
       true -> {:noreply, assign(socket, current: expected_page)}
-      _ -> 
+      _ ->
         %{data: orbs, meta: meta} = filter_by_traits(traits, limit: limit, page: expected_page)
         {:noreply, assign(socket, orbs: orbs, pagination: meta.pagination, current: expected_page)}
     end

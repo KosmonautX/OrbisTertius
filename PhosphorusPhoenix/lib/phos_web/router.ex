@@ -129,7 +129,7 @@ defmodule PhosWeb.Router do
 
     end
 
-    live "/dev/orbs", Admin.OrbLive.Index, :index
+    live "/dev/orbs", Admin.OrbLive.Dev, :index
 
   end
 
