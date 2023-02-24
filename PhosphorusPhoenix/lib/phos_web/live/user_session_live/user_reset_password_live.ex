@@ -33,10 +33,10 @@ defmodule PhosWeb.UserResetPasswordLive do
       </.simple_form>
 
       <div class="text-base   dark:text-white flex gap-4">
-        <.link patch={~p"/users/register"} class="text-sm text-teal-400 font-bold hover:underline">
+        <.link navigate={~p"/users/register"} class="text-sm text-teal-400 font-bold hover:underline">
           Register
         </.link>
-        <.link patch={~p"/users/log_in"} class="text-sm text-teal-400 font-bold hover:underline">
+        <.link navigate={~p"/users/log_in"} class="text-sm text-teal-400 font-bold hover:underline">
           Log in
         </.link>
       </div>

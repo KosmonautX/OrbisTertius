@@ -12,7 +12,7 @@ defmodule Phos.MessageTest do
 
     test "list_memories/0 returns all memories" do
       memory = memory_fixture()
-      assert Message.list_memories() == [memory]
+      assert Message.list_memories() == [memory |> Phos.Repo.preload([:orb_subject, :user_source, :rel_subject])]
     end
 
     test "get_memory!/1 returns the memory with given id" do
