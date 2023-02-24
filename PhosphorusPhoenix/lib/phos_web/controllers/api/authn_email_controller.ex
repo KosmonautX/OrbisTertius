@@ -31,6 +31,22 @@ defmodule PhosWeb.API.AuthNEmailController do
       conn
       |> put_status(201)
       |> render("register.json", user: user)
+    else
+        _ -> {:error, :unprocessable_entity}
+
+    end
+  end
+
+
+  def resend_confirmation(%Plug.Conn{assigns: %{current_user: %{email: email}}} = conn, _) do
+    IO.inspect(email)
+    with %{confirmed_at: nil} = user <- Users.get_user_by_email(email) do
+
+      Users.deliver_user_confirmation_instructions(user, &"scrb://host/userland/auth/email/confirm_email/#{&1}")
+
+      conn
+      |> put_status(201)
+      |> render("resend_confirmation.json")
     end
   end
 

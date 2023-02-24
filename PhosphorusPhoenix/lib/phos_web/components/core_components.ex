@@ -15,6 +15,7 @@ defmodule PhosWeb.CoreComponents do
 
   alias Phoenix.LiveView.JS
   import PhosWeb.Gettext
+  import Phoenix.HTML
 
   @doc """
   Renders a modal.
@@ -1385,7 +1386,7 @@ defmodule PhosWeb.CoreComponents do
   def media_carousel(assigns) do
     ~H"""
     <div :if={!is_nil(@media)} id={"#{@id}-carousel-wrapper"}>
-      <section class="glide" id={"#{@id}-carousel"} phx-update="ignore" phx-hook="Carousel">
+      <section  class="glide" id={"#{@id}-carousel"} phx-update="ignore" phx-hook="Carousel">
         <div id={"#{@id}-container"} data-glide-el="track" class="glide__track relative">
           <div class="glide__slides">
             <div :for={m <- @media} class="glide__slide">
@@ -1417,28 +1418,28 @@ defmodule PhosWeb.CoreComponents do
               </div>
             </div>
           </div>
-          <div class="pointer-events-auto">
-            <div class="absolute  inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-black/0 w-full flex flex-col border-b-0 rounded-b-xl border-gray-200 dark:border-gray-700">
-              <.link
-                :if={@orb.media}
-                id={"#{@id}-link-#{@orb.id}"}
-                class="relative"
-                navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
-              >
-                <.orb_information
-                  id={"#{@id}-orb-info-#{@orb.id}"}
-                  title={@orb.title}
-                  info_color="text-white"
-                />
-              </.link>
-              <.chip emoji={[
-                %{sticker: "😊", count: "20"},
-                %{sticker: "❤️", count: "60"},
-                %{sticker: "🥹", count: "50"},
-                %{sticker: "🫠", count: "30"}
-              ]} />
-              <div class="items-end">
-                <.orb_action
+          <div class="absolute pointer-events-auto inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-black/0 w-full flex flex-col border-b-0 rounded-b-xl border-gray-200 dark:border-gray-700
+          ">
+            <.link
+              :if={@orb.media}
+              id={"#{@id}-link-#{@orb.id}"}
+              class="relative"
+              navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
+            >
+              <.orb_information
+                id={"#{@id}-orb-info-#{@orb.id}"}
+                title={@orb.title}
+                info_color="prose-invert text-white"
+              />
+            </.link>
+            <.chip emoji={[
+              %{sticker: "😊", count: "20"},
+              %{sticker: "❤️", count: "60"},
+              %{sticker: "🥹", count: "50"},
+              %{sticker: "🫠", count: "30"}
+            ]} />
+            <div class="items-end">
+              <.orb_action
                   :if={@orb.media}
                   id={"#{@id}-scry-orb-#{@orb.id}"}
                   orb={@orb}
@@ -1448,7 +1449,6 @@ defmodule PhosWeb.CoreComponents do
               </div>
             </div>
           </div>
-        </div>
         <div :if={length(@media) > 1} data-glide-el="controls">
           <div
             data-glide-el="controls[nav]"
@@ -1494,14 +1494,22 @@ defmodule PhosWeb.CoreComponents do
   """
   attr(:id, :string, required: true)
   attr(:title, :string)
-  attr(:info_color, :string, default: "text-gray-600")
+  attr(:info_color, :string, default: "prose-zinc text-gray-600")
 
   def orb_information(assigns) do
-    ~H"""
-    <p id={"#{@id}-info"} class={["lg:text-lg text-base font-bold px-2 dark:text-white", @info_color]}>
-      <%= @title %>
-    </p>
-    """
+    assigns =
+      assigns
+      |> assign(:title,
+    case Earmark.as_html(assigns.title) do
+      {:ok, result, _} -> HtmlSanitizeEx.html5(result) |> raw()
+      _ -> "-"
+    end)
+      ## if contains a link opengraph scrape that mofo
+      ~H"""
+      <section id={"#{@id}-info"} class={["prose prose-a:text-blue-500 text-lg  font-bold px-2 dark:prose-invert", @info_color]}>
+        <%= @title %>
+      </section>
+      """
   end
 
   @doc """
@@ -1904,13 +1912,16 @@ defmodule PhosWeb.CoreComponents do
         data-selector="phos_modal_message"
         class="w-full flex flex-col items-center bg-white border border-gray-200 rounded-2xl shadow-2xl hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 p-2"
       >
-        <div class="dark:text-white">
-          Welcome message
-        </div>
+        <div :if={@user} class="flex flex-col justify-center items-center p-6 space-y-2 ">
+        <img
+          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+          class=" h-16 w-16 lg:w-32 lg:h-32 border-4 border-white rounded-full object-cover"
+        />
         <p class="mt-3 font-semibold text-xl dark:text-white">Hmm...You were saying?</p>
-        <p class="mt-3 w-1/2 text-center text-gray-400 dark:text-gray-400">
-          Join the tribe to share your thoughts with raizzy paizzy now!
+        <p :if={@user.username} class="mt-3 w-1/2 text-center text-gray-400 dark:text-gray-400">
+          Join the tribe to share your thoughts with #{@user.username} now!
         </p>
+        </div>
         <div class="mt-3">
           <.button type="button">Download the Scratchbac app</.button>
         </div>

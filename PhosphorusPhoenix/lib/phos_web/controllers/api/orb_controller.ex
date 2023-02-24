@@ -87,8 +87,8 @@ defmodule PhosWeb.API.OrbController do
       nil -> {:error, :not_found}
     end
   end
+
   # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X GET 'http://localhost:4000/api/orbs/a4519fe0-70ec-42e7-86f3-fdab1ef8ca23'
-  #
   #
 
   def show_history(conn, %{"id" => id, "page" => page, "traits" => traits}) do
