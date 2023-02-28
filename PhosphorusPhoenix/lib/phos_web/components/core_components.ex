@@ -1653,14 +1653,14 @@ defmodule PhosWeb.CoreComponents do
         type="button"
         class="text-white bg-[#050708] hover:bg-[#050708]/90 focus:ring-4 focus:outline-none focus:ring-[#050708]/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-[#050708]/55 mr-2 mb-2 w-56"
       >
-        <.google type="social_media" class=" mr-2 -ml-1"></.google>
+        <.google class=" mr-2 -ml-1"></.google>
         Sign in with Google
       </button>
       <button
         type="button"
         class="text-white bg-[#050708] hover:bg-[#050708]/90 focus:ring-4 focus:outline-none focus:ring-[#050708]/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-[#050708]/50 dark:hover:bg-[#050708]/30 mr-2 mb-2 w-56"
       >
-        <.apple type="apple_svg" class=" mr-2 -ml-1"></.apple>
+        <.apple class=" mr-2 -ml-1"></.apple>
         Sign in with Apple
       </button>
 
