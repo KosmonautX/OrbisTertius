@@ -70,6 +70,7 @@ defmodule Phos.MixProject do
       {:ssl_verify_fun, "~> 1.1"},
       # auth token
       {:ex_firebase_auth, github: "KosmonautX/ExFirebaseAuth"},
+      {:ecto_psql_extras, "~> 0.7.10"},
       {:mint, "~> 1.0"},
       {:castore, "~> 0.1.0"},
       {:tailwind, "~> 0.1", runtime: Mix.env() == :dev},

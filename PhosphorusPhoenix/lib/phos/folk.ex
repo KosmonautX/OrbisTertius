@@ -5,6 +5,7 @@ defmodule Phos.Folk do
 
   import Ecto.Query, warn: false
   use Nebulex.Caching
+
   alias Phos.Repo
   alias Phos.Users.{User, RelationBranch, RelationRoot}
 

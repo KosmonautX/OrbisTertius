@@ -136,7 +136,11 @@ defmodule PhosWeb.Router do
   scope "/admin", PhosWeb.Admin, as: :admin, on_mount: {Phos.Admin.Mounter, :admin} do
     pipe_through [:browser, :admin]
 
-    live_dashboard "/dashboard", metrics: PhosWeb.Telemetry
+    live_dashboard "/dashboard",
+      metrics: PhosWeb.Telemetry,
+      ecto_repos: [Phos.Repo],
+      ecto_psql_extras_options: [long_running_queries: [threshold: "200 milliseconds"]]
+
     live "/", DashboardLive, :index
     live "/orbs", OrbLive.Index, :index
     live "/orbs/import", OrbLive.Import, :import
