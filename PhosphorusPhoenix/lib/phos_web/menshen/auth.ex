@@ -15,7 +15,7 @@ defmodule PhosWeb.Menshen.Auth do
   end
 
   def validate_fyr(token) do
-     with {:ok, body} <- get_cert(token),
+    with {:ok, body} <- get_cert(token),
          {:ok, %{"kid" => kid}} <- Joken.peek_header(token),
          {:ok, keys} <- Map.fetch(JOSE.JWK.from_firebase(body), kid),
          {:verify, {true, %{fields: %{"exp" => exp} = fields}, _}} <- {:verify, JOSE.JWT.verify(keys, token)},
@@ -28,11 +28,12 @@ defmodule PhosWeb.Menshen.Auth do
         {:error, "Expired JWT"}
 
       {:verify, _} ->
-      #in case of cycling of
+        #in case of cycling of
         with {:ok, body} <- update_cert(token),
              {:ok, %{"kid" => kid}} <- Joken.peek_header(token),
              {:ok, keys} <- Map.fetch(JOSE.JWK.from_firebase(body), kid),
-             {:verify, {true, %{fields: fields}, _}} <- {:verify, JOSE.JWT.verify(keys, token)} do
+             {:verify, {true, %{fields: %{"exp" => exp} = fields}, _}} <- {:verify, JOSE.JWT.verify(keys, token)},
+             {:verify, {:ok, _}} <- {:verify, verify_expiry(exp)} do
 
           {:ok, fields}
         else
@@ -42,7 +43,8 @@ defmodule PhosWeb.Menshen.Auth do
         end
 
       _ -> {:error, "invalid token"}
-   end
+
+    end
 
   end
 

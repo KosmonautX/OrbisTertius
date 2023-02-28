@@ -45,6 +45,8 @@ defmodule PhosWeb.Router do
 
     get "/", PageController, :home
 
+    get "/redirect/:out", PageController, :redirect
+
     live_storybook "/storybook", backend_module: PhosWeb.Storybook
   end
 
@@ -128,8 +130,6 @@ defmodule PhosWeb.Router do
       live "/user/:username/allies", UserProfileLive.Show, :allies
 
     end
-
-    live "/dev/orbs", Admin.OrbLive.Dev, :index
 
   end
 
