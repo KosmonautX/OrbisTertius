@@ -10,6 +10,7 @@
 :bala=fFKlWcfV9RRavNZJUxt46BLYB5n1
 :tate=FbXQKufaWFOUNIsVYsn5tdW1qUc2
 :jean=HMhn3DPO71h0cMYFh52vM1tBacX2
+:anon=CKFaRTrLZxde3SHrtWBpQdtZ8Nr2
 :princeton_id=9bf9c443-f89b-460a-972d-6704ae66823d
 :owentwo_id=973da4ae-48a6-498d-b988-548af3af99f6
 :satrio_id=b3cd35ef-83e2-448e-831d-f5ded1c39692
@@ -39,9 +40,9 @@ User-Agent: Emacs27
 ## Generate Client-side JWT
 GET :localipAddress/devland/flameon?user=:lky_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
-## Generate Google Identity idToken for Firebase Auth
 
-GET :localipAddress/devland/lankaonfyr?fyr_id=:bala
+## Generate Google Identity idToken for Firebase Auth
+GET :localipAddress/devland/lankaonfyr?fyr_id=:anon
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 
@@ -65,9 +66,8 @@ GET :ipAddress/userland/self/
 ## Register User via Email
 POST :ipAddress/userland/auth/email/register
 :auth-headers
-
 {
-    "email": "owenthe@bo.wen",
+    "email": "anonthe@bo.wen",
     "password": "1234567890-="
 }
 
