@@ -38,7 +38,8 @@
   <div class="w-full h-auto container mx-auto lg:flex lg:flex-row gap-8 mb-14 lg:px-14">
     <div
       :if={@live_action != :allies}
-      class="flex flex-col w-full max-w-full px-3 mt-2 lg:w-7/12 lg:flex-none">
+      class="flex flex-col w-full max-w-full px-3 mt-2 lg:w-7/12 lg:flex-none"
+    >
       <div class="hidden lg:block">
         <.user_information_card
           :if={not is_nil(@user.public_profile)}
@@ -57,11 +58,14 @@
       </ul>
     </div>
 
-    <div id="ally_list" class={[
-      "w-full max-w-full px-3 mt-2 lg:flex-none",
-      @live_action == :allies && "block",
-      @live_action != :allies && "hidden lg:w-5/12 md:block"
-    ]}>
+    <div
+      id="ally_list"
+      class={[
+        "w-full max-w-full px-3 mt-2 lg:flex-none",
+        @live_action == :allies && "block",
+        @live_action != :allies && "hidden lg:w-5/12 md:block"
+      ]}
+    >
       <h5 class="lg:block hidden text-left font-semibold text-lg py-1 px-2 p-4 dark:text-white">
         Allies
       </h5>
@@ -72,7 +76,8 @@
           id="infinite-home-desktop"
           ally_list={@ally_list}
           current_user={@current_user}
-          page={@page} />
+          page={@page}
+        />
       </div>
     </div>
   </div>

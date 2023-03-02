@@ -6,7 +6,10 @@ defmodule PhosWeb.MemoryLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, :memories, list_memories())}
+    {:ok,
+     socket
+     |> assign(:memories, list_memories())
+     |> assign(:page, 1)}
   end
 
   @impl true
@@ -38,6 +41,21 @@ defmodule PhosWeb.MemoryLive.Index do
     {:ok, _} = Message.delete_memory(memory)
 
     {:noreply, assign(socket, :memories, list_memories())}
+  end
+
+  @impl true
+  def handle_event("load-more", _, %{assigns: assigns} = socket) do
+    IO.inspect("hello")
+
+    {:noreply,
+     assign(socket, page: assigns.page + 1)
+     |> list_more_mesage()}
+  end
+
+  defp list_more_mesage(%{assigns: %{page: page}} = socket) do
+    socket
+    |> assign(page: page)
+    |> assign(memories: list_memories())
   end
 
   defp list_memories do

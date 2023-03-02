@@ -1,5 +1,5 @@
-<div class="hidden lg:block w-full p-2">
-  <div class="flex items-center px-4 py-2">
+<div class="hidden lg:block w-full p-1 max-h-fit		">
+  <div class="flex items-center px-2 mb-2">
     <div class="block mr-4">
       <.link navigate={~p"/admin/orbs/import"} class="button button-sm">
         <i class="fa-solid fa-plus cursor-pointer mr-1"></i> Import orbs
@@ -18,7 +18,9 @@
       </.form>
     </div>
   </div>
-  <.table id="orbs" rows={@orbs}>
+ <div class="">
+
+   <.table id="orbs" rows={@orbs}>
     <:col label="No">~</:col>
     <:col :let={orb} classes="sticky left-0" label="Initiator">
       <.admin_user_preview user={orb.initiator}></.admin_user_preview>
@@ -52,6 +54,7 @@
 
     <:col :let={orb} label="Traits"><%= inspect(orb.traits) %></:col>
   </.table>
+ </div>
 </div>
 
 <div class="lg:hidden block">

@@ -3,14 +3,27 @@ defmodule Phos.Notification.Scheduller do
 
   require Logger
 
-  defstruct [:action_path, :active, :archetype, :archetype_id, :frequency, :id, :regions, :target_group, :title, :body , :time_condition, :trigger]
+  defstruct [
+    :action_path,
+    :active,
+    :archetype,
+    :archetype_id,
+    :frequency,
+    :id,
+    :regions,
+    :target_group,
+    :title,
+    :body,
+    :time_condition,
+    :trigger
+  ]
 
   @one_minute :timer.minutes(1)
 
   def start_link(opts), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
 
   @impl true
-  def init(_opts) do 
+  def init(_opts) do
     table = :ets.new(:notification_registry, [:set, :protected, read_concurrency: true])
     Process.send_after(self(), :timer, @one_minute)
     {:ok, table}
@@ -75,7 +88,9 @@ defmodule Phos.Notification.Scheduller do
       {:ok, data, true} ->
         spawn(fn -> send_notification(data) end)
         {:noreply, state}
-      _ -> {:noreply, state}
+
+      _ ->
+        {:noreply, state}
     end
   end
 
@@ -90,14 +105,19 @@ defmodule Phos.Notification.Scheduller do
   @impl true
   def handle_call({:update_status, id, status}, _from, state) do
     case lookup(state, id) do
-      {:ok, _data, current_status} when current_status == status -> {:reply, "Cannot update status", state}
-      {:ok, %{id: id} = data, _current_status} -> 
+      {:ok, _data, current_status} when current_status == status ->
+        {:reply, "Cannot update status", state}
+
+      {:ok, %{id: id} = data, _current_status} ->
         Phos.External.Notion.update_platform_notification(id, %{
           properties: %{"Active" => %{"checkbox" => status}}
-        }) 
+        })
+
         GenServer.cast(__MODULE__, :renew)
         {:reply, Map.put(data, :active, status), state}
-      _ -> {:reply, "data not found", state}
+
+      _ ->
+        {:reply, "data not found", state}
     end
   end
 
@@ -110,7 +130,7 @@ defmodule Phos.Notification.Scheduller do
 
   @impl true
   def handle_call(:list, _from, state) do
-    data = 
+    data =
       :ets.tab2list(state)
       |> Enum.map(fn {_id, d, active} ->
         Map.put(d, :active, active)
@@ -138,7 +158,8 @@ defmodule Phos.Notification.Scheduller do
     fetch_tokens(data)
     |> Phos.Notification.push(
       %{title: title, body: Map.get(data, :body, "")},
-    %{action_path: "#{data.action_path}/#{data.archetype_id}"})
+      %{action_path: "#{data.action_path}/#{data.archetype_id}"}
+    )
   end
 
   defp fetch_tokens(%{regions: regions}) when is_list(regions) do
@@ -149,10 +170,10 @@ defmodule Phos.Notification.Scheduller do
     |> Phos.Action.notifiers_by_geohashes()
     |> Enum.map(fn n ->
       cond do
-      is_map(n) == true ->
+        is_map(n) == true ->
           Map.get(n, :fcm_token, nil)
 
-      true ->
+        true ->
           nil
       end
     end)
@@ -164,16 +185,20 @@ defmodule Phos.Notification.Scheduller do
   defp run_notification_timer(notifications) do
     now_time = current_time()
     Logger.debug("Running notification timer at #{now_time}")
-    Enum.filter(notifications, fn {_id, %{time_condition: ntime, frequency: frequency}, _active} ->
-      [date, time] = case ntime do
-        %DateTime{} -> [DateTime.to_date(ntime), DateTime.to_time(now_time)]
-        %Time{} -> [Timex.today, ntime]
-      end
 
-      diff = case should_execute?(frequency, date, now_time) do
-        true -> Time.diff(time, ntime)
-        _ -> -1
-      end
+    Enum.filter(notifications, fn {_id, %{time_condition: ntime, frequency: frequency}, _active} ->
+      [date, time] =
+        case ntime do
+          %DateTime{} -> [DateTime.to_date(ntime), DateTime.to_time(now_time)]
+          %Time{} -> [Timex.today(), ntime]
+        end
+
+      diff =
+        case should_execute?(frequency, date, now_time) do
+          true -> Time.diff(time, ntime)
+          _ -> -1
+        end
+
       diff > 0 and diff < 60
     end)
     |> Enum.map(&Kernel.elem(&1, 1))
@@ -212,5 +237,4 @@ defmodule Phos.Notification.Scheduller do
     DateTime.utc_now()
     |> Timex.Timezone.convert(singapore_timezone())
   end
-
 end

@@ -32,7 +32,7 @@ let liveSocket = new LiveSocket("/live", Socket, {
   },
   hooks: Hooks
 }
-                               )
+)
 
 // Show progress bar on live navigation and form submits
 topbar.config({ barColors: { 0: "#29d" }, shadowColor: "rgba(0, 0, 0, .3)" })
@@ -49,7 +49,7 @@ window.addEventListener("phos:clipcopy", (event) => {
   console.log(event.target);
   if ("share" in navigator) {
     const text = event.target.textContent;
-    navigator.share({ title: document.getElementsByName('og:title')[0].getAttribute('content'), url: text});
+    navigator.share({ title: document.getElementsByName('og:title')[0].getAttribute('content'), url: text });
   }
   else if ("clipboard" in navigator) {
     const text = event.target.textContent;
@@ -66,7 +66,7 @@ var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
 var themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
 
 // Change the icons inside the button based on previous settings
-if(themeToggleDarkIcon && themeToggleLightIcon){
+if (themeToggleDarkIcon && themeToggleLightIcon) {
   if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
     themeToggleLightIcon.classList.remove('hidden');
   } else {
@@ -103,7 +103,8 @@ if(themeToggleDarkIcon && themeToggleLightIcon){
     }
 
   }
-)};
+  )
+};
 
 
 

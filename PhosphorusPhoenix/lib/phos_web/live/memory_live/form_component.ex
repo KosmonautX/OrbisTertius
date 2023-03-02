@@ -6,25 +6,28 @@ defmodule PhosWeb.MemoryLive.FormComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div>
-      <.header>
-        <%= @title %>
-        <:subtitle>Use this form to manage memory records in your database.</:subtitle>
-      </.header>
-
+    <div class="relative flex flex-col w-full justify-between px-2 ">
       <.simple_form
         :let={f}
+        class="w-full my-4"
         for={@changeset}
         id="memory-form"
         phx-target={@myself}
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={{f, :message}} type="text" label="message" />
-        <.input field={{f, :media}} type="checkbox" label="media" />
-        <.input field={{f, :user_source_id}} type="hidden" value={@current_user.id}/>
+        <.input field={{f, :message}} type="text" label="" />
+        <.input field={{f, :user_source_id}} type="hidden" value={@current_user.id} />
+        <.input
+          field={{f, :rel_subject_id}}
+          type="hidden"
+          value="92f48859-8c24-4f55-984d-65621073351f"
+        />
+
         <:actions>
-          <.button phx-disable-with="Saving..." type="submit" >Save Memory</.button>
+          <button type="submit" phx-disable-with="Saving..." class="absolute inset-y-0 right-5">
+            <Heroicons.paper_airplane class="h-8 w-8 text-teal-400 font-bold" />
+          </button>
         </:actions>
       </.simple_form>
     </div>

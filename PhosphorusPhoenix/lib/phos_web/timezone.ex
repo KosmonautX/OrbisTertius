@@ -15,5 +15,4 @@ defmodule PhosWeb.Timezone do
      |> assign(:locale, locale)
      |> assign(:timezone, %{timezone: timezone, timezone_offset: timezone_offset})}
   end
-
 end

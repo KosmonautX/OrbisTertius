@@ -11,22 +11,20 @@
           id="orb-initiator-username"
           user={@orb.initiator}
           show_location={false}
-          main_height="lg:h-64">
-          </.user_profile_banner>
+          main_height="lg:h-64"
+        >
+        </.user_profile_banner>
       </div>
       <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md text-center">
         <.user_information_card_orb
           id="orb-initiator-public-profile"
           user={@orb.initiator}
-          flex="">
+          flex=""
+        >
           <:ally_button current_user={@current_user} user={@orb.initiator} socket={@socket} />
         </.user_information_card_orb>
       </div>
     </div>
-
-
-
-
     <!-- Post card and Comments-->
     <div class="lg:hidden block w-full dark:bg-gray-900 ">
       <div class="flex flex-wrap items-center justify-center p-2 border-b border-gray-300">
@@ -92,11 +90,7 @@
           />
         </div>
       </div>
-
     </div>
-
-
-
     <!--Desktop Related Post-->
     <div class="hidden lg:block w-full lg:w-4/12 lg:flex-none">
       <h5 class="text-left font-semibold text-lg dark:text-white">

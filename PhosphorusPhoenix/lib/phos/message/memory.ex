@@ -6,6 +6,7 @@ defmodule Phos.Message.Memory do
   @primary_key {:id, :binary_id, autogenerate: false}
   @foreign_key_type :binary_id
   @timestamps_opts [type: :utc_datetime_usec]
+
   schema "memories" do
     field :media, :boolean, default: false
     field :message, :string

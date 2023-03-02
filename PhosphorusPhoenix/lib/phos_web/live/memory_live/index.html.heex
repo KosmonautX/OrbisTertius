@@ -1,70 +1,49 @@
-<.header>
-  Listing Memories
-  <:actions>
-    <.link patch={~p"/memories/new"}>
-      <.button>New Memory</.button>
-    </.link>
-  </:actions>
-</.header>
-
-<.table id="memories" rows={@memories} row_click={&JS.navigate(~p"/memories/#{&1}")}>
-  <:col :let={memory} label="Message"><%= memory.message %></:col>
-  <:col :let={memory} label="UserName">
-    <.link navigate={
-      path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{memory.user_source.username}")
-    }>
-      <%= memory |> get_in([Access.key(:user_source, %{}), Access.key(:username, "-")]) %>
-    </.link>
-  </:col>
-
-  <:col :let={memory} label="orb">
-    <%= if memory.orb_subject do %>
-      <img src={Phos.Orbject.S3.get!("USR", memory.user_source.id, "public/profile/lossless")} />
-    <% end %>
-  </:col>
-  <:col :let={memory} label="Media"><%= memory.media %></:col>
-
-  <:action :let={memory}>
-    <div class="sr-only">
-      <.link navigate={~p"/memories/#{memory}"}>Show</.link>
-    </div>
-    <.link patch={~p"/memories/#{memory}/edit"}>Edit</.link>
-  </:action>
-  <:action :let={memory}>
-    <.link phx-click={JS.push("delete", value: %{id: memory.id})} data-confirm="Are you sure?">
-      Delete
-    </.link>
-  </:action>
-</.table>
-<.link navigate={~p"/memories/new"}>Send New Message</.link>
-<.modal
-  :if={@live_action in [:new, :edit]}
-  id="memory-modal"
-  show
-  on_cancel={JS.navigate(~p"/memories")}
->
-  <.live_component
-    module={PhosWeb.MemoryLive.FormComponent}
-    id={@memory.id || :new}
-    title={@page_title}
-    action={@live_action}
-    current_user={@current_user}
-    memory={@memory}
-    navigate={~p"/memories"}
-  />
-</.modal>
-
-
-  <div class="container mx-auto">
-      <div class="min-w-full border rounded lg:grid lg:grid-cols-3">
-        <div class="border-r border-gray-300 lg:col-span-1">
-            <div class="mx-3 my-3 relative text-gray-600">
-              <span class="absolute inset-y-0 right-0 flex items-center pr-2">
-                <Heroicons.x_mark solid class="h-5 w-5 stroke-current" />
-              </span>
-              <input type="search" class="block w-full py-3 bg-gray-100 rounded-2xl" name="search"
-                placeholder="Search in Chat" required />
-            </div>
+<div class="container mx-auto	lg:mt-24 mt-16">
+  <div class="min-w-full lg:border lg:rounded lg:grid lg:grid-cols-3">
+    <div class="lg:border-r lg:border-gray-300 lg:col-span-1 w-full">
+      <div class="relative text-gray-600 mx-2 my-2">
+        <span class="absolute inset-y-0 right-0 flex items-center pr-2">
+          <Heroicons.magnifying_glass class="w-5 h-5 dark:text-white mr-2" />
+        </span>
+        <input
+          type="search"
+          class="block py-3 pl-3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-2xl focus:ring-teal-500 focus:border-teal-500 w-full p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500 "
+          name="search"
+          placeholder="Search in chat......"
+          required
+        />
       </div>
+      <.last_message memories={@memories}></.last_message>
     </div>
+
+    <div class="hidden lg:col-span-2 lg:block">
+      <div class="relative flex items-center p-3 border-b border-gray-300">
+        <img
+          class="object-cover w-10 h-10 rounded-full"
+          src="https://cdn.pixabay.com/photo/2018/01/15/07/51/woman-3083383__340.jpg"
+          alt="username"
+        />
+        <span class="block ml-2 font-bold text-gray-600">Emma</span>
+        <span class="absolute w-3 h-3 bg-green-600 rounded-full left-10 top-3"></span>
+      </div>
+      <.live_component
+        module={PhosWeb.Components.ListMessage}
+        id="infinite-home-desktop"
+        memories={@memories}
+        current_user={@current_user}
+        timezone={@timezone}
+        page={@page}
+      />
+
+      <.live_component
+        module={PhosWeb.MemoryLive.FormComponent}
+        id={:new}
+        title={@page_title}
+        action={:new}
+        current_user={@current_user}
+        memory={%Phos.Message.Memory{}}
+        navigate={~p"/memories"}
+      />
+    </div>
+  </div>
 </div>

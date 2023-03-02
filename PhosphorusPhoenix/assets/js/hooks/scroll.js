@@ -5,6 +5,7 @@ export default Scroll = {
         const target = entries[0];
         if (target.isIntersecting && this.pending == this.page()) {
             this.pending = this.page() + 1;
+            console.log("load")
             this.pushEvent("load-more", {});
         }
     },

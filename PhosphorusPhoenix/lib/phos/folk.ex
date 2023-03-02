@@ -8,7 +8,7 @@ defmodule Phos.Folk do
   alias Phos.Repo
   alias Phos.Users.{User, RelationBranch, RelationRoot}
 
-  #@ttl :timer.hours(1)
+  # @ttl :timer.hours(1)
 
   #   @doc """
   #   Gets a single Relation.
@@ -27,23 +27,27 @@ defmodule Phos.Folk do
   #
   def get_relation!(id),
     do: Repo.get!(RelationRoot, id)
+
   def get_relation!(id, your_id),
-    do: Repo.get!(RelationRoot, id)
-    |> self_initiated_enricher(your_id)
+    do:
+      Repo.get!(RelationRoot, id)
+      |> self_initiated_enricher(your_id)
 
   defp self_initiated_enricher(%RelationRoot{} = rel_root, your_id) do
     %{rel_root | self_initiated: your_id == rel_root.initiator_id}
     |> case do
-         %{self_initiated: true} = rel ->
-           rel |> Repo.preload([:acceptor])
-         %{self_initiated: false} = rel ->
-           rel |> Repo.preload([:initiator])
+      %{self_initiated: true} = rel ->
+        rel |> Repo.preload([:acceptor])
+
+      %{self_initiated: false} = rel ->
+        rel |> Repo.preload([:initiator])
     end
   end
 
   def get_relation_by_pair(self, other),
-    do: Repo.get_by(RelationBranch, [user_id: self, friend_id: other])
-    |> Phos.Repo.preload(:root)
+    do:
+      Repo.get_by(RelationBranch, user_id: self, friend_id: other)
+      |> Phos.Repo.preload(:root)
 
   #   @doc """
   #   Creates a Relation.
@@ -63,16 +67,22 @@ defmodule Phos.Folk do
     |> RelationRoot.gen_branches_changeset(attrs)
     |> Repo.insert()
     |> case do
-         {:ok, rel} = data ->
-           rel = rel |> Repo.preload([:initiator])
-           spawn(fn ->
-             Phos.Notification.target("'USR.#{rel.acceptor_id}' in topics",
-               %{title: "#{rel.initiator.username} requested to be your ally 🤝"},
-               %{action_path: "/folkland/self/requests"})
-           end)
-           data
-         err -> err
-       end
+      {:ok, rel} = data ->
+        rel = rel |> Repo.preload([:initiator])
+
+        spawn(fn ->
+          Phos.Notification.target(
+            "'USR.#{rel.acceptor_id}' in topics",
+            %{title: "#{rel.initiator.username} requested to be your ally 🤝"},
+            %{action_path: "/folkland/self/requests"}
+          )
+        end)
+
+        data
+
+      err ->
+        err
+    end
   end
 
   #   @doc """
@@ -93,18 +103,23 @@ defmodule Phos.Folk do
     |> RelationRoot.mutate_state_changeset(attrs)
     |> Repo.update()
     |> case do
-         {:ok, rel} = data ->
-           rel = rel |> Repo.preload([:acceptor])
-           spawn(fn ->
-             Phos.Notification.target("'USR.#{rel.initiator_id}' in topics",
-               %{title: "#{rel.acceptor.username} accepted your ally request ❤️"},
-               %{action_path: "/userland/others/#{rel.acceptor_id}"})
-           end)
-           data
-         err -> err
-       end
-  end
+      {:ok, rel} = data ->
+        rel = rel |> Repo.preload([:acceptor])
 
+        spawn(fn ->
+          Phos.Notification.target(
+            "'USR.#{rel.initiator_id}' in topics",
+            %{title: "#{rel.acceptor.username} accepted your ally request ❤️"},
+            %{action_path: "/userland/others/#{rel.acceptor_id}"}
+          )
+        end)
+
+        data
+
+      err ->
+        err
+    end
+  end
 
   @doc """
   Deletes a relation.
@@ -122,7 +137,6 @@ defmodule Phos.Folk do
     Repo.delete(relation)
   end
 
-
   @doc """
   Add friend
 
@@ -130,20 +144,31 @@ defmodule Phos.Folk do
   Accpetor cannot request a user as friend
 
   ## Examples:
+  9878f0b1-bc3a-49e7-9d5c-5183f4871957
+  ￼
+  Message @bAladdin
 
   iex> add_friend(user_id_with_no_friends)
   {:ok, %Phos.Users.Relation{}}
 
   """
-  @spec add_friend(requester_id :: Ecto.UUID.t(), acceptor_id :: Ecto.UUID.t()) :: {:ok, Phos.Users.Relation.t()} | {:error, Ecto.Changeset.t()}
+  @spec add_friend(requester_id :: Ecto.UUID.t(), acceptor_id :: Ecto.UUID.t()) ::
+          {:ok, Phos.Users.Relation.t()} | {:error, Ecto.Changeset.t()}
   def add_friend(requester_id, acceptor_id) when requester_id != acceptor_id do
-    payload = %{"initiator_id" => requester_id,
-                "acceptor_id" => acceptor_id,
-                "branches" => [%{"user_id" => acceptor_id, "friend_id"=> requester_id},
-                               %{"user_id" => requester_id, "friend_id"=> acceptor_id}]}
+    payload = %{
+      "initiator_id" => requester_id,
+      "acceptor_id" => acceptor_id,
+      "branches" => [
+        %{"user_id" => acceptor_id, "friend_id" => requester_id},
+        %{"user_id" => requester_id, "friend_id" => acceptor_id}
+      ]
+    }
+
     create_relation(payload)
   end
-  def add_friend(_requester_id, _acceptor_id), do: {:error, "API not needed to connect to your own inner self"}
+
+  def add_friend(_requester_id, _acceptor_id),
+    do: {:error, "API not needed to connect to your own inner self"}
 
   @doc """
   List of user pending friends request
@@ -161,11 +186,15 @@ defmodule Phos.Folk do
   """
   @spec pending_requests(user_id :: Ecto.UUID.t() | Phos.Users.User.t()) :: [Phos.Users.User.t()]
   def pending_requests(user, page \\ 1, sort_attribute \\ :inserted_at, limit \\ 15)
-  def pending_requests(%Phos.Users.User{id: id}, page, sort_attribute, limit), do: pending_requests(id, page, sort_attribute, limit)
+
+  def pending_requests(%Phos.Users.User{id: id}, page, sort_attribute, limit),
+    do: pending_requests(id, page, sort_attribute, limit)
+
   def pending_requests(user_id, page, sort_attribute, limit) do
-    query = from r in RelationRoot,
-      where: r.initiator_id == ^user_id and r.state == "requested",
-      preload: [:acceptor]
+    query =
+      from r in RelationRoot,
+        where: r.initiator_id == ^user_id and r.state == "requested",
+        preload: [:acceptor]
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
   end
@@ -184,14 +213,18 @@ defmodule Phos.Folk do
       [%User{}, %User{}]
 
   """
-  @spec friend_requests(user_id :: Ecto.UUID.t() | Phos.Users.User.t(), filters :: Keyword.t()) :: [Phos.Users.User.t()] | Phos.Users.User.t()
+  @spec friend_requests(user_id :: Ecto.UUID.t() | Phos.Users.User.t(), filters :: Keyword.t()) ::
+          [Phos.Users.User.t()] | Phos.Users.User.t()
   def friend_requests(user, page \\ 1, sort_attribute \\ :inserted_at, limit \\ 15)
-  def friend_requests(%Phos.Users.User{id: id}, page, sort_attribute, limit), do: friend_requests(id, page, sort_attribute, limit)
-  def friend_requests(user_id, page, sort_attribute, limit) do
-    query = from r in RelationRoot,
-      where: r.acceptor_id == ^user_id and r.state == "requested",
-      preload: [:initiator]
 
+  def friend_requests(%Phos.Users.User{id: id}, page, sort_attribute, limit),
+    do: friend_requests(id, page, sort_attribute, limit)
+
+  def friend_requests(user_id, page, sort_attribute, limit) do
+    query =
+      from r in RelationRoot,
+        where: r.acceptor_id == ^user_id and r.state == "requested",
+        preload: [:initiator]
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
   end
@@ -262,48 +295,54 @@ defmodule Phos.Folk do
 
   """
   def friends(user_id, page \\ 1, sort_attribute \\ :completed_at, limit \\ 15)
-  def friends(%Phos.Users.User{id: id}, page, sort_attribute, limit), do: friends(id, page, sort_attribute, limit)
+
+  def friends(%Phos.Users.User{id: id}, page, sort_attribute, limit),
+    do: friends(id, page, sort_attribute, limit)
 
   ## cache invalidation when updated needed
-  #@decorate cacheable(cache: Cache, key: {User, :friends, [user_id, page, sort_attribute, limit]}, opts: [ttl: @ttl])
+  # @decorate cacheable(cache: Cache, key: {User, :friends, [user_id, page, sort_attribute, limit]}, opts: [ttl: @ttl])
 
   def friends({user_id, your_id}, page, sort_attribute, limit) do
-    query = from r in Phos.Users.RelationBranch,
-      where: r.user_id == ^user_id and not is_nil(r.completed_at),
-      left_join: friend in assoc(r, :friend),
-      select: friend,
-      left_join: mutual in assoc(friend, :relations),
-      on: mutual.friend_id == ^your_id,
-      left_join: root in assoc(mutual, :root),
-      select_merge: %{self_relation: root}
+    query =
+      from r in Phos.Users.RelationBranch,
+        where: r.user_id == ^user_id and not is_nil(r.completed_at),
+        left_join: friend in assoc(r, :friend),
+        select: friend,
+        left_join: mutual in assoc(friend, :relations),
+        on: mutual.friend_id == ^your_id,
+        left_join: root in assoc(mutual, :root),
+        select_merge: %{self_relation: root}
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
   end
 
   def friends(user_id, page, sort_attribute, limit) do
-    query = from r in RelationBranch,
-      where: not is_nil(r.completed_at),
-      where: r.user_id == ^user_id,
-      preload: [:root, :friend]
+    query =
+      from r in RelationBranch,
+        where: not is_nil(r.completed_at),
+        where: r.user_id == ^user_id,
+        preload: [:root, :friend]
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
   end
 
   def friends_lite(user_id) do
-    query = from r in RelationBranch,
-      where: not is_nil(r.completed_at),
-      where: r.user_id == ^user_id,
-      select: r.friend_id
+    query =
+      from r in RelationBranch,
+        where: not is_nil(r.completed_at),
+        where: r.user_id == ^user_id,
+        select: r.friend_id
 
     Repo.all(query)
   end
 
   def notifiers_by_friends(user_id) do
-    query = from r in RelationBranch,
-      where: not is_nil(r.completed_at) and r.user_id == ^user_id,
-      inner_join: friend in assoc(r, :friend),
-      distinct: friend.integrations["fcm_token"],
-      select: friend.integrations
+    query =
+      from r in RelationBranch,
+        where: not is_nil(r.completed_at) and r.user_id == ^user_id,
+        inner_join: friend in assoc(r, :friend),
+        distinct: friend.integrations["fcm_token"],
+        select: friend.integrations
 
     Repo.all(query)
   end
@@ -316,6 +355,5 @@ defmodule Phos.Folk do
     |> do_get_feeds()
   end
 
-  defp do_get_feeds(friend_ids), do: Phos.Action.list_orbs([initiator_id: friend_ids])
-
+  defp do_get_feeds(friend_ids), do: Phos.Action.list_orbs(initiator_id: friend_ids)
 end

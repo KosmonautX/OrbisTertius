@@ -98,6 +98,7 @@ defmodule PhosWeb.Router do
       live "/memories/:id/show/edit", MemoryLive.Show, :edit
 
 
+
       live "/reveries", ReverieLive.Index, :index
       live "/reveries/new", ReverieLive.Index, :new
       live "/reveries/:id/edit", ReverieLive.Index, :edit
