@@ -60,7 +60,7 @@ defmodule PhosWeb.AllyButton do
   def handle_event("reject_ally_request", _, %{assigns: %{current_user: curr, user: user}} = socket) do
     with %Phos.Users.RelationBranch{root: root} <- Phos.Folk.get_relation_by_pair(curr.id, user.id),
          true <- root.acceptor_id == curr.id,
-         {:ok, _rel} <- Phos.Folk.update_relation(root, %{"state" => "blocked"}) do
+         {:ok, _rel} <- Phos.Folk.delete_relation(root) do
       PhosWeb.Endpoint.broadcast_from(self(), "folks", "reject", root.id)
       {:noreply, 
         socket
@@ -119,7 +119,7 @@ defmodule PhosWeb.AllyButton do
     """
   end
 
-  def render(%{ally: ally} = assigns) when ally == "requested"  do
+  def render(%{ally: ally} = assigns) when ally == "requested" or ally == "blocked" do
     ~H"""
     <div class="flex">
       <.button class="flex items-center p-0 items-start align-center"
@@ -127,9 +127,9 @@ defmodule PhosWeb.AllyButton do
         <span><%= String.capitalize(@ally) %></span>
       </.button>
       <.modal id={"delete_friend_request_#{@user.id}"} on_confirm={JS.push("delete_ally_request", target: @myself) |> hide_modal("delete_friend_request")}>
-        <:title>Delete friend request confirmation ?</:title>
+        <:title>Unally?</:title>
         <div>
-          Are you sure want to delete your friend request to <%= @user.username %> ?
+          Are you sure want to delete your request to <%= @user.username %> ?
         </div>
         <:confirm tone={:danger}>Yes, delete</:confirm>
         <:cancel>No, keep requesting</:cancel>
@@ -169,7 +169,6 @@ defmodule PhosWeb.AllyButton do
     </div>
     """
   end
-
 
   def render(assigns) do
     ~H"""

@@ -14,7 +14,7 @@ defmodule PhosWeb.Components.ScrollAlly do
           user={ally}
         >
           <:information>
-            <%= ally |> get_in([Access.key(:public_profile, %{}), Access.key(:occupation, "-")]) %>
+            <%= ally |> get_in([Access.key(:public_profile, %{}), Access.key(:occupation, "Community Member")]) %>
           </:information>
           <:actions>
             <.live_component

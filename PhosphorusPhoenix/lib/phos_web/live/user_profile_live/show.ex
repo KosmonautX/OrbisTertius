@@ -98,7 +98,12 @@ defmodule PhosWeb.UserProfileLive.Show do
     case init_id == user.id or acc_id == user.id do
       true ->
         send_update(PhosWeb.AllyButton,
-          id: "user_information_card_ally",
+          id: "user-information-card-ally",
+          related_users: %{receiver_id: init_id, sender_id: user.id}
+        )
+
+        send_update(PhosWeb.AllyButton,
+          id: "user-information-card-ally-desktop",
           related_users: %{receiver_id: init_id, sender_id: user.id}
         )
 

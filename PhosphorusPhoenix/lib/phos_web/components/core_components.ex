@@ -281,7 +281,7 @@ defmodule PhosWeb.CoreComponents do
   defp button_class(:primary), do: "bg-teal-400 hover:bg-teal-600"
   defp button_class(:warning), do: "bg-yellow-400 hover:bg-yellow-600"
   defp button_class(:success), do: "bg-green-400 hover:bg-green-600"
-
+  defp button_class(:dark), do: "bg-slate-800 hover:bg-black"
   defp button_class(:icons),
     do:
       "inline-block text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm"
@@ -1775,6 +1775,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:user, :map, required: true)
   attr(:flex, :any, default: nil)
   attr(:id, :string, required: true)
+  slot(:actions)
 
   def user_information_card(assigns) do
     assigns =
@@ -1798,13 +1799,10 @@ defmodule PhosWeb.CoreComponents do
 
         <div class="flex gap-6">
           <a id={"#{@id}-sharebtn"} phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}>
-            <div id={"#{@id}-copylink"} class="hidden">
-              <%= PhosWeb.Endpoint.host() <>
-                path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
-            </div>
+            <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.host() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %></div>
             <.share_btn type="banner" class="h-8 ml-4 dark:fill-white"></.share_btn>
           </a>
-          <.ally_btn type="banner" class="h-8 ml-4 dark:fill-white"></.ally_btn>
+          <%= render_slot(@actions) %>
         </div>
       </div>
       <div class="space-y-1">
