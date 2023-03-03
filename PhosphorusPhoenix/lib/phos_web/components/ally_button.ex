@@ -1,5 +1,6 @@
 defmodule PhosWeb.AllyButton do
   use PhosWeb, :live_component
+  import PhosWeb.SVG
 
   def update(%{current_user: curr, user: user} = assigns, socket) when not is_nil(curr) do
     {:ok, 
@@ -17,11 +18,12 @@ defmodule PhosWeb.AllyButton do
   end
 
   def update(%{root_id: root_id} = _assigns, %{assigns: %{current_user: user}} = socket) do
-    ally =
-      root_id
-      |> Phos.Folk.get_relation!()
-      |> ally_status(user.id)
-    {:ok, assign(socket, :ally, ally)}
+    rel = Phos.Folk.get_relation!(root_id)
+    ally = rel |> ally_status(user.id)
+    {:ok, socket
+          |>assign(:ally, ally)
+          |>assign(:rel, rel)
+    }
   end
 
   def update(_assigns, socket), do: {:ok, assign(socket, ally: false, current_user: nil)}
@@ -119,6 +121,16 @@ defmodule PhosWeb.AllyButton do
     """
   end
 
+  def render(%{ally: "completed", user: user} = assigns) do
+    ~H"""
+    <div class="flex">
+    <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{user.id}")}>
+    <.chat type="banner" class="h-8 ml-4 dark:fill-white"/>
+    </.link>
+    </div>
+    """
+  end
+
   def render(%{ally: ally} = assigns) when ally == "requested" or ally == "blocked" do
     ~H"""
     <div class="flex">
@@ -174,10 +186,8 @@ defmodule PhosWeb.AllyButton do
     ~H"""
     <div class="flex">
       <.button class="flex items-center p-0 items-start align-center"
-        phx-target={@myself}
-        tone={if(@ally == "completed", do: :warning, else: :primary)}
-        phx-click="chat_ally">
-        <span class="capitalize"><%= if(@ally == "completed", do: "Chat", else: @ally) %></span>
+        tone={:primary}>
+        <span class="capitalize"><%= @ally %></span>
       </.button>
     </div>
     """

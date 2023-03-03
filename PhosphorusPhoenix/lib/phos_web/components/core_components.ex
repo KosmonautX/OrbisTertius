@@ -1023,7 +1023,7 @@ defmodule PhosWeb.CoreComponents do
               </a>
             </li>
             <li>
-              <a href="#" class="flex items-center justify-between lg:hover:text-teal-500   ">
+              <a href="/memories" class="flex items-center justify-between lg:hover:text-teal-500   ">
                 Chats
                 <Heroicons.chevron_down solid class="w-4 h-4 ml-1 stroke-current dark:text-white" />
               </a>
