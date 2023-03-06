@@ -1,11 +1,11 @@
 <!--desktop View -->
-<section class="lg:container mx-auto h-screen lg:mt-20 mt-14 ">
+<section class=" mx-auto h-screen lg:mt-20 mt-14 lg:px-20">
   <div
     :if={not is_nil(@orb.initiator) && @orb.initiator}
     class="flex lg:flex-row flex-col items-start mt-6 lg:gap-4"
   >
     <!-- Desktop View in Orb View Profile-->
-    <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full max-w-full px-3 lg:w-3/12  lg:flex-none">
+    <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full max-w-full lg:w-3/12  lg:flex-none">
       <div class="lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-md">
         <.user_profile_banner
           id="orb-initiator-username"
@@ -23,12 +23,8 @@
         </.user_information_card_orb>
       </div>
     </div>
-
-
-
-
     <!-- Post card and Comments-->
-    <div class="lg:hidden block w-full dark:bg-gray-900 ">
+    <div class="lg:hidden block w-full dark:bg-gray-900  sticky top-10 bg-white z-10 ">
       <div class="flex flex-wrap items-center justify-center p-2 border-b border-gray-300">
         <.link patch={~p"/user/#{@orb.initiator.username}"}>
           <Heroicons.chevron_left class="w-6 h-6 dark:text-white font-semibold" />

@@ -542,7 +542,8 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <div
       id={@id}
-      class="relative w-full flex flex-col bg-white border-0 border-transparent border-solid shadow-xl p-2 overflow-scroll">
+      class="relative w-full flex flex-col bg-white border-0 border-transparent border-solid shadow-xl p-2 overflow-scroll"
+    >
       <table class="w-full align-top text-slate-500">
         <thead class="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-base tracking-none whitespace-nowrap text-slate-400">
           <tr>
@@ -1277,7 +1278,7 @@ defmodule PhosWeb.CoreComponents do
           />
         </.link>
         <div>
-          <h2 class="text-base font-bold text-gray-900  dark:text-white lg:text-lg ml-1">
+          <h2 class="text-base font-bold text-gray-900  dark:text-white lg:text-lg ">
             <%= "@#{@user.username}" %>
           </h2>
           <p class="flex items-center lg:text-base text-gray-700 dark:text-gray-400 ml-1">
@@ -1386,7 +1387,7 @@ defmodule PhosWeb.CoreComponents do
   def media_carousel(assigns) do
     ~H"""
     <div :if={!is_nil(@media)} id={"#{@id}-carousel-wrapper"}>
-      <section  class="glide" id={"#{@id}-carousel"} phx-update="ignore" phx-hook="Carousel">
+      <section class="glide" id={"#{@id}-carousel"} phx-update="ignore" phx-hook="Carousel">
         <div id={"#{@id}-container"} data-glide-el="track" class="glide__track relative">
           <div class="glide__slides">
             <div :for={m <- @media} class="glide__slide">
@@ -1440,15 +1441,15 @@ defmodule PhosWeb.CoreComponents do
             ]} />
             <div class="items-end">
               <.orb_action
-                  :if={@orb.media}
-                  id={"#{@id}-scry-orb-#{@orb.id}"}
-                  orb={@orb}
-                  date={@timezone}
-                  main_color="text-white"
-                />
-              </div>
+                :if={@orb.media}
+                id={"#{@id}-scry-orb-#{@orb.id}"}
+                orb={@orb}
+                date={@timezone}
+                main_color="text-white"
+              />
             </div>
           </div>
+        </div>
         <div :if={length(@media) > 1} data-glide-el="controls">
           <div
             data-glide-el="controls[nav]"
@@ -1499,17 +1500,23 @@ defmodule PhosWeb.CoreComponents do
   def orb_information(assigns) do
     assigns =
       assigns
-      |> assign(:title,
-    case Earmark.as_html(assigns.title) do
-      {:ok, result, _} -> HtmlSanitizeEx.html5(result) |> raw()
-      _ -> "-"
-    end)
-      ## if contains a link opengraph scrape that mofo
-      ~H"""
-      <section id={"#{@id}-info"} class={["prose prose-a:text-blue-500 text-lg  font-bold px-2 dark:prose-invert", @info_color]}>
-        <%= @title %>
-      </section>
-      """
+      |> assign(
+        :title,
+        case Earmark.as_html(assigns.title) do
+          {:ok, result, _} -> HtmlSanitizeEx.html5(result) |> raw()
+          _ -> "-"
+        end
+      )
+
+    ## if contains a link opengraph scrape that mofo
+    ~H"""
+    <section
+      id={"#{@id}-info"}
+      class={["prose prose-a:text-blue-500 text-lg  font-bold px-2 dark:prose-invert", @info_color]}
+    >
+      <%= @title %>
+    </section>
+    """
   end
 
   @doc """
@@ -1559,10 +1566,10 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <div
       id={"#{@id}-actions"}
-      class={["flex justify-between w-full font-bold text-base px-2", @main_color]}
+      class={["flex justify-between w-full font-medium text-base px-2", @main_color]}
     >
       <div>
-        <span class="dark:text-white lg:text-lg text-base">
+        <span class="dark:text-white ">
           <%= get_date(@orb.inserted_at, @date) %>
         </span>
       </div>

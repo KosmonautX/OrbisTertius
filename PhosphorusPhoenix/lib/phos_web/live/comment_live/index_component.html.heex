@@ -1,7 +1,7 @@
 <div class="w-full ">
   <h2 class="text-base text-gray-900 font-bold lg:text-lg dark:text-white p-2">Comments</h2>
   <hr class="h-px border-2" />
-  <div class="ui threaded comments overflow-y-auto lg:h-60 h-full ">
+  <div class="ui threaded comments overflow-y-auto h-full">
     <.live_component
       :for={comment <- filter_root_comments_chrono(@comments)}
       module={PhosWeb.CommentLive.ShowComponent}
