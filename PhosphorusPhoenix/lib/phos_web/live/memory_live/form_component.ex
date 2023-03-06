@@ -19,9 +19,10 @@ defmodule PhosWeb.MemoryLive.FormComponent do
         <.input field={{f, :message}} type="text" label="" />
         <.input field={{f, :user_source_id}} type="hidden" value={@current_user.id} />
         <.input
+          :if={!is_nil(@rel)}
           field={{f, :rel_subject_id}}
           type="hidden"
-          value="92f48859-8c24-4f55-984d-65621073351f"
+          value={@rel.id}
         />
 
         <:actions>

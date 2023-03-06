@@ -13,19 +13,22 @@
           required
         />
       </div>
-      <.last_message memories={@memories}></.last_message>
+      <.last_message id={"last-message"} memories={@memories}/>
     </div>
 
-    <div class="hidden lg:col-span-2 lg:block">
+    <div :if={@user} class="hidden lg:col-span-2 lg:block">
+      <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.id}")}>
       <div class="relative flex items-center p-3 border-b border-gray-300">
         <img
           class="object-cover w-10 h-10 rounded-full"
-          src="https://cdn.pixabay.com/photo/2018/01/15/07/51/woman-3083383__340.jpg"
+          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
           alt="username"
         />
-        <span class="block ml-2 font-bold text-gray-600">Emma</span>
-        <span class="absolute w-3 h-3 bg-green-600 rounded-full left-10 top-3"></span>
+        <span class="block ml-2 font-bold text-gray-600">
+            <%= get_in(@user, [Access.key(:public_profile, %{}), Access.key(:public_name, "")]) || @user.username %> </span>
+        <!-- <span class="absolute w-3 h-3 bg-green-600 rounded-full left-10 top-3"></span> -->
       </div>
+      </.link>
       <.live_component
         module={PhosWeb.Components.ListMessage}
         id="infinite-home-desktop"
@@ -40,9 +43,10 @@
         id={:new}
         title={@page_title}
         action={:new}
+        rel={@user.self_relation}
         current_user={@current_user}
         memory={%Phos.Message.Memory{}}
-        navigate={~p"/memories"}
+        navigate={~p"/memories/user/#{@user}"}
       />
     </div>
   </div>

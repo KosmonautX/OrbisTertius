@@ -1357,12 +1357,13 @@ defmodule PhosWeb.CoreComponents do
       />
 
       <.link
-        :if={@media == []}
+
         id={"#{@id}-scry-orb-#{@orb.id}-link"}
         class="relative"
         navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
       >
-        <.orb_information id={"#{@id}-scry-orb-#{@orb.id}"} title={@orb.title} />
+        <.orb_information :if={@media == []} id={"#{@id}-scry-orb-#{@orb.id}"} title={@orb.payload.inner_title || @orb.title} />
+        <.orb_information :if={!is_nil(@orb.payload.info)} id={"#{@id}-scry-orb-#{@orb.id}"} title={@orb.payload.info} />
       </.link>
       <.orb_action :if={@media == []} id={"#{@id}-scry-orb-#{@orb.id}"} orb={@orb} date={@timezone} />
     </div>
@@ -1493,7 +1494,7 @@ defmodule PhosWeb.CoreComponents do
    Renders Orb Information
   """
   attr(:id, :string, required: true)
-  attr(:title, :string)
+  attr(:title, :string, default: "")
   attr(:info_color, :string, default: "prose-zinc text-gray-600")
 
   def orb_information(assigns) do
@@ -1979,6 +1980,7 @@ defmodule PhosWeb.CoreComponents do
 
   @spec last_message(map) :: Phoenix.LiveView.Rendered.t()
   def last_message(assigns) do
+    IO.inspect assigns
     ~H"""
     <ul class="overflow-y-auto h-[40rem]">
       <li
