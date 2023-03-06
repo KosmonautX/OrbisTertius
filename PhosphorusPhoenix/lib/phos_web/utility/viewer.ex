@@ -95,6 +95,7 @@ defmodule PhosWeb.Util.Viewer do
     %{
       id: user.id,
       username: user.username,
+      confirmed_at: user.confirmed_at,
       fyr_id: user.fyr_id,
       profile: user_profile_mapper(user),
       relationships: relationship_reducer(user),

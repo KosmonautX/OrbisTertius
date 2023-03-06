@@ -1,6 +1,9 @@
 defmodule PhosWeb.Menshen.Auth do
+  use Nebulex.Caching
+
   alias PhosWeb.Menshen.Role
   alias Phos.Users.{Private_Profile}
+  alias Phos.Cache
 
   def generate_user!(id), do: generate_boni!(id)
 
@@ -12,12 +15,37 @@ defmodule PhosWeb.Menshen.Auth do
   end
 
   def validate_fyr(token) do
-    case ExFirebaseAuth.Token.verify_token(token) do
-    {:ok, _fyr_id, %JOSE.JWT{fields: claims}} ->
-        {:ok, claims}
-    {:error, reason} ->
-        {:error, reason}
+    with {:ok, body} <- get_cert(token),
+         {:ok, %{"kid" => kid}} <- Joken.peek_header(token),
+         {:ok, keys} <- Map.fetch(JOSE.JWK.from_firebase(body), kid),
+         {:verify, {true, %{fields: %{"exp" => exp} = fields}, _}} <- {:verify, JOSE.JWT.verify(keys, token)},
+         {:verify, {:ok, _}} <- {:verify, verify_expiry(exp)} do
+
+      {:ok, fields}
+    else
+
+      {:verify, {:expired, _}} ->
+        {:error, "Expired JWT"}
+
+      {:verify, _} ->
+        #in case of cycling of
+        with {:ok, body} <- update_cert(token),
+             {:ok, %{"kid" => kid}} <- Joken.peek_header(token),
+             {:ok, keys} <- Map.fetch(JOSE.JWK.from_firebase(body), kid),
+             {:verify, {true, %{fields: %{"exp" => exp} = fields}, _}} <- {:verify, JOSE.JWT.verify(keys, token)},
+             {:verify, {:ok, _}} <- {:verify, verify_expiry(exp)} do
+
+          {:ok, fields}
+        else
+
+          _ -> {:error, "invalid token"}
+
+        end
+
+      _ -> {:error, "invalid token"}
+
     end
+
   end
 
   def validate_boni(token), do: Role.Boni.verify_and_validate(token)
@@ -53,4 +81,24 @@ defmodule PhosWeb.Menshen.Auth do
 
   defp parse_territories(_), do: %{}
 
+  @decorate cacheable(cache: Cache, key: {Phos.External.GoogleCert, :get_cert})
+  defp get_cert(token), do: Phos.External.GoogleCert.get_Cert()
+
+  @decorate cache_put(
+              cache: Cache,
+              key: {Phos.External.GoogleCert, :get_cert},
+              match: &cert_legit/1
+            )
+  defp update_cert(token), do: Phos.External.GoogleCert.get_Cert()
+
+
+  defp cert_legit({:ok, _}), do: true
+  defp cert_legit(_), do: false
+
+  defp verify_expiry(exp) do
+    cond do
+      exp > DateTime.utc_now() |> DateTime.to_unix() -> {:ok, exp}
+      true -> {:expired, exp}
+    end
+  end
 end

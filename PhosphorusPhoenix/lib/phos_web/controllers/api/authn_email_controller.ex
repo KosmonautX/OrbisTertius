@@ -39,10 +39,9 @@ defmodule PhosWeb.API.AuthNEmailController do
 
 
   def resend_confirmation(%Plug.Conn{assigns: %{current_user: %{email: email}}} = conn, _) do
-    IO.inspect(email)
     with %{confirmed_at: nil} = user <- Users.get_user_by_email(email) do
 
-      Users.deliver_user_confirmation_instructions(user, &"scrb://host/userland/auth/email/confirm_email/#{&1}")
+      Users.deliver_user_confirmation_instructions(user, &url(~p"/users/confirm/#{&1}"))
 
       conn
       |> put_status(201)

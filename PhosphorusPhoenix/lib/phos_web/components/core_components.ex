@@ -1660,14 +1660,14 @@ defmodule PhosWeb.CoreComponents do
         type="button"
         class="text-white bg-[#050708] hover:bg-[#050708]/90 focus:ring-4 focus:outline-none focus:ring-[#050708]/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-[#050708]/55 mr-2 mb-2 w-56"
       >
-        <.google type="social_media" class=" mr-2 -ml-1"></.google>
+        <.google class=" mr-2 -ml-1"></.google>
         Sign in with Google
       </button>
       <button
         type="button"
         class="text-white bg-[#050708] hover:bg-[#050708]/90 focus:ring-4 focus:outline-none focus:ring-[#050708]/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-[#050708]/50 dark:hover:bg-[#050708]/30 mr-2 mb-2 w-56"
       >
-        <.apple type="apple_svg" class=" mr-2 -ml-1"></.apple>
+        <.apple class=" mr-2 -ml-1"></.apple>
         Sign in with Apple
       </button>
 
@@ -1909,6 +1909,7 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:id, :string, required: true)
   attr(:show, :boolean, default: false, doc: "Default value is not to show the message")
+  attr(:path, :string, default: "/")
   attr(:user, :any, default: nil, doc: "User state to create session / to redirect in app")
 
   def welcome_message(assigns) do
@@ -1920,36 +1921,39 @@ defmodule PhosWeb.CoreComponents do
         class="w-full flex flex-col items-center bg-white border border-gray-200 rounded-2xl shadow-2xl hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 p-2"
       >
         <div :if={@user} class="flex flex-col justify-center items-center p-6 space-y-2 ">
-          <img
-            src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
-            class=" h-16 w-16 lg:w-32 lg:h-32 border-4 border-white rounded-full object-cover"
-          />
-          <p class="mt-3 font-semibold text-xl dark:text-white">Hmm...You were saying?</p>
-          <p :if={@user.username} class="mt-3 w-1/2 text-center text-gray-400 dark:text-gray-400">
-            Join the tribe to share your thoughts with #{@user.username} now!
-          </p>
+        <img
+          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+          class=" h-16 w-16 lg:w-32 lg:h-32 border-4 border-white rounded-full object-cover"
+        />
+        <p class="mt-3 font-semibold text-xl dark:text-white">Hmm...You were saying?</p>
+        <p :if={@user.username} class="mt-3 w-1/2 text-center text-gray-400 dark:text-gray-400">
+          <%= "Join the tribe to share your thoughts with #{@user.username} now!" %>
+        </p>
         </div>
         <div class="mt-3">
-          <.button type="button">Download the Scratchbac app</.button>
+          <.link
+            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/redirect/#{@path}")}
+            class="text-sm text-teal-400 font-bold hover:underline">
+          <.button type="button">Jump to Scratchbac App</.button>
+          </.link>
         </div>
         <div :if={is_nil(@user)} class="mt-3 text-sm text-gray-500 ">
           <.link
             navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
-            class="text-sm text-teal-400 font-bold hover:underline"
-          >
+            class="text-sm text-teal-400 font-bold hover:underline">
             Sign up
           </.link>
           Or
           <.link
             navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/log_in")}
-            class="text-sm text-teal-400 font-bold hover:underline"
-          >
+            class="text-sm text-teal-400 font-bold hover:underline">
             Sign in
           </.link>
           via Web
         </div>
         <div :if={not is_nil(@user)} class="mt-3">
-          <a class="hover:text-teal-400 text-base font-bold hover:underline hover:cursor-pointer dark:text-white">
+          <a class="hover:text-teal-400 text-base font-bold hover:underline hover:cursor-pointer dark:text-white"
+             phx-click={hide_modal(%JS{}, "welcome_message")}>
             Bring me back to what I was doing!
           </a>
         </div>

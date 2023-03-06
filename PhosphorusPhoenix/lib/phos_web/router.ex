@@ -45,6 +45,8 @@ defmodule PhosWeb.Router do
 
     get "/", PageController, :home
 
+    get "/redirect/:out", PageController, :redirect
+
     live_storybook "/storybook", backend_module: PhosWeb.Storybook
   end
 
@@ -129,14 +131,16 @@ defmodule PhosWeb.Router do
 
     end
 
-    live "/dev/orbs", Admin.OrbLive.Dev, :index
-
   end
 
   scope "/admin", PhosWeb.Admin, as: :admin, on_mount: {Phos.Admin.Mounter, :admin} do
     pipe_through [:browser, :admin]
 
-    live_dashboard "/dashboard", metrics: PhosWeb.Telemetry
+    live_dashboard "/dashboard",
+      metrics: PhosWeb.Telemetry,
+      ecto_repos: [Phos.Repo],
+      ecto_psql_extras_options: [long_running_queries: [threshold: "200 milliseconds"]]
+
     live "/", DashboardLive, :index
     live "/orbs", OrbLive.Index, :index
     live "/orbs/import", OrbLive.Import, :import

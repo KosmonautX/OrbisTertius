@@ -1,10 +1,13 @@
 defmodule Phos.External.GoogleIdentity do
   use HTTPoison.Base
+  use Retry
 
   def link_email(fyr_id, email) do
-    {:ok, resp = %HTTPoison.Response{}} = post("setAccountInfo", %{idToken: gen_idToken(fyr_id), email: email})
+    case set_AccountInfo(%{idToken: gen_idToken(fyr_id), email: email}) do
+    {:ok, %HTTPoison.Response{body: %{"email" => email}}} -> email
 
-    resp.body["email"]
+    {:error, err} -> raise RuntimeError, HTTPoison.Error.message(err)
+   end
   end
 
   def gen_customToken(fyr_id) do
@@ -12,10 +15,11 @@ defmodule Phos.External.GoogleIdentity do
   end
 
   def gen_idToken(fyr_id) do
-    #break into with
-    {:ok, resp = %HTTPoison.Response{}} = post("verifyCustomToken", %{token: create_custom_token(fyr_id),
-                                                                     returnSecureToken: true})
-    resp.body["idToken"]
+    case verify_CustomToken(%{token: create_custom_token(fyr_id), returnSecureToken: true}) do
+    {:ok, %HTTPoison.Response{body: %{"idToken" => idToken}}} -> idToken
+
+    {:error, err} -> raise RuntimeError, HTTPoison.Error.message(err)
+   end
   end
 
   ## Full API Documentation
@@ -27,6 +31,26 @@ defmodule Phos.External.GoogleIdentity do
   def process_response_body(body), do: body |> Jason.decode!()
 
   def process_request_body(body) when is_map(body), do: Jason.encode!(body)
+
+  defp verify_CustomToken(params) do
+    retry with: exponential_backoff() |> randomize |> expiry(10_000) do
+      post("verifyCustomToken", params)
+    after
+      response -> response
+    else
+      err -> err
+    end
+  end
+
+  defp set_AccountInfo(params) do
+    retry with: exponential_backoff() |> randomize |> expiry(10_000) do
+      post("setAccountInfo", params)
+    after
+      response -> response
+    else
+      err -> err
+    end
+  end
 
   defp create_custom_token(uid) when is_binary(uid) do
     now = DateTime.utc_now() |> DateTime.to_unix()
@@ -49,4 +73,4 @@ defmodule Phos.External.GoogleIdentity do
      |> JOSE.JWS.compact()
      |> elem(1)
   end
-end
+ end
