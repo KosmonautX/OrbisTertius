@@ -11,7 +11,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
      socket
      |> assign(assigns)
      |> assign(:changeset, changeset)
-     |> allow_upload(:image, accept: ~w(.jpg .jpeg .png .mp4 .gif), max_entries: 5, max_file_size: 8_888_888)}
+     |> allow_upload(:image, accept: ~w(.jpg .jpeg .png .mp4 .gif .mov), max_entries: 5, max_file_size: 8_888_888)}
   end
 
   @impl true

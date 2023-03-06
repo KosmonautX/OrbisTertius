@@ -21,7 +21,7 @@
   <.table id="orbs" rows={@orbs}>
     <:col label="No">~</:col>
     <:col :let={orb} classes="sticky left-0" label="Initiator">
-      <.admin_user_preview user={orb.initiator}></.admin_user_preview>
+      <.admin_user_preview user={orb.initiator} id={"admin_user_preview_for_#{orb.id}"} />
     </:col>
 
     <:col :let={orb} label="Username">
@@ -56,11 +56,7 @@
 
 <div class="lg:hidden block">
   <div class="grid grid-cols-2 gap-4">
-    <%= for orb <- @orbs do %>
-      <div>
-        <.admin_grid user={orb.initiator}/>
-      </div>
-    <% end %>
+    <.admin_grid :for={orb <- @orbs} user={orb.initiator} id={"admin-grid-for-#{orb.id}"}/>
   </div>
 </div>
 
