@@ -1698,7 +1698,7 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:id, :string, required: true)
   attr(:navigate, :any)
-  # slot(:inner_block, required: true)
+  slot(:inner_block)
   attr(:user, :map, required: true)
   attr(:show_location, :boolean)
   attr(:main_height, :string, default: "lg:h-80")

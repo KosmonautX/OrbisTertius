@@ -19,7 +19,7 @@ defmodule PhosWeb.Components.ScrollAlly do
           <:actions>
             <.live_component
               id={"ally_component_infinite_scroll_#{ally.id}"}
-              module={PhosWeb.AllyButton}
+              module={PhosWeb.Component.AllyButton}
               current_user={@current_user}
               socket={@socket}
               user={ally}

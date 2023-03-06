@@ -1,4 +1,4 @@
-defmodule PhosWeb.AllyButton do
+defmodule PhosWeb.Component.AllyButton do
   use PhosWeb, :live_component
   import PhosWeb.SVG
 
@@ -124,7 +124,7 @@ defmodule PhosWeb.AllyButton do
   def render(%{ally: "completed", user: user} = assigns) do
     ~H"""
     <div class="flex">
-    <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{user.id}")}>
+    <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{user.username}")}>
     <.chat type="banner" class="h-8 ml-4 dark:fill-white"/>
     </.link>
     </div>

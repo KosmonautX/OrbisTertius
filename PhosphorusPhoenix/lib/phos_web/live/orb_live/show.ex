@@ -93,7 +93,7 @@ defmodule PhosWeb.OrbLive.Show do
     %{initiator_id: init_id, acceptor_id: acc_id} = root = Phos.Folk.get_relation!(root_id)
     case init_id == user.id or acc_id == user.id do
       true ->
-        send_update(PhosWeb.AllyButton, id: "user_information_card_ally", root_id: root.id)
+        send_update(PhosWeb.Component.AllyButton, id: "user_information_card_ally", root_id: root.id)
         {:noreply, put_flash(socket, :info, "Relation updated")}
         _ -> {:noreply, put_flash(socket, :info, "no change on relation")}
     end
@@ -103,7 +103,7 @@ defmodule PhosWeb.OrbLive.Show do
   def handle_info(%Phoenix.Socket.Broadcast{topic: "folks", event: "delete", payload: {init_id, acc_id}}, %{assigns: %{current_user: user}} = socket) do
     case init_id == user.id or acc_id == user.id do
       true -> 
-        send_update(PhosWeb.AllyButton, id: "user_information_card_ally", related_users: %{receiver_id: init_id, sender_id: user.id})
+        send_update(PhosWeb.Component.AllyButton, id: "user_information_card_ally", related_users: %{receiver_id: init_id, sender_id: user.id})
         {:noreply, put_flash(socket, :error, "Ally request is deleted") }
         _ -> {:noreply, put_flash(socket, :info, "handle info not matched")}
     end
