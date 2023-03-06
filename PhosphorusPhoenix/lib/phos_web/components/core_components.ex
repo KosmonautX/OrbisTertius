@@ -282,6 +282,7 @@ defmodule PhosWeb.CoreComponents do
   defp button_class(:warning), do: "bg-yellow-400 hover:bg-yellow-600"
   defp button_class(:success), do: "bg-green-400 hover:bg-green-600"
   defp button_class(:dark), do: "bg-slate-800 hover:bg-black"
+
   defp button_class(:icons),
     do:
       "inline-block text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm"
@@ -1980,13 +1981,14 @@ defmodule PhosWeb.CoreComponents do
 
   @spec last_message(map) :: Phoenix.LiveView.Rendered.t()
   def last_message(assigns) do
-    IO.inspect assigns
+    IO.inspect(assigns)
+
     ~H"""
     <ul class="overflow-y-auto h-[40rem]">
       <li
         :for={memory <- @memories}
-        class="flex items-center px-3 py-2 text-sm transition duration-150 ease-in-out border-b border-gray-300 cursor-pointer hover:bg-gray-100 focus:outline-none"
-      >
+        class="flex items-center px-3 py-2 text-sm transition duration-150 ease-in-out border-b border-gray-300 cursor-pointer hover:bg-gray-100 focus:outline-none">
+        <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{memory.user_source.username}")}>
         <div class="relative mr-2">
           <img
             src={Phos.Orbject.S3.get!("USR", memory.user_source.id, "public/profile/lossless")}
@@ -2007,6 +2009,7 @@ defmodule PhosWeb.CoreComponents do
             <%= memory.message %>
           </span>
         </div>
+        </.link>
       </li>
     </ul>
     """

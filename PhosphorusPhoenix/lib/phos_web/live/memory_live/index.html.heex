@@ -17,7 +17,7 @@
     </div>
 
     <div :if={@user} class="hidden lg:col-span-2 lg:block">
-      <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.id}")}>
+      <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}>
       <div class="relative flex items-center p-3 border-b border-gray-300">
         <img
           class="object-cover w-10 h-10 rounded-full"
@@ -46,7 +46,7 @@
         rel={@user.self_relation}
         current_user={@current_user}
         memory={%Phos.Message.Memory{}}
-        navigate={~p"/memories/user/#{@user}"}
+        navigate={~p"/memories/user/#{@user.username}"}
       />
     </div>
   </div>

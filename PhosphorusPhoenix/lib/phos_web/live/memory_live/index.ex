@@ -18,10 +18,12 @@ defmodule PhosWeb.MemoryLive.Index do
   end
 
   defp apply_action(%{assigns: %{current_user: your}} = socket, :show, %{"username" => username}) do
-    mems = case user = Phos.Users.get_public_user_by_username(username, your.id) do
-      %{self_relation: nil} -> []
-      %{self_relation: rel} -> Message.list_messages_by_relation({rel.id, your.id}, 1).data
-    end
+    mems =
+      case user = Phos.Users.get_public_user_by_username(username, your.id) do
+        %{self_relation: nil} -> []
+        %{self_relation: rel} -> Message.list_messages_by_relation({rel.id, your.id}, 1).data
+      end
+
     socket
     |> assign(:page_title, "Chatting with @" <> username)
     |> assign(:memory, nil)
