@@ -1388,8 +1388,8 @@ defmodule PhosWeb.CoreComponents do
 
   def media_carousel(assigns) do
     ~H"""
-    <div :if={!is_nil(@media)} id={"#{@id}-carousel-wrapper"}>
-      <section class="glide relative flex items-center" id={"#{@id}-carousel"} phx-update="ignore" phx-hook="Carousel">
+    <div :if={!is_nil(@media)} id={"#{@id}-carousel-wrapper"} class="glide">
+      <section class="relative flex items-center" id={"#{@id}-carousel"} phx-update="ignore" phx-hook="Carousel">
         <div id={"#{@id}-container"} data-glide-el="track" class="glide__track">
           <div class="glide__slides">
             <div :for={m <- @media} class="glide__slide">
@@ -1402,7 +1402,6 @@ defmodule PhosWeb.CoreComponents do
 
                 <video
                   :if={(m.ext |> String.split("/") |> hd) in ["video"]}
-                  id="media_video"
                   class="w-full h-96 aspect-video hover:aspect-square object-cover border-gray-200 border-b-0 rounded-b-xl shadow-lg dark:border-gray-700"
                   autoplay
                   playsinline
@@ -1427,7 +1426,11 @@ defmodule PhosWeb.CoreComponents do
             </div>
           </div>
         </div>
-        <div :if={length(@media) > 1} class="absolute w-full flex justify-between" data-glide-el="controls">
+        <div :if={length(@media) > 1} 
+          class="absolute w-full flex justify-between"
+          id={"#{@id}-carousel-wrapper-#{:rand.uniform}"}
+          phx-hook="CarouselControl"
+          data-glide-el="controls">
           <button
             id={"#{@id}-carousel-prev"}
             type="button"
@@ -1450,7 +1453,7 @@ defmodule PhosWeb.CoreComponents do
             </span>
           </button>
         </div>
-        <div class="absolute bottom-3">
+        <div class="absolute bottom-0 pb-4 h-2/5 pointer-events-auto flex flex-col justify-end bg-gradient-to-t from-black/80 to-black/0 w-full flex flex-col border-b-0 rounded-b-xl border-gray-200 dark:border-gray-700">
           <.link
             :if={@orb.media}
             id={"#{@id}-link-#{@orb.id}"}

@@ -7,7 +7,6 @@ const Carousel = {
       swipeThreshold: 88,
       type: 'carousel'
     })
-    console.log({ glide })
     glide.mount({ Controls, Breakpoints, Swipe })
   }
 }
