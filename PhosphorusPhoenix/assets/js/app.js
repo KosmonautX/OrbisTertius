@@ -45,7 +45,6 @@ window.addEventListener("DOMContentLoaded", ModalApplication)
 
 
 window.addEventListener("phos:clipcopy", (event) => {
-  console.log(event.target);
   if ("share" in navigator) {
     const text = event.target.textContent;
     navigator.share({ title: document.querySelector('meta[property="og:title"]')?.content, url: text});

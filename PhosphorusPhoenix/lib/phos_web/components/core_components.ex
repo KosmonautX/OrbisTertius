@@ -1340,7 +1340,7 @@ defmodule PhosWeb.CoreComponents do
         <:actions>
           <button
           id={"#{@id}-scry-orb-#{@orb.id}-sharebtn"}
-          phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
+          phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-scry-orb-#{@orb.id}-copylink")}
           class="text-center inline-flex items-center dark:text-white">
           <div id={"#{@id}-scry-orb-#{@orb.id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %></div>
           <.comment_share type="share" class="ml-2 fill-white"></.comment_share>
@@ -1367,7 +1367,6 @@ defmodule PhosWeb.CoreComponents do
 
       <.link
         :if={@media == []}
-        id={"#{@id}-scry-orb-#{@orb.id}-link"}
         class="relative"
         navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
       >
