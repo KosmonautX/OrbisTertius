@@ -9,6 +9,8 @@ defmodule PhosWeb.MemoryLive.Index do
     {:ok,
      socket
      |> assign(:memories, list_memories())
+     |> assign(:usersearch, "")
+     |> assign(:search_memories, list_memories())
      |> assign(:page, 1)}
   end
 
@@ -64,6 +66,27 @@ defmodule PhosWeb.MemoryLive.Index do
     {:noreply,
      assign(socket, page: assigns.page + 1)
      |> list_more_mesage()}
+  end
+
+  def handle_event("search", %{"usersearch" => usersearch}, socket) do
+    send(self(), {:run_search, usersearch})
+
+    socket =
+      assign(socket,
+        usersearch: usersearch,
+        search_memories: []
+      )
+
+    {:noreply, socket}
+  end
+
+  def handle_info({:run_search, usersearch}, socket) do
+    socket =
+      assign(socket,
+      search_memories: Message.search_by_username(usersearch)
+      )
+
+    {:noreply, socket}
   end
 
   defp list_more_mesage(%{assigns: %{page: page}} = socket) do

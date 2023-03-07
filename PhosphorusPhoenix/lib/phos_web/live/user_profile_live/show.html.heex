@@ -30,13 +30,13 @@
   <div class="lg:hidden block w-full">
     <.user_information_card :if={not is_nil(@user.public_profile)} id="user_info" user={@user}>
       <:actions>
-            <.live_component
-              id={"user-information-card-ally"}
-              module={PhosWeb.Component.AllyButton}
-              current_user={@current_user}
-              socket={@socket}
-              user={@user}
-            />
+        <.live_component
+          id="user-information-card-ally"
+          module={PhosWeb.Component.AllyButton}
+          current_user={@current_user}
+          socket={@socket}
+          user={@user}
+        />
       </:actions>
     </.user_information_card>
   </div>
@@ -54,17 +54,18 @@
         <.user_information_card
           :if={not is_nil(@user.public_profile)}
           id="user-details"
-          user={@user}>
-        <:actions>
+          user={@user}
+        >
+          <:actions>
             <.live_component
-              id={"user-information-card-ally-desktop"}
+              id="user-information-card-ally-desktop"
               module={PhosWeb.Component.AllyButton}
               current_user={@current_user}
               socket={@socket}
               user={@user}
             />
-      </:actions>
-      </.user_information_card>
+          </:actions>
+        </.user_information_card>
       </div>
       <h5 class="lg:block hidden text-left font-semibold text-lg py-1 px-2 dark:text-white">
         Posts

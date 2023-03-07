@@ -18,62 +18,61 @@
       </.form>
     </div>
   </div>
- <div class="">
+  <div class="">
+    <.table id="orbs" rows={@orbs}>
+      <:col label="No">~</:col>
+      <:col :let={orb} classes="sticky left-0" label="Initiator">
+        <.admin_user_preview user={orb.initiator}></.admin_user_preview>
+      </:col>
 
-   <.table id="orbs" rows={@orbs}>
-    <:col label="No">~</:col>
-    <:col :let={orb} classes="sticky left-0" label="Initiator">
-      <.admin_user_preview user={orb.initiator}></.admin_user_preview>
-    </:col>
+      <:col :let={orb} label="Username">
+        <%= orb
+        |> get_in([
+          Access.key(:initiator, %{}),
+          Access.key(:public_profile, %{}),
+          Access.key(:public_name, "")
+        ]) %>
+      </:col>
 
-    <:col :let={orb} label="Username">
-      <%= orb
-      |> get_in([
-        Access.key(:initiator, %{}),
-        Access.key(:public_profile, %{}),
-        Access.key(:public_name, "")
-      ]) %>
-    </:col>
+      <:col :let={orb} label="Created at">
+        <%= Timex.format!(orb.inserted_at, "{D} {Mshort} {YY} {h24}:{m}") %>
+      </:col>
 
-    <:col :let={orb} label="Created at">
-      <%= Timex.format!(orb.inserted_at, "{D} {Mshort} {YY} {h24}:{m}") %>
-    </:col>
+      <:col :let={orb} label="Title">
+        <.link navigate={~p"/admin/orbs/#{orb}"}><%= orb.title %></.link>
+      </:col>
 
-       <:col :let={orb}  label="Title">
-      <.link navigate={~p"/admin/orbs/#{orb}"}><%= orb.title %></.link>
-    </:col>
+      <:col :let={orb} label="Birthday">
+        <%= orb
+        |> get_in([
+          Access.key(:initiator, %{}),
+          Access.key(:public_profile, %{}),
+          Access.key(:birthday, "nil")
+        ]) %>
+      </:col>
 
-    <:col :let={orb} label="Birthday">
-      <%= orb
-      |> get_in([
-        Access.key(:initiator, %{}),
-        Access.key(:public_profile, %{}),
-        Access.key(:birthday, "nil")
-      ]) %>
-    </:col>
-
-    <:col :let={orb} label="Traits"><%= inspect(orb.traits) %></:col>
-  </.table>
- </div>
+      <:col :let={orb} label="Traits"><%= inspect(orb.traits) %></:col>
+    </.table>
+  </div>
 </div>
 
 <div class="lg:hidden block">
   <div class="grid grid-cols-2 gap-4">
     <%= for orb <- @orbs do %>
       <div>
-        <.admin_grid user={orb.initiator}/>
+        <.admin_grid user={orb.initiator} />
       </div>
     <% end %>
   </div>
 </div>
 
 <div class="px-4 py-3 w-full sm:flex sm:flex-1 sm:items-center sm:justify-between">
-    <.live_component
-      module={PhosWeb.Components.Pagination}
-      limit={@limit}
-      meta={@pagination}
-      id="paginate"
-      route_path={~p"/admin/orbs"}
-      current={@current}
-    />
-  </div>
+  <.live_component
+    module={PhosWeb.Components.Pagination}
+    limit={@limit}
+    meta={@pagination}
+    id="paginate"
+    route_path={~p"/admin/orbs"}
+    current={@current}
+  />
+</div>

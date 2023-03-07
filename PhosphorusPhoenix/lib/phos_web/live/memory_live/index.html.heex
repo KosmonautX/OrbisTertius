@@ -1,34 +1,28 @@
-<div class="container mx-auto	lg:mt-24 mt-16">
+<!--Desktop View-->
+<div class="container mx-auto	lg:mt-24 mt-16 hidden lg:block">
   <div class="min-w-full lg:border lg:rounded lg:grid lg:grid-cols-3">
     <div class="lg:border-r lg:border-gray-300 lg:col-span-1 w-full">
-      <div class="relative text-gray-600 mx-2 my-2">
+      <form phx-submit="search" class="relative text-gray-600 mx-2 my-2">
+        <input
+          type="text"
+          name="usersearch"
+          value={@usersearch}
+          placeholder="Search in chat......"
+          autofocus
+          autocomplete="off"
+          list="matches"
+          class="block py-3 pl-3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-2xl focus:ring-teal-500 focus:border-teal-500 w-full p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500"
+        />
         <span class="absolute inset-y-0 right-0 flex items-center pr-2">
           <Heroicons.magnifying_glass class="w-5 h-5 dark:text-white mr-2" />
         </span>
-        <input
-          type="search"
-          class="block py-3 pl-3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-2xl focus:ring-teal-500 focus:border-teal-500 w-full p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500 "
-          name="search"
-          placeholder="Search in chat......"
-          required
-        />
-      </div>
-      <.last_message id={"last-message"} memories={@memories}/>
+      </form>
+
+      <.last_message id="last-message" memories={@search_memories} date={@timezone} />
     </div>
 
-    <div :if={@user} class="hidden lg:col-span-2 lg:block">
-      <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}>
-      <div class="relative flex items-center p-3 border-b border-gray-300">
-        <img
-          class="object-cover w-10 h-10 rounded-full"
-          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
-          alt="username"
-        />
-        <span class="block ml-2 font-bold text-gray-600">
-            <%= get_in(@user, [Access.key(:public_profile, %{}), Access.key(:public_name, "")]) || @user.username %> </span>
-        <!-- <span class="absolute w-3 h-3 bg-green-600 rounded-full left-10 top-3"></span> -->
-      </div>
-      </.link>
+    <div :if={@user} class=" lg:col-span-2">
+      <.chat_profile user={@user} />
       <.live_component
         module={PhosWeb.Components.ListMessage}
         id="infinite-home-desktop"
@@ -49,5 +43,60 @@
         navigate={~p"/memories/user/#{@user.username}"}
       />
     </div>
+  </div>
+</div>
+<!--Mobile View-->
+<div class="min-w-full lg:hidden block">
+  <div class="w-full mt-16">
+    <div class="bg-white text-gray-600 mx-2 my-2 sticky top-14 z-10">
+      <span class="absolute inset-y-0 right-0 flex items-center pr-2">
+        <Heroicons.magnifying_glass class="w-5 h-5 dark:text-white mr-2" />
+      </span>
+      <input
+        type="search"
+        class="block py-3 pl-3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-2xl focus:ring-teal-500 focus:border-teal-500 w-full p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500 "
+        name="search"
+        placeholder="Search in chat......"
+        required
+      />
+    </div>
+    <.last_message id="last-message" memories={@memories} date={@timezone} />
+  </div>
+
+  <div :if={@user} class="">
+    <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}>
+      <div class="relative flex items-center p-3 border-b border-gray-300">
+        <img
+          class="object-cover w-12 h-12 rounded-full"
+          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+          alt="username"
+          onerror="this.src='/images/default_hand.jpg';"
+        />
+        <span class="block ml-2 font-bold text-gray-600">
+          <%= get_in(@user, [Access.key(:public_profile, %{}), Access.key(:public_name, "")]) ||
+            @user.username %>
+        </span>
+        <span class="absolute w-3 h-3 bg-green-600 rounded-full left-10 top-3"></span>
+      </div>
+    </.link>
+    <.live_component
+      module={PhosWeb.Components.ListMessage}
+      id="infinite-home-mobile"
+      memories={@memories}
+      current_user={@current_user}
+      timezone={@timezone}
+      page={@page}
+    />
+
+    <.live_component
+      module={PhosWeb.MemoryLive.FormComponent}
+      id={:mobile}
+      title={@page_title}
+      action={:new}
+      rel={@user.self_relation}
+      current_user={@current_user}
+      memory={%Phos.Message.Memory{}}
+      navigate={~p"/memories/user/#{@user.username}"}
+    />
   </div>
 </div>
