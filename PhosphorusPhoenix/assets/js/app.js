@@ -31,8 +31,7 @@ let liveSocket = new LiveSocket("/live", Socket, {
     }
   },
   hooks: Hooks
-}
-                               )
+})
 
 // Show progress bar on live navigation and form submits
 topbar.config({ barColors: { 0: "#29d" }, shadowColor: "rgba(0, 0, 0, .3)" })
@@ -49,7 +48,7 @@ window.addEventListener("phos:clipcopy", (event) => {
   console.log(event.target);
   if ("share" in navigator) {
     const text = event.target.textContent;
-    navigator.share({ title: document.getElementsByName('og:title')[0].getAttribute('content'), url: text});
+    navigator.share({ title: document.querySelector('meta[property="og:title"]')?.content, url: text});
   }
   else if ("clipboard" in navigator) {
     const text = event.target.textContent;
