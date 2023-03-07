@@ -6,9 +6,9 @@ defmodule PhosWeb.Components.ScrollOrb do
   def render(assigns) do
     ~H"""
     <div >
-      <div id="infinite-scroll-body" phx-update="append" class="flex flex-col gap-4">
+      <div id="infinite-scroll-body" phx-update="append" class="flex flex-col gap-2">
         <%= for orb <- @orbs do %>
-        <div id={"orb-divided-#{random_id()}"} class="bg-white border border-gray-200 rounded-2xl shadow hover:bg-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:hover:bg-gray-700 ">
+        <div id={"orb-divided-#{random_id()}"} class="border border-gray-200 rounded-xl shadow-md dark:border-gray-700">
           <.scry_orb id={"orb-history-#{random_id()}"} orb={orb} timezone={@timezone1}/>
         </div>
         <% end %>

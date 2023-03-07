@@ -12,7 +12,7 @@ defmodule Storybook.Components.Card do
       """
     ]
   end
-  
+
   def variations do
     [
       %Variation{

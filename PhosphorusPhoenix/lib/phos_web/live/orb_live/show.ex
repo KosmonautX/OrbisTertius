@@ -16,14 +16,17 @@ defmodule PhosWeb.OrbLive.Show do
         Comments.get_root_comments_by_orb(orb.id)
         |> decode_to_comment_tuple_structure()
 
+      Phos.PubSub.subscribe("folks")
+
       {:ok,
        socket
        |> assign(:orb, orb)
        |> assign_meta(orb)
+       |> assign(:ally, false)
        |> assign(:comments, comments)
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
-       temporary_assigns: [orbs: Action.get_active_orbs_by_initiator(orb.initiator.id)]}
+       temporary_assigns: [orbs: Action.orbs_by_initiators([orb.initiator.id], 1).data]}
       else
         nil -> raise PhosWeb.ErrorLive, message: "Orb Not Found"
     end
@@ -39,11 +42,12 @@ defmodule PhosWeb.OrbLive.Show do
       {:ok,
        socket
        |> assign(:orb, orb)
+       |> assign(:ally, false)
        |> assign_meta(orb)
        |> assign(:comments, comment)
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
-       temporary_assigns: [orbs: Action.get_active_orbs_by_initiator(orb.initiator.id)]}
+       temporary_assigns: [orbs: Action.orbs_by_initiators([orb.initiator.id], 1).data]}
     else
       {:error, :not_found} -> raise PhosWeb.ErrorLive, message: "Orb Not Found"
     end
@@ -84,6 +88,27 @@ defmodule PhosWeb.OrbLive.Show do
      |> put_flash(:info, "Comment updated successfully")}
   end
 
+  @impl true
+  def handle_info(%Phoenix.Socket.Broadcast{topic: "folks", event: action, payload: root_id}, %{assigns: %{current_user: user}} = socket) when action in ["add", "reject", "accept"] do
+    %{initiator_id: init_id, acceptor_id: acc_id} = root = Phos.Folk.get_relation!(root_id)
+    case init_id == user.id or acc_id == user.id do
+      true ->
+        send_update(PhosWeb.AllyButton, id: "user_information_card_ally", root_id: root.id)
+        {:noreply, put_flash(socket, :info, "Relation updated")}
+        _ -> {:noreply, put_flash(socket, :info, "no change on relation")}
+    end
+  end
+
+  @impl true
+  def handle_info(%Phoenix.Socket.Broadcast{topic: "folks", event: "delete", payload: {init_id, acc_id}}, %{assigns: %{current_user: user}} = socket) do
+    case init_id == user.id or acc_id == user.id do
+      true -> 
+        send_update(PhosWeb.AllyButton, id: "user_information_card_ally", related_users: %{receiver_id: init_id, sender_id: user.id})
+        {:noreply, put_flash(socket, :error, "Ally request is deleted") }
+        _ -> {:noreply, put_flash(socket, :info, "handle info not matched")}
+    end
+  end
+
   defp apply_action(socket, :reply, %{"id" => _orb_id, "cid" => cid} = _params) do
     socket
     |> assign(:comment, Comments.get_comment!(cid))
@@ -119,12 +144,22 @@ defmodule PhosWeb.OrbLive.Show do
   end
 
   defp assign_meta(socket, orb) do
+    media = Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless")
+        |> (fn media ->
+        (for {path, url} <- media || [] do
+        %Phos.Orbject.Structure.Media{
+        ext: MIME.from_path(path) |> String.split("/") |> hd,
+        url: url
+        } end) end).()
+        |> List.first()
+
     assign(socket, :meta, %{
       title: " #{orb.title} by #{orb.initiator.username}",
       description:
         "#{get_in(orb, [Access.key(:payload, %{}), Access.key(:info, "")])} #{orb |> get_in([Access.key(:payload, %{}), Access.key(:inner_title, "-")])}",
       type: "website",
-      image: Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless"),
+      image: (if (!is_nil(media) && media.ext in ["application", "image"]), do: media.url),
+      video: (if (!is_nil(media) && media.ext in ["video"]), do: media.url),
       url: url(socket, ~p"/orb/#{orb}")
     })
   end
@@ -135,7 +170,7 @@ defmodule PhosWeb.OrbLive.Show do
     |> assign(
       orbs:
         socket.assigns.orbs ++
-          Action.get_active_orbs_by_initiator(socket.assigns.orb.initiator.id)
+          Action.orbs_by_initiators([socket.assigns.orb.initiator.id], page).data
     )
   end
 

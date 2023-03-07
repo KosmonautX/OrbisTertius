@@ -125,10 +125,24 @@ defmodule Phos.Users do
     |> Repo.insert()
   end
 
-  def create_fyr_user(attrs \\ %{}) do
-    %User{}
-    |> User.fyr_registration_changeset(attrs)
-    |> Repo.insert()
+  def migrate_fyr_user(old_user, new_user) do
+    old_changeset =
+      old_user
+      |> User.fyr_registration_changeset(%{fyr_id: nil})
+
+    new_changeset =
+      new_user
+      |> User.fyr_registration_changeset(%{fyr_id: old_user.fyr_id})
+
+    with {:ok, _} <- Repo.transaction(
+           Multi.new()
+           |> Multi.update(:old_user, old_changeset)
+           |> Multi.update(:new_user, new_changeset)
+         ) do
+      :ok
+    else
+      _ -> :error
+    end
   end
 
   def migrate_user(attrs \\ %{}) do
@@ -375,6 +389,28 @@ defmodule Phos.Users do
     %User{}
     |> User.registration_changeset(attrs)
     |> Repo.insert()
+  end
+
+  @doc """
+  Registers an anonymous user.
+
+  ## Examples
+
+  iex> register_user(%{field: value})
+  {:ok, %User{}}
+
+  iex> register_user(%{field: bad_value})
+  {:error, %Ecto.Changeset{}}
+
+  """
+  def claim_anon_user(%User{email: nil} = user, attrs) do
+    user
+    |> User.registration_changeset(attrs)
+    |> Repo.update()
+  end
+
+  def claim_anon_user(user, attrs) do
+    {:error, "email already registered for user"}
   end
 
   @doc """

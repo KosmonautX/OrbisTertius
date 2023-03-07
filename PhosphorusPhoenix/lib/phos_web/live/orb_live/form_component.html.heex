@@ -13,10 +13,10 @@
 
       <.input field={{f, :title}} label="Title" required={true} />
       <.input field={{f, :active}} type="hidden" value="true" />
-      <.input field={{f, :media}} type="hidden" value={false} />
+      <.input field={{f, :media}} type="hidden"/>
       <.input field={{f, :source}} type="hidden" value="web" />
       <.input field={{f, :initiator_id}} type="hidden" value={@current_user.id} />
-      <.input field={{f, :extinguish}} type="datetime-local" label="Extinguish" />
+      <.input field={{f, :extinguish}} type="datetime-local" label="Extinguish" value="2023-06-01T08:30"/>
       <.input field={{f, :radius}} type="select" label="Extinguish" options={["2km": 8, "1km": 9, "500m": 10]} value={10} />
       <.input :if={not is_nil(@addresses)} field={{f, :location}} type="select" options={Map.keys(@addresses)} value={:live} />
       <.input field={{f, :traits}} type="select" multiple={true} label="Traits" options={["Pinned": "pin", "Treasure Hunt": "treasurehunt"]} value="treasurehunt"/>

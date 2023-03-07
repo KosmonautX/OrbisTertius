@@ -21,21 +21,21 @@
         field={{f, :body}}
         class="flex-1"
         type="textarea"
-        placeholder="In the beginning was the Word..."
+        placeholder="For when you feel like commenting..."
       />
 
       <:actions>
         <button type="submit" phx-disable-with="Saving..." class="absolute right-2.5 bottom-2">
           <Heroicons.paper_airplane class="h-8 w-8 text-teal-400 font-bold" />
         </button>
-        <.button
+        <button
           :if={@action in [:reply, :edit]}
           type="reset"
+          class="absolute right-10 bottom-2"
           phx-click={"cancel-#{@action}"}
-          phx-target={"#comment-#{@comment.id}"}
-        >
-          Cancel
-        </.button>
+          phx-target={"#comment-#{@comment.id}"}>
+          <Heroicons.x_circle class="h-8 w-8 text-amber-400 font-bold" />
+        </button>
       </:actions>
 
       <.input field={{f, :initiator_id}} type="hidden" value={@current_user.id} />

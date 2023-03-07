@@ -11,7 +11,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
      socket
      |> assign(assigns)
      |> assign(:changeset, changeset)
-     |> allow_upload(:image, accept: ~w(.jpg .jpeg .png), max_entries: 5, max_file_size: 8_888_888)}
+     |> allow_upload(:image, accept: ~w(.jpg .jpeg .png .mp4 .gif), max_entries: 5, max_file_size: 8_888_888)}
   end
 
   @impl true
@@ -54,39 +54,79 @@ defmodule PhosWeb.OrbLive.FormComponent do
 
     file_uploaded =
       consume_uploaded_entries(socket, :image, fn %{path: path}, %{ref: count, client_type: type} ->
-        for {res, resolution} <- compression do
+        case type |> String.split("/") |> hd() do
+          "image" ->
+            for {res, resolution} <- compression do
 
-          {:ok, media} = Phos.Orbject.Structure.apply_media_changeset(
-            %{id: orb_id,
-              archetype: "ORB",
-              media: [%{access: "public",
-                      essence: "banner",
-                      resolution: resolution,
-                      count: String.to_integer(count) + 1,
-                      ext: List.first(MIME.extensions(type))
-                      }]})
+              {:ok, media} = Phos.Orbject.Structure.apply_media_changeset(
+                %{id: orb_id,
+                  archetype: "ORB",
+                  media: [%{access: "public",
+                            essence: "banner",
+                            resolution: resolution,
+                            count: String.to_integer(count),
+                            ext: List.first(MIME.extensions(type))
+                           }]})
 
-          [dest | _] = Map.values(Phos.Orbject.S3.put_all!(media))
+              [dest | _] = Map.values(Phos.Orbject.S3.put_all!(media))
 
-          compressed_image =
-            path
-            |> Mogrify.open()
-            |> Mogrify.resize(res)
-            |> Mogrify.save()
+              compressed_image =
+                path
+                |> Mogrify.open()
+                |> Mogrify.resize(res)
+                |> Mogrify.save()
 
-          HTTPoison.put(dest, {:file, compressed_image.path})
-        end
+              HTTPoison.put(dest, {:file, compressed_image.path})
+            end
+          "video" ->
+            ext = List.first(MIME.extensions(type))
+            ext_path = "#{path}.#{ext}"
+            File.rename!(path, ext_path)
+              thumbnail =
+                ext_path
+                |> Mogrify.open()
+                |> Mogrify.format("jpeg")
+                |> Map.update(:path,"",  fn path -> path <> "[5]" end)
+                |> Mogrify.save()
 
+              {:ok, lossy_media} = Phos.Orbject.Structure.apply_media_changeset(
+                %{id: orb_id,
+                  archetype: "ORB",
+                  media: [%{access: "public",
+                            essence: "banner",
+                            resolution: "lossy",
+                            count: String.to_integer(count),
+                            ext: "jpeg"
+                           }]})
+
+              [lossy_dest | _] = Map.values(Phos.Orbject.S3.put_all!(lossy_media))
+
+              HTTPoison.put(lossy_dest, {:file, thumbnail.path})
+
+              {:ok, lossless_media} = Phos.Orbject.Structure.apply_media_changeset(
+                %{id: orb_id,
+                  archetype: "ORB",
+                  media: [%{access: "public",
+                            essence: "banner",
+                            resolution: "lossless",
+                            count: String.to_integer(count),
+                            ext: ext
+                           }]})
+
+              [lossless_dest | _] = Map.values(Phos.Orbject.S3.put_all!(lossless_media))
+
+              HTTPoison.put(lossless_dest, {:file, ext_path})
+            end
         {:ok, path}
-      end)
+       end)
 
-    if Enum.empty?(file_uploaded) do
-      orb_params = Map.replace(orb_params, "media", false)
-      save_orb(socket, socket.assigns.action, orb_params)
-    else
-      orb_params = Map.replace(orb_params, "media", true)
-      save_orb(socket, socket.assigns.action, orb_params)
+    orb_params = unless Enum.empty?(file_uploaded) do
+      Map.replace(orb_params, "media", true)
+      else
+        orb_params
     end
+
+    save_orb(socket, socket.assigns.action, orb_params)
   end
 
   defp error_to_string(:too_large), do: "Image too large"

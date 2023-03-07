@@ -14,6 +14,8 @@ module.exports = {
 
       height: {
         '900': '56rem',
+        '128': '32rem',
+
       }
 
     },
@@ -22,6 +24,7 @@ module.exports = {
   darkMode: "class",
 
   plugins: [
+    require('@tailwindcss/typography'),
     require('@tailwindcss/forms')
   ]
 }

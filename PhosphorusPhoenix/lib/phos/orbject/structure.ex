@@ -18,6 +18,7 @@ defmodule Phos.Orbject.Structure do
       field(:count, :integer)
       field(:ext, :string)
       field(:path, :string)
+      field(:url, :string)
     end
   end
 
@@ -73,7 +74,7 @@ defmodule Phos.Orbject.Structure do
     |> cast(attrs, [:access, :essence, :count, :resolution, :ext])
     |> validate_inclusion(:access, ["public"])
     |> validate_inclusion(:essence, ["banner"])
-    |> validate_number(:count, greater_than: 0, less_than: 6)
+    |> validate_number(:count, greater_than: -1, less_than: 6)
     |> validate_inclusion(:resolution, ["lossy", "lossless"])
     |> validate_inclusion(:ext, ["jpeg", "jpg", "png", "gif", "mp4", "mov", "mp3"])
     |> validate_required([:access, :essence])

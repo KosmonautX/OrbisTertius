@@ -9,7 +9,21 @@
 
 <.table id="memories" rows={@memories} row_click={&JS.navigate(~p"/memories/#{&1}")}>
   <:col :let={memory} label="Message"><%= memory.message %></:col>
+  <:col :let={memory} label="UserName">
+    <.link navigate={
+      path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{memory.user_source.username}")
+    }>
+      <%= memory |> get_in([Access.key(:user_source, %{}), Access.key(:username, "-")]) %>
+    </.link>
+  </:col>
+
+  <:col :let={memory} label="orb">
+    <%= if memory.orb_subject do %>
+      <img src={Phos.Orbject.S3.get!("USR", memory.user_source.id, "public/profile/lossless")} />
+    <% end %>
+  </:col>
   <:col :let={memory} label="Media"><%= memory.media %></:col>
+
   <:action :let={memory}>
     <div class="sr-only">
       <.link navigate={~p"/memories/#{memory}"}>Show</.link>
@@ -22,7 +36,7 @@
     </.link>
   </:action>
 </.table>
-
+<.link navigate={~p"/memories/new"}>Send New Message</.link>
 <.modal
   :if={@live_action in [:new, :edit]}
   id="memory-modal"
@@ -34,7 +48,23 @@
     id={@memory.id || :new}
     title={@page_title}
     action={@live_action}
+    current_user={@current_user}
     memory={@memory}
     navigate={~p"/memories"}
   />
 </.modal>
+
+
+  <div class="container mx-auto">
+      <div class="min-w-full border rounded lg:grid lg:grid-cols-3">
+        <div class="border-r border-gray-300 lg:col-span-1">
+            <div class="mx-3 my-3 relative text-gray-600">
+              <span class="absolute inset-y-0 right-0 flex items-center pr-2">
+                <Heroicons.x_mark solid class="h-5 w-5 stroke-current" />
+              </span>
+              <input type="search" class="block w-full py-3 bg-gray-100 rounded-2xl" name="search"
+                placeholder="Search in Chat" required />
+            </div>
+      </div>
+    </div>
+</div>

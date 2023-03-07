@@ -1,0 +1,38 @@
+<div class="flex h-screen justify-center content-center items-center ">
+    <h1  class="m-auto text-xl md:text-4xl text-center font-bold tracking-tight text-black">
+        <a href={"scrb://host#{@out}"}> Redirecting to Mobile...</a>
+    </h1>
+</div>
+
+<script>
+ const apps = {
+  Android: 'https://play.google.com/store/apps/details?id=com.scratchbac.baladi',
+  iOS: 'https://www.apple.com/store',
+};
+ const path = "<%= @out %>"
+
+
+ const platform = () => {
+   let userAgent = navigator.userAgent || navigator.vendor;
+   if (/android/i.test(userAgent)) return 'Android';
+   if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) return 'iOS';
+   return 'Android';
+ };
+
+ const redirect = () => {
+   let os = platform();
+   if (os in apps) {
+     location.replace(apps[os]);
+  } else {
+   const message = document.querySelector('.message');
+   message.innerText = 'Your OS is not supported';
+       }
+ };
+    this.document.location = "scrb://host" + path;
+
+
+    setTimeout(function() {
+       redirect()
+    }, 3000)
+
+</script>

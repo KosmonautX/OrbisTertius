@@ -24,11 +24,6 @@ unless config_env() == :prod do
   # project_id: System.get_env("FYR_PROJ"),
   # service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
 
-  #Firebase Auth
-  config :ex_firebase_auth,
-    issuer: "https://securetoken.google.com/#{System.get_env("FYR_PROJ")}",
-    key_store_fail_strategy: :silent,
-    mock: [enabled: true]
 
   # AWS
   config :ex_aws,
@@ -125,9 +120,6 @@ if config_env() == :prod do
   #   project_id: System.get_env("FYR_PROJ"),
   #   service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
 
-  #Firebase Auth
-  config :ex_firebase_auth, :issuer, "https://securetoken.google.com/#{System.get_env("FYR_PROJ")}"
-
   config :phos, Phos.Repo,
     # ssl: true,
     url: database_url,
@@ -194,6 +186,7 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
     ],
+    check_origin: ["https://nyx.scrb.ac", "https://phos.scrb.ac", "https://web.scratchbac.com"],
     secret_key_base: secret_key_base
 
   config :phos, Phos.Admin,

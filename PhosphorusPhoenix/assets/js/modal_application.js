@@ -7,7 +7,7 @@ const ModalApplication = () => {
 
   modal.querySelectorAll('a[data-phx-link="redirect"]').forEach(val => {
     const url = new URL(val.href, document.location.origin)
-    url.searchParams.append('return_to', encodedReturnTo)
+    url.searchParams.set('return_to', encodedReturnTo)
     val.href = `${val.href}${url.search}`
   })
 }

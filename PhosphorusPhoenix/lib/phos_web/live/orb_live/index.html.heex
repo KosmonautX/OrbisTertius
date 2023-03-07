@@ -62,7 +62,6 @@
 <div id="wrapper" phx-update="ignore">
   <div id="map" phx-hook="InitIndexMap" style="height: 400px; z-index: -1"></div>
 </div>
-<%= IO.puts(inspect(@addresses)) %>
 <div :for={{key, value} <- @addresses}>
   <h2><%= String.capitalize(to_string(key)) %> Orbs</h2>
   <.table id={"table_for_#{key}"} rows={location_fetcher(value, @geolocation)}>
@@ -79,7 +78,6 @@
 
         <.link phx-click={JS.push("delete", value: %{id: orb.id})} data-confirm="Are you sure?">
           Delete
-
         </.link>
       </div>
     </:action>
