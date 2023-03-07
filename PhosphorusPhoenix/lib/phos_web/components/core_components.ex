@@ -1011,7 +1011,7 @@ defmodule PhosWeb.CoreComponents do
             </button>
           </div>
         </div>
-        <div class="hidden lg:block items-center justify-between w-full  lg:w-auto">
+        <!--<div class="hidden lg:block items-center justify-between w-full  lg:w-auto">
           <ul class="flex flex-col lg:flex-row lg:space-x-6  text-gray-700 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent">
             <li>
               <a href="#" class="block lg:hover:text-teal-500">
@@ -1030,7 +1030,7 @@ defmodule PhosWeb.CoreComponents do
               </a>
             </li>
           </ul>
-        </div>
+        </div>-->
       </div>
     </nav>
     """
@@ -1338,11 +1338,19 @@ defmodule PhosWeb.CoreComponents do
           <%= @orb_location %>
         </:information>
         <:actions>
+          <button
+          id={"#{@id}-scry-orb-#{@orb.id}-sharebtn"}
+          phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
+          class="text-center inline-flex items-center dark:text-white">
+          <div id={"#{@id}-scry-orb-#{@orb.id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %></div>
+          <.comment_share type="share" class="ml-2 fill-white"></.comment_share>
+          </button>
+
           <.chat type="banner" class="h-8 ml-4 dark:fill-white"></.chat>
 
-          <button class="inline-block text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700  focus:outline-none  dark:focus:ring-gray-700 rounded-lg text-sm p-1.5">
+          <!--button class="inline-block text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700  focus:outline-none  dark:focus:ring-gray-700 rounded-lg text-sm p-1.5">
             <Heroicons.ellipsis_horizontal class="lg:h=8 lg:w-8 h-6 w-6 text-black dark:text-white" />
-          </button>
+          </button> -->
         </:actions>
       </.user_info_bar>
 
@@ -1433,12 +1441,6 @@ defmodule PhosWeb.CoreComponents do
                 info_color="prose-invert text-white"
               />
             </.link>
-            <.chip emoji={[
-              %{sticker: "😊", count: "20"},
-              %{sticker: "❤️", count: "60"},
-              %{sticker: "🥹", count: "50"},
-              %{sticker: "🫠", count: "30"}
-            ]} />
             <div class="items-end">
               <.orb_action
                 :if={@orb.media}
@@ -1574,15 +1576,6 @@ defmodule PhosWeb.CoreComponents do
         </span>
       </div>
       <div class="flex flex-cols space-x-1">
-        <button
-          id={"#{@id}-sharebtn"}
-          phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
-          class="text-center inline-flex items-center dark:text-white">
-          <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %></div>
-          <.comment_share type="share" class="ml-2 fill-white"></.comment_share>
-          <span class="ml-1">11</span>
-        </button>
-
         <.link
           id={"#{@id}-scry-orb-#{@orb.id}-link"}
           class="relative"
@@ -1593,11 +1586,6 @@ defmodule PhosWeb.CoreComponents do
             <span class="ml-1"><%= @orb.comment_count %></span>
           </button>
         </.link>
-
-        <button class="text-center inline-flex items-center dark:text-white">
-          <.like_btn type="like" class="ml-2 fill-white"></.like_btn>
-          <span class="ml-1"><span class="ml-1">22</span></span>
-        </button>
       </div>
     </div>
     """
@@ -1695,7 +1683,7 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:id, :string, required: true)
   attr(:navigate, :any)
-  # slot(:inner_block, required: true)
+  slot(:inner_block)
   attr(:user, :map, required: true)
   attr(:show_location, :boolean)
   attr(:main_height, :string, default: "lg:h-80")

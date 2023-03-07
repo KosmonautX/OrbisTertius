@@ -26,7 +26,7 @@ defmodule PhosWeb.OrbLive.Show do
        |> assign(:comments, comments)
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
-       temporary_assigns: [orbs: Action.get_active_orbs_by_initiator(orb.initiator.id)]}
+       temporary_assigns: [orbs: Action.orbs_by_initiators([orb.initiator.id], 1).data]}
       else
         nil -> raise PhosWeb.ErrorLive, message: "Orb Not Found"
     end
@@ -47,7 +47,7 @@ defmodule PhosWeb.OrbLive.Show do
        |> assign(:comments, comment)
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
-       temporary_assigns: [orbs: Action.get_active_orbs_by_initiator(orb.initiator.id)]}
+       temporary_assigns: [orbs: Action.orbs_by_initiators([orb.initiator.id], 1).data]}
     else
       {:error, :not_found} -> raise PhosWeb.ErrorLive, message: "Orb Not Found"
     end
@@ -170,7 +170,7 @@ defmodule PhosWeb.OrbLive.Show do
     |> assign(
       orbs:
         socket.assigns.orbs ++
-          Action.get_active_orbs_by_initiator(socket.assigns.orb.initiator.id)
+          Action.orbs_by_initiators([socket.assigns.orb.initiator.id], page).data
     )
   end
 
