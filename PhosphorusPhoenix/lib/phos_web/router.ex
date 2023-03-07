@@ -87,30 +87,6 @@ defmodule PhosWeb.Router do
     end
   end
 
-  scope "/", PhosWeb do
-    pipe_through [:browser]
-
-    resources "/admin/sessions", AdminSessionController, only: [:new, :create, :index], as: :admin_session
-
-    get "/users/log_out", UserSessionController, :delete
-
-    live_session :current_user,
-      on_mount: [{PhosWeb.Menshen.Gate, :mount_current_user}] do
-      live "/users/confirm/:token", UserConfirmationLive, :edit
-      live "/users/confirm", UserConfirmationInstructionsLive, :new
-    end
-
-    live_session :guest_if_not_logged_in,
-      on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Timezone, :timezone}] do
-
-      live "/orb/:id", OrbLive.Show, :show
-      live "/user/:username", UserProfileLive.Show, :show
-      live "/user/:username/allies", UserProfileLive.Show, :allies
-
-    end
-
-  end
-
   scope "/admin", PhosWeb.Admin, as: :admin, on_mount: {Phos.Admin.Mounter, :admin} do
     pipe_through [:browser, :admin]
 
@@ -283,6 +259,29 @@ defmodule PhosWeb.Router do
         live "/reveries/:id", ReverieLive.Show, :show
         live "/reveries/:id/show/edit", ReverieLive.Show, :edit
       end
+    end
+  end
+
+    scope "/", PhosWeb do
+    pipe_through [:browser]
+
+    resources "/admin/sessions", AdminSessionController, only: [:new, :create, :index], as: :admin_session
+
+    get "/users/log_out", UserSessionController, :delete
+
+    live_session :current_user,
+      on_mount: [{PhosWeb.Menshen.Gate, :mount_current_user}] do
+      live "/users/confirm/:token", UserConfirmationLive, :edit
+      live "/users/confirm", UserConfirmationInstructionsLive, :new
+    end
+
+    live_session :guest_if_not_logged_in,
+      on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Timezone, :timezone}] do
+
+      live "/orb/:id", OrbLive.Show, :show
+      live "/user/:username", UserProfileLive.Show, :show
+      live "/user/:username/allies", UserProfileLive.Show, :allies
+
     end
   end
 end
