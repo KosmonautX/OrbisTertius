@@ -55,7 +55,7 @@ defmodule PhosWeb.UserProfileLive.FormComponent do
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
 
   defp save_profile(socket, :edit, profile_params) do
-    case Users.update_user(socket.assigns.user, profile_params) do
+    case Users.update_user(socket.assigns.current_user, profile_params) do
       {:ok, _user} ->
         {:noreply,
          socket

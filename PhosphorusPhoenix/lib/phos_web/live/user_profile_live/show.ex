@@ -50,11 +50,7 @@ defmodule PhosWeb.UserProfileLive.Show do
   end
 
   @impl true
-  def handle_event(
-        "load-more",
-        _,
-        %{assigns: %{current_user: user, page: page, ally_list: ally_list, user: friend}} = socket
-      ) do
+  def handle_event("load-more", _, %{assigns: %{current_user: user, page: page, ally_list: ally_list, user: friend}} = socket) do
     expected_page = page + 1
 
     {:noreply,
@@ -114,9 +110,13 @@ defmodule PhosWeb.UserProfileLive.Show do
     |> assign(page_title: "Viewing Profile")
   end
 
-  defp apply_action(socket, :edit, _params) do
-    socket
-    |> assign(:page_title, "Updating Profile")
+  defp apply_action(socket, :edit, params) do
+    if(socket.assigns.current_user.username == params["username"]) do
+      socket
+      |> assign(:page_title, "Updating Profile")
+    else
+      push_patch(socket, to: ~p"/user/#{params["username"]}")
+    end
   end
 
   defp apply_action(socket, :allies, _params) do
@@ -131,7 +131,7 @@ defmodule PhosWeb.UserProfileLive.Show do
       type: "website",
       # TODO fetch from media
       image: Phos.Orbject.S3.get!("USR", user.id, "public/profile/lossless"),
-      url: url(socket, ~p"/user/#{user.id}")
+      url: url(socket, ~p"/user/#{user.username}")
     })
   end
 

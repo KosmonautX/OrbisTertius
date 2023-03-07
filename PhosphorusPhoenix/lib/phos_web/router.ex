@@ -73,13 +73,6 @@ defmodule PhosWeb.Router do
 
       get "/welcome", PageController, :welcome
 
-      live "/orb", OrbLive.Index, :index
-      live "/orb/new", OrbLive.Index, :new
-      live "/orb/sethome", OrbLive.Index, :sethome
-      live "/orb/setwork", OrbLive.Index, :setwork
-
-      live "/orb/:id/edit", OrbLive.Index, :edit
-      live "/orb/:id/show/edit", OrbLive.Show, :edit
       live "/orb/:id/show/:cid", OrbLive.Show, :show_ancestor
       live "/orb/:id/reply/:cid", OrbLive.Show, :reply
       live "/orb/:id/edit/:cid", OrbLive.Show, :edit_comment
@@ -91,21 +84,6 @@ defmodule PhosWeb.Router do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
 
-
-      live "/memories", MemoryLive.Index, :index
-      live "/memories/new", MemoryLive.Index, :new
-      live "/memories/:id/edit", MemoryLive.Index, :edit
-
-      live "/memories/:id", MemoryLive.Show, :show
-      live "/memories/:id/show/edit", MemoryLive.Show, :edit
-
-
-      live "/reveries", ReverieLive.Index, :index
-      live "/reveries/new", ReverieLive.Index, :new
-      live "/reveries/:id/edit", ReverieLive.Index, :edit
-
-      live "/reveries/:id", ReverieLive.Show, :show
-      live "/reveries/:id/show/edit", ReverieLive.Show, :edit
     end
   end
 
@@ -275,4 +253,36 @@ defmodule PhosWeb.Router do
       get "/lankaonfyr", DevLandController, :fyr
     end
   end
- end
+
+  if Mix.env() == :test or Mix.env() == :dev do
+    scope "/", PhosWeb do
+      pipe_through [:browser, :require_authenticated_user]
+
+      live_session :required_authenticated_user_dev,
+        on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated},{PhosWeb.Timezone, :timezone}] do
+        live "/orb", OrbLive.Index, :index
+        live "/orb/new", OrbLive.Index, :new
+        live "/orb/sethome", OrbLive.Index, :sethome
+        live "/orb/setwork", OrbLive.Index, :setwork
+
+        live "/orb/:id/edit", OrbLive.Index, :edit
+        live "/orb/:id/show/edit", OrbLive.Show, :edit
+
+        live "/memories", MemoryLive.Index, :index
+        live "/memories/new", MemoryLive.Index, :new
+        live "/memories/:id/edit", MemoryLive.Index, :edit
+
+        live "/memories/:id", MemoryLive.Show, :show
+        live "/memories/:id/show/edit", MemoryLive.Show, :edit
+
+
+        live "/reveries", ReverieLive.Index, :index
+        live "/reveries/new", ReverieLive.Index, :new
+        live "/reveries/:id/edit", ReverieLive.Index, :edit
+
+        live "/reveries/:id", ReverieLive.Show, :show
+        live "/reveries/:id/show/edit", ReverieLive.Show, :edit
+      end
+    end
+  end
+end
