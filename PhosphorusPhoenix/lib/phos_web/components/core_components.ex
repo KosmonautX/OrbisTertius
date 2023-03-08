@@ -1390,7 +1390,7 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <div :if={!is_nil(@media)} id={"#{@id}-carousel-wrapper"} class="glide">
       <section class="relative flex items-center" id={"#{@id}-carousel"} phx-update="ignore" phx-hook="Carousel">
-        <div id={"#{@id}-container"} data-glide-el="track" class="glide__track">
+        <div id={"#{@id}-container"} data-glide-el="track" class="glide__track w-full">
           <div class="glide__slides">
             <div :for={m <- @media} class="glide__slide">
               <div class="relative">
