@@ -41,7 +41,6 @@ export const VideoMute = () => {
   selectors.forEach(el => {
     mouseEnter(el)
     mouseLeave(el)
-    
   })
 }
 
