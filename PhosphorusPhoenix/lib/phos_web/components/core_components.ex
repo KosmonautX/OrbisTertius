@@ -1412,15 +1412,18 @@ defmodule PhosWeb.CoreComponents do
                 </video>
                 <a
                   :if={(m.ext |> String.split("/") |> hd) in ["video"]}
-                  class="absolute hover:text-blue-300 top-0 right-10 bg-transparent p-2 hover:cursor-pointer"
+                  class="absolute hover:text-blue-300 inset-0 bg-transparent flex justify-center items-center p-2 hover:cursor-pointer"
+                  data-selector="mute"
                   onclick="
                     this.previousElementSibling.muted = !this.previousElementSibling.muted;
-                    this.firstElementChild.classList.toggle('hidden')
-                    this.lastElementChild.classList.toggle('hidden')
+                    this.firstElementChild.firstElementChild.classList.toggle('hidden')
+                    this.firstElementChild.lastElementChild.classList.toggle('hidden')
                   "
                 >
-                  <Heroicons.speaker_x_mark class="h-6 w-6 hover:text-blue-300 absolute text-white font-semibold" />
-                  <Heroicons.speaker_wave class="hidden h-6 w-6 hover:text-blue-300 absolute text-white font-semibold" />
+                  <span class="h-10 w-10 items-center justify-center rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none hidden">
+                    <Heroicons.speaker_x_mark class="h-6 w-6 hover:text-blue-300 text-white font-semibold" />
+                    <Heroicons.speaker_wave class="hidden h-6 w-6 hover:text-blue-300 text-white font-semibold" />
+                  </span>
                 </a>
               </div>
             </div>
@@ -1435,7 +1438,7 @@ defmodule PhosWeb.CoreComponents do
             id={"#{@id}-carousel-prev"}
             type="button"
             data-glide-dir="<"
-            class="absolute top-0 left-0  flex items-center justify-center h-full px-2 cursor-pointer group focus:outline-none"
+            class="absolute top-0 left-0 flex items-center justify-center h-full px-2 cursor-pointer group focus:outline-none"
           >
             <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
               <Heroicons.chevron_left class="mt-0.5 h-6 w-6" />

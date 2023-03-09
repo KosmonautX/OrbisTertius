@@ -5,8 +5,8 @@ const findSection = (target) => {
 
 const muteVideo = vid => {
   vid.muted = true
-  vid.nextElementSibling.firstElementChild.classList.remove('hidden')
-  vid.nextElementSibling.lastElementChild.classList.add('hidden')
+  vid.nextElementSibling.firstElementChild.firstElementChild.classList.remove('hidden')
+  vid.nextElementSibling.firstElementChild.lastElementChild.classList.add('hidden')
 }
 
 const CarouselControl = {

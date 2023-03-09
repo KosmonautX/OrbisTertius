@@ -9,7 +9,7 @@ import Hooks from "./hooks";
 import { Socket } from "phoenix"
 import { LiveSocket } from "phoenix_live_view"
 import topbar from "../vendor/topbar"
-import ModalApplication from "./modal_application"
+import ModalApplication, {VideoMute} from "./modal_application"
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, {
@@ -40,9 +40,13 @@ window.addEventListener("phx:page-loading-start", info => topbar.delayedShow(200
 window.addEventListener("phx:page-loading-stop", () => {
   topbar.hide()
   ModalApplication()
+  VideoMute()
 })
 
-window.addEventListener("DOMContentLoaded", ModalApplication)
+window.addEventListener("DOMContentLoaded", () => {
+  ModalApplication()
+  VideoMute()
+})
 
 
 window.addEventListener("phos:clipcopy", (event) => {
