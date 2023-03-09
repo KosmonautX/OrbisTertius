@@ -57,7 +57,7 @@ defmodule PhosWeb.CoreComponents do
     <div
       id={@id}
       phx-mounted={@show && show_modal(@id)}
-      class="relative z-50 hidden bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-400 dark:border-gray-700 dark:hover:bg-gray-700"
+      class="relative z-50 hidden bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-400 dark:border-gray-700 dark:hover:bg-gray-700 px-2"
     >
       <div
         id={"#{@id}-bg"}
@@ -1402,7 +1402,7 @@ defmodule PhosWeb.CoreComponents do
               <div class="relative">
                 <img
                   :if={(m.ext |> String.split("/") |> hd) in ["image", "application"]}
-                  class="h-96 w-full object-cover border-gray-200 border-b-0 rounded-b-xl shadow-lg dark:border-gray-700"
+                  class="h-96 w-full object-cover  border-gray-200 border-b-0 rounded-b-xl shadow-lg dark:border-gray-700"
                   src={m.url}
                   loading="lazy"
                 />
@@ -1987,13 +1987,14 @@ defmodule PhosWeb.CoreComponents do
   end
 
   attr(:id, :string, required: true)
+  attr(:action, :atom)
   attr(:memories, :any)
   attr(:date, :string)
 
   @spec last_message(map) :: Phoenix.LiveView.Rendered.t()
   def last_message(assigns) do
     ~H"""
-    <ul class="overflow-y-auto lg:h-[40rem] h-screen">
+    <ul class="overflow-y-auto h-screen">
       <li :for={memory <- @memories}>
         <.link navigate={
           path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{memory.user_source.username}")
@@ -2033,7 +2034,7 @@ defmodule PhosWeb.CoreComponents do
 
   def list_message(assigns) do
     ~H"""
-    <div id={"#{@id}-list"} class=" lg:h-[40rem] h-screen overflow-y-auto">
+    <div id={"#{@id}-list"} class=" h-screen overflow-y-auto">
       <ul :for={msg <- @memories} class="relative w-full p-1.5">
         <%= if msg.user_source_id != @current_user.id do %>
           <li class="flex justify-start">
@@ -2066,12 +2067,13 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:id, :string, required: true)
   attr(:user, :any)
+  slot(:actions)
 
   def chat_profile(assigns) do
     ~H"""
-    <div>
+    <div class="flex justify-between items-center w-full border-b border-gray-300 px-0.5">
       <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}>
-        <div class="relative flex items-center p-3 border-b border-gray-300">
+        <div class="relative flex p-1 px-2">
           <img
             class="object-cover w-12 h-12 rounded-full"
             src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
@@ -2085,6 +2087,7 @@ defmodule PhosWeb.CoreComponents do
           <span class="absolute w-3 h-3 bg-green-600 rounded-full left-10 top-3"></span>
         </div>
       </.link>
+      <div><%= render_slot(@actions) %></div>
     </div>
     """
   end

@@ -1,21 +1,25 @@
+<!--Edit Profile Modal in Profile View-->
 <.modal
   :if={@live_action in [:edit]}
   id="edit_profile_modal"
   show={@live_action in [:edit]}
   on_cancel={JS.navigate(~p"/user/#{@current_user.username}")}
 >
-  <.live_component
-    module={PhosWeb.UserProfileLive.FormComponent}
-    id={@current_user.id}
-    title={@page_title}
-    action={@live_action}
-    user={@user}
-    current_user={@current_user}
-    return_to={~p"/user/#{@current_user.username}"}
-  />
+  <div class="p-4">
+    <.live_component
+      module={PhosWeb.UserProfileLive.FormComponent}
+      id={@current_user.id}
+      title={@page_title}
+      action={@live_action}
+      user={@user}
+      current_user={@current_user}
+      return_to={~p"/user/#{@current_user.username}"}
+    />
+  </div>
 </.modal>
 
 <section class="w-full flex flex-col items-center mt-14 gap-4 justify-center lg:mt-18">
+  <!--User Profile Banner-->
   <div class="w-full">
     <.user_profile_banner id="orb-user-profile" user={@user} show_location={true}>
       <.link
@@ -26,7 +30,7 @@
       </.link>
     </.user_profile_banner>
   </div>
-
+  <!--User inforamtion card in Desktop View-->
   <div class="lg:hidden block w-full">
     <.user_information_card :if={not is_nil(@user.public_profile)} id="user_info" user={@user}>
       <:actions>
@@ -40,8 +44,8 @@
       </:actions>
     </.user_information_card>
   </div>
-
-  <div class="lg:hidden block sticky top-12 bg-white z-10 left-0 w-full items-center justify-center">
+  <!--Tabs Using Mobile View There two tabs (Posts/Allies)-->
+  <div class="lg:hidden block sticky top-14 bg-white z-10 left-0 w-full items-center justify-center">
     <.tabs_profile id="orb-user-tabs-profile" action={@live_action} username={@user.username} />
   </div>
 
@@ -50,6 +54,7 @@
       :if={@live_action != :allies}
       class="flex flex-col w-full max-w-full px-3 mt-2 lg:w-7/12 lg:flex-none"
     >
+      <!--User inforamtion card in Mobile/Tablet View-->
       <div class="hidden lg:block">
         <.user_information_card
           :if={not is_nil(@user.public_profile)}
@@ -67,6 +72,7 @@
           </:actions>
         </.user_information_card>
       </div>
+
       <h5 class="lg:block hidden text-left font-semibold text-lg py-1 px-2 dark:text-white">
         Posts
       </h5>
@@ -77,7 +83,7 @@
         </li>
       </ul>
     </div>
-
+    <!--Allies Tab Details in Mobile View Using action Button its go   to new Route in Mobile View -->
     <div
       id="ally_list"
       class={[

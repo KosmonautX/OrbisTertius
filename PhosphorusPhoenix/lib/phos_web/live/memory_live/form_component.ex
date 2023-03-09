@@ -6,27 +6,22 @@ defmodule PhosWeb.MemoryLive.FormComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="relative flex flex-col w-full justify-between px-2 ">
+    <div class="border-t-2 border-gray-200 px-2 relative">
       <.simple_form
         :let={f}
-        class="w-full my-4"
+        class=""
         for={@changeset}
         id="memory-form"
         phx-target={@myself}
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={{f, :message}} type="text" label="" />
+        <.input field={{f, :message}} type="text" placeholder="Scratching..." />
         <.input field={{f, :user_source_id}} type="hidden" value={@current_user.id} />
-        <.input
-          :if={!is_nil(@rel)}
-          field={{f, :rel_subject_id}}
-          type="hidden"
-          value={@rel.id}
-        />
+        <.input :if={!is_nil(@rel)} field={{f, :rel_subject_id}} type="hidden" value={@rel.id} />
 
         <:actions>
-          <button type="submit" phx-disable-with="Saving..." class="absolute inset-y-0 right-5">
+          <button type="submit" phx-disable-with="Saving..." class="absolute inset-y-1 right-4">
             <Heroicons.paper_airplane class="h-8 w-8 text-teal-400 font-bold" />
           </button>
         </:actions>
