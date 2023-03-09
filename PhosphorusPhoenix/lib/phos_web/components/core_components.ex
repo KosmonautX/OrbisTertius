@@ -1403,11 +1403,7 @@ defmodule PhosWeb.CoreComponents do
                 <video
                   :if={(m.ext |> String.split("/") |> hd) in ["video"]}
                   class="w-full h-96 aspect-video hover:aspect-square object-cover border-gray-200 border-b-0 rounded-b-xl shadow-lg dark:border-gray-700"
-                  autoplay
-                  playsinline
-                  muted
-                  onclick="this.paused ? this.play() : this.pause()"
-                  >
+                  muted loop preload="auto">
                   <source src={m.url} type={m.ext} />
                 </video>
                 <a
