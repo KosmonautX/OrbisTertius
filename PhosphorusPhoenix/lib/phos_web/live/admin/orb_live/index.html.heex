@@ -38,7 +38,11 @@
     </:col>
 
        <:col :let={orb}  label="Title">
-      <.link navigate={~p"/admin/orbs/#{orb}"}><%= orb.title %></.link>
+      <.link navigate={~p"/admin/orbs/#{orb}"}><%= orb.title || orb
+      |> get_in([
+        Access.key(:payload, %{}),
+        Access.key(:inner_title, "nil")
+      ]) %></.link>
     </:col>
 
     <:col :let={orb} label="Birthday">
