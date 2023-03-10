@@ -1,3 +1,5 @@
+import {VideoMute} from "../modal_application"
+
 // assets/js/infinite_scroll.js
 export default Scroll = {
     page() { return this.el.dataset.page; },
@@ -25,5 +27,6 @@ export default Scroll = {
     },
     updated() {
         this.pending = this.page();
+        VideoMute()
     },
 };
