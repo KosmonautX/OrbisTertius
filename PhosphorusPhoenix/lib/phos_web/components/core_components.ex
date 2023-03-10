@@ -1403,7 +1403,7 @@ defmodule PhosWeb.CoreComponents do
                 <video
                   :if={(m.ext |> String.split("/") |> hd) in ["video"]}
                   class="w-full h-96 aspect-video hover:aspect-square object-cover border-gray-200 border-b-0 rounded-b-xl shadow-lg dark:border-gray-700"
-                  muted loop preload="auto">
+                  muted loop preload="auto" playsinline>
                   <source src={m.url} type={m.ext} />
                 </video>
                 <a
@@ -1424,33 +1424,6 @@ defmodule PhosWeb.CoreComponents do
               </div>
             </div>
           </div>
-        </div>
-        <div :if={length(@media) > 1} 
-          class="absolute w-full flex justify-between"
-          id={"#{@id}-carousel-wrapper-#{:rand.uniform}"}
-          phx-hook="CarouselControl"
-          data-glide-el="controls">
-          <button
-            id={"#{@id}-carousel-prev"}
-            type="button"
-            data-glide-dir="<"
-            class="absolute top-0 left-0 flex items-center justify-center h-full px-2 cursor-pointer group focus:outline-none"
-          >
-            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
-              <Heroicons.chevron_left class="mt-0.5 h-6 w-6" />
-            </span>
-          </button>
-
-          <button
-            id={"#{@id}-carousel-next"}
-            type="button"
-            data-glide-dir=">"
-            class="absolute top-0 right-0 flex items-center justify-center h-full px-2 cursor-pointer group focus:outline-none"
-          >
-            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
-              <Heroicons.chevron_right class="mt-0.5 h-6 w-6" />
-            </span>
-          </button>
         </div>
         <div class="absolute bottom-0 pb-4 h-2/5 pointer-events-auto flex flex-col justify-end bg-gradient-to-t from-black/80 to-black/0 w-full flex flex-col border-b-0 rounded-b-xl border-gray-200 dark:border-gray-700">
           <.link
@@ -1481,15 +1454,39 @@ defmodule PhosWeb.CoreComponents do
               />
           </div>
         </div>
-        <div
-          data-glide-el="controls[nav]"
-          class="absolute flex space-x-3 -translate-x-1/2 bottom-1 left-1/2"
-        >
+        <div :if={length(@media) > 1} data-glide-el="controls">
+          <div
+            data-glide-el="controls[nav]"
+            class="absolute flex space-x-3 -translate-x-1/2 bottom-2 left-1/2"
+          >
+            <button
+              :for={count <- Enum.to_list(1..length(@media))}
+              class="h-2 w-2 rounded-full bg-white/70 group-hover:bg-white/90 focus:ring-4 focus:ring-white group-focus:outline-none"
+              data-glide-dir={"=#{count}"}
+            />
+          </div>
+
           <button
-            :for={count <- Enum.to_list(1..length(@media))}
-            class="h-2 w-2 rounded-full bg-white/70 group-hover:bg-white/90 focus:ring-4 focus:ring-white group-focus:outline-none"
-            data-glide-dir={"=#{count}"}
-          />
+            id={"#{@id}-carousel-prev"}
+            type="button"
+            data-glide-dir="<"
+            class="absolute top-0 left-0  flex items-center justify-center h-full px-2 cursor-pointer group focus:outline-none"
+          >
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
+              <Heroicons.chevron_left class="mt-0.5 h-6 w-6" />
+            </span>
+          </button>
+
+          <button
+            id={"#{@id}-carousel-next"}
+            type="button"
+            data-glide-dir=">"
+            class="absolute top-0 right-0 flex items-center justify-center h-full px-2 cursor-pointer group focus:outline-none"
+          >
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none">
+              <Heroicons.chevron_right class="mt-0.5 h-6 w-6" />
+            </span>
+          </button>
         </div>
       </section>
     </div>
