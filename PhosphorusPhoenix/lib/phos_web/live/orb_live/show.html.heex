@@ -47,7 +47,16 @@
       </div>
 
       <div class="w-full border border-gray-200 rounded-xl shadow-md dark:border-gray-700">
-        <.scry_orb id="Orb" orb={@orb} timezone={@timezone} />
+        <.scry_orb id="Orb" orb={@orb} timezone={@timezone}>
+          <:user_action>
+    <.live_component
+  id="orb-ally-button"
+              module={PhosWeb.AllyButton}
+              current_user={@current_user}
+              user={@orb.initiator}
+              socket={@socket} />
+  </:user_action>
+  </.scry_orb>
         <div class="px-2">
           <.live_component
             module={PhosWeb.CommentLive.IndexComponent}

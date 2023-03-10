@@ -1300,6 +1300,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:id, :string, required: true)
   attr(:orb, :map)
   attr(:timezone, :string)
+  slot(:user_action)
 
   def scry_orb(assigns) do
     assigns =
@@ -1349,7 +1350,7 @@ defmodule PhosWeb.CoreComponents do
           <.comment_share type="share" class="ml-2 fill-white"></.comment_share>
           </button>
 
-          <.chat type="banner" class="h-8 ml-4 dark:fill-white"></.chat>
+          <%= render_slot(@user_action) %>
 
           <!--button class="inline-block text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700  focus:outline-none  dark:focus:ring-gray-700 rounded-lg text-sm p-1.5">
             <Heroicons.ellipsis_horizontal class="lg:h=8 lg:w-8 h-6 w-6 text-black dark:text-white" />
