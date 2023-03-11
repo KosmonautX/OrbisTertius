@@ -84,6 +84,10 @@ defmodule PhosWeb.Router do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
 
+
+      live "/memories", MemoryLive.Index, :index
+      live "/memories/new", MemoryLive.Index, :new
+      live "/memories/user/:username", MemoryLive.Index, :show
     end
   end
 
@@ -244,8 +248,6 @@ defmodule PhosWeb.Router do
         live "/orb/:id/edit", OrbLive.Index, :edit
         live "/orb/:id/show/edit", OrbLive.Show, :edit
 
-        live "/memories", MemoryLive.Index, :index
-        live "/memories/new", MemoryLive.Index, :new
         live "/memories/:id/edit", MemoryLive.Index, :edit
 
         live "/memories/:id", MemoryLive.Show, :show

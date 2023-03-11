@@ -59,7 +59,7 @@ defmodule PhosWeb.CoreComponents do
     <div
       id={@id}
       phx-mounted={@show && show_modal(@id)}
-      class="relative z-50 hidden bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-400 dark:border-gray-700 dark:hover:bg-gray-700"
+      class="relative z-50 hidden bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-400 dark:border-gray-700 dark:hover:bg-gray-700 px-2"
     >
       <div
         id={"#{@id}-bg"}
@@ -280,11 +280,11 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  defp button_class(:danger), do: "bg-red-400 hover:bg-red-600 text-white"
-  defp button_class(:primary), do: "bg-teal-400 hover:bg-teal-600 text-white"
-  defp button_class(:warning), do: "bg-yellow-400 hover:bg-yellow-600 text-white"
-  defp button_class(:success), do: "bg-green-400 hover:bg-green-600 text-white"
-  defp button_class(:dark), do: "bg-black hover:bg-gray-800 text-white"
+  defp button_class(:danger), do: "bg-red-400 hover:bg-red-600"
+  defp button_class(:primary), do: "bg-teal-400 hover:bg-teal-600 text-white dark:text-black"
+  defp button_class(:warning), do: "bg-yellow-400 hover:bg-yellow-600"
+  defp button_class(:success), do: "bg-green-400 hover:bg-green-600"
+  defp button_class(:dark), do: "bg-slate-800 hover:bg-black text-white"
 
   defp button_class(:icons),
     do:
@@ -548,7 +548,7 @@ defmodule PhosWeb.CoreComponents do
       class="relative w-full flex flex-col bg-white border-0 border-transparent border-solid shadow-xl p-2 overflow-scroll"
     >
       <table class="w-full align-top text-slate-500">
-        <thead class="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-base tracking-none whitespace-nowrap text-slate-400">
+        <thead class=" py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-base tracking-none whitespace-nowrap text-slate-400">
           <tr>
             <th :for={col <- @col} class="p-0 pb-4 pr-6 "><%= col[:label] %></th>
             <th class="relative p-0 pb-4">
@@ -556,7 +556,7 @@ defmodule PhosWeb.CoreComponents do
             </th>
           </tr>
         </thead>
-        <tbody class="p-2 align-top border-b text-sm">
+        <tbody class="align-top text-sm">
           <tr
             :for={row <- @rows}
             id={"#{@id}-#{Phoenix.Param.to_param(row)}"}
@@ -610,18 +610,17 @@ defmodule PhosWeb.CoreComponents do
 
   def admin_user_preview(assigns) do
     ~H"""
-    <div class="flex px-2 py-1">
+    <div class="flex max-w-sm">
       <div>
         <img
           src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossy")}
           onerror="this.src='/images/default_banner.jpg';"
-          class="h-16 w-16 mr-4 object-cover rounded-full "
+          class="xl:h-14 xl:w-14 lg:w-12 lg:h-12 mr-4 object-cover rounded-full "
           alt="user5"
-          iex
         />
       </div>
-      <div class="flex flex-col justify-center">
-        <h6 class="mb-0 leading-normal text-base"><%= "#{@user.username}" %></h6>
+      <div class="flex flex-col xl:ml-1 lg:ml-2 -mb-2">
+        <h6 class="mb-0 leading-normal text-sm font-bold"><%= "#{@user.username}" %></h6>
         <p class="mb-0 leading-tight text-sm text-gray-400"><%= "#{@user.email}" %></p>
       </div>
     </div>
@@ -1027,7 +1026,7 @@ defmodule PhosWeb.CoreComponents do
               </a>
             </li>
             <li>
-              <a href="#" class="flex items-center justify-between lg:hover:text-teal-500   ">
+              <a href="/memories" class="flex items-center justify-between lg:hover:text-teal-500   ">
                 Chats
                 <Heroicons.chevron_down solid class="w-4 h-4 ml-1 stroke-current dark:text-white" />
               </a>
@@ -1299,7 +1298,7 @@ defmodule PhosWeb.CoreComponents do
   """
   attr(:id, :string, required: true)
   attr(:orb, :map)
-  attr(:timezone, :string)
+  attr(:timezone, :map)
   slot(:user_action)
 
   def scry_orb(assigns) do
@@ -1370,11 +1369,19 @@ defmodule PhosWeb.CoreComponents do
       />
 
       <.link
-        :if={@media == []}
         class="relative"
         navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
       >
-        <.orb_information id={"#{@id}-scry-orb-#{@orb.id}"} title={@orb.title} />
+        <.orb_information
+          :if={@media == []}
+          id={"#{@id}-scry-orb-#{@orb.id}"}
+          title={get_in(@orb, [Access.key(:payload), Access.key(:inner_title)]) || @orb.title}
+        />
+        <.orb_information
+          :if={!is_nil(get_in(@orb, [Access.key(:payload), Access.key(:info)]))}
+          id={"#{@id}-scry-orb-#{@orb.id}"}
+          title={@orb.payload.info}
+        />
       </.link>
       <.orb_action :if={@media == []} id={"#{@id}-scry-orb-#{@orb.id}"} orb={@orb} date={@timezone} />
     </div>
@@ -1405,7 +1412,7 @@ defmodule PhosWeb.CoreComponents do
               <div class="relative">
                 <img
                   :if={(m.ext |> String.split("/") |> hd) in ["image", "application"]}
-                  class="h-96 w-full object-cover border-gray-200 border-b-0 rounded-b-xl shadow-lg dark:border-gray-700"
+                  class="h-96 w-full object-cover  border-gray-200 border-b-0 rounded-b-xl shadow-lg dark:border-gray-700"
                   src={m.url}
                   loading="lazy" />
 
@@ -1436,7 +1443,6 @@ defmodule PhosWeb.CoreComponents do
         </div>
         <div class="absolute bottom-0 pb-4 h-2/5 pointer-events-auto flex flex-col justify-end bg-gradient-to-t from-black/80 to-black/0 w-full flex flex-col border-b-0 rounded-b-xl border-gray-200 dark:border-gray-700">
           <.link
-            :if={@orb.media}
             id={"#{@id}-link-#{@orb.id}"}
             class="relative"
             navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
@@ -1507,7 +1513,7 @@ defmodule PhosWeb.CoreComponents do
    Renders Orb Information
   """
   attr(:id, :string, required: true)
-  attr(:title, :string)
+  attr(:title, :string, default: "")
   attr(:info_color, :string, default: "prose-zinc text-gray-600")
 
   def orb_information(assigns) do
@@ -1525,8 +1531,7 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <section
       id={"#{@id}-info"}
-      class={["prose prose-a:text-blue-500 text-lg  font-bold px-2 dark:prose-invert", @info_color]}
-    >
+      class={["prose prose-a:text-blue-500 text-base font-bold px-2 pt-2 dark:prose-invert", @info_color]}>
       <%= @title %>
     </section>
     """
@@ -1772,6 +1777,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:user, :map, required: true)
   attr(:flex, :any, default: nil)
   attr(:id, :string, required: true)
+  slot(:actions)
 
   slot(:ally_button) do
     attr(:user, :map, doc: "user want to attached to")
@@ -1805,14 +1811,7 @@ defmodule PhosWeb.CoreComponents do
             <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %></div>
             <.share_btn type="banner" class="h-8 ml-4 dark:fill-white"></.share_btn>
           </a>
-          <div :if={@ally_button != []}>
-            <.live_component
-              :for={ally <- @ally_button}
-              module={Phos.AllyButton}
-              current_user={ally.current_user}
-              user={ally.user}
-              socket={ally.socket} />
-          </div>
+          <%= render_slot(@actions) %>
         </div>
       </div>
       <div class="space-y-1">
@@ -1887,7 +1886,7 @@ defmodule PhosWeb.CoreComponents do
           <.live_component
             :for={ally <- @ally_button}
             id="ally_button"
-            module={PhosWeb.AllyButton}
+            module={PhosWeb.Component.AllyButton}
             current_user={ally.current_user}
             user={ally.user}
             socket={ally.socket} />
@@ -1948,6 +1947,7 @@ defmodule PhosWeb.CoreComponents do
         <p :if={@user.username} class="mt-3 w-1/2 text-center text-gray-400 dark:text-gray-400">
           <%= "Join the tribe to share your thoughts with #{@user.username} now!" %>
         </p>
+
         </div>
         <div class="mt-3">
           <.link
@@ -2001,65 +2001,108 @@ defmodule PhosWeb.CoreComponents do
   end
 
   attr(:id, :string, required: true)
-  attr(:memories, :list)
+  attr(:action, :atom)
+  attr(:memories, :any)
+  attr(:date, :string)
 
   @spec last_message(map) :: Phoenix.LiveView.Rendered.t()
   def last_message(assigns) do
     ~H"""
-    <ul :for={memory <- @memories} class="overflow-auto h-[32rem] flex flex-col rounded-lg w-full">
-      <li class="relative flex bg-white border-0 rounded-t-lg w-full">
-        <a class="text-sm transition duration-150 ease-in-out border-b border-gray-300 cursor-pointer hover:bg-gray-100 focus:outline-none px-1 py-1">
-          <div class="relative flex">
-            <img
-              src={Phos.Orbject.S3.get!("USR", @memory.user_source.id, "public/profile/lossless")}
-              class="w-12 h-12 border-4 border-white rounded-full object-cover"
-              onerror="this.src='/images/default_hand.jpg';"
-            />
-            <span class="top-0 left-7 absolute w-3.5 h-3.5 bg-red-400 border-2 border-white dark:border-gray-800 rounded-full">
-            </span>
-            <div class="flex flex-col items-start justify-center">
-              <h2 class="font-bold text-gray-900 dark:text-white ml-1 mb-0 leading-normal text-sm">
-                <%= memory |> get_in([Access.key(:user_source, %{}), Access.key(:username, "-")]) %>
-              </h2>
-              <p class="text-gray-700 dark:text-gray-400 ml-1 mb-0 leading-relaxed text-xs">
-                Is it still available? Sorry for asking so last min!!!Is it still available? Sorry for asking so last min!!!
-              </p>
+
+    <ul class="overflow-y-auto h-screen">
+      <li :for={memory <- @memories}>
+        <.link navigate={
+          path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{memory.user_source.username}")
+        }>
+          <div class="flex items-center px-3 py-2 text-sm transition duration-150 ease-in-out border-b border-gray-300 cursor-pointer hover:bg-gray-100 focus:outline-none">
+            <div class="relative mr-2">
+              <img
+                src={Phos.Orbject.S3.get!("USR", memory.user_source.id, "public/profile/lossless")}
+                class="w-16 h-16 border-2 border-white rounded-full object-cover"
+                onerror="this.src='/images/default_hand.jpg';"
+              />
+              <span class="top-2 left-10 absolute w-3.5 h-3.5 bg-red-400 border-2 border-white dark:border-gray-800 rounded-full">
+              </span>
+            </div>
+            <div class="w-full flex flex-col -mt-4">
+              <div class="flex justify-between">
+                <span class="block ml-2 font-semibold text-base  font-bold text-gray-900 dark:text-white mb-0 leading-normal">
+                  <%= memory |> get_in([Access.key(:user_source, %{}), Access.key(:username, "-")]) %>
+                </span>
+                <span class="block text-gray-600"><%= get_date(memory.inserted_at, @date) %></span>
+              </div>
+              <span class="block text-gray-700 dark:text-gray-400 ml-2 mb-0 leading-relaxed">
+                <%= memory.message %>
+              </span>
             </div>
           </div>
-        </a>
-        <span class="text-xs text-gray-600 flex justify-end">10/10/2001</span>
+        </.link>
       </li>
     </ul>
     """
   end
 
   attr(:id, :string, required: true)
-  attr(:memories, :list, doc: "Memories list and must have list value")
+  attr(:current_user, :map, required: true)
+  attr(:memories, :any)
+  attr(:timezone, :string)
 
   def list_message(assigns) do
     ~H"""
-    <div class="relative w-full p-6 overflow-y-auto h-[40rem]">
-      <ul class="space-y-2">
-        <li class="flex justify-start">
-          <div class="relative max-w-xl px-4 py-2 text-gray-700 bg-white rounded shadow rounded-l-xl">
-            <span class="flex-1 text-xs font-medium leading-relaxed	">
-              Is it still available? Sorry for asking so last min!!!
-              <span class="text-xs flex justify-end">8.29 AM</span>
-            </span>
-          </div>
-        </li>
-        <li class="flex justify-end">
-          <div
-            :for={msg <- @memories}
-            class="relative max-w-xl px-4 py-2 text-gray-700 bg-amber-300 rounded shadow rounded-l-xl"
-          >
-            <span class="flex-1 text-xs font-medium leading-relaxed	">
-              <%= msg.message %>
-              <span class="text-xs flex justify-end">8.29 AM</span>
-            </span>
-          </div>
-        </li>
+    <div id={"#{@id}-list"} class=" h-screen overflow-y-auto">
+      <ul :for={msg <- @memories} class="relative w-full p-1.5">
+        <%= if msg.user_source_id != @current_user.id do %>
+          <li class="flex justify-start">
+            <div class="relative max-w-xl px-4 py-2 text-gray-700 bg-white rounded shadow rounded-l-xl">
+              <span class="flex-1 text-xs font-medium leading-relaxed	">
+                <%= msg.message %>
+                <span class="text-xs flex justify-end">
+                  <%= get_time(msg.inserted_at, @timezone) %>
+                </span>
+              </span>
+            </div>
+          </li>
+        <% end %>
+        <%= if msg.user_source_id == @current_user.id do %>
+          <li class="flex justify-end">
+            <div class="relative max-w-xl px-4 py-2 text-gray-700 bg-amber-300 rounded shadow rounded-l-xl">
+              <span class="flex-1 text-xs font-medium leading-relaxed	">
+                <%= msg.message %>
+                <span class="text-xs flex justify-end">
+                  <%= get_time(msg.inserted_at, @timezone) %>
+                </span>
+              </span>
+            </div>
+          </li>
+        <% end %>
       </ul>
+    </div>
+    """
+  end
+
+  attr(:id, :string, required: true)
+  attr(:user, :any)
+  slot(:actions)
+
+  def chat_profile(assigns) do
+    ~H"""
+    <div class="flex justify-between items-center w-full border-b border-gray-300 px-0.5">
+      <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}>
+        <div class="relative flex p-1 px-2">
+          <img
+            class="object-cover w-12 h-12 rounded-full"
+            src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+            alt="username"
+            onerror="this.src='/images/default_hand.jpg';"
+          />
+          <span class="block ml-2 font-bold text-gray-600">
+            <%= get_in(@user, [Access.key(:public_profile, %{}), Access.key(:public_name, "")]) ||
+              @user.username %>
+          </span>
+          <span class="absolute w-3 h-3 bg-green-600 rounded-full left-10 top-3"></span>
+        </div>
+      </.link>
+      <div><%= render_slot(@actions) %></div>
     </div>
     """
   end
@@ -2069,6 +2112,14 @@ defmodule PhosWeb.CoreComponents do
     |> DateTime.from_naive!(timezone.timezone)
     |> Timex.shift(minutes: trunc(timezone.timezone_offset))
     |> Timex.format("{D}-{0M}-{YYYY}")
+    |> elem(1)
+  end
+
+  defp get_time(time, timezone) do
+    time
+    |> DateTime.from_naive!(timezone.timezone)
+    |> Timex.shift(hours: trunc(timezone.timezone_offset))
+    |> Timex.format("{h12}:{m} {am}")
     |> elem(1)
   end
 end
