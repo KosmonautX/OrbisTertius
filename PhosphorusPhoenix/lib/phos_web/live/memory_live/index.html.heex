@@ -18,7 +18,12 @@
         </span>
       </form>
 
-      <.last_message id="last-message" memories={@search_memories} date={@timezone} />
+      <.live_component 
+        module={PhosWeb.Component.LastMessage}
+        id="last-message"
+        memories={@search_memories} 
+        current_user={@current_user}
+        date={@timezone} />
     </div>
 
     <div :if={@user} class=" lg:col-span-2">

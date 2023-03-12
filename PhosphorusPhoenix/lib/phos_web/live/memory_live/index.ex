@@ -23,7 +23,9 @@ defmodule PhosWeb.MemoryLive.Index do
     mems =
       case user = Phos.Users.get_public_user_by_username(username, your.id) do
         %{self_relation: nil} -> []
-        %{self_relation: rel} -> Message.list_messages_by_relation({rel.id, your.id}, 1).data
+        %{self_relation: rel} -> 
+          Phos.PubSub.subscribe("memory:rel:#{rel.id}")
+          Message.list_messages_by_relation({rel.id, your.id}, 1).data
       end
 
     socket
@@ -87,6 +89,13 @@ defmodule PhosWeb.MemoryLive.Index do
       )
 
     {:noreply, socket}
+  end
+
+  def handle_info({Phos.PubSub, "new_message", _memory}, socket) do
+    {:noreply,
+      socket
+      |> assign(:memories, list_memories())
+      |> assign(:search_memories, list_memories())}
   end
 
   defp list_more_mesage(%{assigns: %{page: page}} = socket) do
