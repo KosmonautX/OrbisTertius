@@ -67,12 +67,19 @@ defmodule PhosWeb.MemoryLive.FormComponent do
     end
   end
 
+  defp publish(%{rel_subject_id: subject_id} = memory) do
+    rel = Phos.Folk.get_relation!(subject_id)
+
+    Phos.PubSub.publish(memory, "new_message", "memory:rel:#{subject_id}")
+    Phos.PubSub.publish(memory, "last_message", "memory:user:#{rel.acceptor_id}")
+    Phos.PubSub.publish(memory, "last_message", "memory:user:#{rel.initiator_id}")
+  end
+
   defp save_memory(socket, :new, memory_params) do
     case Message.create_memory(memory_params |> Map.put("id", Ecto.UUID.generate())) do
       {:ok, memory} ->
-        IO.inspect(memory)
-        Phos.PubSub.publish(memory, "new_message", "memory:rel:#{memory.rel_subject_id}")
-        |> IO.inspect()
+        spawn(fn -> publish(memory) end)
+
         {:noreply,
          socket
          |> put_flash(:info, "Memory created successfully")

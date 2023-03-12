@@ -48,7 +48,8 @@ defmodule PhosWeb.MemoryLive.Index do
     |> assign(:user, nil)
   end
 
-  defp apply_action(socket, :index, _params) do
+  defp apply_action(%{assigns: %{current_user: user}} = socket, :index, _params) do
+    Phos.PubSub.subscribe("memory:user:#{user.id}")
     socket
     |> assign(:page_title, "Listing Memories")
     |> assign(:memory, nil)
@@ -92,10 +93,11 @@ defmodule PhosWeb.MemoryLive.Index do
   end
 
   def handle_info({Phos.PubSub, "new_message", _memory}, socket) do
-    {:noreply,
-      socket
-      |> assign(:memories, list_memories())
-      |> assign(:search_memories, list_memories())}
+    {:noreply, assign(socket, :memories, list_memories())}
+  end
+
+  def handle_info({Phos.PubSub, "last_message", _memory}, socket) do
+    {:noreply, assign(socket, :search_memories, list_memories())}
   end
 
   defp list_more_mesage(%{assigns: %{page: page}} = socket) do
