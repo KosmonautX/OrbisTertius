@@ -1,0 +1,39 @@
+#+title: Todo
+** Build assoc for memory straight through relation core acts as last message timing and track read through reverie
+
+** Everything to do with Redirect
+
+
+** Everything to do with Sharing Links & Media both int and ext
+
+[40%] TODO
+- [X] Map.Set
+- [ ] Video Support
+- [X] navigator.share and clipboard as fallback https://www.w3.org/TR/web-share/#dom-sharedata-url
+  - [X] clipboard push flash message
+- [X] user media banner w fallback
+- [X] Guest Dark Mode Peaceful coexistence
+- [X] exit modal when click outside of modal etc (satrio)
+  - [X] fit to screen height
+- [ ] ally integration w infinite scroll user profile
+- [ ] consistent image/video preview in sharing links
+- [ ] Dynamic links to app
+- [ ] Sharing Link domain 433 issue
+  lib/phos_web/controllers/api/friend_controller.ex:89: PhosWeb.API.FriendController.show_discovery/2
+
+
+2023-02-08 18:43:58
+        (elixir 1.14.2) lib/enum.ex:1658: Enum."-map/2-lists^map/1-0-"/2
+
+
+2023-02-08 18:43:58
+        (h3 3.6.4+build.104.ref90e1b6e) :h3.parent(0 <- guard , 8)
+- [ ] Modal raizzpaizzy take data from current meta data or soemthing
+- [ ] COmment Box
+- [ ] Allies in mobile view
+- [X] Email Login APIs
+- [ ] Reaction APIs
+** /api/memland/friends/d878e065-f71e-467a-822b-996cb0c08aa3?cursor=1676473067009&asc=false"
+** /api/userland/self
+index fyr/auth check as well
+https://stackoverflow.com/questions/56600637/elixir-phoenix-how-to-customize-http-request-log-format
