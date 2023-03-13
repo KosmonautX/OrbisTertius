@@ -68,10 +68,15 @@ defmodule PhosWeb.Router do
   scope "/", PhosWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    live_session :required_authenticated_user,
-      on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated},{PhosWeb.Timezone, :timezone}] do
+    live_session :onboarding_user,
+      on_mount: [{PhosWeb.Menshen.Gate, :mount_current_user}] do
+      live "/begin", UserWelcomeLive, :onboard
+      end
 
-      get "/welcome", PageController, :welcome
+    live_session :required_authenticated_user,
+      on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Timezone, :timezone}] do
+
+      live "/welcome", UserWelcomeLive, :welcome
 
       live "/orb/:id/show/:cid", OrbLive.Show, :show_ancestor
       live "/orb/:id/reply/:cid", OrbLive.Show, :reply

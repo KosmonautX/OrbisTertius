@@ -106,5 +106,5 @@ defmodule PhosWeb.AuthController do
   defp username_decider(conn, %{username: username}) when username == "" or is_nil(username) do
     redirect(conn, to: ~p"/users/settings")
   end
-  defp username_decider(conn, _), do: redirect(conn, to: "/orb")
+  defp username_decider(conn, _), do: redirect(conn, to: "/")
 end

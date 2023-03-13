@@ -164,7 +164,10 @@ defmodule PhosWeb.Menshen.Gate do
     case current_user do
       data when data in [true, false, nil] ->
         {:cont, Phoenix.Component.assign(socket, :guest, true)}
-      _user -> {:cont, Phoenix.Component.assign(socket, :guest, false)}
+      %Users.User{username: nil} ->
+        {:halt, Phoenix.LiveView.redirect(socket, to: onboarding_path(socket))}
+      _user ->
+        {:cont, Phoenix.Component.assign(socket, :guest, false)}
     end
   end
 
@@ -251,4 +254,5 @@ defmodule PhosWeb.Menshen.Gate do
   defp maybe_store_return_to(conn), do: conn
 
   defp signed_in_path(_conn), do: ~p"/welcome"
+  defp onboarding_path(_conn), do: ~p"/begin"
 end

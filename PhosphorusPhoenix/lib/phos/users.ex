@@ -476,8 +476,8 @@ defmodule Phos.Users do
   %Ecto.Changeset{data: %User{}}
 
   """
-  def change_telegram_login(user, attrs \\ %{}) do
-    User.post_telegram_changeset(user, attrs)
+  def change_user_username(user, attrs \\ %{}) do
+    User.post_registration_changeset(user, attrs)
   end
 
 
