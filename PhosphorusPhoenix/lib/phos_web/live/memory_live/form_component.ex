@@ -67,26 +67,20 @@ defmodule PhosWeb.MemoryLive.FormComponent do
     end
   end
 
-  defp publish(%{rel_subject_id: subject_id} = memory) do
-    rel = Phos.Folk.get_relation!(subject_id)
-
-    Phos.PubSub.publish(memory, "new_message", "memory:rel:#{subject_id}")
-    Phos.PubSub.publish(memory, "last_message", "memory:user:#{rel.acceptor_id}")
-    Phos.PubSub.publish(memory, "last_message", "memory:user:#{rel.initiator_id}")
-  end
-
-  defp save_memory(socket, :new, memory_params) do
-    case Message.create_memory(memory_params |> Map.put("id", Ecto.UUID.generate())) do
-      {:ok, memory} ->
-        spawn(fn -> publish(memory) end)
-
-        {:noreply,
-         socket
-         |> put_flash(:info, "Memory created successfully")
-         |> push_navigate(to: socket.assigns.navigate)}
-
+  defp save_memory(%{assigns: %{rel: relation, current_user: user}} = socket, :new, params) do
+    with user_destination <- get_receiver_id(relation, user),
+         memory_params <- Map.merge(params, %{"id" => Ecto.UUID.generate(), "user_destination_id" => user_destination}),
+         {:ok, memory} <- Message.create_message(memory_params) do
+           {:noreply,
+             socket
+             |> put_flash(:info, "Memory created successfully")
+             |> push_navigate(to: socket.assigns.navigate)}
+    else
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, changeset: changeset)}
     end
   end
+
+  defp get_receiver_id(%{acceptor_id: acc_id} = rel, %{id: id} = _user) when acc_id == id, do: rel.initiator_id
+  defp get_receiver_id(%{acceptor_id: id} = _rel, _user), do: id
 end

@@ -5,12 +5,15 @@ defmodule PhosWeb.MemoryLive.Index do
   alias Phos.Message.Memory
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
+    Phos.PubSub.subscribe("memory:user:#{user.id}")
+    mems = list_memories()
+
     {:ok,
      socket
-     |> assign(:memories, list_memories())
+     |> assign(:memories, mems)
      |> assign(:usersearch, "")
-     |> assign(:search_memories, list_memories())
+     |> assign(:search_memories, mems)
      |> assign(:page, 1)}
   end
 
@@ -19,13 +22,16 @@ defmodule PhosWeb.MemoryLive.Index do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
+  defp apply_action(%{assigns: %{current_user: your}} = socket, :show, %{"username" => username})
+    when your.username == username, do: apply_action(socket, :index, %{})
+
   defp apply_action(%{assigns: %{current_user: your}} = socket, :show, %{"username" => username}) do
     mems =
       case user = Phos.Users.get_public_user_by_username(username, your.id) do
         %{self_relation: nil} -> []
         %{self_relation: rel} -> 
-          Phos.PubSub.subscribe("memory:rel:#{rel.id}")
           Message.list_messages_by_relation({rel.id, your.id}, 1).data
+          |> Enum.map(&(&1.memory))
       end
 
     socket
@@ -92,12 +98,9 @@ defmodule PhosWeb.MemoryLive.Index do
     {:noreply, socket}
   end
 
-  def handle_info({Phos.PubSub, "new_message", _memory}, socket) do
-    {:noreply, assign(socket, :memories, list_memories())}
-  end
-
-  def handle_info({Phos.PubSub, "last_message", _memory}, socket) do
-    {:noreply, assign(socket, :search_memories, list_memories())}
+  def handle_info({Phos.PubSub, {:memory, "formation"}, _data}, socket) do
+    mems = list_memories()
+    {:noreply, assign(socket, memories: mems, search_memories: mems)}
   end
 
   defp list_more_mesage(%{assigns: %{page: page}} = socket) do

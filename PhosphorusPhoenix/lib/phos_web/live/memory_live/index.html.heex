@@ -20,13 +20,13 @@
 
       <.live_component 
         module={PhosWeb.Component.LastMessage}
-        id="last-message"
+        id="dekstop-last-message"
         memories={@search_memories} 
         current_user={@current_user}
         date={@timezone} />
     </div>
 
-    <div :if={@user} class=" lg:col-span-2">
+    <div :if={@user} class="lg:col-span-2">
       <.chat_profile user={@user}>
         <:actions>
           <.live_component
@@ -83,12 +83,12 @@
       </span>
     </form>
 
-    <.last_message
-      id="last-message"
-      memories={@search_memories}
-      date={@timezone}
-      action={@live_action}
-    />
+    <.live_component 
+      module={PhosWeb.Component.LastMessage}
+      id="mobile-last-message"
+      memories={@search_memories} 
+      current_user={@current_user}
+      date={@timezone} />
   </div>
 
   <div
