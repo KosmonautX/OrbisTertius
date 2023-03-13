@@ -11,7 +11,7 @@ defmodule PhosWeb.MemoryLive.FormComponent do
         :let={f}
         class=""
         for={@changeset}
-        id="memory-form"
+        id={"#{@id}-memory-form"}
         phx-target={@myself}
         phx-change="validate"
         phx-submit="save"

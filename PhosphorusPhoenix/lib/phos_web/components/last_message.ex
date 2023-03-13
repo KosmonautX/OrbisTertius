@@ -35,7 +35,7 @@ defmodule PhosWeb.Component.LastMessage do
     <ul class="overflow-y-auto h-screen">
       <li :for={memory <- @memories}>
         <.link navigate={
-          path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{memory.user_source.username}")
+          path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{get_username(memory.rel_subject, @current_user)}")
         }>
           <div class="flex items-center px-3 py-2 text-sm transition duration-150 ease-in-out border-b border-gray-300 cursor-pointer hover:bg-gray-100 focus:outline-none">
             <div class="relative mr-2">

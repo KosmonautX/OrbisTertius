@@ -19,11 +19,12 @@ defmodule PhosWeb.MemoryLive.Index do
 
   @impl true
   def handle_params(params, _url, socket) do
+    IO.inspect(socket.assigns.live_action)
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
   defp apply_action(%{assigns: %{current_user: your}} = socket, :show, %{"username" => username})
-    when your.username == username, do: apply_action(socket, :index, %{})
+    when your.username == username, do: push_navigate(socket, to: ~p"/memories")
 
   defp apply_action(%{assigns: %{current_user: your}} = socket, :show, %{"username" => username}) do
     mems =
@@ -34,9 +35,12 @@ defmodule PhosWeb.MemoryLive.Index do
           |> Enum.map(&(&1.memory))
       end
 
+    send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_dekstop, memory: %Memory{})
+    send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_mobile, memory: %Memory{})
+
     socket
     |> assign(:page_title, "Chatting with @" <> username)
-    |> assign(:memory, nil)
+    |> assign(:memory, %Memory{})
     |> assign(:user, user)
     |> assign(:memories, mems)
   end
@@ -55,7 +59,6 @@ defmodule PhosWeb.MemoryLive.Index do
   end
 
   defp apply_action(%{assigns: %{current_user: user}} = socket, :index, _params) do
-    Phos.PubSub.subscribe("memory:user:#{user.id}")
     socket
     |> assign(:page_title, "Listing Memories")
     |> assign(:memory, nil)
@@ -89,6 +92,7 @@ defmodule PhosWeb.MemoryLive.Index do
     {:noreply, socket}
   end
 
+  @impl true
   def handle_info({:run_search, usersearch}, socket) do
     socket =
       assign(socket,
@@ -100,7 +104,7 @@ defmodule PhosWeb.MemoryLive.Index do
 
   def handle_info({Phos.PubSub, {:memory, "formation"}, _data}, socket) do
     mems = list_memories()
-    {:noreply, assign(socket, memories: mems, search_memories: mems)}
+    {:noreply, assign(socket, memories: mems, search_memories: mems, memory: %Memory{})}
   end
 
   defp list_more_mesage(%{assigns: %{page: page}} = socket) do

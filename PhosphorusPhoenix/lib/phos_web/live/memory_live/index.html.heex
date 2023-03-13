@@ -27,7 +27,7 @@
     </div>
 
     <div :if={@user} class="lg:col-span-2">
-      <.chat_profile user={@user}>
+      <.chat_profile id={"dekstop-chat-profile-for-#{@user.username}"} user={@user}>
         <:actions>
           <.live_component
             id="desktop_view_ally"
@@ -49,12 +49,12 @@
 
       <.live_component
         module={PhosWeb.MemoryLive.FormComponent}
-        id={:new}
+        id={:new_on_dekstop}
         title={@page_title}
         action={:new}
         rel={@user.self_relation}
         current_user={@current_user}
-        memory={%Phos.Message.Memory{}}
+        memory={@memory}
         navigate={~p"/memories/user/#{@user.username}"}
       />
     </div>
@@ -99,7 +99,7 @@
       @live_action != :show && "block lg:col-span-2"
     ]}
   >
-    <.chat_profile user={@user}>
+      <.chat_profile id={"mobile-chat-profile-for-#{@user.username}"} user={@user}>
       <:actions>
         <.live_component
           id="mobile_view_ally"
@@ -121,12 +121,12 @@
     <div class="bottom-0 left-0 z-10 fixed w-full px-4 bg-white dark:bg-gray-900 ">
       <.live_component
         module={PhosWeb.MemoryLive.FormComponent}
-        id={:new_one}
+        id={:new_on_mobile}
         title={@page_title}
         action={:new}
         rel={@user.self_relation}
         current_user={@current_user}
-        memory={%Phos.Message.Memory{}}
+        memory={@memory}
         navigate={~p"/memories/user/#{@user.username}"}
       />
     </div>
