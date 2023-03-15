@@ -21,7 +21,7 @@ defmodule Phos.Comments do
   """
   def list_comments_by_initiator(id) do
     (from c in Comment,
-      where: c.orb_id == ^id,
+      where: c.initiator_id == ^id,
       select: c)
     |> Repo.all()
   end
