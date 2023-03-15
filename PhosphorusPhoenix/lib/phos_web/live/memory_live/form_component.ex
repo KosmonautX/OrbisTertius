@@ -33,11 +33,12 @@ defmodule PhosWeb.MemoryLive.FormComponent do
   @impl true
   def update(%{memory: memory} = assigns, socket) do
     changeset = Message.change_memory(memory)
+    relation  = Map.get(assigns, :rel)
 
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(:changeset, changeset)}
+     |> assign(changeset: changeset, rel: relation)}
   end
 
   @impl true

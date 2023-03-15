@@ -4,9 +4,9 @@ defmodule PhosWeb.MemoryLiveTest do
   import Phoenix.LiveViewTest
   import Phos.MessageFixtures
 
-  @create_attrs %{media: true, message: "some message"}
-  @update_attrs %{media: false, message: "some updated message"}
-  @invalid_attrs %{media: false, message: nil}
+  @create_attrs %{message: "some message"}
+  @update_attrs %{message: "some updated message"}
+  @invalid_attrs %{message: nil}
 
   defp create_memory(_) do
     memory = memory_fixture()
@@ -16,13 +16,21 @@ defmodule PhosWeb.MemoryLiveTest do
   describe "Index" do
     setup [:create_memory, :register_and_log_in_user]
 
-    test "lists all memories", %{conn: conn, memory: memory} do
+    test "lists all memories", %{conn: conn, user: user} do
+      initiator = Phos.UsersFixtures.user_fixture()
+      assert {:ok, root} = Phos.Folk.add_friend(initiator.id, user.id)
+      assert {:ok, _data} = Phos.Folk.update_relation(root, %{"state" => "completed"})
+
+      memory = memory_fixture(@create_attrs |> Map.put(:rel_subject_id, root.id))
+
       {:ok, _index_live, html} = live(conn, ~p"/memories")
 
-      assert html =~ "Listing Memories"
+      assert html =~ "form phx-submit=\"search\""
       assert html =~ memory.message
     end
 
+    @tag :skip
+    # TODO: New memory can be created by clicking chat button
     test "saves new memory", %{conn: conn} do
       {:ok, index_live, _html} = live(conn, ~p"/memories")
 
@@ -45,6 +53,8 @@ defmodule PhosWeb.MemoryLiveTest do
       assert html =~ "some message"
     end
 
+    @tag :skip
+    # TODO: right now memory cannot edited
     test "updates memory in listing", %{conn: conn, memory: memory} do
       {:ok, index_live, _html} = live(conn, ~p"/memories")
 
@@ -67,6 +77,8 @@ defmodule PhosWeb.MemoryLiveTest do
       assert html =~ "some updated message"
     end
 
+    @tag :skip
+    # TODO: right now memory cannot be deleted
     test "deletes memory in listing", %{conn: conn, memory: memory} do
       {:ok, index_live, _html} = live(conn, ~p"/memories")
 
@@ -94,12 +106,12 @@ defmodule PhosWeb.MemoryLiveTest do
       assert_patch(show_live, ~p"/memories/#{memory}/show/edit")
 
       assert show_live
-             |> form("#memory-form", memory: @invalid_attrs)
+             |> form("##{memory.id}-memory-form", memory: @invalid_attrs)
              |> render_change() =~ "can&#39;t be blank"
 
       {:ok, _, html} =
         show_live
-        |> form("#memory-form", memory: @update_attrs)
+        |> form("##{memory.id}-memory-form", memory: @update_attrs)
         |> render_submit()
         |> follow_redirect(conn, ~p"/memories/#{memory}")
 
