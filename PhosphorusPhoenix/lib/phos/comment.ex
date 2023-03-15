@@ -19,8 +19,11 @@ defmodule Phos.Comments do
   [%Comment{}, ...]
 
   """
-  def list_comments do
-    Repo.all(Comment) |> Repo.preload([:initiator])
+  def list_comments_by_initiator(id) do
+    (from c in Comment,
+      where: c.orb_id == ^id,
+      select: c)
+    |> Repo.all()
   end
 
   #   @doc """
@@ -134,7 +137,7 @@ defmodule Phos.Comments do
 
   end
 
-  def get_descendents_comment(id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+  def get_descendents_comment(id, page) do
     query =
       from c in Comment,
       as: :c,
@@ -146,7 +149,7 @@ defmodule Phos.Comments do
       ),
       select_merge: %{child_count: sc.count}
 
-    Repo.Paginated.all(query, page, sort_attribute, limit)
+    Repo.Paginated.all(query, [page: page, asc: true])
   end
 
   def get_root_comments_by_orb(id, page, sort_attribute \\ :inserted_at, limit \\ 12) do

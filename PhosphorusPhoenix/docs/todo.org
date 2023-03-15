@@ -6,20 +6,22 @@
 
 ** Everything to do with Sharing Links & Media both int and ext
 
-[40%] TODO
+[60%] TODO
 - [X] Map.Set
-- [ ] Video Support
+- [X] Video Support
 - [X] navigator.share and clipboard as fallback https://www.w3.org/TR/web-share/#dom-sharedata-url
   - [X] clipboard push flash message
 - [X] user media banner w fallback
 - [X] Guest Dark Mode Peaceful coexistence
 - [X] exit modal when click outside of modal etc (satrio)
   - [X] fit to screen height
-- [ ] ally integration w infinite scroll user profile
-- [ ] consistent image/video preview in sharing links
+- [X] ally integration w infinite scroll user profile
+- [X] consistent image/video preview in sharing links
 - [ ] Dynamic links to app
+- [ ] Pagination for Chat IntersectionObserver
 - [ ] Sharing Link domain 433 issue
   lib/phos_web/controllers/api/friend_controller.ex:89: PhosWeb.API.FriendController.show_discovery/2
+-  [ ] Cloudflare for web
 
 
 2023-02-08 18:43:58
