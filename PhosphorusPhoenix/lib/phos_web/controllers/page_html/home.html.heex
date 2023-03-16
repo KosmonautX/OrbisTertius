@@ -2,7 +2,7 @@
   <img class="object-cover h-screen	w-full" src="images/Full_Team_(1).jpg" alt="Background Image" />
   <div :if={!is_nil(@current_user)} class="absolute inset-0 bg-gray-700 bg-opacity-70 flex flex-col justify-center items-center space-y-4">
     <h1  class="mt-4 text-xl md:text-4xl text-center font-bold tracking-tight text-white">
-      <%= gettext("Welcome to Scratchbac%{name}!", name: ", #{Map.get(@current_user, :username, "")}") %>
+      <%= gettext("Welcome to Scratchbac%{name}!", name: ", #{Map.get(@current_user, :username, nil) || "🥳"}") %>
     </h1>
   </div>
   <div :if={is_nil(@current_user)} class="absolute inset-0 bg-gray-700 bg-opacity-70 flex flex-col justify-center items-center space-y-4">

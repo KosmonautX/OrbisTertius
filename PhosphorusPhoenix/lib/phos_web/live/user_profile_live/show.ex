@@ -50,7 +50,11 @@ defmodule PhosWeb.UserProfileLive.Show do
   end
 
   @impl true
-  def handle_event("load-more", _, %{assigns: %{current_user: user, page: page, ally_list: ally_list, user: friend}} = socket) do
+  def handle_event(
+        "load-more",
+        _,
+        %{assigns: %{current_user: user, page: page, ally_list: ally_list, user: friend}} = socket
+      ) do
     expected_page = page + 1
 
     {:noreply,
@@ -74,7 +78,7 @@ defmodule PhosWeb.UserProfileLive.Show do
 
     case init_id == user.id or acc_id == user.id do
       true ->
-        send_update(PhosWeb.AllyButton,
+        send_update(PhosWeb.Component.AllyButton,
           id: "ally_component_infinite_scroll_#{acc_id}",
           root_id: root.id
         )
@@ -93,8 +97,13 @@ defmodule PhosWeb.UserProfileLive.Show do
       ) do
     case init_id == user.id or acc_id == user.id do
       true ->
-        send_update(PhosWeb.AllyButton,
-          id: "user_information_card_ally",
+        send_update(PhosWeb.Component.AllyButton,
+          id: "user-information-card-ally",
+          related_users: %{receiver_id: init_id, sender_id: user.id}
+        )
+
+        send_update(PhosWeb.Component.AllyButton,
+          id: "user-information-card-ally-desktop",
           related_users: %{receiver_id: init_id, sender_id: user.id}
         )
 

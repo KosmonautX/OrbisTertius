@@ -10,7 +10,7 @@ defmodule Phos.External.TelegramClient do
      case report["archetype"] do
        "USR" ->
          """
-         Reported <b>User ID</b>: <a href="https://app.scrb.ac/?apn=com.scratchbac.baladi&ibi=com.baladi.scratchbac&isi=1587462661&link=https%3A%2F%2Fapp.scrb.ac%2Fuserland%2Fusers%2F#{report["id"]}">#{report["id"]}</a>
+         Reported <b>User ID</b>: <a href="https://app.scrb.ac/?apn=com.scratchbac.baladi&ibi=com.baladi.scratchbac&isi=1587462661&link=https%3A%2F%2Fapp.scrb.ac%2Fuserland%2Fothers%2F#{report["id"]}">#{report["id"]}</a>
          """
        "ORB" ->
          """

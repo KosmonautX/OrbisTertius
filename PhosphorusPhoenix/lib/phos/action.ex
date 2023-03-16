@@ -186,6 +186,7 @@ defmodule Phos.Action do
       as: :l,
       where: l.location_id in ^hashes,
       left_join: orbs in assoc(l, :orbs),
+      on: orbs.userbound == true,
       inner_join: initiator in assoc(orbs, :initiator),
       on: initiator.integrations["beacon"]["location"]["scope"] == true,
       distinct: initiator.integrations["fcm_token"],

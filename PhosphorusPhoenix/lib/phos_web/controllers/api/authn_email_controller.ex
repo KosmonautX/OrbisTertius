@@ -26,7 +26,7 @@ defmodule PhosWeb.API.AuthNEmailController do
     with {:ok, user} <- Users.claim_anon_user(anon, params),
          Phos.External.GoogleIdentity.link_email(anon.fyr_id, email) do
 
-      Users.deliver_user_confirmation_instructions(user, fn token -> "#{token}" end)
+      Users.deliver_user_confirmation_instructions(user, &url(~p"/users/confirm/#{&1}"))
 
       conn
       |> put_status(201)

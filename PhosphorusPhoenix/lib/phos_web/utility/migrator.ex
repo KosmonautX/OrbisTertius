@@ -79,7 +79,11 @@ defmodule PhosWeb.Util.Migrator do
         %Users.User{} = user -> {:ok, user}
         nil ->
           case Users.get_user_by_fyr(data["localId"]) do
-            %Users.User{} = user -> {:ok, user}
+            %Users.User{} = user ->
+              user
+              |> Users.User.changeset(payload)
+              |> Phos.Repo.update()
+
             nil -> Users.create_user(payload)
           end
       end

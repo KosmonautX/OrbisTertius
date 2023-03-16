@@ -31,7 +31,7 @@ defmodule PhosWeb.UserSettingsLive do
           required
         />
         <:actions>
-          <.button phx-disable-with="Changing...">Change Email</.button>
+          <.button phx-disable-with="Changing..." type="submit">Change Email</.button>
         </:actions>
       </.simple_form>
 

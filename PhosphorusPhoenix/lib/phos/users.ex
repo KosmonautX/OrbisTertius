@@ -367,6 +367,18 @@ defmodule Phos.Users do
     |> Phos.Repo.Preloader.lateral(:orbs, [limit: 5])
   end
 
+  def get_public_user_by_username(username, your_id) do
+    Phos.Repo.one(from u in User,
+      where: u.username == ^username,
+      left_join: branch in assoc(u, :relations),
+      on: branch.friend_id == ^your_id,
+      left_join: root in assoc(branch, :root),
+      select: u,
+      select_merge: %{self_relation: root}
+    )
+    |> Phos.Repo.Preloader.lateral(:orbs, [limit: 5])
+  end
+
   def get_private_profile!(id) do
     Repo.get!(Private_Profile, id)
   end
@@ -464,8 +476,8 @@ defmodule Phos.Users do
   %Ecto.Changeset{data: %User{}}
 
   """
-  def change_telegram_login(user, attrs \\ %{}) do
-    User.post_telegram_changeset(user, attrs)
+  def change_user_username(user, attrs \\ %{}) do
+    User.post_registration_changeset(user, attrs)
   end
 
 

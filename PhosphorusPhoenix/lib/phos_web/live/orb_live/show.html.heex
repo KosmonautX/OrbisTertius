@@ -23,8 +23,9 @@
         </.user_information_card_orb>
       </div>
     </div>
+
     <!-- Post card and Comments-->
-    <div class="lg:hidden block w-full dark:bg-gray-900  sticky top-10 bg-white z-10 ">
+    <div class="lg:hidden block w-full dark:bg-gray-900 sticky top-10 bg-white z-10">
       <div class="flex flex-wrap items-center justify-center p-2 border-b border-gray-300">
         <.link patch={~p"/user/#{@orb.initiator.username}"}>
           <Heroicons.chevron_left class="w-6 h-6 dark:text-white font-semibold" />
@@ -46,11 +47,21 @@
       </div>
 
       <div class="w-full border border-gray-200 rounded-xl shadow-md dark:border-gray-700">
-        <.scry_orb id="Orb" orb={@orb} timezone={@timezone} />
+        <.scry_orb id="Orb" orb={@orb} timezone={@timezone}>
+          <:user_action>
+    <.live_component
+  id="orb-ally-button"
+              module={PhosWeb.Component.AllyButton}
+              current_user={@current_user}
+              user={@orb.initiator}
+              socket={@socket} />
+  </:user_action>
+  </.scry_orb>
         <div class="px-2">
           <.live_component
             module={PhosWeb.CommentLive.IndexComponent}
-            id="cotimezone1={@timezone} mmentindex"
+            id="commentindex"
+            timezone1={@timezone}
             changeset={@changeset}
             action="new"
             orb={@orb}
