@@ -12,6 +12,11 @@ module.exports = {
         Poppins: ["Poppins", "sans-serif"],
       },
 
+      padding: {
+        '2.8': '44.8rem',
+      },
+
+
       height: {
         '900': '56rem',
         '128': '32rem',

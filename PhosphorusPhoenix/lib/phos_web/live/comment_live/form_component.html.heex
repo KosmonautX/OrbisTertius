@@ -1,8 +1,8 @@
-<div class="w-full ">
-  <h3 :if={not is_nil(@reply_comment)}>
+<div>
+  <h3 :if={not is_nil(@reply_comment)} class="text-sm font-bold text-gray-600 dark:text-white">
     <%= to_string(@action) %>: <%= @comment.body %>
   </h3>
-  <div class="relative flex flex-col w-full justify-between">
+  <div class="relative flex flex-col justify-between">
     <.simple_form
       :let={f}
       class="flex justify-between w-full"
@@ -33,7 +33,8 @@
           type="reset"
           class="absolute right-10 bottom-2"
           phx-click={"cancel-#{@action}"}
-          phx-target={"#comment-#{@comment.id}"}>
+          phx-target={"#comment-#{@comment.id}"}
+        >
           <Heroicons.x_circle class="h-8 w-8 text-amber-400 font-bold" />
         </button>
       </:actions>

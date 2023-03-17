@@ -1,7 +1,23 @@
-<div class="w-full ">
-  <h2 class="text-base text-gray-900 font-bold lg:text-lg dark:text-white p-2">Comments</h2>
-  <hr class="h-px border-2" />
-  <div class="ui threaded comments overflow-y-auto h-full">
+<div class="w-full bg-white px-2 lg:rounded-b-3xl dark:bg-gray-900 dark:border dark:border-white">
+  <span class="lg:hidden block text-gray-900 font-bold text-2xl dark:text-white border-b border-gray-400">
+  </span>
+  <h2 class="hidden lg:block text-gray-900 font-bold text-2xl dark:text-white border-b-2 border-black">
+    Comments
+  </h2>
+
+  <div :if={not is_nil(@current_user)} class="hidden lg:block lg:rounded-3xl">
+    <.live_component
+      module={PhosWeb.CommentLive.FormComponent}
+      changeset={@changeset}
+      current_user={@current_user}
+      orb={@orb}
+      id={"create-root-comment-desktop-#{@orb.id}"}
+      target={nil}
+      action={:new}
+    />
+  </div>
+
+  <div class="ui threaded comments overflow-y-auto h-full lg:rounded-b-3xl">
     <.live_component
       :for={comment <- filter_root_comments_chrono(@comments)}
       module={PhosWeb.CommentLive.ShowComponent}
@@ -14,6 +30,7 @@
       socket={@socket}
       reply_comment={@reply_comment}
       edit_comment={@edit_comment}
-      phx-target={"#comment-#{elem(comment, 1).id}"}/>
+      phx-target={"#comment-#{elem(comment, 1).id}"}
+    />
   </div>
 </div>
