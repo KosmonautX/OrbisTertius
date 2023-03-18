@@ -11,6 +11,9 @@ defmodule PhosWeb.API.FriendController do
     render(conn, :paginated, friends: friends)
   end
 
+  def index_last_memories(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"page" => page}),
+    do: render(conn, :paginated, relations: Phos.Message.last_messages_by_relation(id, page))
+
   def show(%{assigns: %{current_user: user}} = conn, %{"id" => id}) do
     relation = Folk.get_relation!(id, user.id)
     render(conn, :show, relation: relation)

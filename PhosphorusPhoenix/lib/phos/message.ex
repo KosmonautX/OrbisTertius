@@ -17,31 +17,28 @@ defmodule Phos.Message do
   """
 
   def last_messages_by_relation(id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
-    Phos.Message.Reverie
-    |> where([r], r.user_destination_id == ^id)
-    |> join(:inner, [r], m in Phos.Message.Memory, on: r.memory_id == m.id)
-    |> select_merge([r, m], %{memory: m})
-    |> distinct([r, m], m.rel_subject_id)
-    |> order_by([e], desc: e.inserted_at)
-    |> preload([memory: [rel_subject: [:acceptor, :initiator], orb_subject: []]])
+    Phos.Users.RelationBranch
+    |> where([b], b.user_id == ^id)
+    |> join(:inner, [b], r in assoc(b, :root))
+    |> select([_b, r], r)
+    |> join(:inner, [_b, r], m in assoc(r, :last_memory))
+    |> join(:left, [_b, r, m], o in assoc(m, :orb_subject))
+    |> select_merge([_b, r, m, o], %{last_memory: %{m | orb_subject: o}})
+    |> order_by([_b, r, _m], desc: r.updated_at)
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
-  def last_messages_by_orb_within_relation({rel_id, yours}, opts) when is_list(opts) do
-    Phos.Message.Reverie
-    |> where([r], r.user_destination_id == ^yours)
-    |> join(:inner, [r], m in Phos.Message.Memory, on: r.memory_id == m.id and not is_nil(m.orb_subject_id) and m.rel_subject_id == ^rel_id)
-    |> select_merge([r, m], %{memory: m})
-    |> preload([memory: [:orb_subject]])
+  def last_messages_by_orb_within_relation({rel_id, _yours}, opts) when is_list(opts) do
+    Phos.Message.Memory
+    |> where([m], m.rel_subject_id == ^rel_id and not is_nil(m.orb_subject_id))
+    |> preload([:orb_subject])
     |> Repo.Paginated.all(opts)
   end
 
-  def last_messages_by_orb_within_relation({rel_id, yours}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
-    Phos.Message.Reverie
-    |> where([r], r.user_destination_id == ^yours)
-    |> join(:inner, [r], m in Phos.Message.Memory, on: r.memory_id == m.id and not is_nil(m.orb_subject_id) and m.rel_subject_id == ^rel_id)
-    |> select_merge([r, m], %{memory: m})
-    |> preload([memory: [:orb_subject]])
+  def last_messages_by_orb_within_relation({rel_id, _yours}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    Phos.Message.Memory
+    |> where([m], m.rel_subject_id == ^rel_id and not is_nil(m.orb_subject_id))
+    |> preload([:orb_subject])
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
@@ -52,17 +49,15 @@ defmodule Phos.Message do
 
   ## Examples
 
-      iex> list_messages_by_pair()
+      iex> list_messages_by_relation()
       [%Echo{}, ...]
 
   """
 
-  def list_messages_by_relation({rel_id, yours}, opts) when is_list(opts) do
-    Phos.Message.Reverie
-    |> where([r], r.user_destination_id == ^yours)
-    |> join(:inner, [r], m in Phos.Message.Memory, on: m.rel_subject_id == ^rel_id and r.memory_id == m.id)
-    |> select_merge([r, m], %{memory: m})
-    |> preload([memory: [:user_source, :orb_subject]])
+  def list_messages_by_relation({rel_id, _yours}, opts) when is_list(opts) do
+    Phos.Message.Memory
+    |> where([m], m.rel_subject_id == ^rel_id)
+    |> preload([:user_source, :orb_subject])
     |> Repo.Paginated.all(opts)
   end
 
@@ -76,13 +71,10 @@ defmodule Phos.Message do
 
   """
 
-  def list_messages_by_relation({rel_id, yours}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
-    Phos.Message.Reverie
-    |> where([r], r.user_destination_id == ^yours)
-    |> join(:inner, [r], m in Phos.Message.Memory, on: m.rel_subject_id == ^rel_id and r.memory_id == m.id)
-    |> select_merge([r, m], %{memory: m})
-    |> order_by([e], desc: e.inserted_at)
-    |> preload([memory: [:user_source, :orb_subject]])
+  def list_messages_by_relation({rel_id, _yours}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    Phos.Message.Memory
+    |> where([m], m.rel_subject_id == ^rel_id)
+    |> preload([:user_source, :orb_subject])
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
@@ -96,13 +88,10 @@ defmodule Phos.Message do
 
   """
 
-  def list_messages_by_orb({orb_id, yours}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
-    Phos.Message.Reverie
-    |> where([r], r.user_destination_id == ^yours)
-    |> join(:inner, [r], m in Phos.Message.Memory, on: m.orb_subject_id == ^orb_id and r.memory_id == m.id)
-    |> select_merge([r, m], %{memory: m})
-    |> order_by([e], desc: e.inserted_at)
-    |> preload([memory: [:user_source]])
+  def list_messages_by_orb({orb_id, _yours}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    Phos.Message.Memory
+    |> where([m], m.orb_subject_id == ^orb_id)
+    |> preload([:user_source])
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
@@ -150,13 +139,22 @@ defmodule Phos.Message do
       iex> create_message(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
-  """
+    """
 
-    def create_message(%{"id" => mem_id, "user_source_id" => i_id, "rel_subject_id" => _rel_id, "user_destination_id"=> a_id} = params) do
-      attrs = params
-      |> Map.put("reveries", [%{"user_destination_id" => i_id, "memory_id" => mem_id},
-                             %{"user_destination_id" => a_id, "memory_id" => mem_id}])
-      gen_memory(attrs)
+    def create_message(%{"id" => _mem_id, "user_source_id" => _u_id, "rel_subject_id" => rel_id} = attrs) do
+      with rel <- Phos.Folk.get_relation!(rel_id),
+           mem_changeset <- Phos.Users.RelationRoot.mutate_memory_changeset(rel, attrs),
+           {:ok, memory} <- Repo.insert(mem_changeset) do
+        memory
+        |> Repo.preload([:orb_subject, :user_source, [rel_subject: :branches]])
+        |> Phos.PubSub.publish({:memory, "formation"}, memory.rel_subject.branches)
+        |> (&({:ok, &1})).()
+
+      else
+        {:error, err} -> {:error, err}
+
+      _ -> {:error, :not_found}
+      end
     end
 
   @doc """
@@ -183,18 +181,6 @@ defmodule Phos.Message do
     |> Memory.changeset(attrs |> Map.put(:id, Ecto.UUID.generate()))
     |> Repo.insert()
   end
-
-  def gen_memory(attrs \\ %{}) do
-    memory_changeset = %Memory{}
-    |> Memory.gen_reveries_changeset(attrs)
-
-    with {:ok, memory} <- Repo.insert(memory_changeset) do
-      memory
-      |> Repo.preload([:orb_subject, :user_source, :rel_subject])
-      |> Phos.PubSub.publish({:memory, "formation"}, memory.reveries)
-      |> (&({:ok, &1})).()
-    end
-   end
 
   @doc """
   Updates a memory.

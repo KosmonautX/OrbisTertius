@@ -28,6 +28,14 @@ defmodule Phos.Message.Memory do
     |> foreign_key_constraint(:user_source_id)
   end
 
+  def gen_changeset(memory, attrs) do
+    memory
+    |> cast(attrs, [:id, :user_source_id, :orb_subject_id, :rel_subject_id, :message, :media])
+    |> validate_required([:id, :user_source_id, :message, :media, :rel_subject_id])
+    |> foreign_key_constraint(:user_source_id)
+    |> foreign_key_constraint(:rel_subject_id)
+  end
+
   def gen_reveries_changeset(memory, attrs) do
     memory
     |> cast(attrs, [:id, :user_source_id, :orb_subject_id, :rel_subject_id, :media, :message])

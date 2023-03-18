@@ -31,7 +31,6 @@ defmodule PhosWeb.MemoryLive.Index do
         %{self_relation: nil} -> []
         %{self_relation: rel} -> 
           Message.list_messages_by_relation({rel.id, your.id}, 1).data
-          |> Enum.map(&(&1.memory))
       end
 
     send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_dekstop, memory: %Memory{})
