@@ -30,3 +30,18 @@ export default Scroll = {
         VideoMute()
     },
 };
+
+export const ScrollTop = {
+  mounted() {
+    let timer
+
+    this.el.firstElementChild.addEventListener('scroll', ({ target }) => {
+      if (target.scrollTop <= 0) {
+        clearTimeout(timer)
+        timer = setTimeout(() => {
+          this.pushEvent("load-more", {})
+        }, 300)
+      }
+    })
+  },
+};

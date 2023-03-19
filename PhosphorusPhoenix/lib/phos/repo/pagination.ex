@@ -1,6 +1,7 @@
 defmodule Phos.Repo.Paginated do
   import Ecto.Query
 
+  def query_builder(query, opts \\ [])
   def query_builder(query, opts) do
     sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
     limit = Keyword.get(opts, :limit, 12)

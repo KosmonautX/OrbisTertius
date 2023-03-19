@@ -1,6 +1,6 @@
 <!--Desktop View-->
 <div class="container mx-auto	lg:mt-24 mt-16 hidden lg:block">
-  <div class="min-w-full lg:border lg:rounded lg:grid lg:grid-cols-3">
+  <div class="min-w-full lg:border lg:rounded lg:grid lg:grid-cols-3  h-[calc(100vh_-_7rem)]">
     <div class="lg:border-r lg:border-gray-300 lg:col-span-1 w-full">
       <form phx-submit="search" class="relative text-gray-600 mx-2 my-2">
         <input
@@ -44,6 +44,7 @@
         memories={@memories}
         current_user={@current_user}
         timezone={@timezone}
+        cursor={@message_cursor}
         page={@page}
       />
 
@@ -116,6 +117,7 @@
       memories={@memories}
       current_user={@current_user}
       timezone={@timezone}
+      cursor={@message_cursor}
       page={@page}
     />
     <div class="bottom-0 left-0 z-10 fixed w-full px-4 bg-white dark:bg-gray-900 ">

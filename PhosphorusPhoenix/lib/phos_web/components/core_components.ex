@@ -2049,7 +2049,7 @@ defmodule PhosWeb.CoreComponents do
 
   def list_message(assigns) do
     ~H"""
-    <div id={"#{@id}-list"} class=" h-screen overflow-y-auto">
+    <div id={"#{@id}-list"} class="overflow-y-auto h-[calc(100vh_-_16rem)]">
       <ul :for={msg <- @memories} class="relative w-full p-1.5">
         <%= if msg.user_source_id != @current_user.id do %>
           <li class="flex justify-start">

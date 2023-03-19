@@ -54,28 +54,29 @@ defmodule Phos.Message do
 
   """
 
+  def list_messages_by_relation({rel_id, yours}, opts \\ []) when is_list(opts) do
   def list_messages_by_relation({rel_id, _yours}, opts) when is_list(opts) do
-    Phos.Message.Memory
-    |> where([m], m.rel_subject_id == ^rel_id)
-    |> preload([:user_source, :orb_subject])
-    |> Repo.Paginated.all(opts)
+    sort_attr = Keyword.get(opts, :sort_attribute, :inserted_at)
+    limit = Keyword.get(opts, :limit, 12)
+
+    query =
+      Phos.Message.Memory
+      |> where([m], m.rel_subject_id == ^rel_id)
+      |> preload([:user_source, :orb_subject])
+
+    case Keyword.get(opts, :page) do
+      nil -> Repo.Paginated.all(query, opts)
+      page -> Repo.Paginated.all(query, page, sort_attr, limit)
+    end
   end
 
-  @doc """
-  Returns paginated call by page of the messages by relation
-
-  ## Examples
-
-      iex> list_messages_by_pair()
-      [%Echo{}, ...]
-
-  """
-
-  def list_messages_by_relation({rel_id, _yours}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
-    Phos.Message.Memory
-    |> where([m], m.rel_subject_id == ^rel_id)
-    |> preload([:user_source, :orb_subject])
-    |> Repo.Paginated.all(page, sort_attribute, limit)
+  def list_messages_by_user(user, opts \\ [])
+  def list_messages_by_user(%Phos.Users.User{id: id}, opts), do: list_messages_by_user(id, opts)
+  def list_messages_by_user(user_id, opts) when is_bitstring(user_id) do
+    Phos.Message.Reverie
+    |> where([r], r.user_destination_id == ^user_id)
+    |> preload([memory: [:user_source, :rel_subject]])
+    |> Repo.Paginated.all(opts)
   end
 
   @doc """

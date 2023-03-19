@@ -32,7 +32,7 @@ defmodule PhosWeb.Component.LastMessage do
 
   def render(assigns) do
     ~H"""
-    <ul class="overflow-y-auto h-screen">
+    <ul class="overflow-y-auto">
       <li :for={memory <- @memories}>
         <.link navigate={
           path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{get_username(memory.rel_subject, @current_user)}")

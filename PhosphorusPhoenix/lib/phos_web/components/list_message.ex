@@ -6,7 +6,8 @@ defmodule PhosWeb.Components.ListMessage do
   def render(assigns) do
     ~H"""
     <div>
-      <div id={"#{@id}-infinite-scroll-body"} phx-update="append">
+      <div id={"#{@id}-infinite-scroll-marker"} data-page={@page} />
+      <div id={"#{@id}-infinite-scroll-body"} phx-update="prepend" phx-hook="ScrollTop">
         <.list_message
           id={"list-more-message-#{random_id()}"}
           memories={@memories}
@@ -14,7 +15,6 @@ defmodule PhosWeb.Components.ListMessage do
           timezone={@timezone}
         />
       </div>
-      <div id={"#{@id}-infinite-scroll-marker"} phx-hook="Scroll" data-page={@page} />
     </div>
     """
   end

@@ -7,14 +7,14 @@ defmodule PhosWeb.MemoryLive.Index do
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
     Phos.PubSub.subscribe("memory:user:#{user.id}")
-    mems = list_memories()
+    %{
+      data: search_memories,
+      meta: metadata,
+    } = memories_by_user(user)
 
     {:ok,
      socket
-     |> assign(:memories, mems)
-     |> assign(:usersearch, "")
-     |> assign(:search_memories, mems)
-     |> assign(:page, 1)}
+     |> assign(usersearch: "", search_memories: reveries_to_memories(search_memories), metadata: metadata, page: 1)}
   end
 
   @impl true
@@ -26,11 +26,10 @@ defmodule PhosWeb.MemoryLive.Index do
     when your.username == username, do: push_navigate(socket, to: ~p"/memories")
 
   defp apply_action(%{assigns: %{current_user: your}} = socket, :show, %{"username" => username}) do
-    mems =
+    %{data: mems, meta: meta} =
       case user = Phos.Users.get_public_user_by_username(username, your.id) do
-        %{self_relation: nil} -> []
-        %{self_relation: rel} -> 
-          Message.list_messages_by_relation({rel.id, your.id}, 1).data
+        %{self_relation: nil} -> %{meta: %{}, data: []}
+        %{self_relation: rel} -> list_memories(user, rel.id, limit: 15)
       end
 
     send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_dekstop, memory: %Memory{})
@@ -39,8 +38,8 @@ defmodule PhosWeb.MemoryLive.Index do
     socket
     |> assign(:page_title, "Chatting with @" <> username)
     |> assign(:memory, %Memory{})
-    |> assign(:user, user)
-    |> assign(:memories, mems)
+    |> assign(user: user, message_cursor: Map.get(meta, :pagination, %{}) |> Map.get(:cursor))
+    |> assign(:memories, reveries_to_memories(mems))
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
@@ -68,7 +67,7 @@ defmodule PhosWeb.MemoryLive.Index do
     memory = Message.get_memory!(id)
     {:ok, _} = Message.delete_memory(memory)
 
-    {:noreply, assign(socket, :memories, list_memories())}
+    {:noreply, assign(socket, :memories, [])}
   end
 
   @impl true
@@ -101,17 +100,33 @@ defmodule PhosWeb.MemoryLive.Index do
   end
 
   def handle_info({Phos.PubSub, {:memory, "formation"}, _data}, socket) do
-    mems = list_memories()
+    mems = []
     {:noreply, assign(socket, memories: mems, search_memories: mems, memory: %Memory{})}
   end
 
-  defp list_more_mesage(%{assigns: %{page: page}} = socket) do
+  defp list_more_mesage(%{assigns: %{message_cursor: cursor, current_user: user, memories: [memory | _tail] = memories}} = socket) when not is_nil(cursor) do
+    time = DateTime.from_unix!(cursor, :millisecond)
+    %{meta: %{pagination: pagination}, data: data} = list_memories(user, memory.rel_subject_id, filter: time)
+
     socket
-    |> assign(page: page)
-    |> assign(memories: list_memories())
+    |> assign(page: 1)
+    |> assign(message_cursor: Map.get(pagination, :cursor, nil))
+    |> assign(memories: reveries_to_memories(data) ++ memories)
+  end
+  defp list_more_mesage(socket), do: socket
+
+  defp list_memories(user, relation_id, opts \\ [])
+  defp list_memories(%{id: user_id} = _current_user, relation_id, opts), do: list_memories(user_id, relation_id, opts)
+  defp list_memories(user_id, relation_id, opts) do
+    Message.list_messages_by_relation({relation_id, user_id}, opts)
   end
 
-  defp list_memories do
-    Message.list_memories()
+  defp memories_by_user(user, opts \\ []) do
+    Message.list_messages_by_user(user, opts)
+  end
+
+  defp reveries_to_memories(data) do
+    Enum.map(data, &(&1.memory))
+    |> Enum.reverse()
   end
 end
