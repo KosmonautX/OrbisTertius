@@ -21,7 +21,7 @@ defmodule Phos.Users.RelationRoot do
     has_many :branches, RelationBranch, references: :id, foreign_key: :root_id, on_delete: :delete_all
     belongs_to :initiator, User, references: :id, type: Ecto.UUID
     belongs_to :acceptor, User, references: :id, type: Ecto.UUID
-    has_one :last_memory, Phos.Message.Memory, references: :id, foreign_key: :rel_subject_id, on_replace: :update
+    belongs_to :last_memory, Phos.Message.Memory, references: :id, type: Ecto.UUID, on_replace: :update
     field :self_initiated, :boolean, virtual: true
     field :friend, :map, virtual: true
 
@@ -44,10 +44,9 @@ defmodule Phos.Users.RelationRoot do
     |> Fsmx.transition_changeset(params["state"], params)
   end
 
-  def mutate_memory_changeset(root, params) do
+  def mutate_last_memory_changeset(root, params) do
     root
-    |> Ecto.build_assoc(:last_memory)
-    |> Phos.Message.Memory.gen_changeset(params)
+    |> cast(params, [:last_memory_id])
   end
 
 

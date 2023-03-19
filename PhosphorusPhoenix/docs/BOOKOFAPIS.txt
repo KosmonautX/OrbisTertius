@@ -205,7 +205,7 @@ GET :ipAddress/folkland/stream/discovery/614510498785787903,614510497487650815?p
 :auth-headers
 
 ## Show Relation Resource
-GET :ipAddress/folkland/friends/7dcd842a-8d07-4407-8ca4-6346d54b0f86
+GET :ipAddress/folkland/friends/cc9e46c0-0f98-410f-bb3e-12044d41fef3
 -> run-hook (restclient-set-var ":rel" (cdr (assq 'relation_id (assq 'data (json-read)))))
 :auth-headers
 
@@ -418,7 +418,7 @@ POST :ipAddress/memland/memories
 :auth-headers
 {
     "user_destination_id": ":lky_id",
-    "message": "14",
+    "message": "another one",
     "rel_subject_id": ":rel",
     "orb_subject_id": ":orb"
 }

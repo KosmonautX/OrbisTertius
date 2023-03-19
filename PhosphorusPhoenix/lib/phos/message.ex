@@ -16,16 +16,16 @@ defmodule Phos.Message do
 
   """
 
-  def last_messages_by_relation(id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+  def last_messages_by_relation(id, page, sort_attribute \\ :updated_at, limit \\ 12) do
     Phos.Users.RelationBranch
     |> where([b], b.user_id == ^id)
-    |> join(:inner, [b], r in assoc(b, :root))
+    |> join(:inner, [b], r in assoc(b, :root), as: :relation)
     |> select([_b, r], r)
     |> join(:inner, [_b, r], m in assoc(r, :last_memory))
     |> join(:left, [_b, r, m], o in assoc(m, :orb_subject))
     |> select_merge([_b, r, m, o], %{last_memory: %{m | orb_subject: o}})
     |> order_by([_b, r, _m], desc: r.updated_at)
-    |> Repo.Paginated.all(page, sort_attribute, limit)
+    |> Repo.Paginated.all([page: page, sort_attribute: {:relation , sort_attribute}, limit: limit])
   end
 
   def last_messages_by_orb_within_relation({rel_id, _yours}, opts) when is_list(opts) do
@@ -142,12 +142,12 @@ defmodule Phos.Message do
     """
 
     def create_message(%{"id" => _mem_id, "user_source_id" => _u_id, "rel_subject_id" => rel_id} = attrs) do
-      with rel <- Phos.Folk.get_relation!(rel_id),
-           mem_changeset <- Phos.Users.RelationRoot.mutate_memory_changeset(rel, attrs),
+      with rel = Phos.Folk.get_relation!(rel_id),
+           mem_changeset <- Phos.Message.Memory.gen_changeset(%Memory{}, attrs) |> Ecto.Changeset.put_assoc(:last_rel_memory, rel),
            {:ok, memory} <- Repo.insert(mem_changeset) do
         memory
         |> Repo.preload([:orb_subject, :user_source, [rel_subject: :branches]])
-        |> Phos.PubSub.publish({:memory, "formation"}, memory.rel_subject.branches)
+        |> tap(&Phos.PubSub.publish(&1, {:memory, "formation"}, &1.rel_subject.branches))
         |> (&({:ok, &1})).()
 
       else

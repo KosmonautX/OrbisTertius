@@ -14,6 +14,7 @@ defmodule Phos.Message.Memory do
     belongs_to :orb_subject, Phos.Action.Orb, references: :id, type: Ecto.UUID
     belongs_to :rel_subject, Phos.Users.RelationRoot, references: :id, type: Ecto.UUID
     belongs_to :com_subject, Phos.Comments.Comment, references: :id, type: Ecto.UUID
+    has_one :last_rel_memory, Phos.Users.RelationRoot, foreign_key: :last_memory_id
 
     has_many :reveries, Reverie, references: :id, foreign_key: :memory_id, on_delete: :delete_all
 
