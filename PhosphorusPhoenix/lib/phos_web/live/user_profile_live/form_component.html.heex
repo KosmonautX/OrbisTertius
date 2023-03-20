@@ -1,62 +1,52 @@
 <div>
-  <h2><%= @title %></h2>
+  <h2 class="text-xl font-Poppins font-semibold text-teal-400"><%= @title %></h2>
 
   <section phx-drop-target={@uploads.image.ref}>
-
     <.simple_form
       :let={f}
       for={@changeset}
       id="userprofile-form"
       phx-target={@myself}
       phx-change="validate"
-      phx-submit="save">
+      phx-submit="save"
+    >
+      <.input field={{f, :user_id}} type="hidden" value={@current_user.id} />
+      <.input field={{f, :media}} type="hidden" />
+      <%= label(f, :past_image) %>
+      <%= if @user.media do %>
+        <img
+          class="h-24 w-24 object-cover rounded-full"
+          src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+        />
+      <% end %>
 
       <%= inputs_for f, :public_profile, fn ff -> %>
         <.input field={{ff, :bio}} label="Bio" />
         <.input field={{ff, :occupation}} label="Role" />
         <.input field={{ff, :birthday}} type="datetime-local" label="Birthday" />
         <.input field={{ff, :public_name}} label="Name" />
-        <.input field={{ff, :traits}} type="select" multiple={true} label="Traits" options={["Dog": "dogs", "Cat": "cats"]} value="dogs"/>
+        <.input
+          field={{ff, :traits}}
+          type="select"
+          multiple={true}
+          label="Traits"
+          options={[Dog: "dogs", Cat: "cats"]}
+          value="dogs"
+        />
       <% end %>
 
-      <.input field={{f, :user_id}} type="hidden" value={@current_user.id} />
-      <.input field={{f, :media}} type="hidden" />
-      <%= label f, :past_image %>
-      <%= if @user.media do %>
-        <img src={ Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless") }>
-      <% end%>
       <:actions>
-      <%= for entry <- @uploads.image.entries do %>
-              <article class="upload-entry">
-                   <figure>
-                     <.live_img_preview entry={entry} />
-                     <figcaption><%= entry.client_name %></figcaption>
-                   </figure>
-
-                   <%# entry.progress will update automatically for in-flight entries %>
-                   <progress value={entry.progress} max="100"> <%= entry.progress %>% </progress>
-
-                   <%# a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 %>
-                   <button type="button" phx-click="cancel-upload" phx-value-ref={entry.ref} aria-label="cancel">&times;</button>
-
-                   <%# Phoenix.Component.upload_errors/2 returns a list of error atoms %>
-                   <%= for err <- upload_errors(@uploads.image, entry) do %>
-                     <p class="alert alert-danger"><%= error_to_string(err) %></p>
-                   <% end %>
-               </article>
-           <% end %>
-
-           <%# Phoenix.Component.upload_errors/1 returns a list of error atoms %>
-           <%= for err <- upload_errors(@uploads.image) do %>
-             <p class="alert alert-danger"><%= error_to_string(err) %></p>
-      <% end %>
-      <form id="upload-form" phx-submit="save" phx-change="validate">
-           <.live_file_input upload={@uploads.image} />
-           <button type="submit">Upload</button>
-      </form>
-
-        <.button type="submit" phx-disable-with="Saving...">Save</.button>
+        <form id="upload-form" phx-submit="save" phx-change="validate">
+          <.live_file_input upload={@uploads.image} />
+          <button type="submit">Upload</button>
+        </form>
       </:actions>
+
+      <.live_component
+        module={PhosWeb.Components.CropUploadInput}
+        id="Crop_Image"
+        uploads={@uploads}
+      />
     </.simple_form>
   </section>
 </div>

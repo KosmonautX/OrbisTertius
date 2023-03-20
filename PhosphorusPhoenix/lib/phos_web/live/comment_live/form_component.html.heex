@@ -1,8 +1,8 @@
-<div class="w-full ">
-  <h3 :if={not is_nil(@reply_comment)}>
+<div class="mb-4 font-poppins">
+  <h3 :if={not is_nil(@reply_comment)} class="text-sm font-bold text-gray-600 dark:text-white">
     <%= to_string(@action) %>: <%= @comment.body %>
   </h3>
-  <div class="relative flex flex-col w-full justify-between">
+  <div class="relative flex flex-col justify-between">
     <.simple_form
       :let={f}
       class="flex justify-between w-full"
@@ -19,21 +19,23 @@
       <.input
         :if={@action != :edit}
         field={{f, :body}}
-        class="flex-1"
+        class="flex-1 ml-2"
         type="textarea"
-        placeholder="For when you feel like commenting..."
+        hide_error="true"
+        placeholder="Add a comment..."
       />
 
       <:actions>
-        <button type="submit" phx-disable-with="Saving..." class="absolute right-2.5 bottom-2">
-          <Heroicons.paper_airplane class="h-8 w-8 text-teal-400 font-bold" />
+        <button type="submit" phx-disable-with="Saving..." class="absolute right-2.5 bottom-3.5">
+        <.send_btn type="send"/>
         </button>
         <button
           :if={@action in [:reply, :edit]}
           type="reset"
           class="absolute right-10 bottom-2"
           phx-click={"cancel-#{@action}"}
-          phx-target={"#comment-#{@comment.id}"}>
+          phx-target={"#comment-#{@comment.id}"}
+        >
           <Heroicons.x_circle class="h-8 w-8 text-amber-400 font-bold" />
         </button>
       </:actions>
