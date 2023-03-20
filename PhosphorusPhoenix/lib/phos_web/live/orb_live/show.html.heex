@@ -1,6 +1,8 @@
 <!--desktop View -->
-<div class="h-full lg:bg-gray-100 bg-white dark:bg-gray-900">
-  <div class="lg:mt-20 mt-14 lg:px-20">
+<div class=" lg:bg-gray-100 bg-white dark:bg-gray-900 font-poppins"><br>
+  <br>
+  <br>
+  <div class="lg:mt-2 mt-14 lg:px-20">
     <div
       :if={not is_nil(@orb.initiator) && @orb.initiator}
       class="flex lg:flex-row flex-col items-start mt-6 lg:gap-4"
@@ -49,7 +51,7 @@
         </div>
 
         <div class="w-full lg:rounded-3xl">
-          <.scry_orb id="Orb" orb={@orb} timezone={@timezone} />
+          <.scry_orb id="Orb" orb={@orb} timezone={@timezone} show_information={false}/>
           <.live_component
             module={PhosWeb.CommentLive.IndexComponent}
             id="commentindex"

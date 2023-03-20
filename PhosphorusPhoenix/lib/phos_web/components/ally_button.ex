@@ -192,9 +192,9 @@ defmodule PhosWeb.Component.AllyButton do
   def render(%{ally: ally} = assigns) when ally == "requesting" do
     ~H"""
     <div class="flex gap-2">
-      <.button tone={:success} phx-target={@myself} phx-click="accept_ally_request" class="flex">
-        Accept
-      </.button>
+      <button phx-target={@myself} phx-click="accept_ally_request" class="flex">
+       <.accept type="accept"/>
+      </button>
       <.button tone={:dark} phx-target={@myself} phx-click="reject_ally_request" class="flex">
         Reject
       </.button>

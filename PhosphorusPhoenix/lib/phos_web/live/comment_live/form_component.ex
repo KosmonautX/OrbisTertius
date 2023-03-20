@@ -3,6 +3,8 @@ defmodule PhosWeb.CommentLive.FormComponent do
 
   alias Phos.Comments
   alias PhosWeb.Utility.Encoder
+  import PhosWeb.SVG
+
 
   @impl true
   def update(assigns, socket) do

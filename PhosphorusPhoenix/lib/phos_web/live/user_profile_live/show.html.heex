@@ -18,13 +18,13 @@
   </div>
 </.modal>
 
-<section class="w-full flex flex-col items-center mt-12 lg:gap-4 gap-2 lg:mt-18">
+<section class="w-full flex flex-col items-center mt-12 lg:gap-4 gap-2 lg:mt-18 font-poppins">
   <!--User Profile Banner-->
   <div class="w-full">
     <.user_profile_banner id="orb-user-profile" user={@user} show_location={true} />
   </div>
   <!--User inforamtion card in Mobile View-->
-  <div class="lg:hidden block w-full px-2">
+  <div class="lg:hidden block w-full px-4 mt-4">
     <.user_information_card :if={not is_nil(@user.public_profile)} id="user_info" user={@user}>
       <:actions>
         <.live_component
@@ -46,7 +46,7 @@
     </.user_information_card>
   </div>
   <!--Tabs Using Mobile View There two tabs (Posts/Allies)-->
-  <div class="lg:hidden block sticky top-12 bg-white z-10 left-0 w-full items-center justify-center">
+  <div class="lg:hidden block sticky top-14 bg-white z-10 left-0 w-full items-center justify-center">
     <.tabs_profile id="orb-user-tabs-profile" action={@live_action} username={@user.username} />
   </div>
 
@@ -83,7 +83,7 @@
         Posts
       </h5>
       <ul :for={orb <- @orbs} class="lg:py-2">
-        <li class="border-b border-gray-400 pb-2">
+        <li class="lg:border-b lg:border-gray-400 pb-2 px-4 lg:px-0">
           <.scry_orb id="orb-history" orb={orb} timezone={@timezone} />
         </li>
       </ul>
@@ -94,7 +94,7 @@
       class={[
         "w-full max-w-full lg:px-3  lg:flex-none",
         @live_action == :allies && "block",
-        @live_action != :allies && "hidden lg:w-4/12 md:block"
+        @live_action != :allies && "hidden lg:w-4/12 lg:block"
       ]}
     >
       <h5 class="lg:block hidden text-left font-semibold text-2xl dark:text-white border-b-2 border-black mb-2.5 py-2">
