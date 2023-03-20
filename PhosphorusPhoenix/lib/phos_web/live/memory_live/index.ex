@@ -11,11 +11,10 @@ defmodule PhosWeb.MemoryLive.Index do
       data: search_memories,
       meta: metadata,
     } = memories_by_user(user)
-    mems = Enum.map(search_memories, &(&1.last_memory)) |> Enum.reverse()
 
     {:ok,
      socket
-     |> assign(usersearch: "", search_memories: mems, metadata: metadata, page: 1)}
+     |> assign(usersearch: "", search_memories: map_last_memory(search_memories), metadata: metadata)}
   end
 
   @impl true
@@ -30,7 +29,7 @@ defmodule PhosWeb.MemoryLive.Index do
     %{data: [mem | _tail] = mems, meta: meta} =
       case user = Phos.Users.get_public_user_by_username(username, your.id) do
         %{self_relation: nil} -> %{meta: %{}, data: []}
-        %{self_relation: rel} -> list_memories(user, rel.id, limit: 15)
+        %{self_relation: rel} -> list_memories(user, rel.id)
       end
 
     send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_dekstop, memory: %Memory{})
@@ -73,10 +72,8 @@ defmodule PhosWeb.MemoryLive.Index do
   end
 
   @impl true
-  def handle_event("load-more", _, %{assigns: assigns} = socket) do
-    {:noreply,
-     assign(socket, page: assigns.page + 1)
-     |> list_more_mesage()}
+  def handle_event("load-more", _, socket) do
+    {:noreply, list_more_mesage(socket)}
   end
 
   def handle_event("search", %{"usersearch" => usersearch}, socket) do
@@ -101,19 +98,19 @@ defmodule PhosWeb.MemoryLive.Index do
         user_cursor: Map.get(meta.pagination, :cursor))}
   end
 
-  def handle_info({Phos.PubSub, {:memory, "formation"}, _data}, socket) do
-    mems = []
-    {:noreply, assign(socket, memories: mems, search_memories: mems, memory: %Memory{})}
+  def handle_info({Phos.PubSub, {:memory, "formation"}, %{rel_subject_id: rel_id} = data}, %{assigns: %{current_user: user, memories: memories}} = socket) do
+    %{data: search_memories, meta: _meta} = memories_by_user(user)
+    {:noreply, assign(socket, memories: memories ++ [data], search_memories: map_last_memory(search_memories), memory: %Memory{})}
   end
 
   defp list_more_mesage(%{assigns: %{message_cursor: cursor, current_user: user, memories: [memory | _tail] = memories}} = socket) when not is_nil(cursor) do
     time = DateTime.from_unix!(cursor, :millisecond)
     %{meta: %{pagination: pagination}, data: data} = list_memories(user, memory.rel_subject_id, filter: time)
+    new_data = Kernel.++(data, memories) |> Enum.sort(&(DateTime.compare(&1.inserted_at, &2.inserted_at) == :lt))
 
     socket
-    |> assign(page: 1)
     |> assign(message_cursor: Map.get(pagination, :cursor, nil))
-    |> assign(memories: data ++ memories)
+    |> assign(memories: new_data)
   end
   defp list_more_mesage(socket), do: socket
 
@@ -125,5 +122,9 @@ defmodule PhosWeb.MemoryLive.Index do
 
   defp memories_by_user(user, opts \\ []) do
     Message.list_messages_by_user(user, opts)
+  end
+
+  defp map_last_memory(relationships) do
+    Enum.map(relationships, &(&1.last_memory)) |> Enum.reverse()
   end
 end

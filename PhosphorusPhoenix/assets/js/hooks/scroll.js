@@ -35,7 +35,14 @@ export const ScrollTop = {
   mounted() {
     let timer
 
-    this.el.firstElementChild.addEventListener('scroll', ({ target }) => {
+    this.scrolledElement = this.el.firstElementChild
+
+    if (!this.scrolledElement) return
+    if (this.scrolledElement.clientHeight > 0) this.scrolledElement.scrollTop = this.scrolledElement.clientHeight
+
+    this.height = this.scrolledElement.scrollHeight
+
+    this.scrolledElement.addEventListener('scroll', ({ target }) => {
       if (target.scrollTop <= 0) {
         clearTimeout(timer)
         timer = setTimeout(() => {
@@ -44,4 +51,12 @@ export const ScrollTop = {
       }
     })
   },
+
+  updated() {
+    if (this.height != 0) {
+      this.scrolledElement.scrollTop = this.scrolledElement.scrollHeight - this.height
+      
+      if (this.scrolledElement.scrollHeight != this.height) this.height = this.scrolledElement.height
+    }
+  }
 };

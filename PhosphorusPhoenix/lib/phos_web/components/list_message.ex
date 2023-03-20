@@ -6,7 +6,6 @@ defmodule PhosWeb.Components.ListMessage do
   def render(assigns) do
     ~H"""
     <div>
-      <div id={"#{@id}-infinite-scroll-marker"} data-page={@page} />
       <div id={"#{@id}-infinite-scroll-body"} phx-update="prepend" phx-hook="ScrollTop">
         <.list_message
           id={"list-more-message-#{random_id()}"}
