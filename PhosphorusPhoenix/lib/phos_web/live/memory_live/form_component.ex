@@ -18,7 +18,7 @@ defmodule PhosWeb.MemoryLive.FormComponent do
       >
         <.input field={{f, :message}} type="text" placeholder="Scratching..." />
         <.input field={{f, :user_source_id}} type="hidden" value={@current_user.id} />
-        <.input :if={!is_nil(@rel)} field={{f, :rel_subject_id}} type="hidden" value={@rel.id} />
+        <.input :if={!is_nil(@rel)} field={{f, :rel_subject_id}} type="hidden" value={@rel} />
 
         <:actions>
           <button type="submit" phx-disable-with="Saving..." class="absolute inset-y-1 right-4">
@@ -33,12 +33,7 @@ defmodule PhosWeb.MemoryLive.FormComponent do
   @impl true
   def update(%{memory: memory} = assigns, socket) do
     changeset = Message.change_memory(memory)
-    relation  = Map.get(assigns, :rel)
-
-    {:ok,
-     socket
-     |> assign(assigns)
-     |> assign(changeset: changeset, rel: relation)}
+    {:ok, assign(socket, assigns) |> assign(changeset: changeset)}
   end
 
   @impl true
@@ -84,4 +79,9 @@ defmodule PhosWeb.MemoryLive.FormComponent do
 
   defp get_receiver_id(%{acceptor_id: acc_id} = rel, %{id: id} = _user) when acc_id == id, do: rel.initiator_id
   defp get_receiver_id(%{acceptor_id: id} = _rel, _user), do: id
+  defp get_receiver_id(id, user) when is_binary(id) do
+    id
+    |> Phos.Folk.get_relation!()
+    |> get_receiver_id(user)
+  end
 end

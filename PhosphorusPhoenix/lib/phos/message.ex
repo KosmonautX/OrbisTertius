@@ -72,10 +72,28 @@ defmodule Phos.Message do
   def list_messages_by_user(user, opts \\ [])
   def list_messages_by_user(%Phos.Users.User{id: id}, opts), do: list_messages_by_user(id, opts)
   def list_messages_by_user(user_id, opts) when is_bitstring(user_id) do
-    Phos.Message.Reverie
-    |> where([r], r.user_destination_id == ^user_id)
-    |> preload([memory: [:user_source, :rel_subject]])
+    user_id
+    |> query_message_by_user()
+    |> preload([last_memory: [:user_source, :rel_subject]])
     |> Repo.Paginated.all(opts)
+  end
+
+  def search_message_by_user(user, search_keyword, opts \\ [])
+  def search_message_by_user(%Phos.Users.User{id: id}, keyword, opts), do: search_message_by_user(id, keyword, opts)
+  def search_message_by_user(user_id, keyword, opts) do
+    keyword = "%#{keyword}%"
+    user_id
+    |> query_message_by_user()
+    |> join(:inner, [r], m in assoc(r, :last_memory))
+    |> join(:inner, [r], a in Phos.Users.User, on: (r.acceptor_id == a.id or r.initiator_id == a.id) and ilike(a.username, ^keyword))
+    |> preload([last_memory: [:user_source, :rel_subject]])
+    |> Repo.Paginated.all(opts)
+  end
+
+  defp query_message_by_user(user_id) do
+    Phos.Users.RelationRoot
+    |> where([r], not is_nil(r.last_memory_id))
+    |> where([r], r.initiator_id == ^user_id or r.acceptor_id == ^user_id)
   end
 
   @doc """

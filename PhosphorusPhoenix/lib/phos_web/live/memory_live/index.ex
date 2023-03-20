@@ -11,10 +11,11 @@ defmodule PhosWeb.MemoryLive.Index do
       data: search_memories,
       meta: metadata,
     } = memories_by_user(user)
+    mems = Enum.map(search_memories, &(&1.last_memory)) |> Enum.reverse()
 
     {:ok,
      socket
-     |> assign(usersearch: "", search_memories: Enum.map(search_memories, &(&1.memory)) |> Enum.reverse(), metadata: metadata, page: 1)}
+     |> assign(usersearch: "", search_memories: mems, metadata: metadata, page: 1)}
   end
 
   @impl true
@@ -26,7 +27,7 @@ defmodule PhosWeb.MemoryLive.Index do
     when your.username == username, do: push_navigate(socket, to: ~p"/memories")
 
   defp apply_action(%{assigns: %{current_user: your}} = socket, :show, %{"username" => username}) do
-    %{data: mems, meta: meta} =
+    %{data: [mem | _tail] = mems, meta: meta} =
       case user = Phos.Users.get_public_user_by_username(username, your.id) do
         %{self_relation: nil} -> %{meta: %{}, data: []}
         %{self_relation: rel} -> list_memories(user, rel.id, limit: 15)
@@ -38,6 +39,7 @@ defmodule PhosWeb.MemoryLive.Index do
     socket
     |> assign(:page_title, "Chatting with @" <> username)
     |> assign(:memory, %Memory{})
+    |> assign(:relation_id, mem.rel_subject_id)
     |> assign(user: user, message_cursor: Map.get(meta, :pagination, %{}) |> Map.get(:cursor))
     |> assign(:memories, Enum.reverse(mems))
   end
@@ -90,13 +92,13 @@ defmodule PhosWeb.MemoryLive.Index do
   end
 
   @impl true
-  def handle_info({:run_search, usersearch}, socket) do
-    socket =
-      assign(socket,
-      search_memories: Message.search_by_username(usersearch)
-      )
+  def handle_info({:run_search, usersearch}, %{assigns: %{current_user: user}} = socket) do
+    %{data: data, meta: meta} = Message.search_message_by_user(user, usersearch)
 
-    {:noreply, socket}
+    {:noreply, 
+      assign(socket, 
+        search_memories: Enum.map(data, &(&1.last_memory)) |> Enum.reverse(),
+        user_cursor: Map.get(meta.pagination, :cursor))}
   end
 
   def handle_info({Phos.PubSub, {:memory, "formation"}, _data}, socket) do

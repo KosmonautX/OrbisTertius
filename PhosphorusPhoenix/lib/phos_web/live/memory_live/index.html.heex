@@ -53,7 +53,7 @@
         id={:new_on_dekstop}
         title={@page_title}
         action={:new}
-        rel={@user.self_relation}
+        rel={@relation_id}
         current_user={@current_user}
         memory={@memory}
         navigate={~p"/memories/user/#{@user.username}"}
@@ -126,7 +126,7 @@
         id={:new_on_mobile}
         title={@page_title}
         action={:new}
-        rel={@user.self_relation}
+        rel={@relation_id}
         current_user={@current_user}
         memory={@memory}
         navigate={~p"/memories/user/#{@user.username}"}
