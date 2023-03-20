@@ -55,7 +55,6 @@ defmodule Phos.Message do
   """
 
   def list_messages_by_relation({rel_id, yours}, opts \\ []) when is_list(opts) do
-  def list_messages_by_relation({rel_id, _yours}, opts) when is_list(opts) do
     sort_attr = Keyword.get(opts, :sort_attribute, :inserted_at)
     limit = Keyword.get(opts, :limit, 12)
 

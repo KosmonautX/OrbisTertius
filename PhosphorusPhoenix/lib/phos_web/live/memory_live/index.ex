@@ -14,7 +14,7 @@ defmodule PhosWeb.MemoryLive.Index do
 
     {:ok,
      socket
-     |> assign(usersearch: "", search_memories: reveries_to_memories(search_memories), metadata: metadata, page: 1)}
+     |> assign(usersearch: "", search_memories: Enum.map(search_memories, &(&1.memory)) |> Enum.reverse(), metadata: metadata, page: 1)}
   end
 
   @impl true
@@ -39,7 +39,7 @@ defmodule PhosWeb.MemoryLive.Index do
     |> assign(:page_title, "Chatting with @" <> username)
     |> assign(:memory, %Memory{})
     |> assign(user: user, message_cursor: Map.get(meta, :pagination, %{}) |> Map.get(:cursor))
-    |> assign(:memories, reveries_to_memories(mems))
+    |> assign(:memories, Enum.reverse(mems))
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
@@ -111,7 +111,7 @@ defmodule PhosWeb.MemoryLive.Index do
     socket
     |> assign(page: 1)
     |> assign(message_cursor: Map.get(pagination, :cursor, nil))
-    |> assign(memories: reveries_to_memories(data) ++ memories)
+    |> assign(memories: data ++ memories)
   end
   defp list_more_mesage(socket), do: socket
 
@@ -123,10 +123,5 @@ defmodule PhosWeb.MemoryLive.Index do
 
   defp memories_by_user(user, opts \\ []) do
     Message.list_messages_by_user(user, opts)
-  end
-
-  defp reveries_to_memories(data) do
-    Enum.map(data, &(&1.memory))
-    |> Enum.reverse()
   end
 end
