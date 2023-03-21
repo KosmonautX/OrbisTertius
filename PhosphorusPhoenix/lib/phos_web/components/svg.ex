@@ -53,13 +53,14 @@ defmodule PhosWeb.SVG do
     """
   end
 
-  def location(assigns) do
+  def location(%{type: "location"} = assigns) do
     ~H"""
     <svg
       class="dark:fill-white"
       width="14"
       height="15"
       viewBox="0 0 14 15"
+      class={@class}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -122,7 +123,10 @@ defmodule PhosWeb.SVG do
 
   def apple(assigns) do
     ~H"""
-    <svg height="19" viewBox="0 12 18 22" width="18" class={@class} xmlns="http://www.w3.org/2000/svg">
+    <svg height="19" viewBox="0 12 18 22" width="18" class={@class} xmlns="http://www.w3.org/2000/svg"
+    class={@class}
+
+    >
       <path d="m15.5752 19.0792a4.2055 4.2055 0 0 0 -2.01 3.5376 4.0931 4.0931 0 0 0 2.4908 3.7542 9.7779 9.7779 0 0 1 -1.2755 2.6351c-.7941 1.1431-1.6244 2.2862-2.8878 2.2862s-1.5883-.734-3.0443-.734c-1.42 0-1.9252.7581-3.08.7581s-1.9611-1.0589-2.8876-2.3584a11.3987 11.3987 0 0 1 -1.9373-6.1487c0-3.61 2.3464-5.523 4.6566-5.523 1.2274 0 2.25.8062 3.02.8062.734 0 1.8771-.8543 3.2729-.8543a4.3778 4.3778 0 0 1 3.6822 1.841zm-6.8586-2.0456a1.3865 1.3865 0 0 1 -.2527-.024 1.6557 1.6557 0 0 1 -.0361-.337 4.0341 4.0341 0 0 1 1.0228-2.5148 4.1571 4.1571 0 0 1 2.7314-1.4078 1.7815 1.7815 0 0 1 .0361.373 4.1487 4.1487 0 0 1 -.9867 2.587 3.6039 3.6039 0 0 1 -2.5148 1.3236z">
       </path>
     </svg>
@@ -131,7 +135,7 @@ defmodule PhosWeb.SVG do
 
   def ally_btn(assigns) do
     ~H"""
-    <svg width="81" height="45" viewBox="0 0 81 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="81" height="40" viewBox="0 0 81 45" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect width="81" height="45" rx="15" fill="#00BFB2" />
       <path
         d="M29.472 23.28H26.448V26.384H24.336V23.28H21.312V21.328H24.336V18.224H26.448V21.328H29.472V23.28ZM38.7333 25.872H34.2853L33.5493 28H31.1973L35.2133 16.816H37.8213L41.8373 28H39.4693L38.7333 25.872ZM38.1253 24.08L36.5093 19.408L34.8932 24.08H38.1253ZM45.5784 16.16V28H43.3384V16.16H45.5784ZM50.0315 16.16V28H47.7915V16.16H50.0315ZM60.7246 19.136L55.2366 32.192H52.8526L54.7726 27.776L51.2206 19.136H53.7326L56.0206 25.328L58.3406 19.136H60.7246Z"
@@ -143,7 +147,7 @@ defmodule PhosWeb.SVG do
 
   def share_btn(assigns) do
     ~H"""
-    <svg width="45" height="45" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="42" height="42" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect width="45" height="45" rx="15" fill="#F4F4F4" />
       <path
         d="M18.6844 20.6578L25.3125 17.3438M25.3156 26.6578L18.6938 23.3469M31 16C31 17.6569 29.6569 19 28 19C26.3431 19 25 17.6569 25 16C25 14.3431 26.3431 13 28 13C29.6569 13 31 14.3431 31 16ZM19 22C19 23.6569 17.6569 25 16 25C14.3431 25 13 23.6569 13 22C13 20.3431 14.3431 19 16 19C17.6569 19 19 20.3431 19 22ZM31 28C31 29.6569 29.6569 31 28 31C26.3431 31 25 29.6569 25 28C25 26.3431 26.3431 25 28 25C29.6569 25 31 26.3431 31 28Z"
@@ -156,22 +160,10 @@ defmodule PhosWeb.SVG do
 
   def comment_chat(%{type: "comment"} = assigns) do
     ~H"""
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 18 19"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      class={@class}
-    >
-      <path
-        d="M5.44444 7.27776H11.6667M5.44444 10.8333H9.88888M11.9333 15.8111L17 17.5L15.3111 12.4333C15.3111 12.4333 16.1111 11.2778 16.1111 9.05553C16.1111 4.88273 12.7284 1.5 8.55554 1.5C4.38273 1.5 1 4.88273 1 9.05553C1 13.2283 4.38273 16.6111 8.55554 16.6111C10.8531 16.6111 11.9333 15.8111 11.9333 15.8111Z"
-        stroke="#404252"
-        stroke-width="1.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
+    <svg width="19" height="19" viewBox="0 0 18 18" fill="none" class={@class} xmlns="http://www.w3.org/2000/svg">
+    <path d="M5.44444 6.77776H11.6667M5.44444 10.3333H9.88888M11.9333 15.3111L17 17L15.3111 11.9333C15.3111 11.9333 16.1111 10.7778 16.1111 8.55553C16.1111 4.38273 12.7284 1 8.55554 1C4.38273 1 1 4.38273 1 8.55553C1 12.7283 4.38273 16.1111 8.55554 16.1111C10.8531 16.1111 11.9333 15.3111 11.9333 15.3111Z" stroke="#404252" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
+
     """
   end
 

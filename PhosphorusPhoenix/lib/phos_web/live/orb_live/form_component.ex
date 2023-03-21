@@ -11,7 +11,11 @@ defmodule PhosWeb.OrbLive.FormComponent do
      socket
      |> assign(assigns)
      |> assign(:changeset, changeset)
-     |> allow_upload(:image, accept: ~w(.jpg .jpeg .png .mp4 .gif .mov), max_entries: 5, max_file_size: 8_888_888)}
+     |> allow_upload(:image,
+       accept: ~w(.jpg .jpeg .png .mp4 .gif .mov),
+       max_entries: 5,
+       max_file_size: 8_888_888
+     )}
   end
 
   @impl true
@@ -43,7 +47,10 @@ defmodule PhosWeb.OrbLive.FormComponent do
           |> :h3.k_ring(1)
 
         orb_params
-        |> Map.put("central_geohash", central_hash)
+        |> Map.put(
+          "central_geohash",
+          central_hash
+        )
         |> Map.put("geolocation", geohashes)
       rescue
         ArgumentError -> orb_params |> Map.put("geolocation", [])
@@ -53,20 +60,25 @@ defmodule PhosWeb.OrbLive.FormComponent do
     orb_params = Map.put(orb_params, "id", orb_id)
 
     file_uploaded =
-      consume_uploaded_entries(socket, :image, fn %{path: path}, %{ref: count, client_type: type} ->
+      consume_uploaded_entries(socket, :image, fn %{path: path},
+                                                  %{ref: count, client_type: type} ->
         case type |> String.split("/") |> hd() do
           "image" ->
             for {res, resolution} <- compression do
-
-              {:ok, media} = Phos.Orbject.Structure.apply_media_changeset(
-                %{id: orb_id,
+              {:ok, media} =
+                Phos.Orbject.Structure.apply_media_changeset(%{
+                  id: orb_id,
                   archetype: "ORB",
-                  media: [%{access: "public",
-                            essence: "banner",
-                            resolution: resolution,
-                            count: String.to_integer(count),
-                            ext: List.first(MIME.extensions(type))
-                           }]})
+                  media: [
+                    %{
+                      access: "public",
+                      essence: "banner",
+                      resolution: resolution,
+                      count: String.to_integer(count),
+                      ext: List.first(MIME.extensions(type))
+                    }
+                  ]
+                })
 
               [dest | _] = Map.values(Phos.Orbject.S3.put_all!(media))
 
@@ -78,53 +90,67 @@ defmodule PhosWeb.OrbLive.FormComponent do
 
               HTTPoison.put(dest, {:file, compressed_image.path})
             end
+
           "video" ->
             ext = List.first(MIME.extensions(type))
             ext_path = "#{path}.#{ext}"
             File.rename!(path, ext_path)
-              thumbnail =
-                ext_path
-                |> Mogrify.open()
-                |> Mogrify.format("jpeg")
-                |> Map.update(:path,"",  fn path -> path <> "[5]" end)
-                |> Mogrify.save()
 
-              {:ok, lossy_media} = Phos.Orbject.Structure.apply_media_changeset(
-                %{id: orb_id,
-                  archetype: "ORB",
-                  media: [%{access: "public",
-                            essence: "banner",
-                            resolution: "lossy",
-                            count: String.to_integer(count),
-                            ext: "jpeg"
-                           }]})
+            thumbnail =
+              ext_path
+              |> Mogrify.open()
+              |> Mogrify.format("jpeg")
+              |> Map.update(:path, "", fn path -> path <> "[5]" end)
+              |> Mogrify.save()
 
-              [lossy_dest | _] = Map.values(Phos.Orbject.S3.put_all!(lossy_media))
+            {:ok, lossy_media} =
+              Phos.Orbject.Structure.apply_media_changeset(%{
+                id: orb_id,
+                archetype: "ORB",
+                media: [
+                  %{
+                    access: "public",
+                    essence: "banner",
+                    resolution: "lossy",
+                    count: String.to_integer(count),
+                    ext: "jpeg"
+                  }
+                ]
+              })
 
-              HTTPoison.put(lossy_dest, {:file, thumbnail.path})
+            [lossy_dest | _] = Map.values(Phos.Orbject.S3.put_all!(lossy_media))
 
-              {:ok, lossless_media} = Phos.Orbject.Structure.apply_media_changeset(
-                %{id: orb_id,
-                  archetype: "ORB",
-                  media: [%{access: "public",
-                            essence: "banner",
-                            resolution: "lossless",
-                            count: String.to_integer(count),
-                            ext: ext
-                           }]})
+            HTTPoison.put(lossy_dest, {:file, thumbnail.path})
 
-              [lossless_dest | _] = Map.values(Phos.Orbject.S3.put_all!(lossless_media))
+            {:ok, lossless_media} =
+              Phos.Orbject.Structure.apply_media_changeset(%{
+                id: orb_id,
+                archetype: "ORB",
+                media: [
+                  %{
+                    access: "public",
+                    essence: "banner",
+                    resolution: "lossless",
+                    count: String.to_integer(count),
+                    ext: ext
+                  }
+                ]
+              })
 
-              HTTPoison.put(lossless_dest, {:file, ext_path})
-            end
+            [lossless_dest | _] = Map.values(Phos.Orbject.S3.put_all!(lossless_media))
+
+            HTTPoison.put(lossless_dest, {:file, ext_path})
+        end
+
         {:ok, path}
-       end)
+      end)
 
-    orb_params = unless Enum.empty?(file_uploaded) do
-      Map.replace(orb_params, "media", true)
+    orb_params =
+      unless Enum.empty?(file_uploaded) do
+        Map.replace(orb_params, "media", true)
       else
         orb_params
-    end
+      end
 
     save_orb(socket, socket.assigns.action, orb_params)
   end

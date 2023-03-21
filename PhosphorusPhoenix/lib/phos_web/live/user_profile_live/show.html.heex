@@ -21,7 +21,7 @@
 <section class="w-full flex flex-col items-center mt-12 lg:gap-4 gap-2 lg:mt-18 font-poppins">
   <!--User Profile Banner-->
   <div class="w-full">
-    <.user_profile_banner id="orb-user-profile" user={@user} show_location={true} />
+    <.user_profile_banner id="orb-user-profile" user={@user} show_location={true} show_img={false}/>
   </div>
   <!--User inforamtion card in Mobile View-->
   <div class="lg:hidden block w-full px-4 mt-4">
@@ -50,15 +50,14 @@
     <.tabs_profile id="orb-user-tabs-profile" action={@live_action} username={@user.username} />
   </div>
 
-  <div class="w-full lg:flex lg:flex-row gap-4 justify-center lg:mt-5 lg:px-80">
+  <div class="w-full lg:flex lg:flex-row gap-4 justify-center lg:mt-5 xl:px-80 lg:px-56">
     <div :if={@live_action != :allies} class="flex flex-col lg:px-3 lg:w-8/12 lg:flex-none">
       <!--User inforamtion card in Desktop View-->
       <div class="hidden lg:block">
         <.user_information_card
           :if={not is_nil(@user.public_profile)}
           id="user-details"
-          user={@user}
-        >
+          user={@user}>
           <:actions>
             <.live_component
               id="user-information-card-ally-desktop"
@@ -79,18 +78,18 @@
         </.user_information_card>
       </div>
 
-      <h5 class="lg:block hidden text-left font-semibold text-2xl mt-4 dark:text-white border-b-2 border-black mb-2.5 py-2">
+      <h5 class="lg:block hidden text-left font-semibold text-2xl dark:text-white border-b-2 border-black mb-2.5 py-2">
         Posts
       </h5>
       <p
         :if={@orbs == []}
-        class="text-center py-6 text-gray-600 font-medium text-xl dark:text-white"
+        class="w-full mx-auto text-center py-6 text-gray-600 font-medium lg:text-lg text-base dark:text-white"
       >
         <%= "#{@user.username} has no Post yet" %>
       </p>
 
       <ul :for={orb <- @orbs} class="lg:py-2">
-        <li class="lg:border-b lg:border-gray-400 pb-2 px-4 lg:px-0">
+        <li class="lg:border-b lg:border-gray-400 pb-4 lg:pb-2 px-0.5 lg:px-0">
           <.scry_orb id="orb-history" orb={orb} timezone={@timezone} />
         </li>
       </ul>
@@ -110,7 +109,7 @@
 
       <p
         :if={@ally_list == []}
-        class="text-center py-6 text-gray-600 font-medium text-xl dark:text-white"
+        class="w-full mx-auto text-center py-6 text-gray-600 font-medium lg:text-lg text-base dark:text-white"
       >
         <%= "#{@user.username} has no allies yet" %>
       </p>
