@@ -1372,10 +1372,7 @@ defmodule PhosWeb.CoreComponents do
             phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-scry-orb-#{@orb.id}-copylink")}
             class="text-center inline-flex items-center dark:text-white"
           >
-            <div id={"#{@id}-scry-orb-#{@orb.id}-copylink"} class="hidden">
-              <%= PhosWeb.Endpoint.url() <>
-                path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %>
-            </div>
+          <div id={"#{@id}-scry-orb-#{@orb.id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %></div>
             <.share_btn type="banner" class="h-8 ml-4 dark:fill-white"></.share_btn>
           </button>
           <%= render_slot(@user_action) %>
@@ -1816,10 +1813,7 @@ defmodule PhosWeb.CoreComponents do
         </p>
         <div class="flex gap-4">
           <a id={"#{@id}-sharebtn"} phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}>
-            <div id={"#{@id}-copylink"} class="hidden">
-              <%= PhosWeb.Endpoint.url() <>
-                path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
-            </div>
+            <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %></div>
             <.share_btn type="banner" class="h-8 ml-4 dark:fill-white"></.share_btn>
           </a>
           <%= render_slot(@actions) %>
@@ -1894,10 +1888,7 @@ defmodule PhosWeb.CoreComponents do
       </p>
       <div class="flex gap-6 items-center justify-center">
         <a id={"#{@id}-sharebtn"} phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}>
-          <div id={"#{@id}-copylink"} class="hidden">
-            <%= PhosWeb.Endpoint.url() <>
-              path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
-          </div>
+          <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %></div>
           <.share_btn type="button" class="h-8 ml-4 dark:fill-white"></.share_btn>
           <%= render_slot(@actions) %>
         </a>

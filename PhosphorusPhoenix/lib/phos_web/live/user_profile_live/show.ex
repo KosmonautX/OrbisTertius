@@ -135,6 +135,8 @@ defmodule PhosWeb.UserProfileLive.Show do
 
   defp assign_meta(socket, user) do
     assign(socket, :meta, %{
+      author: user,
+      mobile_redirect: "userland/others/" <> user.id,
       title: "@#{user.username}",
       description: user |> get_in([Access.key(:public_profile, %{}), Access.key(:bio, "-")]),
       type: "website",

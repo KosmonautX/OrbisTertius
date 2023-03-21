@@ -19,6 +19,7 @@ defmodule Phos.Orbject.Structure do
       field(:ext, :string)
       field(:path, :string)
       field(:url, :string)
+      field(:mimetype, :string)
     end
   end
 

@@ -149,17 +149,21 @@ defmodule PhosWeb.OrbLive.Show do
         (for {path, url} <- media || [] do
         %Phos.Orbject.Structure.Media{
         ext: MIME.from_path(path) |> String.split("/") |> hd,
-        url: url
+        url: url,
+        mimetype: MIME.from_path(path)
         } end) end).()
         |> List.first()
 
     assign(socket, :meta, %{
+      author: orb.initiator,
+      mobile_redirect: "orbland/orbs/" <> orb.id,
       title: " #{orb.title} by #{orb.initiator.username}",
       description:
         "#{get_in(orb, [Access.key(:payload, %{}), Access.key(:info, "")])} #{orb |> get_in([Access.key(:payload, %{}), Access.key(:inner_title, "-")])}",
       type: "website",
       image: (if (!is_nil(media) && media.ext in ["application", "image"]), do: media.url),
       video: (if (!is_nil(media) && media.ext in ["video"]), do: media.url),
+      "video:type": (if (!is_nil(media) && media.ext in ["video"]), do: media.mimetype),
       url: url(socket, ~p"/orb/#{orb}")
     })
   end

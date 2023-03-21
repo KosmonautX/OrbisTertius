@@ -26,6 +26,7 @@
       <.guest_banner if={is_nil(@current_user)} current_user={@current_user} />
     <% end %>
     <div class="w-full h-screen"><%= @inner_content %></div>
-    <.welcome_message id="welcome_message" path={@conn.request_path} user={@current_user} />
+    <.welcome_message :if={assigns[:meta]} id="welcome_message" path={@meta.mobile_redirect} user={@meta.author || @current_user} />
+    <.welcome_message :if={is_nil(assigns[:meta])} id="welcome_message" path={@conn.request_path} user={@current_user} />
   </body>
 </html>
