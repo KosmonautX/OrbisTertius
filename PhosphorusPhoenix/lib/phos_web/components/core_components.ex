@@ -226,7 +226,10 @@ defmodule PhosWeb.CoreComponents do
   def simple_form(assigns) do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
-      <div class={["space-y-4 bg-white font-poppins mt-4 dark:bg-gray-900 dark:border-gray-700 w-full", @class]}>
+      <div class={[
+        "space-y-4 bg-white font-poppins mt-4 dark:bg-gray-900 dark:border-gray-700 w-full",
+        @class
+      ]}>
         <%= render_slot(@inner_block, f) %>
         <div :for={action <- @actions} class={"#{Map.get(action, :classes, "")}"}>
           <%= render_slot(action, f) %>
@@ -339,6 +342,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:rest, :global, include: ~w(autocomplete disabled form max maxlength min minlength
                                    pattern placeholder readonly required size step))
   slot(:inner_block)
+  attr(:hide_error, :boolean, default: true)
 
   def input(%{field: {f, field}} = assigns) do
     assigns
@@ -493,7 +497,10 @@ defmodule PhosWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800 dark:text-white font-poppins ">
+    <label
+      for={@for}
+      class="block text-sm font-semibold leading-6 text-zinc-800 dark:text-white font-poppins "
+    >
       <%= render_slot(@inner_block) %>
     </label>
     """
@@ -1016,7 +1023,7 @@ defmodule PhosWeb.CoreComponents do
           </ul>
           <div class="flex gap-2">
             <button id="welcome-button" type="button" phx-click={show_modal("welcome_message")}>
-            <.open_app type="open" ></.open_app>
+              <.open_app type="open"></.open_app>
             </button>
             <!--<button
               id="theme-toggle"
@@ -1392,7 +1399,6 @@ defmodule PhosWeb.CoreComponents do
         timezone={@timezone}
         media={@media}
         show_information={@show_information}
-      }
       />
 
       <.link class="relative" navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}>
@@ -1407,7 +1413,12 @@ defmodule PhosWeb.CoreComponents do
           title={@orb.payload.info}
         />
       </.link>
-      <.orb_action :if={@media == [] || not @show_information} id={"#{@id}-scry-orb-#{@orb.id}"} orb={@orb} date={@timezone} show_information={@show_information}
+      <.orb_action
+        :if={@media == [] || not @show_information}
+        id={"#{@id}-scry-orb-#{@orb.id}"}
+        orb={@orb}
+        date={@timezone}
+        show_information={@show_information}
       />
     </div>
     """
@@ -1441,29 +1452,32 @@ defmodule PhosWeb.CoreComponents do
           <div class="glide__slides">
             <div :for={m <- @media} class="glide__slide">
               <div class="relative">
-              <.link
-            id={"#{@id}-link-#{@orb.id}"}
-            class="relative"
-            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
-          >
-                <img
-                  :if={(m.ext |> String.split("/") |> hd) in ["image", "application"]}
-
-                  class={[@show_information == true && "lg:rounded-b-3xl", "h-96 w-full object-cover dark:border dark:border-white", @class]}
-                  src={m.url}
-                  loading="lazy"
-                />
-
-                <video
-                  :if={(m.ext |> String.split("/") |> hd) in ["video"]}
-                  class="w-full h-96 aspect-video hover:aspect-square object-cover lg:rounded-b-3xl dark:border dark:border-white"
-                  muted
-                  loop
-                  preload="auto"
-                  playsinline
+                <.link
+                  id={"#{@id}-link-#{@orb.id}"}
+                  class="relative"
+                  navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
                 >
-                  <source src={m.url} type={m.ext} />
-                </video>
+                  <img
+                    :if={(m.ext |> String.split("/") |> hd) in ["image", "application"]}
+                    class={[
+                      @show_information == true && "lg:rounded-b-3xl",
+                      "h-96 w-full object-cover dark:border dark:border-white",
+                      @class
+                    ]}
+                    src={m.url}
+                    loading="lazy"
+                  />
+
+                  <video
+                    :if={(m.ext |> String.split("/") |> hd) in ["video"]}
+                    class="w-full h-96 aspect-video hover:aspect-square object-cover lg:rounded-b-3xl dark:border dark:border-white"
+                    muted
+                    loop
+                    preload="auto"
+                    playsinline
+                  >
+                    <source src={m.url} type={m.ext} />
+                  </video>
                 </.link>
                 <a
                   :if={(m.ext |> String.split("/") |> hd) in ["video"]}
@@ -1485,19 +1499,21 @@ defmodule PhosWeb.CoreComponents do
           </div>
         </div>
 
-
-      <div :if={@show_information} class="absolute bottom-0 h-2/5 pointer-events-auto flex flex-col justify-end bg-gradient-to-t from-black/80 to-black/0 w-full flex flex-col lg:border-b-0 lg:rounded-b-xl lg:border-gray-200 dark:border-gray-700">
-      <.link
+        <div
+          :if={@show_information}
+          class="absolute bottom-0 h-2/5 pointer-events-auto flex flex-col justify-end bg-gradient-to-t from-black/80 to-black/0 w-full flex flex-col border-b-0 rounded-b-xl border-gray-200 dark:border-gray-700"
+        >
+          <.link
             id={"#{@id}-link-#{@orb.id}-info"}
             class="relative"
             navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
           >
-      <.orb_information
+            <.orb_information
               id={"#{@id}-orb-info-#{@orb.id}"}
               title={@orb.title}
               info_color="prose-invert text-white"
             />
-        </.link>
+          </.link>
           <!-- <.chip emoji={[
             %{sticker: "😊", count: "20"},
             %{sticker: "❤️", count: "60"},
@@ -1514,9 +1530,6 @@ defmodule PhosWeb.CoreComponents do
             />
           </div>
         </div>
-
-
-
 
         <div :if={length(@media) > 1} data-glide-el="controls">
           <div
@@ -1624,10 +1637,11 @@ defmodule PhosWeb.CoreComponents do
     <div
       id={"#{@id}-actions"}
       class={[
-        @show_information == true && "lg:rounded-b-3xl", "flex justify-between w-full font-medium text-base px-3 dark:border-b dark:border-b-white mt-2 lg:mt-0 font-poppins",
+        @show_information == true && "lg:rounded-b-3xl",
+        "flex justify-between w-full font-medium text-base px-3 dark:border-b dark:border-b-white mt-2 lg:mt-0 font-poppins",
         @main_color
-      ]}>
-
+      ]}
+    >
       <div>
         <span class="dark:text-white ">
           <%= get_date(@orb.inserted_at, @date) %>
@@ -1812,7 +1826,7 @@ defmodule PhosWeb.CoreComponents do
     <div class="flex flex-col w-full mx-auto font-poppins">
       <div class="flex flex-wrap justify-between w-full gap-2">
         <p class="lg:text-3xl text-2xl font-extrabold text-gray-900  dark:text-white lg:text-left text-center inset-y-.5">
-            <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
+          <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
         </p>
         <div class="flex gap-4">
           <a id={"#{@id}-sharebtn"} phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}>
@@ -1826,9 +1840,9 @@ defmodule PhosWeb.CoreComponents do
         </div>
       </div>
       <div class="space-y-2">
-          <p class="text-base text-black font-bold dark:text-gray-400">
-            <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
-          </p>
+        <p class="text-base text-black font-bold dark:text-gray-400">
+          <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
+        </p>
         <p class="text-black font-medium text-base dark:text-gray-400 mt-1">
           <%= @user |> get_in([:public_profile, Access.key(:bio, "-")]) %>
         </p>

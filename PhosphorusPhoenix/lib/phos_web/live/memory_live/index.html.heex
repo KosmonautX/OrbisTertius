@@ -20,8 +20,8 @@
       <.last_message id="last-message" memories={@search_memories} date={@timezone} />
     </div>
 
-    <div :if={@user} class=" lg:col-span-2">
-      <.chat_profile user={@user}>
+    <div :if={@user} class="lg:col-span-2">
+      <.chat_profile id="profile-desktop-view" user={@user}>
         <:actions>
           <.live_component
             id="desktop_view_ally"
@@ -93,7 +93,7 @@
       @live_action != :show && "block lg:col-span-2"
     ]}
   >
-    <.chat_profile user={@user}>
+    <.chat_profile id="profile-mobile-view" user={@user}>
       <:actions>
         <.live_component
           id="mobile_view_ally"
@@ -124,6 +124,5 @@
         navigate={~p"/memories/user/#{@user.username}"}
       />
     </div>
-
   </div>
 </div>
