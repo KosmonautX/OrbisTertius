@@ -13,6 +13,8 @@ if System.get_env("PHX_SERVER") && System.get_env("RELEASE_NAME") do
 end
 
 ## Shared Configs
+##
+config :phos, Phos.Notification, worker: 1
 
 unless config_env() == :prod do
   #dotenv Parsing .env file

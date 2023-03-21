@@ -1077,13 +1077,13 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <nav class="bg-white px-2 fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold p-2 dark:bg-gray-900 font-poppins">
       <div class="flex flex-wrap items-center justify-between mx-auto">
-        <a href="/" class="flex items-center">
+        <a href="//www.scratchbac.com/blog" class="flex items-center">
           <.logo type="banner" class="h-7 ml-4 dark:fill-white"></.logo>
         </a>
         <div class="flex gap-2">
-          <.button type="button" phx-click={show_modal("welcome_message")}>
-            Open app
-          </.button>
+          <button id="welcome-button" type="button" phx-click={show_modal("welcome_message")}>
+            <.open_app type="open" ></.open_app>
+            </button>
           <button
             id="theme-toggle"
             type="button"
