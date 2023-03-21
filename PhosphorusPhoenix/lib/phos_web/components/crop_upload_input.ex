@@ -24,10 +24,12 @@ defmodule PhosWeb.Components.CropUploadInput do
               type="button"
               phx-click="cancel-upload"
               phx-value-ref={entry.ref}
-              aria-label="cancel">
+              aria-label="cancel"
+            >
               &times;
             </button>
           </article>
+
           <.button type="submit" phx-disable-with="Saving...">Save</.button>
         </.modal>
       <% end %>

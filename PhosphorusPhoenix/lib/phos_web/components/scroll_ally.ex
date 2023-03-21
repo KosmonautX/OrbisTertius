@@ -6,7 +6,7 @@ defmodule PhosWeb.Components.ScrollAlly do
   def render(assigns) do
     ~H"""
     <div>
-      <div id="infinite-scroll-body" phx-update="append" class="overflow-x px-2 lg:px-0">
+      <div id="infinite-scroll-body" phx-update="append" class="w-full mx-auto px-4 lg:px-0">
         <.user_info_bar
           :for={ally <- @ally_list}
           :if={!is_nil(Map.get(ally, :username))}

@@ -68,6 +68,7 @@ defmodule PhosWeb.MemoryLive.Index do
      |> list_more_mesage()}
   end
 
+  @impl true
   def handle_event("search", %{"usersearch" => usersearch}, socket) do
     send(self(), {:run_search, usersearch})
 
@@ -80,6 +81,7 @@ defmodule PhosWeb.MemoryLive.Index do
     {:noreply, socket}
   end
 
+  @impl true
   def handle_info({:run_search, usersearch}, socket) do
     socket =
       assign(socket,
@@ -92,11 +94,7 @@ defmodule PhosWeb.MemoryLive.Index do
   defp list_more_mesage(%{assigns: %{page: page}} = socket) do
     socket
     |> assign(page: page)
-    |> assign(
-      memories:
-        list_memories()
-        |> dbg()
-    )
+    |> assign(memories: list_memories())
   end
 
   defp list_memories do
