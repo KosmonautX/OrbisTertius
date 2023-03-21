@@ -7,7 +7,7 @@ defmodule PhosWeb.OrbLive.Show do
 
   @impl true
   def mount(
-        %{"id" => id} = _params,
+        %{"id" => id} = params,
         _session,
         %{assigns: %{current_user: %Phos.Users.User{} = user}} = socket
       ) do
@@ -21,7 +21,7 @@ defmodule PhosWeb.OrbLive.Show do
       {:ok,
        socket
        |> assign(:orb, orb)
-       |> assign_meta(orb)
+       |> assign_meta(orb, params)
        |> assign(:ally, false)
        |> assign(:comments, comments)
        |> assign(:comment, %Comments.Comment{})
@@ -33,7 +33,7 @@ defmodule PhosWeb.OrbLive.Show do
   end
 
   @impl true
-  def mount(%{"id" => id} = _parmas, _session, socket) do
+  def mount(%{"id" => id} = params, _session, socket) do
     with {:ok, orb} <- Action.get_orb(id) do
       comment =
         Comments.get_root_comments_by_orb(orb.id)
@@ -43,7 +43,7 @@ defmodule PhosWeb.OrbLive.Show do
        socket
        |> assign(:orb, orb)
        |> assign(:ally, false)
-       |> assign_meta(orb)
+       |> assign_meta(orb, params)
        |> assign(:comments, comment)
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
@@ -143,6 +143,8 @@ defmodule PhosWeb.OrbLive.Show do
     |> assign(:page_title, "Editing")
   end
 
+  defp assign_meta(socket, orb, %{"bac" => _}), do: socket |> assign(:redirect, true) |> assign_meta(orb)
+  defp assign_meta(socket, orb, _), do: assign_meta(socket, orb)
   defp assign_meta(socket, orb) do
     media = Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless")
         |> (fn media ->
