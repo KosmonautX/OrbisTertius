@@ -1084,12 +1084,30 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <nav class="bg-white px-2 fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold p-2 dark:bg-gray-900 font-poppins">
       <div class="flex flex-wrap items-center justify-between mx-auto">
-        <a href="/" class="flex items-center">
+        <a href="//www.scratchbac.com/blog" class="flex items-center">
           <.logo type="banner" class="h-7 ml-4 dark:fill-white"></.logo>
         </a>
-          <.button type="button" phx-click={show_modal("welcome_message")}>
-            Open app
-          </.button>
+        <div class="flex gap-2">
+          <button id="welcome-button" type="button" phx-click={show_modal("welcome_message")}>
+            <.open_app type="open" ></.open_app>
+            </button>
+          <button
+            id="theme-toggle"
+            type="button"
+            class="text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm p-2 "
+          >
+            <Heroicons.moon
+              mini
+              id="theme-toggle-dark-icon"
+              class="hidden w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"
+            />
+            <Heroicons.sun
+              mini
+              id="theme-toggle-light-icon"
+              class="hidden w-8 h-8 text-gray-700 group-hover:text-teal-500  dark:text-white"
+            />
+          </button>
+        </div>
       </div>
     </nav>
     """
@@ -1366,10 +1384,7 @@ defmodule PhosWeb.CoreComponents do
             phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-scry-orb-#{@orb.id}-copylink")}
             class="text-center inline-flex items-center dark:text-white"
           >
-            <div id={"#{@id}-scry-orb-#{@orb.id}-copylink"} class="hidden">
-              <%= PhosWeb.Endpoint.url() <>
-                path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %>
-            </div>
+          <div id={"#{@id}-scry-orb-#{@orb.id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %></div>
             <.share_btn type="banner" class="h-8 ml-4 dark:fill-white"></.share_btn>
           </button>
           <%= render_slot(@user_action) %>
@@ -1819,10 +1834,7 @@ defmodule PhosWeb.CoreComponents do
         </p>
         <div class="flex gap-4">
           <a id={"#{@id}-sharebtn"} phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}>
-            <div id={"#{@id}-copylink"} class="hidden">
-              <%= PhosWeb.Endpoint.url() <>
-                path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
-            </div>
+            <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %></div>
             <.share_btn type="banner" class="h-8 ml-4 dark:fill-white"></.share_btn>
           </a>
           <%= render_slot(@actions) %>
@@ -1897,10 +1909,7 @@ defmodule PhosWeb.CoreComponents do
       </p>
       <div class="flex gap-6 items-center justify-center">
         <a id={"#{@id}-sharebtn"} phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}>
-          <div id={"#{@id}-copylink"} class="hidden">
-            <%= PhosWeb.Endpoint.url() <>
-              path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
-          </div>
+          <div id={"#{@id}-copylink"} class="hidden"><%= PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %></div>
           <.share_btn type="button" class="h-8 ml-4 dark:fill-white"></.share_btn>
           <%= render_slot(@actions) %>
         </a>

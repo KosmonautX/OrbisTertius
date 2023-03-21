@@ -15,17 +15,18 @@
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
     <link phx-track-static rel="stylesheet" href={~p"/assets/vendor/fonts/Poppins/poppins.css"} />
 
-    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
+    <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
   </head>
   <body class="h-screen w-full mx-auto dark:bg-gray-900">
-    <%= # take username of initiator through meta tags %>
+    <meta :if={assigns[:redirect]} http-equiv="Refresh" content={"0; URL=scrb://host/" <> assigns[:meta][:mobile_redirect]} />
     <%= if @current_user do %>
       <.banner :if={@current_user} current_user={@current_user} />
     <% else %>
       <.guest_banner if={is_nil(@current_user)} current_user={@current_user} />
     <% end %>
     <div class="w-full h-screen"><%= @inner_content %></div>
-    <.welcome_message id="welcome_message" path={@conn.request_path} user={@current_user} />
+    <.welcome_message :if={assigns[:meta]} id="welcome_message" path={@meta.mobile_redirect} user={@meta.author || @current_user} />
+    <.welcome_message :if={is_nil(assigns[:meta])} id="welcome_message" path={@conn.request_path} user={@current_user} />
   </body>
 </html>
