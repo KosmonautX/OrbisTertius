@@ -1,10 +1,10 @@
 <!--desktop View -->
 <div class=" lg:bg-gray-100 bg-white dark:bg-gray-900 font-poppins">
-<div class="hidden lg:block" >
-          <br>
-          <br>
-          <br>
-    </div>
+  <div class="hidden lg:block">
+    <br />
+    <br />
+    <br />
+  </div>
   <div class="md:mt-0 mt-14 lg:px-20">
     <div
       :if={not is_nil(@orb.initiator) && @orb.initiator}
@@ -32,25 +32,27 @@
         </div>
       </div>
       <!-- Post card and Comments-->
-      <div class="lg:hidden block w-full dark:bg-gray-900 sticky top-10 bg-white z-10">
+      <div class="lg:hidden block w-full dark:bg-gray-900 sticky top-14 bg-white z-10 md:mb-8">
         <div class="flex flex-wrap items-center justify-center p-2 border-b border-gray-300">
           <.link patch={~p"/user/#{@orb.initiator.username}"}>
             <Heroicons.chevron_left class="w-6 h-6 dark:text-white font-semibold" />
           </.link>
           <span class="text-center text-base font-semibold text-gray-800 dark:text-white flex-1 items-center justify-center">
-            <%= "#{@orb.initiator.username} Post" %>
+            <%= "#{@orb.initiator.username}'s Post" %>
           </span>
         </div>
       </div>
 
       <div class="lg:w-5/12 lg:flex-none w-full">
         <div class="hidden lg:block mb-2">
-          <div class="flex">
-            <.link patch={~p"/user/#{@orb.initiator.username}"}>
+          <.link patch={~p"/user/#{@orb.initiator.username}"}>
+            <span class="flex text-gray-600 dark:text-white text-base font-bold  mb-1.5">
               <Heroicons.chevron_left class="w-5 h-5 mt-0.5 dark:text-white font-semibold" />
-            </.link>
-            <span class="text-gray-600 dark:text-white text-base font-bold ml-1 mb-1.5">Back</span>
-          </div>
+              <span class="ml-2">
+                Back
+              </span>
+            </span>
+          </.link>
         </div>
 
         <div class="w-full lg:rounded-3xl">
@@ -100,4 +102,5 @@
       </div>
     </div>
   </div>
+  <span :if={length(@orbs) < 3} class="hidden lg:block h-96 bg-gray-100"></span>
 </div>
