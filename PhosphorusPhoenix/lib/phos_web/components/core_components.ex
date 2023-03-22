@@ -1243,7 +1243,7 @@ defmodule PhosWeb.CoreComponents do
             class={[
               (@action == :show && "text-black border-black active") ||
                 "border-transparent hover:text-gray-600 hover:border-gray-300",
-              "inline-flex  border-b-2 GROUP px-16  md:px-40"
+              "inline-flex  border-b-2 GROUP px-14  md:px-40"
             ]}
           >
             Posts
@@ -1256,7 +1256,7 @@ defmodule PhosWeb.CoreComponents do
             class={[
               (@action == :allies && "text-black border-black active") ||
                 "border-transparent hover:text-gray-300 hover:border-gray-300",
-              "inline-flex  border-b-2 GROUP px-16 md:px-40"
+              "inline-flex  border-b-2 GROUP px-14 md:px-40"
             ]}
           >
             Allies
@@ -1615,22 +1615,25 @@ defmodule PhosWeb.CoreComponents do
    Render a External link is use to share hyperlinks
   """
   attr(:id, :string, required: true)
-  attr(:memories, :any)
 
-  def orb_link(assigns) do
+  def external_orb_link(assigns) do
     ~H"""
     <a
       href="#"
-      class="flex w-full items-center border border-gray-200 rounded-lg bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 px-2 font-poppins"
+      class="w-full max-auto h-auto flex flex-row items-center rounded-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 font-poppins bg-gray-50"
     >
-      <p class="text-gray-700 text-sm dark:text-gray-400">
-        <%= @memories |> get_in([Access.key(:orb_subject, %{}), Access.key(:title, "-")]) %>
-      </p>
       <img
-        class="object-cover max-h-28 max-w-20 p-2 rounded-lg "
-        src="/images/Full_Team_(1).jpg"
-        alt=""
+        class="object-cover  h-28 w-40 rounded-l-xl rounded-none"
+        src="https://picsum.photos/200/300"
       />
+      <div class="flex flex-col justify-between text-left ml-4 mx-3 space-y-1 p-1">
+        <h5 class="lg:text-lg text-base font-bold text-black dark:text-white">
+          SOUTHEAST ASIA BECOMES MY OYSTER EP1
+        </h5>
+        <p class="lg:text-sm  text-xs text-gray-700 dark:text-gray-400">
+          I’m in Thailand this week!! Come with to find out where are the best places to eat and hang ALONE because #foreveralonegang
+        </p>
+      </div>
     </a>
     """
   end
@@ -1649,7 +1652,7 @@ defmodule PhosWeb.CoreComponents do
       id={"#{@id}-actions"}
       class={[
         @show_information == true && "lg:rounded-b-3xl",
-        "flex justify-between w-full lg:text-base text-sm lg:px-3  px-2 dark:border-b dark:border-b-white mt-2 lg:mt-0 font-poppins rounded-b-lg",
+        "flex justify-between w-full lg:text-sm text-xs lg:px-3  px-2 dark:border-b dark:border-b-white mt-2 lg:mt-0 font-poppins rounded-b-lg",
         @main_color
       ]}
     >
@@ -1763,7 +1766,7 @@ defmodule PhosWeb.CoreComponents do
         onerror="this.src='/images/default_banner.jpg';"
       />
       <div class="absolute inset-0 px-6 py-6 flex flex-col items-center bg-opacity-50">
-        <p class="text-base lg:text-2xl text-white font-bold mb-2"><%= "@#{@user.username}" %></p>
+        <p class="text-lg lg:text-2xl text-white font-bold mb-2"><%= "@#{@user.username}" %></p>
         <.link
           :if={@user.username}
           navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}
