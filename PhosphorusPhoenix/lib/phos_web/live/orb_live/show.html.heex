@@ -45,11 +45,14 @@
 
       <div class="lg:w-5/12 lg:flex-none w-full">
         <div class="hidden lg:block mb-2">
-            <.link patch={~p"/user/#{@orb.initiator.username}"}>
-              <span class="flex text-gray-600 dark:text-white text-base font-bold  mb-1.5">
-                <Heroicons.chevron_left class="w-5 h-5 mt-0.5 dark:text-white font-semibold" /><span class="ml-2">Back</span>
+          <.link patch={~p"/user/#{@orb.initiator.username}"}>
+            <span class="flex text-gray-600 dark:text-white text-base font-bold  mb-1.5">
+              <Heroicons.chevron_left class="w-5 h-5 mt-0.5 dark:text-white font-semibold" />
+              <span class="ml-2">
+                Back
               </span>
-            </.link>
+            </span>
+          </.link>
         </div>
 
         <div class="w-full lg:rounded-3xl">
@@ -99,4 +102,5 @@
       </div>
     </div>
   </div>
+  <span :if={length(@orbs) < 3} class="hidden lg:block h-96 bg-gray-100"></span>
 </div>
