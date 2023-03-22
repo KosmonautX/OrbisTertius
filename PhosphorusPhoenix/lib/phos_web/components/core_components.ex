@@ -1459,6 +1459,7 @@ defmodule PhosWeb.CoreComponents do
                   class="relative"
                   navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
                 >
+
                   <img
                     :if={(m.ext |> String.split("/") |> hd) in ["image", "application"]}
                     class={[
@@ -1469,23 +1470,20 @@ defmodule PhosWeb.CoreComponents do
                     src={m.url}
                     loading="lazy"
                   />
-
+                  </.link>
                   <video
                     :if={(m.ext |> String.split("/") |> hd) in ["video"]}
                     class={[
                       @show_information == true && "lg:rounded-b-3xl",
-                      "w-full h-96 aspect-video hover:aspect-square object-cover dark:border dark:border-white rounded-b-lg",
-                      @class
+                      "w-full h-96 aspect-video hover:aspect-square object-cover dark:border dark:border-white rounded-b-lg"
                     ]}
-
                     muted
                     loop
-                    preload="auto"
+                    preload="metadata"
                     playsinline
                   >
-                    <source src={m.url} type={m.ext} />
+                    <source src={m.url<> "#t=0.5"} type={m.ext} />
                   </video>
-                </.link>
                 <a
                   :if={(m.ext |> String.split("/") |> hd) in ["video"]}
                   class="absolute hover:text-blue-300 inset-0 bg-transparent flex justify-center items-center p-2 hover:cursor-pointer"
@@ -1585,18 +1583,18 @@ defmodule PhosWeb.CoreComponents do
       |> assign(
         :title,
         case Earmark.as_html(assigns.title) do
-          {:ok, result, _} -> HtmlSanitizeEx.html5(result) |> raw()
-          _ -> "-"
+          {:ok, result, _} -> result |> HtmlSanitizeEx.html5() |> raw()
+          _ -> ""
         end
       )
 
-    ## if contains a link opengraph scrape that mofo
+    ## ast to opengraph
     ~H"""
     <div class={["lg:px-3 px-2 py-1 dark:border-x-white font-poppins", @info_color]}>
       <span
         id={"#{@id}-info"}
         class={[
-          "prose prose-a:text-blue-500 text-base font-medium dark:prose-invert w-full",
+          "prose prose-a:text-blue-500 text-base break-words overflow-hidden font-medium dark:prose-invert w-full",
           @info_color
         ]}
       >
