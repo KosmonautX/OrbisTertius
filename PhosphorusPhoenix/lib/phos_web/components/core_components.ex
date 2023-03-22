@@ -1414,11 +1414,13 @@ defmodule PhosWeb.CoreComponents do
           :if={@media == [] || not @show_information}
           id={"#{@id}-scry-orb-#{@orb.id}"}
           title={get_in(@orb, [Access.key(:payload), Access.key(:inner_title)]) || @orb.title}
+          show_link={true}
         />
         <.orb_information
           :if={!is_nil(get_in(@orb, [Access.key(:payload), Access.key(:info)]))}
           id={"#{@id}-scry-orb-#{@orb.id}"}
           title={@orb.payload.info}
+          show_link={true}
         />
       </.link>
       <.orb_action
@@ -1583,20 +1585,26 @@ defmodule PhosWeb.CoreComponents do
   attr(:id, :string, required: true)
   attr(:title, :string, default: "")
   attr(:info_color, :string, default: "prose-zinc text-gray-600 w-full bg-white dark:bg-gray-900")
+  attr(:show_link, :boolean, default: false)
 
   def orb_information(assigns) do
-    assigns =
+  assigns =
       assigns
       |> assign(
         :title,
         case Earmark.as_html(assigns.title) do
           {:ok, result, _} -> result |> HtmlSanitizeEx.html5() |> raw()
           _ -> ""
-        end
-      )
+        end)
+      |> assign(:link,
+      case PhosWeb.Util.DOMParser.extract_link_from_markdown(assigns.title) do
+      "" -> nil
+      link when is_binary(link) -> link
+      _ -> nil
+    end)
 
-    ## ast to opengraph
     ~H"""
+
     <div class={["lg:px-3 px-2 py-1 dark:border-x-white font-poppins", @info_color]}>
       <span
         id={"#{@id}-info"}
@@ -1606,6 +1614,7 @@ defmodule PhosWeb.CoreComponents do
         ]}
       >
         <%= @title %>
+        <.external_orb_link  :if={@show_link && not is_nil(@link)} link={@link}/>
       </span>
     </div>
     """
@@ -1614,24 +1623,31 @@ defmodule PhosWeb.CoreComponents do
   @doc """
    Render a External link is use to share hyperlinks
   """
-  attr(:id, :string, required: true)
-
+  attr(:link, :string, default: nil)
   def external_orb_link(assigns) do
+  assigns = assign(assigns, :page,
+      case LinkPreview.create(assigns.link) do
+      {:ok, page} -> page
+      _ -> nil
+    end)
+
     ~H"""
     <a
-      href="#"
+      :if={not is_nil(@page)}
+      href={@link}
       class="w-full max-auto h-auto flex flex-row items-center rounded-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 font-poppins bg-gray-50"
     >
       <img
+        :if={@page.images != []}
         class="object-cover  h-28 w-40 rounded-l-xl rounded-none"
-        src="https://picsum.photos/200/300"
+        src={List.first(@page.images)[:url]}
       />
       <div class="flex flex-col justify-between text-left ml-4 mx-3 space-y-1 p-1">
         <h5 class="lg:text-lg text-base font-bold text-black dark:text-white">
-          SOUTHEAST ASIA BECOMES MY OYSTER EP1
+          <%= @page.title %>
         </h5>
         <p class="lg:text-sm  text-xs text-gray-700 dark:text-gray-400">
-          I’m in Thailand this week!! Come with to find out where are the best places to eat and hang ALONE because #foreveralonegang
+          <%= @page.description %>
         </p>
       </div>
     </a>
