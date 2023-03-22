@@ -1595,12 +1595,14 @@ defmodule PhosWeb.CoreComponents do
           {:ok, result, _} -> result |> HtmlSanitizeEx.html5() |> raw()
           _ -> ""
         end)
-      |> assign(:link,
-      case PhosWeb.Util.DOMParser.extract_link_from_markdown(assigns.title) do
-      "" -> nil
-      link when is_binary(link) -> link
-      _ -> nil
-    end)
+    # needs to be async and handled on client side scraping
+
+    #   |> assign(:link,
+    #   case PhosWeb.Util.DOMParser.extract_link_from_markdown(assigns.title) do
+    #   "" -> nil
+    #   link when is_binary(link) -> link
+    #   _ -> nil
+    # end)
 
     ~H"""
     <div class={["lg:px-3 px-2 py-1 dark:border-x-white font-poppins break-words", @info_color]}>
@@ -1612,7 +1614,7 @@ defmodule PhosWeb.CoreComponents do
         ]}
       >
         <%= @title %>
-        <.external_orb_link  :if={@show_link && not is_nil(@link)} link={@link}/>
+        <!-- <.external_orb_link  :if={@show_link && not is_nil(@link)} link={@link}/> -->
       </span>
     </div>
     """
