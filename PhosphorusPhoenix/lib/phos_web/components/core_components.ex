@@ -1604,8 +1604,7 @@ defmodule PhosWeb.CoreComponents do
     end)
 
     ~H"""
-
-    <div class={["lg:px-3 px-2 py-1 dark:border-x-white font-poppins", @info_color]}>
+    <div class={["lg:px-3 px-2 py-1 dark:border-x-white font-poppins break-words", @info_color]}>
       <span
         id={"#{@id}-info"}
         class={[
