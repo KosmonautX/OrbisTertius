@@ -1599,7 +1599,7 @@ defmodule PhosWeb.CoreComponents do
     end)
 
     ~H"""
-        <div class={["lg:px-3 px-2 py-1 dark:border-x-white font-poppins break-words", @info_color]}>
+        <div class={["lg:px-4 px-2 py-1 dark:border-x-white font-poppins break-words", @info_color]}>
       <span
         id={"#{@id}-info"}
         class={[
@@ -1629,18 +1629,18 @@ defmodule PhosWeb.CoreComponents do
     <a
       :if={not is_nil(@page)}
       href={@link}
-      class="w-full max-auto h-auto flex flex-row items-center rounded-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 font-poppins bg-gray-50"
+      class="w-full max-auto h-32 flex flex-row items-center rounded-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 font-poppins bg-gray-50"
     >
       <img
         :if={@page.images != []}
-        class="object-cover  h-28 w-40 rounded-l-xl rounded-none"
+        class="object-cover h-32 w-40 rounded-l-xl rounded-none"
         src={List.first(@page.images)[:url]}
       />
-      <div class="flex flex-col justify-between text-left ml-4 mx-3 space-y-1 p-1">
-        <h5 class="lg:text-lg text-base font-bold text-black dark:text-white">
+      <div class="flex flex-col justify-between text-left ml-2 mx-3 space-y-1 p-2">
+        <h5 class="text-sm font-bold text-black dark:text-white break-words">
           <%= @page.title %>
         </h5>
-        <p class="lg:text-sm  text-xs text-gray-700 dark:text-gray-400">
+        <p class="text-xs text-gray-700 dark:text-gray-400 break-words">
           <%= @page.description %>
         </p>
       </div>
@@ -1662,14 +1662,14 @@ defmodule PhosWeb.CoreComponents do
       id={"#{@id}-actions"}
       class={[
         @show_information == true && "lg:rounded-b-3xl",
-        "flex justify-between w-full lg:text-sm text-xs px-4 lg:px-4 dark:border-b dark:border-b-white mt-2 lg:mt-0 font-poppins",
+        "flex justify-between w-full lg:text-sm text-xs px-4 dark:border-b dark:border-b-white mt-2 lg:mt-0 font-poppins",
         @main_color
       ]}
     >
       <span class="dark:text-white">
         <%= get_date(@orb.inserted_at, @date) %>
       </span>
-      <div class={[@class, "flex flex-cols mr-1 lg:mr-0"]}>
+      <div class={[@class, "flex flex-cols"]}>
         <.link
           id={"#{@id}-scry-orb-#{@orb.id}-link"}
           class="relative"
