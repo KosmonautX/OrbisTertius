@@ -22,10 +22,9 @@ defmodule PhosWeb.UserProfileLive.Show do
     with %Users.User{} = user <- Users.get_user_by_username(username) do
       {:noreply,
        socket
-       |> assign(:params, params)
        |> assign(:user, user)
        |> assign(:ally_list, ally_list(current_user, user))
-       |> assign_meta(user)
+       |> assign_meta(user, params)
        |> assign(:orbs, Action.orbs_by_initiators([user.id], 1).data)
        |> apply_action(socket.assigns.live_action, params)}
     else
@@ -42,8 +41,8 @@ defmodule PhosWeb.UserProfileLive.Show do
 
     {:noreply,
      socket
-     |> assign(:params, params)
      |> assign(:user, user)
+     |> assign_meta(user, params)
      |> assign(:ally_list, ally_list(current_user, user))
      |> assign(:orbs, Action.get_active_orbs_by_initiator(user_id))
      |> apply_action(socket.assigns.live_action, params)}
@@ -133,6 +132,8 @@ defmodule PhosWeb.UserProfileLive.Show do
     |> assign(page_title: "Viewing Allies")
   end
 
+  defp assign_meta(socket, user, %{"bac" => _}), do: socket |> assign(:redirect, true) |> assign_meta(user)
+  defp assign_meta(socket, user, _), do: assign_meta(socket, user)
   defp assign_meta(socket, user) do
     assign(socket, :meta, %{
       author: user,
