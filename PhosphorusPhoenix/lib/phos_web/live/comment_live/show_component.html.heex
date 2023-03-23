@@ -39,7 +39,7 @@
         </p>
       </div>
 
-      <!--<div :if={not is_nil(@current_user)} class="text-sm font-bold text-gray-500 font-poppins">
+      <div :if={not is_nil(@current_user)} class="text-sm font-bold text-gray-500 font-poppins">
         <.link
           :if={elem(@comment, 1).active and elem(@comment, 1).initiator_id == @current_user.id}
           href="#edit"
@@ -56,7 +56,7 @@
         >
           Delete
         </.link>
-      </div>-->
+      </div>
 
       <div
         :if={elem(@comment, 1).child_count > 0}
