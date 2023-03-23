@@ -56,12 +56,14 @@ defmodule PhosWeb.UserProfileLive.Show do
       ) do
     expected_page = page + 1
 
-    {:noreply,
-     assign(socket,
-       page: expected_page,
-       ally_list: ally_list ++ ally_list(user, friend, expected_page)
-     )}
-  end
+    case ally_list(user, friend, expected_page) do
+      [_|_] = allies -> {:noreply,
+      assign(socket,
+        page: expected_page,
+        ally_list: ally_list ++ allies)}
+      _ -> {:noreply, socket}
+    end
+   end
 
   @impl true
   def handle_event("load-more", _, %{assigns: %{current_user: user}} = socket) when is_nil(user),
