@@ -339,10 +339,9 @@ defmodule PhosWeb.CoreComponents do
   attr(:prompt, :string, default: nil, doc: "the prompt for select inputs")
   attr(:options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2")
   attr(:multiple, :boolean, default: false, doc: "the multiple flag for select inputs")
-  attr(:rest, :global, include: ~w(autocomplete disabled form max maxlength min minlength
+  attr(:rest, :global, include: ~w(hide_error autocomplete disabled form max maxlength min minlength
                                    pattern placeholder readonly required size step))
   slot(:inner_block)
-  attr(:hide_error, :boolean, default: true)
 
   def input(%{field: {f, field}} = assigns) do
     assigns
@@ -396,7 +395,7 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  def input(%{type: "textarea", rest: %{class: _class, hide_error: "true"}} = assigns) do
+  def input(%{type: "textarea", rest: %{class: _class, hide_error: true}} = assigns) do
     ~H"""
     <div phx-feedback-for={@name} class={[@rest.class]}>
       <.label for={@id}><%= @label %></.label>
@@ -1588,15 +1587,15 @@ defmodule PhosWeb.CoreComponents do
         case Earmark.as_html(assigns.title) do
           {:ok, result, _} -> result |> HtmlSanitizeEx.html5() |> raw()
           _ -> ""
-        end
-      )
-      |> assign(
-        :link,
-        case PhosWeb.Util.DOMParser.extract_link_from_markdown(assigns.title) do
-          "" -> nil
-          link when is_binary(link) -> link
-          _ -> nil
-    end)
+        end)
+    # needs to be async and handled on client side scraping
+
+    #   |> assign(:link,
+    #   case PhosWeb.Util.DOMParser.extract_link_from_markdown(assigns.title) do
+    #   "" -> nil
+    #   link when is_binary(link) -> link
+    #   _ -> nil
+    # end)
 
     ~H"""
         <div class={["lg:px-4 px-2 py-1 dark:border-x-white font-poppins break-words", @info_color]}>
@@ -1608,7 +1607,7 @@ defmodule PhosWeb.CoreComponents do
         ]}
       >
         <%= @title %>
-        <.external_orb_link  :if={@show_link && not is_nil(@link)} link={@link}/>
+        <!-- <.external_orb_link  :if={@show_link && not is_nil(@link)} link={@link}/> -->
       </span>
     </div>
     """
