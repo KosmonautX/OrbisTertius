@@ -13,7 +13,6 @@ defmodule PhosWeb.Components.ScrollAlly do
           id={"user-#{random_id()}-infobar"}
           user={ally}
           show_padding={false}
-
           class="border-b border-gray-300 lg:border-0"
         >
           <:information>

@@ -16,6 +16,10 @@ module.exports = {
         '2.8': '44.8rem',
       },
 
+      inset: {
+        '60px': '60px',
+      },
+
 
       height: {
         '900': '56rem',

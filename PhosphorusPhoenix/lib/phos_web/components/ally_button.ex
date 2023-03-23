@@ -140,7 +140,7 @@ defmodule PhosWeb.Component.AllyButton do
 
   def render(%{current_user: user} = assigns) when user in [nil, ""] do
     ~H"""
-    <div class="flex" phx-click={show_modal("welcome_message")}>
+    <div class="flex " phx-click={show_modal("welcome_message")}>
       <.ally_btn />
     </div>
     """
@@ -160,7 +160,12 @@ defmodule PhosWeb.Component.AllyButton do
     ~H"""
     <div class="flex">
       <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{user.username}")}>
-        <.chat type="banner" class="h-8 ml-4 dark:fill-white" />
+        <button
+          type="button"
+          class="text-black bg-amber-500 hover:bg-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-300 font-bold rounded-2xl lg:text-base px-6 py-2.5 text-center mr-2 dark:focus:ring-amber-900 font-poppins"
+        >
+          Chat
+        </button>
       </.link>
     </div>
     """
@@ -193,7 +198,7 @@ defmodule PhosWeb.Component.AllyButton do
     ~H"""
     <div class="flex gap-2">
       <button phx-target={@myself} phx-click="accept_ally_request" class="flex">
-       <.accept type="accept"/>
+        <.accept type="accept" />
       </button>
       <.button tone={:dark} phx-target={@myself} phx-click="reject_ally_request" class="flex">
         Reject
@@ -204,10 +209,13 @@ defmodule PhosWeb.Component.AllyButton do
 
   def render(%{ally: false} = assigns) do
     ~H"""
-    <div class="flex">
-      <div class="flex" phx-target={@myself} phx-click="add_ally">
-        <.ally_btn />
-      </div>
+    <div class="flex" phx-target={@myself} phx-click="add_ally">
+      <button
+        type="button"
+        class="text-white bg-teal-500 hover:bg-teal-300 focus:outline-none focus:ring-4 focus:ring-teal-300 font-bold rounded-2xl lg:text-base px-6 py-2.5 text-center dark:focus:ring-teal-900 font-poppins"
+      >
+        <span class="h-5 w-5">+</span>Ally
+      </button>
     </div>
     """
   end

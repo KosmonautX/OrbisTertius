@@ -1,4 +1,3 @@
-
 <div
   class="mt-4 lg:mt-2 bg-white dark:bg-gray-900 lg:px-2 px-2 font-poppins lg:mb-0"
   id={"comment-#{elem(@comment, 1).id}"}>
@@ -128,6 +127,12 @@
         id={"edit-comment-#{elem(@comment, 1).id}"}
         action={:edit}
       />
+
+      <div :if={not elem(@comment, 1).active}>
+        <p class="text-sm text-gray-500 font-medium ml-2 dark:text-gray-400">
+          --Comment deleted--
+        </p>
+      </div>
     </div>
   </div>
 

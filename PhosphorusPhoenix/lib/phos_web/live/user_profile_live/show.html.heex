@@ -30,7 +30,7 @@
   </div>
 
   <!--User inforamtion card in Mobile View-->
-  <div class="lg:hidden block w-full px-4 mt-4">
+  <div class="lg:hidden block w-full px-8 mt-4">
     <.user_information_card :if={not is_nil(@user.public_profile)} id="user_info" user={@user}>
       <:actions>
         <.live_component
@@ -52,11 +52,11 @@
     </.user_information_card>
   </div>
   <!--Tabs Using Mobile View There two tabs (Posts/Allies)-->
-  <div class="lg:hidden block sticky top-14 bg-white z-10 left-0 w-full items-center justify-center">
+  <div class="lg:hidden block sticky top-[60px] bg-white z-10 left-0 w-full items-center justify-center ">
     <.tabs_profile id="orb-user-tabs-profile" action={@live_action} username={@user.username} />
   </div>
 
-  <div class="w-full lg:flex lg:flex-row gap-4 justify-center lg:mt-5 2xl:px-72 xl:px-32 lg:mx-20 ">
+  <div class="w-full lg:flex lg:flex-row gap-4 justify-center lg:mt-5 2xl:px-72 xl:px-32 lg:mx-20">
     <div :if={@live_action != :allies} class="flex flex-col lg:px-3 lg:w-8/12 lg:flex-none">
       <!--User inforamtion card in Desktop View-->
       <div class="hidden lg:block">
@@ -110,7 +110,7 @@
         @live_action != :allies && "hidden lg:w-4/12 lg:block"
       ]}
     >
-      <h5 class="lg:block hidden text-left font-semibold text-2xl dark:text-white border-b-2 border-black mb-2.5 py-2">
+      <h5 class="lg:block hidden text-left font-semibold text-2xl dark:text-white border-b-2 border-black mb-3 py-2">
         Allies
       </h5>
 

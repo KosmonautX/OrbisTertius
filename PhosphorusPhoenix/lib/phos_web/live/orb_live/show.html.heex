@@ -32,8 +32,8 @@
         </div>
       </div>
       <!-- Post card and Comments-->
-      <div class="lg:hidden block w-full dark:bg-gray-900 sticky top-14 bg-white z-10 md:mb-8">
-        <div class="flex flex-wrap items-center justify-center p-2 border-b border-gray-300">
+      <div class="lg:hidden block w-full dark:bg-gray-900 sticky top-[60px] bg-white z-10 mb-2 md:mb-8">
+        <div class="flex flex-wrap items-center justify-center p-2 border-b border-gray-200">
           <.link patch={~p"/user/#{@orb.initiator.username}"}>
             <Heroicons.chevron_left class="w-6 h-6 dark:text-white font-semibold" />
           </.link>
@@ -73,7 +73,7 @@
           />
           <div
             :if={not is_nil(@current_user)}
-            class="lg:hidden  block bottom-0 left-0 z-10 fixed w-full px-4 bg-white dark:bg-gray-900"
+            class="lg:hidden block bottom-0 z-10 fixed w-full px-4 bg-white dark:bg-gray-900"
           >
             <.live_component
               module={PhosWeb.CommentLive.FormComponent}
