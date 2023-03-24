@@ -28,9 +28,8 @@
       show_img={false}
     />
   </div>
-
   <!--User inforamtion card in Mobile View-->
-  <div class="lg:hidden block w-full px-4 mt-4">
+  <div class="lg:hidden block w-full mx-auto px-6 mt-4">
     <.user_information_card :if={not is_nil(@user.public_profile)} id="user_info" user={@user}>
       <:actions>
         <.live_component
@@ -40,23 +39,23 @@
           socket={@socket}
           user={@user}
         />
-        <!--<.link
+        <.link
           :if={@current_user && @user.id == @current_user.id}
           patch={~p"/user/#{@current_user.username}/edit"}
         >
           <button class="bg-black text-white hover:black focus:outline-none focus:ring-4 focus:ring-black font-semibold rounded-2xl text-base px-6 py-2.5 text-center dark:focus:ring-black font-Poppins">
             Edit
           </button>
-        </.link>-->
+        </.link>
       </:actions>
     </.user_information_card>
   </div>
   <!--Tabs Using Mobile View There two tabs (Posts/Allies)-->
-  <div class="lg:hidden block sticky top-14 bg-white z-10 left-0 w-full items-center justify-center">
+  <div class="lg:hidden block sticky top-[60px] bg-white z-10 left-0 w-full items-center justify-center ">
     <.tabs_profile id="orb-user-tabs-profile" action={@live_action} username={@user.username} />
   </div>
 
-  <div class="w-full lg:flex lg:flex-row gap-4 justify-center lg:mt-5 2xl:px-72 xl:px-32 lg:mx-20 ">
+  <div class="w-full lg:flex lg:flex-row gap-4 justify-center lg:mt-5 2xl:px-80  xl:px-64 lg:mx-52">
     <div :if={@live_action != :allies} class="flex flex-col lg:px-3 lg:w-8/12 lg:flex-none">
       <!--User inforamtion card in Desktop View-->
       <div class="hidden lg:block">
@@ -73,14 +72,14 @@
               socket={@socket}
               user={@user}
             />
-            <!--<.link
+            <.link
               :if={@current_user && @user.id == @current_user.id}
               patch={~p"/user/#{@current_user.username}/edit"}
             >
               <button class="bg-black text-white hover:black focus:outline-none focus:ring-4 focus:ring-black font-semibold rounded-2xl text-base px-6 py-2.5 text-center dark:focus:ring-black font-Poppins">
                 Edit
               </button>
-            </.link>-->
+            </.link>
           </:actions>
         </.user_information_card>
       </div>
@@ -90,9 +89,9 @@
       </h5>
       <p
         :if={@orbs == []}
-        class="w-full mx-auto text-center py-6 text-gray-600 font-medium text-base dark:text-white"
+        class="w-full mx-auto text-center py-6 text-gray-600 font-medium lg:text-base text-sm dark:text-white"
       >
-        <%= "#{@user.username} has no Post yet" %>
+        <%= "#{@user.username} has no post yet" %>
       </p>
 
       <ul :for={orb <- @orbs} class="lg:py-2">
@@ -110,13 +109,13 @@
         @live_action != :allies && "hidden lg:w-4/12 lg:block"
       ]}
     >
-      <h5 class="lg:block hidden text-left font-semibold text-2xl dark:text-white border-b-2 border-black mb-2.5 py-2">
+      <h5 class="lg:block hidden text-left font-semibold text-2xl dark:text-white border-b-2 border-black mb-3 py-2">
         Allies
       </h5>
 
       <p
         :if={@ally_list == []}
-        class="w-full mx-auto text-center py-6 text-gray-600 font-medium  text-base dark:text-white"
+        class="w-full mx-auto text-center py-6 text-gray-600 font-medium text-sm lg:text-base dark:text-white"
       >
         <%= "#{@user.username} has no allies yet" %>
       </p>

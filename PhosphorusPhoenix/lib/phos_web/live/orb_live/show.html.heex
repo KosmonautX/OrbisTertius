@@ -32,8 +32,8 @@
         </div>
       </div>
       <!-- Post card and Comments-->
-      <div class="lg:hidden block w-full dark:bg-gray-900 sticky top-14 bg-white z-10 md:mb-8">
-        <div class="flex flex-wrap items-center justify-center p-2 border-b border-gray-300">
+      <div class="lg:hidden block w-full dark:bg-gray-900 sticky top-[60px] bg-white z-10 mb-2 md:mb-8">
+        <div class="flex flex-wrap items-center justify-center p-2 border-b border-gray-200">
           <.link patch={~p"/user/#{@orb.initiator.username}"}>
             <Heroicons.chevron_left class="w-6 h-6 dark:text-white font-semibold" />
           </.link>
@@ -44,16 +44,16 @@
       </div>
 
       <div class="lg:w-5/12 lg:flex-none w-full">
-        <div class="hidden lg:block mb-2">
-          <.link patch={~p"/user/#{@orb.initiator.username}"}>
+        <.link patch={~p"/user/#{@orb.initiator.username}"}>
+          <div class="hidden lg:block mb-2 w-full mx-auto">
             <span class="flex text-gray-600 dark:text-white text-base font-bold  mb-1.5">
               <Heroicons.chevron_left class="w-5 h-5 mt-0.5 dark:text-white font-semibold" />
               <span class="ml-2">
                 Back
               </span>
             </span>
-          </.link>
-        </div>
+          </div>
+        </.link>
 
         <div class="w-full lg:rounded-3xl">
           <.scry_orb id="Orb" orb={@orb} timezone={@timezone} show_information={false} />
@@ -73,7 +73,7 @@
           />
           <div
             :if={not is_nil(@current_user)}
-            class="lg:hidden  block bottom-0 left-0 z-10 fixed w-full px-4 bg-white dark:bg-gray-900"
+            class="lg:hidden block bottom-0 z-10 fixed w-full px-4 bg-white dark:bg-gray-900"
           >
             <.live_component
               module={PhosWeb.CommentLive.FormComponent}

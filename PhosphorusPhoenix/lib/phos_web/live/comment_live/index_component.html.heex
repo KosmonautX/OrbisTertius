@@ -1,8 +1,9 @@
-<div class="w-full bg-white px-2 mt-4 lg:mt-0 py-3 lg:rounded-b-3xl dark:bg-gray-900 dark:border dark:border-white font-poppins">
-
+<div class="w-full bg-white px-2 mt-2 lg:mt-0 lg:rounded-b-3xl dark:bg-gray-900 dark:border dark:border-white font-poppins">
   <h2 class="hidden lg:block text-gray-900 font-bold text-2xl dark:text-white ml-2">
-    Comments
+    comments
   </h2>
+
+  <hr class=" block lg:hidden" />
 
   <div :if={not is_nil(@current_user)} class="hidden lg:block lg:rounded-3xl">
     <.live_component
@@ -16,7 +17,7 @@
     />
   </div>
 
-  <div class="ui threaded comments overflow-y-auto h-full lg:rounded-b-3xl">
+  <div class="ui threaded comments overflow-y-auto h-full lg:rounded-b-3xl mb-14 lg:mb-0">
     <.live_component
       :for={comment <- filter_root_comments_chrono(@comments)}
       module={PhosWeb.CommentLive.ShowComponent}
