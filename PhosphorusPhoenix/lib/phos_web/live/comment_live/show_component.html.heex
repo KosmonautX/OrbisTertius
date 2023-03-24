@@ -2,16 +2,16 @@
 <div
   class="mt-4 lg:mt-2 bg-white dark:bg-gray-900 lg:px-2 px-2 font-poppins lg:mb-0"
   id={"comment-#{elem(@comment, 1).id}"}>
-  <div class="flex">
-    <.link navigate={~p"/user/#{elem(@comment, 1).initiator.username}"}>
+  <div class="flex shrink-0">
+    <.link navigate={~p"/user/#{elem(@comment, 1).initiator.username}"} class="flex shrink-0">
       <img
-        class="lg:w-14 lg:h-14 h-8 w-8 shrink-0 rounded-full object-cover"
+        class="lg:w-14 lg:h-14 h-8 w-8  rounded-full object-cover"
         src={Phos.Orbject.S3.get!("USR", elem(@comment, 1).initiator_id, "public/profile/lossy")}
         onerror="this.src='/images/default_hand.jpg';"
       />
     </.link>
     <div class="flex flex-col w-full ml-2 font-poppins break-all">
-      <strong class="text-base font-bold text-gray-800 dark:text-white">
+      <strong class="lg:text-base text-sm font-bold text-gray-800 dark:text-white">
         <.link navigate={~p"/user/#{elem(@comment, 1).initiator.username}"}>
           <%= elem(@comment, 1).initiator.username %>
         </.link>

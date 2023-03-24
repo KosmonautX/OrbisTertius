@@ -44,16 +44,16 @@
       </div>
 
       <div class="lg:w-5/12 lg:flex-none w-full">
-        <div class="hidden lg:block mb-2">
-          <.link patch={~p"/user/#{@orb.initiator.username}"}>
+        <.link patch={~p"/user/#{@orb.initiator.username}"}>
+          <div class="hidden lg:block mb-2 w-full mx-auto">
             <span class="flex text-gray-600 dark:text-white text-base font-bold  mb-1.5">
               <Heroicons.chevron_left class="w-5 h-5 mt-0.5 dark:text-white font-semibold" />
               <span class="ml-2">
                 Back
               </span>
             </span>
-          </.link>
-        </div>
+          </div>
+        </.link>
 
         <div class="w-full lg:rounded-3xl">
           <.scry_orb id="Orb" orb={@orb} timezone={@timezone} show_information={false} />

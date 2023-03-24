@@ -339,8 +339,12 @@ defmodule PhosWeb.CoreComponents do
   attr(:prompt, :string, default: nil, doc: "the prompt for select inputs")
   attr(:options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2")
   attr(:multiple, :boolean, default: false, doc: "the multiple flag for select inputs")
-  attr(:rest, :global, include: ~w(hide_error autocomplete disabled form max maxlength min minlength
-                                   pattern placeholder readonly required size step))
+
+  attr(:rest, :global,
+    include: ~w(hide_error autocomplete disabled form max maxlength min minlength
+                                   pattern placeholder readonly required size step)
+  )
+
   slot(:inner_block)
 
   def input(%{field: {f, field}} = assigns) do
@@ -1235,11 +1239,11 @@ defmodule PhosWeb.CoreComponents do
   def tabs_profile(assigns) do
     ~H"""
     <div id={@id} class="w-full sticky top-0 left-0 right-0 font-poppins">
-      <ul class="flex justify-center font-semibold text-base  text-gray-500 dark:text-white bg-white gap-x-30">
+      <ul class="flex justify-center font-semibold text-sm  text-gray-500 dark:text-white bg-white gap-x-30">
         <li class={[
           (@action == :show && "text-black border-black active") ||
             "border-transparent hover:text-gray-600  hover:border-gray-300",
-          "flex-1 border-b-2 GROUP text-center py-3"
+          "flex-1 border-b-2 GROUP text-center py-1.5"
         ]}>
           <.link patch={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@username}")}>
             Posts
@@ -1249,7 +1253,7 @@ defmodule PhosWeb.CoreComponents do
         <li class={[
           (@action == :allies && "text-black border-black active") ||
             "border-transparent hover:text-gray-300  hover:border-gray-300",
-          "flex-1 border-b-2 GROUP text-center py-3"
+          "flex-1 border-b-2 GROUP text-center py-1.5"
         ]}>
           <.link patch={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@username}/allies")}>
             Allies
@@ -1289,8 +1293,8 @@ defmodule PhosWeb.CoreComponents do
     <div
       id={@id}
       class={[
-        @show_padding == true && "lg:px-4",
-        "w-full bg-white  lg:py-2 py-4 flex items-center justify-between dark:bg-gray-900 dark:border dark:border-white px-4 font-poppins",
+        @show_padding == true && "lg:px-4" || "lg:px-0",
+        "w-full bg-white lg:py-2 py-4 flex items-center justify-between dark:bg-gray-900 dark:border dark:border-white px-4 font-poppins",
         @class
       ]}
     >
@@ -1298,29 +1302,30 @@ defmodule PhosWeb.CoreComponents do
         <.link
           :if={@user.username}
           navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}
+          class="flex shrink-0"
         >
           <img
             src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
-            class="lg:w-14 lg:h-14 h-12 w-12 rounded-full object-cover shrink-0"
+            class="lg:w-14 lg:h-14 h-12 w-12 rounded-full object-cover "
             onerror="this.src='/images/default_hand.jpg';"
           />
         </.link>
-        <div class="flex flex-col justify-center -mt-2 ml-1.5">
+        <div class="flex flex-col justify-center -mt-2 ml-1.5 overflow-hidden truncate">
           <.link
             :if={@user.username}
             navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}
           >
-            <p class="font-bold text-gray-900 dark:text-white text-base truncate">
+            <p class="font-bold text-gray-900 dark:text-white text-base">
               <%= "@#{@user.username}" %>
             </p>
           </.link>
 
-          <p class="flex items-center text-sm text-gray-700 dark:text-gray-400">
+          <p class="flex items-center lg:text-sm text-xs text-gray-700 dark:text-gray-400">
             <%= render_slot(@information) %>
           </p>
         </div>
       </div>
-      <div class="flex justify-end gap-2"><%= render_slot(@actions) %></div>
+      <div class="flex gap-2"><%= render_slot(@actions) %></div>
     </div>
     """
   end
@@ -1587,7 +1592,9 @@ defmodule PhosWeb.CoreComponents do
         case Earmark.as_html(assigns.title) do
           {:ok, result, _} -> result |> HtmlSanitizeEx.html5() |> raw()
           _ -> ""
-        end)
+        end
+      )
+
     # needs to be async and handled on client side scraping
 
     #   |> assign(:link,
@@ -1598,7 +1605,7 @@ defmodule PhosWeb.CoreComponents do
     # end)
 
     ~H"""
-        <div class={["lg:px-4 px-2 py-1 dark:border-x-white font-poppins break-words", @info_color]}>
+    <div class={["px-4 py-1 dark:border-x-white font-poppins break-words", @info_color]}>
       <span
         id={"#{@id}-info"}
         class={[
@@ -1617,12 +1624,17 @@ defmodule PhosWeb.CoreComponents do
    Render a External link is use to share hyperlinks
   """
   attr(:link, :string, default: nil)
+
   def external_orb_link(assigns) do
-  assigns = assign(assigns, :page,
+    assigns =
+      assign(
+        assigns,
+        :page,
         case LinkPreview.create(assigns.link) do
           {:ok, page} -> page
           _ -> nil
-    end)
+        end
+      )
 
     ~H"""
     <a
@@ -1846,7 +1858,7 @@ defmodule PhosWeb.CoreComponents do
       )
 
     ~H"""
-    <div class="flex flex-col font-poppins mb-4">
+    <div class="flex flex-col font-poppins mb-2">
       <div class="flex mx-auto w-full justify-between w-full gap-2">
         <p class="lg:text-3xl text-2xl word-break font-extrabold text-gray-900  dark:text-white text-left  inset-y-.5 mb-1 lg:mb-0">
           <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
