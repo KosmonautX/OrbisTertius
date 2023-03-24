@@ -223,6 +223,20 @@ defmodule PhosWeb.SVG do
     """
   end
 
+  def comment_media(assigns) do
+    ~H"""
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M5.44444 6.77776H11.6667M5.44444 10.3333H9.88888M11.9333 15.3111L17 17L15.3111 11.9333C15.3111 11.9333 16.1111 10.7778 16.1111 8.55553C16.1111 4.38273 12.7284 1 8.55554 1C4.38273 1 1 4.38273 1 8.55553C1 12.7283 4.38273 16.1111 8.55554 16.1111C10.8531 16.1111 11.9333 15.3111 11.9333 15.3111Z"
+        stroke="white"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+    """
+  end
+
   def send_btn(%{type: "send"} = assigns) do
     ~H"""
     <svg width="30" height="36" viewBox="0 0 21 17" fill="none" xmlns="http://www.w3.org/2000/svg">

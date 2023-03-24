@@ -1293,7 +1293,7 @@ defmodule PhosWeb.CoreComponents do
     <div
       id={@id}
       class={[
-        @show_padding == true && "lg:px-4" || "lg:px-0",
+        (@show_padding == true && "lg:px-4") || "lg:px-0",
         "w-full bg-white lg:py-2 py-4 flex items-center justify-between dark:bg-gray-900 dark:border dark:border-white px-4 font-poppins",
         @class
       ]}
@@ -1315,7 +1315,7 @@ defmodule PhosWeb.CoreComponents do
             :if={@user.username}
             navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}
           >
-            <p class="font-bold text-gray-900 dark:text-white text-base">
+            <p class="font-bold text-gray-900 dark:text-white lg:text-base text-sm">
               <%= "@#{@user.username}" %>
             </p>
           </.link>
@@ -1537,6 +1537,7 @@ defmodule PhosWeb.CoreComponents do
               orb={@orb}
               date={@timezone}
               main_color="text-white"
+              show_information={true}
             />
           </div>
         </div>
@@ -1686,8 +1687,9 @@ defmodule PhosWeb.CoreComponents do
           class="relative"
           navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
         >
-          <button class="text-center inline-flex items-center dark:text-white">
-            <.comment_chat type="comment" class="fill-white"></.comment_chat>
+          <button :if={@show_information} class="text-center inline-flex items-center dark:text-white">
+            <.comment_chat type="comment" class="text-white"></.comment_chat>
+            <.comment_media />
             <span class="ml-1"><%= @orb.comment_count %></span>
           </button>
         </.link>
@@ -1858,12 +1860,12 @@ defmodule PhosWeb.CoreComponents do
       )
 
     ~H"""
-    <div class="flex flex-col font-poppins mb-2">
-      <div class="flex mx-auto w-full justify-between w-full gap-2">
-        <p class="lg:text-3xl text-2xl word-break font-extrabold text-gray-900  dark:text-white text-left  inset-y-.5 mb-1 lg:mb-0">
+    <div class="flex flex-col font-poppins mb-2 mx-auto w-full lg:mx-0">
+      <div class="flex justify-between w-full gap-2">
+        <p class="lg:text-3xl text-2xl break-words font-extrabold text-gray-900  dark:text-white text-left  mb-1 lg:mb-0">
           <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
         </p>
-        <div class="flex gap-4">
+        <div class="flex gap-2">
           <a id={"#{@id}-sharebtn"} phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}>
             <div id={"#{@id}-copylink"} class="hidden">
               <%= PhosWeb.Endpoint.url() <>
@@ -1874,7 +1876,7 @@ defmodule PhosWeb.CoreComponents do
           <%= render_slot(@actions) %>
         </div>
       </div>
-      <div class="space-y-2">
+      <div class="space-y-2 break-words">
         <p class="text-base text-black font-bold dark:text-gray-400">
           <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
         </p>
@@ -1935,10 +1937,10 @@ defmodule PhosWeb.CoreComponents do
 
     ~H"""
     <div class="flex flex-col p-4 w-full space-y-2 rounded-3xl bg-white dark:bg-gray-900 dark:border dark:border-white font-poppins">
-      <h5 class="lg:text-2xl  text-lg font-extrabold text-gray-900 dark:text-white font-Poppins">
+      <h5 class="lg:text-2xl  text-lg font-extrabold text-gray-900 dark:text-white font-Poppins break-words">
         <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
       </h5>
-      <p class="text-black text-base font-semibold dark:text-gray-400">
+      <p class="text-black text-base font-semibold dark:text-gray-400 break-words">
         <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
       </p>
       <div class="flex gap-6 items-center justify-center">
@@ -1948,6 +1950,7 @@ defmodule PhosWeb.CoreComponents do
               path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
           </div>
           <.share_btn type="button" class="h-8 ml-4 dark:fill-white"></.share_btn>
+
           <%= render_slot(@actions) %>
         </a>
         <div :if={@ally_button != []}>

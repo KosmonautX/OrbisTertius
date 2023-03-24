@@ -140,25 +140,25 @@ defmodule PhosWeb.Component.AllyButton do
 
   def render(%{current_user: user} = assigns) when user in [nil, ""] do
     ~H"""
-    <div class="flex " phx-click={show_modal("welcome_message")}>
+    <a class="flex " phx-click={show_modal("welcome_message")}>
       <.ally_btn />
-    </div>
+    </a>
     """
   end
 
   def render(%{ally: false, self: true} = assigns) do
     ~H"""
-    <div class="flex hidden">
+    <a class="flex hidden">
       <.button class="hidden">
         button
       </.button>
-    </div>
+    </a>
     """
   end
 
   def render(%{ally: "completed", user: user} = assigns) do
     ~H"""
-    <div class="flex">
+    <a class="flex">
       <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{user.username}")}>
         <button
           type="button"
@@ -167,13 +167,13 @@ defmodule PhosWeb.Component.AllyButton do
           Chat
         </button>
       </.link>
-    </div>
+    </a>
     """
   end
 
   def render(%{ally: ally} = assigns) when ally == "requested" or ally == "blocked" do
     ~H"""
-    <div class="flex">
+    <a class="flex">
       <.button class="flex" phx-click={show_modal("delete_friend_request_#{@user.id}")}>
         <%= String.capitalize(@ally) %>
       </.button>
@@ -184,49 +184,50 @@ defmodule PhosWeb.Component.AllyButton do
         }
       >
         <:title>Unally?</:title>
-        <div>
+        <a>
           Are you sure want to delete your request to <%= @user.username %> ?
-        </div>
+        </a>
         <:confirm tone={:danger}>Yes, delete</:confirm>
         <:cancel>No, keep requesting</:cancel>
       </.modal>
-    </div>
+    </a>
     """
   end
 
   def render(%{ally: ally} = assigns) when ally == "requesting" do
     ~H"""
-    <div class="flex gap-2">
-      <button phx-target={@myself} phx-click="accept_ally_request" class="flex">
+    <a class="flex gap-2">
+      <a phx-target={@myself} phx-click="accept_ally_request" class="flex">
         <.accept type="accept" />
-      </button>
+      </a>
+
       <.button tone={:dark} phx-target={@myself} phx-click="reject_ally_request" class="flex">
         Reject
       </.button>
-    </div>
+    </a>
     """
   end
 
   def render(%{ally: false} = assigns) do
     ~H"""
-    <div class="flex" phx-target={@myself} phx-click="add_ally">
+    <a phx-target={@myself} phx-click="add_ally">
       <button
         type="button"
         class="text-white bg-teal-500 hover:bg-teal-300 focus:outline-none focus:ring-4 focus:ring-teal-300 font-bold rounded-2xl lg:text-base px-6 py-2.5 text-center dark:focus:ring-teal-900 font-poppins"
       >
         <span class="h-5 w-5">+</span>Ally
       </button>
-    </div>
+    </a>
     """
   end
 
   def render(assigns) do
     ~H"""
-    <div class="flex">
+    <a class="flex">
       <.button class="flex capitalize" tone={:primary}>
         <%= @ally %>
       </.button>
-    </div>
+    </a>
     """
   end
 

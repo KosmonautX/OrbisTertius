@@ -29,7 +29,7 @@
     />
   </div>
   <!--User inforamtion card in Mobile View-->
-  <div class="lg:hidden block w-full px-8 mt-4">
+  <div class="lg:hidden block w-full mx-auto px-6 mt-4">
     <.user_information_card :if={not is_nil(@user.public_profile)} id="user_info" user={@user}>
       <:actions>
         <.live_component
@@ -39,14 +39,14 @@
           socket={@socket}
           user={@user}
         />
-        <!--<.link
+        <.link
           :if={@current_user && @user.id == @current_user.id}
           patch={~p"/user/#{@current_user.username}/edit"}
         >
           <button class="bg-black text-white hover:black focus:outline-none focus:ring-4 focus:ring-black font-semibold rounded-2xl text-base px-6 py-2.5 text-center dark:focus:ring-black font-Poppins">
             Edit
           </button>
-        </.link>-->
+        </.link>
       </:actions>
     </.user_information_card>
   </div>
@@ -55,7 +55,7 @@
     <.tabs_profile id="orb-user-tabs-profile" action={@live_action} username={@user.username} />
   </div>
 
-  <div class="w-full lg:flex lg:flex-row gap-4 justify-center lg:mt-5 2xl:px-80  xl:px-64 lg:mx-64">
+  <div class="w-full lg:flex lg:flex-row gap-4 justify-center lg:mt-5 2xl:px-80  xl:px-64 lg:mx-52">
     <div :if={@live_action != :allies} class="flex flex-col lg:px-3 lg:w-8/12 lg:flex-none">
       <!--User inforamtion card in Desktop View-->
       <div class="hidden lg:block">
@@ -72,14 +72,14 @@
               socket={@socket}
               user={@user}
             />
-            <!--<.link
+            <.link
               :if={@current_user && @user.id == @current_user.id}
               patch={~p"/user/#{@current_user.username}/edit"}
             >
               <button class="bg-black text-white hover:black focus:outline-none focus:ring-4 focus:ring-black font-semibold rounded-2xl text-base px-6 py-2.5 text-center dark:focus:ring-black font-Poppins">
                 Edit
               </button>
-            </.link>-->
+            </.link>
           </:actions>
         </.user_information_card>
       </div>
