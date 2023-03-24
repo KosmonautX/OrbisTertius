@@ -1338,6 +1338,8 @@ defmodule PhosWeb.CoreComponents do
   attr(:timezone, :map)
   slot(:user_action)
   attr(:show_information, :boolean, default: true)
+  attr(:show_media, :boolean, default: true)
+
   attr(:class, :string, default: nil)
 
   def scry_orb(assigns) do
@@ -1427,6 +1429,7 @@ defmodule PhosWeb.CoreComponents do
         orb={@orb}
         date={@timezone}
         show_information={@show_information}
+        show_media={false}
       />
     </div>
     """
@@ -1445,6 +1448,9 @@ defmodule PhosWeb.CoreComponents do
   attr(:orb, :any)
   attr(:timezone, :string)
   attr(:show_information, :boolean, default: true)
+  attr(:show_comment, :boolean, default: true)
+  attr(:show_media, :boolean, default: true)
+
   attr(:media, :any)
 
   def media_carousel(assigns) do
@@ -1538,6 +1544,8 @@ defmodule PhosWeb.CoreComponents do
               date={@timezone}
               main_color="text-white"
               show_information={true}
+              show_comment={false}
+              show_media={true}
             />
           </div>
         </div>
@@ -1665,6 +1673,8 @@ defmodule PhosWeb.CoreComponents do
   attr(:date, :string)
   attr(:class, :string, default: nil)
   attr(:show_information, :boolean, default: true)
+  attr(:show_comment, :boolean, default: true)
+  attr(:show_media, :boolean, default: true)
   attr(:main_color, :string, default: "text-gray-600 bg-white dark:bg-gray-900")
 
   # TODO orb_actions wiring with data
@@ -1687,9 +1697,9 @@ defmodule PhosWeb.CoreComponents do
           class="relative"
           navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
         >
-          <button :if={@show_information} class="text-center inline-flex items-center dark:text-white">
-            <.comment_chat type="comment" class="text-white"></.comment_chat>
-            <.comment_media />
+          <button class="text-center inline-flex items-center dark:text-white">
+            <.comment_chat :if={@show_comment} type="comment" class="-ml-1"></.comment_chat>
+            <.comment_media :if={@show_media} />
             <span class="ml-1"><%= @orb.comment_count %></span>
           </button>
         </.link>
