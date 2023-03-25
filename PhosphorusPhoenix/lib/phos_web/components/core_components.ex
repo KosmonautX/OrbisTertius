@@ -1411,20 +1411,20 @@ defmodule PhosWeb.CoreComponents do
 
       <.link class="relative" navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}>
         <.orb_information
-          :if={@media == [] || not @show_information}
+          :if={@media == [] || !@show_information}
           id={"#{@id}-scry-orb-#{@orb.id}"}
-          title={get_in(@orb, [Access.key(:payload), Access.key(:inner_title)]) || @orb.title}
+          title={get_in(@orb, [Access.key(:payload), Access.key(:inner_title)]) || @orb.title || ""}
           show_link={true}
         />
         <.orb_information
-          :if={!is_nil(get_in(@orb, [Access.key(:payload), Access.key(:info)]))}
+          :if={is_binary(get_in(@orb, [Access.key(:payload), Access.key(:info)])) && !@show_information}
           id={"#{@id}-scry-orb-#{@orb.id}"}
           title={@orb.payload.info}
           show_link={true}
         />
       </.link>
       <.orb_action
-        :if={@media == [] || not @show_information}
+        :if={@media == [] || !@show_information}
         id={"#{@id}-scry-orb-#{@orb.id}"}
         orb={@orb}
         date={@timezone}
@@ -1467,7 +1467,6 @@ defmodule PhosWeb.CoreComponents do
             <div :for={m <- @media} class="glide__slide">
               <div class="relative">
                 <.link
-                  id={"#{@id}-link-#{@orb.id}"}
                   class="relative"
                   navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
                 >
@@ -1493,7 +1492,7 @@ defmodule PhosWeb.CoreComponents do
                   preload="metadata"
                   playsinline
                 >
-                  <source src={m.url<> "#t=0.5"} type={m.ext} />
+                  <source src={m.url<> "#t=0.1"} type={m.ext} />
                 </video>
                 <a
                   :if={(m.ext |> String.split("/") |> hd) in ["video"]}
@@ -1520,13 +1519,12 @@ defmodule PhosWeb.CoreComponents do
           class="absolute bottom-0 h-2/5 pointer-events-auto flex flex-col justify-end bg-gradient-to-t from-black/80 to-black/0 w-full flex flex-col lg:border-b-0 lg:rounded-b-xl lg:border-gray-200 dark:border-gray-700"
         >
           <.link
-            id={"#{@id}-link-#{@orb.id}-info"}
             class="relative"
             navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
           >
             <.orb_information
               id={"#{@id}-orb-info-#{@orb.id}"}
-              title={@orb.title}
+              title={@orb.payload.inner_title || @orb.title}
               info_color="prose-invert text-white"
             />
           </.link>
@@ -1538,12 +1536,10 @@ defmodule PhosWeb.CoreComponents do
           ]} /> -->
           <div class="items-end">
             <.orb_action
-              :if={@orb.media}
               id={"#{@id}-scry-orb-#{@orb.id}"}
               orb={@orb}
               date={@timezone}
               main_color="text-white"
-              show_information={true}
               show_comment={false}
               show_media={true}
             />
@@ -1616,7 +1612,6 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <div class={["px-4 py-1 dark:border-x-white font-poppins break-words", @info_color]}>
       <span
-        id={"#{@id}-info"}
         class={[
           "prose prose-a:text-blue-500 text-base break-words overflow-hidden font-medium dark:prose-invert w-full",
           @info_color
@@ -1693,13 +1688,12 @@ defmodule PhosWeb.CoreComponents do
       </span>
       <div class={[@class, "flex flex-cols"]}>
         <.link
-          id={"#{@id}-scry-orb-#{@orb.id}-link"}
           class="relative"
           navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
         >
           <button class="text-center inline-flex items-center dark:text-white">
-            <.comment_chat :if={@show_comment} type="comment" class="-ml-1"></.comment_chat>
-            <.comment_media :if={@show_media} />
+            <.comment :if={!@show_media} type="dark" class="-ml-1"/>
+            <.comment :if={@show_media} type="light" />
             <span class="ml-1"><%= @orb.comment_count %></span>
           </button>
         </.link>
@@ -2010,7 +2004,8 @@ defmodule PhosWeb.CoreComponents do
   attr(:id, :string, required: true)
   attr(:show, :boolean, default: false, doc: "Default value is not to show the message")
   attr(:path, :string, default: "/")
-  attr(:user, :any, default: nil, doc: "User state to create session / to redirect in app")
+  attr(:user, :any, default: nil, doc: "Relational User Object")
+  attr(:current_user, :any, default: nil, doc: "User state to create session / to redirect in app")
 
   def welcome_message(assigns) do
     ~H"""
@@ -2033,7 +2028,7 @@ defmodule PhosWeb.CoreComponents do
         <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/redirect/#{@path}")}>
           <.modal_open type="modal" class="" />
         </.link>
-        <div :if={is_nil(@user)} class="text-sm text-gray-500 ">
+        <div :if={is_nil(@current_user)} class="text-sm text-gray-500 ">
           <.link
             navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
             class="text-sm text-teal-400 font-bold hover:underline"
