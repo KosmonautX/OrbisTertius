@@ -1238,7 +1238,7 @@ defmodule PhosWeb.CoreComponents do
 
   def tabs_profile(assigns) do
     ~H"""
-    <div id={@id} class="w-full sticky top-0 left-0 right-0 font-poppins">
+    <div id={@id} class="w-full font-poppins">
       <ul class="flex justify-center font-semibold text-sm  text-gray-500 dark:text-white bg-white gap-x-30">
         <li class={[
           (@action == :show && "text-black border-black active") ||
