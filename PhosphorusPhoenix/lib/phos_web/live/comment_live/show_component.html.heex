@@ -23,11 +23,11 @@
         </span>
       </strong>
 
-      <div :if={not is_nil(@current_user)} class="flex w-full justify-between">
+      <div class="flex w-full justify-between">
         <p class="text-sm font-light text-gray-600 dark:text-white">
           <%= Timex.from_now(elem(@comment, 1).inserted_at) %>
         </p>
-        <p class="text-sm font-bold text-gray-500 hover:text-gray-400 hover:underline mr-6">
+        <p :if={not is_nil(@current_user)} class="text-sm font-bold text-gray-500 hover:text-gray-400 hover:underline mr-6">
           <.link
             href="#reply"
             phx-click="reply-comment"
