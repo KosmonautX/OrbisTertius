@@ -83,7 +83,7 @@ defmodule PhosWeb.UserWelcomeLive do
     case Users.update_pub_user(user, %{"username" => username}) do
       {:ok, _} ->
         info = "Username Chosen"
-        {:noreply, put_flash(socket, :info, info)}
+        {:noreply, socket |> put_flash(:info, info) |> redirect(to: ~p"/welcome")}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :username_changeset, Map.put(changeset, :action, :insert))}
