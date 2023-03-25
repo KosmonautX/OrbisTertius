@@ -170,27 +170,14 @@ defmodule PhosWeb.OrbLive.Show do
     })
   end
 
-  defp get_orbs(%{assigns: %{page: page}} = socket) do
-    socket
-    |> assign(page: page)
-    |> assign(
-      orbs:
-        socket.assigns.orbs ++
-          Action.orbs_by_initiators([socket.assigns.orb.initiator.id], page).data
-    )
-  end
 
-  def handle_event("load-more", _, %{assigns: assigns} = socket) do
-    {:noreply, assign(socket, page: assigns.page + 1) |> get_orbs()}
-  end
-
-  def handle_event("next", _, %{assigns: %{active_image: active}} = socket) do
-    {:noreply, assign(socket, active_image: active + 1)}
-  end
-
-  def handle_event("prev", _, %{assigns: %{active_image: active}} = socket) do
-    {:noreply, assign(socket, active_image: active - 1)}
-  end
+  def handle_event("load-more", _, %{assigns: %{page: page, orb: orb}} = socket) do
+    expected_page = page + 1
+    case Action.orbs_by_initiators([orb.initiator.id], expected_page).data do
+      [_|_] = orbs -> {:noreply, assign(socket, page: expected_page, orbs: orbs)}
+      _ -> {:noreply, socket}
+    end
+   end
 
   # Save comment flow
   @impl true
