@@ -50,7 +50,6 @@ defmodule PhosWeb.UserForgotPasswordLive do
 
     {:noreply,
      socket
-     |> put_flash(:info, info)
-     |> redirect(to: ~p"/")}
+     |> put_flash(:info, info)}
   end
 end
