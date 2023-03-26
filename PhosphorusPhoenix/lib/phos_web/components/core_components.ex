@@ -15,7 +15,6 @@ defmodule PhosWeb.CoreComponents do
 
   alias Phoenix.LiveView.JS
   import PhosWeb.Gettext
-  import Phoenix.HTML
   import PhosWeb.Util.DOMParser
 
   @doc """

@@ -77,9 +77,9 @@ config :phos, PhosWeb.Endpoint,
 config :logger, :console,
  format: "[$level] $message\n"
 
- config :logger,
- truncate: :infinity,
- translator_inspect_opts: [limit: :infinity]
+ # config :logger,
+ # truncate: :infinity,
+ # translator_inspect_opts: [limit: :infinity]
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.

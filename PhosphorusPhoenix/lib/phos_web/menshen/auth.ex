@@ -15,7 +15,7 @@ defmodule PhosWeb.Menshen.Auth do
   end
 
   def validate_fyr(token) do
-    with {:ok, body} <- get_cert(token),
+    with {:ok, body} <- get_cert(),
          {:ok, %{"kid" => kid}} <- Joken.peek_header(token),
          {:ok, keys} <- Map.fetch(JOSE.JWK.from_firebase(body), kid),
          {:verify, {true, %{fields: %{"exp" => exp} = fields}, _}} <- {:verify, JOSE.JWT.verify(keys, token)},
@@ -29,7 +29,7 @@ defmodule PhosWeb.Menshen.Auth do
 
       {:verify, _} ->
         #in case of cycling of
-        with {:ok, body} <- update_cert(token),
+        with {:ok, body} <- update_cert(),
              {:ok, %{"kid" => kid}} <- Joken.peek_header(token),
              {:ok, keys} <- Map.fetch(JOSE.JWK.from_firebase(body), kid),
              {:verify, {true, %{fields: %{"exp" => exp} = fields}, _}} <- {:verify, JOSE.JWT.verify(keys, token)},
@@ -82,14 +82,14 @@ defmodule PhosWeb.Menshen.Auth do
   defp parse_territories(_), do: %{}
 
   @decorate cacheable(cache: Cache, key: {Phos.External.GoogleCert, :get_cert})
-  defp get_cert(token), do: Phos.External.GoogleCert.get_Cert()
+  defp get_cert(), do: Phos.External.GoogleCert.get_Cert()
 
   @decorate cache_put(
               cache: Cache,
               key: {Phos.External.GoogleCert, :get_cert},
               match: &cert_legit/1
             )
-  defp update_cert(token), do: Phos.External.GoogleCert.get_Cert()
+  defp update_cert(), do: Phos.External.GoogleCert.get_Cert()
 
 
   defp cert_legit({:ok, _}), do: true
