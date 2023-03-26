@@ -1,7 +1,7 @@
 import {VideoMute} from "../modal_application"
 
 // assets/js/infinite_scroll.js
-export default Scroll = {
+export const Scroll = {
     page() { return this.el.dataset.page;},
     archetype() { return this.el.dataset.archetype;},
     loadMore(entries) {

@@ -10,7 +10,7 @@
         onerror="this.src='/images/default_hand.jpg';"
       />
     </.link>
-    <div class="flex flex-col w-full ml-2 font-poppins break-all">
+    <div class="flex flex-col w-full ml-2 font-poppins break-words">
       <strong class="lg:text-base text-sm font-bold text-gray-800 dark:text-white">
         <.link navigate={~p"/user/#{elem(@comment, 1).initiator.username}"}>
           <%= elem(@comment, 1).initiator.username %>
@@ -19,7 +19,7 @@
           :if={elem(@comment, 1).active and is_nil(@edit_comment)}
           class="text-sm text-gray-700 font-medium dark:text-gray-400 ml-1"
         >
-          <%= elem(@comment, 1).body %>
+          <%= PhosWeb.Util.DOMParser.extract_html_from_md elem(@comment, 1).body %>
         </span>
       </strong>
 

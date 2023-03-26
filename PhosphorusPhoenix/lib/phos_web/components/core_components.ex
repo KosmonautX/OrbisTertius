@@ -16,6 +16,7 @@ defmodule PhosWeb.CoreComponents do
   alias Phoenix.LiveView.JS
   import PhosWeb.Gettext
   import Phoenix.HTML
+  import PhosWeb.Util.DOMParser
 
   @doc """
   Renders a modal.
@@ -1590,16 +1591,6 @@ defmodule PhosWeb.CoreComponents do
   attr(:show_link, :boolean, default: false)
 
   def orb_information(assigns) do
-    assigns =
-      assigns
-      |> assign(
-        :title,
-        case Earmark.as_html(assigns.title) do
-          {:ok, result, _} -> result |> HtmlSanitizeEx.html5() |> raw()
-          _ -> ""
-        end
-      )
-
     # needs to be async and handled on client side scraping
 
     #   |> assign(:link,
@@ -1617,7 +1608,7 @@ defmodule PhosWeb.CoreComponents do
           @info_color
         ]}
       >
-        <%= @title %>
+        <%= extract_html_from_md @title %>
         <!-- <.external_orb_link  :if={@show_link && not is_nil(@link)} link={@link}/> -->
       </span>
     </div>

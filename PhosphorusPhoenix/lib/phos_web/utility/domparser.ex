@@ -24,4 +24,14 @@ defmodule PhosWeb.Util.DOMParser do
         {:cont, acc}
     end)
   end
+
+  def extract_html_from_md(md) when is_binary(md) do
+      case Earmark.as_html(md) do
+          {:ok, result, _} -> result |> HtmlSanitizeEx.html5() |> Phoenix.HTML.raw()
+          _ -> ""
+      end
+  end
+
+  def extract_html_from_md(_), do: ""
+
 end
