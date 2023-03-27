@@ -118,6 +118,11 @@ config :phos, Phos.External.Notion,
   database: {System, :get_env, "NOTION_DATABASE"},
   notification_database: {System, :get_env, "NOTION_NOTIFICATION_DATABASE"}
 
+config :phos, Phos.PlatformNotification,
+  worker: 4,
+  min_demand: 2,
+  max_demand: 10
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

@@ -9,7 +9,7 @@ config :bcrypt_elixir, :log_rounds, 1
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :phos, Phos.Repo,
-  username: "postgres",
+  username: System.get_env("PGUSERNAME") || "postgres",
   password: "root",
   hostname: "localhost",
   database: "phos_test#{System.get_env("MIX_TEST_PARTITION")}",
