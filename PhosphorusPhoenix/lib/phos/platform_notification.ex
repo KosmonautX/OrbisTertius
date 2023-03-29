@@ -6,7 +6,7 @@ defmodule Phos.PlatformNotification do
   @type entity_id :: String.t() | integer()
   @type message_type :: integer()
 
-  alias __MODULE__.{Producer, Dispatcher, Consumer, Store}
+  alias __MODULE__.{Producer, Dispatcher, Consumer, Store, Template}
 
   @moduledoc """
   PlatformNotification used to generate notification with flexibility
@@ -39,7 +39,7 @@ defmodule Phos.PlatformNotification do
   def init(_opts) do
     number    = Keyword.get(config(), :worker, 4)
     workers   = Enum.map(1..number, fn n -> Supervisor.child_spec({Consumer, []}, id: :"platfrom_notification_worker_#{n}") end)
-    children  = [Producer, Dispatcher, Store | workers]
+    children  = [Producer, Dispatcher, Store, Template | workers]
 
     Supervisor.init(children, strategy: :one_for_all)
   end
