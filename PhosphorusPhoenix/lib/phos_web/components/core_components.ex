@@ -1524,7 +1524,7 @@ defmodule PhosWeb.CoreComponents do
           >
             <.orb_information
               id={"#{@id}-orb-info-#{@orb.id}"}
-              title={@orb.payload.inner_title || @orb.title}
+              title={@orb.payload && @orb.payload.inner_title || @orb.title}
               info_color="prose-invert text-white"
             />
           </.link>

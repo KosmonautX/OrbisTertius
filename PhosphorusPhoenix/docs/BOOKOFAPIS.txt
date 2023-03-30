@@ -12,6 +12,7 @@
 :jean=HMhn3DPO71h0cMYFh52vM1tBacX2
 :anon=ETCiVo6Rr3gniuI44Gq9f2a5Ldl1
 :javier=v78yYQpVjlUaOsmzKguPoXcGqqw2
+:jiayi=3f6idzconSaWU31lQpcwXl3q8623
 :princeton_id=9bf9c443-f89b-460a-972d-6704ae66823d
 :owentwo_id=973da4ae-48a6-498d-b988-548af3af99f6
 :satrio_id=b3cd35ef-83e2-448e-831d-f5ded1c39692
@@ -43,7 +44,7 @@ GET :localipAddress/devland/flameon?user=:lky_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
-GET :localipAddress/devland/lankaonfyr?fyr_id=:javier
+GET :localipAddress/devland/lankaonfyr?fyr_id=:jiayi
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 

@@ -15,8 +15,19 @@
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
     <link phx-track-static rel="stylesheet" href={~p"/assets/vendor/fonts/Poppins/poppins.css"} />
 
-    <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
-    </script>
+    <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}/>
+<!-- Google tag (gtag.js) -->
+  <script :if={PhosWeb.Endpoint.host() == "phos.scrb.ac"} async src="https://www.googletagmanager.com/gtag/js?id=G-ENF7RD8HB8"/>
+
+  <script :if={PhosWeb.Endpoint.host() == "phos.scrb.ac"}>
+    window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-ENF7RD8HB8', {
+        send_page_view: false
+       });
+  </script>
   </head>
   <body class="h-screen w-full mx-auto dark:bg-gray-900">
     <meta :if={assigns[:redirect]} http-equiv="Refresh" content={"0; URL=scrb://host/" <> assigns[:meta][:mobile_redirect]} />
