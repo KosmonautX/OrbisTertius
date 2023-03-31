@@ -1305,7 +1305,7 @@ defmodule PhosWeb.CoreComponents do
           class="flex shrink-0"
         >
           <img
-            src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+            src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossy")}
             class="lg:w-14 lg:h-14 h-12 w-12 rounded-full object-cover "
             onerror="this.src='/images/default_hand.jpg';"
           />
