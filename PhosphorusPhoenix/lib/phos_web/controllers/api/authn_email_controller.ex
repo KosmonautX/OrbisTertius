@@ -12,6 +12,7 @@ defmodule PhosWeb.API.AuthNEmailController do
       render(conn, :login, user: user, token: token)
     else
       %Users.User{email: ^email} = fyring_user ->
+        # migrate fyr_id from anonymous user to user w email
         with %Users.User{email: nil, fyr_id: fyr_id} <- anon,
              :ok <- Users.migrate_fyr_user(anon, fyring_user),
                token <- Phos.External.GoogleIdentity.gen_customToken(fyr_id) do

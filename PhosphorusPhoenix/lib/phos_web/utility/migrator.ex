@@ -69,7 +69,12 @@ defmodule PhosWeb.Util.Migrator do
       {:ok, %{"fyr_id" => data["localId"], "email" => email_provider(providers) || email}} end)
     |> Multi.run(:user, fn _repo, %{payload: %{"email" => email} = payload} when is_binary(email) ->
       case Users.get_user_by_email(email) do
-            %Users.User{} = user -> {:ok, user}
+        %Users.User{fyr_id: nil} = user ->
+                  user
+                  |> Users.User.fyr_registration_changeset(%{fyr_id: data["localId"]})
+                  |> Phos.Repo.update()
+
+        %Users.User{} = user -> {:ok, user}
             nil ->
               case Users.get_user_by_fyr(data["localId"]) do
                 %Users.User{} = user ->
