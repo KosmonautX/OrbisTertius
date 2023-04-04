@@ -1,4 +1,6 @@
 defmodule Phos.PlatformNotification.Scheduller do
+  require Logger
+
   use GenServer
 
   @one_minute :timer.minutes(1)
@@ -23,7 +25,7 @@ defmodule Phos.PlatformNotification.Scheduller do
 
   defp run_notification_timer(notifications) do
     now_time = current_time()
-    Logger.debug("Running notification timer at #{now_time}")
+    Logger.debug("Running platform notification timer at #{now_time}")
     Enum.filter(notifications, fn {_id, %{time_condition: ntime, frequency: frequency}, _active} ->
       [date, time] = case ntime do
         %DateTime{} -> [DateTime.to_date(ntime), DateTime.to_time(now_time)]

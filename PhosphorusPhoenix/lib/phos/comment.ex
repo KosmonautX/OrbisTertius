@@ -98,7 +98,13 @@ defmodule Phos.Comments do
   #
   #
 
-  def get_comment(id), do: Repo.get(Comment, id) |> Repo.preload([:initiator])
+  def get_comment(id) do
+    query = from c in Comment,
+      where: c.id == ^id,
+      preload: [:initiator, :orb],
+      limit: 1
+    Repo.one(query)
+  end
   def get_comment!(id), do: Repo.get!(Comment, id) |> Repo.preload([:initiator])
 
   def get_descendents_comment(id) do

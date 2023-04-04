@@ -7,6 +7,7 @@ defmodule Phos.PlatformNotification.Dispatcher do
     GenStage.start_link(__MODULE__, state, name: __MODULE__)
   end
 
+  @impl true
   def init(_state) do
     {:producer_consumer, 0, subscribe_to: conn_opts()}
   end
@@ -16,13 +17,21 @@ defmodule Phos.PlatformNotification.Dispatcher do
     [{PN.Producer, opts}]
   end
 
+  @impl true
   def handle_events([event | _rest], from, state) do
     event
-    |> filter_event()
+    |> filter_event_type()
+    |> filter_event_entity()
     |> case do
       {:ok, data} ->
         GenStage.reply(from, :ok)
-        {:noreply, [data], state + 1}
+        stored = PN.Store.insert(%{
+          active: true,
+          spec: data,
+          id: Ecto.UUID.generate(),
+        })
+
+        {:noreply, [stored.id], state + 1}
       _ -> 
         GenStage.reply(from, :error)
         {:noreply, [], state}
@@ -30,42 +39,26 @@ defmodule Phos.PlatformNotification.Dispatcher do
   end
   def handle_events(_events, _from, state), do: {:noreply, [], state}
 
-  defp filter_event({type, entity, id, msg}) when type in [:email, :push, :broadcast] do
-    actor(entity, id)
-    |> define_message(msg, type)
-    |> case do
-      {:filtered, _data} = data -> {:ok, data}
-      err -> err
-    end
-  end
-  defp filter_event(_data), do: :error
-
-  defp actor("USR", id) do
-    case Phos.Users.find_user_by_id(id) do
-      {:ok, user} -> %{actor: user, token: get_token(user)}
-      err -> err
-    end
-  end
-  defp actor("ORB", id) do
-    case Phos.Action.get_orb(id) do
-      {:ok, orb} -> %{actor: orb, token: get_token(orb.initiator)}
-      err -> err
-    end
-  end
-  defp actor(_, _), do: :error
-
-  defp get_token(%Phos.Users.User{} = user) do
-    get_in(user, [Access.key(:integrations, %{}), Access.key(:fcm_token, nil)])
+  @impl true
+  def handle_info({_ref, {id, type, message}}, state) when type in [:retry, :error] do
+    stored = PN.Store.get(id)
+    PN.Store.update(id, %{error_reason: message, last_try_at: DateTime.utc_now(), retry_attempt: stored.retry_attempt + 1})
+    {:noreply, [], state}
   end
 
-  defp define_message(:error, _msg, _type), do: :error
-  defp define_message({:error, _err_msg}, _msg, _type), do: :error
-  defp define_message(result, msg_id, type) when is_list(result) do
-    {:filtered, Enum.map(result, &find_message(&1, msg_id, type))}
+  @impl true
+  def handle_info({_ref, {id, :success, _message}}, state) do
+    PN.Store.update(id, %{last_try_at: DateTime.utc_now(), success: true})
+    {:noreply, [], state}
   end
-  defp define_message(result, msg_id, type), do: {:filtered, find_message(result, msg_id, type)}
 
-  defp find_message(result, msg_id, type) do
-    Map.merge(result, %{message: %{id: msg_id, content: "Lorem ipsum"}, type: type})
+  defp filter_event_type({type, _entity, _id, _msg} = data) when type in [:email, :push, :broadcast] do
+    {:ok, data}
   end
+  defp filter_event_type(_data), do: :error
+
+  defp filter_event_entity({:ok, {_type, entity, _id, _msg} = data}) when entity in ["USR", "ORB", "COMMENT"] do
+    {:ok, data}
+  end
+  defp filter_event_entity(:error), do: :error
 end

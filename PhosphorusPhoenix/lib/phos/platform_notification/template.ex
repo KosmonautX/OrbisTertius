@@ -24,16 +24,20 @@ defmodule Phos.PlatformNotification.Template do
     sender_name: boolean(),
     event_name: boolean(),
     counter: integer(),
+    icon: String.t(),
+    click_action: String.t(),
   }
   @type parsed() :: %{
     title: String.t(),
     subtitle: String.t(),
-    body: String.t()
+    body: String.t(),
+    icon: Strint.t(),
+    click_action: String.t(),
   }
   @enforce_keys [:id, :body, :title]
   @default_backup :s3
 
-  defstruct [:id, :body, :title, :subtitle, receiver_name: false, sender_name: false, event_name: false, counter: false]
+  defstruct [:id, :body, :title, :subtitle, :icon, :click_action, receiver_name: false, sender_name: false, event_name: false, counter: false]
 
   def start_link(opts), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   
@@ -168,8 +172,10 @@ defmodule Phos.PlatformNotification.Template do
       iex> get("not_exists")
       {:error, "Your data is moved or already deleted"}
   """
-  @spec parse(id :: String.t(), opts :: list()) :: {:ok, result :: parsed()} | {:error, reason :: String.t()}
-  def parse(id, opts \\ []) do
+  @spec parse(id :: String.t() | t(), opts :: list()) :: {:ok, result :: parsed()} | {:error, reason :: String.t()}
+  def parse(template_or_id, opts \\ [])
+  def parse(%__MODULE__{} = parse, opts), do: parse_data(parse, opts)
+  def parse(id, opts) do
     GenServer.call(__MODULE__, {:parse, id, opts})
   end
 
@@ -182,7 +188,7 @@ defmodule Phos.PlatformNotification.Template do
 
   @impl true
   def handle_call(:list, _from, state) do
-    data = :ets.tab2list(state)
+    data = :ets.tab2list(state) |> Enum.map(fn {_, data} -> data end)
     {:reply, data, state}
   end
 
@@ -238,6 +244,8 @@ defmodule Phos.PlatformNotification.Template do
       body: replace_data_value(data.body, keys, options),
       title: replace_data_value(data.title, keys, options),
       subtitle: replace_data_value(data.subtitle, keys, options),
+      icon: data.icon,
+      click_action: data.click_action,
     }
   end
 

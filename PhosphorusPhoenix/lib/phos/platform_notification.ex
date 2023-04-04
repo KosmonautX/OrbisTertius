@@ -6,7 +6,9 @@ defmodule Phos.PlatformNotification do
   @type entity_id :: String.t() | integer()
   @type message_type :: integer()
 
-  alias __MODULE__.{Producer, Dispatcher, Consumer, Store, Template}
+  @type t :: {notification_type(), entity(), entity_id(), message_type()}
+
+  alias __MODULE__.{Producer, Dispatcher, Consumer, Store, Scheduller, Template}
 
   @moduledoc """
   PlatformNotification used to generate notification with flexibility

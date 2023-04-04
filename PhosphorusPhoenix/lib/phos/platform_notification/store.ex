@@ -19,16 +19,16 @@ defmodule Phos.PlatformNotification.Store do
 
   @type t :: %__MODULE__{
     active: boolean(),
-    actor: map() | struct(),
+    success: boolean(),
+    spec: Phos.PlatformNotification.t(),
     id: non_neg_integer(),
-    notify_type: non_neg_integer(),
     retry_after: non_neg_integer(),
     retry_attempt: non_neg_integer(),
-    template_id: String.t(),
+    next_execute_at: DateTime.t(),
+    error_reason: String.t(),
   }
-  @enforce_keys [:actor, :id, :template_id]
 
-  defstruct [:actor, :id, :template_id, retry_after: 5, retry_attempt: 0, active: false, notify_type: 1]
+  defstruct [:id, :spec, :error_reason, :next_execute_at, retry_after: 5, retry_attempt: 0, active: false, success: false]
 
   def start_link(opts), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
 
@@ -49,6 +49,20 @@ defmodule Phos.PlatformNotification.Store do
   @spec list :: [t()]
   def list do
     GenServer.call(__MODULE__, :list)
+  end
+
+  def schedulled do
+    filter = [{
+      { :_, :_, :"$1", :"$2"},
+      [{:==, :"$1", true}],
+      [:"$_"]
+    }]
+
+    filter(filter)
+  end
+
+  def filter(filter) do
+    GenServer.call(__MODULE__, {:filter, filter})
   end
 
   @doc """
@@ -152,7 +166,7 @@ defmodule Phos.PlatformNotification.Store do
   @impl true
   def handle_call({:get, id}, _from, state) do
     case lookup(state, id) do
-      {:ok, data, active} -> {:reply, Map.put(data, :active, active), state}
+      {:ok, data} -> {:reply, data, state}
       _ -> {:reply, "data not found", state}
     end
   end
@@ -160,7 +174,11 @@ defmodule Phos.PlatformNotification.Store do
   @impl true
   def handle_call({:update, id, data}, _from, state) do
     case lookup(state, id) do
-      {:ok, _data, current_status} when current_status == data -> {:reply, "Cannot update status", state}
+      {:ok, existing} ->
+        updated = Map.merge(existing, data)
+        :ets.delete(state, id)
+        insert_data(state, updated)
+        {:reply, updated, state}
       _ -> {:reply, "data not found", state}
     end
   end
@@ -176,41 +194,58 @@ defmodule Phos.PlatformNotification.Store do
   def handle_call(:list, _from, state) do
     data = 
       :ets.tab2list(state)
-      |> Enum.map(fn {_id, d, active} ->
-        Map.put(d, :active, active)
+      |> Enum.map(fn {_id, d, _active, _success} ->
+        d
       end)
 
     {:reply, data, state}
   end
 
   @impl true
-  def handle_call({:insert, data}, _from, state) do
+  def handle_call({:insert, params}, _from, state) do
+    data = struct(__MODULE__, params)
+    
     insert_data(state, data)
-    {:reply, struct(__MODULE__, data), data}
+    {:reply, data, state}
   end
 
   @impl true
-  def handle_cast({:reload, name}, state) do
+  def handle_call({:filter, filter}, _from, state) do
+    case filter_by(state, filter) do
+      {:ok, data} -> {:reply, data, state}
+      _ -> {:reply, nil, state}
+    end
+  end
+
+  @impl true
+  def handle_cast({:reload, _name}, state) do
     # TODO: reload from backup table
     {:noreply, state}
   end
 
   @impl true
-  def handle_cast({:backup, name}, state) do
+  def handle_cast({:backup, _name}, state) do
     # TODO: backup to persistent datastore
     {:noreply, state}
   end
 
   defp lookup(table, id) do
     case :ets.lookup(table, id) do
-      [{_id, data, active}] -> {:ok, data, active}
-      _ -> {:error, "data not found", false}
+      [{_id, data, _active, _success}] -> {:ok, data}
+      _ -> {:error, "data not found"}
     end
   end
 
-  defp insert_data(table, data) do
-    notification = struct(__MODULE__, data)
-    :ets.insert_new(table, {notification.id, notification})
+  defp insert_data(table, %__MODULE__{id: id, active: active, success: success} = data) do
+    case lookup(table, id) do
+      {:ok, _existing, _, _} -> {:error, "Duplicate ID record"}
+        _ -> :ets.insert(table, {id, data, active, success})
+    end
+  end
+
+  defp filter_by(table, filter) do
+    IO.inspect(filter)
+    :ets.select(table, filter)
   end
 
   defp db_name(""), do: Timex.format!(DateTime.utc_now(), "{YYYY}-{M}-{D}")
