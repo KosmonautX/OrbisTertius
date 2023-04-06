@@ -23,6 +23,7 @@ defmodule PhosWeb.OrbLive.Show do
        |> assign(:orb, orb)
        |> assign_meta(orb, params)
        |> assign(:ally, false)
+       |> assign(:media, nil)
        |> assign(:comments, comments)
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
@@ -133,7 +134,14 @@ defmodule PhosWeb.OrbLive.Show do
     |> assign(:page_title, "Editing Comments")
   end
 
-  defp apply_action(socket, :show, %{"id" => _id} = _params) do
+    defp apply_action(socket, :show, %{"id" => id, "media" => media}) do
+    socket
+    |> assign(:page_title, "")
+    |> assign(:media, Phos.Orbject.S3.get!("ORB", id, media))
+  end
+
+
+  defp apply_action(socket, :show, %{"id" => _id}) do
     socket
     |> assign(:page_title, "")
   end

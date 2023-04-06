@@ -1362,7 +1362,7 @@ defmodule PhosWeb.CoreComponents do
                 for {path, url} <- media do
                   %Phos.Orbject.Structure.Media{
                     ext: MIME.from_path(path),
-                    path: path,
+                    path: "public/banner"<> path,
                     url: url,
                     resolution:
                       path |> String.split(".") |> hd() |> String.split("/") |> List.last()
@@ -1468,12 +1468,12 @@ defmodule PhosWeb.CoreComponents do
               <div class="relative">
                 <.link
                   class="relative"
-                  navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
+                  navigate={unverified_path(PhosWeb.Endpoint, PhosWeb.Router, "/orb/#{@orb.id}?media=#{m.path}")}
                 >
                   <img
                     :if={(m.ext |> String.split("/") |> hd) in ["image", "application"]}
                     class={[
-                      @show_information == true && "lg:rounded-b-3xl",
+                      @show_information == true && "lg:rounded-b-3xl" || "cursor-zoom-in",
                       "h-96 w-full object-cover dark:border dark:border-white",
                       @class
                     ]}
@@ -1584,9 +1584,17 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  attr(:url, :string, default: "")
+  def media_preview(assigns) do
+
+  ~H"""
+  <img src={@url} class="w-full h-full"/>
+  """
+  end
+
   attr(:id, :string, required: true)
   attr(:title, :string, default: "")
-  attr(:info_color, :string, default: "prose-zinc text-gray-600 w-full bg-white dark:bg-gray-900")
+  attr(:info_color, :string, default: "prose-zinc text-gray-600 w-full bg-white dark:bg-gray-900 prose-a:text-blue-500 prose-a:hover:underline")
   attr(:show_link, :boolean, default: false)
 
   def orb_information(assigns) do
@@ -2018,7 +2026,7 @@ defmodule PhosWeb.CoreComponents do
         <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/redirect/#{@path}")}>
           <.modal_open type="modal" class="" />
         </.link>
-        <div :if={is_nil(@current_user)} class="text-sm text-gray-500 ">
+        <!--<div :if={is_nil(@current_user)} class="text-sm text-gray-500 ">
           <.link
             navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
             class="text-sm text-teal-400 font-bold hover:underline"
@@ -2033,7 +2041,7 @@ defmodule PhosWeb.CoreComponents do
             Sign in
           </.link>
           via Web
-        </div>
+        </div> -->
       </div>
     </.modal>
     """

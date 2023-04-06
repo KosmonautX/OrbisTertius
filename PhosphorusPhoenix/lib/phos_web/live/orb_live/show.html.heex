@@ -56,7 +56,7 @@
         </.link>
 
         <div class="w-full lg:rounded-3xl">
-          <.scry_orb id="Orb" orb={@orb} timezone={@timezone} show_information={false} />
+          <.scry_orb id="orb" orb={@orb} timezone={@timezone} show_information={false} />
           <.live_component
             module={PhosWeb.CommentLive.IndexComponent}
             id="commentindex"
@@ -102,5 +102,13 @@
       </div>
     </div>
   </div>
-  <span :if={length(@orbs) < 3} class="hidden lg:block h-96 bg-gray-100"></span>
+  <.modal
+  :if={@live_action in [:show] and not is_nil(@media)}
+  id="orb-media-preview"
+  close_button={true}
+  show={@live_action in [:show] and not is_nil(@media)}
+  >
+  <.media_preview url={@media}/>
+</.modal>
+  <span :if={length(@orbs) < 3} class="hidden lg:block h-96 bg-gray-100"/>
 </div>
