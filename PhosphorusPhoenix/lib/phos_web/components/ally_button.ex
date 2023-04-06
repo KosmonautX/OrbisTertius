@@ -140,7 +140,7 @@ defmodule PhosWeb.Component.AllyButton do
 
   def render(%{current_user: user} = assigns) when user in [nil, ""] do
     ~H"""
-    <a class="flex " phx-click={show_modal("welcome_message")}>
+    <a class="flex" phx-click={show_modal("welcome_message")}>
       <.ally_btn />
     </a>
     """

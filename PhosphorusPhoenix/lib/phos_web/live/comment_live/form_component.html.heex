@@ -26,10 +26,14 @@
       />
 
       <:actions>
-        <button type="submit" phx-disable-with="Saving..." class="absolute right-2.5 bottom-3.5">
+        <button :if={not is_nil(@current_user)} type="submit" phx-disable-with="Saving..." class="absolute right-2.5 bottom-3.5">
         <.send_btn type="send"/>
         </button>
+      <a :if={is_nil(@current_user)} phx-click={show_modal("welcome_message")} class="absolute right-2.5 bottom-3.5">
+       <.send_btn type="send"/>
+      </a>
         <button
+
           :if={@action in [:reply, :edit]}
           type="reset"
           class="absolute right-10 bottom-2"
@@ -40,7 +44,7 @@
         </button>
       </:actions>
 
-      <.input field={{f, :initiator_id}} type="hidden" value={@current_user.id} />
+      <.input :if={not is_nil(@current_user)} field={{f, :initiator_id}} type="hidden" value={@current_user.id} />
       <.input field={{f, :orb_id}} type="hidden" value={@orb.id} />
       <div :if={@action == :reply}>
         <.input field={{f, :parent_id}} type="hidden" value={@comment.id} />
