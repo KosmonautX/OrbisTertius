@@ -11,6 +11,7 @@
     >
     </.live_title>
     <meta property="og:site_name" content="Scratchbac" />
+    <meta :if={assigns[:redirect]} http-equiv="Refresh" content={"0; URL=scrb://host/" <> assigns[:meta][:mobile_redirect]} />
     <.meta_tags contents={assigns[:meta]} />
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
     <link phx-track-static rel="stylesheet" href={~p"/assets/vendor/fonts/Poppins/poppins.css"} />
@@ -30,7 +31,6 @@
   </script>
   </head>
   <body class="h-screen w-full mx-auto dark:bg-gray-900">
-    <meta :if={assigns[:redirect]} http-equiv="Refresh" content={"0; URL=scrb://host/" <> assigns[:meta][:mobile_redirect]} />
     <%= if @current_user do %>
       <.banner :if={@current_user} current_user={@current_user} />
     <% else %>

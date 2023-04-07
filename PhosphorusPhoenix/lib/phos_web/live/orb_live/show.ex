@@ -111,6 +111,14 @@ defmodule PhosWeb.OrbLive.Show do
     end
   end
 
+    def handle_info("unredirect", socket) do
+    {:noreply,
+     socket
+     |> assign(:redirect, nil)
+     |> push_patch(to: ~p"/orb/#{socket.assigns.orb.id}")
+    }
+  end
+
   defp apply_action(socket, :reply, %{"id" => _orb_id, "cid" => cid} = _params) do
     socket
     |> assign(:comment, Comments.get_comment!(cid))
@@ -152,7 +160,10 @@ defmodule PhosWeb.OrbLive.Show do
     |> assign(:page_title, "Editing")
   end
 
-  defp assign_meta(socket, orb, %{"bac" => _}), do: socket |> assign(:redirect, true) |> assign_meta(orb)
+  defp assign_meta(socket, orb, %{"bac" => _})  do
+    Process.send_after(self(), "unredirect", 888)
+    socket |> assign(:redirect, true) |> assign_meta(orb)
+  end
   defp assign_meta(socket, orb, _), do: assign_meta(socket, orb)
   defp assign_meta(socket, orb) do
     media = Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless")

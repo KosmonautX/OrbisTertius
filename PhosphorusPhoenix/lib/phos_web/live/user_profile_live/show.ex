@@ -98,6 +98,14 @@ defmodule PhosWeb.UserProfileLive.Show do
     end
   end
 
+  def handle_info("unredirect", socket) do
+    {:noreply,
+     socket
+     |> assign(:redirect, nil)
+     |> push_patch(to: ~p"/user/#{socket.assigns.user.username}")
+    }
+  end
+
   defp apply_action(socket, :show, _params) do
     socket
     |> assign(page_title: "Viewing Profile")
@@ -117,7 +125,10 @@ defmodule PhosWeb.UserProfileLive.Show do
     |> assign(page_title: "Viewing Allies")
   end
 
-  defp assign_meta(socket, user, %{"bac" => _}), do: socket |> assign(:redirect, true) |> assign_meta(user)
+  defp assign_meta(socket, user, %{"bac" => _}) do
+    Process.send_after(self(), "unredirect", 888)
+    socket |> assign(:redirect, true) |> assign_meta(user)
+  end
   defp assign_meta(socket, user, _), do: assign_meta(socket, user)
   defp assign_meta(socket, user) do
     assign(socket, :meta, %{
