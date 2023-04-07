@@ -23,9 +23,11 @@ defmodule Phos.PlatformNotification.Dispatcher do
     |> filter_event_type()
     |> filter_event_entity()
     |> case do
-      {:ok, data} ->
+      {:ok, %{"template_id" => key} = data} ->
+        template = PN.get_template_by_key(key)
         GenStage.reply(from, :ok)
-        stored = PN.Store.insert(%{
+        {:ok, stored} = PN.insert_notification(%{
+          template_id: template.id,
           active: true,
           spec: data,
           id: Ecto.UUID.generate(),
@@ -41,23 +43,25 @@ defmodule Phos.PlatformNotification.Dispatcher do
 
   @impl true
   def handle_info({_ref, {id, type, message}}, state) when type in [:retry, :error] do
-    stored = PN.Store.get(id)
-    PN.Store.update(id, %{error_reason: message, last_try_at: DateTime.utc_now(), retry_attempt: stored.retry_attempt + 1})
+    stored = PN.get_notification(id)
+    retry_attempt = stored.retry_attempt + 1
+    next_attempt = DateTime.add(DateTime.utc_now(), retry_attempt * stored.retry_after, :minute)
+    PN.update_notification(stored, %{error_reason: message, next_try_at: next_attempt, retry_attempt: retry_attempt})
     {:noreply, [], state}
   end
 
   @impl true
   def handle_info({_ref, {id, :success, _message}}, state) do
-    PN.Store.update(id, %{last_try_at: DateTime.utc_now(), success: true})
+    PN.update_notification(id, %{success: true})
     {:noreply, [], state}
   end
 
-  defp filter_event_type({type, _entity, _id, _msg} = data) when type in [:email, :push, :broadcast] do
+  defp filter_event_type(%{"type" => type} = data) when type in ["email", "push", "broadcast"] do
     {:ok, data}
   end
   defp filter_event_type(_data), do: :error
 
-  defp filter_event_entity({:ok, {_type, entity, _id, _msg} = data}) when entity in ["USR", "ORB", "COMMENT"] do
+  defp filter_event_entity({:ok, %{"entity" => entity} = data}) when entity in ["ORB", "COMMENT"] do
     {:ok, data}
   end
   defp filter_event_entity(:error), do: :error

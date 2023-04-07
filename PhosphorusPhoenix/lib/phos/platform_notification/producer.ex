@@ -53,7 +53,13 @@ defmodule Phos.PlatformNotification.Producer do
   end
 
   @impl true
-  def handle_call({:notify, event}, _from, state) do
+  def handle_call({:notify, {type, entity, id, template_id}}, _from, state) do
+    event = %{
+      "type" => to_string(type),
+      "entity" => entity,
+      "entity_id" => id,
+      "template_id" => template_id
+    }
     {:reply, :ok, [event], state + 1}
   end
 

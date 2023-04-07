@@ -8,7 +8,11 @@ defmodule Phos.PlatformNotification do
 
   @type t :: {notification_type(), entity(), entity_id(), message_type()}
 
-  alias __MODULE__.{Producer, Dispatcher, Consumer, Store, Scheduller, Template}
+  alias __MODULE__.{Producer, Dispatcher, Consumer, Store, Scheduller, Template, Listener}
+
+  import Ecto.Query, warn: false
+
+  alias Phos.Repo
 
   @moduledoc """
   PlatformNotification used to generate notification with flexibility
@@ -41,9 +45,9 @@ defmodule Phos.PlatformNotification do
   def init(_opts) do
     number    = Keyword.get(config(), :worker, 4)
     workers   = Enum.map(1..number, fn n -> Supervisor.child_spec({Consumer, []}, id: :"platfrom_notification_worker_#{n}") end)
-    children  = [Producer, Dispatcher, Store, Template | workers]
+    children  = [Producer, Dispatcher, Listener | workers]
 
-    Supervisor.init(children, strategy: :one_for_all)
+    Supervisor.init(children, strategy: :one_for_one)
   end
 
   def config() do
@@ -53,4 +57,47 @@ defmodule Phos.PlatformNotification do
   @spec notify({notification_type, entity, entity_id, message_type}) :: :ok | :error
   def notify({_name, _entity, _entity_id, _msg_type} = data), do: Producer.notify(data)
   def notify(_data), do: :error
+
+  def create_template(attrs) do
+    opts = Map.put_new(attrs, :id, Ecto.UUID.generate())
+
+    %Template{}
+    |> Template.changeset(opts)
+    |> Repo.insert()
+  end
+
+  def get_template(id) do
+    query = from t in Template, where: t.id == ^id, limit: 1
+    Repo.one(query)
+  end
+
+  def get_template_by_key(key) do
+    query = from t in Template, where: t.key == ^key, limit: 1
+    Repo.one(query)
+  end
+
+  def update_template(template, attrs) do
+    template
+    |> Template.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def insert_notification(attrs) do
+    opts = Map.put_new(attrs, :id, Ecto.UUID.generate())
+
+    %Store{}
+    |> Store.changeset(opts)
+    |> Repo.insert()
+  end
+
+  def update_notification(store, attrs) do
+    store
+    |> Store.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def get_notification(id) do
+    query = from s in Store, where: s.id == ^id, preload: [:template], limit: 1
+    Repo.one(query)
+  end
 end

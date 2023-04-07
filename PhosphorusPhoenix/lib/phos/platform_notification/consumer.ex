@@ -20,8 +20,8 @@ defmodule Phos.PlatformNotification.Consumer do
   end
 
   defp execute_events([], _from), do: :ok
-  defp execute_events([event | tail], from) do
-    case PN.Store.get(event) do
+  defp execute_events([event_id | tail], from) do
+    case PN.get_notification(event_id) do
       %PN.Store{} = event -> execute_event(event, from)
       _ -> :not_found
     end
@@ -29,10 +29,10 @@ defmodule Phos.PlatformNotification.Consumer do
     execute_events(tail, from)
   end
 
-  defp execute_event(%{spec: {type, entity, id, template_id}} = store, from) do
+  defp execute_event(%{spec: %{"type" => type, "entity" => entity, "entity_id" => id}} = store, from) do
     case decide_actor(entity, id) do
       {:ok, {_body, _sender, _receiver, _event, _count} = data} ->
-        case send_notification(type, data, template_id) do
+        case send_notification(type, data, store.template) do
           data when data in [:ok, true] -> GenStage.reply(from, {store.id, :success})
           {:ok, _data} -> GenStage.reply(from, {store.id, :success})
           {:error, message} -> GenStage.reply(from, {store.id, :retry, message})
@@ -42,12 +42,6 @@ defmodule Phos.PlatformNotification.Consumer do
     end
   end
 
-  defp decide_actor("USR", id) do
-    case Phos.Users.find_user_by_id(id) do
-      {:ok, user}  -> {:ok, {"", user, user, nil, nil}}
-      err -> err
-    end
-  end
   defp decide_actor("ORB", id) do
     case Phos.Action.get_orb(id) do
       {:ok, orb} -> {:ok, {orb.title, orb.initiator, orb.initiator, orb, 0}}
@@ -63,12 +57,13 @@ defmodule Phos.PlatformNotification.Consumer do
     end
   end
 
-  defp send_notification(type, {body, sender, receiver, event, count}, template_id) do
-    template = PN.Template.parse(template_id, [sender: sender, receiver: receiver, event: event, count: count, body: body])
+  defp send_notification(type, {body, sender, receiver, event, count}, template) do
+    template = PN.Template.parse(template, [sender: sender, receiver: receiver, event: event, count: count, body: body])
     case type do
-      t when t in [:push, :broadcast] -> send_from_fcm(template, get_token(receiver))
-      :email -> # TODO: email integration
+      t when t in ["push", "broadcast"] -> send_from_fcm(template, get_token(receiver))
+      "email" -> # TODO: email integration
         :ok
+      _ -> :error # not implemented yet
     end
   end
 
