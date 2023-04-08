@@ -1,28 +1,36 @@
-<div>
-<h2>Comments</h2>
+<div class="w-full bg-white px-2 mt-2 lg:mt-0 lg:rounded-b-3xl dark:bg-gray-900 dark:border dark:border-white font-poppins">
+  <h2 class="hidden lg:block text-gray-900 font-bold text-2xl dark:text-white ml-2">
+    comments
+  </h2>
 
-<div class="ui threaded comments">
-<%= unless @current_user == nil do %>
-<.form
-  let={f}
-  for={@changeset}
-  id="comment-form"
-  phx-submit="save">
+  <hr class=" block lg:hidden" />
 
-  <%= textarea f, :body %>
-  <%= error_tag f, :body %>
+  <div class="hidden lg:block lg:rounded-3xl">
+    <.live_component
+      module={PhosWeb.CommentLive.FormComponent}
+      changeset={@changeset}
+      current_user={@current_user}
+      orb={@orb}
+      id={"create-root-comment-desktop-#{@orb.id}"}
+      target={nil}
+      action={:new}
+    />
+  </div>
 
-  <%= hidden_input f, :initiator_id, value: @current_user.id %>
-  <%= error_tag f, :initiator_id %>
-
-  <%= hidden_input f, :orb_id, value: @orb.id %>
-  <%= error_tag f, :orb_id %>
-
-  <%= submit "Add comment", phx_disable_with: "Saving..." %>
-  </.form>
-  <% end %>
-<%= for comment <- filter_root_comments_chrono(@comments) do %>
-    <.card comment={comment} comments={@comments} changeset={@changeset} orb={@orb} current_user={@current_user} socket={@socket} live_action={@live_action}/>
-<% end %>
-    </div>
+  <div class="ui threaded comments overflow-y-auto h-full lg:rounded-b-3xl mb-14 lg:mb-0">
+    <.live_component
+      :for={comment <- filter_root_comments_chrono(@comments)}
+      module={PhosWeb.CommentLive.ShowComponent}
+      comment={comment}
+      comments={@comments}
+      changeset={@changeset}
+      id={"comment-#{elem(comment, 1).id}"}
+      orb={@orb}
+      current_user={@current_user}
+      socket={@socket}
+      reply_comment={@reply_comment}
+      edit_comment={@edit_comment}
+      phx-target={"#comment-#{elem(comment, 1).id}"}
+    />
+  </div>
 </div>

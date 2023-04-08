@@ -3,13 +3,13 @@
 ## Root
 
 ```elixir
-
 orb_id = "9bf9c443-f89b-460a-972d-6704ae66823d"
 your_id = "5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"
 import Ecto.Query
 
 from(orbs in Phos.Action.Orb,
-  where: orbs.id == ^orb_id,
+  as: :o,
+  # where: orbs.id == ^orb_id,
   inner_join: initiator in assoc(orbs, :initiator),
   left_join: branch in assoc(initiator, :relations),
   on: branch.friend_id == ^your_id,
@@ -24,21 +24,21 @@ from(orbs in Phos.Action.Orb,
     ),
   select_merge: %{comment_count: c.count}
 )
-|> Phos.Repo.one()
+|> Phos.Repo.all()
 
-%{
-  "id" => Ecto.UUID.generate(),
-  "title" => "orb",
-  "media" => true,
-  "active" => true,
-  "extinguish" => ~N[2022-10-22 16:31:07],
-  "initiator_id" => your_id,
-  "payload" => %{
-    "info" => "ok",
-    "ext_link" => %{"name" => "Chat with me", "link" => "https://scrbac.com/THChatWithUs"}
-  }
-}
-|> Phos.Action.create_orb()
+# %{
+#   "id" => Ecto.UUID.generate(),
+#   "title" => "orb",
+#   "media" => true,
+#   "active" => true,
+#   "extinguish" => ~N[2022-10-22 16:31:07],
+#   "initiator_id" => your_id,
+#   "payload" => %{
+#     "info" => "ok",
+#     "ext_link" => %{"name" => "Chat with me", "link" => "https://scrbac.com/THChatWithUs"}
+#   }
+# }
+# |> Phos.Action.create_orb()
 ```
 
 ```elixir
@@ -153,4 +153,117 @@ Phos.Users.get_user_by_fyr("fFKlWcfV9RRavNZJUxt46BLYB5n1")
 
 # Phos.Users.get_user_by_fyr("fFKlWcfV9RRavNZJUxt46BLYB5n1") |> Phos.Users.delete_user()
 # PhosWeb.Util.Migrator.fyr_profile("eyJhbGciOiJSUzI1NiIsImtpZCI6IjVkMzQwZGRiYzNjNWJhY2M0Y2VlMWZiOWQxNmU5ODM3ZWM2MTYzZWIiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiVml2ZWtiYWxhIGZyb20gU2NyYXRjaGJhYyIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BTG01d3UxRkdhdm1hdm9VdXRxXzYwZ1VFdFlVbmpiNEh1UHZWRjRGdDN0WD1zOTYtYyIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS9zY3JhdGNoYmFjLW5vcmJhbmR5IiwiYXVkIjoic2NyYXRjaGJhYy1ub3JiYW5keSIsImF1dGhfdGltZSI6MTY2NjUyNzQxOSwidXNlcl9pZCI6ImZGS2xXY2ZWOVJSYXZOWkpVeHQ0NkJMWUI1bjEiLCJzdWIiOiJmRktsV2NmVjlSUmF2TlpKVXh0NDZCTFlCNW4xIiwiaWF0IjoxNjY2NTI3NDE5LCJleHAiOjE2NjY1MzEwMTksImVtYWlsIjoidml2ZWtiYWxhQHNjcmF0Y2hiYWMuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZ29vZ2xlLmNvbSI6WyIxMDk1NDI1OTIzOTIwOTU0MzY4MjMiXSwiZW1haWwiOlsidml2ZWtiYWxhQHNjcmF0Y2hiYWMuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoiY3VzdG9tIn19.a5Zyy2CT0Im2gwCh9jnoKzaK58rq1A2memiO3jpsebQArQucozsyxPd4AhdBMOXTbiUvUgd_zAfDtmV-hzy_qhsYBmJNUjbbu2MYEHkd6RR66544isSPmb515-xaVV-BVbX2aeSpS8lspUTYXD0gVxPq58PqMkG4vvt-RHyv46FfATuUt02-SST7Xorp_6EpMoXmPwnsf6Q-7Q0ji0j0xWdrRpCSUfMfvJFmz6NEaWKd4LkXFdYB_6dzYtEv_C9KnIJYuBl1Bniwk5KHlbPvC20OT-gwD7fiyqJxU6XMoLjbDctwGM_vyESp6xiH9cnTEZgF4JFn50r_0Sk2o6evrw")
+```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## Notification
+
+```elixir
+%{year: year, month: month, day: day} = Date.utc_today()
+sgt = Timex.timezone("Asia/Singapore", {year, month, day})
+
+DateTime.utc_now()
+|> Timex.Timezone.convert(sgt)
+|> DateTime.to_date()
+```
+
+```elixir
+Phos.External.Sector.get()
+|> Map.take(["Bukit Panjang"])
+|> Map.values()
+|> List.flatten()
+|> Phos.Action.notifiers_by_geohashes()
+|> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end)
+
+# :h3.from_string('8d6520cb0811b7f')
+
+Phos.External.Notion.platform_notification()
+# Phos.Action.import_platform_notification()
+```
+
+```elixir
+orb = List.first(Phos.Action.list_orbs())
+```
+
+```elixir
+Phos.Folk.notifiers_by_friends(orb.initiator_id)
+orb |>
+#Phos.Action.notifiers_by_geohashes()
+```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## 📸 Multimedia Support
+
+```elixir
+Phos.Orbject.S3.get_all!("ORB", "5db9d048-f3b2-4d35-89cd-f242155d79db", "public/banner")
+|> Enum.group_by(fn {path, _url} ->
+  String.split(path, ".")
+  |> List.first()
+  |> String.split("/")
+  |> List.last()
+end)
+```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## 🦇 Beacon
+
+```elixir
+import Ecto.Query
+alias Phos.Repo
+hashes = [636_786_611_773_840_255 |> :h3.parent(8)]
+
+from(l in Phos.Action.Orb_Location,
+  as: :l,
+  where: l.location_id in ^hashes,
+  left_join: orbs in assoc(l, :orbs),
+  inner_join: initiator in assoc(orbs, :initiator),
+  on: initiator.integrations["beacon"]["location"]["scope"] == true,
+  distinct: initiator.id,
+  select: initiator.integrations
+)
+|> Repo.all()
+
+# |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end)
+```
+
+```elixir
+Phos.Users.get_user_by_username("lky")
+|> Phos.Users.update_integrations_user(%{
+  "integrations" => %{
+    "beacon" => %{"location" => %{"scope" => true, "subscribe" => [1, 2, "2", "4"]}}
+  }
+})
+
+# Phos.Users.get_user_by_username("lky")
+```
+
+```elixir
+defmodule DOMParser do
+  def extract_link_from_markdown(md) when is_binary(md) do
+    {:ok, ast, _} = EarmarkParser.as_ast(md)
+    String.trim(extract_link_from_ast(ast, ""))
+  end
+
+  defp extract_link_from_ast(ast, result) when is_list(ast) and is_binary(result) do
+    Enum.reduce_while(ast, result, fn
+      {"a", atts, children, _m}, acc ->
+        case Enum.into(atts, %{}) do
+          %{"href" => link} -> {:halt, link}
+          _ -> {:cont, extract_link_from_ast(children, acc)}
+        end
+
+      {_html_tag, _atts, children, _m}, acc ->
+        {:cont, extract_link_from_ast(children, acc)}
+
+      _, acc ->
+        {:cont, acc}
+    end)
+  end
+end
+
+DOMParser.extract_link_from_markdown("https://kosmonautx.github.io/")
+|> LinkPreview.create()
 ```

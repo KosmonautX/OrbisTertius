@@ -13,10 +13,11 @@ defmodule PhosWeb.Util.Migrator do
   def user_profile(id) do
     with {:ok, response} <- do_get_user_profile(id),
          true <- response.status_code >= 200 and response.status_code < 300,
-         users <- user_migration(response.body, id) do
+           users <- user_migration(response.body, id) do
       {:ok, users}
     else
       {:error, err} -> {:error, err}
+    _ -> {:error, :unknown}
     end
   end
 
@@ -26,14 +27,15 @@ defmodule PhosWeb.Util.Migrator do
     after
       {:ok, _result} = response -> response
     else
-      err -> err
+      err ->
+        err
     end
   end
 
   def fyr_profile(token) do
     with {:ok, response} <- do_get_account_info(token),
          true <- response.status_code >= 200 and response.status_code < 300,
-         users <- insert_or_update_user(response.body) do
+           users <- insert_or_update_user(response.body) do
       {:ok, users}
     else
       {:error, err} -> {:error, err}
@@ -57,28 +59,39 @@ defmodule PhosWeb.Util.Migrator do
     |> Enum.map(&Phos.Repo.preload(&1, [:auths]))
   end
 
-  defp user_migration(response, id) when is_map(response) do
-    Task.async(fn ->
-      insert_or_update_user(response, id)
-    end)
-  end
-
   defp insert_or_update_user(%{"kind" => "identitytoolkit#GetAccountInfoResponse", "users" => user_info }) do
     # https://developers.google.com/resources/api-libraries/documentation/identitytoolkit/v3/python/latest/identitytoolkit_v3.relyingparty.html#getAccountInfo
     data = List.first(user_info)
     Multi.new()
     |> Multi.run(:providers, fn _repo, _ -> {:ok, Map.get(data, "providerUserInfo")} end)
-    |> Multi.run(:payload, fn _repo, %{providers: providers} ->
-      {:ok, %{"fyr_id" => data["localId"], "email" => email_provider(providers)}}
-    end)
-    |> Multi.run(:user, fn _repo, %{payload: payload} ->
-      case Users.get_user_by_fyr(data["localId"]) do
+    |> Multi.run(:email, fn _repo, _ -> {:ok, Map.get(data, "email")} end)
+    |> Multi.run(:payload, fn _repo, %{providers: providers, email: email} ->
+      {:ok, %{"fyr_id" => data["localId"], "email" => email_provider(providers) || email}} end)
+    |> Multi.run(:user, fn _repo, %{payload: %{"email" => email} = payload} when is_binary(email) ->
+      case Users.get_user_by_email(email) do
+        %Users.User{fyr_id: nil} = user ->
+                  user
+                  |> Users.User.fyr_registration_changeset(%{fyr_id: data["localId"]})
+                  |> Phos.Repo.update()
+
         %Users.User{} = user -> {:ok, user}
-        nil ->
-          Users.create_user(payload)
+            nil ->
+              case Users.get_user_by_fyr(data["localId"]) do
+                %Users.User{} = user ->
+                  user
+                  |> Users.User.changeset(%{email: email})
+                  |> Phos.Repo.update()
+                nil ->
+                  Users.create_user(payload)
+                end
       end
+      _repo, %{payload: %{"fyr_id" => fyr_id} = payload} ->
+        case Users.get_user_by_fyr(fyr_id) do
+                %Users.User{} = user -> {:ok, user}
+                nil -> Users.create_user(payload)
+        end
     end)
-    |> Multi.insert_all(:registered_providers, Users.Auth, &insert_with_provider/1, on_conflict: :replace_all, conflict_target: [:auth_id, :user_id, :auth_provider])
+    |> Multi.insert_all(:registered_providers, Users.Auth, &insert_with_provider/1, on_conflict: :replace_all, conflict_target: [:user_id, :auth_id, :auth_provider])
     |> Phos.Repo.transaction()
     |> case do
       {:ok, data} -> data
@@ -87,66 +100,12 @@ defmodule PhosWeb.Util.Migrator do
     end
   end
 
-
-  defp insert_or_update_user(data, id) do
-    Multi.new()
-    |> Multi.run(:providers, fn _repo, _ -> {:ok, Map.get(data, "providerData")} end)
-    |> Multi.run(:geolocation, fn _repo, _ -> {:ok, Map.get(data, "geolocation")} end)
-    |> Multi.run(:payload, fn _repo, %{geolocation: locations, providers: providers} ->
-      {:ok,
-        Map.get(data, "payload")
-        |> Map.put("fyr_id", id)
-        |> Map.put("email", email_provider(providers))
-        |> Map.put("public_profile", %{
-          "birthday" => get_in(data, ["payload", "birthday"]),
-          "bio" => get_in(data, ["payload", "bio"])
-        })
-        |> Map.put("private_profile", %{
-          "geolocation" => parse_geolocation(locations)
-        })
-      }
-    end)
-    |> Multi.run(:user, fn _repo, %{payload: payload} ->
-      case Users.get_user_by_fyr(id) do
-        %Users.User{} = user -> {:ok, user}
-        nil ->
-          Users.create_user(payload)
-      end
-    end)
-    |> Multi.insert_all(:registered_providers, Users.Auth, &insert_with_provider/1, on_conflict: :replace_all, conflict_target: [:auth_id, :user_id, :auth_provider])
-    |> Phos.Repo.transaction()
-    |> case do
-      {:ok, data} -> data
-      {:error, err} -> err
-      {:error, _name, changeset, _required} -> {:error, changeset}
-    end
-  end
-
   defp email_provider(providers) when length(providers) > 0 do
     providers
     |> List.first()
-    |> Map.get("email", "")
+    |> Map.get("email", nil)
   end
-  defp email_provider(_), do: ""
-
-  defp parse_geolocation(locations) when map_size(locations) > 0 do
-    locations
-    |> Enum.reduce([], fn {k, v}, acc -> [ Map.put(v, "id", k) | acc] end)
-    |> Enum.map(&get_location_from_h3/1)
-  end
-  defp parse_geolocation(_), do: []
-
-  defp get_location_from_h3(%{"geohashing" => %{"hash" => hash}} = data) do
-    geo =
-      hash
-      |> to_charlist()
-      |> :h3.from_string()
-
-    Map.put(data, "geohash", geo)
-  end
-
-
-  defp get_location_from_h3(data), do: data
+  defp email_provider(_), do: nil
 
   defp insert_with_provider(%{providers: providers, user: user}) when length(providers) > 0 do
     time = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)

@@ -19,12 +19,6 @@ defmodule PhosWeb.UserChannelTest do
     assert_reply ref, :ok, %{"hello" => "there"}
   end
 
-  test "shout broadcasts to archetype:usr", %{socket: socket} do
-    message = %{destination: "some destination", destination_archetype: "USR", message: "some message", subject: "some subject", subject_archetype: "ORB"}
-    push(socket, "shout", message)
-    assert_broadcast "shout", %{destination: "some destination", destination_archetype: "USR", message: "some message", subject: "some subject", subject_archetype: "ORB"}
-  end
-
   test "broadcasts are pushed to the client", %{socket: socket} do
     broadcast_from!(socket, "broadcast", %{"some" => "data"})
     assert_push "broadcast", %{"some" => "data"}

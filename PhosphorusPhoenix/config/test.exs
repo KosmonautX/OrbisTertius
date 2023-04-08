@@ -53,3 +53,8 @@ config :phos, Phos.OAuthStrategy,
     host: "http://localhost:4002",
     botname: "telegram_bot_name"
   ]
+
+config :ex_aws, :retries,
+  max_attempts: 0,
+  base_backoff_in_ms: 10,
+  max_backoff_in_ms: 10_000

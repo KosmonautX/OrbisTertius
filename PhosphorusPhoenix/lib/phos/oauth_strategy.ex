@@ -1,4 +1,6 @@
 defmodule Phos.OAuthStrategy do
+  import Phoenix.VerifiedRoutes
+
   @spec request(atom()) :: {:ok, map()} | {:error, term()}
   def request(provider, format \\ "html") do
     config = config!(provider, format)
@@ -57,7 +59,7 @@ defmodule Phos.OAuthStrategy do
   @spec telegram() :: map()
   def telegram() do
     conf = config!("telegram", "html")
-    default_host = PhosWeb.Router.Helpers.url(PhosWeb.Endpoint) |> https_auth()
+    default_host = path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/auth/telegram/callback")
     host = case Keyword.get(conf, :host) do
       nil -> default_host
       "" -> default_host
@@ -111,13 +113,13 @@ defmodule Phos.OAuthStrategy do
 
 
   defp redirect_uri(provider, "json") do
-    PhosWeb.Router.Helpers.auth_url(PhosWeb.Endpoint, :callback, provider, [format: "json"])
+    PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/auth/#{provider}/callback.json")
     |> https_auth()
   end
-  defp redirect_uri(:telegram, _), do: PhosWeb.Router.Helpers.auth_path(PhosWeb.Endpoint, :callback, :telegram)
+  defp redirect_uri(:telegram, _), do: PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/auth/telegram/callback") |> https_auth()
 
   defp redirect_uri(provider, _) do
-    PhosWeb.Router.Helpers.auth_url(PhosWeb.Endpoint, :callback, provider)
+    PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/auth/#{provider}/callback")
     |> https_auth()
   end
 end

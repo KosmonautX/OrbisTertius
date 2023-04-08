@@ -1,0 +1,128 @@
+<!--Desktop View-->
+<div class="container mx-auto	lg:mt-24 mt-16 hidden lg:block">
+  <div class="min-w-full lg:border lg:rounded lg:grid lg:grid-cols-3">
+    <div class="lg:border-r lg:border-gray-300 lg:col-span-1 w-full">
+      <form phx-submit="search" class="relative text-gray-600 mx-2 my-2">
+        <input
+          type="text"
+          name="usersearch"
+          value={@usersearch}
+          placeholder="Search in chat......"
+          autofocus
+          autocomplete="off"
+          list="matches"
+          class="block py-3 pl-3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-2xl focus:ring-teal-500 focus:border-teal-500 w-full p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500"
+        />
+        <span class="absolute inset-y-0 right-0 flex items-center pr-2">
+          <Heroicons.magnifying_glass class="w-5 h-5 dark:text-white mr-2" />
+        </span>
+      </form>
+      <.last_message id="last-message" memories={@search_memories} date={@timezone} />
+    </div>
+
+    <div :if={@user} class="lg:col-span-2">
+      <.chat_profile id="profile-desktop-view" user={@user}>
+        <:actions>
+          <.live_component
+            id="desktop_view_ally"
+            module={PhosWeb.Component.AllyButton}
+            user={@user}
+            current_user={@current_user}
+            socket={@socket}
+          />
+        </:actions>
+      </.chat_profile>
+      <.live_component
+        module={PhosWeb.Components.ListMessage}
+        id="infinite-home-desktop"
+        memories={@memories}
+        current_user={@current_user}
+        timezone={@timezone}
+        page={@page}
+      />
+
+      <.live_component
+        module={PhosWeb.MemoryLive.FormComponent}
+        id={:new}
+        title={@page_title}
+        action={:new}
+        rel={@user.self_relation}
+        current_user={@current_user}
+        memory={%Phos.Message.Memory{}}
+        navigate={~p"/memories/user/#{@user.username}"}
+      />
+    </div>
+  </div>
+</div>
+<!--Mobile View-->
+<div class="mt-16 mb-16 w-full lg:hidden block">
+  <div class={[
+    "px-3 w-full",
+    @live_action == :show && "hidden",
+    @live_action != :show && "block"
+  ]}>
+    <form phx-submit="search" class="mx-2 sticky top-16 bg-white z-10">
+      <input
+        type="text"
+        name="usersearch"
+        value={@usersearch}
+        placeholder="Search in chat......"
+        autofocus
+        autocomplete="off"
+        list="matches"
+        class=" block py-3 pl-3 border border-gray-300 text-gray-900 text-sm rounded-2xl focus:ring-teal-500 focus:border-teal-500 w-full p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500"
+      />
+      <span class="absolute inset-y-0 right-0 flex items-center pr-2">
+        <Heroicons.magnifying_glass class="w-5 h-5 dark:text-white mr-2" />
+      </span>
+    </form>
+
+    <.last_message
+      id="last-message"
+      memories={@search_memories}
+      date={@timezone}
+      action={@live_action}
+    />
+  </div>
+
+  <div
+    :if={@user}
+    class={[
+      "px-3 mt-2 flex-none w-full",
+      @live_action == :show && "block",
+      @live_action != :show && "block lg:col-span-2"
+    ]}
+  >
+    <.chat_profile id="profile-mobile-view" user={@user}>
+      <:actions>
+        <.live_component
+          id="mobile_view_ally"
+          module={PhosWeb.Component.AllyButton}
+          current_user={@current_user}
+          user={@user}
+          socket={@socket}
+        />
+      </:actions>
+    </.chat_profile>
+    <.live_component
+      module={PhosWeb.Components.ListMessage}
+      id="infinite-home-mobile"
+      memories={@memories}
+      current_user={@current_user}
+      timezone={@timezone}
+      page={@page}
+    />
+    <div class="bottom-0 left-0 z-10 fixed w-full px-4 bg-white dark:bg-gray-900 ">
+      <.live_component
+        module={PhosWeb.MemoryLive.FormComponent}
+        id={:new_one}
+        title={@page_title}
+        action={:new}
+        rel={@user.self_relation}
+        current_user={@current_user}
+        memory={%Phos.Message.Memory{}}
+        navigate={~p"/memories/user/#{@user.username}"}
+      />
+    </div>
+  </div>
+</div>

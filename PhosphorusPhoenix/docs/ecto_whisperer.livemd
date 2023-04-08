@@ -1,0 +1,60 @@
+# Ecto Whisperer
+
+## Section
+
+```elixir
+Ecto.Migrator.with_repo(Phos.Repo, &Ecto.Migrator.run(&1, :down, to: 20_221_105_155_400))
+Ecto.Migrator.with_repo(Phos.Repo, &Ecto.Migrator.run(&1, :up, to: 20_221_225_155_400))
+```
+
+```elixir
+# Phos.Repo.query!("SELECT * FROM echo")
+
+# from(p in Post, where: p.id < 10, update: [set: [title: fragment("upper(?)", ^new_title)]])
+# |> MyRepo.update_all([])
+
+# from(p in Post, where: p.id < 10, update: [set: [visits: p.visits * 1000]])
+# |> MyRepo.update_all([])
+
+# Phos.Repo.update_all("echo", set: [uuid: Ecto.UUID.bingenerate()])
+```
+
+```elixir
+import Ecto.Query
+alias Phos.Message.Memory
+
+rel_id = "17863710-b367-4914-b958-028dd1d8f097"
+a_id = "9bf9c443-f89b-460a-972d-6704ae66823d"
+i_id = "5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"
+mem_id = Ecto.UUID.generate()
+# payload = %{
+#   "id" => mem_id,
+#   "user_source_id" => i_id,
+#   "rel_subject_id" => rel_id,
+#              "reveries" => [%{"user_destination_id" => i_id, "memory_id" => mem_id},
+#                                %{"user_destination_id" => a_id, "memory_id" => mem_id}],
+#               "message" => "good morning"}
+
+# %Memory{}
+# |> Memory.gen_reveries_changeset(payload)
+# |> Phos.Repo.insert()
+
+Phos.Message.create_message(%{
+  "id" => mem_id,
+  "user_source_id" => i_id,
+  "user_destination_id" => a_id,
+  "rel_subject_id" => rel_id,
+  "message" => "hi",
+  "media" => false
+})
+
+Phos.Message.Reverie
+|> where([r], r.user_destination_id == ^a_id)
+|> join(:inner, [r], m in Phos.Message.Memory,
+  on: m.user_source_id == ^i_id and r.memory_id == m.id
+)
+|> select_merge([r, m], %{memory: m})
+|> order_by([e], desc: e.inserted_at)
+|> preload(memory: [:rel_subject, :user_source, :orb_subject])
+|> Phos.Repo.all()
+```

@@ -13,7 +13,7 @@ defmodule PhosWeb.Endpoint do
   socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
   socket "/socket", PhosWeb.UserSocket,
-  websocket: [check_origin: ["//localhost", "//phos.scrb.ac", "//nyx.scrb.ac"]],
+  websocket: [check_origin: ["//localhost", "//web.scratchbac.com", "//phos.scrb.ac", "//nyx.scrb.ac"]],
   longpoll: false
 
   # Serve at "/" the static files from "priv/static" directory.
@@ -23,9 +23,8 @@ defmodule PhosWeb.Endpoint do
   plug Plug.Static,
     at: "/",
     from: :phos,
-
     gzip: false,
-    only: ~w(assets fonts images favicon.ico robots.txt)
+    only: PhosWeb.static_paths()
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.

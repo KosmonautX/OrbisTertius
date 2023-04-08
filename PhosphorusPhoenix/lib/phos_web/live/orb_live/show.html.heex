@@ -1,100 +1,114 @@
-<link rel="stylesheet"
-          href=
-"https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+<!--desktop View -->
+<div class=" lg:bg-gray-100 bg-white dark:bg-gray-900 font-poppins">
+  <div class="hidden lg:block">
+    <br />
+    <br />
+    <br />
+  </div>
+  <div class="md:mt-0 mt-14 lg:px-20">
+    <div
+      :if={not is_nil(@orb.initiator) && @orb.initiator}
+      class="flex lg:flex-row flex-col items-start mt-6 lg:gap-4"
+    >
+      <!-- Desktop View in Orb View Profile-->
+      <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full max-w-full lg:w-3/12  lg:flex-none">
+        <div>
+          <.user_profile_banner
+            id="orb-initiator-username"
+            user={@orb.initiator}
+            show_location={false}
+            main_height="lg:h-64"
+          >
+          </.user_profile_banner>
+        </div>
+        <div class="text-center">
+          <.user_information_card_orb
+            id="orb-initiator-public-profile"
+            user={@orb.initiator}
+            flex=""
+          >
+            <:ally_button current_user={@current_user} user={@orb.initiator} socket={@socket} />
+          </.user_information_card_orb>
+        </div>
+      </div>
+      <!-- Post card and Comments-->
+      <div class="lg:hidden block w-full dark:bg-gray-900 sticky top-[50px] bg-white z-10 mb-2 md:mb-8">
+        <div class="flex flex-wrap items-center justify-center p-2 border-b border-gray-200">
+          <.link patch={~p"/user/#{@orb.initiator.username}"}>
+            <Heroicons.chevron_left class="w-6 h-6 dark:text-white font-semibold" />
+          </.link>
+          <span class="text-center text-base font-semibold text-gray-800 dark:text-white flex-1 items-center justify-center">
+            <%= "#{@orb.initiator.username}'s Post" %>
+          </span>
+        </div>
+      </div>
 
-<h1>Show Orb</h1>
+      <div class="lg:w-5/12 lg:flex-none w-full">
+        <.link patch={~p"/user/#{@orb.initiator.username}"}>
+          <div class="hidden lg:block mb-2 w-full mx-auto">
+            <span class="flex text-gray-600 dark:text-white text-base font-bold  mb-1.5">
+              <Heroicons.chevron_left class="w-5 h-5 mt-0.5 dark:text-white font-semibold" />
+              <span class="ml-2">
+                Back
+              </span>
+            </span>
+          </div>
+        </.link>
 
-<%= if @live_action in [:edit] do %>
-  <.modal return_to={Routes.orb_show_path(@socket, :show, @orb)}>
-    <.live_component
-      module={PhosWeb.OrbLive.FormComponent}
-      id={@orb.id}
-      title={@page_title}
-      action={@live_action}
-      orb={@orb}
-      current_user={@current_user}
-      addresses={nil}
-      geolocation={nil}
-      return_to={Routes.orb_show_path(@socket, :show, @orb)}
-    />
-  </.modal>
-<% end %>
-
-<%= if @live_action in [:reply, :edit_comment] do %>
-    <.modal return_to={Routes.orb_show_path(@socket, :show, @orb)}>
+        <div class="w-full lg:rounded-3xl">
+          <.scry_orb id="orb" orb={@orb} timezone={@timezone} show_information={false} />
+          <.live_component
+            module={PhosWeb.CommentLive.IndexComponent}
+            id="commentindex"
+            timezone1={@timezone}
+            changeset={@changeset}
+            action="new"
+            orb={@orb}
+            comments={@comments}
+            reply_comment={nil}
+            edit_comment={nil}
+            current_user={@current_user}
+            socket={@socket}
+            live_action={@live_action}
+          />
+          <div
+            :if={not is_nil(@current_user)}
+            class="lg:hidden block bottom-0 z-10 fixed w-full px-4 bg-white dark:bg-gray-900"
+          >
+            <.live_component
+              module={PhosWeb.CommentLive.FormComponent}
+              changeset={@changeset}
+              current_user={@current_user}
+              orb={@orb}
+              id={"create-root-comment-#{@orb.id}"}
+              target={nil}
+              action={:new}
+            />
+          </div>
+        </div>
+      </div>
+      <!--Desktop Related Post-->
+      <div class="hidden lg:block w-full lg:w-4/12 lg:flex-none">
+        <h5 class="text-left font-semibold text-2xl dark:text-white mb-2">
+          <%= "Other Posts by #{@orb.initiator.username}" %>
+        </h5>
         <.live_component
-          module={PhosWeb.CommentLive.FormComponent}
-          id={@comment.id}
-          action={@live_action}
-          comment={@comment}
-          changeset={@changeset}
-          orb={@orb}
-          current_user={@current_user}
-          return_to={Routes.orb_show_path(@socket, :show, @orb)}
+          module={PhosWeb.Components.ScrollOrb}
+          id="infinite-home"
+          orbs={@orbs}
+          page={@page}
+          timezone1={@timezone}
         />
-    </.modal>
-<% end %>
-
-<ul>
-
-  <li>
-    <strong>Title:</strong>
-    <%= @orb.title %>
-  </li>
-
-  <li>
-    <strong>Central Geohash:</strong>
-    <%= @orb.central_geohash %>
-  </li>
-
-  <li>
-    <strong>Active:</strong>
-    <%= @orb.active %>
-  </li>
-
-  <%= if @orb.media do %>
-  <li>
-    <strong>Media:</strong>
-    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "150x150") }>
-    <img src={ Phos.Orbject.S3.get!("ORB", @orb.id, "1920x1080") }>
-  </li>
-  <% end%>
-
-  <li>
-    <strong>Extinguish:</strong>
-    <%= @orb.extinguish %>
-  </li>
-
-  <li>
-    <strong>When:</strong>
-    <%= @orb.payload.when %>
-  </li>
-
-  <li>
-    <strong>Where:</strong>
-    <%= @orb.payload.where %>
-  </li>
-
-  <li>
-    <strong>Tip:</strong>
-    <%= @orb.payload.tip %>
-  </li>
-
-  <li>
-    <strong>Info:</strong>
-    <%= @orb.payload.info %>
-  </li>
-
-  <li>
-    <strong>Traits:</strong>
-    <%= @orb.traits %>
-  </li>
-
-
-</ul>
-
-<span><%= live_patch "Edit", to: Routes.orb_show_path(@socket, :edit, @orb), class: "button" %></span> |
-<span><%= live_redirect "Back", to: Routes.orb_index_path(@socket, :index) %></span>
-
-<%# <PhosWeb.CommentLive.Index.render changeset={@changeset} orb={@orb} comments={@comments} current_user={@current_user} socket={@socket} live_action={@live_action}/> %>
-<.live_component module={PhosWeb.CommentLive.IndexComponent} id="commentindex" changeset={@changeset} action="new" orb={@orb} comments={@comments} current_user={@current_user} socket={@socket} live_action={@live_action} />
+      </div>
+    </div>
+  </div>
+  <.modal
+  :if={@live_action in [:show] and not is_nil(@media)}
+  id="orb-media-preview"
+  close_button={true}
+  show={@live_action in [:show] and not is_nil(@media)}
+  >
+  <.media_preview url={@media}/>
+</.modal>
+  <span :if={length(@orbs) < 3} class="hidden lg:block h-96 bg-gray-100"/>
+</div>

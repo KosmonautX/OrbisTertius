@@ -13,6 +13,8 @@ if System.get_env("PHX_SERVER") && System.get_env("RELEASE_NAME") do
 end
 
 ## Shared Configs
+##
+config :phos, Phos.Notification, worker: 1
 
 unless config_env() == :prod do
   #dotenv Parsing .env file
@@ -24,11 +26,6 @@ unless config_env() == :prod do
   # project_id: System.get_env("FYR_PROJ"),
   # service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
 
-  #Firebase Auth
-  config :ex_firebase_auth,
-    issuer: "https://securetoken.google.com/#{System.get_env("FYR_PROJ")}",
-    key_store_fail_strategy: :silent,
-    mock: [enabled: true]
 
   # AWS
   config :ex_aws,
@@ -125,9 +122,6 @@ if config_env() == :prod do
   #   project_id: System.get_env("FYR_PROJ"),
   #   service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
 
-  #Firebase Auth
-  config :ex_firebase_auth, :issuer, "https://securetoken.google.com/#{System.get_env("FYR_PROJ")}"
-
   config :phos, Phos.Repo,
     # ssl: true,
     url: database_url,
@@ -181,11 +175,11 @@ if config_env() == :prod do
   secret_key_base =
     System.get_env("SECRET_KEY_BASE")
 
-  host = System.get_env("PHX_HOST") || "phos.scrb.ac"
+  host = System.get_env("PHX_HOST") || "web.scratchbac.com"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
   config :phos, PhosWeb.Endpoint,
-    url: [host: host, port: 443],
+    url: [host: host, scheme: "https", port: 443],
     http: [
       # Enable IPv6 and bind on all interfaces.
       # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
@@ -194,6 +188,7 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
     ],
+    check_origin: ["https://nyx.scrb.ac", "https://phos.scrb.ac", "https://web.scratchbac.com"],
     secret_key_base: secret_key_base
 
   config :phos, Phos.Admin,

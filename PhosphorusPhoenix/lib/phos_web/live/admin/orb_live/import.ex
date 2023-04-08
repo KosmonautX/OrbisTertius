@@ -1,12 +1,10 @@
 defmodule PhosWeb.Admin.OrbLive.Import do
   use PhosWeb, :admin_view
 
-  alias PhosWeb.Components.{Card}
-
   @impl true
   def mount(_params, _session, socket) do
     Process.send_after(self(),  :live_orbs, 1000)
-    {:ok, assign(socket, [loading: true, orbs: [], message: "", selected_orbs: [], show_detail_id: nil])}
+    {:ok, assign(socket, [loading: true, orbs: [], message: "", selected_orbs: [], show_detail_id: nil, show_modal: false])}
   end
 
   @impl true
@@ -30,29 +28,28 @@ defmodule PhosWeb.Admin.OrbLive.Import do
     |> case do
       [] -> {:noreply, socket
         |> put_flash(:error, "Orb(s) failed to import.")
-        |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+        |> push_redirect(to: ~p"/admin/orbs")}
       data ->
         case contains_error?(data) do
           true ->
             {:noreply, socket
             |> put_flash(:error, "Orb(s) contains error. 💥")
-            |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+            |> push_redirect(to: ~p"/admin/orbs")}
           _ ->
             {:noreply, socket
                 |> put_flash(:info, "Orbs have been born 🥳 @" <> (DateTime.now!("Asia/Singapore") |> Calendar.strftime("%y-%m-%d %I:%M:%S %p")))
-                |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
-
+                |> push_redirect(to: ~p"/admin/orbs")}
             # legacy apis deprecated
             # case Phos.External.HeimdallrClient.post_orb(data) do
             #   {:ok, _response} ->
             #     {:noreply, socket
             #     |> put_flash(:info, "Orbs have been born 🥳 @" <> (DateTime.now!("Asia/Singapore") |> Calendar.strftime("%y-%m-%d %I:%M:%S %p")))
-            #     |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+            #     |> push_redirect(to: ~p"/admin/orbs", replace: true)}
             #   {:error, message} ->
             #     {:noreply, socket
             #     |> put_flash(:error, "Take down Orbs 💥, failed to propogate to legacy api service
             #     #{inspect(message)}")
-            #     |> push_redirect(to: Routes.admin_orb_index_path(socket, :index), replace: true)}
+            #     |> push_redirect(to: ~p"/admin/orbs", replace: true)}
             # end
 
         end
@@ -63,7 +60,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
   def handle_event("detail-orb", %{"index" => index}, %{assigns: %{orbs: _orbs}} = socket) do
     Process.send_after(self(), :marker_update, 500)
     Process.send_after(self(), :boundaries_update, 700)
-    {:noreply, assign(socket, :show_detail_id, String.to_integer(index))}
+    {:noreply, assign(socket, show_detail_id: String.to_integer(index), show_modal: true)}
   end
 
   @impl true
@@ -72,7 +69,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
   end
 
   @impl true
-  def handle_event("close-modal", _, socket), do: {:noreply, assign(socket, :show_detail_id, nil)}
+  def handle_event("close-modal", _, socket), do: {:noreply, assign(socket, show_detail_id: nil, show_modal: false)}
 
   @impl true
   def handle_info(:live_orbs, socket) do
@@ -141,7 +138,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
   def orb_card(assigns) do
     ~H"""
     <div id={"orb_detail_#{@id}"} class="w-full hover:cursor-pointer" phx-click="set-selected-orb" phx-value-selected={@index}>
-      <.live_component module={PhosWeb.Components.Card} title={@data.title} id={@id} name="name" class={define_class(@index, @selected_orbs)}>
+      <.card title={@data.title} id={@id} name="orb_modal" class={define_class(@index, @selected_orbs)}>
         <div class="px-2 pb-3">
           <%= if Map.get(@data, :lossy) do %>
             <img src={Map.get(@data, :lossy)} class="max-w-full h-auto mx-auto" alt="image here" />
@@ -163,7 +160,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
             <%= if selected_orbs?(@index, @selected_orbs), do: "Unselect", else: "select" %>
           </button>
         </div>
-      </.live_component>
+      </.card>
     </div>
     """
   end
@@ -188,7 +185,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
       "locations" => Enum.map(hashes, &Map.new([{"id", &1}])),
       "title" => Map.get(orb, :outer_title, title),
       "initiator_id" => initiator_id,
-      "payload" => %{"info" => orb.info, "inner_title" => title},
+      "payload" => %{"info" => orb.info, "inner_title" => title, "where" => Map.get(orb, :where, nil)},
       "media" => orb.media,
       "source" => :web,
       "extinguish" => create_extinguish(orb.expires_in),
@@ -203,7 +200,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
       "locations" => get_geolock_target(live) |> Enum.map(&Map.new([{"id", &1}])),
       "title" => orb.title,
       "initiator_id" => initiator_id,
-      "payload" => %{"info" => orb.info},
+      "payload" => %{"info" => orb.info, "where" => Map.get(orb, :where, nil)},
       "media" => orb.media,
       "source" => :web,
       "extinguish" => create_extinguish(orb.expires_in),

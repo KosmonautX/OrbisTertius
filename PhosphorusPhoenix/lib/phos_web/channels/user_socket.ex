@@ -10,10 +10,10 @@ defmodule PhosWeb.UserSocket do
   ## Channels
 
   channel "archetype:usr:*", PhosWeb.UserChannel
-  channel "archetype:loc:*", PhosWeb.UserLocationChannel
-  channel "userfeed:*", PhosWeb.UserFeedChannel
-  channel "discovery:usr:*", PhosWeb.DiscoveryChannel
-
+  # channel "archetype:loc:*", PhosWeb.UserLocationChannel
+  # channel "userfeed:*", PhosWeb.UserFeedChannel
+  # channel "discovery:usr:*", PhosWeb.DiscoveryChannel
+  channel "memory:user:*", PhosWeb.UserMemoryChannel
   ## Transports
   #transport :websocket, Phoenix.Transports.WebSocket, check_origin: ["//localhost",  "//echo.scrb.ac"]
 
@@ -30,7 +30,8 @@ defmodule PhosWeb.UserSocket do
   # performing token verification on connect.
 
   @impl true
-  def connect(%{"token" => token} = _params, socket, _connect_info) do
+  def connect(%{"token" => token}, _socket, _connect_info) when is_nil(token) or token == "", do: :error
+  def connect(%{"token" => token} = _params, socket, _connect_info) when is_binary(token) do
     # Parsing of Authorising JWT vector and assigning to session
     case Auth.validate_user(token) do
       {:ok, %{"user_id" => user} = claims} ->

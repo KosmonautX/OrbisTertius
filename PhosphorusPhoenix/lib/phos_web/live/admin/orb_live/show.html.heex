@@ -1,102 +1,133 @@
 <div class="w-half p-2">
-  <.live_component module={PhosWeb.Components.Card} title="Detail orb" id="detail_orb">
-    <.live_component module={PhosWeb.Components.List} name="ID" value={@orb.id} id="orb_id_#{orb.id}"/>
-    <.live_component module={PhosWeb.Components.List} name="Title" editable={true} update={&update_title/2} data={@orb} value={:title} id="orb_title_#{orb.id}"/>
-    <.live_component module={PhosWeb.Components.List} name="Extinguish" value={Timex.format!(@orb.extinguish, "{D} {Mshort} {YY} {h24}:{m}")} id="orb_extinguish_#{orb.id}" />
-    <.live_component module={PhosWeb.Components.List} name="Source" value={@orb.source} id="orb_source_#{orb.id}"/>
-    <.live_component module={PhosWeb.Components.List} name="Status" id="orb_status_#{orb.id}">
-      <div class="flex items-center">
-        <%= if (@orb.active) do %>
-          <div class="flex items-center">
-            <span class="h-2 w-2 flex rounded-full bg-green-500 mr-2" />
-            Active
-          </div>
-          <button phx-click="take-down" type="button" class="ml-6 button button-xs button-danger">
-          Take down
-          </button>
-        <% else %>
-          <span class="h-2 w-2 flex rounded-full bg-red-500 mr-2" />
-          Inactive
-        <% end %>
-      </div>
-    </.live_component>
-    <.live_component module={PhosWeb.Components.List} name="Last update" value={Timex.format!(@orb.updated_at, "{D} {Mshort} {YY} {h24}:{m}")} id="orb_updated_at_#{orb.id}" />
-    <.live_component module={PhosWeb.Components.List} name="Created at" value={Timex.format!(@orb.inserted_at, "{D} {Mshort} {YY} {h24}:{m}")} id="orb_inserted_at_#{orb.id}" />
-  </.live_component>
+  <.card title="Scrying orb">
+    <.list>
+      <:item title="ID"><%= @orb.id %></:item>
+      <:item title="Title"><%= @orb.title %></:item>
+      <:item title="Extinguish"><%= @orb.extinguish %></:item>
+      <:item title="Source"><%= @orb.source %></:item>
+      <:item title="Status">
+        <div :if={not @orb.active} class="flex">
+          <span class="h-2 w-2 flex rounded-full bg-red-500 mr-2" /> Inactive
+        </div>
+        <div :if={@orb.active} class="flex">
+          <span class="h-2 w-2 flex rounded-full bg-green-500 mr-2" /> Active
+        </div>
+        <.button phx-click="active" tone={:warning}>Flip Active</.button>
+        <.button phx-click="destroy" tone={:danger}>Destroy</.button>
+      </:item>
+      <:item title="Last update">
+        <%= Timex.format!(@orb.updated_at, "{D} {Mshort} {YY} {h24}:{m}") %>
+      </:item>
+      <:item title="Created at">
+        <%= Timex.format!(@orb.inserted_at, "{D} {Mshort} {YY} {h24}:{m}") %>
+      </:item>
+    </.list>
+  </.card>
 </div>
 
 <div class="w-full p-2 mt-4">
-  <.live_component module={PhosWeb.Components.Card} title="Orb Traits" id="orb_traits">
+  <.card title="Orb traits">
     <div class="px-4 py-2">
-      <%= if length(@traits_form) > 0 do %>
-        <.form let={f} for={@changeset} phx-submit="save_trait" phx-change="trait_change" id="traits_form">
-          <div>
-           <button type="button" phx-click="trait_management" phx-value-method="add" class="ml-2 button button-sm" id="button_add_trait_orb">
-             <i class="fa-solid fa-plus cursor-pointer mr-1"></i>
-             Add more trait(s)
-           </button>
+      <.form
+        :let={f}
+        :if={length(@traits_form) > 0}
+        for={@changeset}
+        phx-submit="save_trait"
+        phx-change="trait_change"
+        id="traits_form"
+      >
+        <div>
+          <button
+            type="button"
+            phx-click="trait_management"
+            phx-value-method="add"
+            class="ml-2 button button-sm"
+            id="button_add_trait_orb"
+          >
+            <i class="fa-solid fa-plus cursor-pointer mr-1"></i> Add more trait(s)
+          </button>
+        </div>
+        <%= for {val, index} <- Enum.with_index(@traits_form) do %>
+          <div class="flex mt-1 items-center" id={"trait_orb_list_#{index}"}>
+            <%= text_input(f, :"trait[#{index}]",
+              value: val,
+              required: true,
+              id: "trait_orb_input_#{index}",
+              class: "text-sm px-2 py-1 border-0 border-b"
+            ) %>
+            <i
+              class="fa-solid fa-trash ml-1 hover:text-red-300 cursor-pointer"
+              phx-click="trait_management"
+              phx-value-method="delete"
+              phx-value-id={index}
+              id={"traits_delete_icon_#{index}"}
+            >
+            </i>
           </div>
-          <%= for {val, index} <- Enum.with_index(@traits_form) do %>
-            <div class="flex mt-1 items-center" id={"trait_orb_list_#{index}"}>
-              <%= text_input f, :"trait[#{index}]", value: val, required: true, id: "trait_orb_input_#{index}", class: "text-sm px-2 py-1 border-0 border-b" %>
-              <i class="fa-solid fa-trash ml-1 hover:text-red-300 cursor-pointer" phx-click="trait_management" phx-value-method="delete" phx-value-id={index} id={"traits_delete_icon_#{index}"}></i>
-            </div>
-          <% end %>
-          <div class="mt-4">
-            <%= submit "save trait(s)", class: "button button-sm" %>
-          </div>
-        </.form>
-      <% else %>
-        <button type="button" phx-click="trait_management" phx-value-method="init" class="button button-sm">
-          <i class="fa-solid fa-plus cursor-pointer mr-1"></i>
-          Add trait
-        </button>
-      <% end %>
+        <% end %>
+        <div class="mt-4">
+          <%= submit("save trait(s)", class: "button button-sm") %>
+        </div>
+      </.form>
+      <button
+        :if={length(@traits_form) <= 0}
+        type="button"
+        phx-click="trait_management"
+        phx-value-method="init"
+        class="button button-sm"
+      >
+        <i class="fa-solid fa-plus cursor-pointer mr-1"></i> Add trait
+      </button>
     </div>
-    <div>
-      <%= for {t, i} <- Enum.with_index(@orb.traits) do %>
-        <.live_component module={PhosWeb.Components.List} name={t} value="" id={"detail_orb_traits_#{i}"}/>
-      <% end %>
+    <div :for={{t, i} <- Enum.with_index(@orb.traits)}>
+      <p id={"orb_trait_#{i}"}><%= t %></p>
     </div>
-  </.live_component>
+  </.card>
 </div>
 
 <div class="w-full p-2 mt-4">
-  <.live_component module={PhosWeb.Components.Card} title="Image Preview" id="image_preview">
+  <.card title="Image preview">
     <div class="container" phx-drop-target={@uploads.image.ref}>
-      <.form let={f} for={@changeset} phx-submit="change_image" id="change_image_form" class="px-2 py-3">
-        <%= live_file_input @uploads.image, class: "my-2" %>
-        <%= for entry <- @uploads.image.entries do %>
+      <.form
+        :let={_}
+        for={@changeset}
+        phx-submit="change_image"
+        id="change_image_form"
+        class="px-2 py-3"
+      >
+        <.live_file_input upload={@uploads.image} class="my-2" />
+        <div :for={entry <- @uploads.image.entries}>
           <figure class="my-2">
-            <%= live_img_preview entry %>
+            <%= live_img_preview(entry) %>
             <figcaption><strong>Image</strong></figcaption>
           </figure>
-        <% end %>
+        </div>
 
-        <%= for err <- upload_errors(@uploads.image) do %>
+        <div :for={err <- upload_errors(@uploads.image)}>
           <p class="alert alert-danger"><%= error_to_string(err) %></p>
-        <% end %>
+        </div>
 
-        <%= if @orb.media do %>
-
-          <%= submit "Change image", class: "button button-sm mt-2" %>
+        <div :if={@orb.media}>
+          <.button class="button button-sm mt-2">Submit image</.button>
 
           <div class="px-4 py-2">
             <img src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless")} />
-            <img src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossy")}, class="mt-2" />
+            <img src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossy")} , class="mt-2" />
           </div>
-        <% else %>
-          <%= submit "Add image", class: "button button-sm" %>
-        <% end%>
+        </div>
+
+        <.button :if={not @orb.media} class="button button-sm">Add image</.button>
       </.form>
     </div>
-  </.live_component>
+  </.card>
 </div>
 
 <div class="w-full p-2 mt-4">
-  <.live_component module={PhosWeb.Components.Card} title="Detail Initiator" id="detail_initiator">
-    <.live_component module={PhosWeb.Components.List} name="ID" value={@orb.initiator.id} id="initiator_id_#{orb.id}"/>
-    <.live_component module={PhosWeb.Components.List} name="Username" value={@orb.initiator.username} id="initiator_username_#{orb.id}"/>
-    <.live_component module={PhosWeb.Components.List} name="Email" value={@orb.initiator.email} id="initiator_email_#{orb.id}"/>
-  </.live_component>
+  <.card title="Detail initiator">
+    <.list>
+      <:item title="ID"><%= @orb.initiator.id %></:item>
+      <:item title="Username"><%= @orb.initiator.username %></:item>
+      <:item title="Email"><%= @orb.initiator.email %></:item>
+    </.list>
+  </.card>
 </div>

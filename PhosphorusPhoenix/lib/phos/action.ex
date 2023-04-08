@@ -4,8 +4,9 @@ defmodule Phos.Action do
   """
 
   import Ecto.Query, warn: false
+
   alias Phos.Repo
-  alias Phos.Action.{Orb, Location, Orb_Location}
+  alias Phos.Action.{Orb, Orb_Location}
 
   @doc """
   Returns the list of orbs.
@@ -17,7 +18,7 @@ defmodule Phos.Action do
 
   """
   def list_orbs(filters \\ []) do
-    default_query = from o in Orb, preload: [:initiator], order_by: [desc: o.inserted_at]
+    default_query = from o in Orb, preload: [:initiator], order_by: [desc: o.inserted_at], limit: 12
     query = case Kernel.length(filters) do
               0 -> default_query
               _ -> advanced_orb_listing(filters, default_query)
@@ -53,12 +54,29 @@ defmodule Phos.Action do
   #
 
   def get_orb(id) when is_binary(id) do
-    query = from o in Orb, preload: [:locations, :initiator], where: o.id == ^id, limit: 1
+    # parent_path = "*.#{Phos.Utility.Encoder.encode_lpath(id)}.*"
+    query =
+      from o in Orb,
+        preload: [:locations, :initiator, :parent],
+        where: o.id == ^id,
+        inner_lateral_join: p in subquery(
+          from p in Orb,
+            where: p.parent_id == ^id,
+            select: %{count: count(p)}
+        ),
+        inner_lateral_join: c in subquery(
+          from c in Phos.Comments.Comment,
+          where: c.orb_id == ^id,
+          select: %{count: count()}
+        ),
+        select_merge: %{number_of_repost: p.count, comment_count: c.count},
+        limit: 1
     case Repo.one(query) do
       %Orb{} = orb -> {:ok, orb}
       _ -> {:error, :not_found}
     end
   end
+
   def get_orb(orb_id, your_id) do
     from(orbs in Orb,
       where: orbs.id == ^orb_id,
@@ -75,6 +93,7 @@ defmodule Phos.Action do
       select_merge: %{comment_count: c.count})
       |> Repo.one()
   end
+
   def get_orb!(id), do: Repo.get!(Orb, id) |> Repo.preload([:locations, :initiator])
   def get_orb_by_fyr(id), do: Repo.get_by(Phos.Users.User, fyr_id: id)
 
@@ -122,7 +141,6 @@ defmodule Phos.Action do
   end
 
   def orbs_by_geotraits({hashes, your_id}, traits, page, opts \\ []) do
-
     sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
     limit = Keyword.get(opts, :limit, 12)
 
@@ -163,7 +181,58 @@ defmodule Phos.Action do
       |> (&(Map.put(&1, :data, &1.data |> Repo.Preloader.lateral(:orbs, [limit: 5])))).()
   end
 
-  def orbs_by_initiators(user_ids, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+  def notifiers_by_geohashes(hashes) do
+    from(l in Orb_Location,
+      as: :l,
+      where: l.location_id in ^hashes,
+      left_join: orbs in assoc(l, :orbs),
+      on: orbs.userbound == true,
+      inner_join: initiator in assoc(orbs, :initiator),
+      on: initiator.integrations["beacon"]["location"]["scope"] == true,
+      distinct: initiator.integrations["fcm_token"],
+      select: initiator.integrations)
+      |> Repo.all()
+  end
+
+  def orbs_by_friends(your_id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    from(orbs in Orb,
+      as: :o,
+      where: not fragment("? @> ?", orbs.traits, ^["mirage"]),
+      inner_join: initiator in assoc(orbs, :initiator),
+      inner_join: branch in assoc(initiator, :relations),
+      on: branch.friend_id == ^your_id and not is_nil(branch.completed_at),
+      inner_join: root in assoc(branch, :root),
+      select_merge: %{initiator: %{initiator | self_relation: root}},
+      inner_lateral_join: c in subquery(
+        from c in Phos.Comments.Comment,
+        where: c.orb_id == parent_as(:o).id,
+        select: %{count: count()}
+      ),
+      select_merge: %{comment_count: c.count})
+      |> Repo.Paginated.all(page, sort_attribute, limit)
+  end
+
+
+  def orbs_by_initiators(user_ids, page, opts \\ %{})
+  def orbs_by_initiators(user_ids, page, %{"traits" => traits} = opts) do
+    sort_attribute = Map.get(opts, :sort_attribute, :inserted_at)
+    limit = Map.get(opts, :limit, 12)
+    from(o in Orb,
+      as: :o,
+      where: o.initiator_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]) and fragment("? @> ?", o.traits, ^traits),
+      preload: [:initiator],
+      inner_lateral_join: c in subquery(
+        from c in Phos.Comments.Comment,
+        where: c.orb_id == parent_as(:o).id,
+        select: %{count: count()}
+      ),
+      select_merge: %{comment_count: c.count})
+      |> Repo.Paginated.all(page, sort_attribute, limit)
+  end
+
+  def orbs_by_initiators(user_ids, page, opts) do
+    sort_attribute = Map.get(opts, :sort_attribute, :inserted_at)
+    limit = Map.get(opts, :limit, 12)
     from(o in Orb,
       as: :o,
       where: o.initiator_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]),
@@ -176,6 +245,7 @@ defmodule Phos.Action do
       select_merge: %{comment_count: c.count})
       |> Repo.Paginated.all(page, sort_attribute, limit)
   end
+
 
   def get_active_orbs_by_geohashes(ids) do
     query =
@@ -214,12 +284,9 @@ defmodule Phos.Action do
     |> Enum.filter(fn orb -> orb.active == true end)
   end
 
-  def get_orbs_by_trait(trait) do
-    query =
-      from p in Phos.Action.Orb, preload: [:initiator], where: fragment("? @> ?", p.traits, ^trait)
-
-    Repo.all(query, limit: 8)
-  end
+  @doc "Get list of orbs by given traits"
+  @deprecated "Use filter_orbs_by_traits/2 instead which is more cleaner api with paginated response"
+  def get_orbs_by_trait(trait), do: filter_orbs_by_traits(trait, limit: 8) |> Map.get(:data, [])
 
   def get_orb_by_trait_geo(geohashes, traits, options \\ [])
   def get_orb_by_trait_geo(geohashes, trait, options) when is_list(geohashes) do
@@ -258,14 +325,31 @@ defmodule Phos.Action do
          {:ok, orb} = data ->
            orb = orb |> Repo.preload([:initiator])
            spawn(fn ->
-             case orb.initiator do
-               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("ORB.#{orb.id}", token)
-               _ -> nil
-             end
-             Phos.Notification.target("'FLK.#{orb.initiator_id}' in topics && !('USR.#{orb.initiator_id}' in topics)",
-               %{title: "#{orb.initiator.username} forged an orb ⚡",
-                 body: orb.title
-               }, PhosWeb.Util.Viewer.orb_mapper(orb))
+             geonotifiers =
+               notifiers_by_geohashes([orb.central_geohash])
+               |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end)
+               |> MapSet.new()
+               |> MapSet.delete(get_in(orb.initiator, [Access.key(:integrations, %{}), Access.key(:fcm_token, nil)]))
+
+             allynotifiers =
+               Phos.Folk.notifiers_by_friends(orb.initiator_id)
+               |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end)
+               |> MapSet.new()
+               |> MapSet.difference(geonotifiers)
+               |> MapSet.delete(get_in(orb.initiator, [Access.key(:integrations, %{}), Access.key(:fcm_token, nil)]))
+
+
+             Phos.Notification.push(
+               geonotifiers,
+               %{title: "#{orb.initiator.username} just posted across your street 🧭",
+                 body: orb.title},
+               %{action_path: "/orbland/orbs/#{orb.id}"})
+
+             Phos.Notification.push(
+               allynotifiers,
+               %{title: "Your ally 🤝 #{orb.initiator.username} just posted 💫",
+                 body: orb.title},
+               %{action_path: "/orbland/orbs/#{orb.id}"})
 
            end)
            #spawn(fn -> user_feeds_publisher(orb) end)
@@ -282,15 +366,13 @@ defmodule Phos.Action do
          {:ok, orb} = data ->
            orb = orb |> Repo.preload([:initiator])
            spawn(fn ->
-             case orb.initiator do
-               %{integrations: %{fcm_token: token}} -> Fcmex.Subscription.subscribe("ORB.#{orb.id}", token)
-               _ -> nil
-             end
              unless(Enum.member?(orb.traits, "mirage")) do
-               Phos.Notification.target("'FLK.#{orb.initiator_id}' in topics && !('USR.#{orb.initiator_id}' in topics)",
-                 %{title: "#{orb.initiator.username} forged an orb ⚡",
-                   body: orb.title
-                 }, PhosWeb.Util.Viewer.orb_mapper(orb))
+               Phos.Notification.push(
+               Phos.Folk.notifiers_by_friends(orb.initiator_id)
+               |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end),
+               %{title: "Hey! 👋 You’ve got to check out what #{orb.initiator.username} just posted 🌠",
+                 body: orb.title},
+               %{action_path: "/orbland/orbs/#{orb.id}"})
              end
              #spawn(fn -> user_feeds_publisher(orb) end)
            end)
@@ -299,13 +381,13 @@ defmodule Phos.Action do
        end
   end
 
-  defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
-    Phos.Folk.friends_lite(user_id)
-    |> Enum.each(fn user_id ->
-      # spawn(fn -> Phos.Cache.delete({Phos.Users.User, :feeds, user_id}) end)
-      spawn(fn -> Phos.PubSub.publish(orb, {:feeds, "new"}, "userfeed:#{user_id}") end)
-    end)
-  end
+  # defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
+  #   Phos.Folk.friends_lite(user_id)
+  #   |> Enum.each(fn user_id ->
+  #     # spawn(fn -> Phos.Cache.delete({Phos.Users.User, :feeds, user_id}) end)
+  #     spawn(fn -> Phos.PubSub.publish(orb, {:feeds, "new"}, "userfeed:#{user_id}") end)
+  #   end)
+  # end
 
   def create_orb_and_publish(attrs \\ %{})
   def create_orb_and_publish(list) when is_list(list) do
@@ -382,6 +464,55 @@ defmodule Phos.Action do
 
   #   """
   def delete_orb(%Orb{} = orb) do
+    from(o in Phos.Comments.Comment,
+      as: :o,
+      where: o.orb_id == ^orb.id)
+    |> Phos.Repo.all()
+    |> Enum.map(fn com ->
+      from(o in Phos.Comments.Comment,
+        as: :o,
+        where: o.parent_id == ^com.id
+      )
+      |> Phos.Repo.all()
+      |> Enum.map(fn comcom -> Phos.Comments.delete_comment(comcom) end)
+
+      Phos.Comments.delete_comment(com) end)
+
+    from(o in Phos.Message.Memory,
+      as: :o,
+      where: o.orb_subject_id == ^orb.id
+    )
+    |> Phos.Repo.all()
+    |> Enum.map(fn mem -> Phos.Message.delete_memory(mem)
+    end)
+
+    Repo.delete(orb)
+  end
+
+  def admin_delete_orb(%Orb{} = orb) do
+    from(o in Phos.Comments.Comment,
+      as: :o,
+      where: o.orb_id == ^orb.id)
+    |> Phos.Repo.all()
+    |> Enum.map(fn com ->
+      from(o in Phos.Comments.Comment,
+        as: :o,
+        where: o.parent_id == ^com.id
+      )
+      |> Phos.Repo.all()
+      |> Enum.map(fn comcom -> Phos.Comments.delete_comment(comcom) end)
+
+      Phos.Comments.delete_comment(com) end)
+
+    from(o in Phos.Message.Memory,
+      as: :o,
+      where: o.orb_subject_id == ^orb.id
+    )
+    |> Phos.Repo.all()
+    |> Enum.map(fn mem -> Phos.Message.delete_memory(mem)
+    end)
+
+
     Repo.delete(orb)
   end
 
@@ -413,17 +544,35 @@ defmodule Phos.Action do
     end
   end
 
+  def import_platform_notification do
+    case Phos.External.Notion.platform_notification() do
+      data when is_list(data) -> notion_platform_importer(data)
+      _ -> {:error, "Error fetching data from notion"}
+    end
+  end
+
   defp notion_importer(data) when is_list(data), do: Enum.map(data, &notion_parse_properties/1) |> List.flatten()
   defp notion_importer(_), do: []
 
+  defp notion_platform_importer(data) when is_list(data) do
+    Enum.map(data, &notion_platform_parse_properties/1)
+    |> List.flatten()
+    |> Enum.reduce([], fn data, acc ->
+      [Enum.map(data, fn {k, v} -> {String.to_atom(k), v} end) |> Enum.into(%{}) | acc]
+    end)
+  end
+  defp notion_platform_importer(_), do: []
+
+  defp notion_get_values(%{"type" => "date", "date" => data}), do: data
+  defp notion_get_values(%{"type" => "select", "select" => data}) when is_map(data), do: Map.get(data, "name")
+  defp notion_get_values(%{"type" => "select", "select" => data}), do: data
   defp notion_get_values(%{"type" => "multi_select", "multi_select" => data}), do: Enum.map(data, fn d -> Map.get(d, "name") end)
   defp notion_get_values(%{"type" => "files", "files" => files}) when is_list(files) and length(files) > 0, do: List.first(files)["file"]["url"]
   defp notion_get_values(%{"type" => type} = data), do: notion_get_values(Map.get(data, type))
   defp notion_get_values(%{"content" => data}), do: data
   defp notion_get_values(data) when is_boolean(data), do: data
   defp notion_get_values(data) when is_list(data) and length(data) > 0, do: Enum.reduce(data, "", fn val, acc -> Kernel.<>(acc, notion_get_values(val)) end)
-  defp notion_get_values(_), do: "[town]" #TODO this is a terrible default state
-
+  defp notion_get_values(_), do: nil
 
   defp notion_parse_properties(%{"properties" => %{"Type" => type, "Regions" => region} = properties}) do
     sectors = Phos.External.Sector.get()
@@ -438,6 +587,39 @@ defmodule Phos.Action do
       _ -> []
     end
   end
+
+  defp notion_platform_parse_properties(%{"properties" => properties, "id" => id}) do
+  Enum.reduce(properties, %{}, fn {k, v}, acc ->
+    key = String.downcase(k) |> String.replace(" ", "_")
+    value = notion_get_values(v)
+    case key do
+      "time_condition" -> Map.put(acc, key, notion_platform_time(value))
+      "name" -> Map.merge(acc, %{
+        "id" => id,
+        "name" => value
+      })
+      k when k in ["id", "type"] -> acc
+      _ -> Map.put(acc, key, value)
+    end end)
+  end
+
+  defp notion_platform_time(%{"start" => <<_date::bytes-size(10)>> <> "T" <> _rest = date}) do
+    case Timex.parse(date, "{RFC3339}") do
+      {:ok, h} -> h
+      _ -> notion_platform_time(nil)
+    end
+  end
+  defp notion_platform_time(%{"start" => start_date}) do
+    tz = decide_timezone("SGD")
+    case Timex.parse(start_date, "{YYYY}-{0M}-{0D}") do
+      {:ok, h} -> Timex.Timezone.convert(h, tz)
+      _ -> notion_platform_time(nil)
+    end
+  end
+  defp notion_platform_time(_time), do: ~T[07:30:00]
+
+  defp decide_timezone("SGD"), do: Timex.timezone("Asia/Singapore", {2022, 1, 1})
+  defp decide_timezone(_), do: Timex.Timezone.local()
 
   defp orb_imported_detail({name, hashes} = sector, %{"Title" => title, "Radius" => radius, "Location" => location} = properties) do
     traits = Map.get(properties, "Traits", %{}) |> notion_get_values()
@@ -457,7 +639,7 @@ defmodule Phos.Action do
           where: notion_get_values(location) |> String.replace("[town]", name),
           title: notion_get_values(inside_title) |> String.replace("[town]", name),
           outer_title: notion_get_values(outer_title) |> String.replace("[town]", name),
-          geolocation: %{ live: live_location_populator(hashes, radius) },
+          geolocation: %{ live: live_location_populator(hashes, radius)},
           traits: traits
                  })
   end
@@ -469,7 +651,7 @@ defmodule Phos.Action do
     default_orb_populator({ name, nil}, properties)
     |> Map.merge(%{
           where: notion_get_values(location) |> String.replace("[town]", name),
-          title: notion_get_values(inside_title) |> String.replace("[town]", title),
+          title: (if is_nil(notion_get_values(inside_title)), do: title, else: notion_get_values(inside_title)),
           geolocation: %{
             live: %{
               latlon: %{
@@ -489,7 +671,7 @@ defmodule Phos.Action do
       id: Ecto.UUID.generate(),
       username: "Administrator 👋",
       expires_in: expires_in,
-      info: notion_get_values(info) |> String.replace("[town]", name),
+      info: (unless is_nil(notion_get_values(info)), do: notion_get_values(info) |> String.replace("[town]", name)),
       done: notion_get_values(done),
       media: true,
       lossy: notion_get_values(lossy),
@@ -522,8 +704,8 @@ defmodule Phos.Action do
     |> create_orb()
   end
 
-  def subscribe_to_orb(%Orb{id: id} = _orb, %Phos.Users.User{} = user) do
-    topic = "ORB.#{id}"
+  def subscribe_to_orb(%Orb{id: _id} = _orb, %Phos.Users.User{} = _user) do
+    # topic = "ORB.#{id}"
     ## TODO SUB User Topic to Orb
     #token = Map.get(user, :private_profile, %{}) |> Map.get(:user_token)
     #Phos.Notification.subscribe(token, topic)
@@ -536,5 +718,32 @@ defmodule Phos.Action do
     query = from p in __MODULE__.Orb, preload: [:initiator], where: fragment("? @> ?", p.traits, ^traits)
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
+  end
+
+  def reorb(user_id, orb_id, message \\ "")
+  def reorb(%Phos.Users.User{} = user, %Orb{} = orb, message), do: reorb(user.id, orb.id, message)
+  def reorb(user_id, orb_id, message) when is_binary(user_id) and is_binary(orb_id) do
+    id = Ecto.UUID.generate()
+    orb = get_orb!(orb_id)
+    message = if message == "", do: orb.title, else: message
+    path = case orb.path do
+      %{labels: []} -> Phos.Utility.Encoder.encode_lpath(id, orb.id)
+      %{labels: labels} -> Phos.Utility.Encoder.encode_lpath(id, labels)
+      _ -> Phos.Utility.Encoder.encode_lpath(id, orb.id)
+    end
+
+    attrs =
+      Map.from_struct(orb)
+      |> Map.take(~W(active central_geohash extinguish media)a)
+      |> Map.merge(%{
+        id: id,
+        title: message,
+        path: path,
+        parent_id: orb_id,
+        initiator_id: user_id,
+        traits: ["reorb" | Map.get(orb, :traits, [])],
+      })
+
+    create_orb(attrs)
   end
 end

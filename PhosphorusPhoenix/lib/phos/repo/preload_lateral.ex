@@ -21,7 +21,7 @@ defmodule Phos.Repo.Preloader do
     limit = Keyword.get(opts, :limit, 2)
     {order_direction, order_field} = Keyword.get(opts, :order_by, {:desc, :inserted_at})
 
-    fields = source_queryable.__schema__(:fields)
+    _fields = source_queryable.__schema__(:fields)
     %{
       related_key: related_key,
       queryable: assoc_queryable

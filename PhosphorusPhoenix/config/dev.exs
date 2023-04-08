@@ -27,7 +27,9 @@ config :phos, PhosWeb.Endpoint,
   watchers: [
     # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
+    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]},
+    admin: {Tailwind, :install_and_run, [:admin, ~w(--watch)]},
+    storybook_tailwind: {Tailwind, :install_and_run, [:storybook, ~w(--watch)]}
   ]
 
 # ## SSL Support
@@ -66,12 +68,18 @@ config :phos, PhosWeb.Endpoint,
       ~r"priv/gettext/.*(po)$",
       ~r"lib/phos_web/(utility|live|views|controllers|channels)/.*(ex)$",
       ~r"lib/phos_web/templates/.*(eex)$",
-      ~r"lib/phos_web/(views|controllers)/api/.*(ex)$"
+      ~r"lib/phos_web/(views|controllers)/api/.*(ex)$",
+      ~r"storybook/.*(exs)$"
     ]
   ]
 
 # Do not include metadata nor timestamps in development logs
-config :logger, :console, format: "[$level] $message\n"
+config :logger, :console,
+ format: "[$level] $message\n"
+
+ # config :logger,
+ # truncate: :infinity,
+ # translator_inspect_opts: [limit: :infinity]
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.
@@ -86,5 +94,12 @@ config :ex_aws, :s3,
   host: "localhost",
   port: 9000
 
+config :ex_aws, :retries,
+  max_attempts: 2,
+  base_backoff_in_ms: 10,
+  max_backoff_in_ms: 10_000
+
 config :phos, Phos.External.HeimdallrClient,
   base_url: {System, :get_env, ["HEIMDALLR_ENDPOINT"]}
+
+config :link_preview, parsers: [LinkPreview.Parsers.Opengraph]

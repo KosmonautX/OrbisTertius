@@ -1,5 +1,6 @@
 defmodule PhosWeb.AuthChannel do
   ## in the future for authentication using oauth factors and persisting state on process and logout closes state
+  ## extended diffie hellman key agreement w double ratchet
   use PhosWeb, :channel
 
   def join("auth:usr:" <> id, _payload, socket) when id != "" do

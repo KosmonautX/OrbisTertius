@@ -7,19 +7,28 @@
 :princeton=0b3gd5XUGtNP6lqQean4IAp7ogG3
 :satrio=BX1BxM9KkwdFmy2J4FNNkFxclpS2
 :owen=0ErhlIM10Maldn1qVMGOJMKu6J92
+:bala=fFKlWcfV9RRavNZJUxt46BLYB5n1
 :tate=FbXQKufaWFOUNIsVYsn5tdW1qUc2
+:jean=HMhn3DPO71h0cMYFh52vM1tBacX2
+:anon=ETCiVo6Rr3gniuI44Gq9f2a5Ldl1
+:javier=v78yYQpVjlUaOsmzKguPoXcGqqw2
+:jiayi=3f6idzconSaWU31lQpcwXl3q8623
 :princeton_id=9bf9c443-f89b-460a-972d-6704ae66823d
 :owentwo_id=973da4ae-48a6-498d-b988-548af3af99f6
+:satrio_id=b3cd35ef-83e2-448e-831d-f5ded1c39692
 :satrio_id=5c82aeea-7c2b-4a97-a80b-d5b728c4ee86
+:phong_id=f8ed10b7-147e-4864-9525-bcf49c457dfc
 :satrioremote_id=5972b8e6-319b-4bf4-95cf-f58fb2117e21
 :brandon_id=b556571a-362e-4017-9894-f1eed0b39794
-:lky_id=3995c7f6-af54-4e31-85ee-3608e16ec00f
+:lky_id=6d7b0e7c-a633-4a8a-8d85-b8a493109bd4
+#:lky_id=4b2d6d8d-7781-4a20-b868-b0e0db245b85
 :aang_id=58c146d2-407f-49d5-a74d-0d9362e73be9
 :zuko_id=6f6c7d30-4447-4687-8fb9-f95a2de82957
 :owen_id=233e50b1-5507-4a3c-96a7-b6339e8d27f4
 :tate_id=5e7ed96c-f444-43e5-96e9-fe44bba1a664
-:fcm=dkoDy7FBSOybPE-juVQBHa:APA91bEdhNYKyZ75kG2ucjehb1Rqbfv69m2UiFGpve8bZS7ZAAMca3LiRmwg6g6JXPTgt35neGOQdGZcBJ_8Y5VVKNCMAIn0KHMJRfBiJZrcC-0VSazm3u6RTUecAUYxPQbLAZV0kRDA
-:prince_fcm=ewGVcsOAZ02gmzz9zbCLdo:APA91bGS6WbollBieIKBr9x7JvNzbHkTL2K-ukCbGDvjEYtJBqCoVC2U71jF3OAmwobRYocBGQZ-gVQr2-0Zk6ydjjlHuVf7EOjHdS2zA_TxUWIzvDkaZ0jvROqpLyOuMMqCTxqWs2UA
+:fcm=djMNQPoHR_6l5FlC3x_91Y:APA91bFPf8PiG7a0A0zwb9jKJD5JNFogFdPseKOyzyF9htiyM4HQhfl4NVo9j1C4dHnPuWFpR6qIYpGn13ABaKlB7EvI62U4l5ug_TlM-dwFRTETJKPhBVeNiC0Kn46uBSeut9_FIKOo
+:raiz_fcm=f3vM3sCxR76eSaJS0pYwFm:APA91bEqiK7GJvjdKoWWd3A7spQnJFLgJY8rRilnuW9d7IJZHzJ3f3VZbqDwgg5zlwidWw82PTZTeMhEDPc2CwpILM4OQK--6xxYAN1uhR1-5stVeCr5YOZSh0uNhKHdiEpRXtmC-58i
+:rel=9bb7ad28-3caa-49fa-a314-fc9ca8093f27
 :auth-headers = <<
 Authorization: :token
 Content-Type: application/json
@@ -31,11 +40,11 @@ Content-Type: application/json
 User-Agent: Emacs27
 ##
 ## Generate Client-side JWT
-GET :localipAddress/devland/flameon?user=:satrio_id
+GET :localipAddress/devland/flameon?user=:lky_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
-GET :localipAddress/devland/lankaonfyr?fyr_id=:satrio
+GET :localipAddress/devland/lankaonfyr?fyr_id=:jiayi
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 
@@ -56,12 +65,60 @@ POST :ipAddress/userland/auth/fyr/genesis
 GET :ipAddress/userland/self/
 :auth-headers
 
+## Register User via Email
+POST :ipAddress/userland/auth/email/register
+:auth-headers
+{
+    "email": "anon@bo.wen",
+    "password": "1234567890-="
+}
+
+## Login User via Email
+POST :ipAddress/userland/auth/email/login
+-> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'authn_token (json-read))))
+:auth-headers
+
+{
+    "email": "vivekbala@scratchbac.com",
+    "password": "1234567890-="
+}
+
+## Login User via Email
+POST :ipAddress/userland/auth/email/confirm_email
+:auth-headers
+
+{
+    "token": "owenthe@bo.wen"
+}
+#
+# Resend Confirmation
+GET :ipAddress/userland/auth/email/resend_confirmation
+:auth-headers
+
+## Forgot password for bobos
+POST :ipAddress/userland/auth/email/forgot_password
+:auth-headers
+
+{
+    "email": "owenthe@bo.wen"
+}
+
+## Reset Password
+POST :ipAddress/userland/auth/email/reset_password
+:auth-headers
+
+{
+    "token": "I2PwCl1k0haElOuvaJSLCAuTpRQpguHCm0HeeHftghw",
+    "password": "1234567890-++",
+    "password_confirmation": "1234567890-++"
+}
+
 ## Update userdata of self
 PUT :ipAddress/userland/self/
 :auth-headers
 {
     "bio": "alberto robotos",
-    "username": "tate",
+    "username": "lkyiii",
     "public_name": "Albert the Robot",
     "birthday": 16123442423,
     "media": [
@@ -80,14 +137,19 @@ PUT :ipAddress/userland/self/
         "aikido",
         "matrix"
     ],
+    "soulorb": {
+        "title": "wow",
+        "payload": {
+            "inner_title": "longer wow"
+}},
     "occupation": "bloatwarengingeer",
     "profile_pic": 3
 }
 ## Read userdata of Others Profile
-GET :ipAddress/userland/others/:owentwo_id
+GET :ipAddress/userland/others/:lky_id
 :auth-headers
 ## Read all of User Orb History
-GET :ipAddress/userland/others/:satrio_id/history?page=1
+GET :ipAddress/userland/others/:satrio_id/history?page=1&traits=personalpin
 :auth-headers
 
 ## Update territorial data of self
@@ -98,12 +160,23 @@ PUT :ipAddress/userland/self/territory
         {
             "id": "home",
             "geohash": 628021297666224127,
-            "location_description": "Pending road"
+            "location_description": "Keong Saik"
         },
         {
             "id": "work",
-            "geohash": 627986446952349695
+            "geohash": 636786611773840255,
+            "location_description": "Bukit Panjang"
         }
+    ]
+}
+
+## Report User
+PUT :ipAddress/userland/others/e4c01173-f944-4d78-993f-bf4c6fb7cb3a/report
+:auth-headers
+{
+    "message": [
+    "Inappropriate Content",
+    "Spam"
     ]
 }
 
@@ -133,15 +206,21 @@ GET :ipAddress/folkland/stream/self?page=1
 GET :ipAddress/folkland/stream/discovery/614510498785787903,614510497487650815?page=1
 :auth-headers
 
+## Show Relation Resource
+GET :ipAddress/folkland/friends/7dcd842a-8d07-4407-8ca4-6346d54b0f86
+-> run-hook (restclient-set-var ":rel" (cdr (assq 'relation_id (assq 'data (json-read)))))
+:auth-headers
+
 ## Send connection request
 POST :ipAddress/folkland/friends
+-> run-hook (restclient-set-var ":rel" (cdr (assq 'relation_id (assq 'data (json-read)))))
 :auth-headers
 {
-    "acceptor_id": ":brandon_id"
+    "acceptor_id": ":lky_id"
 }
 
 ## Delete Relation Resource (reset everything)
-DELETE :ipAddress/folkland/friends/98c22a1e-0e84-4f2f-b2e3-eb752c7d7c0c
+DELETE :ipAddress/folkland/friends/d2e500ba-2503-4261-8fb9-78d63bdb1a30
 :auth-headers
 
 ## Ended the friendship
@@ -173,7 +252,7 @@ GET :ipAddress/orbland/orbs/3e9ebaa7-cdd0-4d3e-857e-0661aeb12d0b
 :auth-headers
 
 ## Read all orbs in that geohash id
-GET :ipAddress/orbland/stream/623517998944845823,628021598572208127?page=1&traits=pin
+GET :ipAddress/orbland/stream/623517998944845823,628021598572208127?page=1&traits=treasurehunt
 :auth-headers
 
 ## Create Orbs
@@ -191,11 +270,42 @@ POST :ipAddress/orbland/orbs
     "media": [
         {
             "access": "public",
+            "essence": "banner"
+        },
+        {
+            "access": "public",
             "essence": "banner",
-            "resolution": "lossless"
-        }],
+            "resolution": "lossless",
+            "count": 1
+        },
+        {
+            "access": "public",
+            "essence": "banner",
+            "resolution": "lossless",
+            "count": 2
+        },
+        {
+            "access": "public",
+            "essence": "banner",
+            "resolution": "lossless",
+            "count": 3,
+            "ext": "mp3"
+        },
+        {
+            "access": "public",
+            "essence": "banner",
+            "resolution": "lossless",
+            "count": 4
+        },
+        {
+            "access": "public",
+            "essence": "banner",
+            "resolution": "lossless",
+            "count": 5
+        }
+        ],
     "expires_in": "10000",
-    "traits": ["holy", "mooncakes"]
+    "traits": ["personalpin"]
 }
 ## Update Orbs (Deactivate etc)
 ##
@@ -219,6 +329,16 @@ PUT :ipAddress/orbland/orbs/:orb
     "expires_in": "10000",
     "traits": ["holy", "mooncakes"]
 }
+
+## Report Orbs
+PUT :ipAddress/orbland/orbs/e4c01173-f944-4d78-993f-bf4c6fb7cb3a/report
+:auth-headers
+{
+    "message": [
+    "Inappropriate COntent",
+    "Spam"
+    ]
+}
 ### ! Comments API
 ## List Comments
 GET :ipAddress/orbland/comments/
@@ -227,6 +347,14 @@ GET :ipAddress/orbland/comments/
 ## Read Comment
 GET :ipAddress/orbland/comments/:commie
 :auth-headers
+
+## Update Comment
+PUT :ipAddress/orbland/comments/:commie
+:auth-headers
+{
+    "body": "alberto robotos",
+    "active": false
+}
 
 ## Reply to Orb (Create Root Comment)
 POST :ipAddress/orbland/comments/
@@ -243,7 +371,7 @@ POST :ipAddress/orbland/comments/
 -> run-hook (restclient-set-var ":childcommie" (cdr (assq 'id (assq 'data (json-read)))))
 {
     "parent_id": ":commie",
-    "body": "I Have a secret comment"
+    "body": "5"
 }
 
 ## Create DEEP children Comment
@@ -260,15 +388,70 @@ GET :ipAddress/orbland/comments/root/:orb?page=1
 :auth-headers
 
 ## Show Ancestors Comment
-GET :ipAddress/orbland/comments/:orb/ancestor/:commie
+GET :ipAddress/orbland/comments/ancestor/:commie
 :auth-headers
 
 ## Show Childrens Comment
 GET :ipAddress/orbland/comments/children/:commie?page=1
 :auth-headers
 ## Delete Comment
-DELETE :ipAddress/orbland/comments/4f0e37a2-abab-46e8-aeb1-d4520255bf21
+DELETE :ipAddress/orbland/comments/:commie
 :auth-headers
+
+
+### Memland
+## Index by unique relations
+GET :ipAddress/memland/friends/?page=1
+:auth-headers
+
+## Index by unique orbs
+GET :ipAddress/memland/orbs/?page=1
+:auth-headers
+
+## Show by specific relation_id through pages
+GET :ipAddress/memland/friends/:rel?page=1
+:auth-headers
+
+## Show by specific relation_id through cursor
+GET :ipAddress/memland/friends/:rel?cursor=1673502948407&asc=true
+:auth-headers
+
+## Show message by orbs within a relation
+GET :ipAddress/memland/friends/:rel/orbs/?cursor=1773502948407&asc=desc
+:auth-headers
+
+
+
+## Create Memories
+POST :ipAddress/memland/memories
+-> run-hook (restclient-set-var ":echo" (cdr (assq 'orb_uuid (assq 'data (json-read)))))
+:auth-headers
+{
+    "user_destination_id": ":lky_id",
+    "message": "14",
+    "rel_subject_id": ":rel",
+    "orb_subject_id": ":orb"
+}
+
+### Medialand
+#POST :ipAddress/medialand/media/USR/:lky_id?wildcard=true
+POST :ipAddress/medialand/media/MEM/3408a6bc-eba4-4bdf-b14b-938bf206f2b4?wildcard=true
+:auth-headers
+{
+    "media": [
+        {
+            "access": "public",
+            "essence": "profile",
+            "resolution": "lossless"
+        },
+        {
+            "access": "public",
+            "essence": "profile",
+            "resolution": "lossy"
+        }
+        ]
+}
+
 
 
 ## Version Check Major.Minor.Patch

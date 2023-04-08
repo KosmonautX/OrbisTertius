@@ -42,9 +42,21 @@ defmodule Phos.Orbject.S3 do
     signer!(:put, path_constructor(archetype, uuid, form))
   end
 
+  def get_all!(orbject = %Orbject.Structure{}) do
+    root_path = path_constructor(orbject.archetype, orbject.id, "")
+    for obj <- orbject.media, into: %{} do
+      path = path_constructor(orbject.archetype, orbject.id, obj)
+      if orbject.wildcard do
+         {:ok, addresses} = get_all(path)
+        {path_suffix(path, root_path) , addresses}
+      else
+        {path_suffix(path, root_path) , signer!(:get, path)}
+      end
+     end
+  end
 
-  def get_all(archetype, uuid, form \\ "") do
-    root_path = path_constructor(archetype, uuid, form)
+
+  def get_all(root_path) do
     with {:ok, response} <- ExAws.S3.list_objects_v2("orbistertius", prefix: root_path, encoding_type: "url") |> ExAws.request(),
          true <- response.status_code >= 200 and response.status_code < 300,
          [_ |_] <- response.body.contents,
@@ -52,20 +64,22 @@ defmodule Phos.Orbject.S3 do
                                   {path_suffix(obj.key, root_path), signer!(:get,obj.key)} end) do
       {:ok, addresses}
     else
-      [] -> nil
-      {:error, err} -> {:error, err}
+      [] -> {:ok, nil}
+      {:error, _err} -> {:ok, nil}  #TODO better error parsing
     end
+  end
+
+
+  def get_all(archetype, uuid, form \\ "") do
+    root_path = path_constructor(archetype, uuid, form)
+    get_all(root_path)
   end
 
   def get_all!(archetype, uuid, form \\ "") do
     with {:ok, address} <- Phos.Orbject.S3.get_all(archetype, uuid, form) do
       address
-    else
-      {:error, _err} -> nil #TODO better error parsing
-      nil -> nil
     end
   end
-
 
   def put_all!(orbject = %Orbject.Structure{}) do
     root_path = path_constructor(orbject.archetype, orbject.id, "")
@@ -81,6 +95,14 @@ defmodule Phos.Orbject.S3 do
     url
   end
 
+  defp signer(:headandget, path) do
+    ExAws.S3.head_object("orbistertius", path)
+    |> ExAws.request!()
+    ## with 200
+    signer(:get, path)
+    ## else (pass signer link of fallback image function or nil)
+  end
+
 
   defp signer(action, path) do
     config = %{
@@ -92,7 +114,16 @@ defmodule Phos.Orbject.S3 do
 
     ExAws.Config.new(:s3, config) |>
       ExAws.S3.presigned_url(action, config.bucket, path,
-        [expires_in: 888, virtual_host: false, query_params: [{"ContentType", "application/octet-stream"}]])
+        [expires_in: 88888, virtual_host: false, query_params: [{"ContentType", "application/octet-stream"}]])
+  end
+
+  defp path_constructor(archetype, uuid, m = %Orbject.Structure.Media{count: 0}) do
+    "#{archetype}/#{uuid}#{unless is_nil(m.access),
+          do: "/#{m.access}"}#{unless is_nil(m.essence),
+          do: "/#{m.essence}"}#{unless is_nil(m.resolution),
+          do: "/#{m.resolution}"}#{unless is_nil(m.height),
+          do: "#{m.height}x#{m.width}"}#{unless is_nil(m.ext),
+          do: ".#{m.ext}"}"
   end
 
   defp path_constructor(archetype, uuid, m = %Orbject.Structure.Media{}) do
