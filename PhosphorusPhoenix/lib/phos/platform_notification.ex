@@ -45,7 +45,7 @@ defmodule Phos.PlatformNotification do
   def init(_opts) do
     number    = Keyword.get(config(), :worker, 4)
     workers   = Enum.map(1..number, fn n -> Supervisor.child_spec({Consumer, []}, id: :"platfrom_notification_worker_#{n}") end)
-    children  = [Producer, Dispatcher, Listener | workers]
+    children  = [Producer, Dispatcher, Listener, Scheduller | workers]
 
     Supervisor.init(children, strategy: :one_for_one)
   end
@@ -54,9 +54,8 @@ defmodule Phos.PlatformNotification do
     Application.get_env(:phos, __MODULE__, [])
   end
 
-  @spec notify({notification_type, entity, entity_id, message_type}) :: :ok | :error
-  def notify({_name, _entity, _entity_id, _msg_type} = data), do: Producer.notify(data)
-  def notify(_data), do: :error
+  @spec notify(t(), option :: Keyword.t()) :: :ok | :error
+  def notify(data, options \\ []), do: Producer.notify(data, options)
 
   def create_template(attrs) do
     opts = Map.put_new(attrs, :id, Ecto.UUID.generate())
@@ -99,5 +98,13 @@ defmodule Phos.PlatformNotification do
   def get_notification(id) do
     query = from s in Store, where: s.id == ^id, preload: [:template], limit: 1
     Repo.one(query)
+  end
+
+  def active_notification() do
+    time = DateTime.utc_now()
+    query = from s in Store, where: s.active == true and s.retry_attempt <= 5 and s.next_execute_at <= ^time
+    query = where(query, [s], is_nil(s.success) or s.success == false)
+
+    Repo.all(query)
   end
 end

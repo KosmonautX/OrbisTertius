@@ -3,53 +3,36 @@ defmodule Phos.PlatformNotification.Scheduller do
 
   use GenServer
 
-  @one_minute :timer.minutes(1)
+  @default_timer :timer.minutes(5)
 
-  alias Phos.PlatformNotification.Store
+  alias Phos.PlatformNotification, as: PN
 
+  @doc """
+  start_link used to start this module and run the scheduller based on config
+  """
+  @spec start_link(opts :: Keyword.t()) :: :ok | :error
   def start_link(opts), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
 
   @impl true
   def init(_opts) do 
-    Process.send_after(self(), :timer, @one_minute)
+    Process.send_after(self(), :timer, timer())
     {:ok, []}
   end
 
   @impl true
   def handle_info(:timer, state) do
-    notifications = Store.list()
+    notifications = PN.active_notification()
+    now_time = current_time()
+    Logger.debug("Running platform notification timer at #{now_time}")
     run_notification_timer(notifications)
-    Process.send_after(self(), :timer, @one_minute)
+    Process.send_after(self(), :timer, timer())
     {:noreply, state}
   end
 
-  defp run_notification_timer(notifications) do
-    now_time = current_time()
-    Logger.debug("Running platform notification timer at #{now_time}")
-    Enum.filter(notifications, fn {_id, %{time_condition: ntime, frequency: frequency}, _active} ->
-      [date, time] = case ntime do
-        %DateTime{} -> [DateTime.to_date(ntime), DateTime.to_time(now_time)]
-        %Time{} -> [Timex.today, ntime]
-      end
-
-      diff = case should_execute?(frequency, date, now_time) do
-        true -> Time.diff(time, ntime)
-        _ -> -1
-      end
-      diff > 0 and diff < 60
-    end)
-    |> Enum.map(&Kernel.elem(&1, 1))
-    |> Enum.each(&send_notification/1)
-  end
-
-  defp should_execute?(freq, date, current_time) do
-    String.downcase(freq)
-    |> case do
-      "scheduled" -> Date.compare(date, DateTime.to_date(current_time)) == :eq
-      "weekends" -> Timex.weekday(current_time) in [6, 7]
-      "weekly" -> Timex.weekday(current_time) == 1
-      _ -> Date.compare(date, DateTime.to_date(current_time)) == :eq
-    end
+  defp run_notification_timer([]), do: :ok
+  defp run_notification_timer([notification | notifications]) do
+    PN.notify(notification.id)
+    run_notification_timer(notifications)
   end
 
   defp singapore_timezone do
@@ -62,8 +45,12 @@ defmodule Phos.PlatformNotification.Scheduller do
     |> Timex.Timezone.convert(singapore_timezone())
   end
 
-  defp send_notification(elem) do
-    # TODO: Need to know the query
-    elem
+  defp timer() do
+    PN.config()
+    |> Keyword.get(:time_interval)
+    |> case do
+      int when is_integer(int) -> :timer.minutes(int)
+      _ -> @default_timer
+    end
   end
 end

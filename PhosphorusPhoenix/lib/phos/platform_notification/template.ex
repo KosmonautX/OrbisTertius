@@ -51,6 +51,10 @@ defmodule Phos.PlatformNotification.Template do
     field :click_action, :string
   end
   
+  @doc """
+  changeset function used to change map to struct and do some validations
+  """
+  @spec changeset(tempale :: t(), attrs :: map()) :: Ecto.Changeset.t()
   def changeset(template, attrs) do
     template
     |> cast(attrs, [:id, :key, :body, :title, :subtitle, :receiver_name, :sender_name, :event_name, :icon, :click_action])
@@ -58,6 +62,10 @@ defmodule Phos.PlatformNotification.Template do
     |> unique_constraint(:body)
   end
 
+  @doc """
+  parse function used to parse %__MODULE__{} to notification mao()
+  """
+  @spec parse(data :: t() | map(), options :: Keywod.t()) :: parsed()
   def parse(%__MODULE__{} = data, options) do
     keys =
       data
@@ -77,6 +85,7 @@ defmodule Phos.PlatformNotification.Template do
       click_action: data.click_action,
     }
   end
+  def parse(data, _options) when is_map(data), do: data
 
   defp replace_data_value(data, _keys, _options) when data in ["", nil], do: ""
   defp replace_data_value(data, keys, options) do

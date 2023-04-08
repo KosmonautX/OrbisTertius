@@ -44,6 +44,10 @@ defmodule Phos.PlatformNotification.Store do
     belongs_to :template, Phos.PlatformNotification.Template, references: :id, type: Ecto.UUID
   end
 
+  @doc """
+  changeset function used to change map to Ecto.Changeset.t()
+  """
+  @spec changeset(store :: t(), attrs :: map()) :: Ecto.Changeset.t()
   def changeset(store, attrs) do
     store
     |> cast(attrs, [:id, :template_id, :active, :success, :spec, :retry_after, :retry_attempt, :next_execute_at, :error_reason])

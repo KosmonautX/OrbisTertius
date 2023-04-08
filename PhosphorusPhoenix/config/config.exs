@@ -120,6 +120,7 @@ config :phos, Phos.External.Notion,
 
 config :phos, Phos.PlatformNotification,
   worker: 4,
+  time_interval: 5,
   min_demand: 2,
   max_demand: 10
 

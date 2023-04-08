@@ -23,6 +23,10 @@ defmodule Phos.PlatformNotification.Dispatcher do
     |> filter_event_type()
     |> filter_event_entity()
     |> case do
+      {:reply, %{"notification_id" => id}} when not is_nil(id) ->
+        GenStage.reply(from, :ok)
+        {:noreply, [id], state + 1}
+      
       {:ok, %{"template_id" => key} = data} ->
         template = PN.get_template_by_key(key)
         GenStage.reply(from, :ok)
@@ -46,23 +50,26 @@ defmodule Phos.PlatformNotification.Dispatcher do
     stored = PN.get_notification(id)
     retry_attempt = stored.retry_attempt + 1
     next_attempt = DateTime.add(DateTime.utc_now(), retry_attempt * stored.retry_after, :minute)
-    PN.update_notification(stored, %{error_reason: message, next_try_at: next_attempt, retry_attempt: retry_attempt})
+    PN.update_notification(stored, %{error_reason: message, next_execute_at: next_attempt, retry_attempt: retry_attempt, success: retry_attempt > 5})
     {:noreply, [], state}
   end
 
   @impl true
-  def handle_info({_ref, {id, :success, _message}}, state) do
-    PN.update_notification(id, %{success: true})
+  def handle_info({_ref, {id, :success}}, state) do
+    stored = PN.get_notification(id)
+    PN.update_notification(stored, %{success: true})
     {:noreply, [], state}
   end
 
   defp filter_event_type(%{"type" => type} = data) when type in ["email", "push", "broadcast"] do
     {:ok, data}
   end
+  defp filter_event_type(%{"notification_id" => _id} = data), do: {:reply, data}
   defp filter_event_type(_data), do: :error
 
   defp filter_event_entity({:ok, %{"entity" => entity} = data}) when entity in ["ORB", "COMMENT"] do
     {:ok, data}
   end
+  defp filter_event_entity({:reply, %{"notification_id" => _id} = data}), do: {:reply, data}
   defp filter_event_entity(:error), do: :error
 end

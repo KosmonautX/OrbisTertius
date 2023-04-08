@@ -8,7 +8,7 @@ defmodule Phos.PlatformNotification.Producer do
   :type considered as :email, or :push
   :entity considered as "ORB", "USR", "COMMENT"
   :id considered as identifier for :entity
-  :body decoded free text from database
+  :template_id template id listed in database
 
   Example:
 
@@ -37,8 +37,12 @@ defmodule Phos.PlatformNotification.Producer do
     |> Keyword.take([:max_demand, :min_demand])
   end
 
-  def notify(event, timeout \\ 5000) do
-    GenStage.call(__MODULE__, {:notify, event}, timeout)
+  @doc """
+  Notify is used to create notifier to consumer and filtered in dispatcher
+  """
+  @spec notify(event :: PN.t(), options :: Keyword.t(), timeout :: non_neg_integer()) :: :ok
+  def notify(event, options, timeout \\ 5000) do
+    GenStage.call(__MODULE__, {:notify, event, options}, timeout)
   end
 
   @impl true
@@ -53,14 +57,20 @@ defmodule Phos.PlatformNotification.Producer do
   end
 
   @impl true
-  def handle_call({:notify, {type, entity, id, template_id}}, _from, state) do
+  def handle_call({:notify, {type, entity, id, template_id}, options}, _from, state) do
     event = %{
       "type" => to_string(type),
       "entity" => entity,
       "entity_id" => id,
-      "template_id" => template_id
+      "template_id" => template_id,
+      "options" => Enum.into(options, %{})
     }
     {:reply, :ok, [event], state + 1}
+  end
+
+  @impl true
+  def handle_call({:notify, notification_id, options}, _from, state) do
+    {:reply, :ok, [%{"notification_id" => notification_id, "options" => options}], state + 1}
   end
 
   @impl true
@@ -70,6 +80,5 @@ defmodule Phos.PlatformNotification.Producer do
 
   @impl true
   def handle_info({_from, :error}, state) do
-    {:noreply, [], state}
-  end
+    {:noreply, [], state} end
 end
