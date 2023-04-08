@@ -84,13 +84,20 @@ defmodule PhosWeb.API.UserProfileController do
     end
   end
 
-  def update_beacon(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"fcm_token" => token}) do
-    #subscribing to past fcm logic etc
-    # default global topic COUNTRY.SG
-    # resubscribe logic
+  def update_beacon(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"fcm_token" => token, "beacon" => %{"scope" => false}} = params) do
+    with true <- !Fcmex.unregistered?(token),
+         {:ok, %{}} <- Fcmex.Subscription.unsubscribe("USR." <> user.id, token),
+         {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => params}) do
+      render(conn, :show, integration: user_integration)
+    else
+      false -> {:error, :unprocessable_entity}
+    end
+  end
+
+  def update_beacon(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"fcm_token" => token} = params) do
     with true <- !Fcmex.unregistered?(token),
          {:ok, %{}} <- Fcmex.Subscription.subscribe("USR." <> user.id, token),
-         {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => %{"fcm_token" => token}}) do
+         {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => params}) do
       render(conn, :show, integration: user_integration)
     else
       false -> {:error, :unprocessable_entity}
@@ -99,7 +106,7 @@ defmodule PhosWeb.API.UserProfileController do
 
   defp purge_nil(map), do: map |> Enum.reject(fn {_, v} -> is_nil(v) end) |> Map.new()
 
-    defp profile_constructor(user, params) do
+  defp profile_constructor(user, params) do
     %{
       "username" => params["username"],
       "public_profile" => %{"birthday" => (if params["birthday"], do: params["birthday"]|> DateTime.from_unix!() |> DateTime.to_naive()),
@@ -114,9 +121,10 @@ defmodule PhosWeb.API.UserProfileController do
                           "userbound" => true,
                           "initiator_id" => user.id,
                           "traits" => params["traits"],
-                          "title" => (unless is_nil(params["traits"]), do: "Hello, It's my first day on Scratchbac! What's going on today?")
+                          "title" => (if !is_nil(params["soulorb"]), do: params["soulorb"]["title"]),
+                          "payload" => (if !is_nil(params["soulorb"]), do: params["soulorb"]["payload"])
                          } |> purge_nil()
     } |> purge_nil()
   end
 
-end
+ end

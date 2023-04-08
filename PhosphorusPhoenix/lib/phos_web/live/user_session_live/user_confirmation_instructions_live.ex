@@ -5,20 +5,28 @@ defmodule PhosWeb.UserConfirmationInstructionsLive do
 
   def render(assigns) do
     ~H"""
-    <.header>Resend confirmation instructions</.header>
+    <div class="flex flex-col h-screen justify-center items-center">
+      <.header>Resend confirmation instructions</.header>
 
-    <.simple_form :let={f} for={:user} id="resend_confirmation_form" phx-submit="send_instructions">
-      <.input field={{f, :email}} type="email" label="Email" required />
-      <:actions>
-        <.button phx-disable-with="Sending...">Resend confirmation instructions</.button>
-      </:actions>
-    </.simple_form>
+      <.simple_form :let={f} for={:user} id="resend_confirmation_form" phx-submit="send_instructions">
+        <.input field={{f, :email}} type="email" label="Email" required />
+        <:actions>
+          <.button phx-disable-with="Sending..." type="submit">
+            Resend confirmation instructions
+          </.button>
+        </:actions>
+      </.simple_form>
 
-    <p>
-      <.link href={~p"/users/register"}>Register</.link>
-      |
-      <.link href={~p"/users/log_in"}>Log in</.link>
-    </p>
+      <p class="text-gray-600 font-bold mt-2">
+        <.link href={~p"/users/register"} class="font-semibold text-base text-teal-500 underline">
+          Register
+        </.link>
+        Or
+        <.link href={~p"/users/log_in"} class="font-semibold text-base text-teal-500 underline">
+          Log in
+        </.link>
+      </p>
+    </div>
     """
   end
 

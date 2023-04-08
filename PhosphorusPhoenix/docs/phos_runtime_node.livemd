@@ -191,3 +191,79 @@ Phos.Folk.notifiers_by_friends(orb.initiator_id)
 orb |>
 #Phos.Action.notifiers_by_geohashes()
 ```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## 📸 Multimedia Support
+
+```elixir
+Phos.Orbject.S3.get_all!("ORB", "5db9d048-f3b2-4d35-89cd-f242155d79db", "public/banner")
+|> Enum.group_by(fn {path, _url} ->
+  String.split(path, ".")
+  |> List.first()
+  |> String.split("/")
+  |> List.last()
+end)
+```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## 🦇 Beacon
+
+```elixir
+import Ecto.Query
+alias Phos.Repo
+hashes = [636_786_611_773_840_255 |> :h3.parent(8)]
+
+from(l in Phos.Action.Orb_Location,
+  as: :l,
+  where: l.location_id in ^hashes,
+  left_join: orbs in assoc(l, :orbs),
+  inner_join: initiator in assoc(orbs, :initiator),
+  on: initiator.integrations["beacon"]["location"]["scope"] == true,
+  distinct: initiator.id,
+  select: initiator.integrations
+)
+|> Repo.all()
+
+# |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end)
+```
+
+```elixir
+Phos.Users.get_user_by_username("lky")
+|> Phos.Users.update_integrations_user(%{
+  "integrations" => %{
+    "beacon" => %{"location" => %{"scope" => true, "subscribe" => [1, 2, "2", "4"]}}
+  }
+})
+
+# Phos.Users.get_user_by_username("lky")
+```
+
+```elixir
+defmodule DOMParser do
+  def extract_link_from_markdown(md) when is_binary(md) do
+    {:ok, ast, _} = EarmarkParser.as_ast(md)
+    String.trim(extract_link_from_ast(ast, ""))
+  end
+
+  defp extract_link_from_ast(ast, result) when is_list(ast) and is_binary(result) do
+    Enum.reduce_while(ast, result, fn
+      {"a", atts, children, _m}, acc ->
+        case Enum.into(atts, %{}) do
+          %{"href" => link} -> {:halt, link}
+          _ -> {:cont, extract_link_from_ast(children, acc)}
+        end
+
+      {_html_tag, _atts, children, _m}, acc ->
+        {:cont, extract_link_from_ast(children, acc)}
+
+      _, acc ->
+        {:cont, acc}
+    end)
+  end
+end
+
+DOMParser.extract_link_from_markdown("https://kosmonautx.github.io/")
+|> LinkPreview.create()
+```

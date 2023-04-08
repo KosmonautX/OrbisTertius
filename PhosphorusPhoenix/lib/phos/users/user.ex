@@ -22,6 +22,7 @@ defmodule Phos.Users.User do
     has_many :relations, RelationBranch, foreign_key: :user_id
 
     field :self_relation, :string, virtual: true
+    field :profile_image, :string, virtual: true
 
     # has_many :pending_relations, RelationBranch, foreign_key: :user_id, where: [completed_at: nil]
     # has_many :completed_relations, RelationBranch, foreign_key: :user_id, where: [completed_at: {:not, nil}]
@@ -42,8 +43,10 @@ defmodule Phos.Users.User do
     #|> validate_required(:email)
     |> cast_embed(:public_profile)
     |> cast_assoc(:private_profile)
-    |> unique_constraint(:username, name: :unique_username)
+    |> validate_username()
     |> unique_constraint(:fyr_id, name: :unique_fyr)
+    |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
+    |> validate_length(:email, max: 160)
   end
 
   def personal_changeset(%Phos.Users.User{} = user, attrs) do
@@ -52,7 +55,7 @@ defmodule Phos.Users.User do
     #|> validate_required(:email)
     |> cast_embed(:public_profile)
     |> cast_assoc(:personal_orb, with: &Orb.personal_changeset/2)
-    |> unique_constraint(:username, name: :unique_username)
+    |> validate_username()
   end
 
   def territorial_changeset(%Phos.Users.User{} = user, attrs) do
@@ -76,12 +79,11 @@ defmodule Phos.Users.User do
     |> cast_assoc(:auths, with: &Auth.changeset/2)
   end
 
-  def post_telegram_changeset(%__MODULE__{} = user, attrs) do
+  def post_registration_changeset(%__MODULE__{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :email])
-    |> validate_email()
+    |> cast(attrs, [:username])
     |> validate_required(:username)
-    |> unique_constraint(:username, name: :unique_username)
+    |> validate_username()
   end
 
   def migration_changeset(%Phos.Users.User{} = user, attrs) do
@@ -96,10 +98,8 @@ defmodule Phos.Users.User do
 
   def fyr_registration_changeset(%Phos.Users.User{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :fyr_id])
+    |> cast(attrs, [:fyr_id])
     |> validate_required(:fyr_id)
-    |> cast_embed(:public_profile)
-    |> unique_constraint(:username, name: :unique_username)
     |> unique_constraint(:fyr_id, name: :unique_fyr)
   end
 
@@ -107,14 +107,7 @@ defmodule Phos.Users.User do
     user
     |> cast(attrs, [:username, :media])
     |> cast_embed(:public_profile)
-    |> unique_constraint(:username, name: :unique_username)
-  end
-
-  def user_profile_changeset(%Phos.Users.User{} = user, attrs) do
-    user
-    |> cast(attrs, [:media])
-    |> cast_embed(:public_profile)
-    |> unique_constraint(:username, name: :unique_username)
+    |> validate_username()
   end
 
   @doc """
@@ -137,10 +130,9 @@ defmodule Phos.Users.User do
   def registration_changeset(user, attrs, opts \\ []) do
     user
     |> cast(attrs, [:email, :password, :username])
-    |> cast_embed(:public_profile)
     |> validate_email(opts)
     |> validate_password(opts)
-    |> unique_constraint(:username, name: :unique_username)
+    |> validate_username(opts)
   end
 
   defp validate_email(changeset, opts \\ []) do
@@ -149,6 +141,13 @@ defmodule Phos.Users.User do
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
     |> validate_length(:email, max: 160)
     |> maybe_validate_unique_email(opts)
+  end
+
+  defp validate_username(changeset, _opts \\ []) do
+    changeset
+    |> validate_format(:username, ~r/^\w+$/, message: "letters and numbers only")
+    |> validate_length(:username, min: 5, max: 16)
+    |> unique_constraint(:username, name: :unique_username)
   end
 
   defp validate_password(changeset, opts) do

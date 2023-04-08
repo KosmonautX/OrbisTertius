@@ -8,8 +8,8 @@ defmodule PhosWeb.UserRegistrationLiveTest do
     test "renders registration page", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/register")
 
-      assert html =~ "Register"
-      assert html =~ "Log in"
+      assert html =~ "Create account"
+      assert html =~ "Sign in"
     end
 
     test "redirects if already logged in", %{conn: conn} do
@@ -17,7 +17,7 @@ defmodule PhosWeb.UserRegistrationLiveTest do
         conn
         |> log_in_user(user_fixture())
         |> live(~p"/users/register")
-        |> follow_redirect(conn, "/")
+        |> follow_redirect(conn, "/welcome")
 
       assert {:ok, _conn} = result
     end
@@ -30,7 +30,7 @@ defmodule PhosWeb.UserRegistrationLiveTest do
         |> element("#registration_form")
         |> render_change(user: %{"email" => "with spaces", "password" => "too short"})
 
-      assert result =~ "Register"
+      assert result =~ "Create account"
       assert result =~ "must have the @ sign and no spaces"
       assert result =~ "should be at least 12 character"
     end
@@ -45,14 +45,14 @@ defmodule PhosWeb.UserRegistrationLiveTest do
       render_submit(form)
       conn = follow_trigger_action(form, conn)
 
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/welcome"
 
       # Now do a logged in request and assert on the menu
       conn = get(conn, "/")
       response = html_response(conn, 200)
       assert response =~ conn.assigns.current_user.username
-      assert response =~ "Settings"
-      assert response =~ "Log out"
+      assert response =~ "/settings"
+      assert response =~ "/log_out"
     end
 
     test "renders errors for duplicated email", %{conn: conn} do
@@ -78,7 +78,7 @@ defmodule PhosWeb.UserRegistrationLiveTest do
         |> render_click()
         |> follow_redirect(conn, ~p"/users/log_in")
 
-      assert login_html =~ "Log in"
+      assert login_html =~ "Sign in"
     end
   end
 end

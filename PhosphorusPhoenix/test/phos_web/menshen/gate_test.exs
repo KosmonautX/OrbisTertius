@@ -22,7 +22,7 @@ defmodule PhosWeb.Menshen.Test do
       conn = Gate.log_in_user(conn, user)
       assert token = get_session(conn, :user_token)
       assert get_session(conn, :live_socket_id) == "users_sessions:#{Base.url_encode64(token)}"
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/welcome"
       assert Users.get_user_by_session_token(token)
     end
 
@@ -168,7 +168,7 @@ defmodule PhosWeb.Menshen.Test do
         assigns: %{__changed__: %{}, flash: %{}}
       }
 
-      {:halt, updated_socket} = Gate.on_mount(:ensure_authenticated, %{}, session, socket)
+      {:cont, updated_socket} = Gate.on_mount(:ensure_authenticated, %{}, session, socket)
       assert updated_socket.assigns.current_user == nil
     end
 
@@ -180,7 +180,7 @@ defmodule PhosWeb.Menshen.Test do
         assigns: %{__changed__: %{}, flash: %{}}
       }
 
-      {:halt, updated_socket} = Gate.on_mount(:ensure_authenticated, %{}, session, socket)
+      {:cont, updated_socket} = Gate.on_mount(:ensure_authenticated, %{}, session, socket)
       assert updated_socket.assigns.current_user == nil
     end
   end
@@ -216,7 +216,7 @@ defmodule PhosWeb.Menshen.Test do
     test "redirects if user is authenticated", %{conn: conn, user: user} do
       conn = conn |> assign(:current_user, user) |> Gate.redirect_if_user_is_authenticated([])
       assert conn.halted
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/welcome"
     end
 
     test "does not redirect if user is not authenticated", %{conn: conn} do

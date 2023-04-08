@@ -7,9 +7,33 @@ module.exports = {
     '../lib/*_web/**/*.*ex'
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        poppins: ['Poppins']
+      },
+
+      padding: {
+        '2.8': '44.8rem',
+      },
+
+      inset: {
+        '60px': '60px',
+      },
+
+
+      height: {
+        '900': '56rem',
+        '128': '32rem',
+
+      },
+
+    },
   },
+
+  darkMode: "class",
+
   plugins: [
+    require('@tailwindcss/typography'),
     require('@tailwindcss/forms')
   ]
 }

@@ -4,29 +4,31 @@ defmodule PhosWeb.API.FyrAuthController do
   alias Phos.Users
   action_fallback PhosWeb.API.FallbackController
 
-  plug :put_view, json: PhosWeb.Api.AuthJSON
-
   def transmute(conn, %{"fyr" => fyr_token}) do
-    with {:ok, %{"sub" => fyr_id}} <- Auth.validate_fyr(fyr_token) do
-      case Users.get_user_by_fyr(fyr_id)  do
+    with {:ok, %{"sub" => fyr_id, "email" => email}} <- Auth.validate_fyr(fyr_token) do
+      case Users.get_user_by_email(email) do
         user = %Users.User{} ->
           json(conn, %{payload: Auth.generate_user!(user.id)})
-        nil ->
-          {:error, :not_found}
-          # Migration Season Ended
-          # case PhosWeb.Util.Migrator.user_profile(fyr_id) do
-          #   {:ok, users} ->
-          #     conn
-          #     |> put_status(:created)
-          #     |> json(%{payload: Auth.generate_user!(List.first(users).id)})
-          #   {:error, _reason} -> {:error, :not_found}
-          # end
+
+        nil -> case Users.get_user_by_fyr(fyr_id) do
+                 user = %Users.User{} ->
+                   json(conn, %{payload: Auth.generate_user!(user.id)})
+
+                 nil  -> {:error, :not_found}
+               end
         _ -> {:error, :not_found}
       end
     else
+      {:ok, %{"sub" => fyr_id}} ->
+        case Users.get_user_by_fyr(fyr_id) do
+          user = %Users.User{} ->
+            json(conn, %{payload: Auth.generate_user!(user.id)})
+
+          nil  -> {:error, :not_found}
+        end
+
       {:error, _reason} -> {:error, :unprocessable_entity}
     end
-
   end
 
 
@@ -49,13 +51,13 @@ defmodule PhosWeb.API.FyrAuthController do
   end
 
   def semver(conn, %{"version" => version}) do
-    latest = "1.2.4" # latest patch
-    earliest = "1.2.3" # below current minor version
+    latest = "1.3.0" # latest patch
+    earliest = "1.2.10" # below current minor version
     response = cond do
-      Version.match?(version, "~> #{latest}") ->
+      Version.match?(version, ">= " <> latest) ->
         "ignore"
 
-      Version.match?(version, "~> #{earliest}") ->
+      Version.match?(version, "~> " <> earliest) ->
         "recommend"
 
       true ->

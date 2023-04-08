@@ -65,7 +65,7 @@ defmodule Phos.Orbject.S3 do
       {:ok, addresses}
     else
       [] -> {:ok, nil}
-      {:error, err} -> {:ok, nil}  #TODO better error parsing
+      {:error, _err} -> {:ok, nil}  #TODO better error parsing
     end
   end
 
@@ -95,6 +95,14 @@ defmodule Phos.Orbject.S3 do
     url
   end
 
+  defp signer(:headandget, path) do
+    ExAws.S3.head_object("orbistertius", path)
+    |> ExAws.request!()
+    ## with 200
+    signer(:get, path)
+    ## else (pass signer link of fallback image function or nil)
+  end
+
 
   defp signer(action, path) do
     config = %{
@@ -107,6 +115,15 @@ defmodule Phos.Orbject.S3 do
     ExAws.Config.new(:s3, config) |>
       ExAws.S3.presigned_url(action, config.bucket, path,
         [expires_in: 88888, virtual_host: false, query_params: [{"ContentType", "application/octet-stream"}]])
+  end
+
+  defp path_constructor(archetype, uuid, m = %Orbject.Structure.Media{count: 0}) do
+    "#{archetype}/#{uuid}#{unless is_nil(m.access),
+          do: "/#{m.access}"}#{unless is_nil(m.essence),
+          do: "/#{m.essence}"}#{unless is_nil(m.resolution),
+          do: "/#{m.resolution}"}#{unless is_nil(m.height),
+          do: "#{m.height}x#{m.width}"}#{unless is_nil(m.ext),
+          do: ".#{m.ext}"}"
   end
 
   defp path_constructor(archetype, uuid, m = %Orbject.Structure.Media{}) do

@@ -61,7 +61,8 @@ defmodule PhosWeb.UserResetPasswordLiveTest do
           }
         )
         |> render_submit()
-        |> follow_redirect(conn, ~p"/users/log_in")
+        #|> follow_redirect(conn, ~p"/users/log_in")
+        |> follow_redirect(conn, ~p"/")
 
       refute get_session(conn, :user_token)
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Password reset successfully"
@@ -91,13 +92,13 @@ defmodule PhosWeb.UserResetPasswordLiveTest do
     test "redirects to login page when the Log in button is clicked", %{conn: conn, token: token} do
       {:ok, lv, _html} = live(conn, ~p"/users/reset_password/#{token}")
 
-      {:ok, conn} =
+      {:ok, _lv, html} =
         lv
         |> element(~s|main a:fl-contains("Log in")|)
         |> render_click()
         |> follow_redirect(conn, ~p"/users/log_in")
 
-      assert conn.resp_body =~ "Log in"
+      assert html =~ "Sign in"
     end
 
     test "redirects to password reset page when the Register button is clicked", %{
@@ -106,13 +107,13 @@ defmodule PhosWeb.UserResetPasswordLiveTest do
     } do
       {:ok, lv, _html} = live(conn, ~p"/users/reset_password/#{token}")
 
-      {:ok, conn} =
+      {:ok, _lv,  html} =
         lv
         |> element(~s|main a:fl-contains("Register")|)
         |> render_click()
         |> follow_redirect(conn, ~p"/users/register")
 
-      assert conn.resp_body =~ "Register"
+      assert html =~ "Create account"
     end
   end
 end

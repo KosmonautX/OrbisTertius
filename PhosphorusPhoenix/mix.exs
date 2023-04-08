@@ -34,14 +34,14 @@ defmodule Phos.MixProject do
   defp deps do
     [
       {:bcrypt_elixir, "~> 3.0"},
-      {:phoenix, "~> 1.7.0-rc.0", override: true},
+      {:phoenix, "~> 1.7.0-rc.2", override: true},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.9"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 0.18.3"},
-      {:floki, ">= 0.30.0", only: :test},
+      {:phoenix_live_view, "~> 0.18.11"},
+      {:floki, ">= 0.34.0"},
       {:phoenix_live_dashboard, "~> 0.7"},
       {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
       {:dotenv_parser, "~> 2.0", runtime: Mix.env() == :dev},
@@ -68,13 +68,12 @@ defmodule Phos.MixProject do
       {:assent, "~> 0.2.0"},
       {:certifi, "~> 2.4"},
       {:ssl_verify_fun, "~> 1.1"},
-      # auth token
-      {:ex_firebase_auth, github: "KosmonautX/ExFirebaseAuth"},
+      {:ecto_psql_extras, "~> 0.7.10"},
       {:mint, "~> 1.0"},
       {:castore, "~> 0.1.0"},
       {:tailwind, "~> 0.1", runtime: Mix.env() == :dev},
       {:timex, "~> 3.7"},
-      {:earmark, "~>1.4.25"},
+      {:earmark, "~>1.4.36"},
       {:html_sanitize_ex, "~> 1.4"},
       {:prom_ex, github: "KosmonautX/prom_ex"},
       {:fsmx, "~> 0.2.0"},
@@ -83,8 +82,8 @@ defmodule Phos.MixProject do
       {:decorator, "~> 1.4"},
       {:fcmex, github: "KosmonautX/fcmex"},
       {:retry, "~> 0.17"},
-      { :uuid, "~> 1.1" },
-
+      {:uuid, "~> 1.1" },
+      {:link_preview, github: "appunite/link_preview"},
       # comments
       {:ecto_ltree, "~> 0.3.0"},
       #debugging
@@ -93,8 +92,9 @@ defmodule Phos.MixProject do
       {:phoenix_view, "~> 2.0"}, # for error warning removal
       # { :uuid, "~> 1.1" },
       # {:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
-      {:ex_gram, "~> 0.30.0"},
+      {:ex_gram, "~> 0.34.0"},
       {:tesla, "~> 1.2"},
+      {:phx_live_storybook, github: "phenixdigital/phx_live_storybook", runtime: Mix.env() == :dev}
     ]
   end
 

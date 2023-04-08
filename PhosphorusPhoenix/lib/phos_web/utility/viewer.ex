@@ -95,6 +95,7 @@ defmodule PhosWeb.Util.Viewer do
     %{
       id: user.id,
       username: user.username,
+      confirmed_at: user.confirmed_at,
       fyr_id: user.fyr_id,
       profile: user_profile_mapper(user),
       relationships: relationship_reducer(user),
@@ -125,15 +126,27 @@ defmodule PhosWeb.Util.Viewer do
   end
 
   def user_integration_mapper(%{integrations: profile}) do
-    (if Ecto.assoc_loaded?(profile) do
+    (if profile && !is_nil(profile) && Ecto.assoc_loaded?(profile) do
       %{data: %{
            fcm_token: profile.fcm_token,
-        }}
-    end)
+           beacon: (if profile.beacon do
+             for {k , v}  <- Map.from_struct(profile.beacon), into: %{} do
+                     case k do
+                       :scope ->
+                         {:scope, v}
+                       _ ->
+                     {k, %{scope: v.scope,
+                           subscribe: v.subscribe,
+                           unsubscribe: v.unsubscribe
+                          }}
+                    end
+                  end
+           end)}}
+      end)
   end
 
   def user_public_mapper(user) do
-    (if user.public_profile && Ecto.assoc_loaded?(user.public_profile) do
+    (if user.public_profile  && Ecto.assoc_loaded?(user.public_profile) do
       %{data:
         %{ birthday: (if user.public_profile.birthday, do: user.public_profile.birthday |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix()),
            occupation: user.public_profile.occupation,

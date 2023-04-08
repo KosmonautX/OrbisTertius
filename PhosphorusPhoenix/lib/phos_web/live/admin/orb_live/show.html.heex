@@ -1,27 +1,26 @@
 <div class="w-half p-2">
-  <.card title="Detail orb">
+  <.card title="Scrying orb">
     <.list>
       <:item title="ID"><%= @orb.id %></:item>
       <:item title="Title"><%= @orb.title %></:item>
       <:item title="Extinguish"><%= @orb.extinguish %></:item>
       <:item title="Source"><%= @orb.source %></:item>
       <:item title="Status">
+        <div :if={not @orb.active} class="flex">
+          <span class="h-2 w-2 flex rounded-full bg-red-500 mr-2" /> Inactive
+        </div>
         <div :if={@orb.active} class="flex">
-          <div class="flex items-center">
-            <span class="h-2 w-2 flex rounded-full bg-green-500 mr-2" />
-            Active
-          </div>
-          <button phx-click="take-down" type="button" class="ml-6 button button-xs button-danger">
-          Take down
-          </button>
+          <span class="h-2 w-2 flex rounded-full bg-green-500 mr-2" /> Active
         </div>
-        <div :if={not @orb.active}>
-          <span class="h-2 w-2 flex rounded-full bg-red-500 mr-2" />
-          Inactive
-        </div>
+        <.button phx-click="active" tone={:warning}>Flip Active</.button>
+        <.button phx-click="destroy" tone={:danger}>Destroy</.button>
       </:item>
-      <:item title="Last update"><%= Timex.format!(@orb.updated_at, "{D} {Mshort} {YY} {h24}:{m}") %></:item>
-      <:item title="Created at"><%= Timex.format!(@orb.inserted_at, "{D} {Mshort} {YY} {h24}:{m}") %></:item>
+      <:item title="Last update">
+        <%= Timex.format!(@orb.updated_at, "{D} {Mshort} {YY} {h24}:{m}") %>
+      </:item>
+      <:item title="Created at">
+        <%= Timex.format!(@orb.inserted_at, "{D} {Mshort} {YY} {h24}:{m}") %>
+      </:item>
     </.list>
   </.card>
 </div>
@@ -29,26 +28,55 @@
 <div class="w-full p-2 mt-4">
   <.card title="Orb traits">
     <div class="px-4 py-2">
-      <.form :if={length(@traits_form) > 0} let={f} for={@changeset} phx-submit="save_trait" phx-change="trait_change" id="traits_form">
+      <.form
+        :let={f}
+        :if={length(@traits_form) > 0}
+        for={@changeset}
+        phx-submit="save_trait"
+        phx-change="trait_change"
+        id="traits_form"
+      >
         <div>
-         <button type="button" phx-click="trait_management" phx-value-method="add" class="ml-2 button button-sm" id="button_add_trait_orb">
-           <i class="fa-solid fa-plus cursor-pointer mr-1"></i>
-           Add more trait(s)
-         </button>
+          <button
+            type="button"
+            phx-click="trait_management"
+            phx-value-method="add"
+            class="ml-2 button button-sm"
+            id="button_add_trait_orb"
+          >
+            <i class="fa-solid fa-plus cursor-pointer mr-1"></i> Add more trait(s)
+          </button>
         </div>
         <%= for {val, index} <- Enum.with_index(@traits_form) do %>
           <div class="flex mt-1 items-center" id={"trait_orb_list_#{index}"}>
-            <%= text_input f, :"trait[#{index}]", value: val, required: true, id: "trait_orb_input_#{index}", class: "text-sm px-2 py-1 border-0 border-b" %>
-            <i class="fa-solid fa-trash ml-1 hover:text-red-300 cursor-pointer" phx-click="trait_management" phx-value-method="delete" phx-value-id={index} id={"traits_delete_icon_#{index}"}></i>
+            <%= text_input(f, :"trait[#{index}]",
+              value: val,
+              required: true,
+              id: "trait_orb_input_#{index}",
+              class: "text-sm px-2 py-1 border-0 border-b"
+            ) %>
+            <i
+              class="fa-solid fa-trash ml-1 hover:text-red-300 cursor-pointer"
+              phx-click="trait_management"
+              phx-value-method="delete"
+              phx-value-id={index}
+              id={"traits_delete_icon_#{index}"}
+            >
+            </i>
           </div>
         <% end %>
         <div class="mt-4">
-          <%= submit "save trait(s)", class: "button button-sm" %>
+          <%= submit("save trait(s)", class: "button button-sm") %>
         </div>
       </.form>
-      <button :if={length(@traits_form) <= 0} type="button" phx-click="trait_management" phx-value-method="init" class="button button-sm">
-        <i class="fa-solid fa-plus cursor-pointer mr-1"></i>
-        Add trait
+      <button
+        :if={length(@traits_form) <= 0}
+        type="button"
+        phx-click="trait_management"
+        phx-value-method="init"
+        class="button button-sm"
+      >
+        <i class="fa-solid fa-plus cursor-pointer mr-1"></i> Add trait
       </button>
     </div>
     <div :for={{t, i} <- Enum.with_index(@orb.traits)}>
@@ -60,11 +88,17 @@
 <div class="w-full p-2 mt-4">
   <.card title="Image preview">
     <div class="container" phx-drop-target={@uploads.image.ref}>
-      <.form let={_} for={@changeset} phx-submit="change_image" id="change_image_form" class="px-2 py-3">
+      <.form
+        :let={_}
+        for={@changeset}
+        phx-submit="change_image"
+        id="change_image_form"
+        class="px-2 py-3"
+      >
         <.live_file_input upload={@uploads.image} class="my-2" />
         <div :for={entry <- @uploads.image.entries}>
           <figure class="my-2">
-            <%= live_img_preview entry %>
+            <%= live_img_preview(entry) %>
             <figcaption><strong>Image</strong></figcaption>
           </figure>
         </div>
@@ -78,7 +112,7 @@
 
           <div class="px-4 py-2">
             <img src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossless")} />
-            <img src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossy")}, class="mt-2" />
+            <img src={Phos.Orbject.S3.get!("ORB", @orb.id, "public/banner/lossy")} , class="mt-2" />
           </div>
         </div>
 

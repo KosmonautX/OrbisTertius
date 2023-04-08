@@ -27,13 +27,23 @@ defmodule PhosWeb.Menshen.Gate do
   """
   def log_in_user(conn, user, params \\ %{}) do
     token = Users.generate_user_session_token(user)
-    user_return_to = get_session(conn, :user_return_to)
+    user_return_to = case get_session(conn, :user_return_to) do
+      nil -> get_return_to_path(conn, params)
+      path -> path
+    end
 
     conn
     |> renew_session()
     |> put_token_in_session(token)
     |> maybe_write_remember_me_cookie(token, params)
     |> redirect(to: user_return_to || signed_in_path(conn))
+  end
+
+  defp get_return_to_path(conn, params) do
+    case Map.get(params, "return_to", nil) do
+      uri when is_binary(uri) and uri != "" -> URI.decode(uri)
+      _ -> signed_in_path(conn)
+    end
   end
 
   defp maybe_write_remember_me_cookie(conn, token, %{"remember_me" => "true"}) do
@@ -149,17 +159,15 @@ defmodule PhosWeb.Menshen.Gate do
   end
 
   def on_mount(:ensure_authenticated, _params, session, socket) do
-    socket = mount_current_user(session, socket)
+    %{assigns: %{current_user: current_user}} = socket = mount_current_user(session, socket)
 
-    if socket.assigns.current_user do
-      {:cont, socket}
-    else
-      socket =
-        socket
-        |> Phoenix.LiveView.put_flash(:error, "You must log in to access this page.")
-        |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
-
-      {:halt, socket}
+    case current_user do
+      data when data in [true, false, nil] ->
+        {:cont, Phoenix.Component.assign(socket, :guest, true)}
+      %Users.User{username: nil} ->
+        {:halt, Phoenix.LiveView.redirect(socket, to: onboarding_path(socket))}
+      _user ->
+        {:cont, Phoenix.Component.assign(socket, :guest, false)}
     end
   end
 
@@ -178,15 +186,28 @@ defmodule PhosWeb.Menshen.Gate do
       %{"user_token" => user_token} ->
         socket
         |> Phoenix.Component.assign_new(:current_user, fn ->
-          Users.get_user_by_session_token(user_token)
+          with %Users.User{} = user <- Users.get_user_by_session_token(user_token),
+               %Users.User{} = user <- hydrate_user_profile_image(user) do
+            user
+          else
+           _ -> nil
+          end
         end)
-        |> Phoenix.Component.assign_new(:guest, fn ->  false end)
 
       %{} ->
         socket
         |> Phoenix.Component.assign_new(:current_user, fn -> nil end)
-        |> Phoenix.Component.assign_new(:guest, fn ->  true end)
     end
+  end
+
+  defp hydrate_user_profile_image(user = %Users.User{}) do
+    user
+    |> Map.get(:media, false)
+    |> if do
+        %{ user | profile_image: Phos.Orbject.S3.get!("USR", user.id, "public/profile/lossy")}
+       else
+        user
+       end
   end
 
   @doc """
@@ -232,5 +253,6 @@ defmodule PhosWeb.Menshen.Gate do
 
   defp maybe_store_return_to(conn), do: conn
 
-  defp signed_in_path(_conn), do: ~p"/"
+  defp signed_in_path(_conn), do: ~p"/welcome"
+  defp onboarding_path(_conn), do: ~p"/begin"
 end

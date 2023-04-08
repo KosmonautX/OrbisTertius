@@ -5,20 +5,25 @@ defmodule PhosWeb.UserConfirmationLive do
 
   def render(%{live_action: :edit} = assigns) do
     ~H"""
-    <.header>Confirm Account</.header>
+    <div class="flex flex-col h-screen justify-center items-center">
+      <.header>Confirm Account</.header>
 
-    <.simple_form :let={f} for={:user} id="confirmation_form" phx-submit="confirm_account">
-      <.input field={{f, :token}} type="hidden" value={@token} />
-      <:actions>
-        <.button phx-disable-with="Confirming...">Confirm my account</.button>
-      </:actions>
-    </.simple_form>
-
-    <p>
-      <.link href={~p"/users/register"}>Register</.link>
-      |
-      <.link href={~p"/users/log_in"}>Log in</.link>
-    </p>
+      <.simple_form :let={f} for={:user} id="confirmation_form" phx-submit="confirm_account">
+        <.input field={{f, :token}} type="hidden" value={@token} />
+        <:actions>
+          <.button phx-disable-with="Confirming..." type="submit">Confirm my account</.button>
+        </:actions>
+      </.simple_form>
+      <p class="text-gray-600 font-bold mt-2 hidden">
+        <.link href={~p"/users/register"} class="font-semibold text-base text-teal-500 underline">
+          Register
+        </.link>
+        Or
+        <.link href={~p"/users/log_in"} class="font-semibold text-base text-teal-500 underline">
+          Log in
+        </.link>
+      </p>
+    </div>
     """
   end
 

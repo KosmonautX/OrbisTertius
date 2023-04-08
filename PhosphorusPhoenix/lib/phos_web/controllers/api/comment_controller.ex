@@ -9,8 +9,8 @@ defmodule PhosWeb.API.CommentController do
 
   # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X GET 'http://localhost:4000/api/comments'
 
-  def index(conn, _params) do
-    comments = Comments.list_comments()
+  def index(conn = %{assigns: %{current_user: %{id: user_id}}}, _params) do
+    comments = Comments.list_comments_by_initiator(user_id)
     render(conn, :index, comments: comments)
   end
   # curl -H "Content-Type: application/json" -X GET http://localhost:4000/api/comments
@@ -82,21 +82,29 @@ defmodule PhosWeb.API.CommentController do
     render(conn, :index, comments: comments)
   end
 
-  def update(conn, %{"id" => id} = comment_params) do
+  def update(conn = %{assigns: %{current_user: user}}, %{"id" => id} = comment_params) do
     comment = Comments.get_comment!(id)
 
-    with {:ok, %Comment{} = comment} <- Comments.update_comment(comment, comment_params) do
+    with true <- comment.initiator.id == user.id,
+         {:ok, %Comment{} = comment} <- Comments.update_comment(comment, comment_params) do
       render(conn, :show, comment: comment)
+    else
+      false -> {:error, :unauthorized}
+      error -> error
     end
   end
   # curl -H "Content-Type: application/json" -X PUT -d '{"comment": {"active": "false"}}' http://localhost:4000/api/comments/a7bb9551-4561-4bf0-915a-263168bbcc9b
   # curl -H "Content-Type: application/json" -X PUT -d '{"comment": {"body": "HENLOO!"}}' http://localhost:4000/api/comments/a7bb9551-4561-4bf0-915a-263168bbcc9b
 
-  def delete(conn, %{"id" => id}) do
+  def delete(conn = %{assigns: %{current_user: user}}, %{"id" => id}) do
     comment = Comments.get_comment!(id)
 
-    with {:ok, %Comment{}} <- Comments.delete_comment(comment) do
+    with true <- comment.initiator.id == user.id,
+         {:ok, %Comment{}} <- Comments.delete_comment(comment) do
       send_resp(conn, :no_content, "")
+      else
+      false -> {:error, :unauthorized}
+      error -> error
     end
   end
 end

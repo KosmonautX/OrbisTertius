@@ -12,7 +12,8 @@ config :phos,
 
 # Configures the endpoint
 config :phos, PhosWeb.Endpoint,
-  url: [host: "localhost"], #change to "127.0.0.1" to work on privelleged port 80
+  # change to "127.0.0.1" to work on privelleged port 80
+  url: [host: "localhost"],
   render_errors: [
     formats: [html: PhosWeb.ErrorHTML, json: PhosWeb.ErrorJSON],
     layout: false
@@ -38,7 +39,7 @@ config :esbuild,
   version: "0.14.0",
   default: [
     args:
-      ~w(js/app.js js/admin.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
+      ~w(js/app.js js/admin.js js/storybook.js vendor/fonts/Poppins/poppins.css --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/* --loader:.woff2=file --loader:.woff=file),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
@@ -75,7 +76,8 @@ config :phos, Phos.OAuthStrategy,
     bot_id: {System, :get_env, ["TELEGRAM_BOT_ID"]}
   ]
 
-config :tailwind, version: "3.1.6",
+config :tailwind,
+  version: "3.2.7",
   admin: [
     args: ~w(
       --config=tailwind.config.js
@@ -89,6 +91,14 @@ config :tailwind, version: "3.1.6",
       --config=tailwind.config.js
       --input=css/app.css
       --output=../priv/static/assets/app.css
+    ),
+    cd: Path.expand("../assets", __DIR__)
+  ],
+  storybook: [
+    args: ~w(
+      --config=tailwind.config.js
+      --input=css/storybook.css
+      --output=../priv/static/assets/storybook.css
     ),
     cd: Path.expand("../assets", __DIR__)
   ]

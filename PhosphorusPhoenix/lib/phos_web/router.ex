@@ -4,6 +4,7 @@ defmodule PhosWeb.Router do
   import PhosWeb.Menshen.Gate
   import PhosWeb.Menshen.Plug
   import Phoenix.LiveDashboard.Router
+  import PhxLiveStorybook.Router
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -34,13 +35,20 @@ defmodule PhosWeb.Router do
     plug Phos.Admin.Plug
   end
 
+  scope "/" do
+    storybook_assets()
+  end
+
   ## Home Page & Public Pages
   scope "/", PhosWeb do
     pipe_through :browser
 
     get "/", PageController, :home
-  end
 
+    get "/redirect/:out", PageController, :redirect
+
+    live_storybook "/storybook", backend_module: PhosWeb.Storybook
+  end
 
   ## User Genesis Routes
   scope "/", PhosWeb do
@@ -58,53 +66,27 @@ defmodule PhosWeb.Router do
   end
 
   scope "/", PhosWeb do
-    pipe_through [:browser]
-
-    resources "/admin/sessions", AdminSessionController, only: [:new, :create, :index], as: :admin_session
-
-    delete "/users/log_out", UserSessionController, :delete
-
-    live_session :current_user,
-      on_mount: [{PhosWeb.Menshen.Gate, :mount_current_user}] do
-      live "/users/confirm/:token", UserConfirmationLive, :edit
-      live "/users/confirm", UserConfirmationInstructionsLive, :new
-    end
-  end
-
-
-  scope "/", PhosWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    get "/archetype", ArchetypeController, :show do
-      resources "/archetype/usr", UserController, only: [:show]
-    end
+    live_session :onboarding_user,
+      on_mount: [{PhosWeb.Menshen.Gate, :mount_current_user}] do
+      live "/begin", UserWelcomeLive, :onboard
+      end
 
     get "/telegram_signup", TelegramController, :create
 
     live_session :required_authenticated_user,
-      on_mount: {PhosWeb.Menshen.Gate, :ensure_authenticated} do
-      get "/", PageController, :index
-      # get "/orb/sethome", OrbLiveController, :set_home
-      # get "/orb/setwork", OrbLiveController, :set_work
-      # resources "/orb", OrbLiveController, only: [:index, :show]
+      on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Timezone, :timezone}] do
 
-      live "/orb/sethome", OrbLive.Index, :sethome
-      live "/orb/setwork", OrbLive.Index, :setwork
+      live "/welcome", UserWelcomeLive, :welcome
 
-      live "/orb", OrbLive.Index, :index
-      live "/orb/new", OrbLive.Index, :new
-      live "/orb/:id/edit", OrbLive.Index, :edit
-
-      live "/orb/:id", OrbLive.Show, :show
-      live "/orb/:id/show/edit", OrbLive.Show, :edit
       live "/orb/:id/show/:cid", OrbLive.Show, :show_ancestor
       live "/orb/:id/reply/:cid", OrbLive.Show, :reply
       live "/orb/:id/edit/:cid", OrbLive.Show, :edit_comment
 
       live "/user/feeds", UserFeedLive.Index, :index
 
-      live "/user/:username/edit", UserProfileLive.Index, :edit
-      live "/user/:username", UserProfileLive.Index, :index
+      live "/user/:username/edit", UserProfileLive.Show, :edit
 
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
@@ -112,28 +94,18 @@ defmodule PhosWeb.Router do
 
       live "/memories", MemoryLive.Index, :index
       live "/memories/new", MemoryLive.Index, :new
-      live "/memories/:id/edit", MemoryLive.Index, :edit
-
-      live "/memories/:id", MemoryLive.Show, :show
-      live "/memories/:id/show/edit", MemoryLive.Show, :edit
-
-
-      live "/reveries", ReverieLive.Index, :index
-      live "/reveries/new", ReverieLive.Index, :new
-      live "/reveries/:id/edit", ReverieLive.Index, :edit
-
-      live "/reveries/:id", ReverieLive.Show, :show
-      live "/reveries/:id/show/edit", ReverieLive.Show, :edit
-
-
-
+      live "/memories/user/:username", MemoryLive.Index, :show
     end
   end
 
   scope "/admin", PhosWeb.Admin, as: :admin, on_mount: {Phos.Admin.Mounter, :admin} do
     pipe_through [:browser, :admin]
 
-    live_dashboard "/dashboard", metrics: PhosWeb.Telemetry
+    live_dashboard "/dashboard",
+      metrics: PhosWeb.Telemetry,
+      ecto_repos: [Phos.Repo],
+      ecto_psql_extras_options: [long_running_queries: [threshold: "200 milliseconds"]]
+
     live "/", DashboardLive, :index
     live "/orbs", OrbLive.Index, :index
     live "/orbs/import", OrbLive.Import, :import
@@ -149,35 +121,36 @@ defmodule PhosWeb.Router do
     get "/version/:version", FyrAuthController, :semver
 
     scope "/userland" do
-
       scope "/auth/fyr" do
         get "/", FyrAuthController, :transmute
         post "/genesis", FyrAuthController, :genesis # Create User
       end
     end
-    # get "/", AuthController, :index
-    # patch "/", AuthController, :update
-    # post "/login", AuthController, :login
-    # post "/register", AuthController, :register
-    # post "/confirm_email", AuthController, :confirm_email
-    # post "/forgot_password", AuthController, :forgot_password
-    # post "/reset_password", AuthController, :reset_password
-
   end
 
   scope "/api", PhosWeb.API do
     pipe_through [:api, :authorized_user]
 
+    scope "/userland" do
+      get "/self", UserProfileController, :show_self
+      put "/self", UserProfileController, :update_self
+      put "/self/territory", UserProfileController, :update_territory
+      put "/self/beacon", UserProfileController, :update_beacon
+      get "/others/:id", UserProfileController, :show
 
-    get "/userland/self", UserProfileController, :show_self
-    put "/userland/self", UserProfileController, :update_self
-    put "/userland/self/territory", UserProfileController, :update_territory
-    put "/userland/self/beacon", UserProfileController, :update_beacon
-    get "/userland/others/:id", UserProfileController, :show
+      get "/others/:id/history", OrbController, :show_history
+      put "/others/:id/report", TribunalController, :report_user
 
-    get "/userland/others/:id/history", OrbController, :show_history
-    put "/userland/others/:id/report", TribunalController, :report_user
+      scope "/auth/email" do
+        post "/login", AuthNEmailController, :login
+        post "/register", AuthNEmailController, :register
+        post "/confirm_email", AuthNEmailController, :confirm_email
+        get "/resend_confirmation", AuthNEmailController, :resend_confirmation
+        post "/forgot_password", AuthNEmailController, :forgot_password
+        post "/reset_password", AuthNEmailController, :reset_password
+      end
 
+    end
 
     get "/orbland/stream/:id", OrbController, :show_territory
     resources "/orbland/orbs", OrbController, except: [:new, :edit]
@@ -265,7 +238,59 @@ defmodule PhosWeb.Router do
 
       get "/flameon", DevLandController, :new
       get "/lankaonfyr", DevLandController, :fyr
+    end
+  end
+
+  if Mix.env() == :test or Mix.env() == :dev do
+    scope "/", PhosWeb do
+      pipe_through [:browser, :require_authenticated_user]
+
+      live_session :required_authenticated_user_dev,
+        on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated},{PhosWeb.Timezone, :timezone}] do
+        live "/orb", OrbLive.Index, :index
+        live "/orb/new", OrbLive.Index, :new
+        live "/orb/sethome", OrbLive.Index, :sethome
+        live "/orb/setwork", OrbLive.Index, :setwork
+
+        live "/orb/:id/edit", OrbLive.Index, :edit
+        live "/orb/:id/show/edit", OrbLive.Show, :edit
+
+        live "/memories/:id/edit", MemoryLive.Index, :edit
+
+        live "/memories/:id", MemoryLive.Show, :show
+        live "/memories/:id/show/edit", MemoryLive.Show, :edit
+
+
+        live "/reveries", ReverieLive.Index, :index
+        live "/reveries/new", ReverieLive.Index, :new
+        live "/reveries/:id/edit", ReverieLive.Index, :edit
+
+        live "/reveries/:id", ReverieLive.Show, :show
+        live "/reveries/:id/show/edit", ReverieLive.Show, :edit
+      end
+    end
+  end
+
+    scope "/", PhosWeb do
+    pipe_through [:browser]
+
+    resources "/admin/sessions", AdminSessionController, only: [:new, :create, :index], as: :admin_session
+
+    get "/users/log_out", UserSessionController, :delete
+
+    live_session :current_user,
+      on_mount: [{PhosWeb.Menshen.Gate, :mount_current_user}] do
+      live "/users/confirm/:token", UserConfirmationLive, :edit
+      live "/users/confirm", UserConfirmationInstructionsLive, :new
+    end
+
+    live_session :guest_if_not_logged_in,
+      on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Timezone, :timezone}] do
+
+      live "/orb/:id", OrbLive.Show, :show
+      live "/user/:username", UserProfileLive.Show, :show
+      live "/user/:username/allies", UserProfileLive.Show, :allies
 
     end
   end
- end
+end

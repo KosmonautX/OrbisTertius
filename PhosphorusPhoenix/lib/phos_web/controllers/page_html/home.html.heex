@@ -1,8 +1,51 @@
-<section class="mt-4 w-full flex justify-center">
-  <div class="w-1/2 bg-gray-300 flex justify-center rounded py-4">
-    <div>
-      <h1><%= gettext "Welcome to %{name}!", name: "Scratchbac"%></h1>
-      <h2>Awareness In Nearness </h2>
-    </div>
+<div class="relative">
+<img :if={!is_nil(@current_user)} class="object-cover h-screen w-full" src="images/user_splash.jpg" alt="Background Image" />
+<img :if={is_nil(@current_user)} class="object-cover h-screen w-full" src="images/guest_splash.jpg" alt="Background Image" />
+  <div :if={!is_nil(@current_user)} class="absolute inset-0 bg-gray-700 bg-opacity-70 flex flex-col justify-center items-center space-y-4">
+    <h1  class="mt-4 text-xl md:text-4xl text-center font-bold tracking-tight text-white">
+      <%= gettext("Welcome to Scratchbac%{name}!", name: ", #{Map.get(@current_user, :username, nil) || "🥳"}") %>
+    </h1>
   </div>
-</section>
+  <div :if={is_nil(@current_user)} class="absolute inset-0 bg-gray-700 bg-opacity-70 flex flex-col justify-center items-center space-y-4">
+    <h1  class="mt-4 text-xl md:text-4xl text-center font-bold tracking-tight text-white">
+<%= @flash["info"] && "Swee!" %>
+<%= @flash["error"] && "Sad!" %>
+<br>
+<%= @flash["info"] || @flash["error"] || "Welcome to Scratchbac!" %>
+    </h1>
+<.header class="text-white font-bold text-base">
+      <:subtitle>
+        Headed to Mobile App?
+        <.link navigate={~p"/redirect/#{"userland/self/"}"} class="font-semibold text-teal-400 hover:underline">
+            Click here!
+        </.link>
+      </:subtitle>
+    </.header>
+  <!--  <a
+      href="/auth/google"
+      class="flex items-center p-3 text-base font-bold text-gray-900 rounded-3xl bg-gray-50 hover:bg-gray-100 group hover:shadow"
+    >
+      <.google class="w-8 h-8 object-cover fill-white"></.google>
+      <span class="flex-1 ml-3 whitespace-nowrap">Continue with Google</span>
+    </a>
+
+
+    <a
+      href="/auth/apple"
+      class="flex items-center p-3 text-base font-bold text-gray-900 rounded-3xl bg-gray-50 hover:bg-gray-100 group hover:shadow"
+    >
+      <.apple class="w-8 h-8 object-cover fill-black"></.apple>
+      <span class="flex-1 ml-3 whitespace-nowrap">Continue with Apple</span>
+    </a>
+
+    <.header class="text-white font-bold text-base">
+      <:subtitle>
+        Don't have an account?
+        <.link navigate={~p"/users/register"} class="font-semibold text-teal-400 hover:underline">
+            Sign up Now!
+        </.link>
+      </:subtitle>
+    </.header> -->
+
+  </div>
+</div>
