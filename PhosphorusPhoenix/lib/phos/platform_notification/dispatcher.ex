@@ -27,17 +27,15 @@ defmodule Phos.PlatformNotification.Dispatcher do
         GenStage.reply(from, :ok)
         {:noreply, [id], state + 1}
       
-      {:ok, %{"template_id" => key} = data} ->
-        template = PN.get_template_by_key(key)
-        GenStage.reply(from, :ok)
-        {:ok, stored} = PN.insert_notification(%{
-          template_id: template.id,
-          active: true,
-          spec: data,
-          id: Ecto.UUID.generate(),
-        })
-
-        {:noreply, [stored.id], state + 1}
+      {:ok, data} ->
+        case insert_to_persistent_database(data) do
+          {:ok, stored} ->
+            GenStage.reply(from, :ok)
+            {:noreply, [stored.id], state + 1}
+          {:error, msg} -> 
+            GenStage.reply(from, {:error, msg})
+            {:noreply, [], state}
+        end
       _ -> 
         GenStage.reply(from, :error)
         {:noreply, [], state}
@@ -49,7 +47,7 @@ defmodule Phos.PlatformNotification.Dispatcher do
   def handle_info({_ref, {id, type, message}}, state) when type in [:retry, :error] do
     stored = PN.get_notification(id)
     retry_attempt = stored.retry_attempt + 1
-    next_attempt = DateTime.add(DateTime.utc_now(), retry_attempt * stored.retry_after, :minute)
+    next_attempt = DateTime.add(DateTime.utc_now(), retry_attempt * retry_after(), :minute)
     PN.update_notification(stored, %{error_reason: message, next_execute_at: next_attempt, retry_attempt: retry_attempt, success: retry_attempt > 5})
     {:noreply, [], state}
   end
@@ -72,4 +70,45 @@ defmodule Phos.PlatformNotification.Dispatcher do
   end
   defp filter_event_entity({:reply, %{"notification_id" => _id} = data}), do: {:reply, data}
   defp filter_event_entity(:error), do: :error
+
+  defp retry_after do
+    PN.config()
+    |> Keyword.get(:time_interval)
+    |> case do
+      int when is_integer(int) -> int
+      _ -> 5
+    end
+  end
+
+  defp insert_to_persistent_database(%{"template_id" => key} = data) when not is_nil(key) do
+    template = PN.get_template_by_key(key)
+    case get_recepient(data) do
+      {:ok, recepient_id} -> PN.insert_notification(%{
+          template_id: template.id,
+          recepient_id: recepient_id,
+          active: true,
+          spec: data,
+          id: Ecto.UUID.generate(),
+        })
+      err -> err
+    end
+  end
+  defp insert_to_persistent_database(data)  do
+    case get_recepient(data) do
+      {:ok, recepient_id} -> PN.insert_notification(%{
+          recepient_id: recepient_id,
+          active: true,
+          spec: data,
+          id: Ecto.UUID.generate(),
+        })
+      err -> err
+    end
+  end
+
+  defp get_recepient(%{"options" => opts}) do
+    case Map.get(opts, "to") do
+      user when is_bitstring(user) -> {:ok, user}
+      _ -> {:error, "Options to: must be included"}
+    end
+  end
 end

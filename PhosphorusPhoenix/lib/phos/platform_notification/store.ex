@@ -20,11 +20,9 @@ defmodule Phos.PlatformNotification.Store do
   """
 
   @type t :: %__MODULE__{
-    active: boolean(),
     success: boolean(),
     spec: Phos.PlatformNotification.t(),
     id: non_neg_integer(),
-    retry_after: non_neg_integer(),
     retry_attempt: non_neg_integer(),
     next_execute_at: DateTime.t(),
     error_reason: String.t(),
@@ -33,15 +31,16 @@ defmodule Phos.PlatformNotification.Store do
   @primary_key {:id, :binary_id, autogenerate: false}
   @foreign_key_type :binary_id
   schema "notifications" do
-    field :active, :boolean, default: false
     field :success, :boolean
     field :spec, :map
-    field :retry_after, :integer, default: 5
     field :retry_attempt, :integer, default: 0
     field :next_execute_at, :naive_datetime
     field :error_reason, :string
 
     belongs_to :template, Phos.PlatformNotification.Template, references: :id, type: Ecto.UUID
+    belongs_to :recepient, Phos.Users.User, references: :id, type: Ecto.UUID
+
+    timestamps()
   end
 
   @doc """
@@ -50,7 +49,7 @@ defmodule Phos.PlatformNotification.Store do
   @spec changeset(store :: t(), attrs :: map()) :: Ecto.Changeset.t()
   def changeset(store, attrs) do
     store
-    |> cast(attrs, [:id, :template_id, :active, :success, :spec, :retry_after, :retry_attempt, :next_execute_at, :error_reason])
+    |> cast(attrs, [:id, :template_id, :recepient_id, :active, :success, :spec, :retry_after, :retry_attempt, :next_execute_at, :error_reason])
     |> validate_required([:spec, :id])
   end
 end

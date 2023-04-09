@@ -77,13 +77,14 @@ defmodule Phos.Repo.Migrations.AddPlatformNotificationTable do
     create table(:notifications, primary_key: false) do
       add :id, :uuid, primary_key: true
       add :template_id, references(:notification_templates, column: :id, type: :uuid)
-      add :active, :boolean, default: true, null: true
+      add :recepient_id, references(:users, column: :id, type: :uuid)
       add :success, :boolean, null: true
       add :spec, {:map, :string}
-      add :retry_after, :integer, default: 0
       add :retry_attempt, :integer, default: 0
       add :next_execute_at, :naive_datetime, null: true
       add :error_reason, :string
+
+      timestamps()
     end
   end
 

@@ -58,13 +58,12 @@ defmodule Phos.PlatformNotification.Consumer do
   end
 
   defp send_notification(type, {body, sender, receiver, event}, %{spec: spec} = store) do
-    condition = Map.get(spec, "options", %{}) |> Map.get("condition")
+    condition = "'USR.#{store.recepient_id}' in topics"
     template = get_template(spec |> Map.get("options", %{}), store)
     data = Map.get(spec, "options", %{}) |> Map.get("data", %{})
     notification = PN.Template.parse(template, [sender: sender, receiver: receiver, event: event, body: body])
     case type do
-      "push" -> send_from_fcm(notification, get_token(receiver))
-      "broadcast" -> send_broadcast_notification(template, [condition: condition, data: data])
+      t when t in ["push", "broadcast"] -> send_broadcast_notification(template, [condition: condition, data: data])
       "email" -> # TODO: email integration
         :ok
       _ -> :error # not implemented yet
@@ -74,21 +73,7 @@ defmodule Phos.PlatformNotification.Consumer do
   defp send_broadcast_notification(template, options) do
     data = Keyword.get(options, :data, %{})
     condition = Keyword.get(options, :condition, %{})
-    IO.inspect(%{
-      data: data,
-      notif: template,
-      condition: condition
-    })
     Fcmex.push("", notification: template, condition: condition, data: data)
-  end
-
-  defp send_from_fcm(_template, nil), do: {:error, "FCM token not found"}
-  defp send_from_fcm(template, token) do
-    IO.inspect(%{
-      notif: template,
-      condition: token
-    })
-    Fcmex.push(token, notification: template)
   end
 
   defp get_token(%Phos.Users.User{} = user) do

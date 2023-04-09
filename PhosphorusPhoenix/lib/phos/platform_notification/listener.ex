@@ -50,12 +50,13 @@ defmodule Phos.PlatformNotification.Listener do
 
   defp notify_parent_element(%{initiator_id: init_id, parent: %{initiator_id: parent_init_id}} = comment) when init_id != parent_init_id do
     PN.notify({"broadcast", "COMMENT", comment.id, "replied_comment"},
+      to: parent_init_id,
       notification: %{
         title: "#{comment.initiator.username} replied",
         body: comment.body
       }, data: %{
         action_path: "/comland/comments/children/#{comment.id}"
-      }, condition: "'USR.#{parent_init_id}' in topics")
+      })
     comment
   end
   defp notify_parent_element(comment), do: comment
@@ -63,24 +64,26 @@ defmodule Phos.PlatformNotification.Listener do
   defp notify_initiator(%{initiator_id: init_id, orb: %{initiator_id: orb_init_id}, parent: %{initiator_id: parent_init_id}} = comment)
     when orb_init_id not in [init_id, parent_init_id] do
     PN.notify({"broadcast", "COMMENT", comment.id, "replied_orb"},
+      to: orb_init_id,
       notification: %{
         title: "#{comment.initiator.username} replied to a comment withtin your post",
         body: comment.body,
       }, data: %{
         action_path: "/comland/comments/children/#{comment.id}"
-      }, condition: "'USR.#{orb_init_id}' in topics")
+      })
     comment
   end
   defp notify_initiator(comment), do: comment
 
   defp notify_self(%{orb: %{initiator_id: orb_init_id}, initiator_id: init_id} = comment) when orb_init_id != init_id do
     PN.notify({"broadcast", "COMMENT", comment.id, "create_root_comment"},
+      to: orb_init_id,
       notification: %{
         title: "#{comment.initiator.username} replied",
         body: comment.body,
       }, data: %{
         action_path: "/comland/comments/root/#{comment.id}"
-      }, condition: "'USR.#{orb_init_id}'")
+      })
     :ok
   end
   defp notify_self(_comment), do: :ok
