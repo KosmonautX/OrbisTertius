@@ -61,14 +61,15 @@ defmodule Phos.Folk do
   def last_messages_by_relation(id, page, sort_attribute \\ :updated_at, limit \\ 12) do
     RelationBranch
     |> where([b], b.user_id == ^id)
-    |> join(:inner, [b], r in assoc(b, :root), as: :relation)
-    |> select([_b, r], r)
-    |> join(:inner, [_b, r], m in assoc(r, :last_memory))
-    |> join(:left, [_b, r, m], o in assoc(m, :orb_subject))
-    |> select_merge([_b, r, m, o], %{last_memory: %{m | orb_subject: o}})
+    |> join(:inner, [b], f in assoc(b, :friend))
+    |> select([_b, f], f)
+    |> join(:inner, [b, _f], r in assoc(b, :root), as: :relation)
+    |> select_merge([_b, f, root], %{f | self_relation: root} )
+    |> join(:inner, [_b, r,  f], m in assoc(f, :last_memory))
+    |> join(:left, [_b, _f, r, m], o in assoc(m, :orb_subject))
+    |> select_merge([_b, f, r, m, o], %{f| self_relation: %{r | last_memory: %{m | orb_subject: o}}})
     |> order_by([_b, r, _m], desc: r.updated_at)
     |> Repo.Paginated.all([page: page, sort_attribute: {:relation , sort_attribute}, limit: limit])
-    |> self_initiated_enricher(id)
   end
 
   #   @doc """
