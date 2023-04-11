@@ -7,7 +7,7 @@ defmodule PhosWeb.OrbLive.Show do
 
   @impl true
   def mount(
-        %{"id" => id} = _params,
+        %{"id" => id} = params,
         _session,
         %{assigns: %{current_user: %Phos.Users.User{} = user}} = socket
       ) do
@@ -21,8 +21,9 @@ defmodule PhosWeb.OrbLive.Show do
       {:ok,
        socket
        |> assign(:orb, orb)
-       |> assign_meta(orb)
+       |> assign_meta(orb, params)
        |> assign(:ally, false)
+       |> assign(:media, nil)
        |> assign(:comments, comments)
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
@@ -33,7 +34,7 @@ defmodule PhosWeb.OrbLive.Show do
   end
 
   @impl true
-  def mount(%{"id" => id} = _parmas, _session, socket) do
+  def mount(%{"id" => id} = params, _session, socket) do
     with {:ok, orb} <- Action.get_orb(id) do
       comment =
         Comments.get_root_comments_by_orb(orb.id)
@@ -43,8 +44,9 @@ defmodule PhosWeb.OrbLive.Show do
        socket
        |> assign(:orb, orb)
        |> assign(:ally, false)
-       |> assign_meta(orb)
+       |> assign_meta(orb, params)
        |> assign(:comments, comment)
+       |> assign(:media, nil)
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
        temporary_assigns: [orbs: Action.orbs_by_initiators([orb.initiator.id], 1).data]}
@@ -109,6 +111,14 @@ defmodule PhosWeb.OrbLive.Show do
     end
   end
 
+    def handle_info("unredirect", socket) do
+    {:noreply,
+     socket
+     |> assign(:redirect, nil)
+     |> push_patch(to: ~p"/orb/#{socket.assigns.orb.id}")
+    }
+  end
+
   defp apply_action(socket, :reply, %{"id" => _orb_id, "cid" => cid} = _params) do
     socket
     |> assign(:comment, Comments.get_comment!(cid))
@@ -133,7 +143,14 @@ defmodule PhosWeb.OrbLive.Show do
     |> assign(:page_title, "Editing Comments")
   end
 
-  defp apply_action(socket, :show, %{"id" => _id} = _params) do
+    defp apply_action(socket, :show, %{"id" => id, "media" => media}) do
+    socket
+    |> assign(:page_title, "")
+    |> assign(:media, Phos.Orbject.S3.get!("ORB", id, media))
+  end
+
+
+  defp apply_action(socket, :show, %{"id" => _id}) do
     socket
     |> assign(:page_title, "")
   end
@@ -143,48 +160,44 @@ defmodule PhosWeb.OrbLive.Show do
     |> assign(:page_title, "Editing")
   end
 
+  defp assign_meta(socket, orb, %{"bac" => _})  do
+    Process.send_after(self(), "unredirect", 888)
+    socket |> assign(:redirect, true) |> assign_meta(orb)
+  end
+  defp assign_meta(socket, orb, _), do: assign_meta(socket, orb)
   defp assign_meta(socket, orb) do
     media = Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless")
         |> (fn media ->
         (for {path, url} <- media || [] do
         %Phos.Orbject.Structure.Media{
         ext: MIME.from_path(path) |> String.split("/") |> hd,
-        url: url
+        url: url,
+        mimetype: MIME.from_path(path)
         } end) end).()
         |> List.first()
 
     assign(socket, :meta, %{
+      author: orb.initiator,
+      mobile_redirect: "orbland/orbs/" <> orb.id,
       title: " #{orb.title} by #{orb.initiator.username}",
       description:
         "#{get_in(orb, [Access.key(:payload, %{}), Access.key(:info, "")])} #{orb |> get_in([Access.key(:payload, %{}), Access.key(:inner_title, "-")])}",
       type: "website",
       image: (if (!is_nil(media) && media.ext in ["application", "image"]), do: media.url),
       video: (if (!is_nil(media) && media.ext in ["video"]), do: media.url),
+      "video:type": (if (!is_nil(media) && media.ext in ["video"]), do: media.mimetype),
       url: url(socket, ~p"/orb/#{orb}")
     })
   end
 
-  defp get_orbs(%{assigns: %{page: page}} = socket) do
-    socket
-    |> assign(page: page)
-    |> assign(
-      orbs:
-        socket.assigns.orbs ++
-          Action.orbs_by_initiators([socket.assigns.orb.initiator.id], page).data
-    )
-  end
 
-  def handle_event("load-more", _, %{assigns: assigns} = socket) do
-    {:noreply, assign(socket, page: assigns.page + 1) |> get_orbs()}
-  end
-
-  def handle_event("next", _, %{assigns: %{active_image: active}} = socket) do
-    {:noreply, assign(socket, active_image: active + 1)}
-  end
-
-  def handle_event("prev", _, %{assigns: %{active_image: active}} = socket) do
-    {:noreply, assign(socket, active_image: active - 1)}
-  end
+  def handle_event("load-more", _, %{assigns: %{page: page, orb: orb}} = socket) do
+    expected_page = page + 1
+    case Action.orbs_by_initiators([orb.initiator.id], expected_page).data do
+      [_|_] = orbs -> {:noreply, assign(socket, page: expected_page, orbs: orbs)}
+      _ -> {:noreply, socket}
+    end
+   end
 
   # Save comment flow
   @impl true

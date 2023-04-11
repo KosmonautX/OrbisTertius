@@ -23,7 +23,7 @@ defmodule PhosWeb.MemoryLiveTest do
 
       memory = memory_fixture(@create_attrs |> Map.put(:rel_subject_id, root.id))
 
-      {:ok, _index_live, html} = live(conn, ~p"/memories")
+      {:ok, _index_live, html} = live(conn, ~p"/memories/user/#{initiator.username}")
 
       assert html =~ "form phx-submit=\"search\""
       assert html =~ memory.message

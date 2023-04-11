@@ -145,6 +145,10 @@ defmodule Phos.Folk do
 
   """
   def delete_relation(%RelationRoot{} = relation) do
+    from(m in Phos.Message.Memory, where: m.rel_subject_id == ^relation.id)
+    |> Phos.Repo.all()
+    |> Enum.map(&Phos.Message.delete_memory(&1))
+
     Repo.delete(relation)
   end
 

@@ -6,15 +6,18 @@ defmodule PhosWeb.Components.ScrollAlly do
   def render(assigns) do
     ~H"""
     <div>
-      <div id="infinite-scroll-body" phx-update="append" class="overflow-x">
+      <div id={@id <> "infinite-scroll-body"} phx-update="append" class="w-full px-4 lg:px-0">
         <.user_info_bar
           :for={ally <- @ally_list}
           :if={!is_nil(Map.get(ally, :username))}
           id={"user-#{random_id()}-infobar"}
           user={ally}
+          show_padding={false}
+          class="border-b border-gray-300 lg:border-0"
         >
           <:information>
-            <%= ally |> get_in([Access.key(:public_profile, %{}), Access.key(:occupation, "Community Member")]) %>
+            <%= ally
+            |> get_in([Access.key(:public_profile, %{}), Access.key(:occupation, "Community Member")]) %>
           </:information>
           <:actions>
             <.live_component
@@ -27,7 +30,7 @@ defmodule PhosWeb.Components.ScrollAlly do
           </:actions>
         </.user_info_bar>
       </div>
-      <div id="infinite-scroll-marker" phx-hook="Scroll" data-page={@page} />
+      <div id={@id <> "infinite-scroll-marker"} phx-hook="Scroll" data-page={@page} data-archetype="rel"/>
     </div>
     """
   end

@@ -11,7 +11,6 @@ defmodule Phos.Users do
   alias Phos.Cache
   alias Ecto.Multi
 
-
   @ttl :timer.hours(1)
 
   @doc """
@@ -24,7 +23,7 @@ defmodule Phos.Users do
 
   """
   def list_users do
-    query = from u in User
+    query = from(u in User)
     Repo.all(query)
   end
 
@@ -58,8 +57,11 @@ defmodule Phos.Users do
 
   def get_admin do
     query = from u in User, where: u.email == "scratchbac@gmail.com"
+
     case Repo.one(query) do
-      user = %User{} -> user
+      user = %User{} ->
+        user
+
       nil ->
         query = from u in User, order_by: u.inserted_at, limit: 1
         Repo.one(query)
@@ -73,14 +75,17 @@ defmodule Phos.Users do
       %User{} = user -> {:ok, user}
       nil -> {:error, "Location not set"}
     end
+
     Repo.get_by(User |> preload(:private_profile), fyr_id: id)
   end
 
   def get_users_by_home(id, _locname) do
-    query = from u in User,
-      join: p in assoc(u, :private_profile),
-      where: fragment("? <@ ANY(?)", ~s|{"id": "home"}|, p.geolocation),
-      where: u.id == ^id
+    query =
+      from u in User,
+        join: p in assoc(u, :private_profile),
+        where: fragment("? <@ ANY(?)", ~s|{"id": "home"}|, p.geolocation),
+        where: u.id == ^id
+
     # select: p.geolocation
 
     Repo.all(query |> preload(:private_profile))
@@ -89,6 +94,7 @@ defmodule Phos.Users do
   @decorate cacheable(cache: Cache, key: {User, :find, id}, opts: [ttl: @ttl])
   def find_user_by_id(id) when is_bitstring(id) do
     query = from u in User, where: u.id == ^id, limit: 1
+
     case Repo.one(query) do
       %User{} = user -> {:ok, user |> Repo.preload(:private_profile)}
       nil -> {:error, "User not found"}
@@ -98,6 +104,7 @@ defmodule Phos.Users do
   def authenticate(email, password) when is_bitstring(email) and is_bitstring(password) do
     email = String.downcase(email)
     query = from u in User, where: u.email == ^email, limit: 1
+
     case Repo.one(query) do
       %User{} = user -> Argon2.check_pass(user, password)
       _ -> authenticate(nil, nil)
@@ -128,17 +135,18 @@ defmodule Phos.Users do
   def migrate_fyr_user(old_user, new_user) do
     old_changeset =
       old_user
-      |> User.fyr_registration_changeset(%{fyr_id: nil})
+      |> User.changeset(%{fyr_id: nil})
 
     new_changeset =
       new_user
       |> User.fyr_registration_changeset(%{fyr_id: old_user.fyr_id})
 
-    with {:ok, _} <- Repo.transaction(
-           Multi.new()
-           |> Multi.update(:old_user, old_changeset)
-           |> Multi.update(:new_user, new_changeset)
-         ) do
+    with {:ok, _} <-
+           Repo.transaction(
+             Multi.new()
+             |> Multi.update(:old_user, old_changeset)
+             |> Multi.update(:new_user, new_changeset)
+           ) do
       :ok
     else
       _ -> :error
@@ -181,6 +189,7 @@ defmodule Phos.Users do
     user
     |> User.territorial_changeset(attrs)
     |> Repo.update()
+
     # |> case do
     #      {:ok, user} = data ->
     #        spawn(fn -> discovery_publisher(user, attrs) end)
@@ -211,6 +220,7 @@ defmodule Phos.Users do
     changeset = Ecto.Changeset.change(user.public_profile)
     user_changeset = Ecto.Changeset.change(user)
     userprofile_changeset = Ecto.Changeset.change(changeset, attrs)
+
     Ecto.Changeset.put_embed(user_changeset, :public_profile, userprofile_changeset)
     |> Phos.Repo.update()
   end
@@ -245,7 +255,6 @@ defmodule Phos.Users do
     User.changeset(user, attrs)
   end
 
-
   @doc """
   Authenticate a user from oauth provider
   """
@@ -257,24 +266,28 @@ defmodule Phos.Users do
     end
   end
 
-  defp do_query_from_auth(id, provider) when is_atom(provider), do:
-  do_query_from_auth(id, Atom.to_string(provider))
+  defp do_query_from_auth(id, provider) when is_atom(provider),
+    do: do_query_from_auth(id, Atom.to_string(provider))
+
   defp do_query_from_auth(id, provider) do
     Repo.one(
       from a in Auth,
-      preload: [:user],
-      where: a.auth_id == ^id and a.auth_provider == ^provider,
-      limit: 1
+        preload: [:user],
+        where: a.auth_id == ^id and a.auth_provider == ^provider,
+        limit: 1
     )
   end
 
   defp create_new_user(id, provider, %{"auth_date" => _date}) when provider == "telegram" do
     params = %{
-      auths: [%{
-        auth_id: id,
-        auth_provider: to_string(provider)
-              }]
+      auths: [
+        %{
+          auth_id: id,
+          auth_provider: to_string(provider)
+        }
+      ]
     }
+
     %User{}
     |> User.telegram_changeset(params)
     |> Repo.insert()
@@ -285,7 +298,7 @@ defmodule Phos.Users do
       auth_id: id,
       auth_provider: to_string(provider),
       user: %{
-        email: email,
+        email: email
       }
     }
 
@@ -293,9 +306,9 @@ defmodule Phos.Users do
     |> Auth.changeset(params)
     |> Repo.insert()
     |> case do
-         {:ok, auth} -> {:ok, auth.user}
-         error -> error
-       end
+      {:ok, auth} -> {:ok, auth.user}
+      error -> error
+    end
   end
 
   alias Phos.Users.{User, UserToken, UserNotifier}
@@ -331,7 +344,7 @@ defmodule Phos.Users do
 
   """
   def get_user_by_email_and_password(email, password)
-  when is_binary(email) and is_binary(password) do
+      when is_binary(email) and is_binary(password) do
     user = Repo.get_by(User, email: email)
     if User.valid_password?(user, password), do: user
   end
@@ -353,30 +366,33 @@ defmodule Phos.Users do
 
   def get_user!(id), do: Repo.get!(User, id) |> Repo.preload([:private_profile, :personal_orb])
 
-  def get_territorial_user!(id), do: Repo.get!(User, id) |> Repo.preload([:private_profile, personal_orb: :locations])
+  def get_territorial_user!(id),
+    do: Repo.get!(User, id) |> Repo.preload([:private_profile, personal_orb: :locations])
 
   def get_public_user(user_id, your_id) do
-    Phos.Repo.one(from u in User,
-      where: u.id == ^user_id,
-      left_join: branch in assoc(u, :relations),
-      on: branch.friend_id == ^your_id,
-      left_join: root in assoc(branch, :root),
-      select: u,
-      select_merge: %{self_relation: root}
+    Phos.Repo.one(
+      from u in User,
+        where: u.id == ^user_id,
+        left_join: branch in assoc(u, :relations),
+        on: branch.friend_id == ^your_id,
+        left_join: root in assoc(branch, :root),
+        select: u,
+        select_merge: %{self_relation: root}
     )
-    |> Phos.Repo.Preloader.lateral(:orbs, [limit: 5])
+    |> Phos.Repo.Preloader.lateral(:orbs, limit: 5)
   end
 
   def get_public_user_by_username(username, your_id) do
-    Phos.Repo.one(from u in User,
-      where: u.username == ^username,
-      left_join: branch in assoc(u, :relations),
-      on: branch.friend_id == ^your_id,
-      left_join: root in assoc(branch, :root),
-      select: u,
-      select_merge: %{self_relation: root}
+    Phos.Repo.one(
+      from u in User,
+        where: u.username == ^username,
+        left_join: branch in assoc(u, :relations),
+        on: branch.friend_id == ^your_id,
+        left_join: root in assoc(branch, :root),
+        select: u,
+        select_merge: %{self_relation: root}
     )
-    |> Phos.Repo.Preloader.lateral(:orbs, [limit: 5])
+    |> Phos.Repo.Preloader.lateral(:orbs, limit: 5)
   end
 
   def get_private_profile!(id) do
@@ -421,7 +437,7 @@ defmodule Phos.Users do
     |> Repo.update()
   end
 
-  def claim_anon_user(user, attrs) do
+  def claim_anon_user(_user, _attrs) do
     {:error, "email already registered for user"}
   end
 
@@ -466,7 +482,6 @@ defmodule Phos.Users do
     User.pub_profile_changeset(user, attrs)
   end
 
-
   @doc """
   Returns an `%Ecto.Changeset{}` for changing telegram login users.
 
@@ -476,11 +491,9 @@ defmodule Phos.Users do
   %Ecto.Changeset{data: %User{}}
 
   """
-  def change_telegram_login(user, attrs \\ %{}) do
-    User.post_telegram_changeset(user, attrs)
+  def change_user_username(user, attrs \\ %{}) do
+    User.post_registration_changeset(user, attrs)
   end
-
-
 
   @doc """
   Emulates that the email will change without actually changing
@@ -542,7 +555,7 @@ defmodule Phos.Users do
 
   """
   def deliver_user_update_email_instructions(%User{} = user, current_email, update_email_url_fun)
-  when is_function(update_email_url_fun, 1) do
+      when is_function(update_email_url_fun, 1) do
     {encoded_token, user_token} = UserToken.build_email_token(user, "change:#{current_email}")
 
     Repo.insert!(user_token)
@@ -586,9 +599,9 @@ defmodule Phos.Users do
     |> Multi.delete_all(:tokens, UserToken.user_and_contexts_query(user, :all))
     |> Repo.transaction()
     |> case do
-         {:ok, %{user: user}} -> {:ok, user}
-         {:error, :user, changeset, _} -> {:error, changeset}
-       end
+      {:ok, %{user: user}} -> {:ok, user}
+      {:error, :user, changeset, _} -> {:error, changeset}
+    end
   end
 
   ## Session
@@ -607,6 +620,7 @@ defmodule Phos.Users do
   """
   def get_user_by_session_token(token) do
     {:ok, query} = UserToken.verify_session_token_query(token)
+
     Repo.one(query)
     |> Repo.preload([:private_profile])
   end
@@ -634,7 +648,7 @@ defmodule Phos.Users do
 
   """
   def deliver_user_confirmation_instructions(%User{} = user, confirmation_url_fun)
-  when is_function(confirmation_url_fun, 1) do
+      when is_function(confirmation_url_fun, 1) do
     if user.confirmed_at do
       {:error, :already_confirmed}
     else
@@ -678,7 +692,7 @@ defmodule Phos.Users do
 
   """
   def deliver_user_reset_password_instructions(%User{} = user, reset_password_url_fun)
-  when is_function(reset_password_url_fun, 1) do
+      when is_function(reset_password_url_fun, 1) do
     {encoded_token, user_token} = UserToken.build_email_token(user, "reset_password")
     Repo.insert!(user_token)
     UserNotifier.deliver_reset_password_instructions(user, reset_password_url_fun.(encoded_token))
@@ -724,8 +738,8 @@ defmodule Phos.Users do
     |> Multi.delete_all(:tokens, UserToken.user_and_contexts_query(user, :all))
     |> Repo.transaction()
     |> case do
-         {:ok, %{user: user}} -> {:ok, user}
-         {:error, :user, changeset, _} -> {:error, changeset}
-       end
+      {:ok, %{user: user}} -> {:ok, user}
+      {:error, :user, changeset, _} -> {:error, changeset}
+    end
   end
 end

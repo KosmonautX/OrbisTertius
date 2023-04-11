@@ -52,7 +52,7 @@ defmodule PhosWeb.CommentLiveTest do
         |> form("#create-root-comment-#{orb.id}", comment: @invalid_attrs)
         |> render_submit()
 
-      assert view =~ "can&#39;t be blank"
+      assert view =~ "border-rose-400"
     end
 
     test "edit comment", %{conn: conn, orb: orb, user: user} do

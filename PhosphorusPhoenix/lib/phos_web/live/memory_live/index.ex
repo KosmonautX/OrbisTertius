@@ -26,10 +26,10 @@ defmodule PhosWeb.MemoryLive.Index do
     when your.username == username, do: push_navigate(socket, to: ~p"/memories")
 
   defp apply_action(%{assigns: %{current_user: your}} = socket, :show, %{"username" => username}) do
-    %{data: [mem | _tail] = mems, meta: meta} =
+    {%{data: mems, meta: meta}, rel_id} =
       case user = Phos.Users.get_public_user_by_username(username, your.id) do
-        %{self_relation: nil} -> %{meta: %{}, data: []}
-        %{self_relation: rel} -> list_memories(user, rel.id)
+        %{self_relation: nil} -> {%{meta: %{}, data: []}, nil}
+        %{self_relation: rel} -> {list_memories(user, rel.id), rel.id}
       end
 
     send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_dekstop, memory: %Memory{})
@@ -38,9 +38,9 @@ defmodule PhosWeb.MemoryLive.Index do
     socket
     |> assign(:page_title, "Chatting with @" <> username)
     |> assign(:memory, %Memory{})
-    |> assign(:relation_id, mem.rel_subject_id)
+    |> assign(:relation_id, rel_id)
     |> assign(user: user, message_cursor: Map.get(meta, :pagination, %{}) |> Map.get(:cursor))
-    |> assign(:memories, Enum.reverse(mems))
+    |> assign(:memories, mems)
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do

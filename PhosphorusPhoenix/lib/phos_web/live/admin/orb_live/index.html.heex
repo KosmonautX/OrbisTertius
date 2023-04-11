@@ -1,4 +1,4 @@
-<div class="hidden lg:block w-full p-1 max-h-fit		">
+<div class="hidden lg:block w-full p-1 max-h-fit">
   <div class="flex items-center px-2 mb-2">
     <div class="block mr-4">
       <.link navigate={~p"/admin/orbs/import"} class="button button-sm">
@@ -18,11 +18,11 @@
       </.form>
     </div>
   </div>
-<div class="">
-  <.table id="orbs" rows={@orbs}>
-    <:col :let={orb} classes="sticky left-0" label="Initiator">
-      <.admin_user_preview user={orb.initiator} id={"admin_user_preview_for_#{orb.id}"} />
-    </:col>
+  <div class="">
+    <.table id="orbs" rows={@orbs}>
+      <:col :let={orb} classes="sticky left-0" label="Initiator">
+        <.admin_user_preview user={orb.initiator} id={"admin_user_preview_for_#{orb.id}"} />
+      </:col>
       <:col :let={orb} label="Username">
         <%= orb
         |> get_in([
@@ -35,13 +35,16 @@
       <:col :let={orb} label="Created at">
         <%= Timex.format!(orb.inserted_at, "{D} {Mshort} {YY} {h24}:{m}") %>
       </:col>
-       <:col :let={orb}  label="Title">
-      <.link navigate={~p"/admin/orbs/#{orb}"}><%= orb.title || orb
-      |> get_in([
-        Access.key(:payload, %{}),
-        Access.key(:inner_title, "nil")
-      ]) %></.link>
-    </:col>
+      <:col :let={orb} label="Title">
+        <.link navigate={~p"/admin/orbs/#{orb}"}>
+          <%= orb.title ||
+            orb
+            |> get_in([
+              Access.key(:payload, %{}),
+              Access.key(:inner_title, "nil")
+            ]) %>
+        </.link>
+      </:col>
       <:col :let={orb} label="Birthday">
         <%= orb
         |> get_in([
@@ -58,7 +61,7 @@
 
 <div class="lg:hidden block">
   <div class="grid grid-cols-2 gap-4">
-    <.admin_grid :for={orb <- @orbs} user={orb.initiator} id={"admin-grid-for-#{orb.id}"}/>
+    <.admin_grid :for={orb <- @orbs} user={orb.initiator} id={"admin-grid-for-#{orb.id}"} />
   </div>
 </div>
 

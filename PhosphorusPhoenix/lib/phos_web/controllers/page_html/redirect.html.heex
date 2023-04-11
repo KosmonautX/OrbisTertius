@@ -1,6 +1,6 @@
 <div class="flex h-screen justify-center content-center items-center ">
     <h1  class="m-auto text-xl md:text-4xl text-center font-bold tracking-tight text-black">
-        <a href={"scrb://host#{@out}"}> Redirecting to Mobile...</a>
+        <a href={"scrb://host/#{@out}"}> Redirecting to Mobile...</a>
     </h1>
 </div>
 
@@ -28,7 +28,7 @@
    message.innerText = 'Your OS is not supported';
        }
  };
-    this.document.location = "scrb://host" + path;
+    this.document.location = "scrb://host/" + path;
 
 
     setTimeout(function() {

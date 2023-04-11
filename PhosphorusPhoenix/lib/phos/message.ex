@@ -42,8 +42,6 @@ defmodule Phos.Message do
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
-
-
   @doc """
   Returns paginated call by cursorof the messages by relation
 
@@ -145,8 +143,7 @@ defmodule Phos.Message do
   """
   def get_memory!(id), do: Repo.get!(Memory, id)
 
-
-    @doc """
+  @doc """
   Create a Message.
 
   ## Examples
@@ -188,6 +185,7 @@ defmodule Phos.Message do
 
   """
   def create_memory(attrs \\ %{})
+
   def create_memory(%{"id" => _id} = attrs) do
     %Memory{}
     |> Memory.changeset(attrs)
@@ -199,6 +197,7 @@ defmodule Phos.Message do
     |> Memory.changeset(attrs |> Map.put(:id, Ecto.UUID.generate()))
     |> Repo.insert()
   end
+
 
   @doc """
   Updates a memory.

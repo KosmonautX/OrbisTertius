@@ -79,12 +79,11 @@ defmodule Phos.Users.User do
     |> cast_assoc(:auths, with: &Auth.changeset/2)
   end
 
-  def post_telegram_changeset(%__MODULE__{} = user, attrs) do
+  def post_registration_changeset(%__MODULE__{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :email])
-    |> validate_email()
+    |> cast(attrs, [:username])
     |> validate_required(:username)
-    |> unique_constraint(:username, name: :unique_username)
+    |> validate_username()
   end
 
   def migration_changeset(%Phos.Users.User{} = user, attrs) do

@@ -5,68 +5,52 @@ defmodule PhosWeb.UserProfileLive.Show do
   alias Phos.Action
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(%{"username" => username} = params, _session, %{assigns: %{current_user: current_user}} = socket) do
+    with %Users.User{} = user <- Users.get_user_by_username(username) do
     Phos.PubSub.subscribe("folks")
 
     {:ok,
      socket
-     |> assign(page: 1), temporary_assigns: [ally_list: []]}
-  end
+     |> assign(:user, user)
+     |> assign_meta(user, params)
+     |> assign(orb_page: 1)
+     |> assign(ally_page: 1), temporary_assigns: [orbs: Action.orbs_by_initiators([user.id], 1).data,
+       allies: ally_list(current_user, user)]}
 
-  @impl true
-  def handle_params(
-        %{"username" => username} = params,
-        _url,
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    with %Users.User{} = user <- Users.get_user_by_username(username) do
-      {:noreply,
-       socket
-       |> assign(:params, params)
-       |> assign(:user, user)
-       |> assign(:ally_list, ally_list(current_user, user))
-       |> assign_meta(user)
-       |> assign(:orbs, Action.orbs_by_initiators([user.id], 1).data)
-       |> apply_action(socket.assigns.live_action, params)}
     else
       nil -> raise PhosWeb.ErrorLive, message: "User Not Found"
     end
   end
 
-  def handle_params(
-        %{"user_id" => user_id} = params,
-        _url,
-        %{assings: %{current_user: current_user}} = socket
-      ) do
-    user = Users.get_user!(user_id)
-
-    {:noreply,
-     socket
-     |> assign(:params, params)
-     |> assign(:user, user)
-     |> assign(:ally_list, ally_list(current_user, user))
-     |> assign(:orbs, Action.get_active_orbs_by_initiator(user_id))
-     |> apply_action(socket.assigns.live_action, params)}
+  @impl true
+  def handle_params(params, _url, socket) do
+      {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
   @impl true
   def handle_event(
         "load-more",
-        _,
-        %{assigns: %{current_user: user, page: page, ally_list: ally_list, user: friend}} = socket
+        %{"archetype" => "rel"},
+        %{assigns: %{current_user: user, ally_page: page, user: friend}} = socket
       ) do
     expected_page = page + 1
 
-    {:noreply,
-     assign(socket,
-       page: expected_page,
-       ally_list: ally_list ++ ally_list(user, friend, expected_page)
-     )}
-  end
+    case ally_list(user, friend, expected_page) do
+      [_|_] = allies -> {:noreply,
+      assign(socket,
+        page: expected_page,
+        allies: allies)}
+      _ -> {:noreply, socket}
+    end
+   end
 
-  @impl true
-  def handle_event("load-more", _, %{assigns: %{current_user: user}} = socket) when is_nil(user),
-    do: {:noreply, socket}
+  def handle_event("load-more", %{"archetype" => "orb"}, %{assigns: %{orb_page: page, user: user}} = socket) do
+    expected_page = page + 1
+    case Action.orbs_by_initiators([user.id], expected_page).data do
+      [_|_] = orbs -> {:noreply, assign(socket, page: expected_page, orbs: orbs)}
+      _ -> {:noreply, socket}
+    end
+   end
 
   @impl true
   def handle_info(
@@ -114,6 +98,14 @@ defmodule PhosWeb.UserProfileLive.Show do
     end
   end
 
+  def handle_info("unredirect", socket) do
+    {:noreply,
+     socket
+     |> assign(:redirect, nil)
+     |> push_patch(to: ~p"/user/#{socket.assigns.user.username}")
+    }
+  end
+
   defp apply_action(socket, :show, _params) do
     socket
     |> assign(page_title: "Viewing Profile")
@@ -133,8 +125,15 @@ defmodule PhosWeb.UserProfileLive.Show do
     |> assign(page_title: "Viewing Allies")
   end
 
+  defp assign_meta(socket, user, %{"bac" => _}) do
+    Process.send_after(self(), "unredirect", 888)
+    socket |> assign(:redirect, true) |> assign_meta(user)
+  end
+  defp assign_meta(socket, user, _), do: assign_meta(socket, user)
   defp assign_meta(socket, user) do
     assign(socket, :meta, %{
+      author: user,
+      mobile_redirect: "userland/others/" <> user.id,
       title: "@#{user.username}",
       description: user |> get_in([Access.key(:public_profile, %{}), Access.key(:bio, "-")]),
       type: "website",

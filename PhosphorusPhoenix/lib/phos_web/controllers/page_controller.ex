@@ -17,12 +17,8 @@ defmodule PhosWeb.PageController do
     |> render(:redirect, layout: false)
   end
 
-  def redirect(conn, params) do
+  def redirect(conn, _params) do
     render(conn, :redirect, layout: false)
-  end
-
-  def agent(conn, _params) do
-    render(conn, :agent)
   end
 
   def welcome(conn, _params) do
