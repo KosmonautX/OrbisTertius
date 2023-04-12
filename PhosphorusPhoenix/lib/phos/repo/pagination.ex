@@ -19,8 +19,8 @@ defmodule Phos.Repo.Paginated do
   def query_builder(query, page, attr, limit), do: query_builder(query, [sort_attribute: attr, limit: limit, page: page])
 
   #named binding
-  defp maybe_ascend(query, {as, field}, true), do: from [{^as, x}] in query, order_by: field(x, ^field)
-  defp maybe_ascend(query, {as, field}, false), do: from [{^as, x}] in query, order_by: field(x, ^field)
+  defp maybe_ascend(query, {as, field}, false), do: from [{^as, x}] in query, order_by: [{:desc, field(x, ^field)}]
+  defp maybe_ascend(query, {as, field}, true), do: from [{^as, x}] in query, order_by: [{:asc, field(x, ^field)}]
   defp maybe_ascend(query, attr, false), do: query |> order_by(desc: ^attr)
   defp maybe_ascend(query, attr, true), do: query |> order_by(asc: ^attr)
   defp maybe_ascend(query, _attr, nil), do: query
@@ -36,7 +36,10 @@ defmodule Phos.Repo.Paginated do
 
   def all(query, opts) when is_list(opts) do
     limit = Keyword.get(opts, :limit, 12)
-    sort = Keyword.get(opts, :sort_attribute, :inserted_at)
+    sort = case Keyword.get(opts, :sort_attribute, :inserted_at) do
+             {_key, sort_attr} -> sort_attr
+             sort_attr -> sort_attr
+           end
 
     dao = query
     |> query_builder(opts)
@@ -47,7 +50,7 @@ defmodule Phos.Repo.Paginated do
     case Keyword.fetch(opts, :page) do
       # page-based
       {:ok, page} ->
-        total = Phos.Repo.aggregate(query, :count)
+        total =  Phos.Repo.aggregate(query, :count, sort)
         page_response(dao, page, total, limit)
 
       :error ->

@@ -58,7 +58,7 @@ defmodule Phos.Folk do
 
   """
 
-  def last_messages_by_relation(id, page, sort_attribute \\ :updated_at, limit \\ 12) do
+  def last_messages_by_relation(id, opts) when is_list(opts) do
     RelationBranch
     |> where([b], b.user_id == ^id)
     |> join(:inner, [b], f in assoc(b, :friend))
@@ -68,8 +68,7 @@ defmodule Phos.Folk do
     |> join(:inner, [_b, r,  f], m in assoc(f, :last_memory))
     |> join(:left, [_b, _f, r, m], o in assoc(m, :orb_subject))
     |> select_merge([_b, f, r, m, o], %{f| self_relation: %{r | last_memory: %{m | orb_subject: o}}})
-    |> order_by([_b, r, _m], desc: r.updated_at)
-    |> Repo.Paginated.all([page: page, sort_attribute: {:relation , sort_attribute}, limit: limit])
+    |> Repo.Paginated.all([{:sort_attribute, {:relation , :updated_at}} | opts])
   end
 
   #   @doc """

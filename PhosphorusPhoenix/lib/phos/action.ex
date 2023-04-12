@@ -168,16 +168,16 @@ defmodule Phos.Action do
     from(l in Orb_Location,
       as: :l,
       where: l.location_id in ^hashes,
-      left_join: orbs in assoc(l, :orbs),
+      inner_join: orbs in assoc(l, :orbs),
       where: orbs.userbound == true and fragment("? != '[]'", orbs.traits),
       inner_join: initiator in assoc(orbs, :initiator),
       select: initiator,
       distinct: initiator.id,
       left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,
-      left_join: root in assoc(branch, :root),
-      select_merge: %{self_relation: root})
-      |> Repo.Paginated.all(page, sort_attribute, limit)
+      inner_join: root in assoc(branch, :root),
+      select_merge: %{initiator: %{initiator | self_relation: root}})
+      |> Repo.Paginated.all([page: page, sort_attribute: sort_attribute, limit: limit])
       |> (&(Map.put(&1, :data, &1.data |> Repo.Preloader.lateral(:orbs, [limit: 5])))).()
   end
 

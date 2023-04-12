@@ -16,18 +16,6 @@ defmodule Phos.Message do
 
   """
 
-  def last_messages_by_relation(id, page, sort_attribute \\ :updated_at, limit \\ 12) do
-    Phos.Users.RelationBranch
-    |> where([b], b.user_id == ^id)
-    |> join(:inner, [b], r in assoc(b, :root), as: :relation)
-    |> select([_b, r], r)
-    |> join(:inner, [_b, r], m in assoc(r, :last_memory))
-    |> join(:left, [_b, r, m], o in assoc(m, :orb_subject))
-    |> select_merge([_b, r, m, o], %{last_memory: %{m | orb_subject: o}})
-    |> order_by([_b, r, _m], desc: r.updated_at)
-    |> Repo.Paginated.all([page: page, sort_attribute: {:relation , sort_attribute}, limit: limit])
-  end
-
   def last_messages_by_orb_within_relation({rel_id, _yours}, opts) when is_list(opts) do
     Phos.Message.Memory
     |> where([m], m.rel_subject_id == ^rel_id and not is_nil(m.orb_subject_id))
