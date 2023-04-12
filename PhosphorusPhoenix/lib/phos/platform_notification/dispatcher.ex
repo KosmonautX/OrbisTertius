@@ -81,12 +81,11 @@ defmodule Phos.PlatformNotification.Dispatcher do
   end
 
   defp insert_to_persistent_database(%{"template_id" => key} = data) when not is_nil(key) do
-    template = PN.get_template_by_key(key)
+    template = PN.get_template_by_key(key) || %{}
     case get_recepient(data) do
       {:ok, recepient_id} -> PN.insert_notification(%{
-          template_id: template.id,
+          template_id: Map.get(template, :id),
           recepient_id: recepient_id,
-          active: true,
           spec: data,
           id: Ecto.UUID.generate(),
         })

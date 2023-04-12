@@ -49,7 +49,7 @@ defmodule Phos.PlatformNotification.Store do
   @spec changeset(store :: t(), attrs :: map()) :: Ecto.Changeset.t()
   def changeset(store, attrs) do
     store
-    |> cast(attrs, [:id, :template_id, :recepient_id, :active, :success, :spec, :retry_after, :retry_attempt, :next_execute_at, :error_reason])
+    |> cast(attrs, [:id, :template_id, :recepient_id, :success, :spec, :retry_attempt, :next_execute_at, :error_reason])
     |> validate_required([:spec, :id])
   end
 end

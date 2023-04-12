@@ -63,7 +63,7 @@ defmodule Phos.PlatformNotification.Producer do
       "entity" => entity,
       "entity_id" => id,
       "template_id" => template_id,
-      "options" => Enum.into(options, %{})
+      "options" => Enum.into(options, %{}, fn {k, v} -> {to_string(k), v} end)
     }
     {:reply, :ok, [event], state + 1}
   end

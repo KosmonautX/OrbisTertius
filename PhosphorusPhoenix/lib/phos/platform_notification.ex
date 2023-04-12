@@ -96,13 +96,13 @@ defmodule Phos.PlatformNotification do
   end
 
   def get_notification(id) do
-    query = from s in Store, where: s.id == ^id, preload: [:template], limit: 1
+    query = from s in Store, where: s.id == ^id, preload: [:template, :recepient], limit: 1
     Repo.one(query)
   end
 
   def active_notification() do
     time = DateTime.utc_now()
-    query = from s in Store, where: s.active == true and s.retry_attempt <= 5 and s.next_execute_at <= ^time
+    query = from s in Store, where: s.retry_attempt <= 5 and s.next_execute_at <= ^time
     query = where(query, [s], is_nil(s.success) or s.success == false)
 
     Repo.all(query)
