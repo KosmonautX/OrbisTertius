@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "scratchbac-norbandy",
+  "private_key_id": "dummyid",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCimC/9YKhKZJfZ\nu2ffYRFDCFPojUyv1Ct9dd1jtdCOgQR22zPu0Twi5Amav7JPbaUL1f7zbbuA2vTD\nj/5UgBNgydKhLcYYY8eVoFok4J2tzmy6UBXce1vqlVwYpiyYbORhFasxBrRMmfmC\nciTcOOZdI0rbrfeqhcHBYhJ4UO9AnytVjuxos4QnyjWrMqQpz60xr3ihoZDR67Av\nvA/cqdSZYMlR1C9/aKfz9JQlZcUFuBQP65MZ5P753/5ePi2DR9sY6dGm3xjbJEjB\n1F5ulSX7b+gyrMxHfQhrh0SqdJMf9lZDPfd/uwGTdQoXt2anwe86vOvt41k0EE2/\n82l9m66HAgMBAAECggEAMIM7/luyms+8xwg1i97Iabm4X3CZavThLQPX1IJRAdPY\n4yWwLxda3AYyH2wG5dAPKKLm+PbKtT2fPiJefhPgtEZDhDfGHUzYJfq8KriiE1O9\n+TEf9LMRz8JUwj4CnFARLC5s76nSbfCbE6K/AL4xbaS0Fyum88gI8YwzepabbCoX\nz7GA0PIjDcK5yu3Iwq9qlZSNgFKvz+pGpL7DXGq6HGEopTXiRYU8Le2St7aHopU/\n5Y4THAFJ7vUksAqX2zfuQKjXUlX+cTB3KGpS/aAuqtr116tvhfCGHTlbkxZlKONY\n485XA9KwJ8j/RBTDoZlQdcn/Nqqwmx+X9awbdpvfEQKBgQDTQnXV+UZq/1aZCgjs\nYq7TiWsF/ioZqYG44bAWHCwXE3NLsNvHUBPMrHcTwx7afFsvqNxQKW8eGYzbfOkX\nPA63wCct+MVj9m8aDjdiWyMjJq936c9kNv4vAr+zl2SOZQeEyGKkZL7kEe2CNcbP\nDszNKt6YVeO9DgYcZfn6Fk0JywKBgQDFB1L/7/oFIPCRN8c+ik0BfwNJwQacb5Sj\nc13Z7EuyK8k9IgzPnn0UNsnEScCnVYiI07JuTH3dhYFAMM9XS5lEHwljdjTtfMxT\nDzzK9KNCVvFks/4e6jAWXmQ26t7k7Rg3yp970bnlfg7ckskVnaiEp/b6iJqF/9xv\ncW8rV5sGtQKBgQCSPB3/OKcS557VHsogfwrPaP8JTe9shhZCmQ7fry6h5pfXnBv2\nMqsR8YwXxOf1i0E/k161qoi9SChlwmhC6hKyBTPZsatJT8uGOLMDxVxkN6Icml8x\n2pNGjVuPgEtd+fcjZeZKL2anzvUePgVZTMBdgMBGqKWVN0DppXlNMOSw0wKBgCgH\no+pR1EckeRvX7EgdiyWpq35ZlEFGPjmzH7c91ec+FCWyfE3WUm0/8GBL57NXomTC\nNfdI3S2biTYEdKu0tU/syliF1J0HhO+/IcfOSjkZNvQRyah4RgrVZKDvuRdjwE7d\ngOeEJbOll9lijS4yGOHSyk/+Xv6ojB2sOzzgEKQdAoGAYLzqeycJOXG4cI4x+8/+\nE6KBM+QHzkBoxkbgsB7fRzcsO6cjavlOXYzsi9+gF7emz7SZXB/2O31u3bZCmHZH\njzDHlc8W9IzMhExLvKE4REu+OThd8YKME/wVNYwp5S2JcZjTC5nCgxdoXdSaxz9B\non5IzCACRFJ39S3VGWzwgAM=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-kg7np@scratchbac-norbandy.iam.gserviceaccount.com",
+  "client_id": "12345543211",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/wolololo"
+}

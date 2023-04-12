@@ -124,6 +124,11 @@ config :phos, Phos.PlatformNotification,
   min_demand: 2,
   max_demand: 10
 
+config :sparrow,
+  fcm: [
+    path_to_json: :code.priv_dir(:phos) |> to_string() |> Kernel.<>("/data/sparrow_config.json"),
+  ]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
