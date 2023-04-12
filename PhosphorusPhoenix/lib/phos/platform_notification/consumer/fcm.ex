@@ -3,14 +3,24 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
 
   @impl true
   def send(%{spec: spec} = store) do
-    recipient = "'USR.#{store.recepient_id}' in topics"
-    template = get_template(store)
-    options = [notification: template, condition: recipient]
+    recepient = "'USR.#{store.recepient_id}' in topics"
+    %{body: body, title: title} = get_template(store)
+    link = get_link(store)
 
-    case get_in(spec, [Access.key("options", %{}), "data"]) do
-      data when is_map(data) -> Fcmex.push("", Keyword.put(options, :data, data))
-      _ -> Fcmex.push("", options)
-    end
+    android =
+      Sparrow.FCM.V1.Android.new()
+      |> Sparrow.FCM.V1.Android.add_title(title)
+      |> Sparrow.FCM.V1.Android.add_body(body)
+
+    webpush =
+      Sparrow.FCM.V1.Webpush.new(link)
+      |> Sparrow.FCM.V1.Webpush.add_title(title)
+      |> Sparrow.FCM.V1.Webpush.add_body(body)
+
+    Sparrow.FCM.V1.Notification.new(:topic, recepient)
+    |> Sparrow.FCM.V1.Notification.add_android(android)
+    |> Sparrow.FCM.V1.Notification.add_webpush(webpush)
+    |> Sparrow.API.push()
   end
 
   defp get_template(%{spec: spec} = store) do
@@ -19,6 +29,15 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
     |> case do
       n when is_map(n) -> n
       _ -> parse(store)
+    end
+  end
+
+  defp get_link(%{spec: spec} = store) do
+    spec
+    |> get_in([Access.key("options", %{}), Access.key("data", %{}), "action_path"])
+    |> case do
+      nil -> Map.get(store.template, :click_action)
+      l -> l
     end
   end
 
