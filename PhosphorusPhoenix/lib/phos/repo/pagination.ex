@@ -54,21 +54,33 @@ defmodule Phos.Repo.Paginated do
         page_response(dao, page, total, limit)
 
       :error ->
-        if(count > limit) do
+      cond do
+        count > limit ->
           [ _ | [head| _] = resp ] = dao |> Enum.reverse()
           %{data: resp |> Enum.reverse(), # remove last element
             meta: %{
               pagination: %{
                 downstream: true,
                 count: limit,
-                cursor: Map.get(head, sort) |> DateTime.to_unix(:millisecond)}}}
+                cursor: Map.get(head, sort) |> DateTime.from_naive!("UTC") |> DateTime.to_unix(:second)}}}
 
-        else
+          count != 0 ->
+            [head | _ ] = dao |> Enum.reverse()
             %{data: dao,
               meta: %{
                 pagination: %{
-                  count: length(dao),
-                  downstream: false}}}
+                  count: count,
+                  downstream: false,
+                  cursor: Map.get(head, sort) |> DateTime.from_naive!("UTC")  |> DateTime.to_unix(:second)}}}
+
+          count == 0 ->
+            %{data: [],
+              meta: %{
+                pagination: %{
+                  count: 0,
+                  downstream: false
+                  #cursor: Keyword.get(opts, :filter, nil) |> DateTime.from_naive!("UTC")  |> DateTime.to_unix(:second)
+                }}}
         end
     end
   end

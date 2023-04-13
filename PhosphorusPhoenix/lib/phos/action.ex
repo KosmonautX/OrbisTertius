@@ -175,8 +175,8 @@ defmodule Phos.Action do
       distinct: initiator.id,
       left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,
-      inner_join: root in assoc(branch, :root),
-      select_merge: %{initiator: %{initiator | self_relation: root}})
+      left_join: root in assoc(branch, :root),
+      select_merge: %{self_relation: root})
       |> Repo.Paginated.all([page: page, sort_attribute: sort_attribute, limit: limit])
       |> (&(Map.put(&1, :data, &1.data |> Repo.Preloader.lateral(:orbs, [limit: 5])))).()
   end
