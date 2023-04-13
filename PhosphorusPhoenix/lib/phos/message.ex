@@ -16,41 +16,17 @@ defmodule Phos.Message do
 
   """
 
-  def last_messages_by_relation(id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
-    Phos.Message.Reverie
-    |> where([r], r.user_destination_id == ^id)
-    |> join(:inner, [r], m in Phos.Message.Memory, on: r.memory_id == m.id)
-    |> select_merge([r, m], %{memory: m})
-    |> distinct([r, m], m.rel_subject_id)
-    |> order_by([e], desc: e.inserted_at)
-    |> preload(memory: [rel_subject: [:acceptor, :initiator], orb_subject: []])
-    |> Repo.Paginated.all(page, sort_attribute, limit)
-  end
-
-  def last_messages_by_orb_within_relation({rel_id, yours}, opts) when is_list(opts) do
-    Phos.Message.Reverie
-    |> where([r], r.user_destination_id == ^yours)
-    |> join(:inner, [r], m in Phos.Message.Memory,
-      on: r.memory_id == m.id and not is_nil(m.orb_subject_id) and m.rel_subject_id == ^rel_id
-    )
-    |> select_merge([r, m], %{memory: m})
-    |> preload(memory: [:orb_subject])
+  def last_messages_by_orb_within_relation({rel_id, _yours}, opts) when is_list(opts) do
+    Phos.Message.Memory
+    |> where([m], m.rel_subject_id == ^rel_id and not is_nil(m.orb_subject_id))
+    |> preload([:orb_subject])
     |> Repo.Paginated.all(opts)
   end
 
-  def last_messages_by_orb_within_relation(
-        {rel_id, yours},
-        page,
-        sort_attribute \\ :inserted_at,
-        limit \\ 12
-      ) do
-    Phos.Message.Reverie
-    |> where([r], r.user_destination_id == ^yours)
-    |> join(:inner, [r], m in Phos.Message.Memory,
-      on: r.memory_id == m.id and not is_nil(m.orb_subject_id) and m.rel_subject_id == ^rel_id
-    )
-    |> select_merge([r, m], %{memory: m})
-    |> preload(memory: [:orb_subject])
+  def last_messages_by_orb_within_relation({rel_id, _yours}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    Phos.Message.Memory
+    |> where([m], m.rel_subject_id == ^rel_id and not is_nil(m.orb_subject_id))
+    |> preload([:orb_subject])
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
@@ -59,47 +35,51 @@ defmodule Phos.Message do
 
   ## Examples
 
-      iex> list_messages_by_pair()
+      iex> list_messages_by_relation()
       [%Echo{}, ...]
 
   """
 
-  def list_messages_by_relation({rel_id, yours}, opts) when is_list(opts) do
-    Phos.Message.Reverie
-    |> where([r], r.user_destination_id == ^yours)
-    |> join(:inner, [r], m in Phos.Message.Memory,
-      on: m.rel_subject_id == ^rel_id and r.memory_id == m.id
-    )
-    |> select_merge([r, m], %{memory: m})
-    |> preload(memory: [:user_source, :orb_subject])
+  def list_messages_by_relation({rel_id, yours}, opts \\ []) when is_list(opts) do
+    sort_attr = Keyword.get(opts, :sort_attribute, :inserted_at)
+    limit = Keyword.get(opts, :limit, 12)
+
+    query =
+      Phos.Message.Memory
+      |> where([m], m.rel_subject_id == ^rel_id)
+      |> preload([:user_source, :orb_subject])
+
+    case Keyword.get(opts, :page) do
+      nil -> Repo.Paginated.all(query, opts)
+      page -> Repo.Paginated.all(query, page, sort_attr, limit)
+    end
+  end
+
+  def list_messages_by_user(user, opts \\ [])
+  def list_messages_by_user(%Phos.Users.User{id: id}, opts), do: list_messages_by_user(id, opts)
+  def list_messages_by_user(user_id, opts) when is_bitstring(user_id) do
+    user_id
+    |> query_message_by_user()
+    |> preload([last_memory: [:user_source, :rel_subject]])
     |> Repo.Paginated.all(opts)
   end
 
-  @doc """
-  Returns paginated call by page of the messages by relation
+  def search_message_by_user(user, search_keyword, opts \\ [])
+  def search_message_by_user(%Phos.Users.User{id: id}, keyword, opts), do: search_message_by_user(id, keyword, opts)
+  def search_message_by_user(user_id, keyword, opts) do
+    keyword = "%#{keyword}%"
+    user_id
+    |> query_message_by_user()
+    |> join(:inner, [r], m in assoc(r, :last_memory))
+    |> join(:inner, [r], a in Phos.Users.User, on: (r.acceptor_id == a.id or r.initiator_id == a.id) and ilike(a.username, ^keyword))
+    |> preload([last_memory: [:user_source, :rel_subject]])
+    |> Repo.Paginated.all(opts)
+  end
 
-  ## Examples
-
-      iex> list_messages_by_pair()
-      [%Echo{}, ...]
-
-  """
-
-  def list_messages_by_relation(
-        {rel_id, yours},
-        page,
-        sort_attribute \\ :inserted_at,
-        limit \\ 12
-      ) do
-    Phos.Message.Reverie
-    |> where([r], r.user_destination_id == ^yours)
-    |> join(:inner, [r], m in Phos.Message.Memory,
-      on: m.rel_subject_id == ^rel_id and r.memory_id == m.id
-    )
-    |> select_merge([r, m], %{memory: m})
-    |> order_by([e], desc: e.inserted_at)
-    |> preload(memory: [:user_source, :orb_subject])
-    |> Repo.Paginated.all(page, sort_attribute, limit)
+  defp query_message_by_user(user_id) do
+    Phos.Users.RelationRoot
+    |> where([r], not is_nil(r.last_memory_id))
+    |> where([r], r.initiator_id == ^user_id or r.acceptor_id == ^user_id)
   end
 
   @doc """
@@ -112,15 +92,10 @@ defmodule Phos.Message do
 
   """
 
-  def list_messages_by_orb({orb_id, yours}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
-    Phos.Message.Reverie
-    |> where([r], r.user_destination_id == ^yours)
-    |> join(:inner, [r], m in Phos.Message.Memory,
-      on: m.orb_subject_id == ^orb_id and r.memory_id == m.id
-    )
-    |> select_merge([r, m], %{memory: m})
-    |> order_by([e], desc: e.inserted_at)
-    |> preload(memory: [:user_source])
+  def list_messages_by_orb({orb_id, _yours}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+    Phos.Message.Memory
+    |> where([m], m.orb_subject_id == ^orb_id)
+    |> preload([:user_source])
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
@@ -167,25 +142,23 @@ defmodule Phos.Message do
       iex> create_message(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
-  """
+    """
 
-  def create_message(
-        %{
-          "id" => mem_id,
-          "user_source_id" => i_id,
-          "rel_subject_id" => _rel_id,
-          "user_destination_id" => a_id
-        } = params
-      ) do
-    attrs =
-      params
-      |> Map.put("reveries", [
-        %{"user_destination_id" => i_id, "memory_id" => mem_id},
-        %{"user_destination_id" => a_id, "memory_id" => mem_id}
-      ])
+    def create_message(%{"id" => _mem_id, "user_source_id" => _u_id, "rel_subject_id" => rel_id} = attrs) do
+      with rel = Phos.Folk.get_relation!(rel_id),
+           mem_changeset <- Phos.Message.Memory.gen_changeset(%Memory{}, attrs) |> Ecto.Changeset.put_assoc(:last_rel_memory, rel),
+           {:ok, memory} <- Repo.insert(mem_changeset) do
+        memory
+        |> Repo.preload([:orb_subject, :user_source, [rel_subject: :branches]])
+        |> tap(&Phos.PubSub.publish(&1, {:memory, "formation"}, &1.rel_subject.branches))
+        |> (&({:ok, &1})).()
 
-    gen_memory(attrs)
-  end
+      else
+        {:error, err} -> {:error, err}
+
+      _ -> {:error, :not_found}
+      end
+    end
 
   @doc """
   Creates a memory.
@@ -213,18 +186,6 @@ defmodule Phos.Message do
     |> Repo.insert()
   end
 
-  def gen_memory(attrs \\ %{}) do
-    memory_changeset =
-      %Memory{}
-      |> Memory.gen_reveries_changeset(attrs)
-
-    with {:ok, memory} <- Repo.insert(memory_changeset) do
-      memory
-      |> Repo.preload([:orb_subject, :user_source, :rel_subject])
-      |> Phos.PubSub.publish({:memory, "formation"}, memory.reveries)
-      |> (&{:ok, &1}).()
-    end
-  end
 
   @doc """
   Updates a memory.

@@ -27,11 +27,13 @@ defmodule Phos.Folk do
   #   """
   #
   def get_relation!(id),
-    do: Repo.get!(RelationRoot, id)
+    do: Repo.get!(RelationRoot, id) |> Repo.preload(:last_memory)
   def get_relation!(id, your_id),
     do: Repo.get!(RelationRoot, id)
     |> self_initiated_enricher(your_id)
 
+  defp self_initiated_enricher(%{data: roots} = resp, your_id),
+    do: %{resp | data: Enum.map(roots, &(self_initiated_enricher(&1, your_id)))}
   defp self_initiated_enricher(%RelationRoot{} = rel_root, your_id) do
     %{rel_root | self_initiated: your_id == rel_root.initiator_id}
     |> case do
@@ -45,6 +47,29 @@ defmodule Phos.Folk do
   def get_relation_by_pair(self, other),
     do: Repo.get_by(RelationBranch, [user_id: self, friend_id: other])
     |> Phos.Repo.preload(:root)
+
+  @doc """
+  Returns paginated call of the last message between each unique subject source destination triplet
+
+  ## Examples
+
+      iex> last_messages()
+      [%Echo{}, ...]
+
+  """
+
+  def last_messages_by_relation(id, opts) when is_list(opts) do
+    RelationBranch
+    |> where([b], b.user_id == ^id)
+    |> join(:inner, [b], f in assoc(b, :friend))
+    |> select([_b, f], f)
+    |> join(:inner, [b, _f], r in assoc(b, :root), as: :relation)
+    |> select_merge([_b, f, root], %{f | self_relation: root} )
+    |> join(:inner, [_b, r,  f], m in assoc(f, :last_memory))
+    |> join(:left, [_b, _f, r, m], o in assoc(m, :orb_subject))
+    |> select_merge([_b, f, r, m, o], %{f| self_relation: %{r | last_memory: %{m | orb_subject: o}}})
+    |> Repo.Paginated.all([{:sort_attribute, {:relation , :updated_at}} | opts])
+  end
 
   #   @doc """
   #   Creates a Relation.

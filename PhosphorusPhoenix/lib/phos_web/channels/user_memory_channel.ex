@@ -15,8 +15,8 @@ defmodule PhosWeb.UserMemoryChannel do
     {:noreply, socket}
   end
 
-  def handle_in("ping", _, socket) do
-    {:noreply, socket}
+  def handle_in("ping", payload, socket) do
+    {:reply, {:ok, payload}, socket}
   end
 
   def handle_in(_anything, payload, socket) do

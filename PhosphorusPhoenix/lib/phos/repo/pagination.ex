@@ -1,6 +1,7 @@
 defmodule Phos.Repo.Paginated do
   import Ecto.Query
 
+  def query_builder(query, opts \\ [])
   def query_builder(query, opts) do
     sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
     limit = Keyword.get(opts, :limit, 12)
@@ -17,8 +18,12 @@ defmodule Phos.Repo.Paginated do
 
   def query_builder(query, page, attr, limit), do: query_builder(query, [sort_attribute: attr, limit: limit, page: page])
 
+  #named binding
+  defp maybe_ascend(query, {as, field}, false), do: from [{^as, x}] in query, order_by: [{:desc, field(x, ^field)}]
+  defp maybe_ascend(query, {as, field}, true), do: from [{^as, x}] in query, order_by: [{:asc, field(x, ^field)}]
   defp maybe_ascend(query, attr, false), do: query |> order_by(desc: ^attr)
   defp maybe_ascend(query, attr, true), do: query |> order_by(asc: ^attr)
+  defp maybe_ascend(query, _attr, nil), do: query
 
   defp maybe_filter(query, _attr, _ascending, nil), do: query
   defp maybe_filter(query, attr, false, filter), do: query |> Phos.Repo.Filter.where(attr, :<, filter)
@@ -31,7 +36,10 @@ defmodule Phos.Repo.Paginated do
 
   def all(query, opts) when is_list(opts) do
     limit = Keyword.get(opts, :limit, 12)
-    sort = Keyword.get(opts, :sort_attribute, :inserted_at)
+    sort = case Keyword.get(opts, :sort_attribute, :inserted_at) do
+             {_key, sort_attr} -> sort_attr
+             sort_attr -> sort_attr
+           end
 
     dao = query
     |> query_builder(opts)
@@ -42,25 +50,37 @@ defmodule Phos.Repo.Paginated do
     case Keyword.fetch(opts, :page) do
       # page-based
       {:ok, page} ->
-        total = Phos.Repo.aggregate(query, :count, sort)
+        total =  Phos.Repo.aggregate(query, :count, sort)
         page_response(dao, page, total, limit)
 
       :error ->
-        if(count > limit) do
+      cond do
+        count > limit ->
           [ _ | [head| _] = resp ] = dao |> Enum.reverse()
           %{data: resp |> Enum.reverse(), # remove last element
             meta: %{
               pagination: %{
                 downstream: true,
                 count: limit,
-                cursor: Map.get(head, sort) |> DateTime.to_unix(:millisecond)}}}
+                cursor: Map.get(head, sort) |> DateTime.from_naive!("UTC") |> DateTime.to_unix(:second)}}}
 
-        else
+          count != 0 ->
+            [head | _ ] = dao |> Enum.reverse()
             %{data: dao,
               meta: %{
                 pagination: %{
-                  count: length(dao),
-                  downstream: false}}}
+                  count: count,
+                  downstream: false,
+                  cursor: Map.get(head, sort) |> DateTime.from_naive!("UTC")  |> DateTime.to_unix(:second)}}}
+
+          count == 0 ->
+            %{data: [],
+              meta: %{
+                pagination: %{
+                  count: 0,
+                  downstream: false
+                  #cursor: Keyword.get(opts, :filter, nil) |> DateTime.from_naive!("UTC")  |> DateTime.to_unix(:second)
+                }}}
         end
     end
   end

@@ -11,6 +11,9 @@ defmodule PhosWeb.API.FriendController do
     render(conn, :paginated, friends: friends)
   end
 
+  def index_last_memories(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"cursor" => cursor}) ,
+    do: render(conn, :paginated, friends: Folk.last_messages_by_relation(id, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:second)]))
+
   def show(%{assigns: %{current_user: user}} = conn, %{"id" => id}) do
     relation = Folk.get_relation!(id, user.id)
     render(conn, :show, relation: relation)
@@ -44,7 +47,7 @@ defmodule PhosWeb.API.FriendController do
   def requests(%{assigns: %{current_user: user}} = conn, %{"page" => page}) do
     requested_friends = Folk.friend_requests(user.id, page)
     render(conn, :paginated, relations: requested_friends.data |> self_initiated_enricher(user.id),
-      meta: requested_friends.meta )
+      meta: requested_friends.meta)
   end
 
   def pending(%{assigns: %{current_user: user}} = conn, %{"page" => page}) do

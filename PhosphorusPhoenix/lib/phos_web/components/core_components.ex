@@ -2026,7 +2026,7 @@ defmodule PhosWeb.CoreComponents do
         <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/redirect/#{@path}")}>
           <.modal_open type="modal" class="" />
         </.link>
-        <!--<div :if={is_nil(@current_user)} class="text-sm text-gray-500 ">
+        <div :if={is_nil(@current_user) && PhosWeb.Endpoint.url |> String.contains?("localhost")} class="text-sm text-gray-500 ">
           <.link
             navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
             class="text-sm text-teal-400 font-bold hover:underline"
@@ -2041,7 +2041,7 @@ defmodule PhosWeb.CoreComponents do
             Sign in
           </.link>
           via Web
-        </div> -->
+        </div>
       </div>
     </.modal>
     """
@@ -2110,7 +2110,7 @@ defmodule PhosWeb.CoreComponents do
 
   def list_message(assigns) do
     ~H"""
-    <div id={"#{@id}-list"} class=" h-screen overflow-y-auto font-poppins">
+    <div id={"#{@id}-list"} class="overflow-y-auto h-[calc(100vh_-_16rem)]">
       <ul :for={msg <- @memories} class="relative w-full p-1.5">
         <%= if msg.user_source_id != @current_user.id do %>
           <li class="flex justify-start">
