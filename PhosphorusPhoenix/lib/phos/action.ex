@@ -616,7 +616,7 @@ defmodule Phos.Action do
       _ -> notion_platform_time(nil)
     end
   end
-  defp notion_platform_time(_time), do: ~T[07:30:00]
+  defp notion_platform_time(_time), do: ~T[08:00:00]
 
   defp decide_timezone("SGD"), do: Timex.timezone("Asia/Singapore", {2022, 1, 1})
   defp decide_timezone(_), do: Timex.Timezone.local()
@@ -663,6 +663,22 @@ defmodule Phos.Action do
           },
           traits: traits
                  })
+  end
+
+  defp default_orb_populator({name, _hashes}, %{"Info" => info, "Inside Image" => inside, "Outside Image" => outside, "Inside Image Low" => il, "Outside Image Low" => ol, "Done" => done} = _properties) do
+    expires_in = 4 * 7 * 24 * 60 * 60 ## TODO let it be selected in Admin View instead
+    %{
+      id: Ecto.UUID.generate(),
+      username: "Administrator 👋",
+      expires_in: expires_in,
+      info: (unless is_nil(notion_get_values(info)), do: notion_get_values(info) |> String.replace("[town]", name)),
+      done: notion_get_values(done),
+      media: true,
+      inside: notion_get_values(inside),
+      outside: notion_get_values(outside),
+      inside_low: notion_get_values(il),
+      outside_low: notion_get_values(ol)
+    }
   end
 
   defp default_orb_populator({name, _hashes}, %{"Info" => info, "1920_1080 Image" => lossless, "200_150 Image" => lossy, "Done" => done} = _properties) do

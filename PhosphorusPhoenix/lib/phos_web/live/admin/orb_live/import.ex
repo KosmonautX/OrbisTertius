@@ -140,8 +140,8 @@ defmodule PhosWeb.Admin.OrbLive.Import do
     <div id={"orb_detail_#{@id}"} class="w-full hover:cursor-pointer" phx-click="set-selected-orb" phx-value-selected={@index}>
       <.card title={@data.title} id={@id} name="orb_modal" class={define_class(@index, @selected_orbs)}>
         <div class="px-2 pb-3">
-          <%= if Map.get(@data, :lossy) do %>
-            <img src={Map.get(@data, :lossy)} class="max-w-full h-auto mx-auto" alt="image here" />
+          <%= if Map.get(@data, :outside) do %>
+            <img src={Map.get(@data, :outside)} class="max-w-full h-auto mx-auto" alt="image here" />
           <% end %>
           <h3 class="text-sm mt-2 font-light">
             <i class="fa-solid fa-user mr-2"></i>

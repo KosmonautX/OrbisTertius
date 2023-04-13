@@ -25,9 +25,14 @@
       </div>
 
       <div class="px-2 pb-3">
-        <%= if show_detail_orb(@show_detail_id, @orbs) |> Map.get(:lossy) do %>
-        <img src={show_detail_orb(@show_detail_id, @orbs) |> Map.get(:lossy)} class="max-w-full h-auto mx-auto" alt="image here" />
+        Inside Image
+        <%= if show_detail_orb(@show_detail_id, @orbs) |> Map.get(:inside) do %>
+        <img src={show_detail_orb(@show_detail_id, @orbs) |> Map.get(:inside)} class="max-w-full h-auto mx-auto" alt="image here" />
         <% end %>
+        Outside Image
+        <%= if show_detail_orb(@show_detail_id, @orbs) |> Map.get(:outside) do %>
+            <img src={show_detail_orb(@show_detail_id, @orbs) |> Map.get(:outside)} class="max-w-full h-auto mx-auto" alt="image here" />
+          <% end %>
         <h3 class="text-sm mt-2 font-light">
           <i class="fa-solid fa-user mr-2"></i>
           <%= show_detail_orb(@show_detail_id, @orbs) |> Map.get(:username) %>
