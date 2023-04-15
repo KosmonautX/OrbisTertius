@@ -47,7 +47,8 @@ config :esbuild,
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
-  metadata: [:request_id]
+  metadata: [:request_id],
+  level: :info
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
@@ -130,6 +131,9 @@ config :sparrow,
       path_to_json: Path.expand("../priv/data/sparrow-config.json", __DIR__)
     ]
   ]
+
+
+config :sparrow, Sparrow.PoolsWarden, %{enabled: true}
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

@@ -86,7 +86,7 @@ defmodule Phos.MixProject do
       {:link_preview, github: "appunite/link_preview"},
       # comments
       {:ecto_ltree, "~> 0.3.0"},
-      {:sparrow, github: "esl/sparrow", tag: "cc80bbc"},
+      {:sparrow, github: "esl/sparrow", tag: "203f8477"},
 
       #debugging
       {:rexbug, "~> 1.0"},

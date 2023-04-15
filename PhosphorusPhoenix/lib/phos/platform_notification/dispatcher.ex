@@ -44,7 +44,7 @@ defmodule Phos.PlatformNotification.Dispatcher do
   def handle_events(_events, _from, state), do: {:noreply, [], state}
 
   @impl true
-  def handle_info({_ref, {id, type, message}}, state) when type in [:retry, :error] do
+  def handle_info({_ref, {id, type, message}}, state) when type in [:retry, :error, :unknown_error] do
     stored = PN.get_notification(id)
     retry_attempt = stored.retry_attempt + 1
     next_attempt = DateTime.add(DateTime.utc_now(), retry_attempt * retry_after(), :minute)

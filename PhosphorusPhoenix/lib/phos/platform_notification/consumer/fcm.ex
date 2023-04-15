@@ -2,7 +2,7 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
   use Phos.PlatformNotification.Specification
 
   @impl true
-  def send(%{spec: spec} = store) do
+  def send(store) do
     recepient = "'USR.#{store.recepient_id}' in topics"
     %{body: body, title: title} = get_template(store)
     link = get_link(store)
@@ -17,10 +17,14 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
       |> Sparrow.FCM.V1.Webpush.add_title(title)
       |> Sparrow.FCM.V1.Webpush.add_body(body)
 
-    Sparrow.FCM.V1.Notification.new(:topic, recepient)
+    Sparrow.FCM.V1.Notification.new(:condition, recepient)
     |> Sparrow.FCM.V1.Notification.add_android(android)
     |> Sparrow.FCM.V1.Notification.add_webpush(webpush)
     |> Sparrow.API.push()
+    |> case do
+      :ok -> {:ok, "Notification triggered"}
+      err -> err
+    end
   end
 
   defp get_template(%{spec: spec} = store) do
