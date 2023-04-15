@@ -126,7 +126,9 @@ config :phos, Phos.PlatformNotification,
 
 config :sparrow,
   fcm: [
-    path_to_json: :code.priv_dir(:phos) |> to_string() |> Kernel.<>("/data/sparrow_config.json"),
+    [
+      path_to_json: Path.expand("../priv/data/sparrow-config.json", __DIR__)
+    ]
   ]
 
 # Import environment specific config. This must remain at the bottom
