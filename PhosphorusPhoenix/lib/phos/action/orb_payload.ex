@@ -13,6 +13,7 @@ defmodule Phos.Action.Orb_Payload do
     embeds_one :ext_link, Extlink do
       field :name, :string, primary_key: true
       field :url, :string
+      field :referral, :string
     end
   end
 
@@ -30,6 +31,6 @@ defmodule Phos.Action.Orb_Payload do
 
   def extlink_changeset(orb, attrs) do
     orb
-    |> cast(attrs, [:name, :url])
+    |> cast(attrs, [:name, :url, :referral])
   end
 end

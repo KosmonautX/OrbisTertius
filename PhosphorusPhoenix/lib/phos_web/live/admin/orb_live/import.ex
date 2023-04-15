@@ -140,8 +140,8 @@ defmodule PhosWeb.Admin.OrbLive.Import do
     <div id={"orb_detail_#{@id}"} class="w-full hover:cursor-pointer" phx-click="set-selected-orb" phx-value-selected={@index}>
       <.card title={@data.title} id={@id} name="orb_modal" class={define_class(@index, @selected_orbs)}>
         <div class="px-2 pb-3">
-          <%= if Map.get(@data, :lossy) do %>
-            <img src={Map.get(@data, :lossy)} class="max-w-full h-auto mx-auto" alt="image here" />
+          <%= if Map.get(@data, :outside) do %>
+            <img src={Map.get(@data, :outside)} class="max-w-full h-auto mx-auto" alt="image here" />
           <% end %>
           <h3 class="text-sm mt-2 font-light">
             <i class="fa-solid fa-user mr-2"></i>
@@ -185,7 +185,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
       "locations" => Enum.map(hashes, &Map.new([{"id", &1}])),
       "title" => Map.get(orb, :outer_title, title),
       "initiator_id" => initiator_id,
-      "payload" => %{"info" => orb.info, "inner_title" => title, "where" => Map.get(orb, :where, nil)},
+      "payload" => %{"info" => orb.info, "inner_title" => title, "where" => Map.get(orb, :where, nil), "ext_link" => Map.get(orb, :ext_link, nil)},
       "media" => orb.media,
       "source" => :web,
       "extinguish" => create_extinguish(orb.expires_in),
@@ -200,7 +200,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
       "locations" => get_geolock_target(live) |> Enum.map(&Map.new([{"id", &1}])),
       "title" => orb.title,
       "initiator_id" => initiator_id,
-      "payload" => %{"info" => orb.info, "where" => Map.get(orb, :where, nil)},
+      "payload" => %{"info" => orb.info, "where" => Map.get(orb, :where, nil), "ext_link" => Map.get(orb, :ext_link, nil)},
       "media" => orb.media,
       "source" => :web,
       "extinguish" => create_extinguish(orb.expires_in),

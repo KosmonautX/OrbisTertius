@@ -568,6 +568,7 @@ defmodule Phos.Action do
   defp notion_get_values(%{"type" => "select", "select" => data}), do: data
   defp notion_get_values(%{"type" => "multi_select", "multi_select" => data}), do: Enum.map(data, fn d -> Map.get(d, "name") end)
   defp notion_get_values(%{"type" => "files", "files" => files}) when is_list(files) and length(files) > 0, do: List.first(files)["file"]["url"]
+  defp notion_get_values(%{"type" => "url", "url" => link}), do: link
   defp notion_get_values(%{"type" => type} = data), do: notion_get_values(Map.get(data, type))
   defp notion_get_values(%{"content" => data}), do: data
   defp notion_get_values(data) when is_boolean(data), do: data
@@ -616,7 +617,7 @@ defmodule Phos.Action do
       _ -> notion_platform_time(nil)
     end
   end
-  defp notion_platform_time(_time), do: ~T[07:30:00]
+  defp notion_platform_time(_time), do: ~T[08:00:00]
 
   defp decide_timezone("SGD"), do: Timex.timezone("Asia/Singapore", {2022, 1, 1})
   defp decide_timezone(_), do: Timex.Timezone.local()
@@ -665,7 +666,12 @@ defmodule Phos.Action do
                  })
   end
 
-  defp default_orb_populator({name, _hashes}, %{"Info" => info, "1920_1080 Image" => lossless, "200_150 Image" => lossy, "Done" => done} = _properties) do
+  defp default_orb_populator({name, _hashes}, %{"Info" => info,
+                                                "Inside Image" => inside,
+                                                "Outside Image" => outside,
+                                                "Inside Image Low" => il,
+                                                "Outside Image Low" => ol,
+                                                "Done" => done} = prop) do
     expires_in = 4 * 7 * 24 * 60 * 60 ## TODO let it be selected in Admin View instead
     %{
       id: Ecto.UUID.generate(),
@@ -674,8 +680,15 @@ defmodule Phos.Action do
       info: (unless is_nil(notion_get_values(info)), do: notion_get_values(info) |> String.replace("[town]", name)),
       done: notion_get_values(done),
       media: true,
-      lossy: notion_get_values(lossy),
-      lossless: notion_get_values(lossless),
+      inside: notion_get_values(inside),
+      outside: notion_get_values(outside),
+      inside_low: notion_get_values(il),
+      outside_low: notion_get_values(ol),
+      ext_link: %{
+        name: (unless is_nil(notion_get_values(prop["External Message"])), do: notion_get_values(prop["External Message"])),
+        url: (unless is_nil(notion_get_values(prop["External URL"])), do: notion_get_values(prop["External URL"])),
+        referral: (unless is_nil(notion_get_values(prop["External Referral Code"])), do: notion_get_values(prop["External Referral Code"]))
+      }
     }
   end
 
