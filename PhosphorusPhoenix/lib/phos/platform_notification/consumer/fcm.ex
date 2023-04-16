@@ -7,19 +7,7 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
     %{body: body, title: title} = get_template(store)
     link = get_link(store)
 
-    android =
-      Sparrow.FCM.V1.Android.new()
-      |> Sparrow.FCM.V1.Android.add_title(title)
-      |> Sparrow.FCM.V1.Android.add_body(body)
-
-    webpush =
-      Sparrow.FCM.V1.Webpush.new(link)
-      |> Sparrow.FCM.V1.Webpush.add_title(title)
-      |> Sparrow.FCM.V1.Webpush.add_body(body)
-
-    Sparrow.FCM.V1.Notification.new(:condition, recepient)
-    |> Sparrow.FCM.V1.Notification.add_android(android)
-    |> Sparrow.FCM.V1.Notification.add_webpush(webpush)
+    Sparrow.FCM.V1.Notification.new(:condition, recepient, title, body, link)
     |> Sparrow.API.push()
     |> case do
       :ok -> {:ok, "Notification triggered"}
