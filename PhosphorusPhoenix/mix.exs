@@ -86,7 +86,7 @@ defmodule Phos.MixProject do
       {:link_preview, github: "appunite/link_preview"},
       # comments
       {:ecto_ltree, "~> 0.3.0"},
-      {:sparrow, sparrow_dep()},
+      {:sparrow, github: "KosmonautX/sparrow"},
 
       #debugging
       {:rexbug, "~> 1.0"},
