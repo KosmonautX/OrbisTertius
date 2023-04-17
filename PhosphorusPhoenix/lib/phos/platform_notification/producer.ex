@@ -6,7 +6,7 @@ defmodule Phos.PlatformNotification.Producer do
   Notification is based on {:type, :entity, :id, :msg_id} tuple
 
   :type considered as :email, or :push
-  :entity considered as "ORB", "USR", "COMMENT"
+  :entity considered as "ORB", "USR", "COM"
   :id considered as identifier for :entity
   :template_id template id listed in database
 

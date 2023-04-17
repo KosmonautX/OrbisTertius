@@ -81,9 +81,19 @@ defmodule Phos.PlatformNotification do
     |> Repo.update()
   end
 
+  def insert_notification(%{memory: _memory} = attrs) do
+    opts = attrs
+    |> Map.put_new(:id, Ecto.UUID.generate())
+    |> put_in([:memory, :id], Ecto.UUID.generate())
+    |> put_in([:memory, :message], attrs[:spec]["template_id"])
+
+    %Store{}
+    |> Store.changeset(opts)
+    |> Repo.insert()
+  end
+
   def insert_notification(attrs) do
     opts = Map.put_new(attrs, :id, Ecto.UUID.generate())
-
     %Store{}
     |> Store.changeset(opts)
     |> Repo.insert()
@@ -96,7 +106,12 @@ defmodule Phos.PlatformNotification do
   end
 
   def get_notification(id) do
-    query = from s in Store, where: s.id == ^id, preload: [:template, :recepient], limit: 1
+    query = from s in Store, where: s.id == ^id, preload: [:template, :recipient], limit: 1
+    Repo.one(query)
+  end
+
+  def get_notification_by_user(id) do
+    query = from s in Store, where: s.id == ^id, preload: [:template, :recipient], limit: 1
     Repo.one(query)
   end
 

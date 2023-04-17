@@ -36,6 +36,8 @@ unless config_env() == :prod do
     ]
   ]
 
+  config :goth, json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
+
 
   # AWS
   config :ex_aws,
@@ -108,6 +110,8 @@ if config_env() == :prod do
       #Path.expand("../priv/data/sparrow-config.json", __DIR__)
     ]
   ]
+
+  config :goth, json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
 
   # AWS
   config :ex_aws,

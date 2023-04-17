@@ -35,7 +35,6 @@ defmodule Phos.PlatformNotification.Listener do
   # for comments notification
   defp process_data(%{"table" => table, "id" => id, "type" => type}) when table == "comments" and type == "INSERT" do
     comment = Phos.Comments.get_comment(id) |> Phos.Repo.preload([:parent])
-
     comment
     |> notify_parent_element()
     |> notify_initiator()
@@ -49,7 +48,8 @@ defmodule Phos.PlatformNotification.Listener do
   end
 
   defp notify_parent_element(%{initiator_id: init_id, parent: %{initiator_id: parent_init_id}} = comment) when init_id != parent_init_id do
-    PN.notify({"broadcast", "COMMENT", comment.id, "replied_comment"},
+    PN.notify({"broadcast", "COM", comment.id, "reply_com"},
+      memory: %{user_source_id: init_id, com_subject_id: comment.id},
       to: parent_init_id,
       notification: %{
         title: "#{comment.initiator.username} replied",
@@ -61,12 +61,13 @@ defmodule Phos.PlatformNotification.Listener do
   end
   defp notify_parent_element(comment), do: comment
 
-  defp notify_initiator(%{initiator_id: init_id, orb: %{initiator_id: orb_init_id}, parent: %{initiator_id: parent_init_id}} = comment)
+  defp notify_initiator(%{initiator_id: init_id, orb: %{initiator_id: orb_init_id} = orb, parent: %{initiator_id: parent_init_id}} = comment)
     when orb_init_id not in [init_id, parent_init_id] do
-    PN.notify({"broadcast", "COMMENT", comment.id, "replied_orb"},
+    PN.notify({"broadcast", "COM", comment.id, "reply_orb_children"},
+      memory: %{user_source_id: init_id, com_subject_id: comment.id, orb_subject_id: orb.id},
       to: orb_init_id,
       notification: %{
-        title: "#{comment.initiator.username} replied to a comment withtin your post",
+        title: "#{comment.initiator.username} replied to a comment within your post",
         body: comment.body,
       }, data: %{
         action_path: "/comland/comments/children/#{comment.id}"
@@ -75,8 +76,9 @@ defmodule Phos.PlatformNotification.Listener do
   end
   defp notify_initiator(comment), do: comment
 
-  defp notify_self(%{orb: %{initiator_id: orb_init_id}, initiator_id: init_id} = comment) when orb_init_id != init_id do
-    PN.notify({"broadcast", "COMMENT", comment.id, "create_root_comment"},
+  defp notify_self(%{orb: %{initiator_id: orb_init_id} = orb, initiator_id: init_id, parent_id: nil} = comment) when orb_init_id != init_id do
+    PN.notify({"broadcast", "COM", comment.id, "reply_orb_root"},
+      memory: %{user_source_id: init_id, com_subject_id: comment.id, orb_subject_id: orb.id},
       to: orb_init_id,
       notification: %{
         title: "#{comment.initiator.username} replied",

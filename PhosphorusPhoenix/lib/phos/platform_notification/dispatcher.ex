@@ -65,7 +65,7 @@ defmodule Phos.PlatformNotification.Dispatcher do
   defp filter_event_type(%{"notification_id" => _id} = data), do: {:reply, data}
   defp filter_event_type(_data), do: :error
 
-  defp filter_event_entity({:ok, %{"entity" => entity} = data}) when entity in ["ORB", "COMMENT"] do
+  defp filter_event_entity({:ok, %{"entity" => entity} = data}) when entity in ["ORB", "COM"] do
     {:ok, data}
   end
   defp filter_event_entity({:reply, %{"notification_id" => _id} = data}), do: {:reply, data}
@@ -82,20 +82,23 @@ defmodule Phos.PlatformNotification.Dispatcher do
 
   defp insert_to_persistent_database(%{"template_id" => key} = data) when not is_nil(key) do
     template = PN.get_template_by_key(key) || %{}
-    case get_recepient(data) do
-      {:ok, recepient_id} -> PN.insert_notification(%{
+      with {:ok, recipient_id} <- get_recipient(data),
+           {:ok, memory} <- get_memory(data) do
+        PN.insert_notification(%{
           template_id: Map.get(template, :id),
-          recepient_id: recepient_id,
+          recipient_id: recipient_id,
+          memory: memory,
           spec: data,
           id: Ecto.UUID.generate(),
         })
-      err -> err
-    end
+      else
+        err -> err
+      end
   end
   defp insert_to_persistent_database(data)  do
-    case get_recepient(data) do
-      {:ok, recepient_id} -> PN.insert_notification(%{
-          recepient_id: recepient_id,
+    case get_recipient(data) do
+      {:ok, recipient_id} -> PN.insert_notification(%{
+          recipient_id: recipient_id,
           active: true,
           spec: data,
           id: Ecto.UUID.generate(),
@@ -104,10 +107,18 @@ defmodule Phos.PlatformNotification.Dispatcher do
     end
   end
 
-  defp get_recepient(%{"options" => opts}) do
+  defp get_recipient(%{"options" => opts}) do
     case Map.get(opts, "to") do
       user when is_bitstring(user) -> {:ok, user}
       _ -> {:error, "Options to: must be included"}
     end
   end
+
+  defp get_memory(%{"options" => opts}) do
+    case Map.get(opts, "memory") do
+      memory when is_map(memory) -> {:ok, memory}
+      _ -> {:error, "Memories to be included"}
+    end
+  end
+
 end

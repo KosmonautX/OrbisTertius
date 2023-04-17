@@ -38,7 +38,8 @@ defmodule Phos.PlatformNotification.Store do
     field :error_reason, :string
 
     belongs_to :template, Phos.PlatformNotification.Template, references: :id, type: Ecto.UUID
-    belongs_to :recepient, Phos.Users.User, references: :id, type: Ecto.UUID
+    belongs_to :memory, Phos.Message.Memory, references: :id, type: Ecto.UUID
+    belongs_to :recipient, Phos.Users.User, references: :id, type: Ecto.UUID
 
     timestamps()
   end
@@ -49,7 +50,8 @@ defmodule Phos.PlatformNotification.Store do
   @spec changeset(store :: t(), attrs :: map()) :: Ecto.Changeset.t()
   def changeset(store, attrs) do
     store
-    |> cast(attrs, [:id, :template_id, :recepient_id, :success, :spec, :retry_attempt, :next_execute_at, :error_reason])
+    |> cast(attrs, [:id, :template_id, :recipient_id, :success, :spec, :retry_attempt, :next_execute_at, :error_reason])
+    |> cast_assoc(:memory, with: &Phos.Message.Memory.changeset/2)
     |> validate_required([:spec, :id])
   end
 end

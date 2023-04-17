@@ -58,7 +58,7 @@ defmodule Phos.Repo.Migrations.AddPlatformNotificationTable do
     execute "CREATE EVENT TRIGGER add_table_broadcast_triggers ON ddl_command_end
               WHEN TAG IN ('CREATE TABLE','CREATE TABLE AS')
               EXECUTE PROCEDURE create_notify_triggers();"
-    
+
     create table(:notification_templates, primary_key: false) do
       add :id, :uuid, primary_key: true
       add :key, :string
@@ -77,7 +77,8 @@ defmodule Phos.Repo.Migrations.AddPlatformNotificationTable do
     create table(:notifications, primary_key: false) do
       add :id, :uuid, primary_key: true
       add :template_id, references(:notification_templates, column: :id, type: :uuid)
-      add :recepient_id, references(:users, column: :id, type: :uuid)
+      add :memory_id, references(:memories, on_delete: :delete_all, column: :id, type: :uuid)
+      add :recipient_id, references(:users, column: :id, type: :uuid)
       add :success, :boolean, null: true
       add :spec, {:map, :string}
       add :retry_attempt, :integer, default: 0
