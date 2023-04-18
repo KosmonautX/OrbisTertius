@@ -87,6 +87,8 @@ defmodule Phos.Repo.Migrations.AddPlatformNotificationTable do
 
       timestamps()
     end
+    
+    create index(:notifications, :recipient_id)
   end
 
   def down do

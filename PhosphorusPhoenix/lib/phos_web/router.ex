@@ -135,6 +135,7 @@ defmodule PhosWeb.Router do
       put "/self/territory", UserProfileController, :update_territory
       put "/self/beacon", UserProfileController, :update_beacon
       get "/others/:id", UserProfileController, :show
+      get "/self/activity", EchoController, :show_self
 
       get "/others/:id/history", OrbController, :show_history
       put "/others/:id/report", TribunalController, :report_user

@@ -86,7 +86,7 @@ defmodule Phos.MixProject do
       {:link_preview, github: "appunite/link_preview"},
       # comments
       {:ecto_ltree, "~> 0.3.0"},
-      {:sparrow, github: "KosmonautX/sparrow"},
+      {:sparrow, github: "esl/sparrow", tag: "203f847"},
 
       #debugging
       {:rexbug, "~> 1.0"},
@@ -94,7 +94,7 @@ defmodule Phos.MixProject do
       {:phoenix_view, "~> 2.0"}, # for error warning removal
       # { :uuid, "~> 1.1" },
       # {:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
-      {:phx_live_storybook, github: "phenixdigital/phx_live_storybook", runtime: Mix.env() == :dev}
+      {:phx_live_storybook, github: "phenixdigital/phx_live_storybook", tag: "992062c", runtime: Mix.env() == :dev}
     ]
   end
 
