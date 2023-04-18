@@ -22,7 +22,8 @@ defmodule Echolocation do
 
   require Logger
 
-  @topic "memory:user:5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"
+  @id "96db27c1-234c-4c97-9ac7-691f56956a61"
+  @topic "memory:user:#{@id}"
 
   def start_link(args) do
     Slipstream.start_link(__MODULE__, args, name: __MODULE__)
@@ -69,9 +70,21 @@ defmodule Echolocation do
     {:ok, socket}
   end
 
+  @impl Slipstream
+  def handle_reply(ref, reply, socket) do
+    IO.inspect(reply, label: "reply to my request")
+    {:ok, socket}
+  end
+
   def handle_call({:say, goodbyein}, _from, socket) do
     IO.puts("server going bye bye in T-#{inspect(goodbyein)}s")
     :timer.send_interval(:timer.seconds(goodbyein), self(), :stop)
+    {:reply, {:ok, :saygoodbye}, socket}
+  end
+
+  def handle_call({:add, memory}, _from, socket) do
+    IO.puts("Push memory to socket with data #{inspect(memory)}")
+    push(socket, @topic, {:memory, "formation"}, memory)
     {:reply, {:ok, :saygoodbye}, socket}
   end
 
@@ -117,7 +130,7 @@ end
 
 ```elixir
 token =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmeXJfaWQiOiJCWDFCeE05S2t3ZEZteTJKNEZOTmtGeGNscFMyIiwidGVycml0b3J5Ijp7ImhvbWUiOnsiaGFzaCI6NjI4MDIxMjk3NjY2MjI0MTI3LCJyYWRpdXMiOjE2NjY1MDE2OTJ9LCJ3b3JrIjp7Imhhc2giOjYyNzk4NjQ0Njk1MjM0OTY5NSwicmFkaXVzIjoxNjY2NTAxNjkyfX0sInVzZXJfaWQiOiI1YzgyYWVlYS03YzJiLTRhOTctYTgwYi1kNWI3MjhjNGVlODYiLCJ1c2VybmFtZSI6InNhdHJpbyIsImV4cCI6MTY3MTU0MzY2MSwiaWF0IjoxNjcxNTQyNDQ5LCJpc3MiOiJQcmluY2V0b24iLCJyb2xlIjoicGxlYiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.Z2Po3dTR_2vym4Z41t5z2-b5FIIR-_N6jGNhMUljCDs"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmeXJfaWQiOm51bGwsInRlcnJpdG9yeSI6e30sInVzZXJfaWQiOiI5NmRiMjdjMS0yMzRjLTRjOTctOWFjNy02OTFmNTY5NTZhNjEiLCJ1c2VybmFtZSI6ImJlbHVnYSIsImV4cCI6MTY3ODg3NDIwMiwiaWF0IjoxNjc4ODcyOTkwLCJpc3MiOiJQcmluY2V0b24iLCJyb2xlIjoicGxlYiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.5c8no97S9QN-8jmqVDstZHmpNa2-pZzgOnGmII3ZbWs"
 
 domain = "ws://localhost:4000"
 
@@ -126,11 +139,16 @@ config = [
   reconnect_after_msec: [200, 500, 1_000, 2_000]
 ]
 
-{:ok, pid} = Echolocation.start_link(config)
+{:ok, pid} =
+  case Echolocation.start_link(config) do
+    {:ok, _pid} = data -> data
+    {:error, {:already_started, pid}} -> {:ok, pid}
+    {:error, _} = data -> data
+  end
 ```
 
 ```elixir
-GenServer.call(pid, {:say, 1})
+GenServer.call(pid, {:add, %{}})
 ```
 
 <!-- livebook:{"branch_parent_index":0} -->

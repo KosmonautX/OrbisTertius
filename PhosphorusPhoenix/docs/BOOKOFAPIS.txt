@@ -12,6 +12,7 @@
 :jean=HMhn3DPO71h0cMYFh52vM1tBacX2
 :anon=ETCiVo6Rr3gniuI44Gq9f2a5Ldl1
 :javier=v78yYQpVjlUaOsmzKguPoXcGqqw2
+:jiayi=3f6idzconSaWU31lQpcwXl3q8623
 :princeton_id=9bf9c443-f89b-460a-972d-6704ae66823d
 :owentwo_id=973da4ae-48a6-498d-b988-548af3af99f6
 :satrio_id=b3cd35ef-83e2-448e-831d-f5ded1c39692
@@ -43,7 +44,7 @@ GET :localipAddress/devland/flameon?user=:lky_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
-GET :localipAddress/devland/lankaonfyr?fyr_id=:javier
+GET :localipAddress/devland/lankaonfyr?fyr_id=:satrio
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 
@@ -201,12 +202,12 @@ GET :ipAddress/folkland/others/:satrio_id?page=1
 GET :ipAddress/folkland/stream/self?page=1
 :auth-headers
 
-## Orb Stream directed at yourself from friends
-GET :ipAddress/folkland/stream/discovery/614510498785787903,614510497487650815?page=1
+## Folks Discovery Stream (around me)
+GET :ipAddress/folkland/stream/discovery/636786611773840255,636786611773840255?page=1
 :auth-headers
 
 ## Show Relation Resource
-GET :ipAddress/folkland/friends/7dcd842a-8d07-4407-8ca4-6346d54b0f86
+GET :ipAddress/folkland/friends/39424de7-de1c-4471-b78c-ad3851d43ade
 -> run-hook (restclient-set-var ":rel" (cdr (assq 'relation_id (assq 'data (json-read)))))
 :auth-headers
 
@@ -251,7 +252,7 @@ GET :ipAddress/orbland/orbs/3e9ebaa7-cdd0-4d3e-857e-0661aeb12d0b
 :auth-headers
 
 ## Read all orbs in that geohash id
-GET :ipAddress/orbland/stream/623517998944845823,628021598572208127?page=1&traits=treasurehunt
+GET :ipAddress/orbland/stream/623517998944845823,628021598572208127?page=1&traits=treasurehun
 :auth-headers
 
 ## Create Orbs
@@ -400,19 +401,16 @@ DELETE :ipAddress/orbland/comments/:commie
 
 ### Memland
 ## Index by unique relations
-GET :ipAddress/memland/friends/?page=1
+GET :ipAddress/memland/friends/?cursor=16813190790
 :auth-headers
 
 ## Index by unique orbs
-GET :ipAddress/memland/orbs/?page=1
+GET :ipAddress/memland/orbs/:orb?page=1
 :auth-headers
 
-## Show by specific relation_id through pages
-GET :ipAddress/memland/friends/:rel?page=1
-:auth-headers
 
 ## Show by specific relation_id through cursor
-GET :ipAddress/memland/friends/:rel?cursor=1673502948407&asc=true
+GET :ipAddress/memland/friends/:rel?cursor=1673502948407&asc=false
 :auth-headers
 
 ## Show message by orbs within a relation
@@ -427,7 +425,7 @@ POST :ipAddress/memland/memories
 :auth-headers
 {
     "user_destination_id": ":lky_id",
-    "message": "14",
+    "message": "another one",
     "rel_subject_id": ":rel",
     "orb_subject_id": ":orb"
 }

@@ -23,6 +23,7 @@ defmodule PhosWeb.OrbLive.Show do
        |> assign(:orb, orb)
        |> assign_meta(orb, params)
        |> assign(:ally, false)
+       |> assign(:media, nil)
        |> assign(:comments, comments)
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
@@ -45,6 +46,7 @@ defmodule PhosWeb.OrbLive.Show do
        |> assign(:ally, false)
        |> assign_meta(orb, params)
        |> assign(:comments, comment)
+       |> assign(:media, nil)
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
        temporary_assigns: [orbs: Action.orbs_by_initiators([orb.initiator.id], 1).data]}
@@ -109,6 +111,14 @@ defmodule PhosWeb.OrbLive.Show do
     end
   end
 
+    def handle_info("unredirect", socket) do
+    {:noreply,
+     socket
+     |> assign(:redirect, nil)
+     |> push_patch(to: ~p"/orb/#{socket.assigns.orb.id}")
+    }
+  end
+
   defp apply_action(socket, :reply, %{"id" => _orb_id, "cid" => cid} = _params) do
     socket
     |> assign(:comment, Comments.get_comment!(cid))
@@ -133,7 +143,14 @@ defmodule PhosWeb.OrbLive.Show do
     |> assign(:page_title, "Editing Comments")
   end
 
-  defp apply_action(socket, :show, %{"id" => _id} = _params) do
+    defp apply_action(socket, :show, %{"id" => id, "media" => media}) do
+    socket
+    |> assign(:page_title, "")
+    |> assign(:media, Phos.Orbject.S3.get!("ORB", id, media))
+  end
+
+
+  defp apply_action(socket, :show, %{"id" => _id}) do
     socket
     |> assign(:page_title, "")
   end
@@ -143,7 +160,10 @@ defmodule PhosWeb.OrbLive.Show do
     |> assign(:page_title, "Editing")
   end
 
-  defp assign_meta(socket, orb, %{"bac" => _}), do: socket |> assign(:redirect, true) |> assign_meta(orb)
+  defp assign_meta(socket, orb, %{"bac" => _})  do
+    Process.send_after(self(), "unredirect", 888)
+    socket |> assign(:redirect, true) |> assign_meta(orb)
+  end
   defp assign_meta(socket, orb, _), do: assign_meta(socket, orb)
   defp assign_meta(socket, orb) do
     media = Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless")

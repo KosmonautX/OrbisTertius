@@ -14,7 +14,7 @@ defmodule PhosWeb.UserConfirmationLive do
           <.button phx-disable-with="Confirming..." type="submit">Confirm my account</.button>
         </:actions>
       </.simple_form>
-      <p class="text-gray-600 font-bold mt-2">
+      <p class="text-gray-600 font-bold mt-2 hidden">
         <.link href={~p"/users/register"} class="font-semibold text-base text-teal-500 underline">
           Register
         </.link>

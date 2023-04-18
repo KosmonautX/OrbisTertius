@@ -77,6 +77,34 @@ orb
 ```
 
 ```elixir
+import Ecto.Query
+alias Phos.Users.{RelationBranch, RelationRoot, User}
+
+Phos.Folk.get_relation!("cc9e46c0-0f98-410f-bb3e-12044d41fef3")
+|> Phos.Repo.preload([:last_memory])
+
+# |> Phos.Users.RelationRoot.mutate_memory_changeset(%{
+#   "id" => Ecto.UUID.generate(),
+#   "message" => "really",
+#   "media" => "false",
+#   "user_source_id" => "6d7b0e7c-a633-4a8a-8d85-b8a493109bd4"
+# })
+# |> Phos.Repo.insert()
+
+id = "6d7b0e7c-a633-4a8a-8d85-b8a493109bd4"
+
+Phos.Users.RelationBranch
+|> where([b], b.user_id == ^id)
+|> join(:inner, [b], r in assoc(b, :root))
+|> select([_b, r], r)
+|> join(:inner, [_b, r], m in assoc(r, :last_memory))
+|> join(:left, [_b, r, m], o in assoc(m, :orb_subject))
+|> select_merge([_b, r, m, o], %{last_memory: %{m | orb_subject: o}})
+|> order_by([_b, r, _m], desc: r.updated_at)
+|> Phos.Repo.all()
+```
+
+```elixir
 req = "5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"
 acpt = "9bf9c443-f89b-460a-972d-6704ae66823d"
 alt = "deb2800c-a418-40fe-b35a-db30b01f59f8"

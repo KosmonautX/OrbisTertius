@@ -11,14 +11,14 @@ defmodule PhosWeb.MemoryLive.FormComponent do
         :let={f}
         class=""
         for={@changeset}
-        id="memory-form"
+        id={"#{@id}-memory-form"}
         phx-target={@myself}
         phx-change="validate"
         phx-submit="save"
       >
         <.input field={{f, :message}} type="text" placeholder="Scratching..." />
         <.input field={{f, :user_source_id}} type="hidden" value={@current_user.id} />
-        <.input :if={!is_nil(@rel)} field={{f, :rel_subject_id}} type="hidden" value={@rel.id} />
+        <.input :if={!is_nil(@rel)} field={{f, :rel_subject_id}} type="hidden" value={@rel} />
 
         <:actions>
           <button type="submit" phx-disable-with="Saving..." class="absolute inset-y-1 right-4">
@@ -33,11 +33,7 @@ defmodule PhosWeb.MemoryLive.FormComponent do
   @impl true
   def update(%{memory: memory} = assigns, socket) do
     changeset = Message.change_memory(memory)
-
-    {:ok,
-     socket
-     |> assign(assigns)
-     |> assign(:changeset, changeset)}
+    {:ok, assign(socket, assigns) |> assign(changeset: changeset)}
   end
 
   @impl true
@@ -67,16 +63,25 @@ defmodule PhosWeb.MemoryLive.FormComponent do
     end
   end
 
-  defp save_memory(socket, :new, memory_params) do
-    case Message.create_memory(memory_params |> Map.put("id", Ecto.UUID.generate())) do
-      {:ok, _memory} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Memory created successfully")
-         |> push_navigate(to: socket.assigns.navigate)}
-
+  defp save_memory(%{assigns: %{rel: relation, current_user: user}} = socket, :new, params) do
+    with user_destination <- get_receiver_id(relation, user),
+         memory_params <- Map.merge(params, %{"id" => Ecto.UUID.generate(), "user_destination_id" => user_destination}),
+         {:ok, memory} <- Message.create_message(memory_params) do
+           {:noreply,
+             socket
+             |> put_flash(:info, "Memory created successfully")
+             |> push_navigate(to: socket.assigns.navigate)}
+    else
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, changeset: changeset)}
     end
+  end
+
+  defp get_receiver_id(%{acceptor_id: acc_id} = rel, %{id: id} = _user) when acc_id == id, do: rel.initiator_id
+  defp get_receiver_id(%{acceptor_id: id} = _rel, _user), do: id
+  defp get_receiver_id(id, user) when is_binary(id) do
+    id
+    |> Phos.Folk.get_relation!()
+    |> get_receiver_id(user)
   end
 end

@@ -1305,7 +1305,7 @@ defmodule PhosWeb.CoreComponents do
           class="flex shrink-0"
         >
           <img
-            src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
+            src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossy")}
             class="lg:w-14 lg:h-14 h-12 w-12 rounded-full object-cover "
             onerror="this.src='/images/default_hand.jpg';"
           />
@@ -1362,7 +1362,7 @@ defmodule PhosWeb.CoreComponents do
                 for {path, url} <- media do
                   %Phos.Orbject.Structure.Media{
                     ext: MIME.from_path(path),
-                    path: path,
+                    path: "public/banner"<> path,
                     url: url,
                     resolution:
                       path |> String.split(".") |> hd() |> String.split("/") |> List.last()
@@ -1468,12 +1468,12 @@ defmodule PhosWeb.CoreComponents do
               <div class="relative">
                 <.link
                   class="relative"
-                  navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
+                  navigate={unverified_path(PhosWeb.Endpoint, PhosWeb.Router, "/orb/#{@orb.id}?media=#{m.path}")}
                 >
                   <img
                     :if={(m.ext |> String.split("/") |> hd) in ["image", "application"]}
                     class={[
-                      @show_information == true && "lg:rounded-b-3xl",
+                      @show_information == true && "lg:rounded-b-3xl" || "cursor-zoom-in",
                       "h-96 w-full object-cover dark:border dark:border-white",
                       @class
                     ]}
@@ -1524,7 +1524,7 @@ defmodule PhosWeb.CoreComponents do
           >
             <.orb_information
               id={"#{@id}-orb-info-#{@orb.id}"}
-              title={@orb.payload.inner_title || @orb.title}
+              title={@orb.payload && @orb.payload.inner_title || @orb.title}
               info_color="prose-invert text-white"
             />
           </.link>
@@ -1584,9 +1584,17 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  attr(:url, :string, default: "")
+  def media_preview(assigns) do
+
+  ~H"""
+  <img src={@url} class="w-full h-full"/>
+  """
+  end
+
   attr(:id, :string, required: true)
   attr(:title, :string, default: "")
-  attr(:info_color, :string, default: "prose-zinc text-gray-600 w-full bg-white dark:bg-gray-900")
+  attr(:info_color, :string, default: "prose-zinc text-gray-600 w-full bg-white dark:bg-gray-900 prose-a:text-blue-500 prose-a:hover:underline")
   attr(:show_link, :boolean, default: false)
 
   def orb_information(assigns) do
@@ -2018,7 +2026,7 @@ defmodule PhosWeb.CoreComponents do
         <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/redirect/#{@path}")}>
           <.modal_open type="modal" class="" />
         </.link>
-        <div :if={is_nil(@current_user)} class="text-sm text-gray-500 ">
+        <div :if={is_nil(@current_user) && PhosWeb.Endpoint.url |> String.contains?("localhost")} class="text-sm text-gray-500 ">
           <.link
             navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
             class="text-sm text-teal-400 font-bold hover:underline"
@@ -2102,7 +2110,7 @@ defmodule PhosWeb.CoreComponents do
 
   def list_message(assigns) do
     ~H"""
-    <div id={"#{@id}-list"} class=" h-screen overflow-y-auto font-poppins">
+    <div id={"#{@id}-list"} class="overflow-y-auto h-[calc(100vh_-_16rem)]">
       <ul :for={msg <- @memories} class="relative w-full p-1.5">
         <%= if msg.user_source_id != @current_user.id do %>
           <li class="flex justify-start">

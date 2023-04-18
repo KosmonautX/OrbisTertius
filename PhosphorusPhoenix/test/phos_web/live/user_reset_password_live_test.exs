@@ -61,7 +61,8 @@ defmodule PhosWeb.UserResetPasswordLiveTest do
           }
         )
         |> render_submit()
-        |> follow_redirect(conn, ~p"/users/log_in")
+        #|> follow_redirect(conn, ~p"/users/log_in")
+        |> follow_redirect(conn, ~p"/")
 
       refute get_session(conn, :user_token)
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Password reset successfully"

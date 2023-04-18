@@ -23,6 +23,7 @@
     title={@page_title}
     action={@live_action}
     memory={@memory}
+    rel={@memory.rel_subject_id || nil}
     navigate={~p"/memories/#{@memory}"}
   />
 </.modal>

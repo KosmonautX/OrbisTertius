@@ -200,7 +200,7 @@ if config_env() == :prod do
   secret_key_base =
     System.get_env("SECRET_KEY_BASE")
 
-  host = System.get_env("PHX_HOST") || "phos.scrb.ac"
+  host = System.get_env("PHX_HOST") || "web.scratchbac.com"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
   config :phos, PhosWeb.Endpoint,

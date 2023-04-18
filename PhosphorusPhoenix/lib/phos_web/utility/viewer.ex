@@ -210,7 +210,8 @@ defmodule PhosWeb.Util.Viewer do
            ext_link: (if !is_nil(orb.payload.ext_link),
           do: %{
                 name: orb.payload.ext_link.name,
-                url: orb.payload.ext_link.url
+                url: orb.payload.ext_link.url,
+                referral: orb.payload.ext_link.referral
               })
         }
       }

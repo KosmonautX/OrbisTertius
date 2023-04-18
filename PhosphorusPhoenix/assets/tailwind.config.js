@@ -17,7 +17,7 @@ module.exports = {
       },
 
       inset: {
-        '60px': '50px',
+        '60px': '60px',
       },
 
 

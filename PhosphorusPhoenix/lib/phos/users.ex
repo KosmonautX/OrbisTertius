@@ -135,7 +135,7 @@ defmodule Phos.Users do
   def migrate_fyr_user(old_user, new_user) do
     old_changeset =
       old_user
-      |> User.fyr_registration_changeset(%{fyr_id: nil})
+      |> User.changeset(%{fyr_id: nil})
 
     new_changeset =
       new_user

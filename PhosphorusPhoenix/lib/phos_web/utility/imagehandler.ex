@@ -11,6 +11,14 @@ defmodule PhosWeb.Util.ImageHandler do
     entity
   end
 
+  def store_ext_links(entity = %{id: id, inside: inside, outside: outside, outside_low: ol, inside_low: il}, archetype) when not (is_nil(inside) or is_nil(outside)) do
+    Phos.Orbject.S3.put!(archetype, id, "public/banner/lossless") |> upload_link(outside)
+    Phos.Orbject.S3.put!(archetype, id, "public/banner/lossy") |> upload_link(ol)
+    Phos.Orbject.S3.put!(archetype, id, "public/profile/lossless") |> upload_link(inside)
+    Phos.Orbject.S3.put!(archetype, id, "public/profile/lossy") |> upload_link(il)
+    entity
+  end
+
   def store_ext_links(entity, _archetype)  do
     %{entity | media: false}
   end

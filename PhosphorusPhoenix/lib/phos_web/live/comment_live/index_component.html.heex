@@ -5,7 +5,7 @@
 
   <hr class=" block lg:hidden" />
 
-  <div :if={not is_nil(@current_user)} class="hidden lg:block lg:rounded-3xl">
+  <div class="hidden lg:block lg:rounded-3xl">
     <.live_component
       module={PhosWeb.CommentLive.FormComponent}
       changeset={@changeset}
