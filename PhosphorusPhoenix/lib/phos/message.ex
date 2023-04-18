@@ -10,7 +10,7 @@ defmodule Phos.Message do
     do: %{resp | data: Enum.map(memory, &(cluster_enricher(&1)))}
 
   defp cluster_enricher(%{message: "reply_com"} = m),
-     do: %{m | cluster_subject_id: m.com_subject_id}
+     do: %{m | cluster_subject_id: m.com_subject.parent_id}
   defp cluster_enricher(%{message: "reply_orb_children"} = m ),
       do: %{m | cluster_subject_id: m.orb_subject_id}
   defp cluster_enricher(%{message: "reply_orb_root"}= m),
@@ -22,7 +22,8 @@ defmodule Phos.Message do
     |> join(:inner, [n], m in assoc(n, :memory), as: :memory)
     |> select([_n, m], m)
     |> join(:inner, [_n, m], u in assoc(m, :user_source))
-    |> select_merge([n, m, u], %{m | user_source: u})
+    |> join(:left, [_n, m, _u], c in assoc(m, :com_subject))
+    |> select_merge([_n, m, u, c], %{m | user_source: u, com_subject: c})
     |> Repo.Paginated.all([{:sort_attribute, {:memory , :inserted_at}} | opts])
     |> cluster_enricher()
   end

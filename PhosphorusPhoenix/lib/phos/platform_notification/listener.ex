@@ -59,7 +59,7 @@ defmodule Phos.PlatformNotification.Listener do
 
   defp notify_parent_element(%{initiator_id: init_id, parent: %{initiator_id: parent_init_id}} = comment) when init_id != parent_init_id do
     PN.notify({"broadcast", "COM", comment.id, "reply_com"},
-      memory: %{user_source_id: init_id, com_subject_id: comment.id},
+      memory: %{user_source_id: init_id, com_subject_id: comment.id, orb_subject_id: comment.orb_id},
       to: parent_init_id,
       notification: %{
         title: "#{comment.initiator.username} replied",
