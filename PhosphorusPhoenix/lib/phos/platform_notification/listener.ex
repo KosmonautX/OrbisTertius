@@ -11,7 +11,17 @@ defmodule Phos.PlatformNotification.Listener do
 
   @impl true
   def init(_channel) do
-    Logger.info("Starting #{__MODULE__} with channel subscription: #{inspect(@channel)}")
+    :logger.info(%{
+      label: {Phos.PlatformNotification.Listener, :init},
+      report: %{
+        module: __MODULE__,
+        action: "Starting channel specified subscription",
+        channel: @channel,
+      }
+    }, %{
+      domain: [:phos],
+      error_logger: %{tag: :info_msg}
+    })
 
     config = Phos.Repo.config()
     {:ok, pid} = Postgrex.Notifications.start_link(config)

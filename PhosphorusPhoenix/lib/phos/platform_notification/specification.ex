@@ -25,11 +25,11 @@ defmodule Phos.PlatformNotification.Specification do
           end)
 
         %{
-          body: replace_data_value(template.body, keys, options),
-          title: replace_data_value(template.title, keys, options),
-          subtitle: replace_data_value(template.subtitle, keys, options),
-          icon: template.icon,
-          click_action: template.click_action,
+          "body" => replace_data_value(template.body, keys, options),
+          "title" => replace_data_value(template.title, keys, options),
+          "subtitle" => replace_data_value(template.subtitle, keys, options),
+          "icon" => template.icon,
+          "click_action" => template.click_action,
         }
       end
       defoverridable parse: 2

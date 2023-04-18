@@ -47,7 +47,7 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
       sender <- Map.get(entity, :initiator),
       title <- Map.get(entity, :title),
       body <- Map.get(entity, :body, title) do
-      parse(template, sender: sender.username, receiver: store.recipient.username, event: entity, body: body)
+      parse(template, sender: Map.get(sender, :username), receiver: store.recepient.username, event: entity, body: body)
     end
   end
   def parse(_store), do: ""
@@ -61,5 +61,5 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
       _ -> {:error, "Comment not found"}
     end
   end
-  defp get_actor(_), do: nil
+  defp get_actor(_), do: %{}
 end

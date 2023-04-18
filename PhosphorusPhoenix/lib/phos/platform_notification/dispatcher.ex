@@ -65,7 +65,7 @@ defmodule Phos.PlatformNotification.Dispatcher do
   defp filter_event_type(%{"notification_id" => _id} = data), do: {:reply, data}
   defp filter_event_type(_data), do: :error
 
-  defp filter_event_entity({:ok, %{"entity" => entity} = data}) when entity in ["ORB", "COM"] do
+  defp filter_event_entity({:ok, %{"entity" => entity} = data}) when entity in ["ORB", "COM", "PINNED"] do
     {:ok, data}
   end
   defp filter_event_entity({:reply, %{"notification_id" => _id} = data}), do: {:reply, data}

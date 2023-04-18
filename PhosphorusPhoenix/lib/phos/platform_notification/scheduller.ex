@@ -1,6 +1,4 @@
 defmodule Phos.PlatformNotification.Scheduller do
-  require Logger
-
   use GenServer
 
   @default_timer :timer.minutes(5)
@@ -21,12 +19,57 @@ defmodule Phos.PlatformNotification.Scheduller do
 
   @impl true
   def handle_info(:timer, state) do
-    notifications = PN.active_notification()
     now_time = current_time()
-    Logger.debug("Running platform notification timer at #{now_time}")
-    run_notification_timer(notifications)
+    :logger.debug(%{
+      label: {Phos.PlatformNotification.Scheduller, :timer},
+      report: %{
+        module: __MODULE__,
+        action: "schedulled timer every #{timer()}ms",
+        current_time: now_time,
+      }
+    }, %{
+      domain: [:phos],
+      error_logger: %{tag: :debug_msg}
+    })
+
+    spawn(fn -> database_notification() end)
+    spawn(fn -> notion_notification() end)
+
     Process.send_after(self(), :timer, timer())
     {:noreply, state}
+  end
+
+  defp database_notification do
+    :logger.debug(%{
+      label: {Phos.PlatformNotification.Scheduller, :database_notification},
+      report: %{
+        module: __MODULE__,
+        action: "execute failed/pending notification",
+      }
+    }, %{
+      domain: [:phos],
+      error_logger: %{tag: :debug_msg}
+    })
+
+    PN.active_notification()
+    |> run_notification_timer()
+  end
+
+  defp notion_notification do
+    :logger.debug(%{
+      label: {Phos.PlatformNotification.Scheduller, :notion_notification},
+      report: %{
+        module: __MODULE__,
+        action: "executing global notification",
+      }
+    }, %{
+      domain: [:phos],
+      error_logger: %{tag: :debug_msg}
+    })
+
+    PN.Global.list()
+    |> Enum.filter(fn n -> n.active end)
+    |> Enum.map(&running_global_notification/1)
   end
 
   defp run_notification_timer([]), do: :ok
@@ -51,6 +94,36 @@ defmodule Phos.PlatformNotification.Scheduller do
     |> case do
       int when is_integer(int) -> :timer.minutes(int)
       _ -> @default_timer
+    end
+  end
+
+  defp running_global_notification(%{frequency: "weekends"} = data) do
+    case Timex.weekday(current_time()) do
+      d when d in [6, 7] -> do_send_global_notification(data)
+      _ -> nil
+    end
+  end
+  defp running_global_notification(%{frequency: "weekly"} = data) do
+    case Timex.weekday(current_time()) do
+      1 -> do_send_global_notification(data)
+      _ -> nil
+    end
+  end
+  defp running_global_notification(%{frequency: _} = data) do
+    ndate = DateTime.to_date(data.time_condition)
+    case Date.compare(ndate, DateTime.to_time(current_time())) do
+      :eq -> do_send_global_notification(data)
+      _ -> nil
+    end
+  end
+
+  defp do_send_global_notification(%{id: id, time_condition: time} = _data) do
+    case Time.diff(current_time(), time) do
+      t when t > 0 -> case t < timer() do
+          true -> PN.Global.execute(id)
+          _ -> nil
+        end
+      _ -> nil
     end
   end
 end

@@ -194,6 +194,19 @@ defmodule Phos.Action do
       |> Repo.all()
   end
 
+  def orb_initiator_by_geohashes(hashes) do
+    from(l in Orb_Location,
+      as: :l,
+      where: l.location_id in ^hashes,
+      left_join: orbs in assoc(l, :orbs),
+      on: orbs.userbound == true,
+      inner_join: initiator in assoc(orbs, :initiator),
+      on: initiator.integrations["beacon"]["location"]["scope"] == true,
+      distinct: initiator.id,
+      select: initiator.id)
+    |> Repo.all()
+  end
+
   def orbs_by_friends(your_id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
     from(orbs in Orb,
       as: :o,
