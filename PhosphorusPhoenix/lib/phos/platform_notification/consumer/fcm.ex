@@ -7,12 +7,14 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
     %{"body" => body, "title" => title} = get_template(store)
     data = get_data(store)
 
-    Sparrow.FCM.V1.Notification.new(:condition, recipient, title, body, data)
-    |> Sparrow.API.push()
-    |> case do
-      :ok -> {:ok, "Notification triggered"}
-      err -> err
-    end
+    # Sparrow.FCM.V1.Notification.new(:condition, recipient, title, body, data)
+    # |> Sparrow.API.push()
+    # |> case do
+    #   :ok -> {:ok, "Notification triggered"}
+    #   err -> err
+    # end
+    Fcmex.push("", notification: %{title: title, body: body} ,condition: recipient, data: data)
+
   end
 
   defp get_template(%{spec: spec} = store) do

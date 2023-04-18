@@ -65,6 +65,10 @@ POST :ipAddress/userland/auth/fyr/genesis
 GET :ipAddress/userland/self/
 :auth-headers
 
+## Read activities of self
+GET :ipAddress/userland/self/activity?cursor=1603502948407
+:auth-headers
+
 ## Register User via Email
 POST :ipAddress/userland/auth/email/register
 :auth-headers

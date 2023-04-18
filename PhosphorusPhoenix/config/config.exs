@@ -124,7 +124,7 @@ config :phos, Phos.PlatformNotification,
   min_demand: 2,
   max_demand: 10
 
-config :sparrow, Sparrow.PoolsWarden, %{enabled: true}
+#config :sparrow, Sparrow.PoolsWarden, %{enabled: true}
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

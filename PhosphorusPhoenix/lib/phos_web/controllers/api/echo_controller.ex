@@ -28,6 +28,9 @@ defmodule PhosWeb.API.EchoController do
   def show_orbs(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => orb_id, "page" => page}),
     do: render(conn, :paginated, memories: Message.list_messages_by_orb({orb_id, your_id}, page))
 
+  def show_activity(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"cursor" => cursor}),
+    do: render(conn, :paginated, memories: Message.list_activity_by_user_id(your_id, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond)]))
+
   def show(conn = %{assigns: %{current_user: _user}}, %{"id" => id}) do
     with %Memory{} = memory <-  Message.get_memory!(id) do
       render(conn, "show.json", memory: memory)

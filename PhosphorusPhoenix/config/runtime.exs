@@ -26,17 +26,17 @@ unless config_env() == :prod do
   # project_id: System.get_env("FYR_PROJ"),
   # service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
 
-  # Sparrow
-  sparrow_path = :code.priv_dir(:phos) |> to_string() |> Kernel.<>("/data/sparrow_config.json")
-    File.touch(sparrow_path)
-    File.write!(sparrow_path, "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n")
+  # # Sparrow
+  # sparrow_path = :code.priv_dir(:phos) |> to_string() |> Kernel.<>("/data/sparrow_config.json")
+  # #   File.touch(sparrow_path)
+  # #   File.write!(sparrow_path, "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n")
 
-  config :sparrow,
-  fcm: [
-    [
-      path_to_json: sparrow_path
-    ]
-  ]
+  # config :sparrow,
+  #   fcm: [
+  #     [
+  #       path_to_json: sparrow_path
+  #     ]
+  #   ]
 
 
   # AWS
@@ -102,18 +102,29 @@ if config_env() == :prod do
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6], else: []
 
-  # Sparrow
-  #
-  sparrow_path = :code.priv_dir(:phos) |> to_string() |> Kernel.<>("/data/sparrow_config.json")
-    File.touch(sparrow_path)
-    File.write!(sparrow_path, "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n")
+  # # Sparrow
+  # sparrow_path = :code.priv_dir(:phos) |> to_string() |> Kernel.<>("/data/sparrow_config.json")
+  # #   File.touch(sparrow_path)
+  # #   File.write!(sparrow_path, "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n")
 
-  config :sparrow,
-  fcm: [
-    [
-      path_to_json: sparrow_path
-    ]
-  ]
+  # config :sparrow,
+  #   fcm: [
+  #     [
+  #       path_to_json: sparrow_path
+  #     ]
+  #   ]
+
+  #
+  # sparrow_path = :code.priv_dir(:phos) |> to_string() |> Kernel.<>("/data/sparrow_config.json")
+  #   File.touch(sparrow_path)
+  #   File.write!(sparrow_path, "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n")
+
+  # config :sparrow,
+  # fcm: [
+  #   [
+  #     path_to_json: sparrow_path
+  #   ]
+  # ]
 
   # AWS
   config :ex_aws,
