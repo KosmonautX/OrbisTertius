@@ -68,7 +68,7 @@ defmodule PhosWeb.API.EchoController do
 
   def update(%Plug.Conn{assigns: %{current_user: %{id: user_id}}} = conn , %{"id" => id} = params) do
     memory = Message.get_memory!(id)
-    with true <- memory.initiator.id == user_id,
+    with true <- memory.user_source.id == user_id,
          {:ok, attrs} <- memory_constructor(user_id, params),
          {:ok, %Memory{} = memory} <- Message.update_memory(memory, attrs) do
       conn

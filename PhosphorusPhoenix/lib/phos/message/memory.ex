@@ -15,6 +15,8 @@ defmodule Phos.Message.Memory do
     belongs_to :rel_subject, Phos.Users.RelationRoot, references: :id, type: Ecto.UUID
     belongs_to :com_subject, Phos.Comments.Comment, references: :id, type: Ecto.UUID
 
+    field :cluster_subject_id, :binary_id, default: nil, virtual: true
+
     has_many :reveries, Reverie, references: :id, foreign_key: :memory_id, on_delete: :delete_all
 
     timestamps()
