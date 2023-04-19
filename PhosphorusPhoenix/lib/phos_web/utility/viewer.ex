@@ -35,6 +35,10 @@ defmodule PhosWeb.Util.Viewer do
 
         Map.new([{k, %{data: PhosWeb.Util.Viewer.orb_mapper(orb)}}])
 
+      {k, %Phos.Comments.Comment{} = comment} ->
+
+        Map.new([{k, %{data: PhosWeb.Util.Viewer.comment_mapper(comment)}}])
+
       {k, %Phos.Message.Memory{} = memory} ->
 
         Map.new([{k, %{data: PhosWeb.Util.Viewer.memory_mapper(memory)}}])

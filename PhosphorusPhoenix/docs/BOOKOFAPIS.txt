@@ -66,7 +66,7 @@ GET :ipAddress/userland/self/
 :auth-headers
 
 ## Read activities of self
-GET :ipAddress/userland/self/activity?cursor=1603502948407
+GET :ipAddress/userland/self/activity?cursor=16035029484071
 :auth-headers
 
 ## Register User via Email
