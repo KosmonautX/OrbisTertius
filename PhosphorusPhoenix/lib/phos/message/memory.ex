@@ -26,7 +26,7 @@ defmodule Phos.Message.Memory do
   @doc false
   def changeset(memory, attrs) do
     memory
-    |> cast(attrs, [:id,:user_source_id, :orb_subject_id, :rel_subject_id, :message, :media])
+    |> cast(attrs, [:id,:user_source_id, :orb_subject_id, :com_subject_id, :rel_subject_id, :message, :media])
     |> validate_required([:message, :media])
     |> foreign_key_constraint(:user_source_id)
   end

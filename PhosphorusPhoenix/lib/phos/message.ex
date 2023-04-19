@@ -9,12 +9,14 @@ defmodule Phos.Message do
   defp cluster_enricher(%{data: memory} = resp),
     do: %{resp | data: Enum.map(memory, &(cluster_enricher(&1)))}
 
-  defp cluster_enricher(%{message: "reply_com"} = m),
-     do: %{m | cluster_subject_id: m.com_subject.parent_id}
+  defp cluster_enricher(%{message: "reply_com", com_subject: %{parent_id: parent_comment}} = m ),
+     do: %{m | cluster_subject_id: parent_comment}
   defp cluster_enricher(%{message: "reply_orb_children"} = m ),
       do: %{m | cluster_subject_id: m.orb_subject_id}
   defp cluster_enricher(%{message: "reply_orb_root"}= m),
       do: %{m | cluster_subject_id: m.orb_subject_id}
+  defp cluster_enricher(m),
+     do: m
 
   def list_activity_by_user_id(yours, opts) when is_list(opts) do
     Phos.PlatformNotification.Store
