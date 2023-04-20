@@ -8,7 +8,7 @@ defmodule Phos.PlatformNotification do
 
   @type t :: {notification_type(), entity(), entity_id(), message_type()}
 
-  alias __MODULE__.{Producer, Dispatcher, Consumer, Global, Store, Scheduller, Template, Listener}
+  alias __MODULE__.{Producer, Dispatcher, Consumer, Global, Store, Scheduller, Template}
 
   import Ecto.Query, warn: false
 
@@ -45,7 +45,7 @@ defmodule Phos.PlatformNotification do
   def init(_opts) do
     number    = Keyword.get(config(), :worker, 4)
     workers   = Enum.map(1..number, fn n -> Supervisor.child_spec({Consumer, []}, id: :"platfrom_notification_worker_#{n}") end)
-    children  = [Producer, Dispatcher, Listener, Scheduller, Global | workers]
+    children  = [Producer, Dispatcher, Scheduller, Global | workers]
 
     Supervisor.init(children, strategy: :one_for_one)
   end
