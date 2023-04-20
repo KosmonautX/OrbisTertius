@@ -5,3 +5,4 @@ WolfSmoke/node_modules
 .vscode
 *.pyc
 .localstack/data/recorded_api_calls.json
+/PhosphorusPhoenix/log
