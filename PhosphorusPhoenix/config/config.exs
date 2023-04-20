@@ -124,13 +124,13 @@ config :phos, Phos.PlatformNotification,
   min_demand: 2,
   max_demand: 10
 
-config :sparrow,
-  pool_enabled: true,
-  fcm: [
-    [
-      path_to_json: Path.expand("../priv/data/sparrow-config.json", __DIR__)
-    ]
-  ]
+# config :sparrow,
+#   pool_enabled: true,
+#   fcm: [
+#     [
+#       path_to_json: Path.expand("../priv/data/sparrow-config.json", __DIR__)
+#     ]
+#   ]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
