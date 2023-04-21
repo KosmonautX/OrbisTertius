@@ -4,31 +4,33 @@ defmodule Phos.Repo do
     adapter: Ecto.Adapters.Postgres
 
     defoverridable insert: 2,
-                   insert!: 2,
-                   update: 2,
-                   update!: 2
+                   insert!: 2
+                   # update: 2,
+                   # update!: 2
   
   def insert(struct_or_changeset, opts) do
     super(struct_or_changeset, opts)
-    |> prepare_callback(:insert)
+    |> tap(fn res -> prepare_callback(res, :insert) end)
   end
 
   def insert!(struct_or_changeset, opts) do
     super(struct_or_changeset, opts)
-    |> prepare_callback(:insert!)
+    |> tap(fn res -> prepare_callback(res, :insert) end)
   end
 
-  def update(changeset, opts) do
-    super(changeset, opts)
-    |> prepare_callback(:update)
-  end
+  ## future rescinding notification upon deactivate etc
 
-  def update!(changeset, opts) do
-    super(changeset, opts)
-    |> prepare_callback(:update!)
-  end
+  # def update(changeset, opts) do
+  #   super(changeset, opts)
+  #   |> prepare_callback(:update)
+  # end
 
-  defp prepare_callback(data, operation) when operation in [:insert!, :update!], do: define_callback(data, operation)
+  # def update!(changeset, opts) do
+  #   super(changeset, opts)
+  #   |> prepare_callback(:update!)
+  # end
+
+  defp prepare_callback(data, operation) when operation in [:insert, :update], do: define_callback(data, operation)
   defp prepare_callback({:ok, data}, operation), do: define_callback(data, operation)
   defp prepare_callback(err, _operation), do: err
 
