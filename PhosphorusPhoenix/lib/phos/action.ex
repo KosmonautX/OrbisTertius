@@ -583,6 +583,7 @@ defmodule Phos.Action do
   defp notion_get_values(%{"type" => "files", "files" => files}) when is_list(files) and length(files) > 0, do: List.first(files)["file"]["url"]
   defp notion_get_values(%{"type" => "url", "url" => link}), do: link
   defp notion_get_values(%{"type" => type} = data), do: notion_get_values(Map.get(data, type))
+  defp notion_get_values(%{"content" => data}) when data == "" , do: nil
   defp notion_get_values(%{"content" => data}), do: data
   defp notion_get_values(data) when is_boolean(data), do: data
   defp notion_get_values(data) when is_list(data) and length(data) > 0, do: Enum.reduce(data, "", fn val, acc -> Kernel.<>(acc, notion_get_values(val)) end)
@@ -664,7 +665,7 @@ defmodule Phos.Action do
     title = Map.get(properties, "Title", %{}) |> notion_get_values()
     default_orb_populator({ name, nil}, properties)
     |> Map.merge(%{
-          where: notion_get_values(location) |> String.replace("[town]", name),
+          where: notion_get_values(location) || "" |> String.replace("[town]", name),
           title: (if is_nil(notion_get_values(inside_title)), do: title, else: notion_get_values(inside_title)),
           geolocation: %{
             live: %{
@@ -684,14 +685,16 @@ defmodule Phos.Action do
                                                 "Outside Image" => outside,
                                                 "Inside Image Low" => il,
                                                 "Outside Image Low" => ol,
-                                                "Done" => done} = prop) do
+                                                "Done" => done,
+                                                "Initiator Username" => initiator} = prop) do
     expires_in = 4 * 7 * 24 * 60 * 60 ## TODO let it be selected in Admin View instead
     %{
       id: Ecto.UUID.generate(),
-      username: "Administrator 👋",
+      username: notion_get_values(initiator),
       expires_in: expires_in,
       info: (unless is_nil(notion_get_values(info)), do: notion_get_values(info) |> String.replace("[town]", name)),
       done: notion_get_values(done),
+      initiator: Phos.Users.get_user_by_username(notion_get_values(initiator) || ""),
       media: true,
       inside: notion_get_values(inside),
       outside: notion_get_values(outside),
