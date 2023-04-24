@@ -300,11 +300,10 @@ defmodule PhosWeb.CoreComponents do
       "phx-submit-loading:opacity-75",
       "rounded-lg",
       "font-poppins",
-      "px-3",
+      "px-2",
       "py-2",
       "text-sm",
       "font-bold",
-      "leading-6",
       "active:text-white/80"
     ]
     |> Enum.join(" ")
@@ -1608,7 +1607,7 @@ defmodule PhosWeb.CoreComponents do
     # end)
 
     ~H"""
-    <div class={["px-4 py-1 dark:border-x-white font-poppins break-words", @info_color]}>
+    <div class={["px-4 py-1  font-poppins break-words", @info_color]}>
       <span
         class={[
           "prose prose-a:text-blue-500 text-base break-words overflow-hidden font-medium dark:prose-invert w-full",
@@ -1616,7 +1615,7 @@ defmodule PhosWeb.CoreComponents do
         ]}
       >
         <%= extract_html_from_md @title %>
-        <!-- <.external_orb_link  :if={@show_link && not is_nil(@link)} link={@link}/> -->
+        <.button>Go to Website</.button>
       </span>
     </div>
     """
@@ -1677,7 +1676,7 @@ defmodule PhosWeb.CoreComponents do
       id={"#{@id}-actions"}
       class={[
         @show_information == true && "lg:rounded-b-3xl",
-        "flex justify-between w-full lg:text-sm text-xs px-4 dark:border-b dark:border-b-white mt-2 lg:mt-0 font-poppins",
+        "flex justify-between w-full lg:text-sm text-xs px-5 dark:border-b dark:border-b-white mt-2 lg:mt-0 font-poppins",
         @main_color
       ]}
     >
