@@ -1413,7 +1413,6 @@ defmodule PhosWeb.CoreComponents do
           :if={@media == [] || !@show_information}
           id={"#{@id}-scry-orb-#{@orb.id}"}
           title={get_in(@orb, [Access.key(:payload), Access.key(:inner_title)]) || @orb.title || ""}
-          show_link={true}
         />
         <.orb_information
           :if={is_binary(get_in(@orb, [Access.key(:payload), Access.key(:info)])) && !@show_information}
@@ -1422,6 +1421,9 @@ defmodule PhosWeb.CoreComponents do
           show_link={true}
         />
       </.link>
+      <div :if={!@show_information && is_struct(get_in(@orb, [Access.key(:payload), Access.key(:ext_link)]))} class="px-4 py-1 prose-zinc text-gray-600 w-full bg-white dark:bg-gray-900 prose-a:text-blue-500 prose-a:hover:underline  font-poppins break-words">
+        <.button phx-click={show_modal("welcome_message")}><%= @orb.payload.ext_link.name %></.button>
+      </div>
       <.orb_action
         :if={@media == [] || !@show_information}
         id={"#{@id}-scry-orb-#{@orb.id}"}
@@ -1615,7 +1617,7 @@ defmodule PhosWeb.CoreComponents do
         ]}
       >
         <%= extract_html_from_md @title %>
-        <.button>Go to Website</.button>
+
       </span>
     </div>
     """
@@ -2017,7 +2019,7 @@ defmodule PhosWeb.CoreComponents do
             src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
             class=" h-20 w-20 lg:w-32 lg:h-32 border-4 border-white rounded-full object-cover"
           />
-          <p class="font-semibold text-base dark:text-white">Hmm...You were saying?</p>
+          <p class="font-semibold text-base dark:text-white">See you in the Mobile App</p>
           <p :if={@user.username} class="text-sm text-center text-gray-400 dark:text-gray-400">
             <%= "Join the tribe to share your thoughts with #{@user.username} now!" %>
           </p>
