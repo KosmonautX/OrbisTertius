@@ -12,46 +12,44 @@ defmodule PhosWeb.OrbLive.Show do
         %{assigns: %{current_user: %Phos.Users.User{} = user}} = socket
       ) do
     with %Action.Orb{} = orb <- Action.get_orb(id, user.id) do
-      comments =
-        Comments.get_root_comments_by_orb(orb.id)
-        |> decode_to_comment_tuple_structure()
 
       Phos.PubSub.subscribe("folks")
 
       {:ok,
        socket
        |> assign(:orb, orb)
+       |> tap(fn socket -> Enum.member?(socket.assigns.orb.traits, "geolock") && raise PhosWeb.ErrorLive.FourOThree, message: "Go Outside Breathe Air" end)
        |> assign_meta(orb, params)
        |> assign(:ally, false)
        |> assign(:media, nil)
-       |> assign(:comments, comments)
+       |> assign(:comments, Comments.get_root_comments_by_orb(orb.id)
+        |> decode_to_comment_tuple_structure())
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
        temporary_assigns: [orbs: Action.orbs_by_initiators([orb.initiator.id], 1).data]}
       else
-        nil -> raise PhosWeb.ErrorLive, message: "Orb Not Found"
+        nil -> raise PhosWeb.ErrorLive.FourOFour, message: "Orb Not Found"
     end
   end
 
   @impl true
   def mount(%{"id" => id} = params, _session, socket) do
     with {:ok, orb} <- Action.get_orb(id) do
-      comment =
-        Comments.get_root_comments_by_orb(orb.id)
-        |> decode_to_comment_tuple_structure()
 
       {:ok,
        socket
        |> assign(:orb, orb)
+       |> tap(fn socket -> Enum.member?(socket.assigns.orb.traits, "geolock") && raise PhosWeb.ErrorLive.FourOThree, message: "Go Outside Breathe Air" end)
        |> assign(:ally, false)
        |> assign_meta(orb, params)
-       |> assign(:comments, comment)
+       |> assign(:comments, Comments.get_root_comments_by_orb(orb.id)
+        |> decode_to_comment_tuple_structure())
        |> assign(:media, nil)
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1),
        temporary_assigns: [orbs: Action.orbs_by_initiators([orb.initiator.id], 1).data]}
     else
-      {:error, :not_found} -> raise PhosWeb.ErrorLive, message: "Orb Not Found"
+      {:error, :not_found} -> raise PhosWeb.ErrorLive.FourOFour, message: "Orb Not Found"
     end
   end
 
