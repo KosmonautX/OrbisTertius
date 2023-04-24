@@ -18,7 +18,7 @@ defmodule PhosWeb.UserProfileLive.Show do
        allies: ally_list(current_user, user)]}
 
     else
-      nil -> raise PhosWeb.ErrorLive, message: "User Not Found"
+      nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
     end
   end
 
