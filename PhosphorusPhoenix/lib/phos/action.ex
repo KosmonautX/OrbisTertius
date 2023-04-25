@@ -631,7 +631,7 @@ defmodule Phos.Action do
       _ -> notion_platform_time(nil)
     end
   end
-  defp notion_platform_time(_time), do: ~T[08:00:00]
+  defp notion_platform_time(_time), do: DateTime.now!("Asia/Singapore")
 
   defp decide_timezone("SGD"), do: Timex.timezone("Asia/Singapore", {2022, 1, 1})
   defp decide_timezone(_), do: Timex.Timezone.local()

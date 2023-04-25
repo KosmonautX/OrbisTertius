@@ -92,6 +92,15 @@ defmodule Phos.PlatformNotification do
     |> Repo.insert()
   end
 
+  def insert_notification(%{memory_id: _memory} = attrs) do
+    opts = attrs
+    |> Map.put_new(:id, Ecto.UUID.generate())
+
+    %Store{}
+    |> Store.changeset(opts)
+    |> Repo.insert()
+  end
+
   def insert_notification(attrs) do
     opts = Map.put_new(attrs, :id, Ecto.UUID.generate())
     %Store{}

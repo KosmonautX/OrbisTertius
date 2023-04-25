@@ -644,6 +644,7 @@ defmodule PhosWeb.CoreComponents do
   def admin_user_preview(assigns) do
     ~H"""
     <div class="flex max-w-sm font-poppins">
+      <.link if={@user.username} navigate={"/user/#{@user.username}?bac"}>
       <div>
         <img
           src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossy")}
@@ -652,9 +653,13 @@ defmodule PhosWeb.CoreComponents do
           alt="user5"
         />
       </div>
+      </.link>
       <div class="flex flex-col xl:ml-1 lg:ml-2 -mb-2">
+
         <h6 class="mb-0 leading-normal text-sm font-bold"><%= "#{@user.username}" %></h6>
+      <a href={"mailto: #{@user.email}"}>
         <p class="mb-0 leading-tight text-sm text-gray-400"><%= "#{@user.email}" %></p>
+      </a>
       </div>
     </div>
     """

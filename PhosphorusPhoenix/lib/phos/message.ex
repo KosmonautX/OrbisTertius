@@ -25,7 +25,8 @@ defmodule Phos.Message do
     |> select([_n, m], m)
     |> join(:inner, [_n, m], u in assoc(m, :user_source))
     |> join(:left, [_n, m, _u], c in assoc(m, :com_subject))
-    |> select_merge([_n, m, u, c], %{m | user_source: u, com_subject: c})
+    |> join(:left, [_n, m, _u, _c], o in assoc(m, :orb_subject))
+    |> select_merge([_n, m, u, c, o], %{m | user_source: u, com_subject: c, orb_subject: o})
     |> Repo.Paginated.all([{:sort_attribute, {:memory , :inserted_at}} | opts])
     |> cluster_enricher()
   end

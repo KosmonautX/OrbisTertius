@@ -10,12 +10,12 @@ defmodule Phos.Repo do
   
   def insert(struct_or_changeset, opts) do
     super(struct_or_changeset, opts)
-    |> tap(fn res -> prepare_callback(res, :insert) end)
+    |> tap(&prepare_callback(&1, :insert))
   end
 
   def insert!(struct_or_changeset, opts) do
     super(struct_or_changeset, opts)
-    |> tap(fn res -> prepare_callback(res, :insert) end)
+    |> tap(&prepare_callback(&1, :insert!))
   end
 
   ## future rescinding notification upon deactivate etc
@@ -30,7 +30,7 @@ defmodule Phos.Repo do
   #   |> prepare_callback(:update!)
   # end
 
-  defp prepare_callback(data, operation) when operation in [:insert, :update], do: define_callback(data, operation)
+  defp prepare_callback(data, operation) when operation in [:insert!, :update!], do: define_callback(data, operation)
   defp prepare_callback({:ok, data}, operation), do: define_callback(data, operation)
   defp prepare_callback(err, _operation), do: err
 
@@ -51,6 +51,7 @@ defmodule Phos.Repo do
       {:error, :nofile} -> return_data(data, operation)
     end
   end
+
   defp define_callback(data, _operation), do: data
 
   defp to_atom(string_module) do

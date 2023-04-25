@@ -183,20 +183,24 @@ defmodule Phos.PlatformNotification.Global do
     :ets.insert(table, {id, schedule, active})
   end
 
-  defp send_notification(%{regions: regions} = data) do
+  defp send_notification(%{regions: regions, action_path: "/orbland/orbs", archetype_id: id} = data) do
+    {:ok, mem} = Phos.Message.create_memory(%{user_source_id: Phos.Users.get_admin().id, orb_subject_id: id, message: "pltfrm_orb"})
+
     Phos.External.Sector.get()
     |> Map.take(regions)
     |> Map.values()
     |> List.flatten()
     |> Phos.Action.orb_initiator_by_geohashes()
     |> Enum.map(fn uid ->
-      PN.notify({"broadcast", "PINNED", "", nil}, to: uid, notification: %{
+      PN.notify({"broadcast", "ORB", id, "pltfrm_orb"},
+        memory_id: mem.id,
+        to: uid,
+        notification: %{
         title: data.title,
         body: data.body,
       }, data: %{
-        action_path: data.action_path,
+        action_path: data.action_path <> "/"<> id,
       })
     end)
-    
   end
 end
