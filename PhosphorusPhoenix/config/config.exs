@@ -119,10 +119,10 @@ config :phos, Phos.External.Notion,
   notification_database: {System, :get_env, "NOTION_NOTIFICATION_DATABASE"}
 
 config :phos, Phos.PlatformNotification,
-  worker: 88,
+  worker: 18,
   time_interval: 3,
-  min_demand: 50,
-  max_demand: 500
+  min_demand: 1,
+  max_demand: 5
 
 # config :sparrow,
 #   pool_enabled: true,

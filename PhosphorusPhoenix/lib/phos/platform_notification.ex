@@ -43,8 +43,8 @@ defmodule Phos.PlatformNotification do
 
   @impl true
   def init(_opts) do
-    number    = Keyword.get(config(), :worker, 25)
-    workers   = Enum.map(1..number, fn n -> Supervisor.child_spec({Consumer, []}, id: :"platfrom_notification_worker_#{n}") end)
+    number    = Keyword.get(config(), :worker, 10)
+    workers   = Enum.map(1..number, fn n -> Supervisor.child_spec({Consumer, []}, id: :"platform_notification_worker_#{n}") end)
     children  = [Producer, Dispatcher, Scheduller, Global | workers]
 
     Supervisor.init(children, strategy: :one_for_one)
