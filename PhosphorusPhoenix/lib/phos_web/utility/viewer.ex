@@ -140,10 +140,15 @@ defmodule PhosWeb.Util.Viewer do
                        :scope ->
                          {:scope, v}
                        _ ->
-                     {k, %{scope: v.scope,
+                     {k,
+                      (unless is_nil(v) do
+                       %{scope: v.scope,
                            subscribe: v.subscribe,
                            unsubscribe: v.unsubscribe
-                          }}
+                          }
+                       else
+                         %{}
+                       end)}
                     end
                   end
            end)}}

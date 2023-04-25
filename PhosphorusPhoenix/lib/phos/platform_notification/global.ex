@@ -199,7 +199,7 @@ defmodule Phos.PlatformNotification.Global do
         title: data.title,
         body: data.body,
       }, data: %{
-        action_path: data.action_path <> "/"<> id,
+        action_path: data.action_path <> "/" <> id,
       })
     end)
   end

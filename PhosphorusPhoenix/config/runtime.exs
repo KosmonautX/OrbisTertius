@@ -35,7 +35,9 @@ unless config_env() == :prod do
     pool_enabled: true,
     fcm: [
       [
-        path_to_json: sparrow_path
+        path_to_json: sparrow_path,
+        ping_interval: 3000,
+        worker_num: 100
       ]
     ]
 
@@ -112,7 +114,9 @@ if config_env() == :prod do
     pool_enabled: true,
     fcm: [
       [
-        path_to_json: sparrow_path
+        path_to_json: sparrow_path,
+        ping_interval: 3000,
+        worker_num: 100
       ]
     ]
 

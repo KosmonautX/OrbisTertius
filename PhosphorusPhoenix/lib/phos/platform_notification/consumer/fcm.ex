@@ -2,20 +2,22 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
   use Phos.PlatformNotification.Specification
 
   @impl true
-  def send(store) do
-    recipient = "'USR.#{store.recipient_id}' in topics"
+  def send(%{recipient: %{integrations: %{fcm_token: token}}} = store) do
+    IO.inspect "#{store.recipient.username} << #{get_in(store.spec, ["options", "notification", "title"])}"
+    #recipient = "'USR.#{store.recipient_id}' in topics"
     %{"body" => body, "title" => title} = get_template(store)
     data = get_data(store)
 
-    Sparrow.FCM.V1.Notification.new(:condition, recipient, title, body, data)
+    Sparrow.FCM.V1.Notification.new(:token, token, title, body, data)
     |> Sparrow.API.push()
     |> case do
       :ok -> {:ok, "Notification triggered"}
       err -> err
     end
     # Fcmex.push("", notification: %{title: title, body: body} ,condition: recipient, data: data)
-
   end
+
+  def send(_), do: {:error, "No FCM Token"}
 
   defp get_template(%{spec: spec} = store) do
     spec
