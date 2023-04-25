@@ -31,7 +31,7 @@ defmodule Phos.Repo do
   # end
 
   defp prepare_callback(data, operation) when operation in [:insert!, :update!], do: define_callback(data, operation)
-  defp prepare_callback({:ok, data}, operation), do: define_callback(data, operation)
+  defp prepare_callback({:ok, data}, operation) when operation in [:insert, :update], do: define_callback(data, operation)
   defp prepare_callback(err, _operation), do: err
 
   defp define_callback(%{__struct__: module} = data, operation) do
@@ -45,10 +45,10 @@ defmodule Phos.Repo do
     callback_module
     |> Code.ensure_loaded()
     |> case do
-      {:module, module} -> 
+      {:module, module} ->
         spawn(fn -> apply(module, :callback, [operation, data]) end)
-        return_data(data, operation)
-      {:error, :nofile} -> return_data(data, operation)
+        :ok
+      {:error, :nofile} -> :ok
     end
   end
 
@@ -60,13 +60,6 @@ defmodule Phos.Repo do
       String.to_existing_atom(module)
     rescue ArgumentError ->
       String.to_atom(module)
-    end
-  end
-
-  defp return_data(data, operation) do
-    case String.ends_with?("#{operation}", "!") do
-      true -> data
-      _ -> {:ok, data}
     end
   end
 end

@@ -45,7 +45,7 @@ GET :localipAddress/devland/flameon?user=:antoine_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
-GET :localipAddress/devland/lankaonfyr?fyr_id=:satrio
+GET :localipAddress/devland/lankaonfyr?fyr_id=:anon
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 
@@ -74,7 +74,7 @@ GET :ipAddress/userland/self/activity?cursor=16035029484071
 POST :ipAddress/userland/auth/email/register
 :auth-headers
 {
-    "email": "anon@bo.wen",
+    "email": "nonanon@bo.wen",
     "password": "1234567890-="
 }
 

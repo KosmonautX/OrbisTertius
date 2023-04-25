@@ -284,6 +284,13 @@ defmodule Phos.Comments do
 
   #   """
   def delete_comment(%Comment{} = comment) do
+    from(m in Phos.Message.Memory,
+      where: m.com_subject_id == ^comment.id
+    )
+    |> Phos.Repo.all()
+    |> Enum.map(fn mem -> Phos.Message.delete_memory(mem)
+    end)
+
     Repo.delete(comment)
   end
 

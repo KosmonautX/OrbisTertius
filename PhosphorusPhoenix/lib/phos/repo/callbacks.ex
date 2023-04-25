@@ -1,6 +1,4 @@
 defmodule Phos.Repo.Callbacks do
-  @callback callback(operation :: atom(), data :: map()) :: :ok
-
   defmacro __using__(_opts) do
     quote do
       @behaviour Phos.Repo.Callbacks
