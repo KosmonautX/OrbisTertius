@@ -96,7 +96,6 @@ defmodule Phos.PlatformNotification.Dispatcher do
   end
 
   defp insert_to_persistent_database(%{"template_id" => key} = data) when not is_nil(key) do
-    IO.inspect data
     template = PN.get_template_by_key(key) || %{}
       with {:ok, recipient_id} <- get_recipient(data),
            {:ok, memory} <- get_memory(data) do

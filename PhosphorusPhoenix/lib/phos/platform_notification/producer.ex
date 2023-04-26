@@ -80,5 +80,11 @@ defmodule Phos.PlatformNotification.Producer do
 
   @impl true
   def handle_info({_from, :error}, state) do
-    {:noreply, [], state} end
+    {:noreply, [], state}
+  end
+
+  @impl true
+  def handle_info({_from, {:error, msg}}, state) do
+    {:noreply, [], state}
+  end
 end
