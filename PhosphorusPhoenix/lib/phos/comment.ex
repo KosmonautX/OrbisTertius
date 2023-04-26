@@ -49,7 +49,6 @@ defmodule Phos.Comments do
            |> Repo.preload([:initiator, :parent, :orb])
            |> notify_parent_element()
            |> notify_initiator()
-           |> notify_self()
 
            if comment.parent.initiator_id !== comment.initiator.id do
              spawn(fn ->
@@ -72,7 +71,9 @@ defmodule Phos.Comments do
            end
            data
          {:ok, %{orb_id: _o_id} = comment} = data ->
-           comment = comment |> Repo.preload([:orb, :initiator])
+           comment = comment
+           |> Repo.preload([:orb, :initiator])
+           |> notify_self()
            if comment.orb.initiator_id !== comment.initiator.id do
              spawn(fn ->
                Phos.Notification.target("'USR.#{comment.orb.initiator_id}' in topics",
@@ -128,7 +129,9 @@ defmodule Phos.Comments do
       })
     comment
   end
-  defp notify_self(comment), do: comment
+  defp notify_self(comment) do
+    comment
+  end
 
   #   @doc """
   #   Gets a single orb.
