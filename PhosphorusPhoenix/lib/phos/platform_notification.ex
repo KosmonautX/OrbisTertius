@@ -108,7 +108,7 @@ defmodule Phos.PlatformNotification do
     |> Repo.insert()
   end
 
-  def update_notification(store, attrs) do
+  def update_notification(%Store{} = store, attrs) do
     store
     |> Store.changeset(attrs)
     |> Repo.update()
