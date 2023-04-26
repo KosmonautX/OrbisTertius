@@ -191,6 +191,7 @@ defmodule Phos.PlatformNotification.Global do
     |> Map.values()
     |> List.flatten()
     |> Phos.Action.orb_initiator_by_geohashes()
+    #|> batch
     |> Enum.map(fn uid ->
       PN.notify({"broadcast", "ORB", id, "pltfrm_orb"},
         memory_id: mem.id,

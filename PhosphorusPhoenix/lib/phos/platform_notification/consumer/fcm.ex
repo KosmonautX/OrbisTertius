@@ -8,6 +8,8 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
     %{"body" => body, "title" => title} = get_template(store)
     data = get_data(store)
 
+    # synchronous
+
     Sparrow.FCM.V1.Notification.new(:token, token, title, body, data)
     |> Sparrow.API.push()
     |> case do
