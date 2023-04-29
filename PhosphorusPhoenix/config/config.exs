@@ -121,8 +121,8 @@ config :phos, Phos.External.Notion,
 config :phos, Phos.PlatformNotification,
   worker: 18,
   time_interval: 3,
-  min_demand: 1,
-  max_demand: 5
+  min_demand: 5,
+  max_demand: 8
 
 # config :sparrow,
 #   pool_enabled: true,

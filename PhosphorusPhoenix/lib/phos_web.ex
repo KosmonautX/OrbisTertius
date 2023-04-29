@@ -71,7 +71,7 @@ defmodule PhosWeb do
 
   def channel do
     quote do
-      use Phoenix.Channel
+      use Phoenix.Channel, log_join: :debug
       import PhosWeb.Util.Authorization
     end
   end
