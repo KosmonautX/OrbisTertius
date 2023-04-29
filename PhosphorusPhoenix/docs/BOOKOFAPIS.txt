@@ -212,12 +212,12 @@ GET :ipAddress/folkland/others/:satrio_id?page=1
 GET :ipAddress/folkland/stream/self?page=1
 :auth-headers
 
-## Folks Discovery Stream (around me)
-GET :ipAddress/folkland/stream/discovery/636786611773840255,636786611773840255?page=1
+## Orb Stream directed at yourself from friends
+GET :ipAddress/folkland/stream/discovery/614510498785787903,614510497487650815?page=1
 :auth-headers
 
 ## Show Relation Resource
-GET :ipAddress/folkland/friends/39424de7-de1c-4471-b78c-ad3851d43ade
+GET :ipAddress/folkland/friends/7dcd842a-8d07-4407-8ca4-6346d54b0f86
 -> run-hook (restclient-set-var ":rel" (cdr (assq 'relation_id (assq 'data (json-read)))))
 :auth-headers
 
@@ -262,7 +262,7 @@ GET :ipAddress/orbland/orbs/3e9ebaa7-cdd0-4d3e-857e-0661aeb12d0b
 :auth-headers
 
 ## Read all orbs in that geohash id
-GET :ipAddress/orbland/stream/623517998944845823,628021598572208127?page=1&traits=treasurehun
+GET :ipAddress/orbland/stream/623517998944845823,628021598572208127?page=1&traits=treasurehunt
 :auth-headers
 
 ## Create Orbs
@@ -435,7 +435,7 @@ POST :ipAddress/memland/memories
 :auth-headers
 {
     "user_destination_id": ":lky_id",
-    "message": "another one",
+    "message": "14",
     "rel_subject_id": ":rel",
     "orb_subject_id": ":orb"
 }
