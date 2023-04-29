@@ -3,45 +3,6 @@
 ## Root
 
 ```elixir
-orb_id = "9bf9c443-f89b-460a-972d-6704ae66823d"
-your_id = "5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"
-import Ecto.Query
-
-from(orbs in Phos.Action.Orb,
-  as: :o,
-  # where: orbs.id == ^orb_id,
-  inner_join: initiator in assoc(orbs, :initiator),
-  left_join: branch in assoc(initiator, :relations),
-  on: branch.friend_id == ^your_id,
-  left_join: root in assoc(branch, :root),
-  select_merge: %{initiator: %{initiator | self_relation: root}},
-  inner_lateral_join:
-    c in subquery(
-      from(c in Phos.Comments.Comment,
-        where: c.orb_id == ^orb_id,
-        select: %{count: count()}
-      )
-    ),
-  select_merge: %{comment_count: c.count}
-)
-|> Phos.Repo.all()
-
-# %{
-#   "id" => Ecto.UUID.generate(),
-#   "title" => "orb",
-#   "media" => true,
-#   "active" => true,
-#   "extinguish" => ~N[2022-10-22 16:31:07],
-#   "initiator_id" => your_id,
-#   "payload" => %{
-#     "info" => "ok",
-#     "ext_link" => %{"name" => "Chat with me", "link" => "https://scrbac.com/THChatWithUs"}
-#   }
-# }
-# |> Phos.Action.create_orb()
-```
-
-```elixir
 defmodule R do
   def recompile() do
     Mix.Task.reenable("app.start")
@@ -294,4 +255,28 @@ end
 
 DOMParser.extract_link_from_markdown("https://kosmonautx.github.io/")
 |> LinkPreview.create()
+```
+
+## 𓅫 Sparrow
+
+```elixir
+comment =
+  Phos.Comments.get_comment!("6f31a864-dc0c-41fa-a692-face2bec68d5")
+  |> Phos.Repo.preload([:parent])
+
+Phos.PlatformNotification.notify({"broadcast", "COMMENT", comment.id, "replied_comment"},
+  memory: %{
+    user_source_id: comment.initiator_id,
+    com_subject_id: comment.id,
+    message: "#{comment.body}"
+  },
+  to: comment.parent.initiator_id,
+  notification: %{
+    title: "#{comment.initiator.username} replied",
+    body: comment.body
+  },
+  data: %{
+    action_path: "/comland/comments/children/#{comment.id}"
+  }
+)
 ```

@@ -35,6 +35,10 @@ defmodule PhosWeb.Util.Viewer do
 
         Map.new([{k, %{data: PhosWeb.Util.Viewer.orb_mapper(orb)}}])
 
+      {k, %Phos.Comments.Comment{} = comment} ->
+
+        Map.new([{k, %{data: PhosWeb.Util.Viewer.comment_mapper(comment)}}])
+
       {k, %Phos.Message.Memory{} = memory} ->
 
         Map.new([{k, %{data: PhosWeb.Util.Viewer.memory_mapper(memory)}}])
@@ -71,6 +75,7 @@ defmodule PhosWeb.Util.Viewer do
         rel_subject_id: memory.rel_subject_id,
         orb_subject_id: memory.orb_subject_id,
         com_subject_id: memory.com_subject_id,
+        cluster_subject_id: memory.cluster_subject_id,
         action_path: memory.action_path,
         message: memory.message,
         creationtime: memory.inserted_at |> DateTime.to_unix(:millisecond),
@@ -135,10 +140,15 @@ defmodule PhosWeb.Util.Viewer do
                        :scope ->
                          {:scope, v}
                        _ ->
-                     {k, %{scope: v.scope,
+                     {k,
+                      (unless is_nil(v) do
+                       %{scope: v.scope,
                            subscribe: v.subscribe,
                            unsubscribe: v.unsubscribe
-                          }}
+                          }
+                       else
+                         %{}
+                       end)}
                     end
                   end
            end)}}

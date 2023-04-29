@@ -26,6 +26,21 @@ unless config_env() == :prod do
   # project_id: System.get_env("FYR_PROJ"),
   # service_account_json: "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n"
 
+  # Sparrow
+  sparrow_path = :code.priv_dir(:phos) |> to_string() |> Kernel.<>("/data/sparrow_config.json")
+    File.touch(sparrow_path)
+    File.write!(sparrow_path, "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n")
+
+  config :sparrow,
+    pool_enabled: true,
+    fcm: [
+      [
+        path_to_json: sparrow_path,
+        ping_interval: 3000,
+        worker_num: 50
+      ]
+    ]
+
 
   # AWS
   config :ex_aws,
@@ -90,6 +105,21 @@ if config_env() == :prod do
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6], else: []
 
+  # # Sparrow
+  sparrow_path = :code.priv_dir(:phos) |> to_string() |> Kernel.<>("/data/sparrow_config.json")
+    File.touch(sparrow_path)
+    File.write!(sparrow_path, "{\n  \"type\": \"service_account\",\n  \"project_id\": \"#{System.get_env("FYR_PROJ")}\",\n  \"private_key\": \"#{System.get_env("FYR_KEY", "") |> String.replace("\n", "\\n")}\",\n  \"client_email\": \"#{System.get_env("FYR_EMAIL")}\"\n}\n")
+
+  config :sparrow,
+    pool_enabled: true,
+    fcm: [
+      [
+        path_to_json: sparrow_path,
+        ping_interval: 3000,
+        worker_num: 50
+      ]
+    ]
+
   # AWS
   config :ex_aws,
   access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, :instance_role],
@@ -125,7 +155,7 @@ if config_env() == :prod do
   config :phos, Phos.Repo,
     # ssl: true,
     url: database_url,
-    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
+    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "88"),
     socket_options: maybe_ipv6,
     types: Phos.PostgresTypes
 

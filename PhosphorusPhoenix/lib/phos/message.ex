@@ -6,6 +6,31 @@ defmodule Phos.Message do
   import Ecto.Query, warn: false
   alias Phos.Repo
 
+  defp cluster_enricher(%{data: memory} = resp),
+    do: %{resp | data: Enum.map(memory, &(cluster_enricher(&1)))}
+
+  defp cluster_enricher(%{message: "reply_com", com_subject: %{parent_id: parent_comment}} = m ),
+     do: %{m | cluster_subject_id: parent_comment}
+  defp cluster_enricher(%{message: "reply_orb_children"} = m ),
+      do: %{m | cluster_subject_id: m.orb_subject_id}
+  defp cluster_enricher(%{message: "reply_orb_root"}= m),
+      do: %{m | cluster_subject_id: m.orb_subject_id}
+  defp cluster_enricher(m),
+     do: m
+
+  def list_activity_by_user_id(yours, opts) when is_list(opts) do
+    Phos.PlatformNotification.Store
+    |> where([n], n.recipient_id == ^yours)
+    |> join(:inner, [n], m in assoc(n, :memory), as: :memory)
+    |> select([_n, m], m)
+    |> join(:inner, [_n, m], u in assoc(m, :user_source))
+    |> join(:left, [_n, m, _u], c in assoc(m, :com_subject))
+    |> join(:left, [_n, m, _u, _c], o in assoc(m, :orb_subject))
+    |> select_merge([_n, m, u, c, o], %{m | user_source: u, com_subject: c, orb_subject: o})
+    |> Repo.Paginated.all([{:sort_attribute, {:memory , :inserted_at}} | opts])
+    |> cluster_enricher()
+  end
+
   @doc """
   Returns paginated call of the last message between each unique subject source destination triplet
 

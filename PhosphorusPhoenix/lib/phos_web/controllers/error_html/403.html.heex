@@ -310,7 +310,7 @@ hr {
 <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title> 404 - <%= assigns[:reason] && @reason.message || "Not Found" %> </title>
+<title> 403 - <%= assigns[:reason] && @reason.message || "Forbidden" %> </title>
 <link rel="icon" href="/favicon.ico"/>
 <body>
 
@@ -322,8 +322,8 @@ hr {
     <div class="wrap">
     <div class="bg">
       <div class="loading">
-        <span class="title">Error 404 - Not Found</span>
-        <span class="text"><%= assigns[:reason] && @reason.message || "Slipped down the wrong rabbithole" %></span>
+        <span class="title">Error 403 - Forbidden </span>
+        <span class="text"><%= assigns[:reason] && @reason.message || "Not For Your Eyes 🙈" %></span>
       </div>
     </div>
   </div>
@@ -337,4 +337,3 @@ hr {
 
 </body>
 </html>
-

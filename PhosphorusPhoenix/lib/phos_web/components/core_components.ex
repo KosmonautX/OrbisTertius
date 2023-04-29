@@ -300,11 +300,10 @@ defmodule PhosWeb.CoreComponents do
       "phx-submit-loading:opacity-75",
       "rounded-lg",
       "font-poppins",
-      "px-3",
+      "px-2",
       "py-2",
       "text-sm",
       "font-bold",
-      "leading-6",
       "active:text-white/80"
     ]
     |> Enum.join(" ")
@@ -645,6 +644,7 @@ defmodule PhosWeb.CoreComponents do
   def admin_user_preview(assigns) do
     ~H"""
     <div class="flex max-w-sm font-poppins">
+      <.link if={@user.username} navigate={"/user/#{@user.username}?bac"}>
       <div>
         <img
           src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossy")}
@@ -653,9 +653,13 @@ defmodule PhosWeb.CoreComponents do
           alt="user5"
         />
       </div>
+      </.link>
       <div class="flex flex-col xl:ml-1 lg:ml-2 -mb-2">
+
         <h6 class="mb-0 leading-normal text-sm font-bold"><%= "#{@user.username}" %></h6>
+      <a href={"mailto: #{@user.email}"}>
         <p class="mb-0 leading-tight text-sm text-gray-400"><%= "#{@user.email}" %></p>
+      </a>
       </div>
     </div>
     """
@@ -1414,7 +1418,6 @@ defmodule PhosWeb.CoreComponents do
           :if={@media == [] || !@show_information}
           id={"#{@id}-scry-orb-#{@orb.id}"}
           title={get_in(@orb, [Access.key(:payload), Access.key(:inner_title)]) || @orb.title || ""}
-          show_link={true}
         />
         <.orb_information
           :if={is_binary(get_in(@orb, [Access.key(:payload), Access.key(:info)])) && !@show_information}
@@ -1423,6 +1426,9 @@ defmodule PhosWeb.CoreComponents do
           show_link={true}
         />
       </.link>
+      <div :if={!@show_information && is_struct(get_in(@orb, [Access.key(:payload), Access.key(:ext_link)]))} class="px-4 py-1 prose-zinc text-gray-600 w-full bg-white dark:bg-gray-900 prose-a:text-blue-500 prose-a:hover:underline  font-poppins break-words">
+        <.button phx-click={show_modal("welcome_message")}><%= @orb.payload.ext_link.name %></.button>
+      </div>
       <.orb_action
         :if={@media == [] || !@show_information}
         id={"#{@id}-scry-orb-#{@orb.id}"}
@@ -1608,7 +1614,7 @@ defmodule PhosWeb.CoreComponents do
     # end)
 
     ~H"""
-    <div class={["px-4 py-1 dark:border-x-white font-poppins break-words", @info_color]}>
+    <div class={["px-4 py-1  font-poppins break-words", @info_color]}>
       <span
         class={[
           "prose prose-a:text-blue-500 text-base break-words overflow-hidden font-medium dark:prose-invert w-full",
@@ -1616,7 +1622,7 @@ defmodule PhosWeb.CoreComponents do
         ]}
       >
         <%= extract_html_from_md @title %>
-        <!-- <.external_orb_link  :if={@show_link && not is_nil(@link)} link={@link}/> -->
+
       </span>
     </div>
     """
@@ -1677,7 +1683,7 @@ defmodule PhosWeb.CoreComponents do
       id={"#{@id}-actions"}
       class={[
         @show_information == true && "lg:rounded-b-3xl",
-        "flex justify-between w-full lg:text-sm text-xs px-4 dark:border-b dark:border-b-white mt-2 lg:mt-0 font-poppins",
+        "flex justify-between w-full lg:text-sm text-xs px-5 dark:border-b dark:border-b-white mt-2 lg:mt-0 font-poppins",
         @main_color
       ]}
     >
@@ -2018,7 +2024,7 @@ defmodule PhosWeb.CoreComponents do
             src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
             class=" h-20 w-20 lg:w-32 lg:h-32 border-4 border-white rounded-full object-cover"
           />
-          <p class="font-semibold text-base dark:text-white">Hmm...You were saying?</p>
+          <p class="font-semibold text-base dark:text-white">See you in the Mobile App</p>
           <p :if={@user.username} class="text-sm text-center text-gray-400 dark:text-gray-400">
             <%= "Join the tribe to share your thoughts with #{@user.username} now!" %>
           </p>
