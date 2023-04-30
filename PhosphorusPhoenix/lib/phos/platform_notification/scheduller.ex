@@ -18,6 +18,12 @@ defmodule Phos.PlatformNotification.Scheduller do
   end
 
   @impl true
+  def handle_info(:execute, state) do
+    GenStage.cast(PN.Dispatcher, :force_execute)
+    {:noreply, state}
+  end
+
+  @impl true
   def handle_info(:timer, state) do
     now_time = current_time()
     :logger.debug(%{
@@ -34,8 +40,8 @@ defmodule Phos.PlatformNotification.Scheduller do
 
     spawn(fn -> database_notification() end)
     spawn(fn -> notion_notification() end)
-    GenStage.cast(PN.Dispatcher, :force_execute)
 
+    Process.send_after(self(), :execute, 5_000)
     Process.send_after(self(), :timer, timer())
     {:noreply, state}
   end
@@ -111,7 +117,7 @@ defmodule Phos.PlatformNotification.Scheduller do
     end
   end
 
-  defp running_global_notification(%{frequency: _} = data) do
+  defp running_global_notification(%{frequency: _} = _data) do
     nil
   end
 
