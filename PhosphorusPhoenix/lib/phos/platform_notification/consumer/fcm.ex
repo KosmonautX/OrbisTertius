@@ -18,10 +18,18 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
     end
     # Fcmex.push("", notification: %{title: title, body: body} ,condition: recipient, data: data)
   end
+  def send({:file, path}) do
+    Sparrow.FCM.V1.Notification.new(:file, path, nil, nil, nil)
+    |> Sparrow.API.push()
+    |> case do
+      :ok -> {:ok, "Notification triggered"}
+      err -> err
+    end
+  end
 
   def send(_), do: {:error, "No FCM Token"}
 
-  defp get_template(%{spec: spec} = store) do
+  def get_template(%{spec: spec} = store) do
     spec
     |> get_in([Access.key("options", %{}), "notification"])
     |> case do
@@ -30,7 +38,7 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
     end
   end
 
-  defp get_data(%{spec: spec} = _store) do
+  def get_data(%{spec: spec} = _store) do
     spec
     |> get_in([Access.key("options", %{}), Access.key("data", %{})])
     |> case do
@@ -68,4 +76,12 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
     end
   end
   defp get_actor(_), do: %{}
+
+  def send_notification_path() do
+    project_id =
+      Sparrow.PoolsWarden.choose_pool(:fcm)
+      |> Sparrow.FCM.V1.ProjectIdBearer.get_project_id()
+
+    "/v1/projects/#{project_id}/messages:send"
+  end
 end

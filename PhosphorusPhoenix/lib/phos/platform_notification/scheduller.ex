@@ -34,6 +34,7 @@ defmodule Phos.PlatformNotification.Scheduller do
 
     spawn(fn -> database_notification() end)
     spawn(fn -> notion_notification() end)
+    GenStage.cast(PN.Dispatcher, :force_execute)
 
     Process.send_after(self(), :timer, timer())
     {:noreply, state}
