@@ -172,7 +172,7 @@ defmodule Phos.PlatformNotification.Dispatcher do
         end
       {:ok, data} ->
         case insert_to_persistent_database(data) do
-          {:ok, stored} -> Repo.preload(stored, [:recipient, :template])
+          {:ok, stored} -> {:ok, Repo.preload(stored, [:recipient, :template])}
           {:error, _msg} = ret -> ret
         end
       _ -> {:error, nil}
