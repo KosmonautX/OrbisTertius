@@ -17,7 +17,7 @@ defmodule PhosWeb.Admin.OrbLive.Show do
         {:ok, assign(socket, orb: orb, traits_form: [], changeset: Ecto.Changeset.change(orb))}
 
       _ ->
-        raise PhosWeb.ErrorLive, message: "Orb Not Found Nomore"
+        raise PhosWeb.ErrorLive.FourOFour, message: "Orb Not Found Nomore"
     end
   end
 

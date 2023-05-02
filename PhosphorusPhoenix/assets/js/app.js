@@ -34,17 +34,23 @@ let liveSocket = new LiveSocket("/live", Socket, {
 })
 
 // Show progress bar on live navigation and form submits
-topbar.config({ barColors: { 0: "#29d" }, shadowColor: "rgba(0, 0, 0, .3)" })
+topbar.config({ barColors: { 0: "#00A86B" }, shadowColor: "rgba(0, 0, 0, .3)" })
 window.addEventListener("phx:page-loading-start", info => topbar.delayedShow(200))
-window.addEventListener("phx:page-loading-stop", () => {
-  topbar.hide()
-  ModalApplication()
+
+window.addEventListener("phx:page-loading-stop", info => {
   VideoMute()
+  topbar.hide()
+  if (window.location.hostname=="web.scratchbac.com" && ['redirect', 'patch'].includes(info.detail.kind)) {
+     gtag('event', 'page_view', {
+       page_title: document.title,
+       page_location: location.href,
+       page_path: location.pathname
+     })
+   }
 })
 
 window.addEventListener("DOMContentLoaded", () => {
   ModalApplication()
-  VideoMute()
 })
 
 

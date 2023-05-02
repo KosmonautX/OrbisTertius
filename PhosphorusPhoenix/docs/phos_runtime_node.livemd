@@ -3,45 +3,6 @@
 ## Root
 
 ```elixir
-orb_id = "9bf9c443-f89b-460a-972d-6704ae66823d"
-your_id = "5c82aeea-7c2b-4a97-a80b-d5b728c4ee86"
-import Ecto.Query
-
-from(orbs in Phos.Action.Orb,
-  as: :o,
-  # where: orbs.id == ^orb_id,
-  inner_join: initiator in assoc(orbs, :initiator),
-  left_join: branch in assoc(initiator, :relations),
-  on: branch.friend_id == ^your_id,
-  left_join: root in assoc(branch, :root),
-  select_merge: %{initiator: %{initiator | self_relation: root}},
-  inner_lateral_join:
-    c in subquery(
-      from(c in Phos.Comments.Comment,
-        where: c.orb_id == ^orb_id,
-        select: %{count: count()}
-      )
-    ),
-  select_merge: %{comment_count: c.count}
-)
-|> Phos.Repo.all()
-
-# %{
-#   "id" => Ecto.UUID.generate(),
-#   "title" => "orb",
-#   "media" => true,
-#   "active" => true,
-#   "extinguish" => ~N[2022-10-22 16:31:07],
-#   "initiator_id" => your_id,
-#   "payload" => %{
-#     "info" => "ok",
-#     "ext_link" => %{"name" => "Chat with me", "link" => "https://scrbac.com/THChatWithUs"}
-#   }
-# }
-# |> Phos.Action.create_orb()
-```
-
-```elixir
 defmodule R do
   def recompile() do
     Mix.Task.reenable("app.start")
@@ -113,6 +74,34 @@ user_id = List.first(Phos.Users.list_users()).id
   })
 
 orb
+```
+
+```elixir
+import Ecto.Query
+alias Phos.Users.{RelationBranch, RelationRoot, User}
+
+Phos.Folk.get_relation!("cc9e46c0-0f98-410f-bb3e-12044d41fef3")
+|> Phos.Repo.preload([:last_memory])
+
+# |> Phos.Users.RelationRoot.mutate_memory_changeset(%{
+#   "id" => Ecto.UUID.generate(),
+#   "message" => "really",
+#   "media" => "false",
+#   "user_source_id" => "6d7b0e7c-a633-4a8a-8d85-b8a493109bd4"
+# })
+# |> Phos.Repo.insert()
+
+id = "6d7b0e7c-a633-4a8a-8d85-b8a493109bd4"
+
+Phos.Users.RelationBranch
+|> where([b], b.user_id == ^id)
+|> join(:inner, [b], r in assoc(b, :root))
+|> select([_b, r], r)
+|> join(:inner, [_b, r], m in assoc(r, :last_memory))
+|> join(:left, [_b, r, m], o in assoc(m, :orb_subject))
+|> select_merge([_b, r, m, o], %{last_memory: %{m | orb_subject: o}})
+|> order_by([_b, r, _m], desc: r.updated_at)
+|> Phos.Repo.all()
 ```
 
 ```elixir
@@ -238,4 +227,56 @@ Phos.Users.get_user_by_username("lky")
 })
 
 # Phos.Users.get_user_by_username("lky")
+```
+
+```elixir
+defmodule DOMParser do
+  def extract_link_from_markdown(md) when is_binary(md) do
+    {:ok, ast, _} = EarmarkParser.as_ast(md)
+    String.trim(extract_link_from_ast(ast, ""))
+  end
+
+  defp extract_link_from_ast(ast, result) when is_list(ast) and is_binary(result) do
+    Enum.reduce_while(ast, result, fn
+      {"a", atts, children, _m}, acc ->
+        case Enum.into(atts, %{}) do
+          %{"href" => link} -> {:halt, link}
+          _ -> {:cont, extract_link_from_ast(children, acc)}
+        end
+
+      {_html_tag, _atts, children, _m}, acc ->
+        {:cont, extract_link_from_ast(children, acc)}
+
+      _, acc ->
+        {:cont, acc}
+    end)
+  end
+end
+
+DOMParser.extract_link_from_markdown("https://kosmonautx.github.io/")
+|> LinkPreview.create()
+```
+
+## 𓅫 Sparrow
+
+```elixir
+comment =
+  Phos.Comments.get_comment!("6f31a864-dc0c-41fa-a692-face2bec68d5")
+  |> Phos.Repo.preload([:parent])
+
+Phos.PlatformNotification.notify({"broadcast", "COMMENT", comment.id, "replied_comment"},
+  memory: %{
+    user_source_id: comment.initiator_id,
+    com_subject_id: comment.id,
+    message: "#{comment.body}"
+  },
+  to: comment.parent.initiator_id,
+  notification: %{
+    title: "#{comment.initiator.username} replied",
+    body: comment.body
+  },
+  data: %{
+    action_path: "/comland/comments/children/#{comment.id}"
+  }
+)
 ```

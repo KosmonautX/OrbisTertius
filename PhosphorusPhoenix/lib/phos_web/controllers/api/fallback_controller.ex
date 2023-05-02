@@ -6,7 +6,6 @@ defmodule PhosWeb.API.FallbackController do
   """
   use PhosWeb, :controller
 
-
   def call(conn, {:error, %Ecto.Changeset{} = changeset}) do
     conn
     |> put_status(:unprocessable_entity)
@@ -42,7 +41,7 @@ defmodule PhosWeb.API.FallbackController do
     |> render("error.json", reason: message)
   end
 
-  def call(conn, opts) do
+  def call(conn, _opts) do
     conn
     |> put_status(:unprocessable_entity)
     |> put_view(PhosWeb.API.ChangesetView)

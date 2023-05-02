@@ -11,19 +11,33 @@
     >
     </.live_title>
     <meta property="og:site_name" content="Scratchbac" />
+    <meta :if={assigns[:redirect]} http-equiv="Refresh" content={"0; URL=scrb://host/" <> assigns[:meta][:mobile_redirect]} />
     <.meta_tags contents={assigns[:meta]} />
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
-    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
-    </script>
+    <link phx-track-static rel="stylesheet" href={~p"/assets/vendor/fonts/Poppins/poppins.css"} />
+
+    <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}/>
+<!-- Google tag (gtag.js) -->
+  <script :if={PhosWeb.Endpoint.host() == "web.scratchbac.com"} async src="https://www.googletagmanager.com/gtag/js?id=G-ENF7RD8HB8"/>
+
+  <script :if={PhosWeb.Endpoint.host() == "web.scratchbac.com"}>
+    window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-ENF7RD8HB8', {
+        send_page_view: false
+       });
+  </script>
   </head>
   <body class="h-screen w-full mx-auto dark:bg-gray-900">
-    <%= # take username of initiator through meta tags %>
     <%= if @current_user do %>
       <.banner :if={@current_user} current_user={@current_user} />
     <% else %>
       <.guest_banner if={is_nil(@current_user)} current_user={@current_user} />
     <% end %>
     <div class="w-full h-screen"><%= @inner_content %></div>
-    <.welcome_message id="welcome_message" path={@conn.request_path} user={@current_user} />
+    <.welcome_message :if={assigns[:meta]} id="welcome_message" path={@meta.mobile_redirect} user={@meta.author || @current_user} current_user={@current_user} />
+    <.welcome_message :if={is_nil(assigns[:meta])} id="welcome_message" path={@conn.request_path} user={@current_user} current_user={@current_user}/>
   </body>
 </html>

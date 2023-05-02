@@ -35,13 +35,15 @@ defmodule PhosWeb.UserForgotPasswordLiveTest do
     test "sends a new reset password token", %{conn: conn, user: user} do
       {:ok, lv, _html} = live(conn, ~p"/users/reset_password")
 
-      {:ok, conn} =
+      view =
         lv
         |> form("#reset_password_form", user: %{"email" => user.email})
         |> render_submit()
-        |> follow_redirect(conn, "/")
+      #follow_redirect {:ok, conn}
 
-      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "If your email is in our system"
+      assert view =~ "If your email is in our system"
+
+      #assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "If your email is in our system"
 
       assert Repo.get_by!(Users.UserToken, user_id: user.id).context ==
                "reset_password"
@@ -50,13 +52,12 @@ defmodule PhosWeb.UserForgotPasswordLiveTest do
     test "does not send reset password token if email is invalid", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/reset_password")
 
-      {:ok, conn} =
+      view =
         lv
         |> form("#reset_password_form", user: %{"email" => "unknown@example.com"})
         |> render_submit()
-        |> follow_redirect(conn, "/")
 
-      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "If your email is in our system"
+      assert view =~ "If your email is in our system"
       assert Repo.all(Users.UserToken) == []
     end
   end

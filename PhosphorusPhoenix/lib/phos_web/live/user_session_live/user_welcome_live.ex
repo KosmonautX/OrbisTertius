@@ -12,25 +12,30 @@ defmodule PhosWeb.UserWelcomeLive do
       </h2>
       <div :if={is_nil(@current_user.username)}>
         <.header>Choose your Username</.header>
-        <.simple_form class="w-96 p-4"
-        :let={f}
-        id="email_form"
-        for={@username_changeset}
-        phx-submit="update_username"
-        phx-change="validate_username">
-        <.error :if={@username_changeset == :insert}>
-        Oops, something went wrong! Please check the errors below.
-        </.error>
+        <.simple_form
+          :let={f}
+          class="w-96 p-4"
+          id="email_form"
+          for={@username_changeset}
+          phx-submit="update_username"
+          phx-change="validate_username"
+        >
+          <.error :if={@username_changeset == :insert}>
+            Oops, something went wrong! Please check the errors below.
+          </.error>
 
-        <.input field={{f, :username}} type="text" label="Username" required />
+          <.input field={{f, :username}} type="text" label="Username" required />
 
-        <:actions>
-        <.button phx-disable-with="Anointing..." type="submit">Submit Choice</.button>
-        </:actions>
+          <:actions>
+            <.button phx-disable-with="Anointing..." type="submit">Submit Choice</.button>
+          </:actions>
         </.simple_form>
       </div>
 
-      <div :if={!is_nil(@current_user.username)} class="flex flex-col justify-center items-center space-y-4 text-gray-600">
+      <div
+        :if={!is_nil(@current_user.username)}
+        class="flex flex-col justify-center items-center space-y-4 text-gray-600"
+      >
         <h3 class="md:text-2xl text-xl font-bold max-w-md text-center dark:text-gray-400">
           You’re all set for now.
         </h3>
@@ -57,13 +62,15 @@ defmodule PhosWeb.UserWelcomeLive do
     {:ok, socket}
   end
 
-    def handle_event("validate_username", params, socket) do
+  def handle_event("validate_username", params, socket) do
     %{"user" => %{"username" => username}} = params
-    username_changeset = Users.change_user_username(socket.assigns.current_user, %{username: username})
+
+    username_changeset =
+      Users.change_user_username(socket.assigns.current_user, %{username: username})
 
     socket =
       assign(socket,
-        username_changeset: Map.put(username_changeset, :action, :validate),
+        username_changeset: Map.put(username_changeset, :action, :validate)
       )
 
     {:noreply, socket}
@@ -72,10 +79,11 @@ defmodule PhosWeb.UserWelcomeLive do
   def handle_event("update_username", params, socket) do
     %{"user" => %{"username" => username}} = params
     user = socket.assigns.current_user
+
     case Users.update_pub_user(user, %{"username" => username}) do
       {:ok, _} ->
         info = "Username Chosen"
-        {:noreply, put_flash(socket, :info, info)}
+        {:noreply, socket |> put_flash(:info, info) |> redirect(to: ~p"/welcome")}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :username_changeset, Map.put(changeset, :action, :insert))}

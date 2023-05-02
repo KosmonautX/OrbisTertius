@@ -39,7 +39,7 @@ config :esbuild,
   version: "0.14.0",
   default: [
     args:
-      ~w(js/app.js js/admin.js js/storybook.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
+      ~w(js/app.js js/admin.js js/storybook.js vendor/fonts/Poppins/poppins.css --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/* --loader:.woff2=file --loader:.woff=file),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
@@ -77,7 +77,7 @@ config :phos, Phos.OAuthStrategy,
   ]
 
 config :tailwind,
-  version: "3.1.6",
+  version: "3.2.7",
   admin: [
     args: ~w(
       --config=tailwind.config.js
@@ -117,6 +117,20 @@ config :phos, Phos.External.Notion,
   token: {System, :get_env, "NOTION_TOKEN"},
   database: {System, :get_env, "NOTION_DATABASE"},
   notification_database: {System, :get_env, "NOTION_NOTIFICATION_DATABASE"}
+
+config :phos, Phos.PlatformNotification,
+  worker: 18,
+  time_interval: 3,
+  min_demand: 5,
+  max_demand: 8
+
+# config :sparrow,
+#   pool_enabled: true,
+#   fcm: [
+#     [
+#       path_to_json: Path.expand("../priv/data/sparrow-config.json", __DIR__)
+#     ]
+#   ]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

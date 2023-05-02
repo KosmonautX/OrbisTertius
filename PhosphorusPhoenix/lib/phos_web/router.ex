@@ -135,6 +135,7 @@ defmodule PhosWeb.Router do
       put "/self/territory", UserProfileController, :update_territory
       put "/self/beacon", UserProfileController, :update_beacon
       get "/others/:id", UserProfileController, :show
+      get "/self/activity", EchoController, :show_activity
 
       get "/others/:id/history", OrbController, :show_history
       put "/others/:id/report", TribunalController, :report_user
@@ -173,7 +174,7 @@ defmodule PhosWeb.Router do
     scope "/memland" do
       resources "/memories", EchoController, except: [:new, :edit]
       put "/reveries/:id", EchoController, :update_reverie
-      get "/friends", EchoController, :index_relations
+      get "/friends", FriendController, :index_last_memories
       get "/orbs/:id", EchoController, :show_orbs
       get "/friends/:id", EchoController, :show_relations
       get "/friends/:id/orbs", EchoController, :show_relations_jump_orbs

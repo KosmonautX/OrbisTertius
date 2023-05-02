@@ -1,6 +1,6 @@
 <!--Desktop View-->
 <div class="container mx-auto	lg:mt-24 mt-16 hidden lg:block">
-  <div class="min-w-full lg:border lg:rounded lg:grid lg:grid-cols-3">
+  <div class="min-w-full lg:border lg:rounded lg:grid lg:grid-cols-3  h-[calc(100vh_-_7rem)]">
     <div class="lg:border-r lg:border-gray-300 lg:col-span-1 w-full">
       <form phx-submit="search" class="relative text-gray-600 mx-2 my-2">
         <input
@@ -18,11 +18,16 @@
         </span>
       </form>
 
-      <.last_message id="last-message" memories={@search_memories} date={@timezone} />
+      <.live_component 
+        module={PhosWeb.Component.LastMessage}
+        id="dekstop-last-message"
+        memories={@search_memories} 
+        current_user={@current_user}
+        date={@timezone} />
     </div>
 
-    <div :if={@user} class=" lg:col-span-2">
-      <.chat_profile user={@user}>
+    <div :if={@user} class="lg:col-span-2">
+      <.chat_profile id={"dekstop-chat-profile-for-#{@user.username}"} user={@user}>
         <:actions>
           <.live_component
             id="desktop_view_ally"
@@ -39,17 +44,17 @@
         memories={@memories}
         current_user={@current_user}
         timezone={@timezone}
-        page={@page}
+        cursor={@message_cursor}
       />
 
       <.live_component
         module={PhosWeb.MemoryLive.FormComponent}
-        id={:new}
+        id={:new_on_dekstop}
         title={@page_title}
         action={:new}
-        rel={@user.self_relation}
+        rel={@relation_id}
         current_user={@current_user}
-        memory={%Phos.Message.Memory{}}
+        memory={@memory}
         navigate={~p"/memories/user/#{@user.username}"}
       />
     </div>
@@ -78,12 +83,12 @@
       </span>
     </form>
 
-    <.last_message
-      id="last-message"
-      memories={@search_memories}
-      date={@timezone}
-      action={@live_action}
-    />
+    <.live_component 
+      module={PhosWeb.Component.LastMessage}
+      id="mobile-last-message"
+      memories={@search_memories} 
+      current_user={@current_user}
+      date={@timezone} />
   </div>
 
   <div
@@ -94,7 +99,7 @@
       @live_action != :show && "block lg:col-span-2"
     ]}
   >
-    <.chat_profile user={@user}>
+      <.chat_profile id={"mobile-chat-profile-for-#{@user.username}"} user={@user}>
       <:actions>
         <.live_component
           id="mobile_view_ally"
@@ -111,17 +116,17 @@
       memories={@memories}
       current_user={@current_user}
       timezone={@timezone}
-      page={@page}
+      cursor={@message_cursor}
     />
     <div class="bottom-0 left-0 z-10 fixed w-full px-4 bg-white dark:bg-gray-900 ">
       <.live_component
         module={PhosWeb.MemoryLive.FormComponent}
-        id={:new_one}
+        id={:new_on_mobile}
         title={@page_title}
         action={:new}
-        rel={@user.self_relation}
+        rel={@relation_id}
         current_user={@current_user}
-        memory={%Phos.Message.Memory{}}
+        memory={@memory}
         navigate={~p"/memories/user/#{@user.username}"}
       />
     </div>

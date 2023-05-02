@@ -9,6 +9,7 @@ defmodule PhosWeb.MemoryLive.Show do
   end
 
   @impl true
+
   def handle_params(%{"id" => id}, _, socket) do
     {:noreply,
      socket

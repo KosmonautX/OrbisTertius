@@ -17,7 +17,7 @@ defmodule PhosWeb.UserLoginLive do
 
       <.simple_form
         :let={f}
-        class="w-96 p-4"
+        class="w-108 p-4"
         id="login_form"
         for={:user}
         action={~p"/users/log_in"}
@@ -27,9 +27,9 @@ defmodule PhosWeb.UserLoginLive do
         <.input field={{f, :email}} type="email" label="Email" required />
         <.input field={{f, :password}} type="password" label="Password" required />
         <.input field={{f, :return_to}} type="hidden" value={@return_to} />
-        <:actions :let={f} classes="flex justify-between">
-          <.input field={{f, :remember_me}} type="checkbox" label="Keep me logged in" />
-          <.link href={~p"/users/reset_password"} class="text-sm font-semibold dark:text-white">
+        <:actions :let={f} classes="relative h-12 w-108">
+          <.input field={{f, :remember_me}} type="checkbox" label="Remember Me?" />
+          <.link href={~p"/users/reset_password"} class="absolute bottom-0 right-0 text-sm font-semibold dark:text-white">
             Forgot your password?
           </.link>
         </:actions>
