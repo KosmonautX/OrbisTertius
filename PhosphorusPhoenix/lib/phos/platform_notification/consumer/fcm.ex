@@ -18,6 +18,7 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
     end
     # Fcmex.push("", notification: %{title: title, body: body} ,condition: recipient, data: data)
   end
+
   def send({:file, path}) do
     Sparrow.FCM.V1.Notification.new(:file, path, nil, nil, nil)
     |> Sparrow.API.push()
