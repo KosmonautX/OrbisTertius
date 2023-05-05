@@ -33,9 +33,45 @@ defmodule Phos.PlatformNotification.Consumer do
   defp execute_mail_events([], _from), do: :ok
   defp execute_mail_events([store | tail], from) do
     case __MODULE__.Email.send(store) do
-      {:ok, _result} -> GenStage.reply(from, {store.id, :success})
-      {:error, msg} -> GenStage.reply(from, {store.id, :error, msg})
-      err -> GenStage.reply(from, {store.id, :unknown_error, err})
+      {:ok, result} -> 
+        :logger.info(%{
+          label: {Phos.PlatformNotification.Consumer, "success send notification from email"},
+          report: %{
+            module: __MODULE__,
+            executor: __MODULE__.Email,
+            data: result,
+          }
+        }, %{
+          domain: [:phos, :platform_notification],
+          error_logger: %{tag: :info_msg}
+        })
+        GenStage.reply(from, {store.id, :success})
+      {:error, msg} ->
+        :logger.info(%{
+          label: {Phos.PlatformNotification.Consumer, "failed sent notification from email"},
+          report: %{
+            module: __MODULE__,
+            executor: __MODULE__.Email,
+            message: msg,
+          }
+        }, %{
+          domain: [:phos, :platform_notification],
+          error_logger: %{tag: :info_msg}
+        })
+        GenStage.reply(from, {store.id, :error, msg})
+      err ->
+        :logger.info(%{
+          label: {Phos.PlatformNotification.Consumer, "error sent notification from email"},
+          report: %{
+            module: __MODULE__,
+            executor: __MODULE__.Email,
+            message: err
+          }
+        }, %{
+          domain: [:phos, :platform_notification],
+          error_logger: %{tag: :info_msg}
+        })
+        GenStage.reply(from, {store.id, :unknown_error, err})
     end
 
     execute_mail_events(tail, from)
