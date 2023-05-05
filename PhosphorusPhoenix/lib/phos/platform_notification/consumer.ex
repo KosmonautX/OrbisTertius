@@ -66,7 +66,11 @@ defmodule Phos.PlatformNotification.Consumer do
   defp filter_user_token({succeed_data, succeed_ids, failed_ids}, from) do
     path = __MODULE__.Fcm.send_notification_path()
 
-    spawn(fn -> GenStage.reply(from, {failed_ids, :errors, "User doesn't have FCM Token"}) end)
+    spawn(fn -> 
+      if length(failed_ids) > 0 do
+        GenStage.reply(from, {failed_ids, :errors, "User doesn't have FCM Token"})
+      end
+    end)
 
     {Enum.map(succeed_data, fn data ->
       Enum.join(basic_data(path), "\n")
@@ -80,7 +84,9 @@ defmodule Phos.PlatformNotification.Consumer do
   end
 
   defp write_temp_file({binary, ids}) when length(ids) > 0 do
-    path = :os.cmd('mktemp') |> to_string() |> String.replace_suffix("\n", "")
+    base = Enum.map(1..10, fn _x -> :erlang.phash2(make_ref()) |> Kernel.rem(57) |> Kernel.+(65) end) |> List.to_string()
+    filename = "tmp.#{base}"
+    path = "#{System.tmp_dir()}/#{filename}"
     case File.write(path, binary) do
       :ok -> {:ok, {path, ids}}
       err -> err
@@ -92,8 +98,31 @@ defmodule Phos.PlatformNotification.Consumer do
     case __MODULE__.Fcm.send({:file, path}) do
       {:ok, _result} ->
         _ = File.rm(path)
+        :logger.info(%{
+          label: {Phos.PlatformNotification.Consumer, "success batching notification to fcm"},
+          report: %{
+            module: __MODULE__,
+            executor: __MODULE__.Fcm,
+            succeed_data: ids,
+          }
+        }, %{
+          domain: [:phos, :platform_notification],
+          error_logger: %{tag: :info_msg}
+        })
         GenStage.reply(from, {ids, :success})
-      err -> GenStage.reply(from, {nil, :unknown_error, err})
+      err ->
+        :logger.warning(%{
+          label: {Phos.PlatformNotification.Consumer, "error batching notification to fcm"},
+          report: %{
+            module: __MODULE__,
+            executor: __MODULE__.Fcm,
+            error_message: err
+          }
+        }, %{
+          domain: [:phos, :platform_notification],
+          error_logger: %{tag: :warning_msg}
+        })
+        GenStage.reply(from, {nil, :unknown_error, err})
     end
   end
   defp send_to_client(err, from), do: GenStage.reply(from, {nil, :file_error, err})
