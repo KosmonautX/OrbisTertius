@@ -754,6 +754,7 @@ defmodule Phos.Action do
                                         custom_data: []}
                                         |> Sparrow.APNS.Notification.add_title("")
                                         |> Sparrow.APNS.Notification.add_body("")
+                                        |> Sparrow.APNS.Notification.add_badge(0)
                                         |> Sparrow.APNS.Notification.add_apns_priority("5")
                                         |> Sparrow.APNS.Notification.add_content_available(1),
 
@@ -771,6 +772,7 @@ defmodule Phos.Action do
                  Sparrow.FCM.V1.Notification.new(:token, tokens, "", "",
                    %{title: "#{orb.initiator.username} just posted across your street 🧭",
                      body: orb.title,
+                     initiator_id: orb.initiator_id,
                      action_path: "/orbland/orbs/#{orb.id}",
                      cluster_id: "loc_orb"})
                end)
@@ -791,6 +793,7 @@ defmodule Phos.Action do
                Sparrow.FCM.V1.Notification.new(:token, tokens, "", "",
                  %{title: "Your ally 🤝 #{orb.initiator.username} just posted 💫",
                  body: orb.title,
+                 initiator_id: orb.initiator_id,
                  action_path: "/orbland/orbs/#{orb.id}",
                  cluster_id: "folk_orb"})
              end)
