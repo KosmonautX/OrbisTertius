@@ -445,6 +445,12 @@ defmodule Phos.Action do
     |> Repo.update()
   end
 
+  def update_admin_orb(%Orb{} = orb, attrs) do
+    orb
+    |> Orb.admin_changeset(attrs)
+    |> Repo.update()
+  end
+
   #   @doc """
   #   Updates a orb.
 
