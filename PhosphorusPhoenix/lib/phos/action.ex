@@ -168,7 +168,7 @@ defmodule Phos.Action do
     from(l in Orb_Location,
       as: :l,
       where: l.location_id in ^hashes,
-      left_join: orbs in assoc(l, :orbs),
+      inner_join: orbs in assoc(l, :orbs),
       where: orbs.userbound == true and fragment("? != '[]'", orbs.traits),
       inner_join: initiator in assoc(orbs, :initiator),
       select: initiator,
@@ -177,7 +177,7 @@ defmodule Phos.Action do
       on: branch.friend_id == ^your_id,
       left_join: root in assoc(branch, :root),
       select_merge: %{self_relation: root})
-      |> Repo.Paginated.all(page, sort_attribute, limit)
+      |> Repo.Paginated.all([page: page, sort_attribute: sort_attribute, limit: limit])
       |> (&(Map.put(&1, :data, &1.data |> Repo.Preloader.lateral(:orbs, [limit: 5])))).()
   end
 
@@ -192,6 +192,19 @@ defmodule Phos.Action do
       distinct: initiator.integrations["fcm_token"],
       select: initiator.integrations)
       |> Repo.all()
+  end
+
+  def orb_initiator_by_geohashes(hashes) do
+    from(l in Orb_Location,
+      as: :l,
+      where: l.location_id in ^hashes,
+      left_join: orbs in assoc(l, :orbs),
+      on: orbs.userbound == true,
+      inner_join: initiator in assoc(orbs, :initiator),
+      on: initiator.integrations["beacon"]["location"]["scope"] == true,
+      distinct: initiator.id,
+      select: initiator.id)
+    |> Repo.all()
   end
 
   def orbs_by_friends(your_id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
@@ -568,7 +581,9 @@ defmodule Phos.Action do
   defp notion_get_values(%{"type" => "select", "select" => data}), do: data
   defp notion_get_values(%{"type" => "multi_select", "multi_select" => data}), do: Enum.map(data, fn d -> Map.get(d, "name") end)
   defp notion_get_values(%{"type" => "files", "files" => files}) when is_list(files) and length(files) > 0, do: List.first(files)["file"]["url"]
+  defp notion_get_values(%{"type" => "url", "url" => link}), do: link
   defp notion_get_values(%{"type" => type} = data), do: notion_get_values(Map.get(data, type))
+  defp notion_get_values(%{"content" => data}) when data == "" , do: nil
   defp notion_get_values(%{"content" => data}), do: data
   defp notion_get_values(data) when is_boolean(data), do: data
   defp notion_get_values(data) when is_list(data) and length(data) > 0, do: Enum.reduce(data, "", fn val, acc -> Kernel.<>(acc, notion_get_values(val)) end)
@@ -616,7 +631,7 @@ defmodule Phos.Action do
       _ -> notion_platform_time(nil)
     end
   end
-  defp notion_platform_time(_time), do: ~T[07:30:00]
+  defp notion_platform_time(_time), do: DateTime.now!("Asia/Singapore")
 
   defp decide_timezone("SGD"), do: Timex.timezone("Asia/Singapore", {2022, 1, 1})
   defp decide_timezone(_), do: Timex.Timezone.local()
@@ -650,7 +665,7 @@ defmodule Phos.Action do
     title = Map.get(properties, "Title", %{}) |> notion_get_values()
     default_orb_populator({ name, nil}, properties)
     |> Map.merge(%{
-          where: notion_get_values(location) |> String.replace("[town]", name),
+          where: notion_get_values(location) || "" |> String.replace("[town]", name),
           title: (if is_nil(notion_get_values(inside_title)), do: title, else: notion_get_values(inside_title)),
           geolocation: %{
             live: %{
@@ -665,17 +680,31 @@ defmodule Phos.Action do
                  })
   end
 
-  defp default_orb_populator({name, _hashes}, %{"Info" => info, "1920_1080 Image" => lossless, "200_150 Image" => lossy, "Done" => done} = _properties) do
+  defp default_orb_populator({name, _hashes}, %{"Info" => info,
+                                                "Inside Image" => inside,
+                                                "Outside Image" => outside,
+                                                "Inside Image Low" => il,
+                                                "Outside Image Low" => ol,
+                                                "Done" => done,
+                                                "Initiator Username" => initiator} = prop) do
     expires_in = 4 * 7 * 24 * 60 * 60 ## TODO let it be selected in Admin View instead
     %{
       id: Ecto.UUID.generate(),
-      username: "Administrator 👋",
+      username: notion_get_values(initiator),
       expires_in: expires_in,
       info: (unless is_nil(notion_get_values(info)), do: notion_get_values(info) |> String.replace("[town]", name)),
       done: notion_get_values(done),
+      initiator: Phos.Users.get_user_by_username(notion_get_values(initiator) || ""),
       media: true,
-      lossy: notion_get_values(lossy),
-      lossless: notion_get_values(lossless),
+      inside: notion_get_values(inside),
+      outside: notion_get_values(outside),
+      inside_low: notion_get_values(il),
+      outside_low: notion_get_values(ol),
+      ext_link: %{
+        name: (unless is_nil(notion_get_values(prop["External Message"])), do: notion_get_values(prop["External Message"])),
+        url: (unless is_nil(notion_get_values(prop["External URL"])), do: notion_get_values(prop["External URL"])),
+        referral: (unless is_nil(notion_get_values(prop["External Referral Code"])), do: notion_get_values(prop["External Referral Code"]))
+      }
     }
   end
 

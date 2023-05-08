@@ -12,8 +12,6 @@ defmodule PhosWeb.Menshen.Plug do
       else
         _ -> conn |> shallNotPass
     end
-
-
   end
 
   defp shallPass(conn, %Phos.Users.User{} = user), do: assign(conn, :current_user, user)

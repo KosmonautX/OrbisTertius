@@ -14,6 +14,9 @@ defmodule Phos.Message.Memory do
     belongs_to :orb_subject, Phos.Action.Orb, references: :id, type: Ecto.UUID
     belongs_to :rel_subject, Phos.Users.RelationRoot, references: :id, type: Ecto.UUID
     belongs_to :com_subject, Phos.Comments.Comment, references: :id, type: Ecto.UUID
+    has_one :last_rel_memory, Phos.Users.RelationRoot, foreign_key: :last_memory_id
+
+    field :cluster_subject_id, :binary_id, default: nil, virtual: true
 
     has_many :reveries, Reverie, references: :id, foreign_key: :memory_id, on_delete: :delete_all
 
@@ -23,9 +26,17 @@ defmodule Phos.Message.Memory do
   @doc false
   def changeset(memory, attrs) do
     memory
-    |> cast(attrs, [:id,:user_source_id, :orb_subject_id, :rel_subject_id, :message, :media])
+    |> cast(attrs, [:id,:user_source_id, :orb_subject_id, :com_subject_id, :rel_subject_id, :message, :media])
     |> validate_required([:message, :media])
     |> foreign_key_constraint(:user_source_id)
+  end
+
+  def gen_changeset(memory, attrs) do
+    memory
+    |> cast(attrs, [:id, :user_source_id, :orb_subject_id, :rel_subject_id, :message, :media])
+    |> validate_required([:id, :user_source_id, :message, :media, :rel_subject_id])
+    |> foreign_key_constraint(:user_source_id)
+    |> foreign_key_constraint(:rel_subject_id)
   end
 
   def gen_reveries_changeset(memory, attrs) do

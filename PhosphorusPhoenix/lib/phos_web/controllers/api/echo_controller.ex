@@ -7,29 +7,29 @@ defmodule PhosWeb.API.EchoController do
   alias Phos.Message.Memory
   action_fallback PhosWeb.API.FallbackController
 
-  def index_relations(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"page" => page}),
-    do: render(conn, :paginated, reveries: Message.last_messages_by_relation(id, page))
-
   def show_relations_jump_orbs(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => rel_id, "page" => page}),
-    do: render(conn, :paginated, reveries: Message.last_messages_by_orb_within_relation({rel_id, your_id}, page))
+    do: render(conn, :paginated, memories: Message.last_messages_by_orb_within_relation({rel_id, your_id}, page))
 
   def show_relations_jump_orbs(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => rel_id, "cursor" => cursor, "asc" => "true"}),
-    do: render(conn, :paginated, reveries: Message.last_messages_by_orb_within_relation({rel_id, your_id}, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond), asc: true]))
+    do: render(conn, :paginated, memories: Message.last_messages_by_orb_within_relation({rel_id, your_id}, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond), asc: true]))
 
   def show_relations_jump_orbs(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => rel_id, "cursor" => cursor}),
-    do: render(conn, :paginated, reveries: Message.last_messages_by_orb_within_relation({rel_id, your_id}, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond)]))
+    do: render(conn, :paginated, memories: Message.last_messages_by_orb_within_relation({rel_id, your_id}, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond)]))
 
   def show_relations(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => rel_id, "page" => page}),
-    do: render(conn, :paginated, reveries: Message.list_messages_by_relation({rel_id, your_id}, page))
+    do: render(conn, :paginated, memories: Message.list_messages_by_relation({rel_id, your_id}, page))
 
   def show_relations(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => rel_id, "cursor" => cursor, "asc" => "true"}),
-    do: render(conn, :paginated, reveries: Message.list_messages_by_relation({rel_id, your_id}, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond), asc: true]))
+    do: render(conn, :paginated, memories: Message.list_messages_by_relation({rel_id, your_id}, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond), asc: true]))
 
   def show_relations(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => rel_id, "cursor" => cursor}),
-    do: render(conn, :paginated, reveries: Message.list_messages_by_relation({rel_id, your_id}, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond)]))
+    do: render(conn, :paginated, memories: Message.list_messages_by_relation({rel_id, your_id}, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond)]))
 
   def show_orbs(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => orb_id, "page" => page}),
-    do: render(conn, :paginated, reveries: Message.list_messages_by_orb({orb_id, your_id}, page))
+    do: render(conn, :paginated, memories: Message.list_messages_by_orb({orb_id, your_id}, page))
+
+  def show_activity(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"cursor" => cursor}),
+    do: render(conn, :paginated, memories: Message.list_activity_by_user_id(your_id, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond)]))
 
   def show(conn = %{assigns: %{current_user: _user}}, %{"id" => id}) do
     with %Memory{} = memory <-  Message.get_memory!(id) do
@@ -68,7 +68,7 @@ defmodule PhosWeb.API.EchoController do
 
   def update(%Plug.Conn{assigns: %{current_user: %{id: user_id}}} = conn , %{"id" => id} = params) do
     memory = Message.get_memory!(id)
-    with true <- memory.initiator.id == user_id,
+    with true <- memory.user_source.id == user_id,
          {:ok, attrs} <- memory_constructor(user_id, params),
          {:ok, %Memory{} = memory} <- Message.update_memory(memory, attrs) do
       conn

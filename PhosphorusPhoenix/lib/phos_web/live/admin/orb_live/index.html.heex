@@ -23,7 +23,7 @@
       <:col :let={orb} classes="sticky left-0" label="Initiator">
         <.admin_user_preview user={orb.initiator} id={"admin_user_preview_for_#{orb.id}"} />
       </:col>
-      <:col :let={orb} label="Username">
+        <:col :let={orb} label="Public Name">
         <%= orb
         |> get_in([
           Access.key(:initiator, %{}),
@@ -50,7 +50,7 @@
         |> get_in([
           Access.key(:initiator, %{}),
           Access.key(:public_profile, %{}),
-          Access.key(:birthday, "nil")
+          Access.key(:birthday, nil)
         ]) %>
       </:col>
 

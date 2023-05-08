@@ -118,6 +118,20 @@ config :phos, Phos.External.Notion,
   database: {System, :get_env, "NOTION_DATABASE"},
   notification_database: {System, :get_env, "NOTION_NOTIFICATION_DATABASE"}
 
+config :phos, Phos.PlatformNotification,
+  worker: 18,
+  time_interval: 3,
+  min_demand: 5,
+  max_demand: 8
+
+# config :sparrow,
+#   pool_enabled: true,
+#   fcm: [
+#     [
+#       path_to_json: Path.expand("../priv/data/sparrow-config.json", __DIR__)
+#     ]
+#   ]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

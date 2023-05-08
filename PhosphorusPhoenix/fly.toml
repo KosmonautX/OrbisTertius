@@ -1,4 +1,4 @@
-# fly.toml file generated for nyx on 2022-06-13T01:43:05+08:00
+# fly.toml file generated for nyx on 2023-04-19T13:05:51+08:00
 
 app = "nyx"
 kill_signal = "SIGTERM"
@@ -9,15 +9,16 @@ processes = []
   #release_command = "/app/bin/migrate"
 
 [env]
+  PHX_HOST = "nyx.fly.dev"
   PORT = "8080"
-
-[metrics]
-port = 3927
-path = "/metrics"
 
 [experimental]
   allowed_public_ports = []
   auto_rollback = true
+
+[metrics]
+  path = "/metrics"
+  port = 3927
 
 [[services]]
   http_checks = []
@@ -26,8 +27,8 @@ path = "/metrics"
   protocol = "tcp"
   script_checks = []
   [services.concurrency]
-    hard_limit = 25
-    soft_limit = 20
+    hard_limit = 888
+    soft_limit = 500
     type = "connections"
 
   [[services.ports]]
