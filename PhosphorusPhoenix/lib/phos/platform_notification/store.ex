@@ -52,6 +52,12 @@ defmodule Phos.PlatformNotification.Store do
     store
     |> cast(attrs, [:id, :template_id, :memory_id, :recipient_id, :success, :spec, :retry_attempt, :next_execute_at, :error_reason])
     |> cast_assoc(:memory, with: &Phos.Message.Memory.changeset/2)
+    |> prepare_changes(fn changeset ->
+      case fetch_change(changeset, :next_execute_at) do
+        {:ok, _} -> changeset
+          _ -> put_change(changeset, :next_execute_at, NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second))
+      end
+    end)
     |> validate_required([:spec, :id])
   end
 end

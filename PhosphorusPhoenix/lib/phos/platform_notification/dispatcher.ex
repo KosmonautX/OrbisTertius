@@ -1,6 +1,7 @@
 defmodule Phos.PlatformNotification.Dispatcher do
   use GenStage
 
+  alias Phos.Repo
   alias Phos.PlatformNotification, as: PN
 
   def start_link(state) do
@@ -9,7 +10,7 @@ defmodule Phos.PlatformNotification.Dispatcher do
 
   @impl true
   def init(_state) do
-    {:producer_consumer, 0, subscribe_to: conn_opts()}
+    {:producer_consumer, [], subscribe_to: conn_opts()}
   end
 
   defp conn_opts do
@@ -19,29 +20,19 @@ defmodule Phos.PlatformNotification.Dispatcher do
 
   @impl true
   def handle_events([event | _rest], from, state) do
-    event
-    |> filter_event_type()
-    |> filter_event_entity()
-    |> case do
-      {:reply, %{"notification_id" => id}} when not is_nil(id) ->
-        GenStage.reply(from, :ok)
-        {:noreply, [id], state + 1}
-      
-      {:ok, data} ->
-        case insert_to_persistent_database(data) do
-          {:ok, stored} ->
-            GenStage.reply(from, :ok)
-            {:noreply, [stored.id], state + 1}
-          {:error, msg} -> 
-            GenStage.reply(from, {:error, msg})
-            {:noreply, [], state}
-        end
-      _ -> 
-        GenStage.reply(from, :error)
-        {:noreply, [], state}
+    GenStage.reply(from, :ok)
+    Process.send_after(self(), :dispatch, 100)
+    case emitter(event, state) do
+      {:ok, emit} -> {:noreply, [], [emit | state]}
+      _ -> {:noreply, [], state}
     end
   end
   def handle_events(_events, _from, state), do: {:noreply, [], state}
+
+  @impl true
+  def handle_cast(:force_execute, state) do
+    {:noreply, state, []}
+  end
 
   @impl true
   def handle_info({_ref, {id, type, message}}, state) when type in [:retry, :error, :unknown_error] do
@@ -53,9 +44,49 @@ defmodule Phos.PlatformNotification.Dispatcher do
   end
 
   @impl true
+  def handle_info({_ref, {ids, :errors, message}}, state) do
+    PN.update_notifications(ids, %{error_reason: message, retry_attempt: 6, success: false})
+    {:noreply, [], state}
+  end
+
+  @impl true
+  def handle_info({_ref, {_ids, :file_error, message}}, state) do
+    :logger.debug(%{
+      label: {Phos.PlatformNotification.Global, message},
+      report: %{
+        module: __MODULE__,
+        action: :stop,
+        message: message
+      }
+    }, %{
+      domain: [:phos],
+      error_logger: %{tag: :debug_msg}
+    })
+
+    {:noreply, [], state}
+  end
+
+  @impl true
+  def handle_info({_ref, {ids, :success}}, state) when is_list(ids) do
+    PN.update_notifications(ids, %{success: true})
+    {:noreply, [], state}
+  end
+
+  @impl true
   def handle_info({_ref, {id, :success}}, state) do
     stored = PN.get_notification(id)
     PN.update_notification(stored, %{success: true})
+    {:noreply, [], state}
+  end
+
+  @impl true
+  def handle_info(:dispatch, state) when length(state) >= 500 do
+    {events_to_dispatch, remaining_events} = Enum.split(state, max_demand())
+    {:noreply, events_to_dispatch, remaining_events}
+  end
+
+  @impl true
+  def handle_info(:dispatch, state) do
     {:noreply, [], state}
   end
 
@@ -80,21 +111,6 @@ defmodule Phos.PlatformNotification.Dispatcher do
     end
   end
 
-  defp insert_to_persistent_database(%{"template_id" => key, "options" => %{"memory_id" => mem_id}} = data) when not is_nil(key) do
-    template = PN.get_template_by_key(key) || %{}
-      with {:ok, recipient_id} <- get_recipient(data) do
-        PN.insert_notification(%{
-          template_id: Map.get(template, :id),
-          recipient_id: recipient_id,
-          memory_id: mem_id,
-          spec: data,
-          id: Ecto.UUID.generate(),
-        })
-      else
-        err -> err
-    end
-  end
-
   defp insert_to_persistent_database(%{"template_id" => key} = data) when not is_nil(key) do
     template = PN.get_template_by_key(key) || %{}
       with {:ok, recipient_id} <- get_recipient(data),
@@ -110,7 +126,6 @@ defmodule Phos.PlatformNotification.Dispatcher do
         err -> err
       end
   end
-
   defp insert_to_persistent_database(data)  do
     case get_recipient(data) do
       {:ok, recipient_id} -> PN.insert_notification(%{
@@ -137,4 +152,30 @@ defmodule Phos.PlatformNotification.Dispatcher do
     end
   end
 
+  defp max_demand do
+    PN.config()
+    |> Keyword.get(:max_demand, 500)
+  end
+
+  defp emitter(event, state) do
+    event
+    |> filter_event_type()
+    |> filter_event_entity()
+    |> case do
+      {:reply, %{"notification_id" => id} = _data} when not is_nil(id) ->
+        Enum.filter(state, &Kernel.==(&1.id, id))
+        |> Kernel.length()
+        |> Kernel.==(1)
+        |> case do
+          true -> {:error, "Notification exists"}
+          _ -> {:ok, PN.get_notification(id)}
+        end
+      {:ok, data} ->
+        case insert_to_persistent_database(data) do
+          {:ok, stored} -> {:ok, Repo.preload(stored, [:recipient, :template])}
+          {:error, _msg} = ret -> ret
+        end
+      _ -> {:error, nil}
+    end
+  end
 end
