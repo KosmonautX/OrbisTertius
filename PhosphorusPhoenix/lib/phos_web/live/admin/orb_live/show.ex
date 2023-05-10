@@ -14,7 +14,7 @@ defmodule PhosWeb.Admin.OrbLive.Show do
 
     case Action.get_orb(id) do
       {:ok, orb} ->
-        {:ok, assign(socket, orb: orb, traits_form: [], changeset: Ecto.Changeset.change(orb))}
+        {:ok, assign(socket, orb: orb, traits_form: orb.traits, changeset: Ecto.Changeset.change(orb))}
 
       _ ->
         raise PhosWeb.ErrorLive.FourOFour, message: "Orb Not Found Nomore"
@@ -95,11 +95,11 @@ defmodule PhosWeb.Admin.OrbLive.Show do
       ) do
     traits = Map.values(trait_change)
 
-    case Action.update_orb(orb, %{traits: orb.traits ++ traits}) do
+    case Action.update_admin_orb(orb, %{traits: traits}) do
       {:ok, orb} ->
         {:noreply,
          socket
-         |> assign(orb: orb, traits_form: [], changeset: Ecto.Changeset.change(orb))
+         |> assign(orb: orb, traits_form: orb.traits, changeset: Ecto.Changeset.change(orb))
          |> put_flash(:info, "orb traits updated.")}
 
       _ ->

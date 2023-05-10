@@ -183,25 +183,28 @@ defmodule Phos.PlatformNotification.Global do
     :ets.insert(table, {id, schedule, active})
   end
 
-  defp send_notification(%{regions: regions, action_path: "/orbland/orbs", archetype_id: id} = data) do
-    {:ok, mem} = Phos.Message.create_memory(%{user_source_id: Phos.Users.get_admin().id, orb_subject_id: id, message: "pltfrm_orb"})
-
+  defp send_notification(%{regions: regions, action_path: action_path, archetype_id: id} = data) do
+    # {:ok, mem} = Phos.Message.create_memory(%{user_source_id: Phos.Users.get_admin().id, orb_subject_id: id, message: "pltfrm_orb"})
     Phos.External.Sector.get()
     |> Map.take(regions)
     |> Map.values()
     |> List.flatten()
-    |> Phos.Action.orb_initiator_by_geohashes()
+    |> Phos.Action.notifiers_by_geohashes()
+    |> Enum.map(fn n -> n && Map.get(n, :fcm_token, nil) end)
+    |> MapSet.new()
     #|> batch
-    |> Enum.map(fn uid ->
-      PN.notify({"broadcast", "ORB", id, "pltfrm_orb"},
-        memory_id: mem.id,
-        to: uid,
-        notification: %{
-        title: data.title,
-        body: data.body,
-      }, data: %{
-        action_path: data.action_path <> "/" <> id,
-      })
-    end)
+    |> tap(fn batch ->
+               Enum.chunk_every(batch, 499)
+               |> Enum.map(fn tokens ->
+                 Sparrow.FCM.V1.Notification.new(:token,
+                   tokens,
+                   data.title, data.body,
+                   %{action_path: action_path <> "/" <> id,
+                     cluster_id: "platform"})
+               end)
+               |> Enum.map(fn geonotif ->
+                 geonotif
+                 |> Sparrow.API.push() end)
+             end)
   end
 end
