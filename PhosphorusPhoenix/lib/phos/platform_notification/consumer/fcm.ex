@@ -10,13 +10,17 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
 
     # synchronous
 
-    Sparrow.FCM.V1.Notification.new(:token, token, title, body, data)
+    Sparrow.FCM.V1.Notification.new(:token, token, "", "",
+      data
+      |> Map.put(:title, title)
+      |> Map.put(:body, body)
+    )
+    |> Sparrow.FCM.V1.Notification.add_apns(Phos.PlatformNotification.Config.APNS.gen())
     |> Sparrow.API.push()
     |> case do
       :ok -> {:ok, "Notification triggered"}
       err -> err
     end
-    # Fcmex.push("", notification: %{title: title, body: body} ,condition: recipient, data: data)
   end
 
   def send({:file, path}) do

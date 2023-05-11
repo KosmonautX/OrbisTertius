@@ -65,7 +65,7 @@ defmodule Phos.Message do
 
   """
 
-  def list_messages_by_relation({rel_id, yours}, opts \\ []) when is_list(opts) do
+  def list_messages_by_relation({rel_id, _yours}, opts \\ []) when is_list(opts) do
     sort_attr = Keyword.get(opts, :sort_attribute, :inserted_at)
     limit = Keyword.get(opts, :limit, 12)
 
@@ -161,13 +161,13 @@ defmodule Phos.Message do
 
   ## Examples
 
-      iex> create_message(%{field: value})
-      {:ok, %Memory{}}
+  iex> create_message(%{field: value})
+  {:ok, %Memory{}}
 
-      iex> create_message(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
+  iex> create_message(%{field: bad_value})
+  {:error, %Ecto.Changeset{}}
 
-    """
+  """
 
     def create_message(%{"id" => _mem_id, "user_source_id" => _u_id, "rel_subject_id" => rel_id} = attrs) do
       with rel = Phos.Folk.get_relation!(rel_id),
