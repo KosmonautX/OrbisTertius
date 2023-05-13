@@ -4,7 +4,6 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
   @impl true
   def send(%{recipient: %{integrations: %{fcm_token: token}}} = store) do
     IO.inspect "#{store.recipient.username} << #{get_in(store.spec, ["options", "notification", "title"])}"
-    #recipient = "'USR.#{store.recipient_id}' in topics"
     %{"body" => body, "title" => title} = get_template(store)
     data = get_data(store)
 
@@ -34,23 +33,15 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
 
   def send(_), do: {:error, "No FCM Token"}
 
-  def get_template(%{spec: spec} = store) do
-    spec
-    |> get_in([Access.key("options", %{}), "notification"])
-    |> case do
-      n when is_map(n) -> n
-      _ -> parse(store)
-    end
-  end
+  def get_template(%{spec: %{"options" => %{"notification" => %{"silent" => true}}}}), do: %{"title" => "", "body" => ""}
+  def get_template(%{spec: %{"options" => %{"notification" => notif}}}) when is_map(notif), do: notif
+  def get_template(store), do: parse(store)
 
-  def get_data(%{spec: spec} = _store) do
-    spec
-    |> get_in([Access.key("options", %{}), Access.key("data", %{})])
-    |> case do
-      nil -> %{}
-      l -> l
-    end
-  end
+
+  def get_data(%{spec: %{"options" => %{"notification" => %{"silent" => true} = notif}, "data" => data}}) when is_map(data), do: Map.merge(data, notif)
+  def get_data(%{spec: %{"options" => %{"data" => data}}}) when is_map(data), do: data
+  def get_data(_store), do: %{}
+
 
   # defp get_link(%{spec: spec} = store) do
   #   spec
