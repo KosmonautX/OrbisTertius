@@ -230,7 +230,7 @@ POST :ipAddress/folkland/friends
 }
 
 ## Delete Relation Resource (reset everything)
-DELETE :ipAddress/folkland/friends/d2e500ba-2503-4261-8fb9-78d63bdb1a30
+DELETE :ipAddress/folkland/friends/e9d5219f-76fe-4077-8a66-2e8fce6c6a2d
 :auth-headers
 
 ## Ended the friendship

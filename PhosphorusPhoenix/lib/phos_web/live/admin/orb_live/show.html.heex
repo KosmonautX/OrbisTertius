@@ -26,7 +26,7 @@
 </div>
 
 <div class="w-full p-2 mt-4">
-  <.card title="Orb traits">
+  <.card title="Edit Orb Traits">
     <div class="px-4 py-2">
       <.form
         :let={f}
@@ -44,7 +44,7 @@
             class="ml-2 button button-sm"
             id="button_add_trait_orb"
           >
-            <i class="fa-solid fa-plus cursor-pointer mr-1"></i> Add more trait(s)
+            <i class="fa-solid fa-plus cursor-pointer mr-1"></i> Edit trait(s)
           </button>
         </div>
         <%= for {val, index} <- Enum.with_index(@traits_form) do %>
@@ -78,9 +78,6 @@
       >
         <i class="fa-solid fa-plus cursor-pointer mr-1"></i> Add trait
       </button>
-    </div>
-    <div :for={{t, i} <- Enum.with_index(@orb.traits)}>
-      <p id={"orb_trait_#{i}"}><%= t %></p>
     </div>
   </.card>
 </div>

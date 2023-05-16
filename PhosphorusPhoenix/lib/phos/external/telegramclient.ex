@@ -1,20 +1,21 @@
 defmodule Phos.External.TelegramClient do
   use HTTPoison.Base
+  import Phoenix.VerifiedRoutes
 
   def report(user= %Phos.Users.User{}, report) do
     send_message("-1001258902545",
       """
-      Report was sent in by <a href="https://app.scrb.ac/?apn=com.scratchbac.baladi&ibi=com.baladi.scratchbac&isi=1587462661&link=https%3A%2F%2Fapp.scrb.ac%2Fuserland%2Fusers%2F#{user.id}"><b>#{user.username}</b></a>!
+      Report was sent in by <a href="#{PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{user.username}")}"><b>#{user.username}</b></a>!
       Metadata:
       """ <>
      case report["archetype"] do
        "USR" ->
          """
-         Reported <b>User ID</b>: <a href="https://app.scrb.ac/?apn=com.scratchbac.baladi&ibi=com.baladi.scratchbac&isi=1587462661&link=https%3A%2F%2Fapp.scrb.ac%2Fuserland%2Fothers%2F#{report["id"]}">#{report["id"]}</a>
+         Reported <b>User ID</b>: <a href="#{PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{report["id"]}")}">#{report["id"]}</a>
          """
        "ORB" ->
          """
-         Reported <b>Orb UUID</b>: <a href="https://app.scrb.ac/?apn=com.scratchbac.baladi&ibi=com.baladi.scratchbac&isi=1587462661&link=https%3A%2F%2Fapp.scrb.ac%2Forbland%2Forbs%2F#{report["id"]}">#{report["id"]}</a>
+         Reported <b>Orb UUID</b>: <a href="#{PhosWeb.Endpoint.url() <> path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{report["id"]}")}">#{report["id"]}</a>
          """
      end
       <> "Why? "

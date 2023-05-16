@@ -445,6 +445,12 @@ defmodule Phos.Action do
     |> Repo.update()
   end
 
+  def update_admin_orb(%Orb{} = orb, attrs) do
+    orb
+    |> Orb.admin_changeset(attrs)
+    |> Repo.update()
+  end
+
   #   @doc """
   #   Updates a orb.
 
@@ -496,7 +502,7 @@ defmodule Phos.Action do
       where: o.orb_subject_id == ^orb.id
     )
     |> Phos.Repo.all()
-    |> Enum.map(fn mem -> Phos.Message.delete_memory(mem)
+    |> Enum.map(fn mem -> Phos.Message.update_memory(mem, %{orb_subject_id: nil})
     end)
 
     Repo.delete(orb)
@@ -522,7 +528,7 @@ defmodule Phos.Action do
       where: o.orb_subject_id == ^orb.id
     )
     |> Phos.Repo.all()
-    |> Enum.map(fn mem -> Phos.Message.delete_memory(mem)
+    |> Enum.map(fn mem -> Phos.Message.update_memory(mem, %{orb_subject_id: nil})
     end)
 
 
