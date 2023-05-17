@@ -88,7 +88,7 @@
         Posts
       </h5>
       <p
-        :if={@orbs == []}
+        :if={@streams.orbs == []}
         class="w-full mx-auto text-center py-6 text-gray-600 font-medium lg:text-base text-sm dark:text-white"
       >
         <%= "#{@user.username} has no post yet" %>
@@ -97,8 +97,8 @@
       <.live_component
           module={PhosWeb.Components.ScrollOrb}
           id="infinite-orb-home"
-          orbs={@orbs}
           page={@orb_page}
+          streams={@streams}
           timezone1={@timezone}
         />
 
@@ -117,7 +117,7 @@
       </h5>
 
       <p
-        :if={@allies == []}
+        :if={@streams.allies == []}
         class="w-full mx-auto text-center py-6 text-gray-600 font-medium text-sm lg:text-base dark:text-white"
       >
         <%= "#{@user.username} has no allies yet" %>
@@ -127,7 +127,7 @@
         <.live_component
           module={PhosWeb.Components.ScrollAlly}
           id="infinite-ally-home-desktop"
-          ally_list={@allies}
+          ally_list={@streams.allies}
           current_user={@current_user}
           page={@ally_page}
         />

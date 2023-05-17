@@ -23,9 +23,10 @@ defmodule PhosWeb.UserProfileLive.Show do
      |> assign(:user, user)
      |> assign_meta(user, params)
      |> assign(orb_page: 1)
-     |> assign(ally_page: 1), temporary_assigns: [orbs: Action.orbs_by_initiators([user.id], 1).data,
-       allies: ally_list(current_user, user)]}
-
+     |> assign(ally_page: 1)
+     |> stream(:orbs, Action.orbs_by_initiators([user.id], 1).data)
+     |> stream(:allies, ally_list(current_user, user))
+    }
     else
       nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
     end
@@ -41,9 +42,10 @@ defmodule PhosWeb.UserProfileLive.Show do
      |> assign(:user, user)
      |> assign_meta(user, params)
      |> assign(orb_page: 1)
-     |> assign(ally_page: 1), temporary_assigns: [orbs: Action.orbs_by_initiators([user.id], 1).data,
-       allies: ally_list(current_user, user)]}
-
+     |> assign(ally_page: 1)
+     |> stream(:orbs, Action.orbs_by_initiators([user.id], 1).data)
+     |> stream(:allies, ally_list(current_user, user))
+    }
     else
       nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
   end
@@ -74,7 +76,11 @@ defmodule PhosWeb.UserProfileLive.Show do
   def handle_event("load-more", %{"archetype" => "orb"}, %{assigns: %{orb_page: page, user: user}} = socket) do
     expected_page = page + 1
     case Action.orbs_by_initiators([user.id], expected_page).data do
-      [_|_] = orbs -> {:noreply, assign(socket, page: expected_page, orbs: orbs)}
+      [_|_] = orbs ->
+        newsocket =
+          Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
+          |> assign(orb_page: expected_page)
+        {:noreply, newsocket}
       _ -> {:noreply, socket}
     end
    end
