@@ -7,7 +7,7 @@ defmodule PhosWeb.Components.Pagination do
   @impl true
   def update(assigns, socket) do
     {:ok,
-      assign(socket, assigns)
+      socket
       |> assign_new(:active, fn -> false end)
       |> assign_new(:number, fn -> 1 end)
       |> assign_new(:first, fn -> true end)

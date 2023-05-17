@@ -25,8 +25,9 @@ defmodule PhosWeb.OrbLive.Show do
        |> assign(:comments, Comments.get_root_comments_by_orb(orb.id)
         |> decode_to_comment_tuple_structure())
        |> assign(:comment, %Comments.Comment{})
-       |> assign(page: 1),
-       temporary_assigns: [orbs: Action.orbs_by_initiators([orb.initiator.id], 1).data]}
+       |> assign(page: 1)
+       |> stream(:orbs, Action.orbs_by_initiators([orb.initiator.id], 1).data)
+       }
       else
         nil -> raise PhosWeb.ErrorLive.FourOFour, message: "Orb Not Found"
     end
@@ -46,8 +47,8 @@ defmodule PhosWeb.OrbLive.Show do
         |> decode_to_comment_tuple_structure())
        |> assign(:media, nil)
        |> assign(:comment, %Comments.Comment{})
-       |> assign(page: 1),
-       temporary_assigns: [orbs: Action.orbs_by_initiators([orb.initiator.id], 1).data]}
+       |> assign(page: 1)
+       |> stream(:orbs, Action.orbs_by_initiators([orb.initiator.id], 1).data)}
     else
       {:error, :not_found} -> raise PhosWeb.ErrorLive.FourOFour, message: "Orb Not Found"
     end
@@ -102,7 +103,7 @@ defmodule PhosWeb.OrbLive.Show do
   @impl true
   def handle_info(%Phoenix.Socket.Broadcast{topic: "folks", event: "delete", payload: {init_id, acc_id}}, %{assigns: %{current_user: user}} = socket) do
     case init_id == user.id or acc_id == user.id do
-      true -> 
+      true ->
         send_update(PhosWeb.Component.AllyButton, id: "user_information_card_ally", related_users: %{receiver_id: init_id, sender_id: user.id})
         {:noreply, put_flash(socket, :error, "Ally request is deleted") }
         _ -> {:noreply, put_flash(socket, :info, "handle info not matched")}

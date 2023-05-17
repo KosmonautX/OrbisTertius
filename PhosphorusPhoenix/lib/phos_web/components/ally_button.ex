@@ -4,7 +4,7 @@ defmodule PhosWeb.Component.AllyButton do
 
   def update(%{current_user: curr, user: user} = assigns, socket) when not is_nil(curr) do
     {:ok,
-     assign(socket, assigns)
+      socket
      |> assign_new(:self, fn ->
        case Map.get(curr, :id) do
          nil -> false

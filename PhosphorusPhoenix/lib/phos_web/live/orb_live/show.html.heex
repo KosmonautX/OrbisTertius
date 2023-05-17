@@ -95,7 +95,7 @@
         <.live_component
           module={PhosWeb.Components.ScrollOrb}
           id="infinite-home"
-          orbs={@orbs}
+          streams={@streams}
           page={@page}
           timezone1={@timezone}
         />
@@ -110,5 +110,5 @@
   >
   <.media_preview url={@media}/>
 </.modal>
-  <span :if={length(@orbs) < 3} class="hidden lg:block h-96 bg-gray-100"/>
+  <span :if={@streams.orbs |> Enum.count() < 3} class="hidden lg:block h-96 bg-gray-100"/>
 </div>
