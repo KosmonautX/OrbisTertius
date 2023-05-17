@@ -472,7 +472,7 @@ defmodule Phos.Action do
       where: o.orb_subject_id == ^orb.id
     )
     |> Phos.Repo.all()
-    |> Enum.map(fn mem -> Phos.Message.delete_memory(mem)
+    |> Enum.map(fn mem -> Phos.Message.update_memory(mem, %{orb_subject_id: nil})
     end)
 
     Repo.delete(orb)
@@ -498,7 +498,7 @@ defmodule Phos.Action do
       where: o.orb_subject_id == ^orb.id
     )
     |> Phos.Repo.all()
-    |> Enum.map(fn mem -> Phos.Message.delete_memory(mem)
+    |> Enum.map(fn mem -> Phos.Message.update_memory(mem, %{orb_subject_id: nil})
     end)
 
 

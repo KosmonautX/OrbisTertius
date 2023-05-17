@@ -80,8 +80,9 @@ orb
 import Ecto.Query
 alias Phos.Users.{RelationBranch, RelationRoot, User}
 
-Phos.Folk.get_relation!("cc9e46c0-0f98-410f-bb3e-12044d41fef3")
-|> Phos.Repo.preload([:last_memory])
+relation =
+  Phos.Folk.get_relation!("e9d5219f-76fe-4077-8a66-2e8fce6c6a2d")
+  |> Phos.Repo.preload([:last_memory])
 
 # |> Phos.Users.RelationRoot.mutate_memory_changeset(%{
 #   "id" => Ecto.UUID.generate(),
@@ -93,14 +94,17 @@ Phos.Folk.get_relation!("cc9e46c0-0f98-410f-bb3e-12044d41fef3")
 
 id = "6d7b0e7c-a633-4a8a-8d85-b8a493109bd4"
 
-Phos.Users.RelationBranch
-|> where([b], b.user_id == ^id)
-|> join(:inner, [b], r in assoc(b, :root))
-|> select([_b, r], r)
-|> join(:inner, [_b, r], m in assoc(r, :last_memory))
-|> join(:left, [_b, r, m], o in assoc(m, :orb_subject))
-|> select_merge([_b, r, m, o], %{last_memory: %{m | orb_subject: o}})
-|> order_by([_b, r, _m], desc: r.updated_at)
+# Phos.Users.RelationBranch
+# |> where([b], b.user_id == ^id)
+# |> join(:inner, [b], r in assoc(b, :root))
+# |> select([_b, r], r)
+# |> join(:inner, [_b, r], m in assoc(r, :last_memory))
+# |> join(:left, [_b, r, m], o in assoc(m, :orb_subject))
+# |> select_merge([_b, r, m, o], %{last_memory: %{m | orb_subject: o}})
+# |> order_by([_b, r, _m], desc: r.updated_at)
+# |> Phos.Repo.all()
+
+from(m in Phos.Users.RelationRoot, where: m.last_memory_id == ^relation.id)
 |> Phos.Repo.all()
 ```
 
