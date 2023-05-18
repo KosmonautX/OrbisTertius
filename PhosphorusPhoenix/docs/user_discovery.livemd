@@ -22,7 +22,7 @@ defmodule Echolocation do
 
   require Logger
 
-  @id "96db27c1-234c-4c97-9ac7-691f56956a61"
+  @id "6d7b0e7c-a633-4a8a-8d85-b8a493109bd4"
   @topic "memory:user:#{@id}"
 
   def start_link(args) do
@@ -63,6 +63,18 @@ defmodule Echolocation do
     Logger.info(
       # <>
       "Memories Remembered"
+    )
+
+    IO.inspect(message)
+
+    {:ok, socket}
+  end
+
+  @impl Slipstream
+  def handle_message(@topic, "memory_activity", message, socket) do
+    Logger.info(
+      # <>
+      "Memories Acted"
     )
 
     IO.inspect(message)
@@ -130,7 +142,7 @@ end
 
 ```elixir
 token =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmeXJfaWQiOm51bGwsInRlcnJpdG9yeSI6e30sInVzZXJfaWQiOiI5NmRiMjdjMS0yMzRjLTRjOTctOWFjNy02OTFmNTY5NTZhNjEiLCJ1c2VybmFtZSI6ImJlbHVnYSIsImV4cCI6MTY3ODg3NDIwMiwiaWF0IjoxNjc4ODcyOTkwLCJpc3MiOiJQcmluY2V0b24iLCJyb2xlIjoicGxlYiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.5c8no97S9QN-8jmqVDstZHmpNa2-pZzgOnGmII3ZbWs"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmeXJfaWQiOm51bGwsInRlcnJpdG9yeSI6eyJob21lIjp7Imhhc2giOjYyODAyMTI5NzY2NjIyNDEyNywicmFkaXVzIjoxNjc1MzY3MTk1fSwid29yayI6eyJoYXNoIjo2MzY3ODY2MTE3NzM4NDAyNTUsInJhZGl1cyI6MTY3NTM2NzE5NX19LCJ1c2VyX2lkIjoiNmQ3YjBlN2MtYTYzMy00YThhLThkODUtYjhhNDkzMTA5YmQ0IiwidXNlcm5hbWUiOiJsa3lpaSIsImV4cCI6MTY4NDM5OTkxNywiaWF0IjoxNjg0Mzk4NzA1LCJpc3MiOiJQcmluY2V0b24iLCJyb2xlIjoicGxlYiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.MDUIiU7gg2FOaNPSWJdAovvgLxmBT2O_6ZbMD-lTa_E"
 
 domain = "ws://localhost:4000"
 

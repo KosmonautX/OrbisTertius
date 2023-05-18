@@ -43,6 +43,11 @@ defmodule Phos.PubSub do
     message
   end
 
+  def publish(%Phos.Message.Memory{} = message, event, %Phos.Users.User{id: user_id}) do
+    PubSub.broadcast(__MODULE__, "memory:user:#{user_id}", {__MODULE__, event, message})
+    message
+  end
+
   def publish(message, event, topic) do
     PubSub.broadcast(Phos.PubSub, topic, {__MODULE__, event, message})
     message

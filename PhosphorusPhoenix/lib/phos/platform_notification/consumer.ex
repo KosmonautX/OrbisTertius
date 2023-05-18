@@ -18,7 +18,8 @@ defmodule Phos.PlatformNotification.Consumer do
     |> Enum.reduce({[], []}, fn %{spec: spec} = data, {fcm, mail} = acc ->
       Map.get(spec, "type")
       |> case do
-        t when t in ["broadcast", "push"] -> {[data | fcm], mail}
+        t when t in ["broadcast", "push"] ->
+             {[data | fcm], mail}
         "email" -> {fcm, [data | mail]}
         _ -> acc
       end
