@@ -95,7 +95,9 @@ defmodule Phos.Folk do
              Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.acceptor_id}", "", "",
                %{title: "#{rel.initiator.username} requested to be your ally 🤝",
                  action_path: "/folkland/self/requests",
-                 cluster_id: "folk_req"})
+                 cluster_id: "folk_req",
+                 initiator_id: rel.initiator_id
+               })
              |> Sparrow.FCM.V1.Notification.add_apns(Phos.PlatformNotification.Config.APNS.gen())
              |> Sparrow.API.push()
            end)

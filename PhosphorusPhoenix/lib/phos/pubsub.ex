@@ -35,8 +35,9 @@ defmodule Phos.PubSub do
           %{title: "Message from #{user.username}",
             body: message.message,
             action_path: "/memland/memories/#{message.rel_subject_id}",
-            cluster_id: message.rel_subject_id}
-          )
+            cluster_id: message.rel_subject_id,
+            user_source_id: user.id
+          })
           |> Sparrow.FCM.V1.Notification.add_apns(Phos.PlatformNotification.Config.APNS.gen())
           |> Sparrow.API.push()
         end
