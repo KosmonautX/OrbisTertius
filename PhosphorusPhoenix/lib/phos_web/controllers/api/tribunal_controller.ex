@@ -22,5 +22,14 @@ defmodule PhosWeb.API.TribunalController do
     end
   end
 
+  def report_comment(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"id" => id, "message" => message} = report) when is_list(message) do
+    with {:ok, _id} <-  Ecto.UUID.cast(id) do
+      Phos.External.TelegramClient.report(user, report |> Map.put("archetype", "COM"))
+      json(conn, %{report: report})
+    else
+      nil -> {:error, :not_found}
+    end
+  end
+
 
 end
