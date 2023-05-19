@@ -43,6 +43,10 @@ defmodule Phos.Comments do
     %Comment{}
     |> Comment.changeset(attrs)
     |> Repo.insert()
+  end
+
+  def create_comment_and_publish(attrs \\ %{}) do
+    create_comment(attrs)
     |> case do
          {:ok, %{parent_id: p_id} = comment} = data when not is_nil(p_id)->
            comment

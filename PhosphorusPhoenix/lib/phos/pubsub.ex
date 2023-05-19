@@ -49,8 +49,12 @@ defmodule Phos.PubSub do
     message
   end
 
-  def publish(message, event, topic) do
+  def publish(message, event, topic) when not is_nil(topic) do
     PubSub.broadcast(Phos.PubSub, topic, {__MODULE__, event, message})
+    message
+  end
+
+  def publish(message, _event, _topic) do
     message
   end
 

@@ -79,6 +79,7 @@ defmodule Phos.PlatformNotification.Consumer do
   end
 
   defp execute_fcm_events(data, from) do
+    IO.inspect(data, label: "fcm")
     data
     |> create_fcm_spec()
     |> filter_user_token(from)

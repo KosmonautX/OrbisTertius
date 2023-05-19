@@ -26,6 +26,8 @@ defmodule Phos.PlatformNotification.Batch do
     |> Sparrow.API.push()
   end
 
+  def silent_push([], _opts), do: :ok
+
 
   defp chunk_push(chunks) do
     chunks
