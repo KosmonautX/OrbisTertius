@@ -2,7 +2,8 @@ defmodule PhosWeb.Component.AllyButton do
   use PhosWeb, :live_component
   import PhosWeb.SVG
 
-  def update(%{current_user: curr, user: user} = assigns, socket) when not is_nil(curr) do
+  def update(%{current_user: curr, user: user, parent_pid: parent_pid} = assigns, socket) when not is_nil(curr) do
+    # require IEx; IEx.pry();
     {:ok,
       socket
      |> assign_new(:self, fn ->
@@ -13,7 +14,11 @@ defmodule PhosWeb.Component.AllyButton do
      end)
      |> assign_new(:ally, fn ->
        ally_status(Map.get(curr, :id), user.id)
-     end)}
+     end)
+     |> assign_new(:parent_pid, fn -> parent_pid end)
+     |> assign_new(:user, fn -> user end)
+     |> assign_new(:current_user, fn -> curr end)
+    }
   end
 
   def update(%{root_id: root_id} = _assigns, %{assigns: %{current_user: user}} = socket) do
@@ -31,11 +36,11 @@ defmodule PhosWeb.Component.AllyButton do
   def handle_event(
         "add_ally",
         _,
-        %{assigns: %{user: acceptor, current_user: user, socket: foreign_socket}} = socket
+        %{assigns: %{user: acceptor, current_user: user, parent_pid: parent_pid}} = socket
       ) do
     case Phos.Folk.add_friend(user.id, acceptor.id) do
       {:ok, %Phos.Users.RelationRoot{} = relation} ->
-        PhosWeb.Endpoint.broadcast_from(foreign_socket.transport_pid, "folks", "add", relation.id)
+        PhosWeb.Endpoint.broadcast_from(parent_pid, "folks", "add", relation.id)
 
         {:noreply,
          socket
@@ -47,6 +52,26 @@ defmodule PhosWeb.Component.AllyButton do
     end
   end
 
+  #   def handle_event(
+  #       "add_ally",
+  #       _,
+  #       socket
+  #     ) do
+  #       require IEx; IEx.pry();
+  #   # case Phos.Folk.add_friend(user.id, acceptor.id) do
+  #   #   {:ok, %Phos.Users.RelationRoot{} = relation} ->
+  #   #     PhosWeb.Endpoint.broadcast_from(parent_pid, "folks", "add", relation.id)
+
+  #   #     {:noreply,
+  #   #      socket
+  #   #      |> put_flash(:info, "Ally request sent!")
+  #   #      |> assign(:ally, "requested")}
+
+  #   #   _ ->
+  #   #     {:noreply, socket}
+  #     {:noreply, socket}
+  # end
+
   def handle_event(
         "delete_ally_request",
         _,
@@ -56,7 +81,7 @@ defmodule PhosWeb.Component.AllyButton do
            Phos.Folk.get_relation_by_pair(user.id, acceptor.id),
          {:ok, _rel} <- Phos.Folk.delete_relation(root) do
       PhosWeb.Endpoint.broadcast_from(
-        foreign_socket.transport_pid,
+        foreign_socket.parent_pid,
         "folks",
         "delete",
         {user.id, acceptor.id}

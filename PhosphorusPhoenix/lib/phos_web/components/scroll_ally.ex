@@ -1,14 +1,13 @@
 defmodule PhosWeb.Components.ScrollAlly do
   use PhosWeb, :live_component
-
   defp random_id, do: Enum.random(1..1_000_000)
 
   def render(assigns) do
     ~H"""
     <div>
-      <div id={@id <> "infinite-scroll-body"} phx-update="append" class="w-full px-4 lg:px-0">
+      <div id={@id <> "infinite-scroll-body"} phx-update="stream" class="w-full px-4 lg:px-0">
         <.user_info_bar
-          :for={ally <- @ally_list}
+          :for={{_dom_id, ally} <- @streams.ally_list}
           :if={!is_nil(Map.get(ally, :username))}
           id={"user-#{random_id()}-infobar"}
           user={ally}
@@ -25,12 +24,12 @@ defmodule PhosWeb.Components.ScrollAlly do
               module={PhosWeb.Component.AllyButton}
               current_user={@current_user}
               socket={@socket}
+              parent_pid={@parent_pid}
               user={ally}
             />
           </:actions>
         </.user_info_bar>
       </div>
-      <div id={@id <> "infinite-scroll-marker"} phx-hook="Scroll" data-page={@page} data-archetype="rel"/>
     </div>
     """
   end

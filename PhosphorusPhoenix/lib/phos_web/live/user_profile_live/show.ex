@@ -19,13 +19,15 @@ defmodule PhosWeb.UserProfileLive.Show do
     Phos.PubSub.subscribe("folks")
 
     {:ok,
-     socket
+    socket
      |> assign(:user, user)
+     |> assign(:current_user, current_user)
      |> assign_meta(user, params)
      |> assign(orb_page: 1)
      |> assign(ally_page: 1)
+     |> assign(:parent_pid, socket.transport_pid)
      |> stream(:orbs, Action.orbs_by_initiators([user.id], 1).data)
-     |> stream(:allies, ally_list(current_user, user))
+     |> stream(:ally_list, ally_list(current_user, user))
     }
     else
       nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
@@ -38,13 +40,15 @@ defmodule PhosWeb.UserProfileLive.Show do
     Phos.PubSub.subscribe("folks")
 
     {:ok,
-     socket
+    socket
      |> assign(:user, user)
+     |> assign(:current_user, current_user)
      |> assign_meta(user, params)
      |> assign(orb_page: 1)
      |> assign(ally_page: 1)
+     |> assign(:parent_pid, socket.transport_pid)
      |> stream(:orbs, Action.orbs_by_initiators([user.id], 1).data)
-     |> stream(:allies, ally_list(current_user, user))
+     |> stream(:ally_list, ally_list(current_user, user))
     }
     else
       nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
@@ -56,33 +60,47 @@ defmodule PhosWeb.UserProfileLive.Show do
       {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  @impl true
-  def handle_event(
-        "load-more",
-        %{"archetype" => "rel"},
-        %{assigns: %{current_user: user, ally_page: page, user: friend}} = socket
-      ) do
-    expected_page = page + 1
+  # @impl true
+  # def handle_event(
+  #       "load-more",
+  #       %{"archetype" => "rel"},
+  #       %{assigns: %{current_user: user, ally_page: page, user: friend}} = socket
+  #     ) do
+  #   expected_page = page + 1
+  #   case ally_list(user, friend, expected_page) do
+  #     [_|_] = allies -> {:noreply,
+  #     assign(socket,
+  #       page: expected_page,
+  #       allies: allies)}
+  #     _ -> {:noreply, socket}
+  #   end
+  #  end
 
-    case ally_list(user, friend, expected_page) do
-      [_|_] = allies -> {:noreply,
-      assign(socket,
-        page: expected_page,
-        allies: allies)}
-      _ -> {:noreply, socket}
-    end
-   end
+  def handle_event("load-more", %{"archetype" => "orb-ally"}, %{assigns: %{orb_page: orb_page, ally_page: ally_page, current_user: curr, user: user}} = socket) do
+    expected_orb_page = orb_page + 1
+    expected_ally_page = ally_page + 1
 
-  def handle_event("load-more", %{"archetype" => "orb"}, %{assigns: %{orb_page: page, user: user}} = socket) do
-    expected_page = page + 1
-    case Action.orbs_by_initiators([user.id], expected_page).data do
-      [_|_] = orbs ->
-        newsocket =
+    ally_list = ally_list(curr, user, expected_ally_page)
+    orb_list = Action.orbs_by_initiators([user.id], expected_orb_page).data
+
+    newsocket =
+      case {ally_list, orb_list} do
+        {[_|_] = allies, [_|_] = orbs} ->
           Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
-          |> assign(orb_page: expected_page)
-        {:noreply, newsocket}
-      _ -> {:noreply, socket}
-    end
+          Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
+          |> assign(orb_page: expected_orb_page)
+          |> assign(ally_page: expected_ally_page)
+        {[_|_] = allies, []} ->
+          Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
+          |> assign(ally_page: expected_ally_page)
+        {[], [_|_] = orbs} ->
+          Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
+          |> assign(orb_page: expected_orb_page)
+        _ ->
+          socket
+      end
+
+    {:noreply, newsocket}
    end
 
   @impl true

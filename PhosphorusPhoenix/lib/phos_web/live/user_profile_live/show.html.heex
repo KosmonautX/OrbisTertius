@@ -36,8 +36,8 @@
           id="user-information-card-ally"
           module={PhosWeb.Component.AllyButton}
           current_user={@current_user}
-          socket={@socket}
           user={@user}
+          parent_pid={@parent_pid}
         />
         <.link
           :if={@current_user && @user.id == @current_user.id}
@@ -69,8 +69,8 @@
               id="user-information-card-ally-desktop"
               module={PhosWeb.Component.AllyButton}
               current_user={@current_user}
-              socket={@socket}
               user={@user}
+              parent_pid={@parent_pid}
             />
             <.link
               :if={@current_user && @user.id == @current_user.id}
@@ -88,7 +88,7 @@
         Posts
       </h5>
       <p
-        :if={@streams.orbs == []}
+        :if={@streams.orbs |> Enum.count() == 0}
         class="w-full mx-auto text-center py-6 text-gray-600 font-medium lg:text-base text-sm dark:text-white"
       >
         <%= "#{@user.username} has no post yet" %>
@@ -97,7 +97,6 @@
       <.live_component
           module={PhosWeb.Components.ScrollOrb}
           id="infinite-orb-home"
-          page={@orb_page}
           streams={@streams}
           timezone1={@timezone}
         />
@@ -112,12 +111,13 @@
         @live_action != :allies && "hidden lg:w-4/12 lg:block"
       ]}
     >
+
       <h5 class="lg:block hidden text-left font-semibold text-2xl dark:text-white border-b-2 border-black mb-3 py-2">
         Allies
       </h5>
 
       <p
-        :if={@streams.allies == []}
+        :if={@streams.ally_list |> Enum.count() == 0 }
         class="w-full mx-auto text-center py-6 text-gray-600 font-medium text-sm lg:text-base dark:text-white"
       >
         <%= "#{@user.username} has no allies yet" %>
@@ -127,9 +127,9 @@
         <.live_component
           module={PhosWeb.Components.ScrollAlly}
           id="infinite-ally-home-desktop"
-          ally_list={@streams.allies}
+          streams={@streams}
+          parent_pid={@parent_pid}
           current_user={@current_user}
-          page={@ally_page}
         />
       </div>
     </div>
