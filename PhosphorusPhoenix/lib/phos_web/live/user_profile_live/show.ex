@@ -25,6 +25,8 @@ defmodule PhosWeb.UserProfileLive.Show do
      |> assign_meta(user, params)
      |> assign(orb_page: 1)
      |> assign(ally_page: 1)
+     |> assign(end_of_orb?: false)
+     |> assign(end_of_ally?: false)
      |> assign(:parent_pid, socket.transport_pid)
      |> stream(:orbs, Action.orbs_by_initiators([user.id], 1).data)
      |> stream(:ally_list, ally_list(current_user, user))
@@ -46,6 +48,8 @@ defmodule PhosWeb.UserProfileLive.Show do
      |> assign_meta(user, params)
      |> assign(orb_page: 1)
      |> assign(ally_page: 1)
+     |> assign(end_of_orb?: false)
+     |> assign(end_of_ally?: false)
      |> assign(:parent_pid, socket.transport_pid)
      |> stream(:orbs, Action.orbs_by_initiators([user.id], 1).data)
      |> stream(:ally_list, ally_list(current_user, user))
@@ -57,51 +61,73 @@ defmodule PhosWeb.UserProfileLive.Show do
 
   @impl true
   def handle_params(params, _url, socket) do
-      {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  # @impl true
-  # def handle_event(
-  #       "load-more",
-  #       %{"archetype" => "rel"},
-  #       %{assigns: %{current_user: user, ally_page: page, user: friend}} = socket
-  #     ) do
-  #   expected_page = page + 1
-  #   case ally_list(user, friend, expected_page) do
-  #     [_|_] = allies -> {:noreply,
-  #     assign(socket,
-  #       page: expected_page,
-  #       allies: allies)}
-  #     _ -> {:noreply, socket}
-  #   end
-  #  end
-
-  def handle_event("load-more", %{"archetype" => "orb-ally"}, %{assigns: %{orb_page: orb_page, ally_page: ally_page, current_user: curr, user: user}} = socket) do
-    expected_orb_page = orb_page + 1
+  def handle_event("load-more", %{"archetype" => "ally"}, %{assigns: %{ally_page: ally_page, orb_page: orb_page, current_user: curr, user: user}} = socket) do
     expected_ally_page = ally_page + 1
+    expected_orb_page = orb_page + 1
 
-    ally_list = ally_list(curr, user, expected_ally_page)
-    orb_list = Action.orbs_by_initiators([user.id], expected_orb_page).data
+    case check_more_ally(curr, user, expected_ally_page) do
+      {:ok, allies} ->
+        send(self(), {:loadallies, %{"allies" => allies, "expected_ally_page" => expected_ally_page, "expected_orb_page" => expected_orb_page, "current_user" => curr, "user" => user}})
+      {:error, _} ->
+        send(self(), {:loadallies, %{"end_of_ally" => true}})
+    end
+    {:noreply, socket}
+  end
 
+  def handle_event("load-more", %{"archetype" => "orb"}, %{assigns: %{orb_page: orb_page, ally_page: ally_page, current_user: curr, user: user}} = socket) do
+    expected_ally_page = ally_page + 1
+    expected_orb_page = orb_page + 1
+
+    case check_more_orb(user, expected_orb_page) do
+      {:ok, orbs} ->
+        send(self(), {:loadorbs, %{"orbs" => orbs, "end_of_orb" => false, "expected_orb_page" => expected_orb_page, "expected_ally_page" => expected_ally_page, "current_user" => curr, "user" => user}})
+      {:error, _} ->
+        IO.inspect("FIRING END OF ORB")
+        send(self(), {:loadorbs, %{"end_of_orb" => true}})
+    end
+      {:noreply, socket}
+  end
+
+  def handle_info({:loadallies, %{"end_of_ally" => true}}, socket) do
+    {:noreply, socket |> assign(end_of_ally?: true)}
+  end
+
+  def handle_info({:loadallies, %{"allies" => allies, "expected_ally_page" => expected_ally_page, "expected_orb_page" => expected_orb_page, "current_user" => curr, "user" => user}}, socket) do
     newsocket =
-      case {ally_list, orb_list} do
-        {[_|_] = allies, [_|_] = orbs} ->
-          Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
-          Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
-          |> assign(orb_page: expected_orb_page)
-          |> assign(ally_page: expected_ally_page)
-        {[_|_] = allies, []} ->
-          Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
-          |> assign(ally_page: expected_ally_page)
-        {[], [_|_] = orbs} ->
-          Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
-          |> assign(orb_page: expected_orb_page)
-        _ ->
-          socket
-      end
-
+      Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
+      |> assign(ally_page: expected_ally_page)
     {:noreply, newsocket}
-   end
+  end
+
+  def handle_info({:loadorbs, %{"end_of_orb" => true}}, socket) do
+  {:noreply, socket |> assign(end_of_orb?: true)}
+end
+
+  def handle_info({:loadorbs, %{"orbs" => orbs, "expected_orb_page" => expected_orb_page, "expected_ally_page" => expected_ally_page, "current_user" => curr, "user" => user}}, socket) do
+    newsocket =
+      Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
+      |> assign(orb_page: expected_orb_page)
+    {:noreply, newsocket}
+  end
+
+  # returns true if more allies to be loaded
+  defp check_more_ally(curr, user, expected_ally_page) do
+    case ally_list(curr, user, expected_ally_page) do
+      [_|_] = allies -> {:ok, allies}
+      _ -> {:error, %{message: "no ally"}}
+    end
+  end
+
+  # returns true if more orbs to be loaded
+  defp check_more_orb(user, expected_orb_page) do
+    case Action.orbs_by_initiators([user.id], expected_orb_page).data do
+      [_|_] = orbs -> {:ok, orbs}
+      _ -> {:error, %{message: "no orb"}}
+    end
+  end
 
   @impl true
   def handle_info(

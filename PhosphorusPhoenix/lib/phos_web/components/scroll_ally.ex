@@ -1,11 +1,12 @@
 defmodule PhosWeb.Components.ScrollAlly do
   use PhosWeb, :live_component
+
   defp random_id, do: Enum.random(1..1_000_000)
 
   def render(assigns) do
     ~H"""
     <div>
-      <div id={@id <> "infinite-scroll-body"} phx-update="stream" class="w-full px-4 lg:px-0">
+      <div id={@id <> "infinite-scroll-body"} phx-update="stream" phx-viewport-bottom={!@end_of_ally? && "load-more"} phx-value-archetype={"ally"} class="w-full px-4 lg:px-0">
         <.user_info_bar
           :for={{_dom_id, ally} <- @streams.ally_list}
           :if={!is_nil(Map.get(ally, :username))}
