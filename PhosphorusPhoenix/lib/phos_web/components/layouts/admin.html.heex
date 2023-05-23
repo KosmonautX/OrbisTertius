@@ -18,12 +18,14 @@
       <.admin_navbar title="ScratchBac Admin" home_path={~p"/admin"}>
         <:item to={~p"/admin/dashboard"} title="Dashboard" id="dashboard" icon="fa-tv" />
         <:item to={~p"/admin/orbs"} title="Orbs" id="orb" icon="fa-dharmachakra" />
+        <:item to={~p"/admin/users"} title="Users" id="users" icon="fa-user" />
         <:item
           to={~p"/admin/notifications"}
           title="Notifications"
           id="notification"
           icon="fa-clock"
         />
+        
       </.admin_navbar>
       <div class="lg:ml-64 mt-16 lg:mr-4 w-full">
         <%= @inner_content %>

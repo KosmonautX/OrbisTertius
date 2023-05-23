@@ -55,6 +55,13 @@ defmodule Phos.Users do
 
   def get_user_by_username(username), do: Repo.get_by(User, username: username)
 
+  def filter_user_by_username(username) do
+    search = "%#{username}%"
+    User
+    |> where([u], ilike(u.username, ^search))
+    |> Repo.all()
+  end
+
   def get_admin do
     query = from u in User, where: u.email == "scratchbac@gmail.com"
 
