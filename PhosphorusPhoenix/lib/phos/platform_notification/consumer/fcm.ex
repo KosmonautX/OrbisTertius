@@ -33,24 +33,14 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
 
   def send(_), do: {:error, "No FCM Token"}
 
-  def get_template(%{spec: %{"options" => %{"notification" => %{"silent" => true}}}}), do: %{"title" => "", "body" => ""}
+  def get_template(%{spec: %{"options" => %{"notification" => %{silent: true}}}}), do: %{title: "", body: ""}
   def get_template(%{spec: %{"options" => %{"notification" => notif}}}) when is_map(notif), do: notif
   def get_template(store), do: parse(store)
 
 
-  def get_data(%{spec: %{"options" => %{"notification" => %{"silent" => true} = notif}, "data" => data}}) when is_map(data), do: Map.merge(data, notif)
+  def get_data(%{spec: %{"options" => %{"notification" => %{silent: true} = notif, "data" => data}}}) when is_map(data), do: Map.merge(data, notif)
   def get_data(%{spec: %{"options" => %{"data" => data}}}) when is_map(data), do: data
   def get_data(_store), do: %{}
-
-
-  # defp get_link(%{spec: spec} = store) do
-  #   spec
-  #   |> get_in([Access.key("options", %{}), Access.key("data", %{}), "action_path"])
-  #   |> case do
-  #     nil -> Map.get(store.template, :click_action)
-  #     l -> l
-  #   end
-  # end
 
   def parse(%{template: template, spec: spec} = store) when not is_nil(template) do
     with {:ok, entity} <- get_actor(spec),
