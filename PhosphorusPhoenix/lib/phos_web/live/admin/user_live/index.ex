@@ -4,7 +4,6 @@ defmodule PhosWeb.Admin.UserLive.Index do
   alias Phos.Users
 
   def mount(_params, _session, socket) do
-    # with {:ok, %Users.User{} = user} <- Users.get_user_by_username("faez1") do
     limit = 20
     page = 1
     search = ""
@@ -13,7 +12,6 @@ defmodule PhosWeb.Admin.UserLive.Index do
       users: Phos.Users.list_users(),
       search: ""
     )}
-    # end
   end
 
   def handle_event("search",%{"_target" => [_a, search_term] = target} = search, socket ) do
