@@ -205,7 +205,8 @@ defmodule PhosWeb.Util.Viewer do
         hash: orb.central_geohash
       },
       parent: parent_orb_mapper(orb.parent),
-      media: (if orb.media, do: S3.get_all!("ORB", orb.id, "public"))
+      media: (if orb.media, do: S3.get_all!("ORB", orb.id, "public")),
+      comment_count: orb.comment_count
     }
   end
 

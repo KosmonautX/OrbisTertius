@@ -95,6 +95,7 @@ defmodule PhosWeb.CommentControllerTest do
                "body" => "some root",
              } = json_response(conn, 200)["data"]
 
+      on_exit(fn -> :timer.sleep(100) end)
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
@@ -128,6 +129,8 @@ defmodule PhosWeb.CommentControllerTest do
                "body" => "some child",
                "parent_id" => ^parent_comment_id
              } = json_response(conn, 200)["data"]
+
+      on_exit(fn -> :timer.sleep(100) end)
 
     end
 

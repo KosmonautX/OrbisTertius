@@ -31,16 +31,30 @@ defmodule Phos.PubSub do
   def publish(%Phos.Message.Memory{user_source: user} = message, event, %Phos.Users.RelationBranch{user_id: user_id}) do
         PubSub.broadcast(__MODULE__, "memory:user:#{user_id}", {__MODULE__, event, message})
         if(user_id != user.id) do
-          Phos.Notification.target("'USR.#{user_id}' in topics",
-          %{title: "Message from #{user.username}", body: message.message},
-          %{action_path: "/memland/memories/#{message.rel_subject_id}"}
-          )
+          Sparrow.FCM.V1.Notification.new(:topic, "USR.#{user_id}", "", "",
+          %{title: "Message from #{user.username}",
+            body: message.message,
+            action_path: "/memland/memories/#{message.rel_subject_id}",
+            cluster_id: message.rel_subject_id,
+            user_source_id: user.id
+          })
+          |> Sparrow.FCM.V1.Notification.add_apns(Phos.PlatformNotification.Config.APNS.gen())
+          |> Sparrow.API.push()
         end
     message
   end
 
-  def publish(message, event, topic) do
+  def publish(%Phos.Message.Memory{} = message, event, %Phos.Users.User{id: user_id}) do
+    PubSub.broadcast(__MODULE__, "memory:user:#{user_id}", {__MODULE__, event, message})
+    message
+  end
+
+  def publish(message, event, topic) when not is_nil(topic) do
     PubSub.broadcast(Phos.PubSub, topic, {__MODULE__, event, message})
+    message
+  end
+
+  def publish(message, _event, _topic) do
     message
   end
 

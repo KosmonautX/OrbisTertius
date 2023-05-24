@@ -172,7 +172,12 @@ defmodule Phos.PlatformNotification.Dispatcher do
         end
       {:ok, data} ->
         case insert_to_persistent_database(data) do
-          {:ok, stored} -> {:ok, Repo.preload(stored, [:recipient, :template])}
+          {:ok, stored} -> {:ok,
+                           Repo.preload(stored, [:recipient, [memory: [:orb_subject, :com_subject, :user_source]]])
+                           |> tap(fn
+                             %{recipient: u, memory: %Phos.Message.Memory{} = m} ->
+                               Phos.PubSub.publish(m, {:memory, "activity"}, u)
+                           _ -> :ok end)}
           {:error, _msg} = ret -> ret
         end
       _ -> {:error, nil}

@@ -92,9 +92,14 @@ defmodule Phos.Folk do
          {:ok, rel} = data ->
            rel = rel |> Repo.preload([:initiator])
            spawn(fn ->
-             Phos.Notification.target("'USR.#{rel.acceptor_id}' in topics",
-               %{title: "#{rel.initiator.username} requested to be your ally 🤝"},
-               %{action_path: "/folkland/self/requests"})
+             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.acceptor_id}", "", "",
+               %{title: "#{rel.initiator.username} requested to be your ally 🤝",
+                 action_path: "/folkland/self/requests",
+                 cluster_id: "folk_req",
+                 initiator_id: rel.initiator_id
+               })
+             |> Sparrow.FCM.V1.Notification.add_apns(Phos.PlatformNotification.Config.APNS.gen())
+             |> Sparrow.API.push()
            end)
            data
          err -> err
@@ -122,9 +127,12 @@ defmodule Phos.Folk do
          {:ok, rel} = data ->
            rel = rel |> Repo.preload([:acceptor])
            spawn(fn ->
-             Phos.Notification.target("'USR.#{rel.initiator_id}' in topics",
-               %{title: "#{rel.acceptor.username} accepted your ally request ❤️"},
-               %{action_path: "/userland/others/#{rel.acceptor_id}"})
+             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.initiator_id}", "", "",
+               %{title: "#{rel.acceptor.username} accepted your ally request 💪️",
+                 action_path: "/userland/others/#{rel.acceptor_id}",
+                 cluster_id: "folk_req"})
+             |> Sparrow.FCM.V1.Notification.add_apns(Phos.PlatformNotification.Config.APNS.gen())
+             |> Sparrow.API.push()
            end)
            data
          err -> err
