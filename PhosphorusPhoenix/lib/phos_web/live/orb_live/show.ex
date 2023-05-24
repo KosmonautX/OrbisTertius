@@ -26,6 +26,7 @@ defmodule PhosWeb.OrbLive.Show do
         |> decode_to_comment_tuple_structure())
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1)
+       |> assign(end_of_orb?: false)
        |> stream(:orbs, Action.orbs_by_initiators([orb.initiator.id], 1).data)
        }
       else
@@ -48,10 +49,25 @@ defmodule PhosWeb.OrbLive.Show do
        |> assign(:media, nil)
        |> assign(:comment, %Comments.Comment{})
        |> assign(page: 1)
+       |> assign(end_of_orb?: false)
        |> stream(:orbs, Action.orbs_by_initiators([orb.initiator.id], 1).data)}
     else
       {:error, :not_found} -> raise PhosWeb.ErrorLive.FourOFour, message: "Orb Not Found"
     end
+  end
+
+  def handle_event("load-more", _, %{assigns: %{page: page, orb: orb}} = socket) do
+    expected_orb_page = page + 1
+    IO.inspect(orb)
+    newsocket =
+      case PhosWeb.UserProfileLive.Show.check_more_orb(orb.initiator_id, expected_orb_page) do
+        {:ok, orbs} ->
+          Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
+          |> assign(page: expected_orb_page)
+        {:error, _} ->
+          assign(socket, end_of_orb?: true)
+      end
+      {:noreply, newsocket}
   end
 
   @impl true
@@ -190,13 +206,13 @@ defmodule PhosWeb.OrbLive.Show do
   end
 
 
-  def handle_event("load-more", _, %{assigns: %{page: page, orb: orb}} = socket) do
-    expected_page = page + 1
-    case Action.orbs_by_initiators([orb.initiator.id], expected_page).data do
-      [_|_] = orbs -> {:noreply, assign(socket, page: expected_page, orbs: orbs)}
-      _ -> {:noreply, socket}
-    end
-   end
+  # def handle_event("load-more", _, %{assigns: %{page: page, orb: orb}} = socket) do
+  #   expected_page = page + 1
+  #   case Action.orbs_by_initiators([orb.initiator.id], expected_page).data do
+  #     [_|_] = orbs -> {:noreply, assign(socket, page: expected_page, orbs: orbs)}
+  #     _ -> {:noreply, socket}
+  #   end
+  #  end
 
   # Save comment flow
   @impl true

@@ -68,7 +68,7 @@ defmodule PhosWeb.UserProfileLive.Show do
     expected_ally_page = ally_page + 1
 
     newsocket =
-      case check_more_ally(curr, user, expected_ally_page) do
+      case check_more_ally(curr.id, user.id, expected_ally_page) do
         {:ok, allies} ->
           Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
           |> assign(ally_page: expected_ally_page)
@@ -82,7 +82,7 @@ defmodule PhosWeb.UserProfileLive.Show do
     expected_orb_page = orb_page + 1
 
     newsocket =
-      case check_more_orb(user, expected_orb_page) do
+      case check_more_orb(user.id, expected_orb_page) do
         {:ok, orbs} ->
           Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
           |> assign(orb_page: expected_orb_page)
@@ -210,15 +210,15 @@ defmodule PhosWeb.UserProfileLive.Show do
 
   defp ally_list(_, _, _), do: []
 
-  defp check_more_ally(curr, user, expected_ally_page) do
-    case ally_list(curr, user, expected_ally_page) do
+  defp check_more_ally(currid, userid, expected_ally_page) do
+    case ally_list(currid, userid, expected_ally_page) do
       [_|_] = allies -> {:ok, allies}
       _ -> {:error, %{message: "no ally"}}
     end
   end
 
-  defp check_more_orb(user, expected_orb_page) do
-    case Action.orbs_by_initiators([user.id], expected_orb_page).data do
+  def check_more_orb(userid, expected_orb_page) do
+    case Action.orbs_by_initiators([userid], expected_orb_page).data do
       [_|_] = orbs -> {:ok, orbs}
       _ -> {:error, %{message: "no orb"}}
     end
