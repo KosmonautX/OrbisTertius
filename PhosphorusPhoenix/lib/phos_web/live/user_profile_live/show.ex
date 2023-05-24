@@ -68,7 +68,7 @@ defmodule PhosWeb.UserProfileLive.Show do
     expected_ally_page = ally_page + 1
 
     newsocket =
-      case check_more_ally(curr.id, user.id, expected_ally_page) do
+      case check_more_ally(curr, user.id, expected_ally_page) do
         {:ok, allies} ->
           Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
           |> assign(ally_page: expected_ally_page)

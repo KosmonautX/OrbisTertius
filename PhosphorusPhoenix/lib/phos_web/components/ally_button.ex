@@ -33,7 +33,7 @@ defmodule PhosWeb.Component.AllyButton do
   end
 
   def update(_,%{assigns: %{current_user: user, user: acceptor, parent_pid: parent_pid}} = socket) do
-    {:ok, assign(socket, ally: false)}
+    {:ok, assign(socket, ally: false, current_user: user)}
   end
 
   def update(_assigns, socket) do
@@ -151,7 +151,6 @@ defmodule PhosWeb.Component.AllyButton do
   end
 
   def render(%{current_user: user} = assigns) when user in [nil, ""] do
-    # require IEx; IEx.pry()
     ~H"""
     <a class="flex" phx-click={show_modal("welcome_message")}>
       <.ally_btn />

@@ -6,76 +6,39 @@ defmodule PhosWeb.OrbLive.Show do
   alias PhosWeb.Utility.Encoder
 
   @impl true
-  def mount(
-        %{"id" => id} = params,
-        _session,
-        %{assigns: %{current_user: %Phos.Users.User{} = user}} = socket
-      ) do
-    with %Action.Orb{} = orb <- Action.get_orb(id, user.id) do
-
-      Phos.PubSub.subscribe("folks")
-
-      {:ok,
-       socket
-       |> assign(:orb, orb)
-       |> tap(fn socket -> Enum.member?(socket.assigns.orb.traits, "geolock") && raise PhosWeb.ErrorLive.FourOThree, message: "Go Outside Breathe Air" end)
-       |> assign_meta(orb, params)
-       |> assign(:ally, false)
-       |> assign(:media, nil)
-       |> assign(:comments, Comments.get_root_comments_by_orb(orb.id)
-        |> decode_to_comment_tuple_structure())
-       |> assign(:comment, %Comments.Comment{})
-       |> assign(page: 1)
-       |> assign(end_of_orb?: false)
-       |> stream(:orbs, Action.orbs_by_initiators([orb.initiator.id], 1).data)
-       }
-      else
-        nil -> raise PhosWeb.ErrorLive.FourOFour, message: "Orb Not Found"
-    end
+  def mount(%{"id" => id} = params, _session, socket) do
+    {:ok,
+      socket
+      |> assign(:ally, false)
+      |> assign(:media, nil)
+      |> assign(:comment, %Comments.Comment{})
+      |> assign(page: 1)
+      |> assign(end_of_orb?: false)
+    }
   end
 
   @impl true
-  def mount(%{"id" => id} = params, _session, socket) do
-    with {:ok, orb} <- Action.get_orb(id) do
+  def handle_params(%{"id" => id} = params, _, socket) do
+    with %{assigns: %{current_user: %Phos.Users.User{} = user}} <- socket do
+      Phos.PubSub.subscribe("folks")
+    end
 
-      {:ok,
+    with {:ok, orb} <- Action.get_orb(id) do
+      {:noreply,
        socket
        |> assign(:orb, orb)
        |> tap(fn socket -> Enum.member?(socket.assigns.orb.traits, "geolock") && raise PhosWeb.ErrorLive.FourOThree, message: "Go Outside Breathe Air" end)
-       |> assign(:ally, false)
        |> assign_meta(orb, params)
-       |> assign(:comments, Comments.get_root_comments_by_orb(orb.id)
-        |> decode_to_comment_tuple_structure())
-       |> assign(:media, nil)
-       |> assign(:comment, %Comments.Comment{})
-       |> assign(page: 1)
-       |> assign(end_of_orb?: false)
-       |> stream(:orbs, Action.orbs_by_initiators([orb.initiator.id], 1).data)}
+       |> assign(:changeset, Comments.change_comment(%Comments.Comment{}))
+       |> apply_action(socket.assigns.live_action, params)
+       |> assign(:parent_pid, socket.transport_pid)
+       |> assign(:comments, Comments.get_root_comments_by_orb(orb.id) |> decode_to_comment_tuple_structure())
+       |> stream(:orbs, Action.orbs_by_initiators([orb.initiator.id], 1).data)
+      }
     else
       {:error, :not_found} -> raise PhosWeb.ErrorLive.FourOFour, message: "Orb Not Found"
     end
-  end
 
-  def handle_event("load-more", _, %{assigns: %{page: page, orb: orb}} = socket) do
-    expected_orb_page = page + 1
-    IO.inspect(orb)
-    newsocket =
-      case PhosWeb.UserProfileLive.Show.check_more_orb(orb.initiator_id, expected_orb_page) do
-        {:ok, orbs} ->
-          Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
-          |> assign(page: expected_orb_page)
-        {:error, _} ->
-          assign(socket, end_of_orb?: true)
-      end
-      {:noreply, newsocket}
-  end
-
-  @impl true
-  def handle_params(params, _, socket) do
-    {:noreply,
-     socket
-     |> assign(:changeset, Comments.change_comment(%Comments.Comment{}))
-     |> apply_action(socket.assigns.live_action, params)}
   end
 
   @impl true
@@ -205,15 +168,6 @@ defmodule PhosWeb.OrbLive.Show do
     })
   end
 
-
-  # def handle_event("load-more", _, %{assigns: %{page: page, orb: orb}} = socket) do
-  #   expected_page = page + 1
-  #   case Action.orbs_by_initiators([orb.initiator.id], expected_page).data do
-  #     [_|_] = orbs -> {:noreply, assign(socket, page: expected_page, orbs: orbs)}
-  #     _ -> {:noreply, socket}
-  #   end
-  #  end
-
   # Save comment flow
   @impl true
   def handle_event("save", %{"comment" => comment_params}, socket) do
@@ -280,6 +234,20 @@ defmodule PhosWeb.OrbLive.Show do
     {:noreply,
      socket
      |> assign(:comments, updated_comments)}
+  end
+
+  def handle_event("load-more", _, %{assigns: %{page: page, orb: orb}} = socket) do
+    expected_orb_page = page + 1
+    IO.inspect(orb)
+    newsocket =
+      case PhosWeb.UserProfileLive.Show.check_more_orb(orb.initiator_id, expected_orb_page) do
+        {:ok, orbs} ->
+          Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
+          |> assign(page: expected_orb_page)
+        {:error, _} ->
+          assign(socket, end_of_orb?: true)
+      end
+      {:noreply, newsocket}
   end
 
   @impl true
