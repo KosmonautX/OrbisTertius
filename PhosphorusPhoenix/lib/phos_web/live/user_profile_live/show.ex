@@ -68,65 +68,32 @@ defmodule PhosWeb.UserProfileLive.Show do
     expected_ally_page = ally_page + 1
     expected_orb_page = orb_page + 1
 
-    case check_more_ally(curr, user, expected_ally_page) do
-      {:ok, allies} ->
-        send(self(), {:loadallies, %{"allies" => allies, "expected_ally_page" => expected_ally_page, "expected_orb_page" => expected_orb_page, "current_user" => curr, "user" => user}})
-      {:error, _} ->
-        send(self(), {:loadallies, %{"end_of_ally" => true}})
-    end
-    {:noreply, socket}
+    newsocket =
+      case check_more_ally(curr, user, expected_ally_page) do
+        {:ok, allies} ->
+          # send(self(), {:loadallies, %{"allies" => allies, "expected_ally_page" => expected_ally_page}})
+          Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
+          |> assign(ally_page: expected_ally_page)
+        {:error, _} ->
+          assign(socket, end_of_ally?: true)
+      end
+    {:noreply, newsocket}
   end
 
   def handle_event("load-more", %{"archetype" => "orb"}, %{assigns: %{orb_page: orb_page, ally_page: ally_page, current_user: curr, user: user}} = socket) do
     expected_ally_page = ally_page + 1
     expected_orb_page = orb_page + 1
 
-    case check_more_orb(user, expected_orb_page) do
-      {:ok, orbs} ->
-        send(self(), {:loadorbs, %{"orbs" => orbs, "end_of_orb" => false, "expected_orb_page" => expected_orb_page, "expected_ally_page" => expected_ally_page, "current_user" => curr, "user" => user}})
-      {:error, _} ->
-        IO.inspect("FIRING END OF ORB")
-        send(self(), {:loadorbs, %{"end_of_orb" => true}})
-    end
-      {:noreply, socket}
-  end
-
-  def handle_info({:loadallies, %{"end_of_ally" => true}}, socket) do
-    {:noreply, socket |> assign(end_of_ally?: true)}
-  end
-
-  def handle_info({:loadallies, %{"allies" => allies, "expected_ally_page" => expected_ally_page, "expected_orb_page" => expected_orb_page, "current_user" => curr, "user" => user}}, socket) do
     newsocket =
-      Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
-      |> assign(ally_page: expected_ally_page)
-    {:noreply, newsocket}
-  end
-
-  def handle_info({:loadorbs, %{"end_of_orb" => true}}, socket) do
-  {:noreply, socket |> assign(end_of_orb?: true)}
-end
-
-  def handle_info({:loadorbs, %{"orbs" => orbs, "expected_orb_page" => expected_orb_page, "expected_ally_page" => expected_ally_page, "current_user" => curr, "user" => user}}, socket) do
-    newsocket =
-      Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
-      |> assign(orb_page: expected_orb_page)
-    {:noreply, newsocket}
-  end
-
-  # returns true if more allies to be loaded
-  defp check_more_ally(curr, user, expected_ally_page) do
-    case ally_list(curr, user, expected_ally_page) do
-      [_|_] = allies -> {:ok, allies}
-      _ -> {:error, %{message: "no ally"}}
-    end
-  end
-
-  # returns true if more orbs to be loaded
-  defp check_more_orb(user, expected_orb_page) do
-    case Action.orbs_by_initiators([user.id], expected_orb_page).data do
-      [_|_] = orbs -> {:ok, orbs}
-      _ -> {:error, %{message: "no orb"}}
-    end
+      case check_more_orb(user, expected_orb_page) do
+        {:ok, orbs} ->
+          # send(self(), {:loadorbs, %{"orbs" => orbs, "expected_orb_page" => expected_orb_page}})
+          Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
+          |> assign(orb_page: expected_orb_page)
+        {:error, _} ->
+          assign(socket, end_of_orb?: true)
+      end
+      {:noreply, newsocket}
   end
 
   @impl true
@@ -246,4 +213,20 @@ end
       Phos.Folk.friends(friend_id, page) |> Map.get(:data, []) |> Enum.map(&Map.get(&1, :friend))
 
   defp ally_list(_, _, _), do: []
+
+  # returns true if more allies to be loaded
+  defp check_more_ally(curr, user, expected_ally_page) do
+    case ally_list(curr, user, expected_ally_page) do
+      [_|_] = allies -> {:ok, allies}
+      _ -> {:error, %{message: "no ally"}}
+    end
+  end
+
+  # returns true if more orbs to be loaded
+  defp check_more_orb(user, expected_orb_page) do
+    case Action.orbs_by_initiators([user.id], expected_orb_page).data do
+      [_|_] = orbs -> {:ok, orbs}
+      _ -> {:error, %{message: "no orb"}}
+    end
+  end
 end

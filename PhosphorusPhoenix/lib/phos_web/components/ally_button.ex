@@ -2,6 +2,8 @@ defmodule PhosWeb.Component.AllyButton do
   use PhosWeb, :live_component
   import PhosWeb.SVG
 
+  defp random_id, do: Enum.random(1..1_000_000)
+
   def update(%{current_user: curr, user: user, parent_pid: parent_pid} = assigns, socket) when not is_nil(curr) do
     # require IEx; IEx.pry();
     {:ok,
@@ -31,7 +33,7 @@ defmodule PhosWeb.Component.AllyButton do
      |> assign(:rel, rel)}
   end
 
-  def update(_assigns, socket), do: {:ok, assign(socket, ally: false, current_user: nil)}
+  def update(_assigns, socket), do: {:ok, assign(socket, ally: false)}
 
   def handle_event(
         "add_ally",
@@ -52,36 +54,16 @@ defmodule PhosWeb.Component.AllyButton do
     end
   end
 
-  #   def handle_event(
-  #       "add_ally",
-  #       _,
-  #       socket
-  #     ) do
-  #       require IEx; IEx.pry();
-  #   # case Phos.Folk.add_friend(user.id, acceptor.id) do
-  #   #   {:ok, %Phos.Users.RelationRoot{} = relation} ->
-  #   #     PhosWeb.Endpoint.broadcast_from(parent_pid, "folks", "add", relation.id)
-
-  #   #     {:noreply,
-  #   #      socket
-  #   #      |> put_flash(:info, "Ally request sent!")
-  #   #      |> assign(:ally, "requested")}
-
-  #   #   _ ->
-  #   #     {:noreply, socket}
-  #     {:noreply, socket}
-  # end
-
   def handle_event(
         "delete_ally_request",
         _,
-        %{assigns: %{current_user: user, user: acceptor, socket: foreign_socket}} = socket
+        %{assigns: %{current_user: user, user: acceptor, parent_pid: parent_pid}} = socket
       ) do
     with %Phos.Users.RelationBranch{root: root} <-
            Phos.Folk.get_relation_by_pair(user.id, acceptor.id),
          {:ok, _rel} <- Phos.Folk.delete_relation(root) do
       PhosWeb.Endpoint.broadcast_from(
-        foreign_socket.parent_pid,
+        parent_pid,
         "folks",
         "delete",
         {user.id, acceptor.id}
@@ -197,13 +179,14 @@ defmodule PhosWeb.Component.AllyButton do
   end
 
   def render(%{ally: ally} = assigns) when ally == "requested" or ally == "blocked" do
+    random_id =  random_id()
     ~H"""
     <a class="flex">
-      <.button class="flex" phx-click={show_modal("delete_friend_request_#{@user.id}")}>
+      <.button class="flex" phx-click={show_modal("delete_friend_request_#{random_id}_#{@user.id}")}>
         <%= String.capitalize(@ally) %>
       </.button>
       <.modal
-        id={"delete_friend_request_#{@user.id}"}
+        id={"delete_friend_request_#{random_id}_#{@user.id}"}
         on_confirm={
           JS.push("delete_ally_request", target: @myself) |> hide_modal("delete_friend_request")
         }
