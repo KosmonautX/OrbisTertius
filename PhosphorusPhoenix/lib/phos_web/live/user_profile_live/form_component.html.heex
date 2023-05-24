@@ -7,7 +7,6 @@
       for={@changeset}
       id="userprofile-form"
       phx-target={@myself}
-      phx-change="validate"
       phx-submit="save"
     >
       <.input field={{f, :user_id}} type="hidden" value={@current_user.id} />

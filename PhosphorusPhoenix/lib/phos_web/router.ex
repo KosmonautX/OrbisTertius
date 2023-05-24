@@ -108,8 +108,8 @@ defmodule PhosWeb.Router do
     live "/orbs", OrbLive.Index, :index
     live "/orbs/import", OrbLive.Import, :import
     live "/orbs/:id", OrbLive.Show, :show
-    live "/users", UserLive.Index
-    live "/users/:id", UserLive.Show, :show
+    live "/users", UserLive.Index, :index
+    live "/users/:username/edit", UserLive.Index, :edit
 
     live "/notifications", NotificationLive.Index, :index
   end
