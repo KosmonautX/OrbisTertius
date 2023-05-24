@@ -64,14 +64,12 @@ defmodule PhosWeb.UserProfileLive.Show do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  def handle_event("load-more", %{"archetype" => "ally"}, %{assigns: %{ally_page: ally_page, orb_page: orb_page, current_user: curr, user: user}} = socket) do
+  def handle_event("load-more", %{"archetype" => "ally"}, %{assigns: %{ally_page: ally_page, current_user: curr, user: user}} = socket) do
     expected_ally_page = ally_page + 1
-    expected_orb_page = orb_page + 1
 
     newsocket =
       case check_more_ally(curr, user, expected_ally_page) do
         {:ok, allies} ->
-          # send(self(), {:loadallies, %{"allies" => allies, "expected_ally_page" => expected_ally_page}})
           Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
           |> assign(ally_page: expected_ally_page)
         {:error, _} ->
@@ -80,14 +78,12 @@ defmodule PhosWeb.UserProfileLive.Show do
     {:noreply, newsocket}
   end
 
-  def handle_event("load-more", %{"archetype" => "orb"}, %{assigns: %{orb_page: orb_page, ally_page: ally_page, current_user: curr, user: user}} = socket) do
-    expected_ally_page = ally_page + 1
+  def handle_event("load-more", %{"archetype" => "orb"}, %{assigns: %{orb_page: orb_page, user: user}} = socket) do
     expected_orb_page = orb_page + 1
 
     newsocket =
       case check_more_orb(user, expected_orb_page) do
         {:ok, orbs} ->
-          # send(self(), {:loadorbs, %{"orbs" => orbs, "expected_orb_page" => expected_orb_page}})
           Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
           |> assign(orb_page: expected_orb_page)
         {:error, _} ->
@@ -214,7 +210,6 @@ defmodule PhosWeb.UserProfileLive.Show do
 
   defp ally_list(_, _, _), do: []
 
-  # returns true if more allies to be loaded
   defp check_more_ally(curr, user, expected_ally_page) do
     case ally_list(curr, user, expected_ally_page) do
       [_|_] = allies -> {:ok, allies}
@@ -222,7 +217,6 @@ defmodule PhosWeb.UserProfileLive.Show do
     end
   end
 
-  # returns true if more orbs to be loaded
   defp check_more_orb(user, expected_orb_page) do
     case Action.orbs_by_initiators([user.id], expected_orb_page).data do
       [_|_] = orbs -> {:ok, orbs}

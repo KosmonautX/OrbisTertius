@@ -5,7 +5,6 @@ defmodule PhosWeb.Component.AllyButton do
   defp random_id, do: Enum.random(1..1_000_000)
 
   def update(%{current_user: curr, user: user, parent_pid: parent_pid} = assigns, socket) when not is_nil(curr) do
-    # require IEx; IEx.pry();
     {:ok,
       socket
      |> assign_new(:self, fn ->
@@ -33,7 +32,13 @@ defmodule PhosWeb.Component.AllyButton do
      |> assign(:rel, rel)}
   end
 
-  def update(_assigns, socket), do: {:ok, assign(socket, ally: false)}
+  def update(_,%{assigns: %{current_user: user, user: acceptor, parent_pid: parent_pid}} = socket) do
+    {:ok, assign(socket, ally: false)}
+  end
+
+  def update(_assigns, socket) do
+    {:ok, assign(socket, ally: false, current_user: nil)}
+  end
 
   def handle_event(
         "add_ally",
@@ -146,6 +151,7 @@ defmodule PhosWeb.Component.AllyButton do
   end
 
   def render(%{current_user: user} = assigns) when user in [nil, ""] do
+    # require IEx; IEx.pry()
     ~H"""
     <a class="flex" phx-click={show_modal("welcome_message")}>
       <.ally_btn />
