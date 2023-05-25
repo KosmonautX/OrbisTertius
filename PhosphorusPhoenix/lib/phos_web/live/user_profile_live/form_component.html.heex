@@ -18,8 +18,10 @@
           src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
         />
       <% end %>
+      <%= if Map.has_key?(assigns, :admin) do %>
+        <.input field={{f, :username}} label="Username" value={@current_user.username} />
+      <%= end %>
 
-      <.input :if={@admin} field={{f, :username}} label="Username" value={@current_user.username} />
       <%= inputs_for f, :public_profile, fn ff -> %>
         <.input field={{ff, :bio}} label="Bio" />
         <.input field={{ff, :occupation}} label="Title Tag" />

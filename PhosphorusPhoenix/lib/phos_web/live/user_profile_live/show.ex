@@ -21,7 +21,6 @@ defmodule PhosWeb.UserProfileLive.Show do
     {:ok,
      socket
      |> assign(:user, user)
-     |> assign(:admin, false)
      |> assign_meta(user, params)
      |> assign(orb_page: 1)
      |> assign(ally_page: 1), temporary_assigns: [orbs: Action.orbs_by_initiators([user.id], 1).data,
@@ -40,7 +39,6 @@ defmodule PhosWeb.UserProfileLive.Show do
     {:ok,
      socket
      |> assign(:user, user)
-     |> assign(:admin, false)
      |> assign_meta(user, params)
      |> assign(orb_page: 1)
      |> assign(ally_page: 1), temporary_assigns: [orbs: Action.orbs_by_initiators([user.id], 1).data,
