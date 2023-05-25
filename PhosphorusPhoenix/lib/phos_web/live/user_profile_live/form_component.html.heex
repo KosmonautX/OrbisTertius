@@ -19,9 +19,10 @@
         />
       <% end %>
 
+      <.input :if={@admin} field={{f, :username}} label="Username" value={@current_user.username} />
       <%= inputs_for f, :public_profile, fn ff -> %>
         <.input field={{ff, :bio}} label="Bio" />
-        <.input field={{ff, :occupation}} label="Role" />
+        <.input field={{ff, :occupation}} label="Title Tag" />
         <.input field={{ff, :birthday}} type="datetime-local" label="Birthday" />
         <.input field={{ff, :public_name}} label="Name" />
         <.input

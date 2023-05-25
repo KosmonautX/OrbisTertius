@@ -10,7 +10,8 @@ defmodule PhosWeb.Admin.UserLive.Index do
     {:ok,
       assign(socket,
       users: Phos.Users.list_users(),
-      search: ""
+      search: "",
+      admin: true
     )}
   end
 
