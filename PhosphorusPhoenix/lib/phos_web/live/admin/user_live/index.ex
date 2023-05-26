@@ -1,15 +1,16 @@
 defmodule PhosWeb.Admin.UserLive.Index do
   use PhosWeb, :admin_view
 
+  alias Phos.Repo
   alias Phos.Users
 
   def mount(_params, _session, socket) do
     limit = 20
     page = 1
     search = ""
-    {:ok,
+   {:ok,
       assign(socket,
-      users: Phos.Users.list_users(),
+      users: Users.list_users(),
       search: "",
       admin: true
     )}
@@ -33,6 +34,9 @@ defmodule PhosWeb.Admin.UserLive.Index do
 
   end
 
+  # def handle_params(%{"page" => page} = params, _url, socket) do
+  #   dbg
+  # end
   def handle_params(%{"username" => username} = params, _url, socket) do
     with %Users.User{} = user <- Users.get_user_by_username(username) do
       {:noreply,
