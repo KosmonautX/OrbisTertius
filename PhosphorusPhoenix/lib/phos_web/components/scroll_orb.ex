@@ -1,17 +1,24 @@
 defmodule PhosWeb.Components.ScrollOrb do
   use PhosWeb, :live_component
-
-  defp random_id, do: Enum.random(1..1_000_000)
+  alias Phos.Action
 
   def render(assigns) do
     ~H"""
     <div>
       <div id={@id <> "infinite-scroll-body"} phx-update="stream" phx-viewport-bottom={!@end_of_orb? && "load-more"} phx-value-archetype={"orb"} class="flex flex-col gap-2 ">
-        <div :for={{_dom_id, orb} <- @streams.orbs} id={"orb-divided-#{random_id()}"}>
-          <.scry_orb id={"orb-history-#{random_id()}"} orb={orb} timezone={@timezone1} />
+        <div :for={{dom_id, orb} <- @streams.orbs} id={"orb-divided-#{dom_id}"}>
+          <.scry_orb id={"orb-history-#{dom_id}"} orb={orb} timezone={@timezone1} />
         </div>
       </div>
     </div>
     """
   end
+
+  def check_more_orb(userid, expected_orb_page) do
+    case Action.orbs_by_initiators([userid], expected_orb_page).data do
+      [] -> {:ok, []}
+      [_|_] = orbs -> {:ok, orbs}
+    end
+  end
+
 end

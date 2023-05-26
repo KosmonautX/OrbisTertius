@@ -3,6 +3,8 @@ defmodule PhosWeb.UserProfileLive.Show do
 
   alias Phos.Users
   alias Phos.Action
+  alias PhosWeb.Components.ScrollAlly
+  alias PhosWeb.Components.ScrollOrb
 
 
   defguard is_uuid?(value)
@@ -14,50 +16,26 @@ defmodule PhosWeb.UserProfileLive.Show do
   and binary_part(value, 23, 1) == "-"
 
   @impl true
-  def mount(%{"username" => id} = params, _session, %{assigns: %{current_user: current_user}} = socket) when is_uuid?(id) do
-    with {:ok, %Users.User{} = user} <- Users.find_user_by_id(id) do
-    Phos.PubSub.subscribe("folks")
-
-    {:ok,
-    socket
-     |> assign(:user, user)
-     |> assign(:current_user, current_user)
-     |> assign_meta(user, params)
-     |> assign(orb_page: 1)
-     |> assign(ally_page: 1)
-     |> assign(end_of_orb?: false)
-     |> assign(end_of_ally?: false)
-     |> assign(:parent_pid, socket.transport_pid)
-     |> stream(:orbs, Action.orbs_by_initiators([user.id], 1).data)
-     |> stream(:ally_list, ally_list(current_user, user))
-    }
-    else
-      nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
+  def mount(%{"username" => id} = params, _session, %{assigns: %{current_user: current_user}} = socket) do
+    # check if really subscribing
+    if connected?(socket), do: Phos.PubSub.subscribe("folks")
+    case userselect(id) do
+      {:ok, user} ->
+        {:ok,
+          socket
+          |> assign(:user, user)
+          |> assign(:current_user, current_user)
+          |> assign_meta(user, params)
+          |> assign(orb_page: 1)
+          |> assign(ally_page: 1)
+          |> assign(end_of_orb?: false)
+          |> assign(end_of_ally?: false)
+          |> assign(:parent_pid, socket.transport_pid)
+          |> stream(:orbs, Action.orbs_by_initiators([user.id], 1).data)
+          |> stream(:ally_list, ally_list(current_user, user))
+        }
     end
   end
-
-
-  def mount(%{"username" => username} = params, _session, %{assigns: %{current_user: current_user}} = socket) do
-    with %Users.User{} = user <- Users.get_user_by_username(username) do
-    Phos.PubSub.subscribe("folks")
-
-    {:ok,
-    socket
-     |> assign(:user, user)
-     |> assign(:current_user, current_user)
-     |> assign_meta(user, params)
-     |> assign(orb_page: 1)
-     |> assign(ally_page: 1)
-     |> assign(end_of_orb?: false)
-     |> assign(end_of_ally?: false)
-     |> assign(:parent_pid, socket.transport_pid)
-     |> stream(:orbs, Action.orbs_by_initiators([user.id], 1).data)
-     |> stream(:ally_list, ally_list(current_user, user))
-    }
-    else
-      nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
-  end
-    end
 
   @impl true
   def handle_params(params, _url, socket) do
@@ -66,14 +44,14 @@ defmodule PhosWeb.UserProfileLive.Show do
 
   def handle_event("load-more", %{"archetype" => "ally"}, %{assigns: %{ally_page: ally_page, current_user: curr, user: user}} = socket) do
     expected_ally_page = ally_page + 1
-
+    # require IEx; IEx.pry()
     newsocket =
-      case check_more_ally(curr, user.id, expected_ally_page) do
+      case ScrollAlly.check_more_ally(curr, user.id, expected_ally_page) do
+        {:ok, []} ->
+          assign(socket, end_of_ally?: true)
         {:ok, allies} ->
           Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
           |> assign(ally_page: expected_ally_page)
-        {:error, _} ->
-          assign(socket, end_of_ally?: true)
       end
     {:noreply, newsocket}
   end
@@ -82,12 +60,12 @@ defmodule PhosWeb.UserProfileLive.Show do
     expected_orb_page = orb_page + 1
 
     newsocket =
-      case check_more_orb(user.id, expected_orb_page) do
+      case ScrollOrb.check_more_orb(user.id, expected_orb_page) do
+        {:ok, []} ->
+          assign(socket, end_of_orb?: true)
         {:ok, orbs} ->
           Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
           |> assign(orb_page: expected_orb_page)
-        {:error, _} ->
-          assign(socket, end_of_orb?: true)
       end
       {:noreply, newsocket}
   end
@@ -210,17 +188,17 @@ defmodule PhosWeb.UserProfileLive.Show do
 
   defp ally_list(_, _, _), do: []
 
-  defp check_more_ally(currid, userid, expected_ally_page) do
-    case ally_list(currid, userid, expected_ally_page) do
-      [_|_] = allies -> {:ok, allies}
-      _ -> {:error, %{message: "no ally"}}
+  defp userselect(id) when is_uuid?(id) do
+    case Users.find_user_by_id(id) do
+      {:ok, %Users.User{} = user} -> {:ok, user}
+      nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
     end
   end
 
-  def check_more_orb(userid, expected_orb_page) do
-    case Action.orbs_by_initiators([userid], expected_orb_page).data do
-      [_|_] = orbs -> {:ok, orbs}
-      _ -> {:error, %{message: "no orb"}}
+  defp userselect(username) do
+    case Users.get_user_by_username(username) do
+      %Users.User{} = user -> {:ok, user}
+      nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
     end
   end
 end
