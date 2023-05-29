@@ -5,26 +5,24 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
   alias Phos.Leaderboard
 
   def mount(_params, _session, socket) do
-   {:ok,
-      socket
-    }
+    users = Leaderboard.list_users_and_counts()
+
+    socket = assign(socket, users: users)
+
+   {:ok, socket}
   end
 
 
-  def handle_params(params, _url, socket) do
-    sort_by = ((params["sort_by"]) || "username") |> String.to_atom()
+  # def handle_params(params, _url, socket) do
+  #   sort_by = ((params["sort_by"]) || "username") |> String.to_atom()
 
-    options = %{
-      sort_by: sort_by
-    }
+  #   options = %{
+  #     sort_by: sort_by
+  #   }
 
-    users = Leaderboard.rank_users(options)
+  #   # users = Leaderboard.rank_users(options)
 
-    socket =
-      assign(socket,
-        users: users
-      )
 
-    {:noreply, socket}
-  end
+  #   {:noreply, socket}
+  # end
 end
