@@ -5,7 +5,18 @@ defmodule PhosWeb.Components.ScrollOrb do
   def render(assigns) do
     ~H"""
     <div>
-      <div id={@id <> "infinite-scroll-body"} phx-update="stream" phx-viewport-bottom={!@end_of_orb? && "load-more"} phx-value-archetype={"orb"} class="flex flex-col gap-2 ">
+      <div
+        id={@id <> "infinite-scroll-body"}
+        phx-update="stream"
+        phx-viewport-top={@orb_page > 1 && "prev-page"}
+        phx-viewport-bottom={!@end_of_orb? && "load-more"}
+        phx-value-archetype="orb"
+        class={[
+          if(!@end_of_orb?, do: "pb-[calc(200vh)]"),
+          if(@orb_page > 1, do: "pt-[calc(200vh)]"),
+          "flex flex-col gap-2"
+        ]}
+      >
         <div :for={{dom_id, orb} <- @streams.orbs} id={"orb-divided-#{dom_id}"}>
           <.scry_orb id={"orb-history-#{dom_id}"} orb={orb} timezone={@timezone1} />
         </div>
@@ -17,8 +28,7 @@ defmodule PhosWeb.Components.ScrollOrb do
   def check_more_orb(userid, expected_orb_page) do
     case Action.orbs_by_initiators([userid], expected_orb_page).data do
       [] -> {:ok, []}
-      [_|_] = orbs -> {:ok, orbs}
+      [_ | _] = orbs -> {:ok, orbs}
     end
   end
-
 end

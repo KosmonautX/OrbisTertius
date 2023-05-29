@@ -27,7 +27,11 @@
             user={@orb.initiator}
             flex=""
           >
-            <:ally_button current_user={@current_user} user={@orb.initiator} parent_pid={@parent_pid} />
+            <:ally_button
+              current_user={@current_user}
+              user={@orb.initiator}
+              parent_pid={@parent_pid}
+            />
           </.user_information_card_orb>
         </div>
       </div>
@@ -96,7 +100,7 @@
           module={PhosWeb.Components.ScrollOrb}
           id="infinite-home"
           streams={@streams}
-          page={@page}
+          orb_page={@orb_page}
           timezone1={@timezone}
           end_of_orb?={@end_of_orb?}
         />
@@ -104,12 +108,12 @@
     </div>
   </div>
   <.modal
-  :if={@live_action in [:show] and not is_nil(@media)}
-  id="orb-media-preview"
-  close_button={true}
-  show={@live_action in [:show] and not is_nil(@media)}
+    :if={@live_action in [:show] and not is_nil(@media)}
+    id="orb-media-preview"
+    close_button={true}
+    show={@live_action in [:show] and not is_nil(@media)}
   >
-  <.media_preview url={@media}/>
-</.modal>
-  <span :if={@streams.orbs |> Enum.count() < 3} class="hidden lg:block h-96 bg-gray-100"/>
+    <.media_preview url={@media} />
+  </.modal>
+  <span :if={@streams.orbs |> Enum.count() < 3} class="hidden lg:block h-96 bg-gray-100" />
 </div>

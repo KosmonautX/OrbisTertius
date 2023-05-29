@@ -95,13 +95,13 @@
       </p>
 
       <.live_component
-          module={PhosWeb.Components.ScrollOrb}
-          id="infinite-orb-home"
-          streams={@streams}
-          timezone1={@timezone}
-          end_of_orb?={@end_of_orb?}
-        />
-
+        module={PhosWeb.Components.ScrollOrb}
+        id="infinite-orb-home"
+        streams={@streams}
+        timezone1={@timezone}
+        end_of_orb?={@end_of_orb?}
+        orb_page={@orb_page}
+      />
     </div>
     <!--Allies Tab Details in Mobile View Using action Button its go to new Route in Mobile View -->
     <div
@@ -112,13 +112,12 @@
         @live_action != :allies && "hidden lg:w-4/12 lg:block"
       ]}
     >
-
       <h5 class="lg:block hidden text-left font-semibold text-2xl dark:text-white border-b-2 border-black mb-3 py-2">
         Allies
       </h5>
 
       <p
-        :if={@streams.ally_list |> Enum.count() == 0 }
+        :if={@streams.ally_list |> Enum.count() == 0}
         class="w-full mx-auto text-center py-6 text-gray-600 font-medium text-sm lg:text-base dark:text-white"
       >
         <%= "#{@user.username} has no allies yet" %>
@@ -132,6 +131,7 @@
           parent_pid={@parent_pid}
           current_user={@current_user}
           end_of_ally?={@end_of_ally?}
+          ally_page={@ally_page}
         />
       </div>
     </div>

@@ -4,7 +4,18 @@ defmodule PhosWeb.Components.ScrollAlly do
   def render(assigns) do
     ~H"""
     <div>
-      <div id={@id <> "infinite-scroll-body"} phx-update="stream" phx-viewport-bottom={!@end_of_ally? && "load-more"} phx-value-archetype={"ally"} class="w-full px-4 lg:px-0">
+      <div
+        id={@id <> "infinite-scroll-body"}
+        phx-update="stream"
+        phx-viewport-top={@ally_page > 1 && "prev-page"}
+        phx-viewport-bottom={!@end_of_ally? && "load-more"}
+        phx-value-archetype="ally"
+        class={[
+          if(!@end_of_ally?, do: "pb-[calc(200vh)]"),
+          if(@ally_page > 1, do: "pt-[calc(200vh)]"),
+          "w-full px-4 lg:px-0"
+        ]}
+      >
         <.user_info_bar
           :for={{dom_id, ally} <- @streams.ally_list}
           :if={!is_nil(Map.get(ally, :username))}
@@ -63,7 +74,7 @@ defmodule PhosWeb.Components.ScrollAlly do
   def check_more_ally(currid, userid, expected_ally_page) do
     case ally_list(currid, userid, expected_ally_page) do
       [] -> {:ok, []}
-      [_|_] = allies -> {:ok, allies}
+      [_ | _] = allies -> {:ok, allies}
     end
   end
 end

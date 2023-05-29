@@ -42,7 +42,7 @@ defmodule Phos.MixProject do
       {:phoenix_html, "~> 3.3"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       # {:phoenix_live_view, "~> 0.18.11"},
-      {:phoenix_live_view, github: "phoenixframework/phoenix_live_view", tag: "7581dcd", override: true},
+      {:phoenix_live_view, github: "phoenixframework/phoenix_live_view", tag: "76cadff", override: true},
       {:floki, ">= 0.34.0"},
       {:phoenix_live_dashboard, "~> 0.7"},
       {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
