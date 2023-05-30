@@ -45,43 +45,16 @@ defmodule PhosWeb.UserProfileLive.Show do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  def handle_event(
-        "load-more",
-        %{"archetype" => "ally"},
-        %{assigns: %{ally_page: ally_page, current_user: curr, user: user}} = socket
-      ) do
+  def handle_event("load-more", _, %{assigns: %{ally_page: ally_page, orb_page: orb_page, current_user: curr, user: user}} = socket) do
     expected_ally_page = ally_page + 1
-
-    newsocket =
-      case ScrollAlly.check_more_ally(curr, user.id, expected_ally_page) do
-        {:ok, []} ->
-          assign(socket, end_of_ally?: true)
-
-        {:ok, allies} ->
-          Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
-          |> assign(ally_page: expected_ally_page)
-      end
-
-    {:noreply, newsocket}
-  end
-
-  def handle_event(
-        "load-more",
-        %{"archetype" => "orb"},
-        %{assigns: %{orb_page: orb_page, user: user}} = socket
-      ) do
     expected_orb_page = orb_page + 1
 
     newsocket =
-      case ScrollOrb.check_more_orb(user.id, expected_orb_page) do
-        {:ok, []} ->
-          assign(socket, end_of_orb?: true)
-
-        {:ok, orbs} ->
-          Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
-          |> assign(orb_page: expected_orb_page)
-      end
-
+      with {:ok, orbs} <- ScrollOrb.check_more_orb(user.id, expected_orb_page),
+           {:ok, allies} <- ScrollAlly.check_more_ally(curr, user.id, expected_ally_page)
+           do
+            load_more_streams(socket, %{orbs: %{data: orbs, meta: %{page: expected_orb_page, end_of_page?: Enum.empty?(orbs)}}}, %{allies: %{data: allies, meta: %{page: expected_ally_page, end_of_page?: Enum.empty?(allies)}}})
+          end
     {:noreply, newsocket}
   end
 
@@ -241,4 +214,26 @@ defmodule PhosWeb.UserProfileLive.Show do
       nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
     end
   end
+
+  defp load_more_streams(socket, %{orbs: %{data: [], meta: %{page: _orb_page, end_of_page?: end_of_orb?}}}, %{allies: %{data: [], meta: %{page: _ally_page, end_of_page?: end_of_ally?}}}), do: socket |> assign(end_of_orb?: end_of_orb?) |> assign(end_of_ally?: end_of_ally?)
+
+  defp load_more_streams(socket, %{orbs: %{data: orbs, meta: %{page: expected_orb_page, end_of_page?: _end_of_orb?}}}, %{allies: %{data: [], meta: %{page: _expected_ally_page, end_of_page?: end_of_ally?}}}) do
+    Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
+    |> assign(orb_page: expected_orb_page)
+    |> assign(end_of_ally?: end_of_ally?)
+  end
+
+  defp load_more_streams(socket, %{orbs: %{data: [], meta: %{page: _expected_orb_page, end_of_page?: end_of_orb?}}}, %{allies: %{data: allies, meta: %{page: expected_ally_page, end_of_page?: end_of_ally?}}}) do
+    Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
+    |> assign(ally_page: expected_ally_page)
+    |> assign(end_of_orb?: end_of_orb?)
+  end
+
+  defp load_more_streams(socket, %{orbs: %{data: orbs, meta: %{page: expected_orb_page, end_of_page?: _end_of_orb?}}}, %{allies: %{data: allies, meta: %{page: expected_ally_page, end_of_page?: _end_of_ally?}}}) do
+    Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
+    |> then(&Enum.reduce(orbs, &1, fn orb, acc -> stream_insert(acc, :orbs, orb) end))
+    |> assign(orb_page: expected_orb_page)
+    |> assign(ally_page: expected_ally_page)
+  end
+
 end

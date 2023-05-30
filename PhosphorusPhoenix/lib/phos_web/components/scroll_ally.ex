@@ -1,6 +1,6 @@
 defmodule PhosWeb.Components.ScrollAlly do
   use PhosWeb, :live_component
-
+# if(@ally_page > 1, do: "pt-[calc(200vh)]"),
   def render(assigns) do
     ~H"""
     <div>
@@ -12,7 +12,7 @@ defmodule PhosWeb.Components.ScrollAlly do
         phx-value-archetype="ally"
         class={[
           if(!@end_of_ally?, do: "pb-[calc(200vh)]"),
-          if(@ally_page > 1, do: "pt-[calc(200vh)]"),
+
           "w-full px-4 lg:px-0"
         ]}
       >
