@@ -157,7 +157,7 @@ GET :ipAddress/userland/others/:lky_id
 GET :ipAddress/userland/others/:satrio_id/history?page=1&traits=personalpin
 :auth-headers
 
-## Update territorial data of self
+## Update territorial data of self 636786611773840255
 PUT :ipAddress/userland/self/territory
 :auth-headers
 {
@@ -168,8 +168,8 @@ PUT :ipAddress/userland/self/territory
             "location_description": "Keong Saik"
         },
         {
-            "id": "work",
-            "geohash": 636786611773840255,
+            "id": "live",
+            "geohash": 627779412520177663,
             "location_description": "Bukit Panjang"
         }
     ]
