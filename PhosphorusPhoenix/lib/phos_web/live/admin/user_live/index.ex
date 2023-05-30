@@ -10,7 +10,7 @@ defmodule PhosWeb.Admin.UserLive.Index do
     search = ""
    {:ok,
       assign(socket,
-      users: Users.list_users(),
+      users: Users.list_users(limit),
       search: "",
       admin: true
     )}
@@ -37,30 +37,29 @@ defmodule PhosWeb.Admin.UserLive.Index do
   # def handle_params(%{"page" => page} = params, _url, socket) do
   #   dbg
   # end
-  def handle_params(%{"username" => username} = params, _url, socket) do
-    with %Users.User{} = user <- Users.get_user_by_username(username) do
+  def handle_params(%{"id" => id} = params, _url, socket) do
+    with %Users.User{} = user <- Users.get_user!(id) do
       {:noreply,
         socket
         |> assign(:user, user)
         |> apply_action( socket.assigns.live_action, params)}
     else
-      {:error,_} -> IO.inspect("FAIL")
-      {:noreply, socket}
+      {:error,_} -> {:noreply, socket}
     end
 
   end
 
-  def handle_params(params, _url, socket) do
+  def handle_params(_, _, socket) do
     {:noreply, socket}
   end
 
 
-  defp apply_action(socket, :index, params) do
+  defp apply_action(socket, :index, _) do
     socket
     |> assign(:page_title, "Viewing Users")
   end
 
-  defp apply_action(socket, :edit, params) do
+  defp apply_action(socket, :edit, _) do
     socket
     |> assign(:page_title, "Updating Profile")
   end

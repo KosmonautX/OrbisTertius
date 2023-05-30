@@ -4,7 +4,6 @@
   show={@live_action in [:edit]}
   on_cancel={JS.navigate(~p"/admin/users")}
 >
-
   <div class="p-4">
     <.live_component
       module={PhosWeb.UserProfileLive.FormComponent}
@@ -21,7 +20,6 @@
 
 <div class="hidden lg:block w-full p-1 max-h-fit">
   <div class="flex items-center px-2 mb-2">
-
     <div class="flex">
       <.form :let={f} for={:search} phx-change="search">
         <%= text_input(f, :username,
@@ -37,48 +35,39 @@
   </div>
   <div class="">
     <.table id="users" rows={@users}>
-      <:col :let={user} classes="sticky left-0" label=""> 
-        <%= if not is_nil(user.username) do%>
-          <.link patch={~p"/admin/users/#{user.username}/edit"} class="button button-sm">
-            <i class="cursor-pointer mr-1"></i> Edit
-          </.link>
+      <:col :let={user} classes="sticky left-0" label="">
+        <.link patch={~p"/admin/users/#{user.id}/edit"} class="button button-sm">
+          <i class="cursor-pointer mr-1"></i> Edit
+        </.link>
+      </:col>
 
-        <%= else %>
-          <.link class="button button-sm">
-            <i class="cursor-pointer mr-1"></i> Edit
-          </.link>
-        <% end %>
-      </:col>     
-
-      <:col :let={user} classes="sticky left-0" label="Username"> 
-        <%= if not is_nil(user.username) do%>
+      <:col :let={user} classes="sticky left-0" label="Username">
+        <%= if not is_nil(user.username) do %>
           <%= user.username %>
         <% end %>
       </:col>
-      
-      <:col :let={user} classes="sticky left-0" label="Email"> 
-        <%= if not is_nil(user.email) do%>
+
+      <:col :let={user} classes="sticky left-0" label="Email">
+        <%= if not is_nil(user.email) do %>
           <%= user.email %>
         <% end %>
       </:col>
 
-      <:col :let={user} classes="sticky left-0" label="Title Tag"> 
-        <%= if not is_nil(user.public_profile) do%>
+      <:col :let={user} classes="sticky left-0" label="Title Tag">
+        <%= if not is_nil(user.public_profile) do %>
           <%= user.public_profile.occupation %>
-        <% end %>      
+        <% end %>
       </:col>
 
-      <:col :let={user} classes="sticky left-0" label="Birthday"> 
-        <%= if not is_nil(user.public_profile) do%>
+      <:col :let={user} classes="sticky left-0" label="Birthday">
+        <%= if not is_nil(user.public_profile) do %>
           <%= user.public_profile.birthday %>
-        <% end %>   
+        <% end %>
       </:col>
 
-      <:col :let={user} classes="sticky left-0" label="Created"> 
+      <:col :let={user} classes="sticky left-0" label="Created">
         <%= user.inserted_at %>
       </:col>
-
-
     </.table>
   </div>
 </div>
