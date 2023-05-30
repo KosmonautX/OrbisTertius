@@ -4,31 +4,30 @@ defmodule PhosWeb.Admin.OrbLive.Index do
   alias Phos.Action
 
   def mount(_params, _session, socket) do
-    limit = 10
+    limit = 20
     page = 1
     %{data: orbs, meta: meta} = filter_by_traits("", limit: limit, page: page)
 
     {:ok,
       socket
-      |> assign(pagination: meta.pagination, traits: "", limit: limit, current: page, end_of_orb?: false, orbs: orbs)
-      |> stream(:orbs, orbs)
+      |> assign(orbs: orbs, pagination: meta.pagination, traits: "", limit: limit, current: page)
      }
   end
 
-  # def handle_params(%{"page" => page} = _params,_url, %{assigns: %{traits: traits, pagination: pagination, limit: limit} = _assigns} = socket) do
-  #   expected_page = parse_integer(page)
+  def handle_params(%{"page" => page} = _params,_url, %{assigns: %{traits: traits, pagination: pagination, limit: limit} = _assigns} = socket) do
+    expected_page = parse_integer(page)
 
-  #   case expected_page == pagination.current do
-  #     true ->
-  #       {:noreply, assign(socket, current: expected_page)}
+    case expected_page == pagination.current do
+      true ->
+        {:noreply, assign(socket, current: expected_page)}
 
-  #     _ ->
-  #       %{data: orbs, meta: meta} = filter_by_traits(traits, limit: limit, page: expected_page)
+      _ ->
+        %{data: orbs, meta: meta} = filter_by_traits(traits, limit: limit, page: expected_page)
 
-  #       {:noreply,
-  #        assign(socket, orbs: orbs, pagination: meta.pagination, current: expected_page)}
-  #   end
-  # end
+        {:noreply,
+         assign(socket, orbs: orbs, pagination: meta.pagination, current: expected_page)}
+    end
+  end
 
   def handle_params(_params, _url, socket) do
     {:noreply, socket}
@@ -40,21 +39,6 @@ defmodule PhosWeb.Admin.OrbLive.Index do
     rescue
       ArgumentError -> 1
     end
-  end
-
-  def handle_event("load-more", _ , %{assigns: %{orbs: currentOrbs, current: orb_page}} = socket) do
-    IO.inspect("FIRING!")
-    expected_orb_page = orb_page + 1
-
-    newsocket =
-      case check_more_orb(expected_orb_page) do
-        {:ok, %{data: []}} ->
-          assign(socket, end_of_orb?: true)
-        {:ok, %{data: orbs, meta: meta}} ->
-          Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
-          assign(socket, current: expected_orb_page, orbs: currentOrbs ++ orbs)
-      end
-      {:noreply, newsocket}
   end
 
   def handle_event("search", %{"search" => %{"traits" => keyword}}, socket) do
@@ -129,21 +113,5 @@ defmodule PhosWeb.Admin.OrbLive.Index do
       <%= unless is_list(@value), do: @value %>
     </td>
     """
-  end
-
-  defp orb_fetcher(streamorbs, currentOrbs) do
-    IO.inspect(currentOrbs |> Enum.count())
-    newOrbs = Enum.map(streamorbs.inserts, fn {_, _, orb, _} -> orb end)
-    currentOrbs ++ newOrbs
-    # Enum.reduce(streamorbs.inserts, orbs, fn {_, _, orb, _}, acc -> [orb | acc] end)
-  end
-
-  def check_more_orb(expected_orb_page) do
-    limit = 7
-
-    case filter_by_traits("", limit: limit, page: expected_orb_page) do
-      %{data: []} -> {:ok, %{data: [], meta: []}}
-      %{data: orbs, meta: meta} -> {:ok, %{data: orbs, meta: meta}}
-    end
   end
 end
