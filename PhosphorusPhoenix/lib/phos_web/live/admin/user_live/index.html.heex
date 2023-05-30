@@ -42,26 +42,41 @@
       </:col>
 
       <:col :let={user} classes="sticky left-0" label="Username">
-        <%= if not is_nil(user.username) do %>
-          <%= user.username %>
-        <% end %>
+        <%!-- <%= if not is_nil(user.username) do %> --%>
+        <%= user.username %>
+        <%!-- <% end %> --%>
       </:col>
 
       <:col :let={user} classes="sticky left-0" label="Email">
-        <%= if not is_nil(user.email) do %>
-          <%= user.email %>
-        <% end %>
+        <%!-- <%= if not is_nil(user.email) do %> --%>
+        <%= user.email %>
+        <%!-- <% end %> --%>
       </:col>
 
       <:col :let={user} classes="sticky left-0" label="Title Tag">
-        <%= if not is_nil(user.public_profile) do %>
-          <%= user.public_profile.occupation %>
-        <% end %>
+        <%= user
+        |> get_in([
+          Access.key(:public_profile, %{}),
+          Access.key(:occupation, nil)
+        ]) %>
       </:col>
 
       <:col :let={user} classes="sticky left-0" label="Birthday">
+        <%= user
+        |> get_in([
+          Access.key(:public_profile, %{}),
+          Access.key(:birthday, nil)
+        ]) %>
+      </:col>
+
+      <:col :let={user} classes="sticky left-0" label="Age">
         <%= if not is_nil(user.public_profile) do %>
-          <%= user.public_profile.birthday %>
+          <%= NaiveDateTime.diff(
+            NaiveDateTime.utc_now(),
+            get_in(user, [Access.key(:public_profile, %{}), Access.key(:birthday, nil)]),
+            :day
+          )
+          |> div(365) %>
         <% end %>
       </:col>
 

@@ -8,12 +8,12 @@ defmodule PhosWeb.Admin.UserLive.Index do
     limit = 20
     page = 1
     search = ""
-   {:ok,
-      assign(socket,
-      users: Users.list_users(limit),
-      search: "",
-      admin: true
-    )}
+    {:ok,
+      socket
+      |> assign(users: Users.list_users(limit))
+      |> assign(search: "")
+      |> assign(admin: true)
+    }
   end
 
   def handle_event("search",%{"_target" => [_a, search_term] = target} = search, socket ) do
@@ -22,21 +22,17 @@ defmodule PhosWeb.Admin.UserLive.Index do
 
     case search_term do
       "username" ->
-        socket =
-          assign(socket,
-          search: search_value,
-          users: Phos.Users.filter_user_by_username(search_value)
-        )
-        {:noreply, socket}
+      {:noreply,
+        socket
+        |> assign(search: search_value)
+        |> assign(users: Phos.Users.filter_user_by_username(search_value))
+      }
       _ ->
         {:noreply, socket}
     end
 
   end
 
-  # def handle_params(%{"page" => page} = params, _url, socket) do
-  #   dbg
-  # end
   def handle_params(%{"id" => id} = params, _url, socket) do
     with %Users.User{} = user <- Users.get_user!(id) do
       {:noreply,
