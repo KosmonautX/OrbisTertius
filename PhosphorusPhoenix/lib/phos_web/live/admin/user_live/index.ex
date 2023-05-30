@@ -13,6 +13,7 @@ defmodule PhosWeb.Admin.UserLive.Index do
       |> assign(users: Users.list_users(limit))
       |> assign(search: "")
       |> assign(admin: true)
+      |> assign(today: NaiveDateTime.utc_now())
     }
   end
 

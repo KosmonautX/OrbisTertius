@@ -40,11 +40,8 @@
           <i class="cursor-pointer mr-1"></i> Edit
         </.link>
       </:col>
-
-      <:col :let={user} classes="sticky left-0" label="Username">
-        <%!-- <%= if not is_nil(user.username) do %> --%>
-        <%= user.username %>
-        <%!-- <% end %> --%>
+      <:col :let={user} classes="sticky left-0" label="User">
+        <.admin_user_preview user={user} id={"admin_user_preview_for_#{user.id}"} />
       </:col>
 
       <:col :let={user} classes="sticky left-0" label="Email">
@@ -70,14 +67,16 @@
       </:col>
 
       <:col :let={user} classes="sticky left-0" label="Age">
-        <%= if not is_nil(user.public_profile) do %>
-          <%= NaiveDateTime.diff(
-            NaiveDateTime.utc_now(),
-            get_in(user, [Access.key(:public_profile, %{}), Access.key(:birthday, nil)]),
-            :day
-          )
-          |> div(365) %>
-        <% end %>
+        <%= NaiveDateTime.diff(
+          @today,
+          user
+          |> get_in([
+            Access.key(:public_profile, %{}),
+            Access.key(:birthday, nil)
+          ]) || @today,
+          :day
+        )
+        |> div(365) %>
       </:col>
 
       <:col :let={user} classes="sticky left-0" label="Created">
