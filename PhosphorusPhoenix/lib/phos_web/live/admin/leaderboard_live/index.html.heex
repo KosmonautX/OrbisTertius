@@ -1,26 +1,11 @@
 <div class="hidden lg:block w-full p-1 max-h-fit font-poppins">
   <div class="flex items-center px-2 mb-2">
     <span class="flex py-3 mx-2 font-bold text-left uppercase align-middle bg-transparent border-gray-200 shadow-none text-base text-slate-400">
-      Sort By
+      See Counts By
     </span>
-    <.link
-      patch={~p"/admin/leaderboard?#{%{sort_by: :orb_count}}"}
-      class="button button-sm p-0 mx-2"
-    >
-      <i class="cursor-pointer mr-1"></i> Orbs Created
-    </.link>
-    <.link
-      patch={~p"/admin/leaderboard?#{%{sort_by: :ally_count}}"}
-      class="button button-sm p-0 mx-2"
-    >
-      <i class="cursor-pointer mr-1"></i> Number of Allies
-    </.link>
-    <.link
-      patch={~p"/admin/leaderboard?#{%{sort_by: :comment_count}}"}
-      class="button button-sm p-0 mx-2"
-    >
-      <i class="cursor-pointer mr-1"></i> Comments on others
-    </.link>
+    <.button phx-click="orb_count" class="button button-sm p-0 mx-2">Orbs Created</.button>
+    <.button phx-click="ally_count" class="button button-sm p-0 mx-2">Allies</.button>
+    <.button phx-click="comment_count" class="button button-sm p-0 mx-2">Comments</.button>
   </div>
   <div class="">
     <.table id="users" rows={@users}>
@@ -30,16 +15,8 @@
         <% end %>
       </:col>
 
-      <:col :let={user} classes="sticky left-0" label="Orbs">
-        <%= user.orb_count %>
-      </:col>
-
-      <:col :let={user} classes="sticky left-0" label="Allies">
-        <%= user.ally_count %>
-      </:col>
-
-      <:col :let={user} classes="sticky left-0" label="Comments">
-        comment
+      <:col :let={user} classes="sticky left-0" label="Count">
+        <%= user.count %>
       </:col>
 
       <:col :let={user} classes="sticky left-0" label="Created on">
