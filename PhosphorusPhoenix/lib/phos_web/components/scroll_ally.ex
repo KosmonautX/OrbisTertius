@@ -44,8 +44,12 @@ defmodule PhosWeb.Components.ScrollAlly do
     """
   end
 
-  defp ally_list(current_user, friend, page \\ 1)
 
+
+  #ally_list is a wrapper fn around Folk.friends() according to current_user, user found in socket
+
+
+  defp ally_list(current_user, friend, page)
   defp ally_list(%Phos.Users.User{id: id} = _current_user, friend, page),
     do: ally_list(id, friend, page)
 
@@ -56,25 +60,25 @@ defmodule PhosWeb.Components.ScrollAlly do
        when is_bitstring(current_user_id) and is_bitstring(friend_id) do
     case friend_id == current_user_id do
       false ->
-        Phos.Folk.friends({friend_id, current_user_id}, page, :completed_at, 24) |> Map.get(:data, [])
+        Phos.Folk.friends({friend_id, current_user_id}, page, :completed_at, 24)
+        |> Map.get(:data, [])
 
       _ ->
         Phos.Folk.friends(current_user_id, page, :completed_at, 24)
         |> Map.get(:data, [])
-        |> Enum.map(&Map.get(&1, :friend))
+        #|> Enum.map(&Map.get(&1, :friend))
     end
   end
 
   defp ally_list(nil, friend_id, page),
     do:
-      Phos.Folk.friends(friend_id, page, :completed_at, 24) |> Map.get(:data, []) |> Enum.map(&Map.get(&1, :friend))
+      Phos.Folk.friends(friend_id, page, :completed_at, 24) |> Map.get(:data, []) #|> Enum.map(&Map.get(&1, :friend))
 
   defp ally_list(_, _, _), do: []
 
+
+
   def check_more_ally(currid, userid, expected_ally_page) do
-    case ally_list(currid, userid, expected_ally_page) do
-      [] -> {:ok, []}
-      [_ | _] = allies -> {:ok, allies}
-    end
+    ally_list(currid, userid, expected_ally_page)
   end
 end

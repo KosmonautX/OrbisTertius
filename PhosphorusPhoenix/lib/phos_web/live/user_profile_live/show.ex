@@ -23,21 +23,20 @@ defmodule PhosWeb.UserProfileLive.Show do
     # check if really subscribing
     if connected?(socket), do: Phos.PubSub.subscribe("folks")
 
-    case userselect(id) do
-      {:ok, user} ->
-        {:ok,
-         socket
-         |> assign(:user, user)
-         |> assign(:current_user, current_user)
-         |> assign_meta(user, params)
-         |> assign(orb_page: 1)
-         |> assign(ally_page: 1)
-         |> assign(end_of_orb?: false)
-         |> assign(end_of_ally?: false)
-         |> assign(:parent_pid, socket.transport_pid)
-         |> stream(:orbs, Action.orbs_by_initiators([user.id], 1).data)
-         |> stream(:ally_list, ally_list(current_user, user))}
-    end
+    {:ok, user} = mount_user(id)
+
+    {:ok, socket
+    |> assign(:user, user)
+    |> assign(:current_user, current_user)
+    |> assign_meta(user, params)
+    |> assign(:parent_pid, socket.transport_pid)
+    |> stream(:orbs, Action.orbs_by_initiators([user.id], 1).data)
+     # metadata can be handled from paginated query(?)
+    |> assign(orb_page: 1)
+    |> assign(end_of_orb?: false)
+    |> stream(:ally_list, ScrollAlly.check_more_ally(current_user, user, 1))
+    |> assign(ally_page: 1)
+    |> assign(end_of_ally?: false)}
   end
 
   @impl true
@@ -50,8 +49,8 @@ defmodule PhosWeb.UserProfileLive.Show do
     expected_orb_page = orb_page + 1
 
     newsocket =
-      with {:ok, orbs} <- ScrollOrb.check_more_orb(user.id, expected_orb_page),
-           {:ok, allies} <- ScrollAlly.check_more_ally(curr, user.id, expected_ally_page)
+      with orbs <- ScrollOrb.check_more_orb(user.id, expected_orb_page),
+           allies <- ScrollAlly.check_more_ally(curr, user.id, expected_ally_page)
            do
             load_more_streams(socket, %{orbs: %{data: orbs, meta: %{page: expected_orb_page, end_of_page?: Enum.empty?(orbs)}}}, %{allies: %{data: allies, meta: %{page: expected_ally_page, end_of_page?: Enum.empty?(allies)}}})
           end
@@ -135,6 +134,21 @@ defmodule PhosWeb.UserProfileLive.Show do
      |> push_patch(to: ~p"/user/#{socket.assigns.user.username}")}
   end
 
+  defp mount_user(id) when is_uuid?(id) do
+    case Users.find_user_by_id(id) do
+      {:ok, %Users.User{} = user} -> {:ok, user}
+      nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
+    end
+  end
+
+  defp mount_user(username) do
+    case Users.get_user_by_username(username) do
+      %Users.User{} = user -> {:ok, user}
+      nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
+    end
+  end
+
+
   defp apply_action(socket, :show, _params) do
     socket
     |> assign(page_title: "Viewing Profile")
@@ -148,7 +162,6 @@ defmodule PhosWeb.UserProfileLive.Show do
       push_patch(socket, to: ~p"/user/#{params["username"]}")
     end
   end
-
   defp apply_action(socket, :allies, _params) do
     socket
     |> assign(page_title: "Viewing Allies")
@@ -174,48 +187,13 @@ defmodule PhosWeb.UserProfileLive.Show do
     })
   end
 
-  defp ally_list(current_user, friend, page \\ 1)
-
-  defp ally_list(%Phos.Users.User{id: id} = _current_user, friend, page),
-    do: ally_list(id, friend, page)
-
-  defp ally_list(current_user, %Phos.Users.User{id: id} = _friend, page),
-    do: ally_list(current_user, id, page)
-
-  defp ally_list(current_user_id, friend_id, page)
-       when is_bitstring(current_user_id) and is_bitstring(friend_id) do
-    case friend_id == current_user_id do
-      false ->
-        Phos.Folk.friends({friend_id, current_user_id}, page) |> Map.get(:data, [])
-
-      _ ->
-        Phos.Folk.friends(current_user_id, page)
-        |> Map.get(:data, [])
-        |> Enum.map(&Map.get(&1, :friend))
-    end
-  end
-
-  defp ally_list(nil, friend_id, page),
-    do:
-      Phos.Folk.friends(friend_id, page) |> Map.get(:data, []) |> Enum.map(&Map.get(&1, :friend))
-
-  defp ally_list(_, _, _), do: []
-
-  defp userselect(id) when is_uuid?(id) do
-    case Users.find_user_by_id(id) do
-      {:ok, %Users.User{} = user} -> {:ok, user}
-      nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
-    end
-  end
-
-  defp userselect(username) do
-    case Users.get_user_by_username(username) do
-      %Users.User{} = user -> {:ok, user}
-      nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
-    end
-  end
-
-  defp load_more_streams(socket, %{orbs: %{data: [], meta: %{page: _orb_page, end_of_page?: end_of_orb?}}}, %{allies: %{data: [], meta: %{page: _ally_page, end_of_page?: end_of_ally?}}}), do: socket |> assign(end_of_orb?: end_of_orb?) |> assign(end_of_ally?: end_of_ally?)
+  # look to integrate Repo.Paginated.all() :meta
+  defp load_more_streams(socket,
+    %{orbs: %{data: [], meta: %{page: _orb_page, end_of_page?: end_of_orb?}}},
+    %{allies: %{data: [], meta: %{page: _ally_page, end_of_page?: end_of_ally?}}}),
+    do: socket
+    |> assign(end_of_orb?: end_of_orb?)
+    |> assign(end_of_ally?: end_of_ally?)
 
   defp load_more_streams(socket, %{orbs: %{data: orbs, meta: %{page: expected_orb_page, end_of_page?: _end_of_orb?}}}, %{allies: %{data: [], meta: %{page: _expected_ally_page, end_of_page?: end_of_ally?}}}) do
     Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
