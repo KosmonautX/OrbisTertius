@@ -7,6 +7,7 @@
       for={@changeset}
       id="userprofile-form"
       phx-target={@myself}
+      phx-change="validate"
       phx-submit="save"
     >
       <.input field={{f, :user_id}} type="hidden" value={@current_user.id} />
@@ -20,7 +21,7 @@
       <% end %>
       <%= if Map.has_key?(assigns, :admin) do %>
         <.input field={{f, :username}} label="Username" value={@current_user.username} />
-      <%= end %>
+      <% end %>
 
       <%= inputs_for f, :public_profile, fn ff -> %>
         <.input field={{ff, :bio}} label="Bio" />
@@ -38,18 +39,18 @@
       <% end %>
 
       <:actions>
-        <form id="upload-form" phx-submit="save" phx-change="validate">
-          <.live_file_input upload={@uploads.image} />
+        <.live_file_input upload={@uploads.image} />
+        <form id="upload-form" phx-submit="save">
           <.button type="submit">Save</.button>
         </form>
       </:actions>
 
       <.live_component
+        :if={@crop_image}
         module={PhosWeb.Components.CropUploadInput}
         id="Crop_Image"
         uploads={@uploads}
       />
-
     </.simple_form>
   </section>
 </div>
