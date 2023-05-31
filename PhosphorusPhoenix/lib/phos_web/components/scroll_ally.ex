@@ -59,7 +59,7 @@ defmodule PhosWeb.Components.ScrollAlly do
         Phos.Folk.friends({friend_id, current_user_id}, page, :completed_at, 24) |> Map.get(:data, [])
 
       _ ->
-        Phos.Folk.friends(current_user_id, page, limit: 24)
+        Phos.Folk.friends(current_user_id, page, :completed_at, 24)
         |> Map.get(:data, [])
         |> Enum.map(&Map.get(&1, :friend))
     end
@@ -67,7 +67,7 @@ defmodule PhosWeb.Components.ScrollAlly do
 
   defp ally_list(nil, friend_id, page),
     do:
-      Phos.Folk.friends(friend_id, page, limit: 24) |> Map.get(:data, []) |> Enum.map(&Map.get(&1, :friend))
+      Phos.Folk.friends(friend_id, page, :completed_at, 24) |> Map.get(:data, []) |> Enum.map(&Map.get(&1, :friend))
 
   defp ally_list(_, _, _), do: []
 
