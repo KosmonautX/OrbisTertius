@@ -49,36 +49,48 @@ defmodule PhosWeb.Components.ScrollAlly do
   #ally_list is a wrapper fn around Folk.friends() according to current_user, user found in socket
 
 
-  defp ally_list(current_user, friend, page)
-  defp ally_list(%Phos.Users.User{id: id} = _current_user, friend, page),
-    do: ally_list(id, friend, page)
+  defp ally_list(current_user, friend, page, limit)
+  defp ally_list(%Phos.Users.User{id: id} = _current_user, friend, page, limit),
+    do: ally_list(id, friend, page, limit)
 
-  defp ally_list(current_user, %Phos.Users.User{id: id} = _friend, page),
-    do: ally_list(current_user, id, page)
+  defp ally_list(current_user, %Phos.Users.User{id: id} = _friend, page, limit \\ 24),
+    do: ally_list(current_user, id, page, limit)
 
-  defp ally_list(current_user_id, friend_id, page)
+  defp ally_list(current_user_id, friend_id, page, limit)
        when is_bitstring(current_user_id) and is_bitstring(friend_id) do
     case friend_id == current_user_id do
       false ->
-        Phos.Folk.friends({friend_id, current_user_id}, page, :completed_at, 24)
+        Phos.Folk.friends({friend_id, current_user_id}, page, :completed_at, limit)
         |> Map.get(:data, [])
 
       _ ->
-        Phos.Folk.friends(current_user_id, page, :completed_at, 24)
+        Phos.Folk.friends(current_user_id, page, :completed_at, limit)
         |> Map.get(:data, [])
         #|> Enum.map(&Map.get(&1, :friend))
     end
   end
 
-  defp ally_list(nil, friend_id, page),
+  defp ally_list(nil, friend_id, page, limit),
     do:
-      Phos.Folk.friends(friend_id, page, :completed_at, 24) |> Map.get(:data, []) #|> Enum.map(&Map.get(&1, :friend))
+      Phos.Folk.friends(friend_id, page, :completed_at, limit) |> Map.get(:data, []) #|> Enum.map(&Map.get(&1, :friend))
 
-  defp ally_list(_, _, _), do: []
+  defp ally_list(_, _, _, _), do: []
 
 
 
-  def check_more_ally(currid, userid, expected_ally_page) do
-    ally_list(currid, userid, expected_ally_page)
+  def check_more_ally(currid, userid, expected_ally_page, limit) do
+    allies = ally_list(currid, userid, expected_ally_page, 24)
+    count = length(allies)
+    %{
+      data: allies,
+      meta: %{
+        pagination: %{
+          downstream: !Enum.empty?(allies),
+          upstream: expected_ally_page > 1,
+          current: expected_ally_page,
+          total: 1234,
+          start: (expected_ally_page - 1) * limit + 1 ,
+          end: (expected_ally_page - 1) * limit + limit
+    }}}
   end
 end

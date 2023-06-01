@@ -244,15 +244,14 @@ defmodule PhosWeb.OrbLive.Show do
         %{assigns: %{orb_page: page, orb: orb}} = socket
       ) do
     expected_orb_page = page + 1
+    orbs = ScrollOrb.check_more_orb(orb.initiator_id, expected_orb_page)
 
     newsocket =
-      case ScrollOrb.check_more_orb(orb.initiator_id, expected_orb_page) do
-        {:ok, []} ->
-          assign(socket, end_of_orb?: true)
-
-        {:ok, orbs} ->
-          Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
-          |> assign(orb_page: expected_orb_page)
+      if (Enum.empty?(orbs.data)) do
+        assign(socket, end_of_orb?: true)
+      else
+        Enum.reduce(orbs.data, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
+        |> assign(orb_page: orbs.meta.pagination.current)
       end
 
     {:noreply, newsocket}

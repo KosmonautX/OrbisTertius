@@ -26,9 +26,6 @@ defmodule PhosWeb.Components.ScrollOrb do
   end
 
   def check_more_orb(userid, expected_orb_page) do
-    case Action.orbs_by_initiators([userid], expected_orb_page).data do
-      [] -> {:ok, []}
-      [_ | _] = orbs -> {:ok, orbs}
-    end
+    Action.orbs_by_initiators([userid], expected_orb_page)
   end
 end

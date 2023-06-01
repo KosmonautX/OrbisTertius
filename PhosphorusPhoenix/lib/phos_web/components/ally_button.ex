@@ -184,14 +184,15 @@ defmodule PhosWeb.Component.AllyButton do
   end
 
   def render(%{ally: ally} = assigns) when ally == "requested" or ally == "blocked" do
-    random_id =  random_id()
+    assigns =
+      assigns |> assign(:dom_id, "delete_friend_request_#{random_id()}_#{assigns.user.id}")
     ~H"""
     <a class="flex">
-      <.button class="flex" phx-click={show_modal("delete_friend_request_#{random_id}_#{@user.id}")}>
+      <.button class="flex" phx-click={show_modal(@dom_id)}>
         <%= String.capitalize(@ally) %>
       </.button>
       <.modal
-        id={"delete_friend_request_#{random_id}_#{@user.id}"}
+        id={@dom_id}
         on_confirm={
           JS.push("delete_ally_request", target: @myself) |> hide_modal("delete_friend_request")
         }

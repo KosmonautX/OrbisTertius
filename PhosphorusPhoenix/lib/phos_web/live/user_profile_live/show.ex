@@ -32,9 +32,10 @@ defmodule PhosWeb.UserProfileLive.Show do
     |> assign(:parent_pid, socket.transport_pid)
     |> stream(:orbs, Action.orbs_by_initiators([user.id], 1).data)
      # metadata can be handled from paginated query(?)
+    # |> stream_assign(:ally_list, ScrollAlly.)
     |> assign(orb_page: 1)
     |> assign(end_of_orb?: false)
-    |> stream(:ally_list, ScrollAlly.check_more_ally(current_user, user, 1))
+    |> stream(:ally_list, ScrollAlly.check_more_ally(current_user, user.id, 1, 24).data)
     |> assign(ally_page: 1)
     |> assign(end_of_ally?: false)}
   end
@@ -50,9 +51,9 @@ defmodule PhosWeb.UserProfileLive.Show do
 
     newsocket =
       with orbs <- ScrollOrb.check_more_orb(user.id, expected_orb_page),
-           allies <- ScrollAlly.check_more_ally(curr, user.id, expected_ally_page)
+           allies <- ScrollAlly.check_more_ally(curr, user.id, expected_ally_page, 24)
            do
-            load_more_streams(socket, %{orbs: %{data: orbs, meta: %{page: expected_orb_page, end_of_page?: Enum.empty?(orbs)}}}, %{allies: %{data: allies, meta: %{page: expected_ally_page, end_of_page?: Enum.empty?(allies)}}})
+            load_more_streams(socket, %{orbs: %{data: orbs.data, meta: orbs.meta}}, %{allies: %{data: allies.data, meta: allies.meta}})
           end
     {:noreply, newsocket}
   end
@@ -188,30 +189,19 @@ defmodule PhosWeb.UserProfileLive.Show do
   end
 
   # look to integrate Repo.Paginated.all() :meta
-  defp load_more_streams(socket,
-    %{orbs: %{data: [], meta: %{page: _orb_page, end_of_page?: end_of_orb?}}},
-    %{allies: %{data: [], meta: %{page: _ally_page, end_of_page?: end_of_ally?}}}),
-    do: socket
-    |> assign(end_of_orb?: end_of_orb?)
-    |> assign(end_of_ally?: end_of_ally?)
 
-  defp load_more_streams(socket, %{orbs: %{data: orbs, meta: %{page: expected_orb_page, end_of_page?: _end_of_orb?}}}, %{allies: %{data: [], meta: %{page: _expected_ally_page, end_of_page?: end_of_ally?}}}) do
-    Enum.reduce(orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
-    |> assign(orb_page: expected_orb_page)
-    |> assign(end_of_ally?: end_of_ally?)
-  end
-
-  defp load_more_streams(socket, %{orbs: %{data: [], meta: %{page: _expected_orb_page, end_of_page?: end_of_orb?}}}, %{allies: %{data: allies, meta: %{page: expected_ally_page, end_of_page?: end_of_ally?}}}) do
-    Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
-    |> assign(ally_page: expected_ally_page)
-    |> assign(end_of_orb?: end_of_orb?)
-  end
-
-  defp load_more_streams(socket, %{orbs: %{data: orbs, meta: %{page: expected_orb_page, end_of_page?: _end_of_orb?}}}, %{allies: %{data: allies, meta: %{page: expected_ally_page, end_of_page?: _end_of_ally?}}}) do
+  defp load_more_streams(socket, %{orbs: %{data: orbs, meta:  orbs_meta}}, %{allies: %{data: allies, meta: allies_meta}}) do
     Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
     |> then(&Enum.reduce(orbs, &1, fn orb, acc -> stream_insert(acc, :orbs, orb) end))
-    |> assign(orb_page: expected_orb_page)
-    |> assign(ally_page: expected_ally_page)
+    |> assign(orb_page: orbs_meta.pagination.current)
+    |> assign(end_of_orb?: !orbs_meta.pagination.downstream)
+    |> assign(ally_page: allies_meta.pagination.current)
+    |> assign(end_of_ally?: !allies_meta.pagination.downstream)
   end
+
+#   defp stream_assign(socket, key, %{data: data, meta: meta}) do
+# socket |> stream
+# |> assign()
+#   end
 
 end
