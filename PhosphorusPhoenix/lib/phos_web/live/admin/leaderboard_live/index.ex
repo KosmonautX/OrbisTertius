@@ -3,24 +3,58 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
 
   alias Phos.Repo
   alias Phos.Leaderboard
+  alias Phos.Action.Orb
+
 
   def mount(_params, _session, socket) do
-    users = Leaderboard.list_user_counts()
-   {:ok, assign(socket, users: users)}
-  end
-
-  def handle_event("orb_count", _, socket) do
     users = Leaderboard.list_user_counts(:orbs)
-    {:noreply, assign(socket, users: users)}
+    orbs = Leaderboard.rank_orbs()
+   {:ok,
+    socket
+    |> assign(users: users)
+    |> assign(orb_view: false)
+    |> assign(orbs: orbs)
+  }
   end
 
-  def handle_event("ally_count", unsigned_params, socket) do
+  def handle_event("orb_count", _unsigned_params, socket) do
+    users = Leaderboard.list_user_counts(:orbs)
+    {:noreply,
+    socket
+    |> assign(users: users)
+    |> assign(orb_view: false)
+  }
+  end
+
+  def handle_event("ally_count", _, socket) do
     users = Leaderboard.list_user_counts(:relations)
-    {:noreply, assign(socket, users: users)}
+    {:noreply,
+    socket
+    |> assign(users: users)
+    |> assign(orb_view: false)
+  }
   end
 
-  def handle_event("comment_count", unsigned_params, socket) do
+  def handle_event("comment_count", _, socket) do
     users = Leaderboard.list_user_counts(:comments)
-    {:noreply, assign(socket, users: users)}
+    {:noreply,
+    socket
+    |> assign(users: users)
+    |> assign(orb_view: false)
+  }  end
+
+  def handle_event("chat_count", _, socket) do
+    users = Leaderboard.list_user_counts(:chats)
+    {:noreply,
+    socket
+    |> assign(users: users)
+    |> assign(orb_view: false)
+  }  end
+
+  def handle_event("orb_rank", _, socket) do
+    {:noreply,
+    socket
+    |> assign(orb_view: true)
+    }
   end
 end

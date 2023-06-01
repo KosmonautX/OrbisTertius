@@ -80,7 +80,7 @@
       </:col>
 
       <:col :let={user} classes="sticky left-0" label="Created">
-        <%= user.inserted_at %>
+        <%= Phos.Leaderboard.beautify_date(user.inserted_at) %>
       </:col>
     </.table>
   </div>
