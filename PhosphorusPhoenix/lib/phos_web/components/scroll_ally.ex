@@ -7,17 +7,16 @@ defmodule PhosWeb.Components.ScrollAlly do
       <div
         id={@id <> "infinite-scroll-body"}
         phx-update="stream"
-        phx-viewport-top={@ally_page > 1 && "prev-page"}
-        phx-viewport-bottom={!@end_of_ally? && "load-more"}
+        phx-viewport-bottom={!@meta.pagination.downstream && "load-more"}
         phx-value-archetype="ally"
         class={[
-          if(!@end_of_ally?, do: "pb-[calc(200vh)]"),
+          if(@meta.pagination.downstream, do: "pb-[calc(200vh)]"),
 
           "w-full px-4 lg:px-0"
         ]}
       >
         <.user_info_bar
-          :for={{dom_id, ally} <- @streams.ally_list}
+          :for={{dom_id, ally} <- @data}
           :if={!is_nil(Map.get(ally, :username))}
           id={"user-#{dom_id}-infobar"}
           user={ally}
@@ -75,8 +74,6 @@ defmodule PhosWeb.Components.ScrollAlly do
       Phos.Folk.friends(friend_id, page, :completed_at, limit) |> Map.get(:data, []) #|> Enum.map(&Map.get(&1, :friend))
 
   defp ally_list(_, _, _, _), do: []
-
-
 
   def check_more_ally(currid, userid, expected_ally_page, limit) do
     allies = ally_list(currid, userid, expected_ally_page, 24)

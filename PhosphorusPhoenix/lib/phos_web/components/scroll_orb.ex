@@ -8,16 +8,15 @@ defmodule PhosWeb.Components.ScrollOrb do
       <div
         id={@id <> "infinite-scroll-body"}
         phx-update="stream"
-        phx-viewport-top={@orb_page > 1 && "prev-page"}
-        phx-viewport-bottom={!@end_of_orb? && "load-more"}
+        phx-viewport-bottom={@meta.pagination.downstream && "load-more"}
         phx-value-archetype="orb"
         class={[
-          if(!@end_of_orb?, do: "pb-[calc(200vh)]"),
+          if(@meta.pagination.downstream, do: "pb-[calc(200vh)]"),
 
           "flex flex-col gap-2"
         ]}
       >
-        <div :for={{dom_id, orb} <- @streams.orbs} id={"orb-divided-#{dom_id}"}>
+        <div :for={{dom_id, orb} <- @data} id={"orb-divided-#{dom_id}"}>
           <.scry_orb id={"orb-history-#{dom_id}"} orb={orb} timezone={@timezone1} />
         </div>
       </div>

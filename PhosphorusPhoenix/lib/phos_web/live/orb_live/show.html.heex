@@ -99,10 +99,9 @@
         <.live_component
           module={PhosWeb.Components.ScrollOrb}
           id="infinite-home"
-          streams={@streams}
-          orb_page={@orb_page}
+          data={@streams.orbs}
           timezone1={@timezone}
-          end_of_orb?={@end_of_orb?}
+          meta={@orbs}
         />
       </div>
     </div>

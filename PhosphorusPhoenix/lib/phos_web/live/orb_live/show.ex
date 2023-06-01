@@ -14,8 +14,7 @@ defmodule PhosWeb.OrbLive.Show do
      |> assign(:ally, false)
      |> assign(:media, nil)
      |> assign(:comment, %Comments.Comment{})
-     |> assign(orb_page: 1)
-     |> assign(end_of_orb?: false)}
+    }
   end
 
   @impl true
@@ -34,7 +33,7 @@ defmodule PhosWeb.OrbLive.Show do
        |> apply_action(socket.assigns.live_action, params)
        |> assign(:parent_pid, socket.transport_pid)
        |> assign(:comments, Comments.get_root_comments_by_orb(orb.id) |> decode_to_comment_tuple_structure())
-       |> stream(:orbs, Action.orbs_by_initiators([orb.initiator.id], 1).data)
+       |> stream_assign(:orbs, Action.orbs_by_initiators([orb.initiator.id], 1))
       }
     else
       {:error, :not_found} -> raise PhosWeb.ErrorLive.FourOFour, message: "Orb Not Found"
@@ -241,17 +240,17 @@ defmodule PhosWeb.OrbLive.Show do
   def handle_event(
         "load-more",
         _,
-        %{assigns: %{orb_page: page, orb: orb}} = socket
+        %{assigns: %{orbs: orbs_meta, orb: orb}} = socket
       ) do
-    expected_orb_page = page + 1
+    expected_orb_page = orbs_meta.pagination.current + 1
     orbs = ScrollOrb.check_more_orb(orb.initiator_id, expected_orb_page)
 
     newsocket =
       if (Enum.empty?(orbs.data)) do
-        assign(socket, end_of_orb?: true)
+        assign(socket, orbs: orbs.meta)
       else
         Enum.reduce(orbs.data, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
-        |> assign(orb_page: orbs.meta.pagination.current)
+        |> assign(orbs: orbs.meta)
       end
 
     {:noreply, newsocket}
@@ -312,5 +311,11 @@ defmodule PhosWeb.OrbLive.Show do
     for c <- comments, into: [] do
       {String.split(to_string(c.path), ".") |> List.to_tuple(), c}
     end
+  end
+
+  defp stream_assign(socket, key, %{data: data, meta: meta} = params) do
+    socket
+    |> stream(key, data)
+    |> assign(key, meta)
   end
 end

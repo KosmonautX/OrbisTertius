@@ -97,10 +97,9 @@
       <.live_component
         module={PhosWeb.Components.ScrollOrb}
         id="infinite-orb-home"
-        streams={@streams}
+        data={@streams.orbs}
         timezone1={@timezone}
-        end_of_orb?={@end_of_orb?}
-        orb_page={@orb_page}
+        meta={@orbs}
       />
     </div>
     <!--Allies Tab Details in Mobile View Using action Button its go to new Route in Mobile View -->
@@ -127,11 +126,10 @@
         <.live_component
           module={PhosWeb.Components.ScrollAlly}
           id="infinite-ally-home-desktop"
-          streams={@streams}
+          data={@streams.ally_list}
           parent_pid={@parent_pid}
           current_user={@current_user}
-          end_of_ally?={@end_of_ally?}
-          ally_page={@ally_page}
+          meta={@ally_list}
         />
       </div>
     </div>
