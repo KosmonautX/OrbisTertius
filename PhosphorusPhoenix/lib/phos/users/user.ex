@@ -145,7 +145,7 @@ defmodule Phos.Users.User do
 
   defp validate_username(changeset, _opts \\ []) do
     changeset
-    |> validate_format(:username, ~r/^\w+$/, message: "letters and numbers only")
+    |> validate_format(:username, ~r/^[a-z0-9]*$/, message: "lower-case letters and numbers only")
     |> validate_length(:username, min: 5, max: 16)
     |> unique_constraint(:username, name: :unique_username)
   end

@@ -115,28 +115,41 @@ defmodule Phos.Action do
       |> Enum.map(fn orb -> orb.orbs end)
   end
 
-  def orbs_by_geohashes({hashes, your_id}, page, opts \\ []) do
-
-    sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
-    limit = Keyword.get(opts, :limit, 12)
-
-    from(l in Orb_Location,
-      as: :l,
-      where: l.location_id in ^hashes,
-      left_join: orbs in assoc(l, :orbs),
-      where: orbs.userbound != true,
-      select: orbs,
-      inner_join: initiator in assoc(orbs, :initiator),
+  def orbs_by_geohashes({hashes, your_id}) do
+    from(o in Phos.Action.Orb,
+      as: :orb,
+      where: o.userbound != true,
+      inner_join: l in assoc(o, :locs), on: l.location_id in ^hashes,
+      inner_join: c in assoc(o, :comments),
+      inner_join: initiator in assoc(o, :initiator),
       left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,
       left_join: root in assoc(branch, :root),
       select_merge: %{initiator: %{initiator | self_relation: root}},
-      inner_lateral_join: c in subquery(
-        from c in Phos.Comments.Comment,
-        where: c.orb_id == parent_as(:l).orb_id,
-        select: %{count: count()}
+      inner_lateral_join:
+      c_count in subquery(
+        from(c in Phos.Comments.Comment,
+          where: c.orb_id == parent_as(:orb).id,
+          select: %{count: count()}
+        )
       ),
-      select_merge: %{comment_count: c.count})
+      select_merge: %{comment_count: c_count.count},
+      inner_lateral_join: c_init in subquery(
+        from Phos.Comments.Comment,
+        where: [orb_id: parent_as(:orb).id, initiator_id: parent_as(:orb).initiator_id],
+        order_by: :inserted_at,
+        limit: 5,
+        select: [:id]
+      ), on: c_init.id == c.id,
+      left_join: p_c in assoc(c, :parent),
+      preload: [comments: {c, parent: p_c}])
+  end
+
+  def orbs_by_geohashes({hashes, your_id}, page, opts \\ []) do
+
+    sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
+    limit = Keyword.get(opts, :limit, 12)
+    orbs_by_geohashes({hashes, your_id})
       |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
@@ -144,24 +157,9 @@ defmodule Phos.Action do
     sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
     limit = Keyword.get(opts, :limit, 12)
 
-    from(l in Orb_Location,
-      as: :l,
-      where: l.location_id in ^hashes,
-      left_join: orbs in assoc(l, :orbs),
-      where: orbs.userbound != true and fragment("? @> ?", orbs.traits, ^traits),
-      select: orbs,
-      inner_join: initiator in assoc(orbs, :initiator),
-      left_join: branch in assoc(initiator, :relations),
-      on: branch.friend_id == ^your_id,
-      left_join: root in assoc(branch, :root),
-      select_merge: %{initiator: %{initiator | self_relation: root}},
-      inner_lateral_join: c in subquery(
-        from c in Phos.Comments.Comment,
-        where: c.orb_id == parent_as(:l).orb_id,
-        select: %{count: count()}
-      ),
-      select_merge: %{comment_count: c.count})
-      |> Repo.Paginated.all(page, sort_attribute, limit)
+    orbs_by_geohashes({hashes, your_id})
+    |> where([o], fragment("? @> ?", o.traits, ^traits))
+    |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
   def users_by_geohashes({hashes, your_id}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
@@ -276,7 +274,7 @@ defmodule Phos.Action do
     Repo.all(query, limit: 32)
     |> Enum.map(fn orbloc -> Map.put(orbloc.orbs, :comment_count, orbloc.comment_count) end)
     # |> Enum.map(fn orb -> orb.orbs end)
-    |> Enum.filter(fn orb -> orb.active == true end)
+    |> Enum.filter(fn orb -> orb.active == true  end)
   end
 
   def get_active_orbs_by_initiator(user_id) do

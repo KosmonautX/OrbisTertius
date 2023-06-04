@@ -28,6 +28,8 @@ defmodule Phos.Action.Orb do
     #belongs_to :users, User, references: :id, foreign_key: :acceptor, type: Ecto.UUID
 
     has_many :comments, Comment, references: :id
+
+    has_many :locs, Orb_Location, references: :id, foreign_key: :orb_id
     
     many_to_many :locations, Location, join_through: Orb_Location, on_replace: :delete, on_delete: :delete_all#, join_keys: [id: :id, location_id: :location_id]
     embeds_one :payload, Orb_Payload, on_replace: :delete
