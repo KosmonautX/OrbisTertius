@@ -19,5 +19,15 @@ defmodule Phos.Users.Geolocation do
     |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 
+  def places_changeset(orb, attrs) do
+    orb
+    |> cast(attrs, [:id,:location_description, :geohash])
+    |> validate_required([:id])
+    |> validate_inclusion(:id, ["home", "work"])
+    |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
+  end
+
+
+
   def timelock, do: DateTime.utc_now() |> DateTime.to_unix()
  end

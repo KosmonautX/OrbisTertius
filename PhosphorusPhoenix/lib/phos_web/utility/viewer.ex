@@ -165,7 +165,8 @@ defmodule PhosWeb.Util.Viewer do
            profile_pic: user.public_profile.profile_pic,
            banner_pic: user.public_profile.banner_pic,
            traits: user.public_profile.traits,
-           territories: user.public_profile.territories
+           territories: user.public_profile.territories,
+           places: user.public_profile.places
         }
       }
     end)
@@ -205,7 +206,8 @@ defmodule PhosWeb.Util.Viewer do
         hash: orb.central_geohash
       },
       parent: parent_orb_mapper(orb.parent),
-      media: (if orb.media, do: S3.get_all!("ORB", orb.id, "public"))
+      media: (if orb.media, do: S3.get_all!("ORB", orb.id, "public")),
+      comment_count: orb.comment_count
     }
   end
 

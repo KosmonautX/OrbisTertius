@@ -2,7 +2,7 @@ defmodule PhosWeb.DiscoveryChannel do
   use PhosWeb, :channel
 
   @visibility [8]
-  @location_type ["home", "work", "live"]
+  @location_type [:home, :work, :live]
 
   def join("discovery:usr:" <> id, _payload, socket) do
     if authorized?(socket, id) do

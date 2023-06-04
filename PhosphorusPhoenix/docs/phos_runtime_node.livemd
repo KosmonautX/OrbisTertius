@@ -223,10 +223,14 @@ from(l in Phos.Action.Orb_Location,
 ```
 
 ```elixir
-Phos.Users.get_user_by_username("lky")
+token =
+  "emrBcVu5TXy3BlK6wIigqW:APA91bHUaT1VQJmVAsZois0XpmOVAA60OOuJ9ZRG9tPOV3znabGCweo5-slZwYBh6CCaKycyiQUljbE5yBHONx9ZcGMvmNLoDbPsT0HCTV-oqg7b3iuUrU-nqyvhrNRkTbg4NZaPu6wg"
+
+Phos.Users.get_user_by_username("deexupery")
 |> Phos.Users.update_integrations_user(%{
   "integrations" => %{
-    "beacon" => %{"location" => %{"scope" => true, "subscribe" => [1, 2, "2", "4"]}}
+    "fcm_token" => token
+    # "beacon" => %{"location" => %{"scope" => true, "subscribe" => [1, 2, "2", "4"]}}
   }
 })
 
@@ -264,23 +268,72 @@ DOMParser.extract_link_from_markdown("https://kosmonautx.github.io/")
 ## 𓅫 Sparrow
 
 ```elixir
-comment =
-  Phos.Comments.get_comment!("6f31a864-dc0c-41fa-a692-face2bec68d5")
-  |> Phos.Repo.preload([:parent])
+# comment =
+#   Phos.Comments.get_comment!("6f31a864-dc0c-41fa-a692-face2bec68d5")
+#   |> Phos.Repo.preload([:parent])
 
-Phos.PlatformNotification.notify({"broadcast", "COMMENT", comment.id, "replied_comment"},
-  memory: %{
-    user_source_id: comment.initiator_id,
-    com_subject_id: comment.id,
-    message: "#{comment.body}"
-  },
-  to: comment.parent.initiator_id,
-  notification: %{
-    title: "#{comment.initiator.username} replied",
-    body: comment.body
-  },
-  data: %{
-    action_path: "/comland/comments/children/#{comment.id}"
-  }
-)
+# Phos.PlatformNotification.notify({"broadcast", "COMMENT", comment.id, "replied_comment"},
+#   memory: %{
+#     user_source_id: comment.initiator_id,
+#     com_subject_id: comment.id,
+#     message: "#{comment.body}"
+#   },
+#   to: comment.parent.initiator_id,
+#   notification: %{
+#     title: "#{comment.initiator.username} replied",
+#     body: comment.body
+#   },
+#   data: %{
+#     action_path: "/comland/comments/children/#{comment.id}"
+#   }
+# )
+
+apple =
+  Sparrow.FCM.V1.APNS.new(
+    %Sparrow.APNS.Notification{
+      headers: [],
+      alert_opts: [],
+      aps_dictionary_opts: [],
+      custom_data: []
+    }
+    |> Sparrow.APNS.Notification.add_title("")
+    |> Sparrow.APNS.Notification.add_body("")
+    # |> Sparrow.APNS.Notification.add_apns_expiration("1682678925")
+    |> Sparrow.APNS.Notification.add_apns_priority("5")
+    |> Sparrow.APNS.Notification.add_badge(1)
+    # |> Sparrow.APNS.Notification.add_apns_collapse_id("owen")
+    |> Sparrow.APNS.Notification.add_content_available(1),
+    # |> Sparrow.APNS.Notification.add_mutable_content()
+    # |> Sparrow.APNS.Notification.add_thread_id("wow")
+    fn -> {"authorization", ""} end
+  )
+
+token =
+  "emrBcVu5TXy3BlK6wIigqW:APA91bHUaT1VQJmVAsZois0XpmOVAA60OOuJ9ZRG9tPOV3znabGCweo5-slZwYBh6CCaKycyiQUljbE5yBHONx9ZcGMvmNLoDbPsT0HCTV-oqg7b3iuUrU-nqyvhrNRkTbg4NZaPu6wg"
+
+title = "another1"
+body = ""
+data = %{}
+
+[
+  Sparrow.FCM.V1.Notification.new(
+    :token,
+    token,
+    # [token] |> List.duplicate(2) |> List.flatten(),
+    title,
+    body,
+    data
+  )
+  |> Sparrow.FCM.V1.Notification.add_apns(apple)
+]
+|> List.duplicate(2)
+|> List.flatten()
+|> Sparrow.API.push()
+```
+
+```elixir
+[token]
+|> List.duplicate(200)
+|> List.flatten()
+|> Enum.chunk_every(499)
 ```

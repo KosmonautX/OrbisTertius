@@ -338,32 +338,7 @@ defmodule Phos.Action do
          {:ok, orb} = data ->
            orb = orb |> Repo.preload([:initiator])
            spawn(fn ->
-             geonotifiers =
-               notifiers_by_geohashes([orb.central_geohash])
-               |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end)
-               |> MapSet.new()
-               |> MapSet.delete(get_in(orb.initiator, [Access.key(:integrations, %{}), Access.key(:fcm_token, nil)]))
-
-             allynotifiers =
-               Phos.Folk.notifiers_by_friends(orb.initiator_id)
-               |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end)
-               |> MapSet.new()
-               |> MapSet.difference(geonotifiers)
-               |> MapSet.delete(get_in(orb.initiator, [Access.key(:integrations, %{}), Access.key(:fcm_token, nil)]))
-
-
-             Phos.Notification.push(
-               geonotifiers,
-               %{title: "#{orb.initiator.username} just posted across your street 🧭",
-                 body: orb.title},
-               %{action_path: "/orbland/orbs/#{orb.id}"})
-
-             Phos.Notification.push(
-               allynotifiers,
-               %{title: "Your ally 🤝 #{orb.initiator.username} just posted 💫",
-                 body: orb.title},
-               %{action_path: "/orbland/orbs/#{orb.id}"})
-
+             experimental_notify(orb)
            end)
            #spawn(fn -> user_feeds_publisher(orb) end)
            data
@@ -380,12 +355,7 @@ defmodule Phos.Action do
            orb = orb |> Repo.preload([:initiator])
            spawn(fn ->
              unless(Enum.member?(orb.traits, "mirage")) do
-               Phos.Notification.push(
-               Phos.Folk.notifiers_by_friends(orb.initiator_id)
-               |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end),
-               %{title: "Hey! 👋 You’ve got to check out what #{orb.initiator.username} just posted 🌠",
-                 body: orb.title},
-               %{action_path: "/orbland/orbs/#{orb.id}"})
+               experimental_notify(orb)
              end
              #spawn(fn -> user_feeds_publisher(orb) end)
            end)
@@ -780,5 +750,35 @@ defmodule Phos.Action do
       })
 
     create_orb(attrs)
+  end
+
+  def experimental_notify(orb) do
+    geonotifiers =
+      notifiers_by_geohashes([orb.central_geohash])
+      |> Enum.map(fn n -> n && Map.get(n, :fcm_token, nil) end)
+      |> MapSet.new()
+      |> MapSet.delete(get_in(orb.initiator, [Access.key(:integrations, %{}), Access.key(:fcm_token, nil)]))
+      |> tap(fn batch ->
+      Phos.PlatformNotification.Batch.silent_push(batch,
+        title: "#{orb.initiator.username} just posted across your street 🧭",
+        body: orb.title,
+        initiator_id: orb.initiator_id,
+        action_path: "/orbland/orbs/#{orb.id}",
+        cluster_id: "loc_orb")
+    end)
+
+
+      # allynotifiers
+      Phos.Folk.notifiers_by_friends(orb.initiator_id)
+      |> Enum.map(fn n -> n && Map.get(n, :fcm_token, nil) end)
+      |> MapSet.new()
+      |> MapSet.difference(geonotifiers)
+      |> MapSet.delete(get_in(orb.initiator, [Access.key(:integrations, %{}), Access.key(:fcm_token, nil)]))
+      |> Phos.PlatformNotification.Batch.silent_push(
+        title: "Your ally 🤝 #{orb.initiator.username} just posted 💫",
+      body: orb.title,
+      initiator_id: orb.initiator_id,
+      action_path: "/orbland/orbs/#{orb.id}",
+      cluster_id: "folk_orb")
   end
 end

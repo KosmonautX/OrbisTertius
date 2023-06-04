@@ -207,7 +207,7 @@ defmodule PhosWeb.OrbLive.Show do
       |> Map.put("id", comment_id)
       |> Map.put("path", Encoder.encode_lpath(comment_id))
 
-    case Comments.create_comment(comment_params) do
+    case Comments.create_comment_and_publish(comment_params) do
       {:ok, comment} ->
         comment = comment |> Phos.Repo.preload([:initiator, :orb])
         # updated_comments =
@@ -287,7 +287,7 @@ defmodule PhosWeb.OrbLive.Show do
   end
 
   defp save_comment(socket, :reply, comment_params) do
-    case Comments.create_comment(comment_params) do
+    case Comments.create_comment_and_publish(comment_params) do
       {:ok, comment} ->
         comment = comment |> Phos.Repo.preload([:initiator, :orb])
 

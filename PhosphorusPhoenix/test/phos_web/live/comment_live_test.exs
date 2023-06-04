@@ -42,6 +42,8 @@ defmodule PhosWeb.CommentLiveTest do
 
       assert view =~ "Comment added successfully"
       assert view =~ "some body"
+
+      on_exit(fn -> :timer.sleep(100) end)
     end
 
     test "create invalid comment", %{conn: conn, orb: orb} do
@@ -97,6 +99,8 @@ defmodule PhosWeb.CommentLiveTest do
       send(index_live.pid, {:child_comment, child_comment})
 
       assert render(index_live) =~ "Reply added successfully"
+
+      on_exit(fn -> :timer.sleep(100) end)
     end
 
     test "lists ancestor comments", %{conn: conn, orb: orb, user: user} do

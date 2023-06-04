@@ -379,7 +379,6 @@ defmodule Phos.Users do
         select: u,
         select_merge: %{self_relation: root}
     )
-    |> Phos.Repo.Preloader.lateral(:orbs, limit: 5)
   end
 
   def get_public_user_by_username(username, your_id) do

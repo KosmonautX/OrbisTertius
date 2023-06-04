@@ -159,6 +159,7 @@ defmodule PhosWeb.Router do
     get "/orbland/comments/root/:id", CommentController, :show_root
     get "/orbland/comments/children/:id", CommentController, :show_children
     get "/orbland/comments/ancestor/:id", CommentController, :show_ancestor
+    put "/orbland/comments/root/:id/report", TribunalController, :report_comment
 
     scope "/folkland" do
       get "/stream/self", OrbController, :show_friends

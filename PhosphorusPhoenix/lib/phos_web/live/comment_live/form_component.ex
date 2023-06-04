@@ -25,7 +25,7 @@ defmodule PhosWeb.CommentLive.FormComponent do
       |> Map.put("id", comment_id)
       |> Map.put("path", Encoder.encode_lpath(comment_id))
 
-    case Comments.create_comment(comment_params) do
+    case Comments.create_comment_and_publish(comment_params) do
       {:ok, comment} ->
         send(self(), {:new_comment, comment})
 
@@ -46,7 +46,7 @@ defmodule PhosWeb.CommentLive.FormComponent do
       |> Map.put("id", comment_id)
       |> Map.put("path", Encoder.encode_lpath(comment_id, parent_path))
 
-    case Comments.create_comment(comment_params) do
+    case Comments.create_comment_and_publish(comment_params) do
       {:ok, comment} ->
         send(self(), {:child_comment, comment})
 
