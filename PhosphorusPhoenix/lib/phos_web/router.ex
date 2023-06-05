@@ -169,6 +169,7 @@ defmodule PhosWeb.Router do
       put "/friends/accept", FriendController, :accept
       get "/self/requests", FriendController, :requests
       get "/self/pending", FriendController, :pending
+      get "/self/blocked", FriendController, :blocked
       resources "/friends", FriendController, except: [:new, :edit, :update]
     end
 

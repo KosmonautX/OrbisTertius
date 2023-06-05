@@ -24,8 +24,16 @@ defmodule PhosWeb.API.FriendController do
     render(conn, :paginated, friends: friends)
   end
 
+  def create(%{assigns: %{current_user: user}} = conn, %{"acceptor_id" => acceptor_id, "state" => state}) do
+    with {:ok, %RelationRoot{} = relation} <- Folk.add_friend(user.id, acceptor_id, state) do
+      conn
+      |> put_status(:created)
+      |> render(:show, relation: relation)
+    end
+  end
+
   def create(%{assigns: %{current_user: user}} = conn, %{"acceptor_id" => acceptor_id}) do
-    with {:ok, %RelationRoot{} = relation} <- Folk.add_friend(user.id, acceptor_id) do
+    with {:ok, %RelationRoot{} = relation} <- Folk.add_friend(user.id, acceptor_id, "requested") do
       conn
       |> put_status(:created)
       |> render(:show, relation: relation)
@@ -56,19 +64,15 @@ defmodule PhosWeb.API.FriendController do
       meta: requested_friends.meta )
   end
 
+  def blocked(%{assigns: %{current_user: user}} = conn, %{"page" => page}) do
+    blocked = Folk.blocked(user.id, page)
+    render(conn, :paginated, relations: blocked.data |> self_initiated_enricher(user.id),
+      meta: blocked.meta )
+  end
+
   defp self_initiated_enricher(relations, user_id) when is_list(relations) do
     relations
     |> Enum.map(fn relation -> %{relation | self_initiated: user_id == relation.initiator_id} end)
-  end
-
-  def block(%{assigns: %{current_user: user}} = conn, %{"relation_id" => rel_id}) do
-    root = Folk.get_relation!(rel_id)
-    with true <- (root.acceptor_id == user.id) or (root.initiator_id == user.id) ,
-    {:ok, %RelationRoot{} = relation} <- Folk.update_relation(root, %{"state" => "blocked"}) do
-      conn
-      |> put_status(200)
-      |> render(:show, relation: relation)
-    end
   end
 
   def accept(%{assigns: %{current_user: user}} = conn, %{"relation_id" => rel_id}) do
