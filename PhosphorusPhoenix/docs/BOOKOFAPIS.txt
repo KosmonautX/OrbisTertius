@@ -226,11 +226,12 @@ POST :ipAddress/folkland/friends
 -> run-hook (restclient-set-var ":rel" (cdr (assq 'relation_id (assq 'data (json-read)))))
 :auth-headers
 {
-    "acceptor_id": ":lky_id"
+    "acceptor_id": ":lky_id",
+    "state": "blocked"
 }
 
 ## Delete Relation Resource (reset everything)
-DELETE :ipAddress/folkland/friends/e9d5219f-76fe-4077-8a66-2e8fce6c6a2d
+DELETE :ipAddress/folkland/friends/:rel
 :auth-headers
 
 ## Ended the friendship
@@ -255,6 +256,9 @@ GET :ipAddress/folkland/self/requests?page=1
 GET :ipAddress/folkland/self/pending?page=1
 :auth-headers
 
+## List of requests from you
+GET :ipAddress/folkland/self/blocked?page=1
+:auth-headers
 
 ### ! Orbland Calls
 ## Read Orb
