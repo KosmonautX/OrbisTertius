@@ -114,6 +114,7 @@ defmodule PhosWeb.Router do
     live "/users/:id/edit", UserLive.Index, :edit
 
     live "/leaderboard", LeaderboardLive.Index, :index
+    live "/leaderboard/:filter_by", LeaderboardLive.Index, :index
 
     live "/notifications", NotificationLive.Index, :index
   end

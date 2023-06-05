@@ -63,7 +63,8 @@
         |> get_in([
           Access.key(:public_profile, %{}),
           Access.key(:birthday, nil)
-        ]) %>
+        ])
+        |> Phos.Leaderboard.beautify_date() %>
       </:col>
 
       <:col :let={user} classes="sticky left-0" label="Age">

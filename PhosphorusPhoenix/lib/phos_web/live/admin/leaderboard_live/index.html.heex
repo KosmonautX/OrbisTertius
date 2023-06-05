@@ -3,17 +3,23 @@
     <span class="flex py-3 mx-2 font-bold text-left uppercase align-middle bg-transparent border-gray-200 shadow-none text-base text-slate-400">
       See Top Users By
     </span>
-    <.button phx-click="orb_count" class="button button-sm p-0 mx-2">Orbs Created</.button>
-    <.button phx-click="ally_count" class="button button-sm p-0 mx-2">Allies</.button>
-    <.button phx-click="comment_count" class="button button-sm p-0 mx-2">Comments</.button>
-    <.button phx-click="chat_count" class="button button-sm p-0 mx-2">Chats Initiated</.button>
+    <.simple_form :let={f} for={:user} phx-change="filter">
+      <.input
+        name="filter_by"
+        id="adminleaderboard-category"
+        field={{f, :category}}
+        type="select"
+        options={[orbs: "orbs", allies: "allies", comments: "comments", chats: "chats"]}
+        value="orbs"
+      />
+    </.simple_form>
 
     <span class="flex py-3 mx-2 font-bold text-left uppercase align-middle bg-transparent border-gray-200 shadow-none text-base text-slate-400">
       | See Top Orbs By
     </span>
     <.button phx-click="orb_rank" class="button button-sm p-0 mx-2">Comments</.button>
   </div>
-  <div class="">
+  <div>
     <.table :if={not @orb_view} id="users" rows={@users}>
       <:col :let={user} classes="sticky left-0" label="User">
         <.admin_user_preview user={user} id={"admin_user_preview_for_#{user.id}"} />
@@ -48,4 +54,14 @@
       </:col>
     </.table>
   </div>
+  <%!-- <div class="px-4 py-3 w-full sm:flex sm:flex-1 sm:items-center sm:justify-between">
+    <.live_component
+      module={PhosWeb.Components.Pagination}
+      limit={@limit}
+      meta={@pagination}
+      id="paginate"
+      route_path={~p"/admin/leaderboard/"}
+      current={@current}
+    />
+  </div> --%>
 </div>
