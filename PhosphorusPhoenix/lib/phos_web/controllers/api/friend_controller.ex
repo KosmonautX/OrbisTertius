@@ -90,7 +90,17 @@ defmodule PhosWeb.API.FriendController do
         |> render(:relation_error, reason: reason)
     end
   end
-
+  
+  def block(%{assigns: %{current_user: user}} = conn, %{"relation_id" => rel_id}) do
+    root = Folk.get_relation!(rel_id)
+    with true <- (root.acceptor_id == user.id) or (root.initiator_id == user.id) ,
+    {:ok, %RelationRoot{} = relation} <- Folk.update_relation(root, %{"state" => "blocked"}) do
+      conn
+      |> put_status(200)
+      |> render(:show, relation: relation)
+    end
+  end
+ 
   def show_discovery(%{assigns: %{current_user: user}} = conn, %{"id" => hashes, "page" => page}) do
     geohashes = String.split(hashes, ",")
     |> Enum.map(fn hash -> String.to_integer(hash) |> :h3.parent(8) end)
