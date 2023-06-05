@@ -7,7 +7,7 @@ defmodule PhosWeb.Components.ScrollAlly do
       <div
         id={@id <> "infinite-scroll-body"}
         phx-update="stream"
-        phx-viewport-bottom={!@meta.pagination.downstream && "load-more"}
+        phx-viewport-bottom={@meta.pagination.downstream && "load-more"}
         phx-value-archetype="ally"
         class={[
           if(@meta.pagination.downstream, do: "pb-[calc(200vh)]"),
@@ -60,34 +60,23 @@ defmodule PhosWeb.Components.ScrollAlly do
     case friend_id == current_user_id do
       false ->
         Phos.Folk.friends({friend_id, current_user_id}, page, :completed_at, limit)
-        |> Map.get(:data, [])
+        # |> Map.get(:data, [])
 
       _ ->
         Phos.Folk.friends(current_user_id, page, :completed_at, limit)
-        |> Map.get(:data, [])
+        # |> Map.get(:data, [])
         #|> Enum.map(&Map.get(&1, :friend))
     end
   end
 
   defp ally_list(nil, friend_id, page, limit),
     do:
-      Phos.Folk.friends(friend_id, page, :completed_at, limit) |> Map.get(:data, []) #|> Enum.map(&Map.get(&1, :friend))
+      Phos.Folk.friends(friend_id, page, :completed_at, limit)
+      # |> Map.get(:data, []) #|> Enum.map(&Map.get(&1, :friend))
 
   defp ally_list(_, _, _, _), do: []
 
   def check_more_ally(currid, userid, expected_ally_page, limit) do
-    allies = ally_list(currid, userid, expected_ally_page, 24)
-    count = length(allies)
-    %{
-      data: allies,
-      meta: %{
-        pagination: %{
-          downstream: !Enum.empty?(allies),
-          upstream: expected_ally_page > 1,
-          current: expected_ally_page,
-          total: 1234,
-          start: (expected_ally_page - 1) * limit + 1 ,
-          end: (expected_ally_page - 1) * limit + limit
-    }}}
+    ally_list(currid, userid, expected_ally_page, 24)
   end
 end
