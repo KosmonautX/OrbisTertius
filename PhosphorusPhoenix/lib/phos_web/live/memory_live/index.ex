@@ -3,6 +3,7 @@ defmodule PhosWeb.MemoryLive.Index do
 
   alias Phos.Message
   alias Phos.Message.Memory
+  alias PhosWeb.Presence
 
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
@@ -22,6 +23,17 @@ defmodule PhosWeb.MemoryLive.Index do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
+  defp track_user(user, relation_id, pid) when not is_nil(pid) do
+    case Presence.track(pid, "online_users", user.id, %{relation_id: relation_id}) do
+      {:ok, _ref} -> :ok
+      {:error, {:already_tracked, ^pid, topic, key}} ->
+        Presence.untrack(pid, topic, key)
+        track_user(user, relation_id, pid)
+      _ -> :error
+    end
+  end
+  defp track_user(_user, _rel_id, _pid), do: :ok
+
   defp apply_action(%{assigns: %{current_user: your}} = socket, :show, %{"username" => username})
     when your.username == username, do: push_navigate(socket, to: ~p"/memories")
 
@@ -34,6 +46,7 @@ defmodule PhosWeb.MemoryLive.Index do
 
     send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_dekstop, memory: %Memory{})
     send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_mobile, memory: %Memory{})
+    track_user(your, rel_id, socket.transport_pid)
 
     socket
     |> assign(:page_title, "Chatting with @" <> username)

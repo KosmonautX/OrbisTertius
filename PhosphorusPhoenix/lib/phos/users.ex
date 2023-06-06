@@ -53,6 +53,7 @@ defmodule Phos.Users do
   #   """
   def get_user_by_fyr(id), do: Repo.get_by(User, fyr_id: id) |> Repo.preload([:private_profile])
 
+  @decorate cacheable(cache: Phos.Cache, key: {User, username})
   def get_user_by_username(username), do: Repo.get_by(User, username: username)
 
   def get_admin do
