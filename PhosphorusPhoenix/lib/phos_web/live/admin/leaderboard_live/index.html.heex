@@ -11,6 +11,18 @@
         type="select"
         options={[orbs: "orbs", allies: "allies", comments: "comments", chats: "chats"]}
       />
+
+      <%= date_input(f, :startdate,
+        value: @filters.startdate,
+        class:
+          "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+      ) %>
+
+      <%= date_input(f, :enddate,
+        value: @filters.enddate,
+        class:
+          "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+      ) %>
     </.simple_form>
 
     <span class="flex py-3 mx-2 font-bold text-left uppercase align-middle bg-transparent border-gray-200 shadow-none text-base text-slate-400">
@@ -18,38 +30,6 @@
     </span>
     <.button phx-click="orb_rank" class="button button-sm p-0 mx-2">Comments</.button>
   </div>
-
-  <%!-- <div
-    phx-viewport-bottom={@user_meta.pagination.downstream && "load-more"}
-    class={[
-      if(@user_meta.pagination.downstream, do: "pb-[calc(200vh)]"),
-      "flex flex-col gap-2"
-    ]}
-  >
-    <%= for {_, user} <- @streams.users do %>
-      <.admin_user_preview user={user} id={"admin_user_preview_for_#{user.id}"} />
-    <% end %>
-  </div> --%>
-  <%!-- <div phx-viewport-bottom="load-more">
-    <table  id="users">
-      <tr>
-        <th>User</th>
-        <th>Count</th>
-        <th>Date Created</th>
-      </tr>
-      <tr :for={{dom_id, user} <- @streams.users} id={dom_id}>
-        <td classes="sticky left-0" label="User">
-          <.admin_user_preview user={user} id={"admin_user_preview_for_#{user.id}"} />
-        </td>
-        <td classes="sticky left-0" label="Count">
-          <%= user.count %>
-        </td>
-        <td classes="sticky left-0" label="Created on">
-          <%= Leaderboard.beautify_date(user.inserted_at) %>
-        </td>
-      </tr>
-    </table>
-  </div> --%>
 
   <div>
     <table

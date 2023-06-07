@@ -11,6 +11,19 @@ defmodule Phos.Leaderboard do
   #   User
   #   |> Repo.Paginated.all(limit: limit, page: page)
   # end
+  def list_user_counts(limit, page, :orbs, filters) do
+    startdt = Keyword.get(filters, :startdt)
+    enddt = Keyword.get(filters, :enddt)
+
+    from(u in User,
+    join: o in assoc(u, :orbs),
+    where: o.inserted_at > ^startdt,
+    where: o.inserted_at < ^enddt,
+    group_by: u.id,
+    order_by: [desc: count(o)],
+    select_merge: %{count: count(o)})
+    |> Repo.Paginated.all(limit: limit, page: page)
+  end
 
   def list_user_counts(limit, page, :chats) do
     query =
@@ -27,29 +40,27 @@ defmodule Phos.Leaderboard do
       on: u.id == q.uid,
       group_by: u.id,
       order_by: [desc: count(u.id)],
-      select_merge: %{count: count(u.id)},
+      select_merge: %{count: count(u.id)}
     )
     |> Repo.Paginated.all(limit: limit, page: page)
   end
 
-  def list_user_counts(limit, page, :comments) do
-    from(u in User,
-    join: c in Comment,
-    on: c.initiator_id == u.id,
-    group_by: u.id,
-    order_by: [desc: count(c)],
-    select_merge: %{count: count(c)})
-    |> Repo.Paginated.all(limit: limit, page: page)
-  end
+  # def list_user_counts(limit, page, :comments, filters) do
+  #   startdt = Keyword.get(filters, :startdt)
+  #   enddt = Keyword.get(filters, :enddt)
 
-  def list_user_counts(limit, page, :orbs) do
-    from(u in User,
-    join: o in assoc(u, :orbs),
-    group_by: u.id,
-    order_by: [desc: count(o)],
-    select_merge: %{count: count(o)})
-    |> Repo.Paginated.all(limit: limit, page: page)
-  end
+  #   from(u in User,
+  #   join: c in Comment,
+  #   on: c.initiator_id == u.id,
+  #   where: c.inserted_at > ^startdt,
+  #   where: c.inserted_at < ^enddt,
+  #   group_by: u.id,
+  #   order_by: [desc: count(c)],
+  #   select_merge: %{count: count(c)})
+  #   |> Repo.Paginated.all(limit: limit, page: page)
+  # end
+
+
 
   def list_user_counts(limit, page, :allies) do
     from(u in User,
