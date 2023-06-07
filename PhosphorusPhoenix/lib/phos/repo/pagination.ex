@@ -50,8 +50,8 @@ defmodule Phos.Repo.Paginated do
     case Keyword.fetch(opts, :page) do
       # page-based
       {:ok, page} ->
-        total =  Phos.Repo.aggregate(query, :count, sort)
-        page_response(dao, page, total, limit)
+        # total =  Phos.Repo.aggregate(query, :count, sort)
+        page_response(dao, page, 250, limit)
 
       :error ->
       cond do

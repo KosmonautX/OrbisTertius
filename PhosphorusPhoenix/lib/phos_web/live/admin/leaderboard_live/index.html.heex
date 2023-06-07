@@ -10,7 +10,6 @@
         field={{f, :category}}
         type="select"
         options={[orbs: "orbs", allies: "allies", comments: "comments", chats: "chats"]}
-        value="orbs"
       />
     </.simple_form>
 
@@ -19,8 +18,63 @@
     </span>
     <.button phx-click="orb_rank" class="button button-sm p-0 mx-2">Comments</.button>
   </div>
+
+  <%!-- <div
+    phx-viewport-bottom={@user_meta.pagination.downstream && "load-more"}
+    class={[
+      if(@user_meta.pagination.downstream, do: "pb-[calc(200vh)]"),
+      "flex flex-col gap-2"
+    ]}
+  >
+    <%= for {_, user} <- @streams.users do %>
+      <.admin_user_preview user={user} id={"admin_user_preview_for_#{user.id}"} />
+    <% end %>
+  </div> --%>
+  <%!-- <div phx-viewport-bottom="load-more">
+    <table  id="users">
+      <tr>
+        <th>User</th>
+        <th>Count</th>
+        <th>Date Created</th>
+      </tr>
+      <tr :for={{dom_id, user} <- @streams.users} id={dom_id}>
+        <td classes="sticky left-0" label="User">
+          <.admin_user_preview user={user} id={"admin_user_preview_for_#{user.id}"} />
+        </td>
+        <td classes="sticky left-0" label="Count">
+          <%= user.count %>
+        </td>
+        <td classes="sticky left-0" label="Created on">
+          <%= Leaderboard.beautify_date(user.inserted_at) %>
+        </td>
+      </tr>
+    </table>
+  </div> --%>
+
   <div>
-    <.table :if={not @orb_view} id="users" rows={@users}>
+    <table
+      phx-viewport-bottom={@user_meta.pagination.downstream && "load-more"}
+      phx-update="stream"
+      id="users"
+    >
+      <%!-- <tr>
+        <th>User</th>
+        <th>Count</th>
+        <th>Date Created</th>
+      </tr> --%>
+      <tr :for={{dom_id, user} <- @streams.users} id={dom_id}>
+        <td classes="sticky left-0" label="User">
+          <.admin_user_preview user={user} id={"admin_user_preview_for_#{user.id}"} />
+        </td>
+        <td classes="sticky left-0" label="Count">
+          <%= user.count %>
+        </td>
+        <td classes="sticky left-0" label="Created on">
+          <%= Leaderboard.beautify_date(user.inserted_at) %>
+        </td>
+      </tr>
+    </table>
+    <%!-- <.table :if={not @orb_view} id="users" rows={user_fetcher(@streams.users, @users)}>
       <:col :let={user} classes="sticky left-0" label="User">
         <.admin_user_preview user={user} id={"admin_user_preview_for_#{user.id}"} />
       </:col>
@@ -32,9 +86,9 @@
       <:col :let={user} classes="sticky left-0" label="Created on">
         <%= Leaderboard.beautify_date(user.inserted_at) %>
       </:col>
-    </.table>
-
-    <.table :if={@orb_view} id="users" rows={@orbs}>
+    </.table> --%>
+    <%!-- 
+    <.table :if={@orb_view} id="users" rows={user_fetcher(@streams.users, @users_temp)}>
       <:col :let={orb} classes="sticky left-0" label="Orb Link">
         <.link navigate={~p"/orb/#{orb.id}"} class="button button-sm">
           View Orb in SB
@@ -53,8 +107,8 @@
         <%= Leaderboard.beautify_date(orb.inserted_at) %>
       </:col>
     </.table>
-  </div>
-  <%!-- <div class="px-4 py-3 w-full sm:flex sm:flex-1 sm:items-center sm:justify-between">
+  </div> --%>
+    <%!-- <div class="px-4 py-3 w-full sm:flex sm:flex-1 sm:items-center sm:justify-between">
     <.live_component
       module={PhosWeb.Components.Pagination}
       limit={@limit}
@@ -62,6 +116,6 @@
       id="paginate"
       route_path={~p"/admin/leaderboard/"}
       current={@current}
-    />
-  </div> --%>
+    /> --%>
+  </div>
 </div>

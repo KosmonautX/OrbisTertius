@@ -7,19 +7,24 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
 
 
   def mount(_params, _session, socket) do
-    limit = 10
+    limit = 20
     page = 1
-    %{data: users, meta: meta} = Leaderboard.list_user_counts(limit, page, :orbs)
+    %{data: users, meta: user_meta} = Leaderboard.list_user_counts(limit, page, :orbs)
     %{data: orbs} = Leaderboard.rank_orbs(limit, page)
 
    {:ok,
     socket
-    |> assign(users: users)
+    # |> assign(user_list: users)
     |> assign(orb_view: false)
     |> assign(orbs: orbs)
+    |> assign(:filter_by, :orbs)
     |> assign(limit: limit)
-    |> assign(current: page)
-    |> assign(pagination: meta.pagination)
+    # |> assign(current: page)
+    # |> assign(pagination: meta.pagination)
+    |> assign(:users, users)
+    |> stream(:users, users)
+    |> assign(:user_meta, user_meta)
+    # |> stream_assign(:users, Leaderboard.list_user_counts(limit, page, :orbs))
   }
   end
 
@@ -34,87 +39,55 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
 
     {:noreply,
       socket
-      |> assign(users: users)
+      |> assign(user_list: users)
       |> assign(current: expected_page)
       |> assign(pagination: meta.pagination)
     }
   end
 
-  def handle_params(%{"filter_by" => option}, _url, %{assigns: %{limit: limit, pagination: pagination}} = socket) do
+  # def handle_event("filter", _url, %{assigns: %{limit: limit, pagination: pagination}} = socket) do
 
-    case option do
-      "orbs" ->
-        Leaderboard.list_user_counts(limit, pagination.current, :orbs)
-      "allies" ->
-        Leaderboard.list_user_counts(limit, pagination.current, :relations)
-      "comments" ->
-        Leaderboard.list_user_counts(limit, pagination.current, :comments)
-      "chats" ->
-        Leaderboard.list_user_counts(limit, pagination.current, :chats)
-    end
-    {:noreply, socket}
-  end
+  #   case option do
+  #     "orbs" ->
+  #       Leaderboard.list_user_counts(limit, pagination.current, :orbs)
+  #     "allies" ->
+  #       Leaderboard.list_user_counts(limit, pagination.current, :relations)
+  #     "comments" ->
+  #       Leaderboard.list_user_counts(limit, pagination.current, :comments)
+  #     "chats" ->
+  #       Leaderboard.list_user_counts(limit, pagination.current, :chats)
+  #   end
+  #   {:noreply, socket}
+  # end
 
   def handle_params(_params, _url, socket), do: {:noreply, socket}
 
-  def handle_event("filter", %{"filter_by" => option}, %{assigns: %{limit: limit, pagination: pagination}} = socket) do
-    %{data: users, meta: meta} =
-      case option do
-        "orbs" ->
-          Leaderboard.list_user_counts(limit, pagination.current, :orbs)
-        "allies" ->
-          Leaderboard.list_user_counts(limit, pagination.current, :relations)
-        "comments" ->
-          Leaderboard.list_user_counts(limit, pagination.current, :comments)
-        "chats" ->
-          Leaderboard.list_user_counts(limit, pagination.current, :chats)
-      end
+  def handle_event(
+          "load-more",
+          _,
+          %{assigns: %{limit: limit, user_meta: %{pagination: pagination}}} = socket
+        ) do
+      expected_page = pagination.current + 1
+
+      %{data: newusers, meta: newmeta} = Leaderboard.list_user_counts(limit, expected_page, :orbs)
+      newsocket = Enum.reduce(newusers, socket, fn user, acc -> stream_insert(acc, :users, user) end)
+      {:noreply, newsocket |> assign(user_meta: newmeta)}
+
+  end
+  def handle_event("filter", %{"filter_by" => option} , %{assigns: %{limit: limit, user_meta: %{pagination: pagination} = user_meta}} = socket) do
+    IO.inspect(option)
+    %{data: users} = Leaderboard.list_user_counts(limit, pagination.current, String.to_atom(option))
+
 
     {:noreply,
     socket
-    |> assign(users: users)
+    |> stream(:users, users, reset: true)
+    |> assign(user_meta: user_meta)
     |> assign(orb_view: false)
+    # |> assign(filter_by: option)
+
     }
   end
-  # def handle_event("orb_count", _, %{assigns: %{limit: limit}} = socket) do
-  #   %{data: users} = Leaderboard.list_user_counts(limit, 1, :orbs)
-  #   {:noreply,
-  #   socket
-
-  #   |> assign(orb_view: false)
-  # }
-  # end
-
-  # def handle_event("ally_count", _, %{assigns: %{pagination: pagination, limit: limit}} = socket) do
-  #   %{data: users} = Leaderboard.list_user_counts(limit, 1, :relations)
-  #   {:noreply,
-  #   socket
-  #   |> assign(users: users)
-  #   |> assign(orb_view: false)
-  #   |> assign(pagination: pagination)
-  #   |> assign(current: 1)
-  # }
-  # end
-
-  # def handle_event("comment_count", _, %{assigns: %{pagination: pagination, limit: limit}} = socket) do
-  #   %{data: users} = Leaderboard.list_user_counts(limit, 1, :comments)
-  #   {:noreply,
-  #   socket
-  #   |> assign(users: users)
-  #   |> assign(orb_view: false)
-  #   |> assign(pagination: pagination)
-  #   |> assign(current: 1)
-  # }  end
-
-  # def handle_event("chat_count", _, %{assigns: %{pagination: pagination, limit: limit}} = socket) do
-  #   %{data: users} = Leaderboard.list_user_counts(limit, 1, :chats)
-  #   {:noreply,
-  #   socket
-  #   |> assign(users: users)
-  #   |> assign(orb_view: false)
-  #   |> assign(pagination: pagination)
-  #   |> assign(current: 1)
-  # }  end
 
   def handle_event("orb_rank", _, socket) do
     {:noreply,
@@ -122,6 +95,8 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
     |> assign(orb_view: true)
     }
   end
+
+
 
   defp parse_integer(text) do
     try do
@@ -131,4 +106,17 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
     end
   end
 
+  defp stream_assign(socket, key, %{data: data, meta: meta} = params) do
+    socket
+    |> stream(key, data)
+    |> assign(key, meta)
+  end
+
+  defp user_fetcher(streamusers, currentUsers) do
+    # IO.inspect(streamusers)
+    newUsers = Enum.map(streamusers.inserts, fn {_, _, user, _} -> user end)
+    currentUsers |> Enum.count() |> IO.inspect()
+    newUsers
+    # Enum.reduce(streamorbs.inserts, orbs, fn {_, _, orb, _}, acc -> [orb | acc] end)
+  end
 end

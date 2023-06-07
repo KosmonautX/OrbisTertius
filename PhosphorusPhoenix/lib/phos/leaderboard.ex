@@ -51,7 +51,7 @@ defmodule Phos.Leaderboard do
     |> Repo.Paginated.all(limit: limit, page: page)
   end
 
-  def list_user_counts(limit, page, :relations) do
+  def list_user_counts(limit, page, :allies) do
     from(u in User,
     join: o in assoc(u, :relations),
     group_by: u.id,
