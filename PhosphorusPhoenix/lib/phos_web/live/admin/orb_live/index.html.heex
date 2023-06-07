@@ -18,12 +18,14 @@
       </.form>
     </div>
   </div>
+
   <div class="">
-    <.table id="orbs" rows={@orbs}>
+
+    <.table id="orbs" rows={@orbs} >
       <:col :let={orb} classes="sticky left-0" label="Initiator">
         <.admin_user_preview user={orb.initiator} id={"admin_user_preview_for_#{orb.id}"} />
       </:col>
-        <:col :let={orb} label="Public Name">
+      <:col :let={orb} label="Public Name">
         <%= orb
         |> get_in([
           Access.key(:initiator, %{}),
