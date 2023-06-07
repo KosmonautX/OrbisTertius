@@ -70,7 +70,7 @@ defmodule Phos.Comments do
       notification: %{
         title: "#{comment.initiator.username} replied",
         body: comment.body,
-        silent: true
+        silent: false
       }, data: %{
         cluster_id: comment.orb_id,
         action_path: "/comland/comments/children/#{comment.id}"
@@ -87,7 +87,7 @@ defmodule Phos.Comments do
       notification: %{
         title: "#{comment.initiator.username} replied to a comment within your post",
         body: comment.body,
-        silent: true
+        silent: false
       }, data: %{
         cluster_id: orb.id,
         action_path: "/comland/comments/children/#{comment.id}"
@@ -103,7 +103,7 @@ defmodule Phos.Comments do
       notification: %{
         title: "#{comment.initiator.username} replied",
         body: comment.body,
-        silent: true
+        silent: false
       }, data: %{
         cluster_id: orb.id,
         action_path: "/comland/comments/root/#{comment.id}"

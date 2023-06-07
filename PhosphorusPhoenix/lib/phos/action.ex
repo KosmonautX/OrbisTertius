@@ -764,7 +764,7 @@ defmodule Phos.Action do
       |> MapSet.new()
       |> MapSet.delete(get_in(orb.initiator, [Access.key(:integrations, %{}), Access.key(:fcm_token, nil)]))
       |> tap(fn batch ->
-      Phos.PlatformNotification.Batch.silent_push(batch,
+      Phos.PlatformNotification.Batch.push(batch,
         title: "#{orb.initiator.username} just posted across your street 🧭",
         body: orb.title,
         initiator_id: orb.initiator_id,
@@ -779,7 +779,7 @@ defmodule Phos.Action do
       |> MapSet.new()
       |> MapSet.difference(geonotifiers)
       |> MapSet.delete(get_in(orb.initiator, [Access.key(:integrations, %{}), Access.key(:fcm_token, nil)]))
-      |> Phos.PlatformNotification.Batch.silent_push(
+      |> Phos.PlatformNotification.Batch.push(
         title: "Your ally 🤝 #{orb.initiator.username} just posted 💫",
       body: orb.title,
       initiator_id: orb.initiator_id,
