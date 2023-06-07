@@ -120,7 +120,7 @@ defmodule Phos.Action do
       as: :orb,
       where: o.userbound != true,
       inner_join: l in assoc(o, :locs), on: l.location_id in ^hashes,
-      inner_join: c in assoc(o, :comments),
+      left_join: c in assoc(o, :comments),
       inner_join: initiator in assoc(o, :initiator),
       left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,

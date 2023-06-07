@@ -261,8 +261,7 @@ defmodule Phos.Folk do
   def blocked(user_id, page, sort_attribute, limit) do
     query = from r in RelationRoot,
       where: r.initiator_id == ^user_id and r.state == "blocked",
-      preload: [:initiator]
-
+      preload: [:acceptor]
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
   end
