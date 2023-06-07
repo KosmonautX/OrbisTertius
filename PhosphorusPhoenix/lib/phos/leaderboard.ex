@@ -45,29 +45,34 @@ defmodule Phos.Leaderboard do
     |> Repo.Paginated.all(limit: limit, page: page)
   end
 
-  # def list_user_counts(limit, page, :comments, filters) do
-  #   startdt = Keyword.get(filters, :startdt)
-  #   enddt = Keyword.get(filters, :enddt)
+  def list_user_counts(limit, page, :comments, filter_dates) do
+    startdt = Keyword.get(filter_dates, :startdt)
+    enddt = Keyword.get(filter_dates, :enddt)
 
-  #   from(u in User,
-  #   join: c in Comment,
-  #   on: c.initiator_id == u.id,
-  #   where: c.inserted_at > ^startdt,
-  #   where: c.inserted_at < ^enddt,
-  #   group_by: u.id,
-  #   order_by: [desc: count(c)],
-  #   select_merge: %{count: count(c)})
-  #   |> Repo.Paginated.all(limit: limit, page: page)
-  # end
-
-
-
-  def list_user_counts(limit, page, :allies) do
     from(u in User,
-    join: o in assoc(u, :relations),
+    join: c in Comment,
+    on: c.initiator_id == u.id,
+    where: c.inserted_at > ^startdt,
+    where: c.inserted_at < ^enddt,
     group_by: u.id,
-    order_by: [desc: count(o)],
-    select_merge: %{count: count(o)},
+    order_by: [desc: count(c)],
+    select_merge: %{count: count(c)})
+    |> Repo.Paginated.all(limit: limit, page: page)
+  end
+
+
+
+  def list_user_counts(limit, page, :allies, filter_dates) do
+    startdt = Keyword.get(filter_dates, :startdt)
+    enddt = Keyword.get(filter_dates, :enddt)
+
+    from(u in User,
+    join: r in assoc(u, :relations),
+    where: r.completed_at > ^startdt,
+    where: r.completed_at < ^enddt,
+    group_by: u.id,
+    order_by: [desc: count(r)],
+    select_merge: %{count: count(r)},
     limit: 20)
     |> Repo.Paginated.all(limit: limit, page: page)
   end

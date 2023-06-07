@@ -13,13 +13,13 @@
       />
 
       <%= date_input(f, :startdate,
-        value: @filters.startdate,
+        value: @filter_dates.startdate,
         class:
           "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
       ) %>
 
       <%= date_input(f, :enddate,
-        value: @filters.enddate,
+        value: @filter_dates.enddate,
         class:
           "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
       ) %>

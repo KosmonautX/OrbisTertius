@@ -9,7 +9,7 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
   def mount(_params, _session, socket) do
     limit = 20
     page = 1
-    startdt = DateTime.utc_now() |> DateTime.add(-7, :day)
+    startdt = DateTime.utc_now() |> DateTime.add(-365, :day)
     enddt = DateTime.utc_now()
 
     %{data: users, meta: user_meta} = Leaderboard.list_user_counts(limit, page, :orbs, [startdt: startdt, enddt: enddt])
@@ -20,79 +20,60 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
 
 
 
-    filters = %{startdate: startdt |> DateTime.to_date(), enddate: enddt |> DateTime.to_date()}
+    filter_dates = %{startdate: startdt |> DateTime.to_date(), enddate: enddt |> DateTime.to_date()}
 
    {:ok,
     socket
     |> assign(orb_view: false)
     |> assign(orbs: orbs)
-    |> assign(:filter_by, :orbs)
+    |> assign(:filter_by, "orbs")
     |> assign(limit: limit)
     |> assign(:users, users)
     |> stream(:users, users)
     |> assign(:user_meta, user_meta)
-    |> assign(:filters, filters)
+    |> assign(:filter_dates, filter_dates)
   }
   end
-
-  def handle_params(
-    %{"page" => page},
-    _url,
-    %{assigns: %{limit: limit}} = socket)
-    do
-
-    expected_page = parse_integer(page)
-    %{data: users, meta: meta} = Leaderboard.list_user_counts(limit, expected_page, :orbs)
-
-    {:noreply,
-      socket
-      |> assign(user_list: users)
-      |> assign(current: expected_page)
-      |> assign(pagination: meta.pagination)
-    }
-  end
-
-  # def handle_event("filter", _url, %{assigns: %{limit: limit, pagination: pagination}} = socket) do
-
-  #   case option do
-  #     "orbs" ->
-  #       Leaderboard.list_user_counts(limit, pagination.current, :orbs)
-  #     "allies" ->
-  #       Leaderboard.list_user_counts(limit, pagination.current, :relations)
-  #     "comments" ->
-  #       Leaderboard.list_user_counts(limit, pagination.current, :comments)
-  #     "chats" ->
-  #       Leaderboard.list_user_counts(limit, pagination.current, :chats)
-  #   end
-  #   {:noreply, socket}
-  # end
 
   def handle_params(_params, _url, socket), do: {:noreply, socket}
 
   def handle_event(
-          "load-more",
-          _,
-          %{assigns: %{filters: %{startdate: startdt, enddate: enddt},limit: limit, user_meta: %{pagination: pagination}}} = socket
-        ) do
+      "load-more",
+      _,
+      %{assigns: %{filter_by: option, filter_dates: %{startdate: startdate, enddate: enddate}, limit: limit, user_meta: %{pagination: pagination}}} = socket
+      ) do
+      IO.inspect(option)
       expected_page = pagination.current + 1
 
-      %{data: newusers, meta: newmeta} = Leaderboard.list_user_counts(limit, expected_page, :orbs, [startdt: startdt, enddt: enddt])
-      newsocket = Enum.reduce(newusers, socket, fn user, acc -> stream_insert(acc, :users, user) end)
-      {:noreply, newsocket |> assign(user_meta: newmeta)}
+      with {:ok, startdt} <- NaiveDateTime.from_iso8601("#{startdate} 00:00:00"),
+           {:ok, enddt} <- NaiveDateTime.from_iso8601("#{enddate} 23:59:59"),
+           true <- NaiveDateTime.diff(startdt, enddt) < 0
+      do
+        %{data: newusers, meta: newmeta} = Leaderboard.list_user_counts(limit, expected_page, String.to_atom(option), [startdt: startdt, enddt: enddt])
+        newsocket = Enum.reduce(newusers, socket, fn user, acc -> stream_insert(acc, :users, user) end)
+        {:noreply, newsocket |> assign(user_meta: newmeta)}
+      else
+        _ -> {:noreply, socket}
+      end
 
   end
-  def handle_event("filter", %{"filter_by" => option, "user" => %{"startdate" => startdate, "enddate" => enddate}} , %{assigns: %{filters: %{startdate: startdt, enddate: enddt}, limit: limit, user_meta: %{pagination: pagination} = user_meta}} = socket) do
-    IO.inspect(option)
-    with {:ok, startdt} <- NaiveDateTime.from_iso8601("#{startdate} 00:00:00"),
-        {:ok, enddt} <- NaiveDateTime.from_iso8601("#{enddate} 23:59:59"),
-        true <- NaiveDateTime.diff(startdt, enddt) < 0
+
+  def handle_event("filter",
+                  %{"filter_by" => option, "user" => %{"startdate" => startdate, "enddate" => enddate}},
+                  %{assigns: %{limit: limit, user_meta: %{pagination: pagination} = user_meta}} = socket
+                  ) do
+
+      with {:ok, startdt} <- NaiveDateTime.from_iso8601("#{startdate} 00:00:00"),
+           {:ok, enddt} <- NaiveDateTime.from_iso8601("#{enddate} 23:59:59"),
+            true <- NaiveDateTime.diff(startdt, enddt) < 0
       do
-        %{data: users} = Leaderboard.list_user_counts(limit, pagination.current, String.to_atom(option), [startdt: startdt, enddt: enddt])
+        %{data: users} = Leaderboard.list_user_counts(limit, 1, String.to_atom(option), [startdt: startdt, enddt: enddt])
         {:noreply,
         socket
         |> stream(:users, users, reset: true)
         |> assign(user_meta: user_meta)
         |> assign(orb_view: false)
+        |> assign(filter_by: option)
         }
 
       else
@@ -108,28 +89,10 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
     }
   end
 
-
-
-  defp parse_integer(text) do
-    try do
-      String.to_integer(text)
-    rescue
-      ArgumentError -> 1
-    end
-  end
-
   defp stream_assign(socket, key, %{data: data, meta: meta} = params) do
     socket
     |> stream(key, data)
     |> assign(key, meta)
-  end
-
-  defp user_fetcher(streamusers, currentUsers) do
-    # IO.inspect(streamusers)
-    newUsers = Enum.map(streamusers.inserts, fn {_, _, user, _} -> user end)
-    currentUsers |> Enum.count() |> IO.inspect()
-    newUsers
-    # Enum.reduce(streamorbs.inserts, orbs, fn {_, _, orb, _}, acc -> [orb | acc] end)
   end
 
   # def multi_filter_orbs(filters, opts \\ []) do
