@@ -134,32 +134,39 @@ defmodule Phos.Action do
         )
       ),
       select_merge: %{comment_count: c_count.count},
-      inner_lateral_join: c_init in subquery(
-        from Phos.Comments.Comment,
+      # left_lateral_join: c_init in subquery(
+      #   from Phos.Comments.Comment,
+      #   where: [orb_id: parent_as(:orb).id, initiator_id: parent_as(:orb).initiator_id],
+      #   order_by: :inserted_at,
+      #   limit: 1,
+      #   select: [:id]
+      # ), on: c_init.id == c.id,
+      left_lateral_join: init_c in subquery(
+        from c in  Phos.Comments.Comment,
         where: [orb_id: parent_as(:orb).id, initiator_id: parent_as(:orb).initiator_id],
-        order_by: :inserted_at,
         limit: 5,
         select: [:id]
-      ), on: c_init.id == c.id,
-      left_join: p_c in assoc(c, :parent),
-      preload: [comments: {c, parent: p_c}])
+      ), on: init_c.id == c.id,
+      # left_join: p_c in assoc(c, :parent),
+      # left_join: p_init in assoc(p_c, :initiator),
+      # preload: [comments: {c, parent: {p_c, initiator: p_init}}])
+      preload: [comments: {c, [parent: [:initiator]]}])
   end
 
-  def orbs_by_geohashes({hashes, your_id}, page, opts \\ []) do
-
-    sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
-    limit = Keyword.get(opts, :limit, 12)
+  def orbs_by_geohashes({hashes, your_id}, opts) do
+    limit = Keyword.get(opts, :limit, 24)
     orbs_by_geohashes({hashes, your_id})
-      |> Repo.Paginated.all(page, sort_attribute, limit)
+    |> Repo.Paginated.all([{:limit, limit} | opts])
   end
 
-  def orbs_by_geotraits({hashes, your_id}, traits, page, opts \\ []) do
-    sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
+
+  def orbs_by_geotraits({hashes, your_id}, traits, opts) do
+    sort = Keyword.get(opts, :sort_attribute, :inserted_at)
     limit = Keyword.get(opts, :limit, 12)
 
     orbs_by_geohashes({hashes, your_id})
     |> where([o], fragment("? @> ?", o.traits, ^traits))
-    |> Repo.Paginated.all(page, sort_attribute, limit)
+    |> Repo.Paginated.all([{:sort_attribute, sort}| [{:limit, limit} | opts]])
   end
 
   def users_by_geohashes({hashes, your_id}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
