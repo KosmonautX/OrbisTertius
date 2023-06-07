@@ -355,7 +355,9 @@ defmodule Phos.Folk do
     query = from r in RelationBranch,
       where: not is_nil(r.completed_at),
       where: r.user_id == ^user_id,
-      preload: [:root, :friend]
+      inner_join: friend in assoc(r, :friend),
+      select: friend
+      #preload: [:root, :friend]
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
   end
