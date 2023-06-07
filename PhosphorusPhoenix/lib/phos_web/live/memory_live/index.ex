@@ -24,7 +24,7 @@ defmodule PhosWeb.MemoryLive.Index do
   end
 
   defp track_user(user, relation_id, pid) when not is_nil(pid) do
-    case Presence.track(pid, "online_users", user.id, %{relation_id: relation_id}) do
+    case Presence.track(pid, "last_read", user.id, %{relation_id: relation_id}) do
       {:ok, _ref} -> :ok
       {:error, {:already_tracked, ^pid, topic, key}} ->
         Presence.untrack(pid, topic, key)

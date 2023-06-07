@@ -4,6 +4,7 @@ defmodule PhosWeb.UserMemoryChannel do
 
   def join("memory:user:" <> id, _payload, socket) do
     if authorized?(socket, id) do
+      send(self(), :after_join)
       {:ok, socket}
     else
       {:error, %{reason: "unauthorized"}}
@@ -28,8 +29,26 @@ defmodule PhosWeb.UserMemoryChannel do
     {:noreply, socket}
   end
 
+  def handle_info(:after_join, %{assigns: assigns} = socket) do
+    track_online_user_by_geo(socket, assigns.current_user)
+    {:noreply, socket}
+  end
+
   def handle_info(msg, socket) do
     push(socket, "memory_", %{"data" => [msg] |> Viewer.memory_mapper()})
     {:noreply, socket}
+  end
+
+  defp track_online_user_by_geo(%{transport_pid: pid} = socket, user) do
+    key = "online_geos"
+    geo_key = "some_key"
+    push(socket, "#{key}_state", PhosWeb.Presence.list(key))
+    PhosWeb.Presence.track(pid, "online_geos", geo_key, %{user_id: user.id})
+  end
+
+  defp track_online_user(%{transport_pid: pid} = socket, user) do
+    key = "online_users"
+    push(socket, "#{key}_state", PhosWeb.Presence.list(key))
+    PhosWeb.Presence.track(pid, key, user.id, %{online_at: System.system_time(:second)})
   end
 end

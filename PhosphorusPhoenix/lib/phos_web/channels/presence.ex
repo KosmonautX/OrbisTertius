@@ -12,8 +12,14 @@ defmodule PhosWeb.Presence do
   
   def init(_opts), do: {:ok, %{}}
 
-  def handle_metas(_topic, %{leaves: leaves}, _presence, state) do
+  def handle_metas("last_read", %{leaves: leaves}, _presence, state) do
     handle_absence(leaves)
+
+    {:ok, state}
+  end
+
+  def handle_metas(topic, %{leaves: leaves, joins: join}, _presence, state) do
+    # TODO: need to implement
 
     {:ok, state}
   end
