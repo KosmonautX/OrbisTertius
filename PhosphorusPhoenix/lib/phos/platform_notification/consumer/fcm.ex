@@ -9,7 +9,7 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
 
     # synchronous
 
-    Sparrow.FCM.V1.Notification.new(:token, token, "", "",
+    Sparrow.FCM.V1.Notification.new(:token, title, body,
       data
       |> Map.put(:title, title)
       |> Map.put(:body, body)

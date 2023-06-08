@@ -111,7 +111,7 @@ defmodule Phos.Folk do
          {:ok, rel} = data ->
            rel = rel |> Repo.preload([:acceptor])
            spawn(fn ->
-             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.initiator_id}", "", "",
+             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.initiator_id}", "#{rel.acceptor.username} accepted your ally request 💪️", "",
                %{title: "#{rel.acceptor.username} accepted your ally request 💪️",
                  action_path: "/userland/others/#{rel.acceptor_id}",
                  cluster_id: "folk_req"})
@@ -174,7 +174,7 @@ defmodule Phos.Folk do
            rel = rel
            |> Repo.preload([:initiator])
            spawn(fn ->
-             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.acceptor_id}", "", "",
+             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.acceptor_id}", "#{rel.initiator.username} requested to be your ally 🤝", "",
                %{title: "#{rel.initiator.username} requested to be your ally 🤝",
                  action_path: "/folkland/self/requests",
                  cluster_id: "folk_req",
