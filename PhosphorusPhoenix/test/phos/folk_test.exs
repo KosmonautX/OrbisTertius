@@ -97,12 +97,12 @@ defmodule Phos.FolkTest do
       # acceptor view
       assert %{data: [rel], meta: %{pagination: pagination}} = Folk.friends(user)
       assert Map.get(pagination, :current) == 1
-      assert rel.friend_id == initiator.id
+      assert rel.id == initiator.id
 
       # initiator view
       assert %{data: [relation], meta: %{pagination: pagination}} = Folk.friends(initiator)
       assert Map.get(pagination, :current) == 1
-      assert relation.friend_id == user.id
+      assert relation.id == user.id
     end
   end
 

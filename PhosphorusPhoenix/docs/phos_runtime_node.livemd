@@ -337,3 +337,14 @@ data = %{}
 |> List.flatten()
 |> Enum.chunk_every(499)
 ```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## Section
+
+```elixir
+import Ecto.Query
+
+Phos.Users.User
+|> Phos.Repo.all()
+```

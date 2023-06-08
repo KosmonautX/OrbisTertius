@@ -2,6 +2,7 @@ defmodule Phos.PlatformNotification.Batch do
   def push(tokens, opts\\ [{:title, ""}, {:body, ""}])
   def push(%MapSet{} = tokens, opts), do: push(MapSet.to_list(tokens), opts)
   def push(tokens, [{:title, title} | [ {:body, body}| opts]]) when length(tokens) > 500 do
+    opts = [{:silent, false} | opts]
     Enum.chunk_every(tokens, 500)
     |> Enum.map(fn tokens ->
                  Sparrow.FCM.V1.Notification.new(:token, tokens, title, body,

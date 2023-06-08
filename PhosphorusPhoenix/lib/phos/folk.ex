@@ -88,22 +88,6 @@ defmodule Phos.Folk do
     %RelationRoot{}
     |> RelationRoot.gen_branches_changeset(attrs)
     |> Repo.insert()
-    |> case do
-         {:ok, rel} = data ->
-           rel = rel |> Repo.preload([:initiator])
-           spawn(fn ->
-             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.acceptor_id}", "", "",
-               %{title: "#{rel.initiator.username} requested to be your ally 🤝",
-                 action_path: "/folkland/self/requests",
-                 cluster_id: "folk_req",
-                 initiator_id: rel.initiator_id
-               })
-             |> Sparrow.FCM.V1.Notification.add_apns(Phos.PlatformNotification.Config.APNS.gen())
-             |> Sparrow.API.push()
-           end)
-           data
-         err -> err
-       end
   end
 
   #   @doc """
@@ -127,7 +111,7 @@ defmodule Phos.Folk do
          {:ok, rel} = data ->
            rel = rel |> Repo.preload([:acceptor])
            spawn(fn ->
-             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.initiator_id}", "", "",
+             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.initiator_id}", "#{rel.acceptor.username} accepted your ally request 💪️", "",
                %{title: "#{rel.acceptor.username} accepted your ally request 💪️",
                  action_path: "/userland/others/#{rel.acceptor_id}",
                  cluster_id: "folk_req"})
@@ -177,15 +161,34 @@ defmodule Phos.Folk do
   {:ok, %Phos.Users.Relation{}}
 
   """
-  @spec add_friend(requester_id :: Ecto.UUID.t(), acceptor_id :: Ecto.UUID.t()) :: {:ok, Phos.Users.Relation.t()} | {:error, Ecto.Changeset.t()}
-  def add_friend(requester_id, acceptor_id) when requester_id != acceptor_id do
+  def add_friend(requested_id, acceptor_id, state \\ "requested")
+  def add_friend(requester_id, acceptor_id, state) when requester_id != acceptor_id do
     payload = %{"initiator_id" => requester_id,
                 "acceptor_id" => acceptor_id,
                 "branches" => [%{"user_id" => acceptor_id, "friend_id"=> requester_id},
-                               %{"user_id" => requester_id, "friend_id"=> acceptor_id}]}
+                               %{"user_id" => requester_id, "friend_id"=> acceptor_id}],
+               "state" => state}
     create_relation(payload)
+    |> case do
+         {:ok, %RelationRoot{state: "requested"} = rel} = data ->
+           rel = rel
+           |> Repo.preload([:initiator])
+           spawn(fn ->
+             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.acceptor_id}", "#{rel.initiator.username} requested to be your ally 🤝", "",
+               %{title: "#{rel.initiator.username} requested to be your ally 🤝",
+                 action_path: "/folkland/self/requests",
+                 cluster_id: "folk_req",
+                 initiator_id: rel.initiator_id
+               })
+               |> Sparrow.FCM.V1.Notification.add_apns(Phos.PlatformNotification.Config.APNS.gen())
+               |> Sparrow.API.push()
+           end)
+           data
+         {:ok, %RelationRoot{}} = data -> data
+         err -> err
+       end
   end
-  def add_friend(_requester_id, _acceptor_id), do: {:error, "API not needed to connect to your own inner self"}
+  def add_friend(_requester_id, _acceptor_id, _state), do: {:error, "API not needed to connect to your own inner self"}
 
   @doc """
   List of user pending friends request
@@ -219,7 +222,7 @@ defmodule Phos.Folk do
 
   ## Examples:
 
-      iex> pending_requests(user_id_with_no_frind_requests)
+      iex> friend_requests(user_id_with_no_friend_requests)
       []
 
       iex> pending_requests(user_id)
@@ -234,6 +237,31 @@ defmodule Phos.Folk do
       where: r.acceptor_id == ^user_id and r.state == "requested",
       preload: [:initiator]
 
+
+    Repo.Paginated.all(query, page, sort_attribute, limit)
+  end
+
+  @doc """
+  List of blocked friends
+
+  This contains of user data
+
+  ## Examples:
+
+      iex> blocked(user_id_with_no_blocked)
+      []
+
+      iex> blocked(user_id)
+      [%User{}, %User{}]
+
+  """
+  @spec friend_requests(user_id :: Ecto.UUID.t() | Phos.Users.User.t(), filters :: Keyword.t()) :: [Phos.Users.User.t()] | Phos.Users.User.t()
+  def blocked(user, page \\ 1, sort_attribute \\ :inserted_at, limit \\ 15)
+  def blocked(%Phos.Users.User{id: id}, page, sort_attribute, limit), do: blocked(id, page, sort_attribute, limit)
+  def blocked(user_id, page, sort_attribute, limit) do
+    query = from r in RelationRoot,
+      where: r.initiator_id == ^user_id and r.state == "blocked",
+      preload: [:acceptor]
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
   end
@@ -326,7 +354,9 @@ defmodule Phos.Folk do
     query = from r in RelationBranch,
       where: not is_nil(r.completed_at),
       where: r.user_id == ^user_id,
-      preload: [:root, :friend]
+      inner_join: friend in assoc(r, :friend),
+      select: friend
+      #preload: [:root, :friend]
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
   end

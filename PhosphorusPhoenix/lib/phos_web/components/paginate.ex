@@ -6,8 +6,12 @@ defmodule PhosWeb.Components.Pagination do
 
   @impl true
   def update(assigns, socket) do
+    # require IEx; IEx.pry()
     {:ok,
-      assign(socket, assigns)
+      socket
+      |> assign(:current, assigns.current)
+      |> assign(:meta, assigns.meta)
+      |> assign(:route_path, assigns.route_path)
       |> assign_new(:active, fn -> false end)
       |> assign_new(:number, fn -> 1 end)
       |> assign_new(:first, fn -> true end)
