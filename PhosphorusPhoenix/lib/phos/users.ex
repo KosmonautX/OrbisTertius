@@ -32,6 +32,12 @@ defmodule Phos.Users do
     Repo.all(query)
   end
 
+  def list_users(limit, page) do
+    User
+    |> order_by([u], [u.username])
+    |> Repo.Paginated.all(limit: limit, page: page)
+  end
+
   # def list_users_pub do
   #   query = from u in User, preload: [:public_profile]
   #   Repo.all(query)
@@ -55,11 +61,12 @@ defmodule Phos.Users do
 
   def get_user_by_username(username), do: Repo.get_by(User, username: username)
 
-  def filter_user_by_username(username) do
+  def filter_user_by_username(username, limit, page) do
     search = "%#{username}%"
     User
     |> where([u], ilike(u.username, ^search))
-    |> Repo.all()
+    |> order_by([u], [u.username])
+    |> Repo.Paginated.all(limit: limit, page: page)
   end
 
   def get_admin do

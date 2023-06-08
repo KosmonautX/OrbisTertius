@@ -33,62 +33,56 @@
       </.form>
     </div>
   </div>
-  <div class="">
-    <.table id="users" rows={@users}>
-      <:col :let={user} classes="sticky left-0" label="">
-        <.link patch={~p"/admin/users/#{user.id}/edit"} class="button button-sm">
-          <i class="cursor-pointer mr-1"></i> Edit
-        </.link>
-      </:col>
-      <:col :let={user} classes="sticky left-0" label="User">
-        <.admin_user_preview user={user} id={"admin_user_preview_for_#{user.id}"} />
-      </:col>
-
-      <:col :let={user} classes="sticky left-0" label="Email">
-        <%!-- <%= if not is_nil(user.email) do %> --%>
-        <%= user.email %>
-        <%!-- <% end %> --%>
-      </:col>
-
-      <:col :let={user} classes="sticky left-0" label="Title Tag">
-        <%= user
-        |> get_in([
-          Access.key(:public_profile, %{}),
-          Access.key(:occupation, nil)
-        ]) %>
-      </:col>
-
-      <:col :let={user} classes="sticky left-0" label="Birthday">
-        <%= user
-        |> get_in([
-          Access.key(:public_profile, %{}),
-          Access.key(:birthday, nil)
-        ])
-        |> Phos.Leaderboard.beautify_date() %>
-      </:col>
-
-      <:col :let={user} classes="sticky left-0" label="Age">
-        <%= NaiveDateTime.diff(
-          @today,
+  <div>
+    <table
+      phx-viewport-bottom={@user_meta.pagination.downstream && "load-more"}
+      phx-update="stream"
+      id="users"
+    >
+      <tr :for={{dom_id, user} <- @streams.users} id={dom_id}>
+        <td>
+          <.link patch={~p"/admin/users/#{user.id}/edit"} class="button button-sm">
+            <i class="cursor-pointer mr-1"></i> Edit
+          </.link>
+        </td>
+        <td classes="sticky left-0" label="User">
+          <.admin_user_preview user={user} id={"admin_user_preview_for_#{user.id}"} />
+        </td>
+        <td classes="sticky left-0" label="Email">
+          <%= user.email %>
+        </td>
+        <td classes="sticky left-0" label="Title Tag">
+          <%= 
+            user
+            |> get_in([
+              Access.key(:public_profile, %{}),
+              Access.key(:occupation, nil)
+            ])
+          %>
+        </td>
+        <td classes="sticky left-0" label="Age">
+          <%= 
+          NaiveDateTime.diff(@today,
           user
           |> get_in([
             Access.key(:public_profile, %{}),
             Access.key(:birthday, nil)
           ]) || @today,
-          :day
-        )
-        |> div(365) %>
-      </:col>
+          :day)
+          |> div(365)
+          %>
+        </td>
+        <td classes="sticky left-0" label="Created on">
+          <%= Leaderboard.beautify_date(user.inserted_at) %>
+        </td>
+      </tr>
+    </table>
 
-      <:col :let={user} classes="sticky left-0" label="Created">
-        <%= Phos.Leaderboard.beautify_date(user.inserted_at) %>
-      </:col>
-    </.table>
   </div>
 </div>
 
-<div class="lg:hidden block">
+<%!-- <div class="lg:hidden block">
   <div class="grid grid-cols-2 gap-4">
     <.admin_grid :for={user <- @users} user={user} id={"admin-grid-for-#{user.id}"} />
   </div>
-</div>
+</div> --%>

@@ -1,36 +1,61 @@
 defmodule PhosWeb.Admin.UserLive.Index do
   use PhosWeb, :admin_view
 
-  alias Phos.Repo
   alias Phos.Users
+  alias Phos.Leaderboard
+
 
   def mount(_params, _session, socket) do
     limit = 20
     page = 1
     search = ""
+
+    %{data: users, meta: user_meta} = Users.list_users(limit, page)
+
     {:ok,
       socket
-      |> assign(users: Users.list_users(limit))
-      |> assign(search: "")
+      |> assign(limit: limit)
+      |> assign(search: search)
       |> assign(admin: true)
+      |> assign(user_meta: user_meta)
       |> assign(today: NaiveDateTime.utc_now())
+      |> stream(:users, users)
     }
   end
 
-  def handle_event("search",%{"_target" => [_a, search_term] = target} = search, socket ) do
+  def handle_event("search",%{"_target" => [_a, search_term] = target} = search, %{assigns: %{limit: limit}} = socket) do
 
     search_value = get_in(search, target)
-
+    %{data: users, meta: new_meta} = Users.filter_user_by_username(search_value, limit, 1)
     case search_term do
       "username" ->
       {:noreply,
         socket
         |> assign(search: search_value)
-        |> assign(users: Phos.Users.filter_user_by_username(search_value))
+        |> assign(user_meta: new_meta)
+        |> stream(:users, users, reset: true)
       }
       _ ->
         {:noreply, socket}
     end
+
+  end
+
+  def handle_event(
+    "load-more",
+    _,
+    %{assigns: %{search: search, limit: limit, user_meta: %{pagination: pagination}}} = socket
+    ) do
+    expected_page = pagination.current + 1
+
+
+    %{data: new_users, meta: new_meta} = Users.filter_user_by_username(search, limit, expected_page)
+
+    {:noreply,
+    socket
+    |> assign(user_meta: new_meta)
+    |> stream(:users, new_users)
+  }
 
   end
 
