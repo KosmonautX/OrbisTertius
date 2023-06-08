@@ -122,7 +122,6 @@ defmodule Phos.Action do
       inner_join: o in assoc(l, :orbs),
       as: :orb,
       select: o,
-      left_join: c in assoc(o, :comments),
       inner_join: initiator in assoc(o, :initiator),
       left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,
