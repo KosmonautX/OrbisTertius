@@ -26,7 +26,7 @@
       ) %>
 
       <div class="text-center">
-        <.button phx-click="reset" class="button button-sm p-0 mx-2">
+        <.button phx-click="reset-users" class="button button-sm p-0 mx-2">
           Reset Filters
         </.button>
       </div>
@@ -38,9 +38,8 @@
     <.button phx-click="orb_rank" class="button button-sm p-0 mx-2">Comments</.button>
   </div>
 
-  <div>
+  <div :if={not @orb_view}>
     <table
-      :if={@orb_view}
       phx-viewport-bottom={@user_meta.pagination.downstream && "load-more-users"}
       phx-update="stream"
       id="users"
@@ -63,18 +62,18 @@
       </tr>
     </table>
     <%!-- phx-viewport-bottom={@orb_meta.pagination.downstream && "load-more"} --%>
-
+  </div>
+  <div :if={@orb_view}>
     <table
-      :if={not @orb_view}
       phx-update="stream"
       id="orbs"
       phx-viewport-bottom={@orb_meta.pagination.downstream && "load-more-orbs"}
     >
       <%!-- <tr>
-        <th>User</th>
-        <th>Count</th>
-        <th>Date Created</th>
-      </tr> --%>
+          <th>User</th>
+          <th>Count</th>
+          <th>Date Created</th>
+        </tr> --%>
       <tr :for={{dom_id, orb} <- @streams.orbs} id={dom_id}>
         <td classes="sticky left-0" label="Title">
           <%= orb.id %>

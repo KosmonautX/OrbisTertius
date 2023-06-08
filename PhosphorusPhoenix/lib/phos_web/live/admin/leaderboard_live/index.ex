@@ -71,8 +71,7 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
 
   end
 
-  def handle_event("reset", _, socket) do
-    IO.inspect(socket.assigns.streams)
+  def handle_event("reset-users", _, socket) do
 
     {:noreply,
      socket
@@ -83,10 +82,18 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
    end
 
   def handle_event("orb_rank", _, socket) do
+    limit = 40
+    page = 1
+
+    %{data: orbs, meta: orb_meta} = Leaderboard.rank_orbs(limit, page)
+
     {:noreply,
     socket
     |> assign(orb_view: true)
+    |> assign(orb_meta: orb_meta)
+    |> stream(:orbs, orbs)
     }
+
   end
 
   defp setup_assign(socket) do
@@ -96,24 +103,16 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
     enddt = DateTime.utc_now()
 
     %{data: users, meta: user_meta} = Leaderboard.list_user_counts(limit, page, :orbs, [startdt: startdt, enddt: enddt])
-    %{data: orbs, meta: orb_meta} = Leaderboard.rank_orbs(limit, page)
 
     filter_dates = %{startdate: startdt |> DateTime.to_date(), enddate: enddt |> DateTime.to_date()}
 
     socket
     |> assign(orb_view: false)
-    # |> assign(orbs: orbs)
-    |> assign(orb_meta: orb_meta)
-
     |> assign(:filter_by, "orbs")
     |> assign(:filter_dates, filter_dates)
     |> assign(limit: limit)
-
-    # |> assign(:users, users)
     |> assign(:user_meta, user_meta)
-
     |> stream(:users, users)
-    |> stream(:orbs, orbs)
 
   end
 
