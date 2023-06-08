@@ -1,15 +1,16 @@
 <div class="hidden lg:block w-full p-1 max-h-fit font-poppins">
   <div class="flex items-center px-2 mb-2">
-    <span class="flex py-3 mx-2 font-bold text-left uppercase align-middle bg-transparent border-gray-200 shadow-none text-base text-slate-400">
-      See Top Users By
-    </span>
     <.simple_form :let={f} for={:user} phx-change="filter">
+      <div class="flex py-3 mx-2 font-bold text-left uppercase align-middle bg-transparent border-gray-200 shadow-none text-base text-slate-400">
+        See Top Users By
+      </div>
       <.input
         name="filter_by"
         id="adminleaderboard-category"
         field={{f, :category}}
         type="select"
         options={[orbs: "orbs", allies: "allies", comments: "comments", chats: "chats"]}
+        value={@filter_by}
       />
 
       <%= date_input(f, :startdate,
@@ -23,17 +24,24 @@
         class:
           "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
       ) %>
+
+      <div class="text-center">
+        <.button phx-click="reset" class="button button-sm p-0 mx-2">
+          Reset Filters
+        </.button>
+      </div>
     </.simple_form>
 
-    <span class="flex py-3 mx-2 font-bold text-left uppercase align-middle bg-transparent border-gray-200 shadow-none text-base text-slate-400">
+    <div class="flex py-3 mx-2 font-bold text-left uppercase align-middle bg-transparent border-gray-200 shadow-none text-base text-slate-400">
       | See Top Orbs By
-    </span>
+    </div>
     <.button phx-click="orb_rank" class="button button-sm p-0 mx-2">Comments</.button>
   </div>
 
   <div>
     <table
-      phx-viewport-bottom={@user_meta.pagination.downstream && "load-more"}
+      :if={@orb_view}
+      phx-viewport-bottom={@user_meta.pagination.downstream && "load-more-users"}
       phx-update="stream"
       id="users"
     >
@@ -54,48 +62,30 @@
         </td>
       </tr>
     </table>
-    <%!-- <.table :if={not @orb_view} id="users" rows={user_fetcher(@streams.users, @users)}>
-      <:col :let={user} classes="sticky left-0" label="User">
-        <.admin_user_preview user={user} id={"admin_user_preview_for_#{user.id}"} />
-      </:col>
+    <%!-- phx-viewport-bottom={@orb_meta.pagination.downstream && "load-more"} --%>
 
-      <:col :let={user} classes="sticky left-0" label="Count">
-        <%= user.count %>
-      </:col>
-
-      <:col :let={user} classes="sticky left-0" label="Created on">
-        <%= Leaderboard.beautify_date(user.inserted_at) %>
-      </:col>
-    </.table> --%>
-    <%!-- 
-    <.table :if={@orb_view} id="users" rows={user_fetcher(@streams.users, @users_temp)}>
-      <:col :let={orb} classes="sticky left-0" label="Orb Link">
-        <.link navigate={~p"/orb/#{orb.id}"} class="button button-sm">
-          View Orb in SB
-        </.link>
-      </:col>
-      <:col :let={orb} classes="sticky left-0" label="Creator">
-        <.admin_user_preview
-          user={orb.initiator}
-          id={"admin_user_preview_for_#{orb.initiator_id}"}
-        />
-      </:col>
-      <:col :let={orb} classes="sticky left-0" label="Comments">
-        <%= orb.comment_count %>
-      </:col>
-      <:col :let={orb} classes="sticky left-0" label="Created on">
-        <%= Leaderboard.beautify_date(orb.inserted_at) %>
-      </:col>
-    </.table>
-  </div> --%>
-    <%!-- <div class="px-4 py-3 w-full sm:flex sm:flex-1 sm:items-center sm:justify-between">
-    <.live_component
-      module={PhosWeb.Components.Pagination}
-      limit={@limit}
-      meta={@pagination}
-      id="paginate"
-      route_path={~p"/admin/leaderboard/"}
-      current={@current}
-    /> --%>
+    <table
+      :if={not @orb_view}
+      phx-update="stream"
+      id="orbs"
+      phx-viewport-bottom={@orb_meta.pagination.downstream && "load-more-orbs"}
+    >
+      <%!-- <tr>
+        <th>User</th>
+        <th>Count</th>
+        <th>Date Created</th>
+      </tr> --%>
+      <tr :for={{dom_id, orb} <- @streams.orbs} id={dom_id}>
+        <td classes="sticky left-0" label="Title">
+          <%= orb.id %>
+        </td>
+        <td classes="sticky left-0" label="Count">
+          <%= orb.comment_count %>
+        </td>
+        <td classes="sticky left-0" label="Created on">
+          <%= Leaderboard.beautify_date(orb.inserted_at) %>
+        </td>
+      </tr>
+    </table>
   </div>
 </div>
