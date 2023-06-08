@@ -33,11 +33,12 @@
       </.form>
     </div>
   </div>
-  <div>
+  <div class="relative w-full flex flex-col bg-white border-0 border-transparent border-solid shadow-xl p-2 overflow-scroll font-poppins">
     <table
       phx-viewport-bottom={@user_meta.pagination.downstream && "load-more"}
       phx-update="stream"
       id="users"
+      class="w-full align-top text-slate-500"
     >
       <tr :for={{dom_id, user} <- @streams.users} id={dom_id}>
         <td>

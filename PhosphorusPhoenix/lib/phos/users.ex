@@ -38,11 +38,6 @@ defmodule Phos.Users do
     |> Repo.Paginated.all(limit: limit, page: page)
   end
 
-  # def list_users_pub do
-  #   query = from u in User, preload: [:public_profile]
-  #   Repo.all(query)
-  # end
-
   #   @doc """
   #   Gets a single user.
 

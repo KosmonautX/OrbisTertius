@@ -7,10 +7,7 @@ defmodule Phos.Leaderboard do
   alias Phos.Action.Orb
   alias Phos.Message.Memory
 
-  # def list_user_counts(limit, page \\ 1 ) do
-  #   User
-  #   |> Repo.Paginated.all(limit: limit, page: page)
-  # end
+
   def list_user_counts(limit, page, :orbs, filter_dates) do
     startdt = Keyword.get(filter_dates, :startdt)
     enddt = Keyword.get(filter_dates, :enddt)

@@ -1,6 +1,6 @@
 <div class="hidden lg:block w-full p-1 max-h-fit font-poppins">
   <div class="flex items-center px-2 mb-2">
-    <.simple_form :let={f} for={:user} phx-change="filter">
+    <.simple_form :let={f} as={:user} phx-change="filter">
       <div class="flex py-3 mx-2 font-bold text-left uppercase align-middle bg-transparent border-gray-200 shadow-none text-base text-slate-400">
         See Top Users By
       </div>
@@ -38,17 +38,14 @@
     <.button phx-click="orb_rank" class="button button-sm p-0 mx-2">Comments</.button>
   </div>
 
-  <div :if={not @orb_view}>
+  <div class="relative w-full flex flex-col bg-white border-0 border-transparent border-solid shadow-xl p-2 overflow-scroll font-poppins">
     <table
+      :if={not @orb_view} 
       phx-viewport-bottom={@user_meta.pagination.downstream && "load-more-users"}
       phx-update="stream"
       id="users"
+      class="w-full align-top text-slate-500"
     >
-      <%!-- <tr>
-        <th>User</th>
-        <th>Count</th>
-        <th>Date Created</th>
-      </tr> --%>
       <tr :for={{dom_id, user} <- @streams.users} id={dom_id}>
         <td classes="sticky left-0" label="User">
           <.admin_user_preview user={user} id={"admin_user_preview_for_#{user.id}"} />
@@ -61,22 +58,25 @@
         </td>
       </tr>
     </table>
-    <%!-- phx-viewport-bottom={@orb_meta.pagination.downstream && "load-more"} --%>
-  </div>
-  <div :if={@orb_view}>
+
     <table
+      :if={@orb_view} 
       phx-update="stream"
       id="orbs"
       phx-viewport-bottom={@orb_meta.pagination.downstream && "load-more-orbs"}
+      class="table-fixed w-full align-top text-slate-500"
     >
-      <%!-- <tr>
-          <th>User</th>
-          <th>Count</th>
-          <th>Date Created</th>
-        </tr> --%>
       <tr :for={{dom_id, orb} <- @streams.orbs} id={dom_id}>
-        <td classes="sticky left-0" label="Title">
-          <%= orb.id %>
+        <td>
+          <.link navigate={~p"/orb/#{orb.id}"} class="button button-sm">
+            <i class="cursor-pointer"></i> View Orb
+          </.link>
+        </td>
+        <td classes="sticky left-0" label="User">
+          <%= orb.initiator.username %>
+        </td>
+        <td class="sticky left-0 overflow-hidden" label="Title">
+          <%= orb.title %>
         </td>
         <td classes="sticky left-0" label="Count">
           <%= orb.comment_count %>

@@ -18,11 +18,12 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
 
     with {:ok, %{startdt: startdt, enddt: enddt}} <- get_naive_dates(filter_dates) do
       %{data: new_users, meta: new_meta} = Leaderboard.list_user_counts(limit, expected_page, String.to_atom(option), [startdt: startdt, enddt: enddt])
-      newsocket = Enum.reduce(new_users, socket, fn user, acc -> stream_insert(acc, :users, user) end)
 
       {:noreply,
-      newsocket
-      |> assign(user_meta: new_meta)}
+      socket
+      |> assign(user_meta: new_meta)
+      |> stream(:users, new_users)
+    }
     else
       _ -> {:noreply, socket}
     end
@@ -37,11 +38,12 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
     expected_page = pagination.current + 1
 
     %{data: new_orbs, meta: new_meta} = Leaderboard.rank_orbs(limit, expected_page)
-    newsocket = Enum.reduce(new_orbs, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
 
     {:noreply,
-    newsocket
-    |> assign(orb_meta: new_meta)}
+    socket
+    |> assign(orb_meta: new_meta)
+    |> stream(:orbs, new_orbs)
+    }
 
   end
 
