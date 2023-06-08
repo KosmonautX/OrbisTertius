@@ -119,7 +119,7 @@ defmodule Phos.Action do
     from(l in Phos.Action.Orb_Location,
       as: :l,
       where: l.location_id in ^hashes,
-      left_join: o in assoc(l, :orbs),
+      inner_join: o in assoc(l, :orbs),
       as: :orb,
       select: o,
       left_join: c in assoc(o, :comments),
