@@ -40,6 +40,13 @@
       id="users"
       class="w-full align-top text-slate-500"
     >
+      <tr :if={@user_meta.pagination.current == 1} class="font-bold text-left uppercase text-slate-400"> 
+        <th></th>
+        <th> User </th>
+        <th> Title Tag </th>
+        <th class="sticky left-0"> Age </th>
+        <th class="sticky left-0"> Joined on </th>
+      </tr>
       <tr :for={{dom_id, user} <- @streams.users} id={dom_id}>
         <td>
           <.link patch={~p"/admin/users/#{user.id}/edit"} class="button button-sm">
@@ -48,9 +55,6 @@
         </td>
         <td classes="sticky left-0" label="User">
           <.admin_user_preview user={user} id={"admin_user_preview_for_#{user.id}"} />
-        </td>
-        <td classes="sticky left-0" label="Email">
-          <%= user.email %>
         </td>
         <td classes="sticky left-0" label="Title Tag">
           <%= 

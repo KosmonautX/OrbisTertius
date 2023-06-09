@@ -51,7 +51,7 @@ defmodule Phos.Repo.Paginated do
       # page-based
       {:ok, page} ->
         # total =  Phos.Repo.aggregate(query, :count, sort)
-        page_response(dao, page, 250, limit)
+        page_response(dao, page, 1000, limit)
 
       :error ->
       cond do

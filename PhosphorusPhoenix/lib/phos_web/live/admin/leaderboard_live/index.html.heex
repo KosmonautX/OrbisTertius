@@ -35,7 +35,8 @@
     <div class="flex py-3 mx-2 font-bold text-left uppercase align-middle bg-transparent border-gray-200 shadow-none text-base text-slate-400">
       | See Top Orbs By
     </div>
-    <.button phx-click="orb_rank" class="button button-sm p-0 mx-2">Comments</.button>
+        <.button phx-click="orb_rank" class="button button-sm p-0 mx-2">Comments</.button>
+
   </div>
 
   <div class="relative w-full flex flex-col bg-white border-0 border-transparent border-solid shadow-xl p-2 overflow-scroll font-poppins">
@@ -46,14 +47,19 @@
       id="users"
       class="w-full align-top text-slate-500"
     >
+      <tr :if={@user_meta.pagination.current == 1} class="font-bold text-left uppercase text-slate-400"> 
+        <th> User </th>
+        <th class="sticky left-0"> Count </th>
+        <th class="sticky left-0"> Joined on </th>
+      </tr>
       <tr :for={{dom_id, user} <- @streams.users} id={dom_id}>
-        <td classes="sticky left-0" label="User">
+        <td>
           <.admin_user_preview user={user} id={"admin_user_preview_for_#{user.id}"} />
         </td>
-        <td classes="sticky left-0" label="Count">
+        <td>
           <%= user.count %>
         </td>
-        <td classes="sticky left-0" label="Created on">
+        <td>
           <%= Leaderboard.beautify_date(user.inserted_at) %>
         </td>
       </tr>
@@ -66,14 +72,21 @@
       phx-viewport-bottom={@orb_meta.pagination.downstream && "load-more-orbs"}
       class="table-fixed w-full align-top text-slate-500"
     >
+      <tr :if={@orb_meta.pagination.current == 1} class="font-bold text-left uppercase text-slate-400"> 
+        <th></th>
+        <th> User </th>
+        <th> Orb Title </th>
+        <th class="sticky left-0"> Count </th>
+        <th class="sticky left-0"> Joined on </th>
+      </tr>
       <tr :for={{dom_id, orb} <- @streams.orbs} id={dom_id}>
-        <td>
-          <.link navigate={~p"/orb/#{orb.id}"} class="button button-sm">
-            <i class="cursor-pointer"></i> View Orb
+        <td width="10%" class="text-center">
+          <.link patch={~p"/orb/#{orb.id}/edit"} class="button button-sm">
+            <i class="cursor-pointer mr-1"></i> View
           </.link>
         </td>
-        <td classes="sticky left-0" label="User">
-          <%= orb.initiator.username %>
+        <td width="30%" class="sticky left-0" label="User">
+          <.admin_user_preview user={orb.initiator} id={"admin_user_preview_for_#{orb.initiator.id}"} />
         </td>
         <td class="sticky left-0 overflow-hidden" label="Title">
           <%= orb.title %>

@@ -33,10 +33,9 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
   def handle_event(
     "load-more-orbs",
     _,
-    %{assigns: %{limit: limit, orb_meta: %{pagination: pagination}}} = socket
+    %{assigns: %{limit: limit, orb_meta: %{pagination: pagination} = orb_meta }} = socket
     ) do
     expected_page = pagination.current + 1
-
     %{data: new_orbs, meta: new_meta} = Leaderboard.rank_orbs(limit, expected_page)
 
     {:noreply,
@@ -83,23 +82,21 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
     }
    end
 
-  def handle_event("orb_rank", _, socket) do
-    limit = 40
-    page = 1
+  def handle_event("orb_rank", _, %{assigns: %{limit: limit}} = socket) do
 
-    %{data: orbs, meta: orb_meta} = Leaderboard.rank_orbs(limit, page)
+    %{data: orbs, meta: orb_meta} = Leaderboard.rank_orbs(limit, 1)
 
     {:noreply,
     socket
     |> assign(orb_view: true)
     |> assign(orb_meta: orb_meta)
-    |> stream(:orbs, orbs)
+    |> stream(:orbs, orbs, reset: true)
     }
 
   end
 
   defp setup_assign(socket) do
-    limit = 40
+    limit = 20
     page = 1
     startdt = DateTime.utc_now() |> DateTime.add(-60, :day)
     enddt = DateTime.utc_now()
@@ -132,5 +129,7 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
 
     end
   end
+
+
 
 end
