@@ -25,14 +25,14 @@ defmodule PhosWeb.UserProfileLive.Show do
 
     {:ok, user} = mount_user(id)
 
-    {:ok, socket
-    |> assign(:user, user)
-    |> assign(:current_user, current_user)
-    |> assign_meta(user, params)
-    |> assign(:parent_pid, socket.transport_pid)
-    |> stream_assign(:orbs, Action.orbs_by_initiators([user.id], 1))
-    |> stream_assign(:ally_list, ScrollAlly.check_more_ally(current_user, user.id, 1, 24))
-  }
+    {:ok,
+     socket
+     |> assign(:user, user)
+     |> assign(:current_user, current_user)
+     |> assign_meta(user, params)
+     |> assign(:parent_pid, socket.transport_pid)
+     |> stream_assign(:orbs, Action.orbs_by_initiators([user.id], 1))
+     |> stream_assign(:ally_list, ScrollAlly.check_more_ally(current_user, user.id, 1, 24))}
   end
 
   @impl true
@@ -40,16 +40,23 @@ defmodule PhosWeb.UserProfileLive.Show do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  def handle_event("load-more", _, %{assigns: %{ally_list: allies_meta, orbs: orbs_meta, current_user: curr, user: user}} = socket) do
+  def handle_event(
+        "load-more",
+        _,
+        %{assigns: %{ally_list: allies_meta, orbs: orbs_meta, current_user: curr, user: user}} =
+          socket
+      ) do
     expected_ally_page = allies_meta.pagination.current + 1
     expected_orb_page = orbs_meta.pagination.current + 1
 
     newsocket =
       with orbs <- ScrollOrb.check_more_orb(user.id, expected_orb_page),
-           allies <- ScrollAlly.check_more_ally(curr, user.id, expected_ally_page, 24)
-           do
-            load_more_streams(socket, %{orbs: %{data: orbs.data, meta: orbs.meta}}, %{allies: %{data: allies.data, meta: allies.meta}})
-          end
+           allies <- ScrollAlly.check_more_ally(curr, user.id, expected_ally_page, 24) do
+        load_more_streams(socket, %{orbs: %{data: orbs.data, meta: orbs.meta}}, %{
+          allies: %{data: allies.data, meta: allies.meta}
+        })
+      end
+
     {:noreply, newsocket}
   end
 
@@ -120,7 +127,6 @@ defmodule PhosWeb.UserProfileLive.Show do
     end
   end
 
-
   defp apply_action(socket, :show, _params) do
     socket
     |> assign(page_title: "Viewing Profile")
@@ -134,6 +140,7 @@ defmodule PhosWeb.UserProfileLive.Show do
       push_patch(socket, to: ~p"/user/#{params["username"]}")
     end
   end
+
   defp apply_action(socket, :allies, _params) do
     socket
     |> assign(page_title: "Viewing Allies")
@@ -161,7 +168,9 @@ defmodule PhosWeb.UserProfileLive.Show do
 
   # look to integrate Repo.Paginated.all() :meta
 
-  defp load_more_streams(socket, %{orbs: %{data: orbs, meta:  orbs_meta}}, %{allies: %{data: allies, meta: allies_meta}}) do
+  defp load_more_streams(socket, %{orbs: %{data: orbs, meta: orbs_meta}}, %{
+         allies: %{data: allies, meta: allies_meta}
+       }) do
     Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
     |> then(&Enum.reduce(orbs, &1, fn orb, acc -> stream_insert(acc, :orbs, orb) end))
     |> assign(orbs: orbs_meta)

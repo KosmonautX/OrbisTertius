@@ -1,8 +1,6 @@
-
-<div
-  class="mt-4 lg:mt-2 bg-white dark:bg-gray-900 lg:px-2 px-2 font-poppins lg:mb-0"
+<div class="mt-2 bg-white dark:bg-gray-900 font-poppins px-2"
   id={"comment-#{elem(@comment, 1).id}"}>
-  <div class="flex shrink-0">
+  <div class="flex shrink-0" >
     <.link navigate={~p"/user/#{elem(@comment, 1).initiator.username}"} class="flex shrink-0">
       <img
         class="lg:w-14 lg:h-14 h-8 w-8  rounded-full object-cover"
@@ -10,36 +8,43 @@
         onerror="this.src='/images/default_hand.jpg';"
       />
     </.link>
-    <div class="flex flex-col w-full ml-2 font-poppins break-words">
-      <strong class="lg:text-base text-sm font-bold text-gray-800 dark:text-white">
-        <.link navigate={~p"/user/#{elem(@comment, 1).initiator.username}"}>
-          <%= elem(@comment, 1).initiator.username %>
-        </.link>
-        <span
-          :if={elem(@comment, 1).active and is_nil(@edit_comment)}
-          class="text-sm text-gray-700 font-medium dark:text-gray-400 ml-1"
-        >
-          <%= PhosWeb.Util.DOMParser.extract_html_from_md elem(@comment, 1).body %>
+    <div class="flex flex-col w-full ml-1 space-y-0.5 -mt-1 font-poppins break-words px-2">
+      <div class="flex justify-between items-center w-full mx-auto">
+        <span class="flex lg:text-base text-sm font-bold text-gray-800 dark:text-white">
+          <.link navigate={~p"/user/#{elem(@comment, 1).initiator.username}"}>
+            <%= elem(@comment, 1).initiator.username %>
+          </.link>
         </span>
-      </strong>
 
-      <div class="flex w-full justify-between">
-        <p class="text-sm font-light text-gray-600 dark:text-white">
-          <%= Timex.from_now(elem(@comment, 1).inserted_at) %>
-        </p>
-        <p :if={not is_nil(@current_user)} class="text-sm font-bold text-gray-500 hover:text-gray-400 hover:underline mr-6">
+        <Heroicons.ellipsis_horizontal class="lg:h-8 lg:w-8 h-6 w-6 hover:text-gray-300 dark:text-white text-gray-900 font-semibold" />
+      </div>
+
+       <span
+            :if={elem(@comment, 1).active and is_nil(@edit_comment)}
+            class="text-sm text-gray-700 font-medium dark:text-gray-400"
+          >
+            <%= PhosWeb.Util.DOMParser.extract_html_from_md(elem(@comment, 1).body) %>
+          </span>
+
+      <div class="flex w-full justify-between lg:text-sm text-xs dark:text-[#777986]">
+        <p
+          :if={not is_nil(@current_user)}
+          class="font-bold text-gray-500 hover:text-gray-400 hover:underline mr-6"
+        >
           <.link
             href="#reply"
             phx-click="reply-comment"
             phx-value-comment-id={elem(@comment, 1).id}
             phx-target={"#comment-#{elem(@comment, 1).id}"}
           >
-            Reply
+            reply
           </.link>
         </p>
+        <p class="font-medium text-gray-600 ">
+          <%= Timex.from_now(elem(@comment, 1).inserted_at) %>
+        </p>
       </div>
-
-      <div :if={not is_nil(@current_user)} class="text-sm font-bold text-gray-500 font-poppins">
+      <!-- <div :if={not is_nil(@current_user)} class="text-sm font-bold text-gray-500 font-poppins">
         <.link
           :if={elem(@comment, 1).active and elem(@comment, 1).initiator_id == @current_user.id}
           href="#edit"
@@ -56,12 +61,10 @@
         >
           Delete
         </.link>
-      </div>
-
+      </div> -->
       <div
         :if={elem(@comment, 1).child_count > 0}
-        class="text-xs font-medium text-gray-500 font-poppins"
-      >
+        class="text-xs font-medium text-gray-500 font-poppins">
         <div id={"showreply-#{elem(@comment, 1).id}"} style="display: none" class="px-2">
           <.link
             href="#"
@@ -129,16 +132,13 @@
         action={:edit}
       />
 
-
       <div :if={not elem(@comment, 1).active}>
         <p class="text-sm text-gray-500 font-medium ml-2 dark:text-gray-400">
           --Comment deleted--
         </p>
       </div>
-
     </div>
   </div>
-
 
   <div :if={not is_nil(@reply_comment)} id={"reply-comment-for-#{elem(@comment, 1).id}"}>
     <.live_component

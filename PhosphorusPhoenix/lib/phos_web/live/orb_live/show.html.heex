@@ -17,9 +17,7 @@
             id="orb-initiator-username"
             user={@orb.initiator}
             show_location={false}
-            main_height="lg:h-64"
-          >
-          </.user_profile_banner>
+            main_height="lg:h-64" />
         </div>
         <div class="text-center">
           <.user_information_card_orb
@@ -36,8 +34,8 @@
         </div>
       </div>
       <!-- Post card and Comments-->
-      <div class="lg:hidden block w-full dark:bg-gray-900 sticky top-[50px] bg-white z-10 mb-2 md:mb-8">
-        <div class="flex flex-wrap items-center justify-center p-2 border-b border-gray-200">
+      <div class="lg:hidden block w-full dark:bg-gray-900 sticky top-[66px] bg-white z-10 mb-2 md:mb-8">
+        <div class="flex flex-wrap items-center justify-center px-2 py-3">
           <.link patch={~p"/user/#{@orb.initiator.username}"}>
             <Heroicons.chevron_left class="w-6 h-6 dark:text-white font-semibold" />
           </.link>
@@ -59,7 +57,7 @@
           </div>
         </.link>
 
-        <div class="w-full lg:rounded-3xl pb-5">
+        <div class="w-full lg:rounded-3xl pb-5 md:px-12 lg:px-0">
           <.scry_orb id="orb" orb={@orb} timezone={@timezone} show_information={false} />
           <.live_component
             module={PhosWeb.CommentLive.IndexComponent}
@@ -76,7 +74,7 @@
             live_action={@live_action}
           />
           <div
-            class="lg:hidden block bottom-0 z-10 fixed w-full px-4 bg-white dark:bg-gray-900"
+            class="lg:hidden block bottom-0  fixed w-full bg-white dark:bg-gray-900"
           >
             <.live_component
               module={PhosWeb.CommentLive.FormComponent}
@@ -90,6 +88,7 @@
           </div>
         </div>
       </div>
+
       <!--Desktop Related Post-->
       <div class="hidden lg:block w-full lg:w-4/12 lg:flex-none">
         <h5 class="text-left font-semibold text-2xl dark:text-white mb-2">
@@ -109,8 +108,7 @@
     :if={@live_action in [:show] and not is_nil(@media)}
     id="orb-media-preview"
     close_button={true}
-    show={@live_action in [:show] and not is_nil(@media)}
-  >
+    show={@live_action in [:show] and not is_nil(@media)}>
     <.media_preview url={@media} />
   </.modal>
   <span :if={@streams.orbs |> Enum.count() < 3} class="hidden lg:block h-96 bg-gray-100" />

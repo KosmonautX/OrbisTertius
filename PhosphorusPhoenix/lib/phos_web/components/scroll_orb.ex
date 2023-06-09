@@ -1,7 +1,7 @@
 defmodule PhosWeb.Components.ScrollOrb do
   use PhosWeb, :live_component
   alias Phos.Action
-# if(@orb_page > 1, do: "pt-[calc(200vh)]"),
+  # if(@orb_page > 1, do: "pt-[calc(200vh)]"),
   def render(assigns) do
     ~H"""
     <div>
