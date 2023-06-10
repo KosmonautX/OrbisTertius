@@ -18,21 +18,19 @@ defmodule PhosWeb.Presence do
     {:ok, state}
   end
 
-  def handle_metas(topic, %{leaves: leaves, joins: join}, _presence, state) do
+  def handle_metas(_topic, %{leaves: _leaves, joins: _join}, _presence, state) do
     # TODO: need to implement
 
     {:ok, state}
   end
 
   defp handle_absence(leaves) do
-    Enum.map(leaves, fn {_key, %{metas: meta}} ->
-      Enum.map(meta, &(&1.relation_id))
+    Enum.map(leaves, fn {key, %{metas: meta}} ->
+      relations = Enum.map(meta, &(&1.relation_id))
+      set_last_read(relations, key)
     end)
-    |> List.flatten()
-    |> Enum.uniq()
-    |> set_last_read()
   end
 
-  defp set_last_read([]), do: :ok
-  defp set_last_read(data), do: Phos.Folk.set_last_read(data)
+  defp set_last_read([], _user_id), do: :ok
+  defp set_last_read(data, user_id), do: Phos.Folk.set_last_read(data, user_id)
 end

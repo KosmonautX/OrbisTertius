@@ -14,6 +14,7 @@ defmodule PhosWeb.UserSocket do
   # channel "userfeed:*", PhosWeb.UserFeedChannel
   # channel "discovery:usr:*", PhosWeb.DiscoveryChannel
   channel "memory:user:*", PhosWeb.UserMemoryChannel
+  channel "memory:location:*", PhosWeb.LocationMemoryChannel
   ## Transports
   #transport :websocket, Phoenix.Transports.WebSocket, check_origin: ["//localhost",  "//echo.scrb.ac"]
 
@@ -35,6 +36,8 @@ defmodule PhosWeb.UserSocket do
     # Parsing of Authorising JWT vector and assigning to session
     case Auth.validate_user(token) do
       {:ok, %{"user_id" => user} = claims} ->
+        from = self()
+        spawn(fn -> track_user_location(from, claims) end)
         {:ok,
           socket
           |> assign(user_agent: claims, session_token: token, current_user: Phos.Users.get_user!(user))
@@ -45,8 +48,24 @@ defmodule PhosWeb.UserSocket do
   end
 
   @impl true
-
   def connect(_params, _socket, _connect_info), do: :error
+
+  defp track_user_location(pid, %{"territory" => territory, "user_id" => user_id} = claims) do
+    Enum.map(territory, fn {key, val} ->
+      case Map.get(val, "hash") do
+        nil -> :ok
+        hash -> do_track_user_location(pid, key, Phos.Mainland.World.locate(hash), user_id)
+      end
+    end)
+
+    :ok
+  end
+
+  defp do_track_user_location(pid, key, location, user_id) when is_bitstring(location) do
+    loc = location |> String.downcase() |> String.replace(" ", "_")
+    PhosWeb.Presence.track(pid, "online_#{key}_location", loc, %{user_id: user_id})
+  end
+  defp do_track_user_location(_pid, _key, _loc, _user_id), do: :ok
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
   #

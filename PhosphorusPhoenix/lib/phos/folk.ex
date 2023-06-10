@@ -352,10 +352,10 @@ defmodule Phos.Folk do
 
   defp do_get_feeds(friend_ids), do: Phos.Action.list_orbs([initiator_id: friend_ids])
 
-  def set_last_read(relations) when is_list(relations) do
+  def set_last_read(relations, user_id) when is_list(relations) do
     time  = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
-    from(r in RelationRoot, where: r.id in ^relations)
+    from(r in RelationBranch, where: r.user_id == ^user_id and r.root_id in ^relations)
     |> Repo.update_all(set: [last_read_at: time])
   end
-  def set_last_read(relation), do: set_last_read([relation])
+  def set_last_read(relation, user_id), do: set_last_read([relation], user_id)
 end

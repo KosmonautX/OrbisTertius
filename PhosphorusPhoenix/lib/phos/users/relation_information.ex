@@ -24,7 +24,6 @@ defmodule Phos.Users.RelationRoot do
     belongs_to :last_memory, Phos.Message.Memory, references: :id, type: Ecto.UUID, on_replace: :update
     field :self_initiated, :boolean, virtual: true
     field :friend, :map, virtual: true
-    field :last_read_at, :naive_datetime
 
     timestamps()
   end
