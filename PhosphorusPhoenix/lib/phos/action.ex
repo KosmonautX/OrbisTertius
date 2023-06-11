@@ -116,12 +116,10 @@ defmodule Phos.Action do
   end
 
   def orbs_by_geohashes({hashes, your_id}) do
-    from(l in Phos.Action.Orb_Location,
-      as: :l,
-      where: l.location_id in ^hashes,
-      inner_join: o in assoc(l, :orbs),
+    from(o in Phos.Action.Orb,
       as: :orb,
-      select: o,
+      where: o.userbound != true,
+      inner_join: l in Phos.Action.Orb_Location, on: l.location_id in ^hashes and l.orb_id == o.id,
       inner_join: initiator in assoc(o, :initiator),
       left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,
