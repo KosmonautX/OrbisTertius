@@ -5,7 +5,6 @@ defmodule PhosWeb.UserMemoryChannel do
 
   def join("memory:user:" <> id, _payload, socket) do
     if authorized?(socket, id) do
-      send(self(), :after_join)
       {:ok, socket}
     else
       {:error, %{reason: "unauthorized"}}

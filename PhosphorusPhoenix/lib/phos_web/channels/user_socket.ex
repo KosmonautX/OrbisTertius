@@ -50,7 +50,7 @@ defmodule PhosWeb.UserSocket do
   @impl true
   def connect(_params, _socket, _connect_info), do: :error
 
-  defp track_user_location(pid, %{"territory" => territory, "user_id" => user_id} = claims) do
+  defp track_user_location(pid, %{"territory" => territory, "user_id" => user_id} = _claims) do
     Enum.map(territory, fn {key, val} ->
       case Map.get(val, "hash") do
         nil -> :ok
@@ -60,10 +60,14 @@ defmodule PhosWeb.UserSocket do
 
     :ok
   end
+  defp track_user_location(_, _), do: :ok
 
   defp do_track_user_location(pid, key, location, user_id) when is_bitstring(location) do
     loc = location |> String.downcase() |> String.replace(" ", "_")
+    # if already tracked return {:error, :already_tracked} means that system already track user location
+    # this presence used for xx people around you right now
     PhosWeb.Presence.track(pid, "online_#{key}_location", loc, %{user_id: user_id})
+    :ok
   end
   defp do_track_user_location(_pid, _key, _loc, _user_id), do: :ok
 
