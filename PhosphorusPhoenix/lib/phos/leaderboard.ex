@@ -81,10 +81,15 @@ defmodule Phos.Leaderboard do
   end
 
 
-  def rank_orbs(limit, page) do
+  def rank_orbs(limit, page, filter_dates) do
+    startdt = Keyword.get(filter_dates, :startdt)
+    enddt = Keyword.get(filter_dates, :enddt)
+
     from(o in Orb,
     preload: :initiator,
     join: c in assoc(o, :comments),
+    where: c.inserted_at > ^startdt,
+    where: c.inserted_at < ^enddt,
     group_by: o.id,
     order_by: [desc: count(c)],
     select_merge: %{comment_count: count(c)}
