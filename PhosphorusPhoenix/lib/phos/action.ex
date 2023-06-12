@@ -119,8 +119,7 @@ defmodule Phos.Action do
     from(o in Phos.Action.Orb,
       as: :orb,
       where: o.userbound != true,
-      inner_join: l in assoc(o, :locs), on: l.location_id in ^hashes,
-      left_join: c in assoc(o, :comments),
+      inner_join: l in Phos.Action.Orb_Location, on: l.location_id in ^hashes and l.orb_id == o.id,
       inner_join: initiator in assoc(o, :initiator),
       left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,
@@ -133,24 +132,7 @@ defmodule Phos.Action do
           select: %{count: count()}
         )
       ),
-      select_merge: %{comment_count: c_count.count},
-      # left_lateral_join: c_init in subquery(
-      #   from Phos.Comments.Comment,
-      #   where: [orb_id: parent_as(:orb).id, initiator_id: parent_as(:orb).initiator_id],
-      #   order_by: :inserted_at,
-      #   limit: 1,
-      #   select: [:id]
-      # ), on: c_init.id == c.id,
-      left_lateral_join: init_c in subquery(
-        from c in  Phos.Comments.Comment,
-        where: [orb_id: parent_as(:orb).id, initiator_id: parent_as(:orb).initiator_id],
-        limit: 5,
-        select: [:id]
-      ), on: init_c.id == c.id,
-      # left_join: p_c in assoc(c, :parent),
-      # left_join: p_init in assoc(p_c, :initiator),
-      # preload: [comments: {c, parent: {p_c, initiator: p_init}}])
-      preload: [comments: {c, [parent: [:initiator]]}])
+      select_merge: %{comment_count: c_count.count})
   end
 
   def orbs_by_geohashes({hashes, your_id}, opts) do
@@ -165,7 +147,7 @@ defmodule Phos.Action do
     limit = Keyword.get(opts, :limit, 12)
 
     orbs_by_geohashes({hashes, your_id})
-    |> where([o], fragment("? @> ?", o.traits, ^traits))
+    |> where([_l, o], fragment("? @> ?", o.traits, ^traits))
     |> Repo.Paginated.all([{:sort_attribute, sort}| [{:limit, limit} | opts]])
   end
 
