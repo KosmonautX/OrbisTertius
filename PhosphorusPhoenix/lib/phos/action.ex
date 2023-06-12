@@ -147,7 +147,7 @@ defmodule Phos.Action do
     limit = Keyword.get(opts, :limit, 12)
 
     orbs_by_geohashes({hashes, your_id})
-    |> where([_l, o], fragment("? @> ?", o.traits, ^traits))
+    |> where([o], fragment("? @> ?", o.traits, ^traits))
     |> Repo.Paginated.all([{:sort_attribute, sort}| [{:limit, limit} | opts]])
   end
 
