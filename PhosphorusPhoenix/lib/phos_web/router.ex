@@ -14,7 +14,7 @@ defmodule PhosWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_user
-    #plug PhosWeb.Menshen.Mounter, :pleb
+    # plug PhosWeb.Menshen.Mounter, :pleb
   end
 
   pipeline :apple_callback do
@@ -47,7 +47,7 @@ defmodule PhosWeb.Router do
 
     get "/redirect/:out", PageController, :redirect
 
-    live_storybook "/storybook", backend_module: PhosWeb.Storybook
+    live_storybook("/storybook", backend_module: PhosWeb.Storybook)
   end
 
   ## User Genesis Routes
@@ -71,11 +71,10 @@ defmodule PhosWeb.Router do
     live_session :onboarding_user,
       on_mount: [{PhosWeb.Menshen.Gate, :mount_current_user}] do
       live "/begin", UserWelcomeLive, :onboard
-      end
+    end
 
     live_session :required_authenticated_user,
       on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Timezone, :timezone}] do
-
       live "/welcome", UserWelcomeLive, :welcome
 
       live "/orb/:id/show/:cid", OrbLive.Show, :show_ancestor
@@ -88,7 +87,6 @@ defmodule PhosWeb.Router do
 
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
-
 
       live "/memories", MemoryLive.Index, :index
       live "/memories/new", MemoryLive.Index, :new
@@ -113,15 +111,17 @@ defmodule PhosWeb.Router do
   end
 
   scope "/api", PhosWeb.API do
-    #firebased auth
-    pipe_through [:api] # , error_handler:
+    # firebased auth
+    # , error_handler:
+    pipe_through [:api]
 
     get "/version/:version", FyrAuthController, :semver
 
     scope "/userland" do
       scope "/auth/fyr" do
         get "/", FyrAuthController, :transmute
-        post "/genesis", FyrAuthController, :genesis # Create User
+        # Create User
+        post "/genesis", FyrAuthController, :genesis
       end
     end
   end
@@ -148,7 +148,6 @@ defmodule PhosWeb.Router do
         post "/forgot_password", AuthNEmailController, :forgot_password
         post "/reset_password", AuthNEmailController, :reset_password
       end
-
     end
 
     get "/orbland/stream/:id", OrbController, :show_territory
@@ -185,7 +184,6 @@ defmodule PhosWeb.Router do
     scope "/medialand" do
       post "/media/:archetype/:id", MediaController, :show
     end
-
   end
 
   # Other scopes may use custom stacks.
@@ -196,7 +194,6 @@ defmodule PhosWeb.Router do
     get "/:provider/callback", AuthController, :callback
     delete "/logout", AuthController, :delete
   end
-
 
   scope "/auth", PhosWeb do
     pipe_through :apple_callback
@@ -247,7 +244,7 @@ defmodule PhosWeb.Router do
       pipe_through [:browser, :require_authenticated_user]
 
       live_session :required_authenticated_user_dev,
-        on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated},{PhosWeb.Timezone, :timezone}] do
+        on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Timezone, :timezone}] do
         live "/orb", OrbLive.Index, :index
         live "/orb/new", OrbLive.Index, :new
         live "/orb/sethome", OrbLive.Index, :sethome
@@ -261,7 +258,6 @@ defmodule PhosWeb.Router do
         live "/memories/:id", MemoryLive.Show, :show
         live "/memories/:id/show/edit", MemoryLive.Show, :edit
 
-
         live "/reveries", ReverieLive.Index, :index
         live "/reveries/new", ReverieLive.Index, :new
         live "/reveries/:id/edit", ReverieLive.Index, :edit
@@ -272,10 +268,12 @@ defmodule PhosWeb.Router do
     end
   end
 
-    scope "/", PhosWeb do
+  scope "/", PhosWeb do
     pipe_through [:browser]
 
-    resources "/admin/sessions", AdminSessionController, only: [:new, :create, :index], as: :admin_session
+    resources "/admin/sessions", AdminSessionController,
+      only: [:new, :create, :index],
+      as: :admin_session
 
     get "/users/log_out", UserSessionController, :delete
 
@@ -287,11 +285,9 @@ defmodule PhosWeb.Router do
 
     live_session :guest_if_not_logged_in,
       on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Timezone, :timezone}] do
-
       live "/orb/:id", OrbLive.Show, :show
       live "/user/:username", UserProfileLive.Show, :show
-      live "/user/:username/allies", UserProfileLive.Show, :allies
-
+      live "/user/:username/allies", UserProfileLive.Index, :allies
     end
   end
 end

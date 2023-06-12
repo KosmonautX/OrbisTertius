@@ -1,8 +1,9 @@
-<.modal
+<!--<.modal
   :if={@live_action in [:edit]}
   id="edit_profile_modal"
   show={@live_action in [:edit]}
-  on_cancel={JS.navigate(~p"/user/#{@current_user.username}")}>
+  on_cancel={JS.navigate(~p"/user/#{@current_user.username}")}
+>
   <div class="p-4">
     <.live_component
       module={PhosWeb.UserProfileLive.FormComponent}
@@ -14,29 +15,7 @@
       return_to={~p"/user/#{@current_user.username}"}
     />
   </div>
-</.modal>
-    <!--<div id="ally_list" class="w-full mx-auto top-0 fixed left-0 right-0 z-10">
-       <div class="w-full dark:bg-gray-900 bg-white mb-2">
-        <div class="flex flex-wrap items-center justify-center p-2">
-          <.link patch={~p"/user/#{@user.username}"}>
-            <Heroicons.chevron_left class="w-6 h-6 dark:text-white
-            font-semibold" />
-          </.link>
-          <span class="text-center text-base font-semibold text-gray-800 dark:text-white flex-1 items-center justify-center">
-            <%= "#{@user.username}'s allies" %>
-          </span>
-        </div>
-      </div>
-      <p :if={@streams.ally_list |> Enum.count() == 0}
-        class="w-full mx-auto text-center py-6 text-gray-600 font-medium text-sm lg:text-base dark:text-white">
-        <%= "#{@user.username} has no allies yet" %>
-      </p>
-      <div>
-        <.live_component module={PhosWeb.Components.ScrollAlly} id="infinite-ally-home-desktop"
-          data={@streams.ally_list} parent_pid={@parent_pid} current_user={@current_user}
-          meta={@ally_list}/>
-      </div>
-    </div>-->
+</.modal> -->
 <section class="w-full flex flex-col items-center mt-12 lg:gap-4 gap-2 lg:mt-18 font-poppinsbg-white ">
   <div class="w-full fixed left-0 right-0 top-16 z-10">
     <.user_profile_banner
@@ -47,7 +26,12 @@
     />
   </div>
   <div class="w-full px-4 md:px-10 mt-72 lg:mt-80 lg:max-w-4xl lg:px-0">
-    <.user_information_card :if={not is_nil(@user.public_profile)} id="user_info"   user={@user}>
+    <.user_information_card
+      :if={not is_nil(@user.public_profile)}
+      id="user_info"
+      user={@user}
+      username={@user.username}
+    >
       <:actions>
         <.live_component
           id="user-information-card-ally"
@@ -67,27 +51,37 @@
       </:actions>
     </.user_information_card>
   </div>
-  <div class="lg:hidden block sticky top-80 z-10 bg-white w-full items-center justify-center ">
+
+  <div class="lg:hidden block sticky top-80 z-10 bg-white w-full items-center justitruefy-center ">
     <.tabs_profile id="orb-user-tabs-profile" action={@live_action} username={@user.username} />
   </div>
 
-    <div class="w-full flex flex-col px-4 md:px-10  lg:max-w-4xl lg:px-0">
-      <h5 class="lg:block hidden text-left font-semibold text-2xl dark:text-white border-b-2 border-black dark:border-white mb-2.5 py-2">
-        Posts
-      </h5>
-      <p
-        :if={@streams.orbs |> Enum.count() == 0}
-        class="w-full mx-auto text-center py-6 text-gray-600 font-medium lg:text-base text-sm dark:text-white"
-      >
-        <%= "#{@user.username} has no post yet" %>
-      </p>
+  <div class="w-full flex flex-col px-4 md:px-10  lg:max-w-4xl lg:px-0">
+    <h5 class="lg:block hidden text-left font-semibold text-2xl dark:text-white border-b-2 border-black dark:border-white mb-2.5 py-2">
+      Posts
+    </h5>
+    <p
+      :if={@streams.orbs |> Enum.count() == 0}
+      class="w-full mx-auto text-center py-6 text-gray-600 font-medium lg:text-base text-sm dark:text-white"
+    >
+      <%= "#{@user.username} has no post yet" %>
+    </p>
 
-      <.live_component
-        module={PhosWeb.Components.ScrollOrb}
-        id="infinite-orb-home"
-        data={@streams.orbs}
-        timezone1={@timezone}
-        meta={@orbs}
-      />
-    </div>
+    <.live_component
+      module={PhosWeb.Components.ScrollOrb}
+      id="infinite-orb-home"
+      data={@streams.orbs}
+      timezone1={@timezone}
+      meta={@orbs}
+    />
+  </div>
 </section>
+
+<.ally_modal
+  :if={@live_action in [:edit]}
+  id="User_ally"
+  show={@live_action in [:edit]}
+  on_cancel={JS.navigate(~p"/user/#{@current_user.username}")}
+>
+  <.redireact_user id="redirect-user" user={@user} show_location={true} show_img={false} />
+</.ally_modal>

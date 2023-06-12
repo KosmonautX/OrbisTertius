@@ -1,23 +1,26 @@
 <!--desktop View -->
-<div class=" lg:bg-gray-100 bg-white dark:bg-gray-900 font-poppins">
+<div class=" lg:bg-gray-100 bg-white dark:bg-gray-900 font-poppins w-full ">
   <div class="hidden lg:block">
     <br />
     <br />
     <br />
   </div>
-  <div class="md:mt-0 mt-14 lg:px-20">
+  <div class="md:mt-0 mt-14 lg:flex lg:justify-center lg:items-center lg:gap-4 ">
     <div
       :if={not is_nil(@orb.initiator) && @orb.initiator}
       class="flex lg:flex-row flex-col items-start mt-6 lg:gap-4"
     >
       <!-- Desktop View in Orb View Profile-->
-      <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full max-w-full lg:w-3/12  lg:flex-none">
+      <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full lg:max-w-md  lg:flex-none">
         <div>
           <.user_profile_banner
             id="orb-initiator-username"
             user={@orb.initiator}
             show_location={false}
-            main_height="lg:h-64" />
+            show_shadow=""
+            main_height="lg:h-56"
+            text_color="text-white"
+          />
         </div>
         <div class="text-center">
           <.user_information_card_orb
@@ -45,7 +48,7 @@
         </div>
       </div>
 
-      <div class="lg:w-5/12 lg:flex-none w-full">
+      <div class="lg:max-w-xl lg:flex-none w-full">
         <.link patch={~p"/user/#{@orb.initiator.username}"}>
           <div class="hidden lg:block mb-2 w-full mx-auto">
             <span class="flex text-gray-600 dark:text-white text-base font-bold  mb-1.5">
@@ -73,9 +76,7 @@
             socket={@socket}
             live_action={@live_action}
           />
-          <div
-            class="lg:hidden block bottom-0  fixed w-full bg-white dark:bg-gray-900"
-          >
+          <div class="lg:hidden block bottom-0 fixed w-full bg-white dark:bg-gray-900">
             <.live_component
               module={PhosWeb.CommentLive.FormComponent}
               changeset={@changeset}
@@ -88,10 +89,9 @@
           </div>
         </div>
       </div>
-
       <!--Desktop Related Post-->
-      <div class="hidden lg:block w-full lg:w-4/12 lg:flex-none">
-        <h5 class="text-left font-semibold text-2xl dark:text-white mb-2">
+      <div class="hidden lg:block w-full lg:max-w-md  lg:flex-none">
+        <h5 class="text-left font-semibold text-lg dark:text-white mb-1">
           <%= "Other Posts by #{@orb.initiator.username}" %>
         </h5>
         <.live_component
@@ -104,12 +104,19 @@
       </div>
     </div>
   </div>
-  <.modal
+  <.gallery_modal
     :if={@live_action in [:show] and not is_nil(@media)}
     id="orb-media-preview"
     close_button={true}
-    show={@live_action in [:show] and not is_nil(@media)}>
-    <.media_preview url={@media} />
-  </.modal>
+    show={@live_action in [:show] and not is_nil(@media)}
+  >
+    <.media_preview
+      url={@media}
+      orb={@orb}
+      timezone={@timezone}
+      id="orb-preview show_information={false}"
+    />
+    <:title>Post's</:title>
+  </.gallery_modal>
   <span :if={@streams.orbs |> Enum.count() < 3} class="hidden lg:block h-96 bg-gray-100" />
 </div>

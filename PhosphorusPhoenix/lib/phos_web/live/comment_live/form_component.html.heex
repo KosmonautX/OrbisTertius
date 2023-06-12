@@ -1,15 +1,21 @@
-<div class="font-poppins">
+<div class="font-poppins md:mr-4">
   <h3 :if={not is_nil(@reply_comment)} class="text-sm font-bold text-gray-600 dark:text-white">
     <%= to_string(@action) %>: <%= @comment.body %>
   </h3>
-  <div class="relative dark:border-t-2 dark:border-white lg:dark:border-none">
-    <.simple_form :let={f} for={@changeset} id={@id} phx-target={@myself}
-    class="px-2 py-4"
-    phx-submit={@action}>
-      <div class="flex items-center justify-center  w-full gap-2">
+  <div class="relative dark:border-t-2 dark:border-white lg:dark:border-none w-full">
+    <.simple_form
+      :let={f}
+      for={@changeset}
+      id={@id}
+      phx-target={@myself}
+      class="px-2 py-4"
+      phx-submit={@action}
+    >
+      <div class="flex items-center justify-center w-full gap-2">
         <img
           class="lg:w-12 lg:h-12 h-10 w-10 rounded-full object-cover shrink-0"
-          src="https://picsum.photos/200/300"/>
+          src="https://picsum.photos/200/300"
+        />
         <.input
           :if={@action != :edit}
           field={{f, :body}}
@@ -25,7 +31,7 @@
           :if={not is_nil(@current_user)}
           type="submit"
           phx-disable-with="Saving..."
-          class="absolute bottom-4 right-2"
+          class="absolute bottom-4 right-2 md:right-16"
         >
           <.send_btn type="send" />
         </button>

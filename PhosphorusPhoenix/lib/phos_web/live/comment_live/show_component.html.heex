@@ -141,6 +141,7 @@
   </div>
 
   <div :if={not is_nil(@reply_comment)} id={"reply-comment-for-#{elem(@comment, 1).id}"}>
+
     <.live_component
       module={PhosWeb.CommentLive.FormComponent}
       changeset={@changeset}

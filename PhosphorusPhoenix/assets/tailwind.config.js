@@ -28,6 +28,12 @@ module.exports = {
       borderRadius: {
         19: "19px",
       },
+      margin: {
+        "550px": "550px",
+      },
+      maxHeight: {
+        500: "31rem",
+      },
     },
   },
 
