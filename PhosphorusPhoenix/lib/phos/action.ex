@@ -139,6 +139,7 @@ defmodule Phos.Action do
     limit = Keyword.get(opts, :limit, 24)
     orbs_by_geohashes({hashes, your_id})
     |> Repo.Paginated.all([{:limit, limit} | opts])
+    |> (&(Map.put(&1, :data, &1.data |> Phos.Repo.Preloader.lateral(:comments, limit: 3, order_by: {:asc, :inserted_at}, assocs: [:initiator, parent: [:initiator]])))).()
   end
 
 
