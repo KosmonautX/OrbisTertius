@@ -10,35 +10,17 @@ defmodule PhosWeb.Admin.UserLive.Index do
     page = 1
     search = ""
 
-    %{data: users, meta: user_meta} = Users.list_users(limit, page)
+    %{data: users, meta: meta} = Users.filter_user_by_username(search, limit, page)
 
     {:ok,
       socket
-      |> assign(limit: limit)
       |> assign(search: search)
+      |> assign(limit: limit)
       |> assign(admin: true)
-      |> assign(user_meta: user_meta)
+      |> assign(user_meta: meta )
       |> assign(today: NaiveDateTime.utc_now())
       |> stream(:users, users)
     }
-  end
-
-  def handle_event("search",%{"_target" => [_a, search_term] = target} = search, %{assigns: %{limit: limit}} = socket) do
-
-    search_value = get_in(search, target)
-    %{data: users, meta: new_meta} = Users.filter_user_by_username(search_value, limit, 1)
-    case search_term do
-      "username" ->
-      {:noreply,
-        socket
-        |> assign(search: search_value)
-        |> assign(user_meta: new_meta)
-        |> stream(:users, users, reset: true)
-      }
-      _ ->
-        {:noreply, socket}
-    end
-
   end
 
   def handle_event(
@@ -71,10 +53,28 @@ defmodule PhosWeb.Admin.UserLive.Index do
 
   end
 
-  def handle_params(_, _, socket) do
-    {:noreply, socket}
+  def handle_params(%{"search" => %{"username" => search_value}} = params, _url, socket) do
+    send(self(), :start_search)
+    {:noreply,
+    socket
+    |> assign(:search, search_value)
+    }
   end
 
+  def handle_params(_, _, socket) do
+    {:noreply,
+    socket}
+  end
+
+  def handle_info(:start_search, socket) do
+    %{data: users, meta: meta} = Users.filter_user_by_username(socket.assigns.search, socket.assigns.limit, 1)
+
+    {:noreply,
+    socket
+    |> assign(:user_meta, meta)
+    |> stream(:users, users, reset: true)
+    }
+  end
 
   defp apply_action(socket, :index, _) do
     socket

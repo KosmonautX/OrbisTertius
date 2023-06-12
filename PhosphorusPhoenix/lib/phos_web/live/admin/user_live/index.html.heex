@@ -21,10 +21,9 @@
 <div class="hidden lg:block w-full p-1 max-h-fit">
   <div class="flex items-center px-2 mb-2">
     <div class="flex">
-      <.form :let={f} for={:search} phx-change="search">
+      <.form :let={f} for={%{}} as={:search}>
         <%= text_input(f, :username,
           value: @search,
-          phx_debounce: 300,
           placeholder: "Search user by username",
           autocomplete: "off",
           class:
