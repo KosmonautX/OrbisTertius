@@ -1,13 +1,14 @@
 <div class="hidden lg:block w-full p-1 max-h-fit font-poppins">
   <div class="flex items-center px-2 mb-2">
-        <.simple_form :let={f} as={:user} phx-change="update_options">
+    <.simple_form :let={f} as={:user}>
       <div class="flex py-3 mx-2 font-bold text-left uppercase align-middle bg-transparent border-gray-200 shadow-none text-base text-slate-400">
         Filter
       </div>
-        <.input
+      <.input
+        phx-change="update_options"
         name="see_top"
         id="adminleaderboard"
-        field={{f, :category}}
+        field={{f, :see_top}}
         type="select"
         options={@top_options}
         value={@current_view}
@@ -32,57 +33,58 @@
         class:
           "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
       ) %>
-        <:actions>
-          <.button phx-click="reset" class="button button-sm p-0 mx-2">Reset Filters</.button>
-          <.button type="submit" class="button button-sm p-0 mx-2">Apply</.button>
-        </:actions>
+      <:actions>
+        <.button phx-click="reset" class="button button-sm p-0 mx-2">Reset Filters</.button>
+        <.button type="submit" class="button button-sm p-0 mx-2">Apply</.button>
+      </:actions>
     </.simple_form>
-        <%!-- <.button phx-click="orb_rank" class="button button-sm p-0 mx-2">Comments</.button> --%>
-
+    <%!-- <.button phx-click="orb_rank" class="button button-sm p-0 mx-2">Comments</.button> --%>
   </div>
 
   <div class="relative w-full flex flex-col bg-white border-0 border-transparent border-solid shadow-xl p-2 overflow-scroll font-poppins">
-
     <table
-      :if={@current_view == "See Top Users By"} 
+      :if={@current_view == "See Top Users By"}
       phx-viewport-bottom={@user_meta.pagination.downstream && "load-more-users"}
       phx-update="stream"
       id="users"
       class="w-full align-top text-slate-500"
     >
-    <tr class="font-bold text-left uppercase text-slate-400"> 
-        <th> User </th>
-        <th class="sticky left-0"> Count </th>
-        <th class="sticky left-0"> Joined on </th>
+      <tr class="font-bold text-left uppercase text-slate-400">
+        <th>User</th>
+        <th class="sticky left-0">Count</th>
+        <th class="sticky left-0">Joined on</th>
       </tr>
       <tbody>
-      <tr :for={{dom_id, user} <- @streams.users} id={dom_id}>
-        <td>
-          <.admin_user_preview user={user} id={"admin_user_preview_for_#{user.id}"} />
-        </td>
-        <td>
-          <%= user.count %>
-        </td>
-        <td>
-          <%= Leaderboard.beautify_date(user.inserted_at) %>
-        </td>
-      </tr>
+        <tr :for={{dom_id, user} <- @streams.users} id={dom_id}>
+          <td>
+            <.admin_user_preview user={user} id={"admin_user_preview_for_#{user.id}"} />
+          </td>
+          <td>
+            <%= user.count %>
+          </td>
+          <td>
+            <%= Leaderboard.beautify_date(user.inserted_at) %>
+          </td>
+        </tr>
       </tbody>
     </table>
 
     <table
-      :if={@current_view == "See Top Orbs By"} 
+      :if={@current_view == "See Top Orbs By"}
       phx-update="stream"
       id="orbs"
       phx-viewport-bottom={@orb_meta.pagination.downstream && "load-more-orbs"}
       class="table-fixed w-full align-top text-slate-500"
     >
-      <tr :if={@orb_meta.pagination.current == 1} class="font-bold text-left uppercase text-slate-400"> 
+      <tr
+        :if={@orb_meta.pagination.current == 1}
+        class="font-bold text-left uppercase text-slate-400"
+      >
         <th width="10%"></th>
-        <th> User </th>
-        <th> Orb Title </th>
-        <th class="sticky left-0"> Count </th>
-        <th class="sticky left-0"> Joined on </th>
+        <th>User</th>
+        <th>Orb Title</th>
+        <th class="sticky left-0">Count</th>
+        <th class="sticky left-0">Joined on</th>
       </tr>
       <tr :for={{dom_id, orb} <- @streams.orbs} id={dom_id}>
         <td width="15%" class="text-center">
@@ -91,7 +93,10 @@
           </.link>
         </td>
         <td width="30%" class="sticky left-0" label="User">
-          <.admin_user_preview user={orb.initiator} id={"admin_user_preview_for_#{orb.initiator.id}"} />
+          <.admin_user_preview
+            user={orb.initiator}
+            id={"admin_user_preview_for_#{orb.initiator.id}"}
+          />
         </td>
         <td class="sticky left-0 overflow-hidden" label="Title">
           <%= orb.title %>

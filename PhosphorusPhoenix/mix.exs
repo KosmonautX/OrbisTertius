@@ -40,7 +40,7 @@ defmodule Phos.MixProject do
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 3.3"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 0.19.1", override: true},
+      {:phoenix_live_view, "~> 0.19.2", override: true},
       {:floki, ">= 0.34.0"},
       {:phoenix_live_dashboard, "~> 0.7"},
       {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},

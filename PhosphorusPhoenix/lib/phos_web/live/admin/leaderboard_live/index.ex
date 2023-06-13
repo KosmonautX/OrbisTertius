@@ -2,46 +2,40 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
   use PhosWeb, :admin_view
   alias Phos.Leaderboard
 
-  def mount(_params, _session, socket) do
-   {:ok,
-    socket
-    |> setup_assign()
-    }
-  end
+  def mount(_params, _session, socket), do: {:ok, socket |> setup_assign() }
 
   def handle_params( %{"see_top" => see_top, "filter_by" => option, "user" => %{"startdate" => startdate, "enddate" => enddate}}, _url, socket) do
     filter_dates = %{startdate: startdate, enddate: enddate}
+
     case see_top do
+      "See Top Users By" ->
+
+        {:ok, %{startdt: startdt, enddt: enddt}} = get_naive_dates(filter_dates)
+        %{data: users, meta: user_meta} = Leaderboard.list_user_counts(socket.assigns.limit, 1, option_to_atom(option), [startdt: startdt, enddt: enddt])
+
+        {:noreply,
+        socket
+        |> assign(:current_view, "See Top Users By")
+        |> assign(:filter_by, option)
+        |> assign(:filter_dates, filter_dates)
+
+        |> assign(user_meta: user_meta)
+        |> stream(:users, users, reset: true)
+        }
+
       "See Top Orbs By" ->
-        send(self(), :filter_orbs)
-
-        # {:ok, %{startdt: startdt, enddt: enddt}} = get_naive_dates(socket.assigns.filter_dates)
-        # %{data: orbs, meta: orb_meta} = Leaderboard.rank_orbs(socket.assigns.limit, 1, [startdt: startdt, enddt: enddt])
-
+        {:ok, %{startdt: startdt, enddt: enddt}} = get_naive_dates(filter_dates)
+        %{data: orbs, meta: orb_meta} = Leaderboard.rank_orbs(socket.assigns.limit, 1, [startdt: startdt, enddt: enddt])
+        # send(self(), :filter_orbs)
 
         {:noreply, socket
         |> assign(:current_view, "See Top Orbs By")
         |> assign(:filter_by, option)
         |> assign(:filter_dates, filter_dates)
+        |> assign(:count_options, ["Comments"])
 
-        # |> assign(orb_meta: orb_meta)
-        # |> stream(:orbs, orbs, reset: true)
-        }
-
-      "See Top Users By" ->
-        send(self(), :filter_users)
-
-        # {:ok, %{startdt: startdt, enddt: enddt}} = get_naive_dates(socket.assigns.filter_dates)
-        # %{data: new_users, meta: new_meta} = Leaderboard.list_user_counts(socket.assigns.limit, 1, option_to_atom(socket.assigns.filter_by), [startdt: startdt, enddt: enddt])
-
-
-        {:noreply, socket
-        |> assign(:current_view, "See Top Users By")
-        |> assign(:filter_by, option)
-        |> assign(:filter_dates, filter_dates)
-
-        # |> assign(user_meta: new_meta)
-        # |> stream(:users, new_users, reset: true)
+        |> assign(orb_meta: orb_meta)
+        |> stream(:orbs, orbs, reset: true)
         }
 
       _ ->
@@ -52,46 +46,24 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
 
   def handle_params(_, _, socket), do: {:noreply, socket}
 
-
-  def handle_info(:filter_orbs, socket) do
-
-    {:ok, %{startdt: startdt, enddt: enddt}} = get_naive_dates(socket.assigns.filter_dates)
-    %{data: orbs, meta: orb_meta} = Leaderboard.rank_orbs(socket.assigns.limit, 1, [startdt: startdt, enddt: enddt])
-
-    {:noreply,
-    socket
-    |> assign(orb_meta: orb_meta)
-    |> stream(:orbs, orbs, reset: true)
-    }
-  end
-
-  def handle_info(:filter_users, socket) do
-
-    {:ok, %{startdt: startdt, enddt: enddt}} = get_naive_dates(socket.assigns.filter_dates)
-    %{data: new_users, meta: new_meta} = Leaderboard.list_user_counts(socket.assigns.limit, 1, option_to_atom(socket.assigns.filter_by), [startdt: startdt, enddt: enddt])
-    {:noreply,
-    socket
-    |> assign(user_meta: new_meta)
-    |> stream(:users, new_users, reset: true)}
-  end
-
-  def handle_event("update_options", _, %{assigns: %{current_view: current_view}} = socket) do
-    case current_view do
+  def handle_event("update_options", %{"_target" => ["see_top"], "see_top" => see_top},  socket) do
+    case see_top do
       "See Top Users By" ->
         {:noreply,
           socket
-          |> assign(:count_options, ["Orbs", "Allies", "Chats", "Comments"])
-          |> assign(:filter_by, "Orbs")
+          |> assign(:current_view, "See Top Users By")
+          |> assign(:filter_by, "Allies")
+          |> assign(:count_options, ["Allies", "Chats", "Comments", "Orbs"])
 
         }
 
       "See Top Orbs By" ->
         {:noreply,
           socket
+          |> assign(:current_view, "See Top Orbs By")
           |> assign(:count_options, ["Comments"])
-          |> assign(:filter_by, "Comments")
-        }
 
+        }
     end
 
   end
@@ -120,7 +92,7 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
   def handle_event(
     "load-more-orbs",
     _,
-    %{assigns: %{limit: limit, filter_dates: %{} = filter_dates, orb_meta: %{pagination: pagination} = orb_meta }} = socket
+    %{assigns: %{limit: limit, filter_dates: %{} = filter_dates, orb_meta: %{pagination: pagination} }} = socket
     ) do
     expected_page = pagination.current + 1
     {:ok, %{startdt: startdt, enddt: enddt}} = get_naive_dates(filter_dates)
@@ -134,15 +106,9 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
 
   end
 
-  def handle_event("reset", params, socket) do
-
-    {:noreply,
-     socket
-     |> stream(:users, [], reset: true)
-     |> stream(:orbs, [], reset: true)
-     |> setup_assign()
-    }
-   end
+  def handle_event("reset", _, socket) do
+    {:noreply, push_navigate(socket, to: ~p"/admin/leaderboard")}
+  end
 
   defp setup_assign(socket) do
     limit = 20
@@ -151,22 +117,22 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
     enddt = DateTime.utc_now()
     filter_dates = [startdt: startdt, enddt: enddt]
 
-    %{data: users, meta: user_meta} = Leaderboard.list_user_counts(limit, page, :orbs, filter_dates)
-    %{data: orbs, meta: orb_meta} = Leaderboard.rank_orbs(limit, 1, filter_dates)
+    %{meta: user_meta} = Leaderboard.list_user_counts(limit, page, :orbs, filter_dates)
+    %{meta: orb_meta} = Leaderboard.rank_orbs(limit, 1, filter_dates)
 
     filter_dates = %{startdate: startdt |> DateTime.to_date(), enddate: enddt |> DateTime.to_date()}
 
     socket
     |> assign(:top_options, ["See Top Users By", "See Top Orbs By" ])
-    |> assign(:count_options, ["Orbs", "Allies", "Chats", "Comments"])
+    |> assign(:count_options, ["Allies", "Chats", "Comments", "Orbs"])
     |> assign(:current_view, "See Top Users By")
-    |> assign(:filter_by, "Orbs")
     |> assign(:filter_dates, filter_dates)
+    |> assign(:filter_by, "Allies")
     |> assign(limit: limit)
     |> assign(:user_meta, user_meta)
     |> assign(:orb_meta, orb_meta)
-    |> stream(:users, users)
-    |> stream(:orbs, orbs)
+    |> stream(:users, [])
+    |> stream(:orbs, [])
 
   end
 
@@ -187,14 +153,10 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
 
 
   defp option_to_atom(option) do
-
     option
     |> String.downcase()
     |> String.to_atom()
-
   end
-
-
 
 
 
