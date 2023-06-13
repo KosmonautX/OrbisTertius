@@ -1,14 +1,14 @@
-<div class="font-poppins md:mr-4">
+<div class="font-poppins">
   <h3 :if={not is_nil(@reply_comment)} class="text-sm font-bold text-gray-600 dark:text-white">
     <%= to_string(@action) %>: <%= @comment.body %>
   </h3>
-  <div class="relative dark:border-t-2 dark:border-white lg:dark:border-none w-full">
+  <div class="relative w-full">
     <.simple_form
       :let={f}
       for={@changeset}
       id={@id}
       phx-target={@myself}
-      class="px-2 py-4"
+      class="px-2 py-4 flex"
       phx-submit={@action}
     >
       <div class="flex items-center justify-center w-full gap-2">
@@ -31,21 +31,14 @@
           :if={not is_nil(@current_user)}
           type="submit"
           phx-disable-with="Saving..."
-          class="absolute bottom-4 right-2 md:right-16"
-        >
+          class="absolute bottom-4 right-2 lg:bottom-4 lg:right-4 md:right-24">
           <.send_btn type="send" />
         </button>
-        <a
-          :if={is_nil(@current_user)}
-          phx-click={show_modal("welcome_message")}
-          class="absolute bottom-7 right-6"
-        >
-          <.send_btn type="send" />
-        </a>
+
         <button
           :if={@action in [:reply, :edit]}
           type="reset"
-          class="absolute right-2 bottom-0"
+          class="absolute right-4 bottom-8"
           phx-click={"cancel-#{@action}"}
           phx-target={"#comment-#{@comment.id}"}
         >

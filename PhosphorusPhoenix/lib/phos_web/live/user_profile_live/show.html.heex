@@ -16,8 +16,8 @@
     />
   </div>
 </.modal> -->
-<section class="w-full flex flex-col items-center mt-12 lg:gap-4 gap-2 lg:mt-18 font-poppinsbg-white ">
-  <div class="w-full fixed left-0 right-0 top-16 z-10">
+<section class="w-full flex flex-col items-center mt-12 lg:gap-4 gap-2 lg:mt-18 font-poppins bg-white lg:bg-gray-200 dark:bg-gray-900">
+  <div class="w-full fixed left-0 right-0 top-14 z-10">
     <.user_profile_banner
       id="orb-user-profile"
       user={@user}
@@ -52,11 +52,11 @@
     </.user_information_card>
   </div>
 
-  <div class="lg:hidden block sticky top-80 z-10 bg-white w-full items-center justitruefy-center ">
+  <div class="lg:hidden block sticky top-[311px] z-10 bg-white w-full items-center justitruefy-center ">
     <.tabs_profile id="orb-user-tabs-profile" action={@live_action} username={@user.username} />
   </div>
 
-  <div class="w-full flex flex-col px-4 md:px-10  lg:max-w-4xl lg:px-0">
+  <div class="w-full flex flex-col px-2 md:px-10  lg:max-w-4xl lg:px-0">
     <h5 class="lg:block hidden text-left font-semibold text-2xl dark:text-white border-b-2 border-black dark:border-white mb-2.5 py-2">
       Posts
     </h5>
@@ -80,8 +80,15 @@
 <.ally_modal
   :if={@live_action in [:edit]}
   id="User_ally"
+  main_width="lg:max-w-2xl"
   show={@live_action in [:edit]}
   on_cancel={JS.navigate(~p"/user/#{@current_user.username}")}
 >
-  <.redireact_user id="redirect-user" user={@user} show_location={true} show_img={false} />
+  <.redireact_user
+    id="redirect-user"
+    user={@user}
+    show_location={true}
+    show_img={false}
+    username={@user.username}
+  />
 </.ally_modal>

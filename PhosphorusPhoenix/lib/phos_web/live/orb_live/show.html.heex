@@ -6,10 +6,7 @@
     <br />
   </div>
   <div class="md:mt-0 mt-14 lg:flex lg:justify-center lg:items-center lg:gap-4 ">
-    <div
-      :if={not is_nil(@orb.initiator) && @orb.initiator}
-      class="flex lg:flex-row flex-col items-start mt-6 lg:gap-4"
-    >
+    <div :if={not is_nil(@orb.initiator) && @orb.initiator} class="flex lg:flex-row flex-col items-start mt-6 lg:gap-4">
       <!-- Desktop View in Orb View Profile-->
       <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full lg:max-w-md  lg:flex-none">
         <div>
@@ -37,7 +34,7 @@
         </div>
       </div>
       <!-- Post card and Comments-->
-      <div class="lg:hidden block w-full dark:bg-gray-900 sticky top-[66px] bg-white z-10 mb-2 md:mb-8">
+      <div class="lg:hidden block w-full dark:bg-gray-900 sticky top-[60px] bg-white z-10 mb-2 md:mb-8">
         <div class="flex flex-wrap items-center justify-center px-2 py-3">
           <.link patch={~p"/user/#{@orb.initiator.username}"}>
             <Heroicons.chevron_left class="w-6 h-6 dark:text-white font-semibold" />
@@ -60,32 +57,36 @@
           </div>
         </.link>
 
-        <div class="w-full lg:rounded-3xl pb-5 md:px-12 lg:px-0">
-          <.scry_orb id="orb" orb={@orb} timezone={@timezone} show_information={false} />
-          <.live_component
-            module={PhosWeb.CommentLive.IndexComponent}
-            id="commentindex"
-            timezone1={@timezone}
-            changeset={@changeset}
-            action="new"
-            orb={@orb}
-            comments={@comments}
-            reply_comment={nil}
-            edit_comment={nil}
-            current_user={@current_user}
-            socket={@socket}
-            live_action={@live_action}
-          />
-          <div class="lg:hidden block bottom-0 fixed w-full bg-white dark:bg-gray-900">
+      <!--Main Orb in Mobile View and Desktop View-->
+        <div class="w-full lg:px-0 md:px-10">
+          <div class="w-full lg:rounded-3xl pb-5 ">
+            <.scry_orb id="orb" orb={@orb} timezone={@timezone} show_information={false} />
             <.live_component
-              module={PhosWeb.CommentLive.FormComponent}
+              module={PhosWeb.CommentLive.IndexComponent}
+              id="commentindex"
+              timezone1={@timezone}
               changeset={@changeset}
-              current_user={@current_user}
+              action="new"
               orb={@orb}
-              id={"create-root-comment-#{@orb.id}"}
-              target={nil}
-              action={:new}
+              comments={@comments}
+              reply_comment={nil}
+              edit_comment={nil}
+              current_user={@current_user}
+              socket={@socket}
+              live_action={@live_action}
             />
+            <div class="lg:hidden block bottom-0 fixed w-full mx-auto bg-white dark:bg-gray-900">
+              <hr class="border md:hidden block dark:border-white"/>
+              <.live_component
+                module={PhosWeb.CommentLive.FormComponent}
+                changeset={@changeset}
+                current_user={@current_user}
+                orb={@orb}
+                id={"create-root-comment-#{@orb.id}"}
+                target={nil}
+                action={:new}
+              />
+            </div>
           </div>
         </div>
       </div>

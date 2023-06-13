@@ -11,7 +11,7 @@ defmodule PhosWeb.Components.ScrollAlly do
         phx-value-archetype="ally"
         class={[
           if(@meta.pagination.downstream, do: "pb-[calc(200vh)]"),
-          "w-full lg:px-0"
+          "w-full lg:px-0 px-3"
         ]}
       >
         <.user_info_bar
@@ -20,7 +20,8 @@ defmodule PhosWeb.Components.ScrollAlly do
           id={"user-#{dom_id}-infobar"}
           user={ally}
           show_padding={false}
-          class="dark:bg-gray-900 lg:dark:bg-gray-900">
+          class="dark:bg-gray-900 lg:dark:bg-gray-900"
+        >
           <:information>
             <span class="text-gray-900 dark:text-[#D1D1D1] truncate w-56">
               <%= ally
@@ -36,6 +37,7 @@ defmodule PhosWeb.Components.ScrollAlly do
               module={PhosWeb.Component.AllyButton}
               current_user={@current_user}
               socket={@socket}
+              size="small"
               parent_pid={@parent_pid}
               user={ally}
             />

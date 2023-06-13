@@ -14,16 +14,14 @@ module.exports = {
 
       inset: {
         "60px": "60px",
-      },
-
-      spacing: {
-        "66px": "66px",
+        "311px": "311px",
       },
 
       height: {
         900: "56rem",
         128: "32rem",
         272: "17rem",
+        428: "26rem",
       },
       borderRadius: {
         19: "19px",
@@ -32,7 +30,7 @@ module.exports = {
         "550px": "550px",
       },
       maxHeight: {
-        500: "31rem",
+        464: "29rem",
       },
     },
   },

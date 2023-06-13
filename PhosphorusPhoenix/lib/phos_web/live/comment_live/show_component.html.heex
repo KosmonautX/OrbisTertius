@@ -1,4 +1,4 @@
-<div class="mt-2 bg-white dark:bg-gray-900 font-poppins px-2"
+<div class="mt-2 bg-white dark:bg-gray-900 lg:dark:bg-gray-800 font-poppins px-2"
   id={"comment-#{elem(@comment, 1).id}"}>
   <div class="flex shrink-0" >
     <.link navigate={~p"/user/#{elem(@comment, 1).initiator.username}"} class="flex shrink-0">
@@ -79,7 +79,7 @@
             phx-value-orb={@orb.id}
             phx-value-path={to_string(elem(@comment, 1).path)}
           >
-            View replies [<%= elem(@comment, 1).child_count %>]
+            ----View replies [<%= elem(@comment, 1).child_count %>]
           </.link>
         </div>
 
@@ -97,7 +97,7 @@
             phx-value-orb={@orb.id}
             phx-value-path={to_string(elem(@comment, 1).path)}
           >
-            Hide replies  [<%= elem(@comment, 1).child_count %>]
+            ----Hide replies  [<%= elem(@comment, 1).child_count %>]
           </.link>
         </div>
         <div id={"initshowreply-#{elem(@comment, 1).id}"}>
@@ -112,7 +112,7 @@
             phx-value-orb={@orb.id}
             phx-value-path={to_string(elem(@comment, 1).path)}
           >
-            View replies [<%= elem(@comment, 1).child_count %>]
+            --View replies [<%= elem(@comment, 1).child_count %>]
           </.link>
         </div>
       </div>
