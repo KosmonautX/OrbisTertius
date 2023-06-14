@@ -11,7 +11,6 @@ defmodule PhosWeb.Admin.UserLive.Index do
     search = ""
 
     %{data: users, meta: meta} = Users.filter_user_by_username(search, limit, page)
-
     {:ok,
       socket
       |> assign(search: search)
@@ -23,30 +22,14 @@ defmodule PhosWeb.Admin.UserLive.Index do
     }
   end
 
-  def handle_event(
-    "load-more",
-    _,
-    %{assigns: %{search: search, limit: limit, user_meta: %{pagination: pagination}}} = socket
-    ) do
-    expected_page = pagination.current + 1
-
-
-    %{data: new_users, meta: new_meta} = Users.filter_user_by_username(search, limit, expected_page)
-
-    {:noreply,
-    socket
-    |> assign(user_meta: new_meta)
-    |> stream(:users, new_users)
-  }
-
-  end
-
   def handle_params(%{"id" => id} = params, _url, socket) do
+
     with %Users.User{} = user <- Users.get_user!(id) do
       {:noreply,
         socket
         |> assign(:user, user)
-        |> apply_action( socket.assigns.live_action, params)}
+        |> apply_action(socket.assigns.live_action, params)
+      }
     else
       {:error,_} -> {:noreply, socket}
     end
@@ -54,31 +37,39 @@ defmodule PhosWeb.Admin.UserLive.Index do
   end
 
   def handle_params(%{"search" => %{"username" => search_value}} = params, _url, socket) do
-    send(self(), :start_search)
+    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  end
+
+  def handle_params(_, _, socket), do: {:noreply, socket}
+
+  def handle_event("change", params, socket) do
+    {:noreply, apply_action(socket, :index, params)}
+  end
+
+  def handle_event(
+    "load-more",
+    params,
+    %{assigns: %{search: search, limit: limit, user_meta: %{pagination: pagination}}} = socket
+    ) do
+
+    expected_page = pagination.current + 1
+
+    %{data: new_users, meta: new_meta} = Users.filter_user_by_username(search, limit, expected_page)
     {:noreply,
-    socket
-    |> assign(:search, search_value)
+      socket
+      |> assign(user_meta: new_meta)
+      |> stream(:users, new_users)
     }
+
   end
 
-  def handle_params(_, _, socket) do
-    {:noreply,
-    socket}
-  end
-
-  def handle_info(:start_search, socket) do
-    %{data: users, meta: meta} = Users.filter_user_by_username(socket.assigns.search, socket.assigns.limit, 1)
-
-    {:noreply,
-    socket
-    |> assign(:user_meta, meta)
-    |> stream(:users, users, reset: true)
-    }
-  end
-
-  defp apply_action(socket, :index, _) do
+  defp apply_action(socket, :index, %{"search" => %{"username" => search_value}}) do
+    %{data: users, meta: meta} = Users.filter_user_by_username(search_value, socket.assigns.limit, 1)
     socket
     |> assign(:page_title, "Viewing Users")
+    |> assign(:user_meta, meta)
+    |> assign(:search, search_value)
+    |> stream(:users, users, reset: true)
   end
 
   defp apply_action(socket, :edit, _) do
