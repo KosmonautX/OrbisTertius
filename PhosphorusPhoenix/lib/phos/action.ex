@@ -115,53 +115,41 @@ defmodule Phos.Action do
       |> Enum.map(fn orb -> orb.orbs end)
   end
 
-  def orbs_by_geohashes({hashes, your_id}, page, opts \\ []) do
-
-    sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
-    limit = Keyword.get(opts, :limit, 12)
-
-    from(l in Orb_Location,
-      as: :l,
-      where: l.location_id in ^hashes,
-      left_join: orbs in assoc(l, :orbs),
-      where: orbs.userbound != true,
-      select: orbs,
-      inner_join: initiator in assoc(orbs, :initiator),
+  def orbs_by_geohashes({hashes, your_id}) do
+    from(o in Phos.Action.Orb,
+      as: :orb,
+      where: o.userbound != true,
+      inner_join: l in Phos.Action.Orb_Location, on: l.location_id in ^hashes and l.orb_id == o.id,
+      inner_join: initiator in assoc(o, :initiator),
       left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,
       left_join: root in assoc(branch, :root),
       select_merge: %{initiator: %{initiator | self_relation: root}},
-      inner_lateral_join: c in subquery(
-        from c in Phos.Comments.Comment,
-        where: c.orb_id == parent_as(:l).orb_id,
-        select: %{count: count()}
+      inner_lateral_join:
+      c_count in subquery(
+        from(c in Phos.Comments.Comment,
+          where: c.orb_id == parent_as(:orb).id,
+          select: %{count: count()}
+        )
       ),
-      select_merge: %{comment_count: c.count})
-      |> Repo.Paginated.all(page, sort_attribute, limit)
+      select_merge: %{comment_count: c_count.count})
   end
 
-  def orbs_by_geotraits({hashes, your_id}, traits, page, opts \\ []) do
-    sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
+  def orbs_by_geohashes({hashes, your_id}, opts) do
+    limit = Keyword.get(opts, :limit, 24)
+    orbs_by_geohashes({hashes, your_id})
+    |> Repo.Paginated.all([{:limit, limit} | opts])
+    |> (&(Map.put(&1, :data, &1.data |> Phos.Repo.Preloader.lateral(:comments, limit: 3, order_by: {:asc, :inserted_at}, assocs: [:initiator, parent: [:initiator]])))).()
+  end
+
+
+  def orbs_by_geotraits({hashes, your_id}, traits, opts) do
+    sort = Keyword.get(opts, :sort_attribute, :inserted_at)
     limit = Keyword.get(opts, :limit, 12)
 
-    from(l in Orb_Location,
-      as: :l,
-      where: l.location_id in ^hashes,
-      left_join: orbs in assoc(l, :orbs),
-      where: orbs.userbound != true and fragment("? @> ?", orbs.traits, ^traits),
-      select: orbs,
-      inner_join: initiator in assoc(orbs, :initiator),
-      left_join: branch in assoc(initiator, :relations),
-      on: branch.friend_id == ^your_id,
-      left_join: root in assoc(branch, :root),
-      select_merge: %{initiator: %{initiator | self_relation: root}},
-      inner_lateral_join: c in subquery(
-        from c in Phos.Comments.Comment,
-        where: c.orb_id == parent_as(:l).orb_id,
-        select: %{count: count()}
-      ),
-      select_merge: %{comment_count: c.count})
-      |> Repo.Paginated.all(page, sort_attribute, limit)
+    orbs_by_geohashes({hashes, your_id})
+    |> where([o], fragment("? @> ?", o.traits, ^traits))
+    |> Repo.Paginated.all([{:sort_attribute, sort}| [{:limit, limit} | opts]])
   end
 
   def users_by_geohashes({hashes, your_id}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
@@ -276,7 +264,7 @@ defmodule Phos.Action do
     Repo.all(query, limit: 32)
     |> Enum.map(fn orbloc -> Map.put(orbloc.orbs, :comment_count, orbloc.comment_count) end)
     # |> Enum.map(fn orb -> orb.orbs end)
-    |> Enum.filter(fn orb -> orb.active == true end)
+    |> Enum.filter(fn orb -> orb.active == true  end)
   end
 
   def get_active_orbs_by_initiator(user_id) do
@@ -338,32 +326,7 @@ defmodule Phos.Action do
          {:ok, orb} = data ->
            orb = orb |> Repo.preload([:initiator])
            spawn(fn ->
-             geonotifiers =
-               notifiers_by_geohashes([orb.central_geohash])
-               |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end)
-               |> MapSet.new()
-               |> MapSet.delete(get_in(orb.initiator, [Access.key(:integrations, %{}), Access.key(:fcm_token, nil)]))
-
-             allynotifiers =
-               Phos.Folk.notifiers_by_friends(orb.initiator_id)
-               |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end)
-               |> MapSet.new()
-               |> MapSet.difference(geonotifiers)
-               |> MapSet.delete(get_in(orb.initiator, [Access.key(:integrations, %{}), Access.key(:fcm_token, nil)]))
-
-
-             Phos.Notification.push(
-               geonotifiers,
-               %{title: "#{orb.initiator.username} just posted across your street 🧭",
-                 body: orb.title},
-               %{action_path: "/orbland/orbs/#{orb.id}"})
-
-             Phos.Notification.push(
-               allynotifiers,
-               %{title: "Your ally 🤝 #{orb.initiator.username} just posted 💫",
-                 body: orb.title},
-               %{action_path: "/orbland/orbs/#{orb.id}"})
-
+             experimental_notify(orb)
            end)
            #spawn(fn -> user_feeds_publisher(orb) end)
            data
@@ -380,12 +343,7 @@ defmodule Phos.Action do
            orb = orb |> Repo.preload([:initiator])
            spawn(fn ->
              unless(Enum.member?(orb.traits, "mirage")) do
-               Phos.Notification.push(
-               Phos.Folk.notifiers_by_friends(orb.initiator_id)
-               |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end),
-               %{title: "Hey! 👋 You’ve got to check out what #{orb.initiator.username} just posted 🌠",
-                 body: orb.title},
-               %{action_path: "/orbland/orbs/#{orb.id}"})
+               experimental_notify(orb)
              end
              #spawn(fn -> user_feeds_publisher(orb) end)
            end)
@@ -780,5 +738,35 @@ defmodule Phos.Action do
       })
 
     create_orb(attrs)
+  end
+
+  def experimental_notify(orb) do
+    geonotifiers =
+      notifiers_by_geohashes([orb.central_geohash])
+      |> Enum.map(fn n -> n && Map.get(n, :fcm_token, nil) end)
+      |> MapSet.new()
+      |> MapSet.delete(get_in(orb.initiator, [Access.key(:integrations, %{}), Access.key(:fcm_token, nil)]))
+      |> tap(fn batch ->
+      Phos.PlatformNotification.Batch.push(batch,
+        title: "#{orb.initiator.username} just posted across your street 🧭",
+        body: orb.title,
+        initiator_id: orb.initiator_id,
+        action_path: "/orbland/orbs/#{orb.id}",
+        cluster_id: "loc_orb")
+    end)
+
+
+      # allynotifiers
+      Phos.Folk.notifiers_by_friends(orb.initiator_id)
+      |> Enum.map(fn n -> n && Map.get(n, :fcm_token, nil) end)
+      |> MapSet.new()
+      |> MapSet.difference(geonotifiers)
+      |> MapSet.delete(get_in(orb.initiator, [Access.key(:integrations, %{}), Access.key(:fcm_token, nil)]))
+      |> Phos.PlatformNotification.Batch.push(
+        title: "Your ally 🤝 #{orb.initiator.username} just posted 💫",
+      body: orb.title,
+      initiator_id: orb.initiator_id,
+      action_path: "/orbland/orbs/#{orb.id}",
+      cluster_id: "folk_orb")
   end
 end

@@ -7,7 +7,12 @@ defmodule PhosWeb.CommentLive.ShowComponent do
 
   def update(assigns, socket) do
     {:ok,
-      assign(socket, assigns)
+      socket
+      |> assign(:orb, assigns.orb)
+      |> assign(:comment, assigns.comment)
+      |> assign(:comments, assigns.comments)
+      |> assign(:current_user, assigns.current_user)
+      |> assign(:changeset, assigns.changeset)
       |> assign_new(:edit_comment, fn -> nil end)
       |> assign_new(:reply_comment, fn -> nil end)}
   end

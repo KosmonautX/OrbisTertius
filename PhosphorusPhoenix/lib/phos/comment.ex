@@ -43,46 +43,21 @@ defmodule Phos.Comments do
     %Comment{}
     |> Comment.changeset(attrs)
     |> Repo.insert()
+  end
+
+  def create_comment_and_publish(attrs \\ %{}) do
+    create_comment(attrs)
     |> case do
          {:ok, %{parent_id: p_id} = comment} = data when not is_nil(p_id)->
            comment
            |> Repo.preload([:initiator, :parent, :orb])
            |> notify_parent_element()
            |> notify_initiator()
-
-           # if comment.parent.initiator_id !== comment.initiator.id do
-           #   spawn(fn ->
-           #     Phos.Notification.target("'USR.#{comment.parent.initiator_id}' in topics",
-           #       %{title: "#{comment.initiator.username} replied",
-           #         body: comment.body
-           #       },
-           #       %{action_path: "/comland/comments/children/#{comment.id}"})
-           #   end)
-           # end
-
-           # if comment.orb.initiator_id not in [comment.initiator.id, comment.parent.initiator_id] do
-           #   spawn(fn ->
-           #     Phos.Notification.target("'USR.#{comment.orb.initiator_id}' in topics",
-           #       %{title: "#{comment.initiator.username} replied to a comment within your post",
-           #         body: comment.body
-           #       },
-           #       %{action_path: "/comland/comments/children/#{comment.id}"})
-           #   end)
-           # end
            data
          {:ok, %{orb_id: _o_id} = comment} = data ->
            comment
            |> Repo.preload([:orb, :initiator])
            |> notify_self()
-           # if comment.orb.initiator_id !== comment.initiator.id do
-           #   spawn(fn ->
-           #     Phos.Notification.target("'USR.#{comment.orb.initiator_id}' in topics",
-           #       %{title: "#{comment.initiator.username} replied",
-           #         body: comment.body
-           #       },
-           #       %{action_path: "/comland/comments/root/#{comment.id}"})
-           #   end)
-           # end
            data
          err -> err
        end
@@ -94,8 +69,10 @@ defmodule Phos.Comments do
       to: parent_init_id,
       notification: %{
         title: "#{comment.initiator.username} replied",
-        body: comment.body
+        body: comment.body,
+        silent: false
       }, data: %{
+        cluster_id: comment.orb_id,
         action_path: "/comland/comments/children/#{comment.id}"
       })
     comment
@@ -110,7 +87,9 @@ defmodule Phos.Comments do
       notification: %{
         title: "#{comment.initiator.username} replied to a comment within your post",
         body: comment.body,
+        silent: false
       }, data: %{
+        cluster_id: orb.id,
         action_path: "/comland/comments/children/#{comment.id}"
       })
     comment
@@ -124,7 +103,9 @@ defmodule Phos.Comments do
       notification: %{
         title: "#{comment.initiator.username} replied",
         body: comment.body,
+        silent: false
       }, data: %{
+        cluster_id: orb.id,
         action_path: "/comland/comments/root/#{comment.id}"
       })
     comment

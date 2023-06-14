@@ -160,7 +160,7 @@ defmodule ChattingDownSockets do
 
   require Logger
 
-  @channel "archetype:usr:b2f8be78-cf09-4ddb-aa67-1856425c75cf"
+  @channel "archetype:usr:6d7b0e7c-a633-4a8a-8d85-b8a493109bd4"
 
   def start_link(args) do
     Slipstream.start_link(__MODULE__, args, name: __MODULE__)

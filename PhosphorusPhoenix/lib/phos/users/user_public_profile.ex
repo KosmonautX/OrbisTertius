@@ -13,6 +13,7 @@ defmodule Phos.Users.Public_Profile do
     field :profile_pic, :integer, default: :rand.uniform(6)
     field :traits, {:array, :string}, default: []
     field :territories, {:array, :integer}, default: []
+    embeds_many :places, Phos.Users.Geolocation, on_replace: :delete
   end
 
   @doc false
@@ -25,8 +26,9 @@ defmodule Phos.Users.Public_Profile do
 
   def territorial_changeset(user, attrs) do
     user
-    |> cast(attrs, Phos.Users.Public_Profile.__schema__(:fields))
+    |> cast(attrs, [:territories])
     |> validate_inclusion(:honorific, ["Mr", "Ms", "Dr"])
+    |> cast_embed(:places, with: &Phos.Users.Geolocation.places_changeset/2)
   end
 
 end

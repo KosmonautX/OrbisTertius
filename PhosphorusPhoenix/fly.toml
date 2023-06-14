@@ -1,46 +1,44 @@
-# fly.toml file generated for nyx on 2023-04-19T13:05:51+08:00
+# fly.toml app configuration file generated for nyx on 2023-06-01T20:21:36+08:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 
 app = "nyx"
+primary_region= "sin"
 kill_signal = "SIGTERM"
-kill_timeout = 5
-processes = []
+kill_timeout = "5s"
+
+[experimental]
+  auto_rollback = true
 
 [deploy]
-  #release_command = "/app/bin/migrate"
 
 [env]
   PHX_HOST = "nyx.fly.dev"
   PORT = "8080"
 
-[experimental]
-  allowed_public_ports = []
-  auto_rollback = true
-
-[metrics]
-  path = "/metrics"
-  port = 3927
-
 [[services]]
-  http_checks = []
+  protocol = "tcp"
   internal_port = 8080
   processes = ["app"]
-  protocol = "tcp"
-  script_checks = []
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
   [services.concurrency]
+    type = "connections"
     hard_limit = 888
     soft_limit = 500
-    type = "connections"
-
-  [[services.ports]]
-    handlers = ["http"]
-    port = 80
-
-  [[services.ports]]
-    handlers = ["tls", "http"]
-    port = 443
 
   [[services.tcp_checks]]
-    grace_period = "10s"
     interval = "20s"
-    restart_limit = 5
     timeout = "10s"
+    grace_period = "10s"
+    restart_limit = 5
+
+[metrics]
+  port = 3927
+  path = "/metrics"

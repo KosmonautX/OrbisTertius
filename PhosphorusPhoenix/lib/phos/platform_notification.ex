@@ -114,6 +114,15 @@ defmodule Phos.PlatformNotification do
     |> Repo.update()
   end
 
+  def update_notifications(ids, attrs) when is_map(attrs) do
+    update_notifications(ids, Map.to_list(attrs))
+  end
+
+  def update_notifications(ids, attrs) do
+    from(s in Store, where: s.id in ^ids)
+    |> Repo.update_all(set: attrs)
+  end
+
   def get_notification(id) do
     query = from s in Store, where: s.id == ^id, preload: [:template, :recipient], limit: 1
     Repo.one(query)
