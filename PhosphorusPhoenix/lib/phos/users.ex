@@ -35,7 +35,7 @@ defmodule Phos.Users do
   def list_users(limit, page) do
     User
     |> order_by([u], [u.username])
-    |> Repo.Paginated.all(limit: limit, page: page)
+    |> Repo.Paginated.all(limit: limit, page: page, aggregate: false)
   end
 
   #   @doc """
@@ -61,7 +61,7 @@ defmodule Phos.Users do
     User
     |> where([u], ilike(u.username, ^search))
     |> order_by([u], [u.username])
-    |> Repo.Paginated.all(limit: limit, page: page)
+    |> Repo.Paginated.all(limit: limit, page: page, aggregate: false)
   end
 
   def get_admin do

@@ -19,7 +19,7 @@ defmodule Phos.Leaderboard do
     group_by: u.id,
     order_by: [desc: count(o)],
     select_merge: %{count: count(o)})
-    |> Repo.Paginated.all(limit: limit, page: page)
+    |> Repo.Paginated.all(limit: limit, page: page, aggregate: false)
   end
 
   def list_user_counts(limit, page, :chats, filter_dates) do
@@ -45,7 +45,7 @@ defmodule Phos.Leaderboard do
       order_by: [desc: count(u.id)],
       select_merge: %{count: count(u.id)}
     )
-    |> Repo.Paginated.all(limit: limit, page: page)
+    |> Repo.Paginated.all(limit: limit, page: page, aggregate: false)
   end
 
   def list_user_counts(limit, page, :comments, filter_dates) do
@@ -60,7 +60,7 @@ defmodule Phos.Leaderboard do
     group_by: u.id,
     order_by: [desc: count(c)],
     select_merge: %{count: count(c)})
-    |> Repo.Paginated.all(limit: limit, page: page)
+    |> Repo.Paginated.all(limit: limit, page: page, aggregate: false)
   end
 
 
@@ -77,7 +77,7 @@ defmodule Phos.Leaderboard do
     order_by: [desc: count(r)],
     select_merge: %{count: count(r)},
     limit: 20)
-    |> Repo.Paginated.all(limit: limit, page: page)
+    |> Repo.Paginated.all(limit: limit, page: page, aggregate: false)
   end
 
 
@@ -94,7 +94,7 @@ defmodule Phos.Leaderboard do
     order_by: [desc: count(c)],
     select_merge: %{comment_count: count(c)}
     )
-    |> Repo.Paginated.all(limit: limit, page: page)
+    |> Repo.Paginated.all(limit: limit, page: page, aggregate: false)
   end
 
   def beautify_date(naive_date) do
