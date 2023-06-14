@@ -16,7 +16,6 @@
   >
     <%= "#{@user.username} has no allies yet" %>
   </p>
-  <div class="h-48 overflow-y-auto">
     <.live_component
       module={PhosWeb.Components.ScrollAlly}
       id="infinite-ally-home-desktop"
@@ -25,5 +24,4 @@
       current_user={@current_user}
       meta={@ally_list}
     />
-  </div>
 </div>

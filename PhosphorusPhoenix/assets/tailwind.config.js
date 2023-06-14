@@ -7,6 +7,10 @@ module.exports = {
       fontFamily: {
         poppins: ["Poppins"],
       },
+      width: {
+        '577': '36rem',
+        '416': '26rem',
+      },
 
       padding: {
         2.8: "44.8rem",

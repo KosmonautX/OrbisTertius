@@ -246,7 +246,8 @@ defmodule PhosWeb.CoreComponents do
     <.form :let={f} for={@for} as={@as} {@rest}>
       <div class={[
         "bg-white font-poppins dark:bg-gray-900 lg:dark:bg-gray-800 w-full ",
-        @class]}>
+        @class
+      ]}>
         <%= render_slot(@inner_block, f) %>
         <div :for={action <- @actions} class={"#{Map.get(action, :classes, "")}"}>
           <%= render_slot(action, f) %>
@@ -980,7 +981,7 @@ defmodule PhosWeb.CoreComponents do
 
   def banner(assigns) do
     ~H"""
-    <nav class="bg-[#EEEFF3] fixed w-full z-10 top-0 left-0 border-b-2 dark:border-white text-base font-bold dark:bg-gray-900 px-4 py-3 font-poppins border-gray-200">
+    <nav class="lg:bg-[#EEEFF3] bg-white fixed w-full z-10 top-0 left-0 border-b-2 dark:border-white text-base font-bold dark:bg-gray-900 px-4 py-3 font-poppins border-gray-200">
       <div class="flex flex-wrap items-center justify-between mx-auto">
         <a href="/" class="flex items-center">
           <.logo type="banner" class="h-8 dark:fill-white"></.logo>
@@ -1026,22 +1027,23 @@ defmodule PhosWeb.CoreComponents do
             </li>
           </ul>
           <div class="flex gap-2">
-          <button id="welcome-button" type="button" phx-click={show_modal("welcome_message")}>
-            <.open_app type="open"></.open_app>
-          </button>
+            <button id="welcome-button" type="button" phx-click={show_modal("welcome_message")}>
+              <.open_app type="open"></.open_app>
+            </button>
             <button
               id="theme-toggle"
               type="button"
-              class="text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm p-1">
+              class="text-gray-700 dark:text-white rounded-sm text-sm p-1"
+            >
               <Heroicons.moon
                 mini
                 id="theme-toggle-dark-icon"
-                class="hidden w-6 h-6 text-gray-700 group-hover:text-teal-500  dark:text-white"
+                class="hidden w-6 h-6 text-gray-700 group-hover:text-teal-500 dark:text-white"
               />
               <Heroicons.sun
                 mini
                 id="theme-toggle-light-icon"
-                class="hidden w-6 h-6 text-gray-700 group-hover:text-teal-500  dark:text-white"
+                class="hidden w-6 h-6 text-gray-700 group-hover:text-teal-500 dark:text-white"
               />
             </button>
           </div>
@@ -1068,27 +1070,28 @@ defmodule PhosWeb.CoreComponents do
     <nav class="bg-white fixed w-full z-10 top-0 left-0 border-b-2 dark:border-white text-base font-bold dark:bg-gray-900 px-4 py-3 font-poppins border-gray-200">
       <div class="flex flex-wrap items-center justify-between mx-auto">
         <a href="//www.scratchbac.com/blog" class="flex items-center">
-        <.logo type="banner" class="h-8 dark:fill-white"></.logo>
+          <.logo type="banner" class="h-8 dark:fill-white"></.logo>
         </a>
         <div class="flex gap-2">
           <button id="welcome-button" type="button" phx-click={show_modal("welcome_message")}>
             <.open_app type="open"></.open_app>
           </button>
           <button
-          id="theme-toggle"
-          type="button"
-          class="text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm p-1">
-          <Heroicons.moon
-            mini
-            id="theme-toggle-dark-icon"
-            class="hidden w-6 h-6 text-gray-700 group-hover:text-teal-500  dark:text-white"
-          />
-          <Heroicons.sun
-            mini
-            id="theme-toggle-light-icon"
-            class="hidden w-6 h-6 text-gray-700 group-hover:text-teal-500  dark:text-white"
-          />
-        </button>
+            id="theme-toggle"
+            type="button"
+            class="text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm p-1"
+          >
+            <Heroicons.moon
+              mini
+              id="theme-toggle-dark-icon"
+              class="hidden w-6 h-6 text-gray-700 group-hover:text-teal-500  dark:text-white"
+            />
+            <Heroicons.sun
+              mini
+              id="theme-toggle-light-icon"
+              class="hidden w-6 h-6 text-gray-700 group-hover:text-teal-500  dark:text-white"
+            />
+          </button>
         </div>
       </div>
     </nav>
@@ -1399,7 +1402,7 @@ defmodule PhosWeb.CoreComponents do
         show_information={@show_information}
       />
 
-      <.orb_action id={"#{@id}-scry-orb-#{@orb.id}"} orb={@orb} date={@timezone} show_comment={false}/>
+      <.orb_action id={"#{@id}-scry-orb-#{@orb.id}"} orb={@orb} date={@timezone} show_comment={false} />
     </div>
     """
   end
@@ -1716,7 +1719,10 @@ defmodule PhosWeb.CoreComponents do
   # TODO orb_actions wiring with data
   def orb_action(assigns) do
     ~H"""
-    <div class={[@rounded, "w-full lg:text-sm text-xs px-2 p-2 mt-1.5 lg:mt-0 font-poppins  bg-white lg:dark:bg-gray-800 dark:bg-gray-900"]}>
+    <div class={[
+      @rounded,
+      "w-full lg:text-sm text-xs px-2 p-2 mt-1.5 lg:mt-0 font-poppins  bg-white lg:dark:bg-gray-800 dark:bg-gray-900"
+    ]}>
       <span class="dark:text-white text-black"><%= get_date(@orb.inserted_at, @date) %></span>
       <div id={"#{@id}-actions"} class="flex justify-between mt-1 mb-1">
         <button class="text-center inline-flex items-center ">
@@ -1919,7 +1925,6 @@ defmodule PhosWeb.CoreComponents do
   attr(:user, :map, required: true)
   attr(:flex, :any, default: nil)
   attr(:id, :string, required: true)
-  attr(:bg_color, :string, default: "bg-[#F9F9F9] dark:bg-gray-800 ")
   slot(:actions)
   slot(:allies)
 
@@ -1940,11 +1945,8 @@ defmodule PhosWeb.CoreComponents do
       )
 
     ~H"""
-    <div class={[
-      "flex flex-col font-poppins mb-2 mx-auto w-full lg:mx-0 lg:px-3.5 px-3 py-4 rounded-[19px] shadow-sm",
-      @bg_color
-    ]}>
-      <div class="flex justify-between w-full gap-2">
+    <div class="flex flex-col font-poppins mx-auto w-full lg:mx-0 py-4 lg:py-4 rounded-[19px] shadow-sm lg:bg-[#F9F9F9] bg-gray-100 dark:bg-gray-800">
+      <div class="flex justify-between w-full gap-2 lg:px-3.5 px-3">
         <p class="lg:text-3xl text-lg break-words font-bold text-gray-900 dark:text-white text-left  mb-1 lg:mb-0">
           <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
         </p>
@@ -1959,7 +1961,7 @@ defmodule PhosWeb.CoreComponents do
           <%= render_slot(@actions) %>
         </div>
       </div>
-      <div class="space-y-1 lg:space-y-2 break-words">
+      <div class="space-y-1 lg:space-y-2 break-words lg:px-3.5 px-3">
         <p class="lg:text-base text-xs text-black font-semibold	dark:text-[#D1D1D1]">
           <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
         </p>
@@ -1974,13 +1976,12 @@ defmodule PhosWeb.CoreComponents do
             <%= "##{trait}" %>
           </span>
         </p>
-        <%= render_slot(@allies) %>
-
-        <p class="text-sm dark:text-white text-black font-bold hover:underline hover:decoration-purple-600 dark:hover:decoration-white hover:decoration-solid hover:decoration-2 cursor-pointer">
+        <p class="lg:hidden block text-sm dark:text-white text-black font-bold hover:underline hover:decoration-purple-600 dark:hover:decoration-white hover:decoration-solid hover:decoration-2 cursor-pointer">
           <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@username}/allies")}>
-            allies with @username
+            <%= "25 allies with #{@user.username}'s and Others" %>
           </.link>
         </p>
+        <%= render_slot(@allies) %>
       </div>
     </div>
     """
@@ -2041,8 +2042,7 @@ defmodule PhosWeb.CoreComponents do
             <%= PhosWeb.Endpoint.url() <>
               path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
           </div>
-          <.share_btn type="button" class="h-8 ml-4 dark:fill-white"></.share_btn>
-          <%= render_slot(@actions) %>
+          <.share_btn type="banner" class="h-8 ml-4 dark:fill-white"></.share_btn>
         </a>
         <div :if={@ally_button != []}>
           <.live_component

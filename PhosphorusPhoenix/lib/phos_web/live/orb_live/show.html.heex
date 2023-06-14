@@ -6,9 +6,12 @@
     <br />
   </div>
   <div class="md:mt-0 mt-14 lg:flex lg:justify-center lg:items-center lg:gap-4 ">
-    <div :if={not is_nil(@orb.initiator) && @orb.initiator} class="flex lg:flex-row flex-col items-start mt-6 lg:gap-4">
+    <div
+      :if={not is_nil(@orb.initiator) && @orb.initiator}
+      class="flex lg:flex-row flex-col items-start mt-6 lg:gap-4"
+    >
       <!-- Desktop View in Orb View Profile-->
-      <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full lg:max-w-md ">
+      <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full lg:w-[26rem] lg:flex-none">
         <div>
           <.user_profile_banner
             id="orb-initiator-username"
@@ -45,7 +48,7 @@
         </div>
       </div>
 
-      <div class="lg:max-w-xl lg:flex-none w-full">
+      <div class="lg:w-[36rem] lg:flex-none w-full">
         <.link patch={~p"/user/#{@orb.initiator.username}"}>
           <div class="hidden lg:block mb-2 w-full mx-auto">
             <span class="flex text-gray-600 dark:text-white text-base font-bold  mb-1.5">
@@ -56,8 +59,7 @@
             </span>
           </div>
         </.link>
-
-      <!--Main Orb in Mobile View and Desktop View-->
+        <!--Main Orb in Mobile View and Desktop View-->
         <div class="w-full lg:px-0 md:px-10">
           <div class="w-full lg:rounded-3xl pb-5 ">
             <.scry_orb id="orb" orb={@orb} timezone={@timezone} show_information={false} />
@@ -76,7 +78,7 @@
               live_action={@live_action}
             />
             <div class="lg:hidden block bottom-0 fixed w-full mx-auto bg-white dark:bg-gray-900">
-              <hr class="border md:hidden block dark:border-white"/>
+              <hr class="border md:hidden block dark:border-white" />
               <.live_component
                 module={PhosWeb.CommentLive.FormComponent}
                 changeset={@changeset}
@@ -91,7 +93,7 @@
         </div>
       </div>
       <!--Desktop Related Post-->
-      <div class="hidden lg:block w-full lg:max-w-md  lg:flex-none">
+      <div class="hidden lg:block w-full lg:w-[26rem]  lg:flex-none">
         <h5 class="text-left font-semibold text-lg dark:text-white mb-1">
           <%= "Other Posts by #{@orb.initiator.username}" %>
         </h5>
