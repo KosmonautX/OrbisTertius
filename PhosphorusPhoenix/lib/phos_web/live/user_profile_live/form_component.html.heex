@@ -19,10 +19,13 @@
           src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossless")}
         />
       <% end %>
+      <%= if Map.has_key?(assigns, :admin) do %>
+        <.input field={{f, :username}} label="Username" value={@current_user.username} />
+      <% end %>
 
       <%= inputs_for f, :public_profile, fn ff -> %>
         <.input field={{ff, :bio}} label="Bio" />
-        <.input field={{ff, :occupation}} label="Role" />
+        <.input field={{ff, :occupation}} label="Title Tag" />
         <.input field={{ff, :birthday}} type="datetime-local" label="Birthday" />
         <.input field={{ff, :public_name}} label="Name" />
         <.input
@@ -36,18 +39,18 @@
       <% end %>
 
       <:actions>
-        <form id="upload-form" phx-submit="save" phx-change="validate">
-          <.live_file_input upload={@uploads.image} />
+        <.live_file_input upload={@uploads.image} />
+        <form id="upload-form" phx-submit="save">
           <.button type="submit">Save</.button>
         </form>
       </:actions>
 
       <.live_component
+        :if={@crop_image}
         module={PhosWeb.Components.CropUploadInput}
         id="Crop_Image"
         uploads={@uploads}
       />
-
     </.simple_form>
   </section>
 </div>

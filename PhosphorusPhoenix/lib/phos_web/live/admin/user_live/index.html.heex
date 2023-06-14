@@ -1,0 +1,90 @@
+<.modal
+  :if={@live_action in [:edit]}
+  id="edit_profile_modal"
+  show={@live_action in [:edit]}
+  on_cancel={JS.navigate(~p"/admin/users")}
+>
+  <div class="p-4">
+    <.live_component
+      module={PhosWeb.UserProfileLive.FormComponent}
+      id="edit_profile_form_component"
+      title={@page_title}
+      current_user={@user}
+      action={@live_action}
+      user={@user}
+      admin={@admin}
+      return_to={~p"/admin/users"}
+    />
+  </div>
+</.modal>
+
+<div class="hidden lg:block w-full p-1 max-h-fit">
+  <div class="flex items-center px-2 mb-2">
+    <div class="flex">
+      <.form :let={f} for={%{}} as={:search} phx-change="change">
+        <%= text_input(f, :username,
+          value: @search,
+          placeholder: "Search user by username",
+          autocomplete: "off",
+          class:
+            "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        ) %>
+      </.form>
+    </div>
+  </div>
+  <div class="relative w-full flex flex-col bg-white border-0 border-transparent border-solid shadow-xl p-2 overflow-scroll font-poppins">
+    <table class="w-full align-top text-slate-500">
+      <tr class="font-bold text-left uppercase text-slate-400">
+        <th></th>
+        <th>User</th>
+        <th>Title Tag</th>
+        <th class="sticky left-0">Age</th>
+        <th class="sticky left-0">Joined on</th>
+      </tr>
+      <tbody
+        id="users"
+        phx-viewport-bottom={@user_meta.pagination.downstream && "load-more"}
+        phx-update="stream"
+      >
+        <tr :for={{dom_id, user} <- @streams.users} id={dom_id}>
+          <td>
+            <.link patch={~p"/admin/users/#{user.id}/edit"} class="button button-sm">
+              <i class="cursor-pointer mr-1"></i> Edit
+            </.link>
+          </td>
+          <td classes="sticky left-0" label="User">
+            <.admin_user_preview user={user} id={"admin_user_preview_for_#{user.id}"} />
+          </td>
+          <td classes="sticky left-0" label="Title Tag">
+            <%= user
+            |> get_in([
+              Access.key(:public_profile, %{}),
+              Access.key(:occupation, nil)
+            ]) %>
+          </td>
+          <td classes="sticky left-0" label="Age">
+            <%= NaiveDateTime.diff(
+              @today,
+              user
+              |> get_in([
+                Access.key(:public_profile, %{}),
+                Access.key(:birthday, nil)
+              ]) || @today,
+              :day
+            )
+            |> div(365) %>
+          </td>
+          <td classes="sticky left-0" label="Created on">
+            <%= Leaderboard.beautify_date(user.inserted_at) %>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%!-- <div class="lg:hidden block">
+  <div class="grid grid-cols-2 gap-4">
+    <.admin_grid :for={user <- @users} user={user} id={"admin-grid-for-#{user.id}"} />
+  </div>
+</div> --%>

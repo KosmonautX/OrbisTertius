@@ -32,10 +32,11 @@ defmodule Phos.Users do
     Repo.all(query)
   end
 
-  # def list_users_pub do
-  #   query = from u in User, preload: [:public_profile]
-  #   Repo.all(query)
-  # end
+  def list_users(limit, page) do
+    User
+    |> order_by([u], [u.username])
+    |> Repo.Paginated.all(limit: limit, page: page, aggregate: false)
+  end
 
   #   @doc """
   #   Gets a single user.
@@ -54,6 +55,14 @@ defmodule Phos.Users do
   def get_user_by_fyr(id), do: Repo.get_by(User, fyr_id: id) |> Repo.preload([:private_profile])
 
   def get_user_by_username(username), do: Repo.get_by(User, username: username)
+
+  def filter_user_by_username(username, limit, page) do
+    search = "%#{username}%"
+    User
+    |> where([u], ilike(u.username, ^search))
+    |> order_by([u], [u.username])
+    |> Repo.Paginated.all(limit: limit, page: page, aggregate: false)
+  end
 
   def get_admin do
     query = from u in User, where: u.email == "scratchbac@gmail.com"
