@@ -167,9 +167,7 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:close, :boolean, default: true, doc: "whether the flash can be closed")
 
-  attr(:rest, :global,
-    doc: "the arbitrary HTML attributes to add to the flash container"
-  )
+  attr(:rest, :global, doc: "the arbitrary HTML attributes to add to the flash container")
 
   slot(:inner_block,
     doc: "the optional inner block that renders the flash message"
@@ -358,24 +356,19 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:type, :string,
     default: "text",
-    values:
-      ~w(checkbox color date datetime-local email file hidden month number password
+    values: ~w(checkbox color date datetime-local email file hidden month number password
                range radio search select tel text textarea time url week)
   )
 
   attr(:value, :any)
 
-  attr(:field, :any,
-    doc: "a %Phoenix.HTML.Form{}/field name tuple, for example: {f, :email}"
-  )
+  attr(:field, :any, doc: "a %Phoenix.HTML.Form{}/field name tuple, for example: {f, :email}")
 
   attr(:errors, :list)
   attr(:checked, :boolean, doc: "the checked flag for checkbox inputs")
   attr(:prompt, :string, default: nil, doc: "the prompt for select inputs")
 
-  attr(:options, :list,
-    doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2"
-  )
+  attr(:options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2")
 
   attr(:multiple, :boolean,
     default: false,
@@ -383,8 +376,7 @@ defmodule PhosWeb.CoreComponents do
   )
 
   attr(:rest, :global,
-    include:
-      ~w(hide_error autocomplete disabled form max maxlength min minlength
+    include: ~w(hide_error autocomplete disabled form max maxlength min minlength
                                    pattern placeholder readonly required size step)
   )
 
@@ -445,9 +437,7 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  def input(
-        %{type: "textarea", rest: %{class: _class, hide_error: true}} = assigns
-      ) do
+  def input(%{type: "textarea", rest: %{class: _class, hide_error: true}} = assigns) do
     ~H"""
     <div phx-feedback-for={@name} class={[@rest.class]}>
       <.label for={@id}><%= @label %></.label>
@@ -918,9 +908,7 @@ defmodule PhosWeb.CoreComponents do
     |> JS.show(to: "##{id}")
     |> JS.show(
       to: "##{id}-bg",
-      transition:
-        {"transition-all transform ease-out duration-300", "opacity-0",
-         "opacity-100"}
+      transition: {"transition-all transform ease-out duration-300", "opacity-0", "opacity-100"}
     )
     |> show("##{id}-container")
     |> JS.focus_first(to: "##{id}-content")
@@ -930,9 +918,7 @@ defmodule PhosWeb.CoreComponents do
     js
     |> JS.hide(
       to: "##{id}-bg",
-      transition:
-        {"transition-all transform ease-in duration-200", "opacity-100",
-         "opacity-0"}
+      transition: {"transition-all transform ease-in duration-200", "opacity-100", "opacity-0"}
     )
     |> hide("##{id}-container")
     |> JS.hide(to: "##{id}", transition: {"block", "block", "hidden"})
@@ -1432,13 +1418,9 @@ defmodule PhosWeb.CoreComponents do
   attr(:show_comment, :boolean, default: true)
   attr(:show_media, :boolean, default: true)
 
-  attr(:img_size, :string,
-    default: "h-96 lg:rounded-none rounded-3xl px-1 lg:px-0 object-cover"
-  )
+  attr(:img_size, :string, default: "h-96 lg:rounded-none rounded-3xl px-1 lg:px-0 object-cover")
 
-  attr(:video_size, :string,
-    default: "h-96 lg:rounded-none rounded-3xl px-1 lg:px-0 object-cover"
-  )
+  attr(:video_size, :string, default: "h-96 lg:rounded-none rounded-3xl px-1 lg:px-0 object-cover")
 
   attr(:media, :any)
 
@@ -1588,8 +1570,8 @@ defmodule PhosWeb.CoreComponents do
       )
 
     ~H"""
-    <div class="w-full h-screen mx-auto dark:bg-gray-900 flex flex-col flex-grow">
-      <div class="flex justify-center items-start px-4 md:px-12 lg:px-0">
+    <div class="w-full mx-auto dark:bg-gray-900 flex h-screen w-full flex-col">
+      <div class="px-4 md:px-12 lg:px-0 flex w-full items-center gap-4 p-4">
         <.user_info_bar
           class="dark:bg-gray-900"
           id={"#{@id}-scry-orb-#{@orb.id}"}
@@ -1608,7 +1590,7 @@ defmodule PhosWeb.CoreComponents do
         </.user_info_bar>
       </div>
 
-      <div class="flex justify-center items-center">
+      <div class="flex flex-1 items-center justify-center">
         <.media_carousel
           :if={@media != []}
           archetype="ORB"
@@ -1622,7 +1604,7 @@ defmodule PhosWeb.CoreComponents do
         />
       </div>
 
-      <div class="bottom-12 left-0 fixed w-full space-y-1 px-4 md:px-12 lg:px-0">
+      <div class="w-full space-y-1 px-4 md:px-12 lg:px-0 mb-24">
         <.orb_information
           id={"#{@id}-orb-info-#{@orb.id}"}
           title={(@orb.payload && @orb.payload.inner_title) || @orb.title}
@@ -1832,8 +1814,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:show_location, :boolean)
 
   attr(:show_shadow, :string,
-    default:
-      "relative top-0 w-full bg-[#FFFFFFB2] py-2 dark:bg-[#000000] dark:opacity-60"
+    default: "relative top-0 w-full bg-[#FFFFFFB2] py-2 dark:bg-[#000000] dark:opacity-60"
   )
 
   attr(:show_img, :boolean, default: true)
@@ -1846,8 +1827,7 @@ defmodule PhosWeb.CoreComponents do
       assigns
       |> assign(:user, Map.from_struct(assigns.user))
       |> then(fn
-        %{show_location: true, user: %{public_profile: %{territories: terr}}} =
-            state ->
+        %{show_location: true, user: %{public_profile: %{territories: terr}}} = state ->
           assign(state, :locations, Phos.Utility.Geo.top_occuring(terr, 2))
 
         state ->
@@ -2035,8 +2015,7 @@ defmodule PhosWeb.CoreComponents do
       assigns
       |> assign(:user, Map.from_struct(assigns.user))
       |> then(fn
-        %{show_location: true, user: %{public_profile: %{territories: terr}}} =
-            state ->
+        %{show_location: true, user: %{public_profile: %{territories: terr}}} = state ->
           assign(state, :locations, Phos.Utility.Geo.top_occuring(terr, 2))
 
         state ->
@@ -2460,8 +2439,7 @@ defmodule PhosWeb.CoreComponents do
       assigns
       |> assign(:user, Map.from_struct(assigns.user))
       |> then(fn
-        %{show_location: true, user: %{public_profile: %{territories: terr}}} =
-            state ->
+        %{show_location: true, user: %{public_profile: %{territories: terr}}} = state ->
           assign(state, :locations, Phos.Utility.Geo.top_occuring(terr, 2))
 
         state ->
