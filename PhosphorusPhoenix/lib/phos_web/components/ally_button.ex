@@ -142,8 +142,7 @@ defmodule PhosWeb.Component.AllyButton do
          end)}
 
       false ->
-        {:noreply,
-         put_flash(socket, :error, "Only acceptor can reject ally request")}
+        {:noreply, put_flash(socket, :error, "Only acceptor can reject ally request")}
 
       _ ->
         {:noreply, socket}
@@ -178,8 +177,7 @@ defmodule PhosWeb.Component.AllyButton do
          end)}
 
       false ->
-        {:noreply,
-         put_flash(socket, :error, "Only acceptor can reject ally request")}
+        {:noreply, put_flash(socket, :error, "Only acceptor can reject ally request")}
 
       _ ->
         {:noreply, socket}

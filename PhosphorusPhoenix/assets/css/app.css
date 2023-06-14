@@ -108,6 +108,8 @@
   box-shadow: 0 0 0 4px white, 0 0 0 8px #9747ff;
 }
 
+
+
 @keyframes fade-in-scale-keys {
   0% {
     scale: 0.95;

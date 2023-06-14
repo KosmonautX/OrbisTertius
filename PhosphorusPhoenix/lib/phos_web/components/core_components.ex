@@ -980,7 +980,7 @@ defmodule PhosWeb.CoreComponents do
 
   def banner(assigns) do
     ~H"""
-    <nav class="bg-white fixed w-full z-10 top-0 left-0 border-b-2 dark:border-white text-base font-bold dark:bg-gray-900 px-4 py-3 font-poppins border-gray-200">
+    <nav class="bg-[#EEEFF3] fixed w-full z-10 top-0 left-0 border-b-2 dark:border-white text-base font-bold dark:bg-gray-900 px-4 py-3 font-poppins border-gray-200">
       <div class="flex flex-wrap items-center justify-between mx-auto">
         <a href="/" class="flex items-center">
           <.logo type="banner" class="h-8 dark:fill-white"></.logo>
@@ -1921,6 +1921,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:id, :string, required: true)
   attr(:bg_color, :string, default: "bg-[#F9F9F9] dark:bg-gray-800 ")
   slot(:actions)
+  slot(:allies)
 
   slot(:ally_button) do
     attr(:user, :map, doc: "user want to attached to")
@@ -1973,6 +1974,8 @@ defmodule PhosWeb.CoreComponents do
             <%= "##{trait}" %>
           </span>
         </p>
+        <%= render_slot(@allies) %>
+
         <p class="text-sm dark:text-white text-black font-bold hover:underline hover:decoration-purple-600 dark:hover:decoration-white hover:decoration-solid hover:decoration-2 cursor-pointer">
           <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@username}/allies")}>
             allies with @username
