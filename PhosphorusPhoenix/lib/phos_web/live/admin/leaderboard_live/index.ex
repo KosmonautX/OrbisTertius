@@ -16,7 +16,7 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
 
     {:ok,
     socket
-    |> set_options(:user)
+    |> assign(:filter_options, ["Allies", "Chats", "Comments", "Orbs"])
     |> assign(:current_view, "See Top Users By")
     |> assign(:filter_by, "Allies")
     |> assign(:filter_dates, filter_dates)
@@ -36,19 +36,17 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
   def handle_params(_, _, socket), do: {:noreply, socket}
 
 
-  def handle_event("change", %{"_target" => ["see_top"], "see_top" => "See Top Users By"},  socket) do
+  def handle_event("change", %{"see_top" => "See Top Users By"} = params,  socket) do
     {:noreply, socket
-    |> assign(:current_view, "See Top Users By")
-    |> set_options(:user)
-    |> push_patch(to: ~p"/admin/leaderboard")
+    |> apply_action(:user, params)
+    |> push_patch(to: ~p"/admin/leaderboard/")
     }
   end
 
-  def handle_event("change", %{"_target" => ["see_top"], "see_top" => "See Top Orbs By"},  socket) do
+  def handle_event("change", %{"see_top" => "See Top Orbs By"} = params,  socket) do
     {:noreply,
     socket
-    |> assign(:current_view, "See Top Orbs By")
-    |> set_options(:orb)
+    |> apply_action(:orb, params)
     |> push_patch(to: ~p"/admin/leaderboard/orb")
     }
   end
@@ -65,6 +63,7 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
     _,
     %{assigns: %{filter_by: option, filter_dates: %{} = filter_dates, limit: limit, user_meta: %{pagination: pagination}}} = socket
     ) do
+
     expected_page = pagination.current + 1
 
     with %{startdt: startdt, enddt: enddt} <- get_naive_dates(socket, filter_dates) do
@@ -86,6 +85,7 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
     _,
     %{assigns: %{limit: limit, filter_dates: %{} = filter_dates, orb_meta: %{pagination: pagination} }} = socket
     ) do
+
     expected_page = pagination.current + 1
     %{startdt: startdt, enddt: enddt} = get_naive_dates(socket, filter_dates)
     %{data: new_orbs, meta: new_meta} = Leaderboard.rank_orbs(limit, expected_page, [startdt: startdt, enddt: enddt])
@@ -105,7 +105,7 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
     %{data: users, meta: user_meta} = Leaderboard.list_user_counts(socket.assigns.limit, 1, option_to_atom(params["filter_by"]), [startdt: startdt, enddt: enddt])
 
     socket
-    |> set_options(:user)
+    |> assign(:filter_options, ["Allies", "Chats", "Comments", "Orbs"])
     |> assign(:current_view, "See Top Users By")
     |> assign(:filter_by, params["filter_by"])
     |> assign(:filter_dates, params["form"])
@@ -118,7 +118,7 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
     %{data: orbs, meta: orb_meta} = Leaderboard.rank_orbs(socket.assigns.limit, 1, [startdt: startdt, enddt: enddt])
 
     socket
-    |> set_options(:orb)
+    |> assign(:filter_options, ["Comments"])
     |> assign(:current_view, "See Top Orbs By")
     |> assign(:filter_by, params["filter_by"])
     |> assign(:filter_dates, params["form"])
@@ -142,26 +142,17 @@ defmodule PhosWeb.Admin.LeaderboardLive.Index do
 
   end
 
-  # defp get_naive_dates(socket, _) do
-  #   {:ok, startdt} = NaiveDateTime.from_iso8601("#{socket.assigns.filter_dates["startdate"]} 00:00:00")
-  #   {:ok, enddt} = NaiveDateTime.from_iso8601("#{socket.assigns.filter_dates["enddate"]} 23:59:59")
-  #   %{startdt: startdt, enddt: enddt}
-  # end
+  defp get_naive_dates(socket, _) do
+    {:ok, startdt} = NaiveDateTime.from_iso8601("#{socket.assigns.filter_dates["startdate"]} 00:00:00")
+    {:ok, enddt} = NaiveDateTime.from_iso8601("#{socket.assigns.filter_dates["enddate"]} 23:59:59")
+    %{startdt: startdt, enddt: enddt}
+  end
 
   defp option_to_atom(option) do
     option
     |> String.downcase()
     |> String.to_atom()
   end
-
-  defp set_options(socket, :user) do
-    socket |> assign(:filter_options, ["Allies", "Chats", "Comments", "Orbs"])
-  end
-
-  defp set_options(socket, :orb) do
-    socket |> assign(:filter_options, ["Comments"])
-  end
-
 
 
 end
