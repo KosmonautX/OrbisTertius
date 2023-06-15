@@ -32,7 +32,6 @@ defmodule PhosWeb.Component.AllyButton do
       ) do
     rel = Phos.Folk.get_relation!(root_id)
     ally = rel |> ally_status(user.id)
-
     {:ok,
      socket
      |> assign(:ally, ally)
@@ -42,16 +41,17 @@ defmodule PhosWeb.Component.AllyButton do
   def update(
         _,
         %{
-          assigns: %{current_user: user, user: acceptor, parent_pid: parent_pid}
+          assigns: %{current_user: user, user: acceptor}
         } = socket
       ) do
-    {:ok, assign(socket, ally: false, current_user: user)}
+    {:ok, assign(socket, ally: false, user: acceptor, current_user: user)}
   end
 
-  def update(assigns, socket) do
+  def update(%{user: acceptor} = assigns, socket) do
     {:ok,
      assign(socket,
        ally: false,
+       user: acceptor,
        current_user: nil,
        size: Map.get(assigns, :size, nil)
      )}
@@ -184,10 +184,10 @@ defmodule PhosWeb.Component.AllyButton do
     end
   end
 
-  def render(%{current_user: user, size: "small"} = assigns)
-      when user in [nil, ""] do
+  def render(%{current_user: your, size: "small"} = assigns)
+      when your in [nil, ""] do
     ~H"""
-    <a class="flex" phx-click={show_modal("welcome_message")}>
+    <a class="flex" phx-click="show_ally" phx-value-ally={@user.id})}>
       <.ally_btn />
     </a>
     """

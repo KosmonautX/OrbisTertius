@@ -369,6 +369,14 @@ defmodule Phos.Users do
   def get_territorial_user!(id),
     do: Repo.get!(User, id) |> Repo.preload([:private_profile, personal_orb: :locations])
 
+  def get_public_user(user_id, nil) do
+    Phos.Repo.one(
+      from u in User,
+        where: u.id == ^user_id,
+        select: u
+    )
+  end
+
   def get_public_user(user_id, your_id) do
     Phos.Repo.one(
       from u in User,
