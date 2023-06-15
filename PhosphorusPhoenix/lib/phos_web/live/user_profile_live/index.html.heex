@@ -25,3 +25,18 @@
       meta={@ally_list}
     />
 </div>
+
+<.ally_modal
+  :if={@live_action in [:ally] and @ally != nil}
+  id="User_ally"
+  main_width="lg:max-w-2xl"
+  show={@live_action in [:ally]}
+  on_cancel={JS.navigate(~p"/user/#{@user.username}/allies")}>
+  <.redirect_user
+    id="redirect-user"
+    user={@ally}
+    show_location={true}
+    show_img={false}
+    username={@user.username}
+  />
+</.ally_modal>
