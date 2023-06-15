@@ -42,7 +42,7 @@
         />
         <.link
           :if={@current_user && @user.id == @current_user.id}
-          patch={~p"/user/#{@current_user.username}/edit"}
+          patch={~p"/user/#{@current_user.username}/ally"}
         >
           <button class="bg-black text-white hover:black focus:outline-none focus:ring-4 focus:ring-black font-semibold rounded-2xl text-base px-6 py-2.5 text-center dark:focus:ring-black font-Poppins">
             Edit
@@ -100,15 +100,15 @@
 </section>
 
 <.ally_modal
-  :if={@live_action in [:edit]}
+  :if={@live_action in [:ally] and @ally != nil}
   id="User_ally"
   main_width="lg:max-w-2xl"
-  show={@live_action in [:edit]}
-  on_cancel={JS.navigate(~p"/user/#{@current_user.username}")}
+  show={@live_action in [:ally]}
+  on_cancel={JS.navigate(~p"/user/#{@user.username}")}
 >
   <.redireact_user
     id="redirect-user"
-    user={@user}
+    user={@ally}
     show_location={true}
     show_img={false}
     username={@user.username}

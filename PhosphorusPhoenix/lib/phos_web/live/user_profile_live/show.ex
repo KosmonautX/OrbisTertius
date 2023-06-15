@@ -60,6 +60,20 @@ defmodule PhosWeb.UserProfileLive.Show do
     {:noreply, newsocket}
   end
 
+  def handle_event(
+        "show_ally",
+        %{"ally" => ally_id},
+        %{assigns: %{ally_list: _allies, current_user: _curr, user: user}} =
+          socket
+      ) do
+
+    {:noreply,
+     socket
+     |> assign(:ally, Phos.Users.get_public_user(ally_id, user.id))
+     |> assign(:live_action, :ally)
+    }
+  end
+
   @impl true
   def handle_info(
         %Phoenix.Socket.Broadcast{topic: "folks", event: action, payload: root_id},
