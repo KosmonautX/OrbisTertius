@@ -12,12 +12,16 @@ defmodule PhosWeb.Components.ScrollOrb do
         phx-value-archetype="orb"
         class={[
           if(@meta.pagination.downstream, do: "pb-[calc(200vh)]"),
-
           "flex flex-col gap-2"
         ]}
       >
         <div :for={{dom_id, orb} <- @data} id={"orb-divided-#{dom_id}"}>
-          <.scry_orb id={"orb-history-#{dom_id}"} orb={orb} timezone={@timezone1} />
+          <.scry_orb
+            id={"orb-history-#{dom_id}"}
+            orb={orb}
+            timezone={@timezone1}
+            show_information={false}
+          />
         </div>
       </div>
     </div>

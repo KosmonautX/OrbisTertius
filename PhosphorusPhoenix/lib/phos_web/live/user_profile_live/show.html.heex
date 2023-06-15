@@ -50,27 +50,27 @@
         </.link>
       </:actions>
       <:allies>
-       <div class="hidden lg:block">
-         <input id="accordion-item-1" type="checkbox" name="accordion" class="hidden" />
-            <label for="accordion-item-1" class="flex cursor-pointer items-center justify-between ml-8">
-              <span class="text-sm dark:text-white text-black font-bold">
-                <%= "25 allies with #{@user.username}'s and Others" %>
-              </span>
-                <Heroicons.chevron_down class="closed-icon h-5 w-5 text-gray-500"/>
-                <Heroicons.chevron_up class="open-icon hidden h-5 w-5 text-gray-500"/>
-            </label>
-            <div class="accordion-content">
-               <.live_component
-                module={PhosWeb.Components.ScrollAlly}
-                id="infinite-ally-home-desktop"
-                data={@streams.ally_list}
-                parent_pid={@parent_pid}
-                current_user={@current_user}
-                meta={@ally_list}
-                />
-           </div>
-       </div>
-     </:allies>
+        <div class="hidden lg:block">
+          <input id="accordion-item-1" type="checkbox" name="accordion" class="hidden" />
+          <label for="accordion-item-1" class="flex cursor-pointer items-center justify-between">
+            <span class="text-sm dark:text-white text-black font-bold">
+              <%= "25 allies with #{@user.username}'s and Others" %>
+            </span>
+            <Heroicons.chevron_down class="closed-icon h-5 w-5 text-gray-500" />
+            <Heroicons.chevron_up class="open-icon hidden h-5 w-5 text-gray-500" />
+          </label>
+          <div class="accordion-content">
+            <.live_component
+              module={PhosWeb.Components.ScrollAlly}
+              id="infinite-ally-home-desktop"
+              data={@streams.ally_list}
+              parent_pid={@parent_pid}
+              current_user={@current_user}
+              meta={@ally_list}
+            />
+          </div>
+        </div>
+      </:allies>
     </.user_information_card>
   </div>
 

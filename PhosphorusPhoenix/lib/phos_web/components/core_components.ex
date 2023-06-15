@@ -1399,10 +1399,14 @@ defmodule PhosWeb.CoreComponents do
         orb={@orb}
         timezone={@timezone}
         media={@media}
-        show_information={@show_information}
       />
 
-      <.orb_action id={"#{@id}-scry-orb-#{@orb.id}"} orb={@orb} date={@timezone} show_comment={false} />
+      <.orb_action
+        id={"#{@id}-scry-orb-#{@orb.id}"}
+        orb={@orb}
+        date={@timezone}
+        show_information={@show_information}
+      />
     </div>
     """
   end
@@ -1420,7 +1424,6 @@ defmodule PhosWeb.CoreComponents do
   attr(:timezone, :string)
   attr(:show_comment, :boolean, default: true)
   attr(:show_media, :boolean, default: true)
-
   attr(:img_size, :string, default: "h-96 lg:rounded-none rounded-3xl px-1 lg:px-0 object-cover")
 
   attr(:video_size, :string, default: "h-96 lg:rounded-none rounded-3xl px-1 lg:px-0 object-cover")
@@ -1617,7 +1620,7 @@ defmodule PhosWeb.CoreComponents do
           orb={@orb}
           date={@timezone}
           show_comment={false}
-          rounded="rounded-none"
+
         />
         <p class="font-medium text-sm dark:text-white text-gray-700 px-2 py-1">
           Liked by bbeebbub and others
@@ -1714,27 +1717,30 @@ defmodule PhosWeb.CoreComponents do
   attr(:date, :string)
   attr(:class, :string, default: nil)
   attr(:show_comment, :boolean, default: true)
-  attr(:rounded, :string, default: "lg:rounded-b-3xl")
+  attr(:show_information, :boolean, default: true)
 
   # TODO orb_actions wiring with data
   def orb_action(assigns) do
     ~H"""
-    <div class={[
-      @rounded,
-      "w-full lg:text-sm text-xs px-2 p-2 mt-1.5 lg:mt-0 font-poppins  bg-white lg:dark:bg-gray-800 dark:bg-gray-900"
-    ]}>
+    <div
+      id={"#{@id}-actions"}
+      class={[
+        @show_information == false && "lg:rounded-b-3xl",
+        @show_information == true && "rounded-none",
+        "w-full lg:text-sm text-xs px-2 p-2 mt-1.5 lg:mt-0 font-poppins bg-white lg:dark:bg-gray-800 dark:bg-gray-900",@class]}
+    >
       <span class="dark:text-white text-black"><%= get_date(@orb.inserted_at, @date) %></span>
       <div id={"#{@id}-actions"} class="flex justify-between mt-1 mb-1">
         <button class="text-center inline-flex items-center ">
-          <.save type="save" class="dark:fill-white h-5 w-5" />
+          <.save type="save" class="dark:fill-white w-5 h-5" />
         </button>
-        <div class={[@class, "flex flex-cols gap-2"]}>
+        <div class="flex flex-cols gap-2">
           <.link
             class="relative"
             navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}
           >
             <button class="text-center inline-flex items-center">
-              <.comment type="comment" class="-ml-1 dark:fill-white h-5 w-5" />
+              <.comment type="comment" class="-ml-1 dark:fill-white w-5 h-5" />
               <span class="ml-1 dark:text-white"><%= @orb.comment_count %></span>
             </button>
           </.link>
@@ -1747,7 +1753,7 @@ defmodule PhosWeb.CoreComponents do
               <%= PhosWeb.Endpoint.url() <>
                 path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %>
             </div>
-            <.share type="share" class="dark:fill-white h-5 w-5" />
+            <.share type="share" class="dark:fill-white w-5 h-5" />
           </button>
         </div>
       </div>
