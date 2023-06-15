@@ -15,11 +15,19 @@ defmodule PhosWeb.Presence do
   def handle_metas("last_read", %{leaves: leaves}, _presence, state) do
     handle_absence(leaves)
 
+    # IO.inspect(state)
+
     {:ok, state}
   end
 
-  def handle_metas(_topic, %{leaves: _leaves, joins: _join}, _presence, state) do
+  def handle_metas(topic, %{leaves: leaves, joins: joins}, presence, state) do
     # TODO: need to implement
+    IO.inspect([
+      topic: topic,
+      leaves: leaves,
+      joins: joins,
+      presence: presence
+    ])
 
     {:ok, state}
   end
