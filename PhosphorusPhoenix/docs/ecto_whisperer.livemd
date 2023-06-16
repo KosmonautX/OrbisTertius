@@ -3,8 +3,12 @@
 ## Section
 
 ```elixir
-Ecto.Migrator.with_repo(Phos.Repo, &Ecto.Migrator.run(&1, :down, to: 20_221_105_155_400))
-Ecto.Migrator.with_repo(Phos.Repo, &Ecto.Migrator.run(&1, :up, to: 20_221_225_155_400))
+Ecto.Migrator.migrations(Phos.Repo)
+```
+
+```elixir
+# Ecto.Migrator.with_repo(Phos.Repo, &Ecto.Migrator.run(&1, :down, to: 20230407074602))
+Ecto.Migrator.with_repo(Phos.Repo, &Ecto.Migrator.run(&1, :up, to: 20_241_225_155_400))
 ```
 
 ```elixir

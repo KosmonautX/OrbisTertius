@@ -86,6 +86,8 @@ defmodule Phos.MixProject do
       {:link_preview, github: "appunite/link_preview"},
       # comments
       {:ecto_ltree, "~> 0.3.0"},
+      {:sparrow, github: "Scratchbac/sparrow", tag: "48d5ae0"},
+
       #debugging
       {:rexbug, "~> 1.0"},
       {:poison, "4.0.1", override: true},
@@ -94,8 +96,17 @@ defmodule Phos.MixProject do
       # {:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
       {:ex_gram, "~> 0.34.0"},
       {:tesla, "~> 1.2"},
-      {:phx_live_storybook, github: "phenixdigital/phx_live_storybook", runtime: Mix.env() == :dev}
+      {:phx_live_storybook, github: "phenixdigital/phx_live_storybook", tag: "992062c", runtime: Mix.env() == :dev}
     ]
+  end
+
+  defp sparrow_dep() do
+    if path = System.get_env("SPARROW_PATH") do
+      [path: path]
+    else
+      #[github: "esl/sparrow"]
+      [github: "KosmonautX/sparrow"]
+    end
   end
 
   # Aliases are shortcuts or tasks specific to the current project.

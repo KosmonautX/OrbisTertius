@@ -8,6 +8,7 @@ defmodule Phos.Comments do
 
   alias Phos.Repo
   alias Phos.Comments.Comment
+  alias Phos.PlatformNotification, as: PN
 
 
   @doc """
@@ -44,41 +45,92 @@ defmodule Phos.Comments do
     |> Repo.insert()
     |> case do
          {:ok, %{parent_id: p_id} = comment} = data when not is_nil(p_id)->
-           comment = comment |> Repo.preload([:initiator, :parent, :orb])
-           if comment.parent.initiator_id !== comment.initiator.id do
-             spawn(fn ->
-               Phos.Notification.target("'USR.#{comment.parent.initiator_id}' in topics",
-                 %{title: "#{comment.initiator.username} replied",
-                   body: comment.body
-                 },
-                 %{action_path: "/comland/comments/children/#{comment.id}"})
-             end)
-           end
+           comment
+           |> Repo.preload([:initiator, :parent, :orb])
+           |> notify_parent_element()
+           |> notify_initiator()
 
-           if comment.orb.initiator_id not in [comment.initiator.id, comment.parent.initiator_id] do
-             spawn(fn ->
-               Phos.Notification.target("'USR.#{comment.orb.initiator_id}' in topics",
-                 %{title: "#{comment.initiator.username} replied to a comment within your post",
-                   body: comment.body
-                 },
-                 %{action_path: "/comland/comments/children/#{comment.id}"})
-             end)
-           end
+           # if comment.parent.initiator_id !== comment.initiator.id do
+           #   spawn(fn ->
+           #     Phos.Notification.target("'USR.#{comment.parent.initiator_id}' in topics",
+           #       %{title: "#{comment.initiator.username} replied",
+           #         body: comment.body
+           #       },
+           #       %{action_path: "/comland/comments/children/#{comment.id}"})
+           #   end)
+           # end
+
+           # if comment.orb.initiator_id not in [comment.initiator.id, comment.parent.initiator_id] do
+           #   spawn(fn ->
+           #     Phos.Notification.target("'USR.#{comment.orb.initiator_id}' in topics",
+           #       %{title: "#{comment.initiator.username} replied to a comment within your post",
+           #         body: comment.body
+           #       },
+           #       %{action_path: "/comland/comments/children/#{comment.id}"})
+           #   end)
+           # end
            data
          {:ok, %{orb_id: _o_id} = comment} = data ->
-           comment = comment |> Repo.preload([:orb, :initiator])
-           if comment.orb.initiator_id !== comment.initiator.id do
-             spawn(fn ->
-               Phos.Notification.target("'USR.#{comment.orb.initiator_id}' in topics",
-                 %{title: "#{comment.initiator.username} replied",
-                   body: comment.body
-                 },
-                 %{action_path: "/comland/comments/root/#{comment.id}"})
-             end)
-           end
+           comment
+           |> Repo.preload([:orb, :initiator])
+           |> notify_self()
+           # if comment.orb.initiator_id !== comment.initiator.id do
+           #   spawn(fn ->
+           #     Phos.Notification.target("'USR.#{comment.orb.initiator_id}' in topics",
+           #       %{title: "#{comment.initiator.username} replied",
+           #         body: comment.body
+           #       },
+           #       %{action_path: "/comland/comments/root/#{comment.id}"})
+           #   end)
+           # end
            data
          err -> err
        end
+  end
+
+  defp notify_parent_element(%{initiator_id: init_id, parent: %{initiator_id: parent_init_id}} = comment) when init_id != parent_init_id do
+    PN.notify({"broadcast", "COM", comment.id, "reply_com"},
+      memory: %{user_source_id: init_id, com_subject_id: comment.id, orb_subject_id: comment.orb_id},
+      to: parent_init_id,
+      notification: %{
+        title: "#{comment.initiator.username} replied",
+        body: comment.body
+      }, data: %{
+        action_path: "/comland/comments/children/#{comment.id}"
+      })
+    comment
+  end
+  defp notify_parent_element(comment), do: comment
+
+  defp notify_initiator(%{initiator_id: init_id, orb: %{initiator_id: orb_init_id} = orb, parent: %{initiator_id: parent_init_id}} = comment)
+    when orb_init_id not in [init_id, parent_init_id] do
+    PN.notify({"broadcast", "COM", comment.id, "reply_orb_children"},
+      memory: %{user_source_id: init_id, com_subject_id: comment.id, orb_subject_id: orb.id},
+      to: orb_init_id,
+      notification: %{
+        title: "#{comment.initiator.username} replied to a comment within your post",
+        body: comment.body,
+      }, data: %{
+        action_path: "/comland/comments/children/#{comment.id}"
+      })
+    comment
+  end
+  defp notify_initiator(comment), do: comment
+
+  defp notify_self(%{orb: %{initiator_id: orb_init_id} = orb, initiator_id: init_id, parent_id: nil} = comment) when orb_init_id != init_id do
+    PN.notify({"broadcast", "COM", comment.id, "reply_orb_root"},
+      memory: %{user_source_id: init_id, com_subject_id: comment.id, orb_subject_id: orb.id},
+      to: orb_init_id,
+      notification: %{
+        title: "#{comment.initiator.username} replied",
+        body: comment.body,
+      }, data: %{
+        action_path: "/comland/comments/root/#{comment.id}"
+      })
+    comment
+  end
+  defp notify_self(comment) do
+    comment
   end
 
   #   @doc """
@@ -98,7 +150,13 @@ defmodule Phos.Comments do
   #
   #
 
-  def get_comment(id), do: Repo.get(Comment, id) |> Repo.preload([:initiator])
+  def get_comment(id) do
+    query = from c in Comment,
+      where: c.id == ^id,
+      preload: [:initiator, :orb],
+      limit: 1
+    Repo.one(query)
+  end
   def get_comment!(id), do: Repo.get!(Comment, id) |> Repo.preload([:initiator])
 
   def get_descendents_comment(id) do
@@ -278,6 +336,13 @@ defmodule Phos.Comments do
 
   #   """
   def delete_comment(%Comment{} = comment) do
+    from(m in Phos.Message.Memory,
+      where: m.com_subject_id == ^comment.id
+    )
+    |> Phos.Repo.all()
+    |> Enum.map(fn mem -> Phos.Message.delete_memory(mem)
+    end)
+
     Repo.delete(comment)
   end
 

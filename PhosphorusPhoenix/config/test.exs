@@ -9,7 +9,7 @@ config :bcrypt_elixir, :log_rounds, 1
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :phos, Phos.Repo,
-  username: "postgres",
+  username: System.get_env("PGUSERNAME") || "postgres",
   password: "root",
   hostname: "localhost",
   database: "phos_test#{System.get_env("MIX_TEST_PARTITION")}",
@@ -29,6 +29,7 @@ config :phos, Phos.Mailer, adapter: Swoosh.Adapters.Test
 
 # Print only warnings and errors during test
 config :logger, level: :warn
+# config :logger, level: :debug
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime

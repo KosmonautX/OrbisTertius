@@ -4,7 +4,34 @@ defmodule PhosWeb.UserProfileLive.Show do
   alias Phos.Users
   alias Phos.Action
 
+
+  defguard is_uuid?(value)
+  when is_bitstring(value)
+  and byte_size(value) == 36
+  and binary_part(value, 8, 1) == "-"
+  and binary_part(value, 13, 1) == "-"
+  and binary_part(value, 18, 1) == "-"
+  and binary_part(value, 23, 1) == "-"
+
   @impl true
+  def mount(%{"username" => id} = params, _session, %{assigns: %{current_user: current_user}} = socket) when is_uuid?(id) do
+    with {:ok, %Users.User{} = user} <- Users.find_user_by_id(id) do
+    Phos.PubSub.subscribe("folks")
+
+    {:ok,
+     socket
+     |> assign(:user, user)
+     |> assign_meta(user, params)
+     |> assign(orb_page: 1)
+     |> assign(ally_page: 1), temporary_assigns: [orbs: Action.orbs_by_initiators([user.id], 1).data,
+       allies: ally_list(current_user, user)]}
+
+    else
+      nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
+    end
+  end
+
+
   def mount(%{"username" => username} = params, _session, %{assigns: %{current_user: current_user}} = socket) do
     with %Users.User{} = user <- Users.get_user_by_username(username) do
     Phos.PubSub.subscribe("folks")
@@ -18,9 +45,9 @@ defmodule PhosWeb.UserProfileLive.Show do
        allies: ally_list(current_user, user)]}
 
     else
-      nil -> raise PhosWeb.ErrorLive, message: "User Not Found"
-    end
+      nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
   end
+    end
 
   @impl true
   def handle_params(params, _url, socket) do
