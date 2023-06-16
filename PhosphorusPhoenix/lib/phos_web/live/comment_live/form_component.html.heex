@@ -2,13 +2,13 @@
   <h3 :if={not is_nil(@reply_comment)} class="text-sm font-bold text-gray-600 dark:text-white">
     <%= to_string(@action) %>: <%= @comment.body %>
   </h3>
-  <div class="relative w-full">
+  <div class="relative w-full lg:mb-2 mb-0">
     <.simple_form
       :let={f}
       for={@changeset}
       id={@id}
       phx-target={@myself}
-      class="px-2 py-4 flex"
+      class="lg:px-0 px-2 lg:py-1 py-4 flex"
       phx-submit={@action}
     >
       <div class="flex items-center justify-center w-full gap-2">
@@ -32,7 +32,8 @@
           :if={not is_nil(@current_user)}
           type="submit"
           phx-disable-with="Saving..."
-          class="absolute bottom-4 right-2 lg:bottom-4 lg:right-4 md:right-24">
+          class="absolute bottom-4 right-2 lg:bottom-4 lg:right-4 md:right-24"
+        >
           <.send_btn type="send" />
         </button>
 

@@ -11,7 +11,7 @@ defmodule PhosWeb.Components.ScrollAlly do
         phx-value-archetype="ally"
         class={[
           if(@meta.pagination.downstream, do: "pb-[calc(200vh)]"),
-          "w-full px-3 lg:px-2 overflow-y-auto journal-scroll lg:h-48 h-screen mb-10 lg:mb-0"
+          "w-full px-3 lg:px-2 overflow-y-auto journal-scroll lg:h-48 h-96"
         ]}
       >
         <.user_info_bar

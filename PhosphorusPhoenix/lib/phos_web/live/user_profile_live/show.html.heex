@@ -1,4 +1,4 @@
-<!--<.modal
+<.modal
   :if={@live_action in [:edit]}
   id="edit_profile_modal"
   show={@live_action in [:edit]}
@@ -15,7 +15,7 @@
       return_to={~p"/user/#{@current_user.username}"}
     />
   </div>
-</.modal> -->
+</.modal>
 <section class="w-full flex flex-col items-center mt-12 lg:gap-4 gap-2 lg:mt-18 font-poppins bg-white lg:bg-[#EEEFF3] dark:bg-gray-900">
   <div class="w-full fixed left-0 right-0 top-14 z-10">
     <.user_profile_banner
@@ -30,8 +30,7 @@
       :if={not is_nil(@user.public_profile)}
       id="user_info"
       user={@user}
-      username={@user.username}
-    >
+      username={@user.username}>
       <:actions>
         <.live_component
           id="user-information-card-ally"
@@ -42,7 +41,7 @@
         />
         <.link
           :if={@current_user && @user.id == @current_user.id}
-          patch={~p"/user/#{@current_user.username}"}
+          patch={~p"/user/#{@current_user.username}/edit"}
         >
           <button class="bg-black text-white hover:black focus:outline-none focus:ring-4 focus:ring-black font-semibold rounded-2xl text-base px-6 py-2.5 text-center dark:focus:ring-black font-Poppins">
             Edit
@@ -52,23 +51,21 @@
       <:allies>
         <div class="hidden lg:block">
           <input id="accordion-item-1" type="checkbox" name="accordion" class="hidden" />
-          <label for="accordion-item-1" class="flex cursor-pointer items-center justify-between">
-            <span class="text-sm dark:text-white text-black font-bold">
-              <%= "25 allies with #{@user.username}'s and Others" %>
-            </span>
-            <Heroicons.chevron_down class="closed-icon h-5 w-5 text-gray-500" />
-            <Heroicons.chevron_up class="open-icon hidden h-5 w-5 text-gray-500" />
+           <label for="accordion-item-1" class="flex cursor-pointer items-center justify-between">
+             <span class="text-sm dark:text-white text-black font-bold">
+                <%= "25 allies with #{@user.username}'s and Others" %>
+             </span>
+             <Heroicons.chevron_down class="closed-icon h-5 w-5 text-gray-500" />
+             <Heroicons.chevron_up class="open-icon hidden h-5 w-5 text-gray-500" />
           </label>
-          <div class="accordion-content">
-            <.live_component
-              module={PhosWeb.Components.ScrollAlly}
-              id="infinite-ally-home-desktop"
-              data={@streams.ally_list}
-              parent_pid={@parent_pid}
-              current_user={@current_user}
-              meta={@ally_list}
-            />
-          </div>
+           <div class="accordion-content hidden">
+             <p :if={@streams.ally_list |> Enum.count() == 0} class="w-full mx-auto text-center py-6  text-gray-600 font-medium text-sm lg:text-base dark:text-white">
+                <%= "#{@user.username} has no allies yet" %>
+             </p>
+             <.live_component module={PhosWeb.Components.ScrollAlly} id="infinite-ally-home-desktop"
+             data={@streams.ally_list} parent_pid={@parent_pid} current_user={@current_user}
+             meta={@ally_list}/>
+           </div>
         </div>
       </:allies>
     </.user_information_card>

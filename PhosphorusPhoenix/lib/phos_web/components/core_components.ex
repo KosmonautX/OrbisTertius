@@ -315,7 +315,7 @@ defmodule PhosWeb.CoreComponents do
   defp button_class(:danger), do: "bg-red-400 hover:bg-red-600"
 
   defp button_class(:primary),
-    do: "bg-teal-400 hover:bg-teal-600 text-white dark:text-black"
+    do: "bg-[#9747FF] hover:bg-purple-600 text-white dark:text-black"
 
   defp button_class(:warning), do: "bg-yellow-400 hover:bg-yellow-600"
   defp button_class(:success), do: "bg-green-400 hover:bg-green-600"
@@ -1576,8 +1576,8 @@ defmodule PhosWeb.CoreComponents do
       )
 
     ~H"""
-    <div class="w-full mx-auto dark:bg-gray-900 flex h-screen w-full flex-col">
-      <div class="px-4 md:px-12 lg:px-0 flex w-full items-center gap-4 p-4">
+    <div class="w-full mx-auto dark:bg-gray-900 dark:lg:bg-gray-800 bg-white flex h-screen w-full flex-col">
+      <div class="px-2 md:px-6 lg:px-4 flex w-full items-center gap-4">
         <.user_info_bar
           class="dark:bg-gray-900"
           id={"#{@id}-scry-orb-#{@orb.id}"}
@@ -1604,13 +1604,13 @@ defmodule PhosWeb.CoreComponents do
           path="public/banner"
           id={"#{@id}-scry-orb-#{@orb.id}"}
           orb={@orb}
-          img_size="h-full rounded-none object-contain	"
+          img_size="h-min	w-full rounded-none object-contain"
           timezone={@timezone}
           media={@media}
         />
       </div>
 
-      <div class="w-full space-y-1 px-4 md:px-12 lg:px-0 mb-24">
+      <div class="w-full space-y-1 px-2 md:px-6 lg:px-4 bg-white dark:bg-gray-900 dark:lg:bg-gray-800 mb-10 lg:mb-24">
         <.orb_information
           id={"#{@id}-orb-info-#{@orb.id}"}
           title={(@orb.payload && @orb.payload.inner_title) || @orb.title}
@@ -1858,7 +1858,7 @@ defmodule PhosWeb.CoreComponents do
         onerror="this.src='/images/default_banner.jpg';"
       />
       <div class="absolute inset-0 flex flex-col justify-center items-center bg-opacity-50">
-        <div class={[@show_shadow, "2"]}>
+        <div class={[@show_shadow]}>
           <div class="absolute inset-x-2 md:inset-x-16  lg:mr-[550px] flex items-end justify-end gap-1">
             <Heroicons.bookmark class="w-6 h-6 text-gray-900 group-hover:text-teal-500 dark:text-white" />
             <Heroicons.ellipsis_vertical class="w-6 h-6 text-gray-900 group-hover:text-teal-500 dark:text-white" />
@@ -2291,20 +2291,20 @@ defmodule PhosWeb.CoreComponents do
     <div
       id={@id}
       phx-mounted={@show && show_modal(@id)}
-      class="relative z-50 hidden bg-white fixed inset-0 dark:bg-gray-900 dark:hover:bg-gray-700 w-full h-screen mx-auto"
+      class="relative z-50 hidden fixed inset-0 w-full h-screen mx-auto"
     >
       <div id={"#{@id}-bg"} class="fixed inset-0 bg-zinc-50/90 transition-opacity" aria-hidden="true" />
-      <div class="fixed inset-0" role="dialog" aria-modal="true" tabindex="0">
-        <div class="w-full flex items-center justify-center dark:bg-gray-900">
+      <div class="fixed inset-0 overflow-y-auto" role="dialog" aria-modal="true" tabindex="0">
+        <div class="w-full flex items-center justify-center">
           <.focus_wrap
             id={"#{@id}-container"}
             phx-mounted={@show && show_modal(@id)}
             phx-window-keydown={hide_modal(@on_cancel, @id)}
             phx-key="escape"
             phx-click-away={hide_modal(@on_cancel, @id)}
-            class="hidden relative  bg-white shadow-zinc-700/10 ring-1 ring-zinc-700/10 transition dark:bg-gray-900"
+            class="hidden relative shadow-zinc-700/10 ring-1 ring-zinc-700/10 transition dark:bg-gray-900 dark:lg:bg-gray-800 bg-white"
           >
-            <div :if={@close_button} class="absolute top-4 right-4">
+            <div :if={@close_button} class="absolute top-4 right-4 lg:top-6 lg:right-6">
               <button
                 phx-click={hide_modal(@on_cancel, @id)}
                 type="button"
@@ -2318,12 +2318,11 @@ defmodule PhosWeb.CoreComponents do
               <header :if={@title != []} class="p-2 pb-3">
                 <h1
                   id={"#{@id}-title"}
-                  class="text-lg font-semibold leading-8 text-zinc-800 dark:text-white text-center"
-                >
+                  class="text-lg font-semibold leading-8 text-zinc-800 dark:text-white text-center">
                   <%= render_slot(@title) %>
                 </h1>
               </header>
-              <div id={"#{@id}-main"} class="w-full">
+              <div id={"#{@id}-main"} class="w-full dg-red-500">
                 <%= render_slot(@inner_block) %>
               </div>
             </div>
@@ -2355,7 +2354,7 @@ defmodule PhosWeb.CoreComponents do
     <div
       id={@id}
       phx-mounted={@show && show_modal(@id)}
-      class="relative z-50 hidden bg-white w-full mx-auto h-screen "
+      class="relative z-50 hidden bg-white w-full mx-auto h-screen"
     >
       <div
         id={"#{@id}-bg"}

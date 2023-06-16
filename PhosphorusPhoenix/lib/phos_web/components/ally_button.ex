@@ -32,6 +32,7 @@ defmodule PhosWeb.Component.AllyButton do
       ) do
     rel = Phos.Folk.get_relation!(root_id)
     ally = rel |> ally_status(user.id)
+
     {:ok,
      socket
      |> assign(:ally, ally)
@@ -216,7 +217,7 @@ defmodule PhosWeb.Component.AllyButton do
     ~H"""
     <a class="flex">
       <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{user.username}")}>
-        <Heroicons.paper_airplane class="lg:w-8 lg:h-8 w-6 h-6 dark:text-white font-semibold" />
+        <Heroicons.paper_airplane class="w-7 h-7 dark:text-white font-semibold" />
       </.link>
     </a>
     """
@@ -272,6 +273,14 @@ defmodule PhosWeb.Component.AllyButton do
       >
         Reject
       </button>
+    </a>
+    """
+  end
+
+  def render(%{ally: false, size: "small"} = assigns) do
+    ~H"""
+    <a class="flex" phx-click="show_ally" phx-value-ally={@user.id})}>
+      <.ally_btn />
     </a>
     """
   end
