@@ -42,7 +42,7 @@
         />
         <.link
           :if={@current_user && @user.id == @current_user.id}
-          patch={~p"/user/#{@current_user.username}/ally"}
+          patch={~p"/user/#{@current_user.username}"}
         >
           <button class="bg-black text-white hover:black focus:outline-none focus:ring-4 focus:ring-black font-semibold rounded-2xl text-base px-6 py-2.5 text-center dark:focus:ring-black font-Poppins">
             Edit
@@ -104,9 +104,9 @@
   id="User_ally"
   main_width="lg:max-w-2xl"
   show={@live_action in [:ally]}
-  on_cancel={JS.navigate(~p"/user/#{@user.username}")}
+  on_cancel={JS.push("hide_ally")}
 >
-  <.redireact_user
+  <.redirect_user
     id="redirect-user"
     user={@ally}
     show_location={true}

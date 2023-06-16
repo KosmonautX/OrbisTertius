@@ -2443,7 +2443,7 @@ defmodule PhosWeb.CoreComponents do
     attr(:socket, :map, doc: "current active socket")
   end
 
-  def redireact_user(assigns) do
+  def redirect_user(assigns) do
     assigns =
       assigns
       |> assign(:user, Map.from_struct(assigns.user))
