@@ -20,7 +20,6 @@ defmodule PhosWeb.MemoryLive.Index do
 
   @impl true
   def handle_params(params, _url, %{assigns: assigns} = socket) do
-    spawn(fn -> friend_online_status(socket, assigns.current_user) end)
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
@@ -36,6 +35,7 @@ defmodule PhosWeb.MemoryLive.Index do
 
     send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_dekstop, memory: %Memory{})
     send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_mobile, memory: %Memory{})
+    spawn(fn -> friend_online_status(socket, user, relation: rel_id) end)
 
     socket
     |> assign(:page_title, "Chatting with @" <> username)
@@ -59,6 +59,8 @@ defmodule PhosWeb.MemoryLive.Index do
   end
 
   defp apply_action(%{assigns: %{current_user: user}} = socket, :index, _params) do
+    IO.inspect("INDEX")
+    spawn(fn -> friend_online_status(socket, user) end)
     socket
     |> assign(:page_title, "Listing Memories")
     |> assign(:memory, nil)
@@ -103,6 +105,10 @@ defmodule PhosWeb.MemoryLive.Index do
   def handle_info({Phos.PubSub, {:memory, "formation"}, %{rel_subject_id: rel_id} = data}, %{assigns: %{current_user: user, memories: memories}} = socket) do
     %{data: search_memories, meta: _meta} = memories_by_user(user)
     {:noreply, assign(socket, memories: memories ++ [data], search_memories: map_last_memory(search_memories), memory: %Memory{})}
+  end
+
+  def handle_info(_data, socket) do
+    {:noreply, socket}
   end
 
   defp list_more_mesage(%{assigns: %{message_cursor: cursor, current_user: user, memories: [memory | _tail] = memories}} = socket) when not is_nil(cursor) do

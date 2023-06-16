@@ -5,6 +5,7 @@ defmodule PhosWeb.UserMemoryChannel do
 
   def join("memory:user:" <> id, _payload, socket) do
     if authorized?(socket, id) do
+      send(self(), :after_join)
       {:ok, socket}
     else
       {:error, %{reason: "unauthorized"}}
@@ -20,9 +21,14 @@ defmodule PhosWeb.UserMemoryChannel do
     {:reply, {:ok, payload}, socket}
   end
 
-
   def handle_info({Phos.PubSub, {:memory, event}, %Phos.Message.Memory{} = memory}, socket) do
     push(socket, "memory_" <> to_string(event), %{"data" => [memory] |> Viewer.memory_mapper()})
+    {:noreply, socket}
+  end
+
+  def handle_info(:after_join, %{assigns: %{current_user: user}} = socket) do
+    PhosWeb.UserPresence.friend_online_status(socket, user)
+    
     {:noreply, socket}
   end
 
