@@ -1,5 +1,7 @@
 defmodule PhosWeb.UserSocket do
   use Phoenix.Socket
+
+  alias PhosWeb.Presence
   alias PhosWeb.Menshen.Auth
 
   # A Socket handler
@@ -66,7 +68,7 @@ defmodule PhosWeb.UserSocket do
     loc = location |> String.downcase() |> String.replace(" ", "_")
     # if already tracked return {:error, :already_tracked} means that system already track user location
     # this presence used for xx people around you right now
-    PhosWeb.Presence.track(pid, "online_#{key}_location", loc, %{user_id: user_id})
+    Presence.track(pid, "online_#{key}_location", loc, %{user_id: user_id})
     :ok
   end
   defp do_track_user_location(_pid, _key, _loc, _user_id), do: :ok

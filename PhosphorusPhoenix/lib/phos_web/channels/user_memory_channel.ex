@@ -1,11 +1,12 @@
 defmodule PhosWeb.UserMemoryChannel do
   use PhosWeb, :channel
 
+  alias PhosWeb.Presence
   alias PhosWeb.Util.Viewer
 
   def join("memory:user:" <> id, _payload, socket) do
     if authorized?(socket, id) do
-      send(self(), :after_join)
+      Process.send_after(self(), :after_join, 1000)
       {:ok, socket}
     else
       {:error, %{reason: "unauthorized"}}
@@ -27,13 +28,20 @@ defmodule PhosWeb.UserMemoryChannel do
   end
 
   def handle_info(:after_join, %{assigns: %{current_user: user}} = socket) do
-    PhosWeb.UserPresence.friend_online_status(socket, user)
-    
+    topic = Presence.user_topic(user.id)
+    Phoenix.PubSub.subscribe(socket.pubsub_server, topic, fastlane: {socket.transport_pid, socket.serializer, []})
+    push(socket, "presence_state", Presence.list(topic))
+    Presence.track(self(), topic, "status", %{online: System.system_time(:second)})
+
     {:noreply, socket}
   end
 
   def handle_info(msg, socket) do
     push(socket, "memory_", %{"data" => [msg] |> Viewer.memory_mapper()})
+    {:noreply, socket}
+  end
+
+  def handle_out(_event, _payload, socket) do
     {:noreply, socket}
   end
 end

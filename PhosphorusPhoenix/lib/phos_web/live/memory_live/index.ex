@@ -3,7 +3,6 @@ defmodule PhosWeb.MemoryLive.Index do
 
   alias Phos.Message
   alias Phos.Message.Memory
-  alias PhosWeb.Presence
 
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
@@ -20,7 +19,7 @@ defmodule PhosWeb.MemoryLive.Index do
 
   @impl true
   def handle_params(params, _url, %{assigns: assigns} = socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+    {:noreply, apply_action(socket, assigns.live_action, params)}
   end
 
   defp apply_action(%{assigns: %{current_user: your}} = socket, :show, %{"username" => username})
@@ -35,7 +34,8 @@ defmodule PhosWeb.MemoryLive.Index do
 
     send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_dekstop, memory: %Memory{})
     send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_mobile, memory: %Memory{})
-    spawn(fn -> friend_online_status(socket, user, relation: rel_id) end)
+
+    PhosWeb.Presence.track(self(), "memory:user:#{your.id}", "last_read", %{rel_id: rel_id})
 
     socket
     |> assign(:page_title, "Chatting with @" <> username)
@@ -58,9 +58,7 @@ defmodule PhosWeb.MemoryLive.Index do
     |> assign(:user, nil)
   end
 
-  defp apply_action(%{assigns: %{current_user: user}} = socket, :index, _params) do
-    IO.inspect("INDEX")
-    spawn(fn -> friend_online_status(socket, user) end)
+  defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Listing Memories")
     |> assign(:memory, nil)

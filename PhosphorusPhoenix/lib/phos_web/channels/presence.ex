@@ -12,24 +12,23 @@ defmodule PhosWeb.Presence do
   
   def init(_opts), do: {:ok, %{}}
 
-  def handle_metas("memory:user:" <> _user_id, %{leaves: leaves, joins: _joins}, _presence, state) do
-    # TODO: need to implement
-    Enum.reduce(leaves, [], fn {key, %{metas: metas}}, acc ->
-      [
-        Enum.reject(metas, fn m ->
-          Map.get(m, :relation_id)
-          |> Kernel.is_nil()
-        end)
-        |> Enum.map(&Map.put(&1, :user_id, key))
-      | acc]
-    end)
-    |> List.flatten()
-    |> Enum.filter(&(&1.foreign))
-    |> Enum.map(fn %{user_id: user_id, relation_id: rel_id} -> set_last_read(rel_id, user_id) end)
+  def handle_metas("memory:user:" <> user_id, %{leaves: leaves, joins: _joins}, _presence, state) do
+    handle_leaves(leaves, user_id)
 
     {:ok, state}
   end
   def handle_metas(_topic, _gates, _presence, state), do: {:ok, state}
+
+  def user_topic(user_id), do: "memory:user:#{user_id}"
+
+  defp handle_leaves(leaves, user_id) do
+    leaves
+    |> Map.get("last_read", %{})
+    |> get_in([Access.key(:metas, [])])
+    |> Enum.map(fn %{rel_id: id} ->
+      set_last_read(id, user_id)
+    end)
+  end
 
   defp set_last_read([], _user_id), do: :ok
   defp set_last_read(data, user_id), do: Phos.Folk.set_last_read(data, user_id)
