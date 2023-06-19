@@ -11,7 +11,7 @@
       phx-submit="save"
     >
       <.input field={{f, :user_id}} type="hidden" value={@current_user.id} />
-      <.input field={{f, :media}} type="hidden" />
+      <.input field={{f, :media}} type="hidden"/>
       <%= label(f, :past_image) %>
       <%= if @user.media do %>
         <img
@@ -37,7 +37,7 @@
 
       <:actions>
         <form id="upload-form" phx-submit="save" phx-change="validate">
-          <.live_file_input upload={@uploads.image} />
+          <.live_file_input upload={@uploads.image} class="dark:text-white font-poppins text-sm text-gray-700"/>
           <.button type="submit">Save</.button>
         </form>
       </:actions>

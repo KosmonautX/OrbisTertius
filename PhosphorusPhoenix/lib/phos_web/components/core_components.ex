@@ -61,7 +61,7 @@ defmodule PhosWeb.CoreComponents do
     <div
       id={@id}
       phx-mounted={@show && show_modal(@id)}
-      class="relative z-50 hidden bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-400 dark:border-gray-700 dark:hover:bg-gray-700 px-2 w-full mx-auto justify-center items-center"
+      class="relative z-50 hidden bg-white rounded-lg shadow dark:bg-gray-900 dark:lg:bg-gray-800 px-2 w-full mx-auto justify-center items-center"
     >
       <div
         id={"#{@id}-bg"}
@@ -84,16 +84,16 @@ defmodule PhosWeb.CoreComponents do
               phx-window-keydown={hide_modal(@on_cancel, @id)}
               phx-key="escape"
               phx-click-away={hide_modal(@on_cancel, @id)}
-              class="hidden relative rounded-2xl shadow-lg bg-white shadow-zinc-700/10 ring-1 ring-zinc-700/10 transition"
+              class="hidden relative rounded-2xl shadow-lg bg-white shadow-zinc-700/10 ring-1 ring-zinc-700/10 transition dark:bg-gray-900 dark:lg:bg-gray-800"
             >
               <div :if={@close_button} class="absolute top-4 right-4">
                 <button
                   phx-click={hide_modal(@on_cancel, @id)}
                   type="button"
-                  class="-m-3 flex-none p-3 opacity-20 hover:opacity-40"
+                  class="-m-3 flex-none p-3 opacity-90 hover:opacity-40"
                   aria-label={gettext("close")}
                 >
-                  <Heroicons.x_mark solid class="h-5 w-5 stroke-current" />
+                  <Heroicons.x_mark class="h-5 w-5 dark:text-white" />
                 </button>
               </div>
               <div id={"#{@id}-content"}>
@@ -245,7 +245,7 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
       <div class={[
-        "bg-white font-poppins dark:bg-gray-900 lg:dark:bg-gray-800 w-full ",
+        "bg-white font-poppins dark:bg-gray-900 lg:dark:bg-gray-800 w-full space-y-4",
         @class
       ]}>
         <%= render_slot(@inner_block, f) %>
@@ -426,7 +426,7 @@ defmodule PhosWeb.CoreComponents do
       <select
         id={@id}
         name={@name}
-        class="font-poppins mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-zinc-500 focus:border-zinc-500 sm:text-sm"
+        class="font-poppins mt-2 block w-full py-2 px-3 border bg-white rounded-lg shadow-sm focus:outline-none focus:ring-zinc-500 focus:border-zinc-500 sm:text-sm border-zinc-300 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
         multiple={@multiple}
         {@rest}
       >

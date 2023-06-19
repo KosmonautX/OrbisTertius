@@ -37,8 +37,7 @@
           module={PhosWeb.Component.AllyButton}
           current_user={@current_user}
           user={@user}
-          parent_pid={@parent_pid}
-        />
+          parent_pid={@parent_pid}/>
         <.link
           :if={@current_user && @user.id == @current_user.id}
           patch={~p"/user/#{@current_user.username}/edit"}
@@ -101,13 +100,20 @@
   id="User_ally"
   main_width="lg:max-w-2xl"
   show={@live_action in [:ally]}
-  on_cancel={JS.push("hide_ally")}
->
+  on_cancel={JS.push("hide_ally")}>
   <.redirect_user
     id="redirect-user"
     user={@ally}
     show_location={true}
     show_img={false}
-    username={@user.username}
-  />
+    username={@user.username}>
+      <:actions>
+        <.live_component
+          id="user-information-card-ally"
+          module={PhosWeb.Component.AllyButton}
+          current_user={@current_user}
+          user={@user}
+          parent_pid={@parent_pid}/>
+      </:actions>
+  </.redirect_user>
 </.ally_modal>

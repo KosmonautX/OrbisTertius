@@ -1,5 +1,4 @@
-<div
-  id="ally_list"
+<div id="ally_list"
   class="w-full mx-auto top-20 fixed left-0 right-0 z-10 lg:px-24 lg:hidden block">
   <div class="w-full dark:bg-gray-900 bg-white">
     <div class="flex flex-wrap items-center justify-center px-2 mb-2">
@@ -12,17 +11,18 @@
       </span>
     </div>
   </div>
-  <p
-    :if={@streams.ally_list |> Enum.count() == 0}
-    class="w-full mx-auto text-center py-6 text-gray-600 font-medium text-sm lg:text-base dark:text-white"
-  >
+  <p :if={@streams.ally_list |> Enum.count() == 0}
+    class="w-full mx-auto text-center py-6 text-gray-600 font-medium text-sm lg:text-base dark:text-white">
     <%= "#{@user.username} has no allies yet" %>
   </p>
- <div>
-   <.live_component module={PhosWeb.Components.ScrollAlly} id="infinite-ally-home-desktop"
-    data={@streams.ally_list} parent_pid={@parent_pid} current_user={@current_user}
-    meta={@ally_list}/>
- </div>
+    <.live_component
+      module={PhosWeb.Components.ScrollAlly}
+      id="infinite-ally-home-desktop"
+      data={@streams.ally_list}
+      parent_pid={@parent_pid}
+      current_user={@current_user}
+      meta={@ally_list}
+    />
 </div>
 
 <.ally_modal
@@ -30,22 +30,21 @@
   id="User_ally"
   main_width="lg:max-w-2xl"
   show={@live_action in [:ally]}
-  on_cancel={JS.navigate(~p"/user/#{@user.username}/allies")}
->
+  on_cancel={JS.navigate(~p"/user/#{@user.username}/allies")}>
   <.redirect_user
     id="redirect-user"
     user={@ally}
     show_location={true}
     show_img={false}
     username={@user.username}>
-      <:actions>
-        <.live_component
-          id="user-information-card-ally"
-          module={PhosWeb.Component.AllyButton}
-          current_user={@current_user}
-          user={@user}
-          parent_pid={@parent_pid}
-        />
-      </:actions>
+    <:actions>
+      <.live_component
+        id="user-information-card-ally"
+        module={PhosWeb.Component.AllyButton}
+        current_user={@current_user}
+        user={@user}
+        parent_pid={@parent_pid}
+      />
+    </:actions>
   </.redirect_user>
 </.ally_modal>

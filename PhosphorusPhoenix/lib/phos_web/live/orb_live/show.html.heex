@@ -62,7 +62,13 @@
         <!--Main Orb in Mobile View and Desktop View-->
         <div class="w-full lg:px-0 md:px-10">
           <div class="w-full lg:rounded-3xl pb-5 ">
-            <.scry_orb id="orb" orb={@orb} timezone={@timezone} show_information={true} class="bg-white"/>
+            <.scry_orb
+              id="orb"
+              orb={@orb}
+              timezone={@timezone}
+              show_information={true}
+              class="bg-white"
+            />
             <.live_component
               module={PhosWeb.CommentLive.IndexComponent}
               id="commentindex"
@@ -100,7 +106,6 @@
         <.live_component
           module={PhosWeb.Components.ScrollOrb}
           id="infinite-home"
-
           data={@streams.orbs}
           timezone1={@timezone}
           meta={@orbs}

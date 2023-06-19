@@ -188,7 +188,7 @@ defmodule PhosWeb.Component.AllyButton do
   def render(%{current_user: your, size: "small"} = assigns)
       when your in [nil, ""] do
     ~H"""
-    <a class="flex" phx-click="show_ally" phx-value-ally={@user.id})}>
+    <a class="flex" phx-click="show_ally" phx-value-ally={@user.id} )}>
       <.ally_btn />
     </a>
     """
@@ -198,7 +198,7 @@ defmodule PhosWeb.Component.AllyButton do
       when user in [nil, ""] do
     ~H"""
     <a class="flex" phx-click={show_modal("welcome_message")}>
-     <.plus_btn />
+      <.plus_btn />
     </a>
     """
   end
@@ -279,7 +279,7 @@ defmodule PhosWeb.Component.AllyButton do
 
   def render(%{ally: false, size: "small"} = assigns) do
     ~H"""
-    <a class="flex" phx-click="show_ally" phx-value-ally={@user.id})}>
+    <a class="flex" phx-click="show_ally" phx-value-ally={@user.id} )}>
       <.ally_btn />
     </a>
     """
