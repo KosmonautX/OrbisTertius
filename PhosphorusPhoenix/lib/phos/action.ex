@@ -139,6 +139,7 @@ defmodule Phos.Action do
     limit = Keyword.get(opts, :limit, 24)
     orbs_by_geohashes({hashes, your_id})
     |> Repo.Paginated.all([{:limit, limit} | opts])
+    |> (&(Map.put(&1, :data, &1.data |> Phos.Repo.Preloader.lateral(:comments, limit: 3, order_by: {:asc, :inserted_at}, assocs: [:initiator, parent: [:initiator]])))).()
   end
 
 
@@ -147,7 +148,7 @@ defmodule Phos.Action do
     limit = Keyword.get(opts, :limit, 12)
 
     orbs_by_geohashes({hashes, your_id})
-    |> where([_l, o], fragment("? @> ?", o.traits, ^traits))
+    |> where([o], fragment("? @> ?", o.traits, ^traits))
     |> Repo.Paginated.all([{:sort_attribute, sort}| [{:limit, limit} | opts]])
   end
 
@@ -747,7 +748,7 @@ defmodule Phos.Action do
       |> MapSet.delete(get_in(orb.initiator, [Access.key(:integrations, %{}), Access.key(:fcm_token, nil)]))
       |> tap(fn batch ->
       Phos.PlatformNotification.Batch.push(batch,
-        title: "#{orb.initiator.username} just posted across your street 🧭",
+        title: "#{orb.initiator.username} from Around Me",
         body: orb.title,
         initiator_id: orb.initiator_id,
         action_path: "/orbland/orbs/#{orb.id}",
@@ -762,7 +763,7 @@ defmodule Phos.Action do
       |> MapSet.difference(geonotifiers)
       |> MapSet.delete(get_in(orb.initiator, [Access.key(:integrations, %{}), Access.key(:fcm_token, nil)]))
       |> Phos.PlatformNotification.Batch.push(
-        title: "Your ally 🤝 #{orb.initiator.username} just posted 💫",
+        title: "#{orb.initiator.username} from Following",
       body: orb.title,
       initiator_id: orb.initiator_id,
       action_path: "/orbland/orbs/#{orb.id}",

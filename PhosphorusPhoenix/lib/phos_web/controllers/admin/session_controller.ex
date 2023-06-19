@@ -25,7 +25,7 @@ defmodule PhosWeb.AdminSessionController do
       |> put_session(:admin_token, token)
       |> put_session(:live_socket_id, "admin_sessions:#{Base.url_encode64(token)}")
       |> put_flash(:info, String.capitalize("sike you are still in the matrix  🔵💊🔴"))
-      |> redirect(to: ~p"/admin/orbs")
+      |> redirect(to: ~p"/admin/users")
       |> halt()
     else
       {_, msg} -> render_unauthenticate(conn, msg)

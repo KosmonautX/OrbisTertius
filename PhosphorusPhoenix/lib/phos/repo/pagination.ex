@@ -50,8 +50,12 @@ defmodule Phos.Repo.Paginated do
     case Keyword.fetch(opts, :page) do
       # page-based
       {:ok, page} ->
-        total =  Phos.Repo.aggregate(query, :count, sort)
-        page_response(dao, page, total, limit)
+        if Keyword.get(opts, :aggregate, true) do
+          total =  Phos.Repo.aggregate(query, :count, sort)
+          page_response(dao, page, total, limit)
+        else
+          page_response(dao, page, nil, limit)
+        end
 
       :error ->
       cond do
@@ -82,7 +86,7 @@ defmodule Phos.Repo.Paginated do
                   #cursor: Keyword.get(opts, :filter, nil) |> DateTime.from_naive!("UTC")  |> DateTime.to_unix(:second)
                 }}}
         end
-    end
+     end
   end
 
   def all(query, page, attr, limit), do: all(query, [sort_attribute: attr, limit: limit, page: page])
