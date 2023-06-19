@@ -34,7 +34,7 @@ defmodule Phos.MixProject do
   defp deps do
     [
       {:bcrypt_elixir, "~> 3.0"},
-      {:phoenix, "~> 1.7.3", override: true},
+      {:phoenix, "~> 1.7.6", override: true},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.9"},
       {:postgrex, ">= 0.0.0"},
