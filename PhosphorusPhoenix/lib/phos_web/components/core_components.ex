@@ -1268,6 +1268,10 @@ defmodule PhosWeb.CoreComponents do
   attr(:class, :string, default: nil)
   attr(:id, :string, required: true)
   attr(:show_padding, :boolean, default: true)
+  attr(:profile_img, :boolean, default: true)
+  attr(:show_user, :boolean, default: true)
+  attr(:dark, :boolean, default: true)
+  attr(:show_location, :boolean, default: true)
   attr(:user, :any)
   slot(:actions)
   slot(:information)
@@ -1276,8 +1280,10 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <div
       id={@id}
-      class={[
-        (@show_padding == true && "lg:px-4") || "lg:px-0",
+       class={[
+        @show_padding == false && "lg:px-4",
+        @show_padding == true && "lg:px-2",
+        @dark == true && "lg:dark:bg-gray-900",
         "w-full bg-white lg:py-2 py-4 flex items-center justify-between lg:dark:bg-gray-800 dark:bg-gray-900 px-2 font-poppins",
         @class
       ]}
@@ -1290,7 +1296,10 @@ defmodule PhosWeb.CoreComponents do
         >
           <img
             src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossy")}
-            class="lg:w-14 lg:h-14 h-12 w-12 rounded-full object-cover dark:border-2 dark:border-[#D1D1D1]"
+             class={[
+             @profile_img == false && "lg:w-14 lg:h-14",
+             @profile_img == true && "lg:w-12 lg:h-12",
+             "h-12 w-12 rounded-full object-cover"]}
             onerror="this.src='/images/default_hand.jpg';"
           />
         </.link>
@@ -1299,13 +1308,15 @@ defmodule PhosWeb.CoreComponents do
             :if={@user.username}
             navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}
           >
-            <p class="font-bold text-gray-900 dark:text-white lg:text-base text-sm">
+            <p class={[(@show_user == true && "lg:text-lg"), "font-bold text-gray-900 dark:text-white lg:text-base text-sm"]}>
               <%= "@#{@user.username}" %>
             </p>
           </.link>
-
-          <p class="flex items-center lg:text-sm text-sm dark:text-[#00D2C4] text-[#00BFB2]
-          font-medium">
+          <p
+            class={[
+             @show_location == false && "lg:text-base text-[#000000] dark:text-white",
+             @show_location == true && "lg:text-sm dark:text-[#00D2C4] text-[#00BFB2]",
+             "flex items-center text-sm font-light"]}>
             <%= render_slot(@information) %>
           </p>
         </div>
@@ -1323,6 +1334,13 @@ defmodule PhosWeb.CoreComponents do
   attr(:timezone, :map)
   slot(:user_action)
   attr(:show_information, :boolean, default: true)
+  attr(:show_padding, :boolean, default: true)
+  attr(:profile_img, :boolean, default: true)
+  attr(:show_user, :boolean, default: true)
+  attr(:show_location, :boolean, default: true)
+    attr(:dark, :boolean, default: true)
+
+
   attr(:class, :string, default: nil)
 
   def scry_orb(assigns) do
@@ -1362,7 +1380,7 @@ defmodule PhosWeb.CoreComponents do
 
     ~H"""
     <div class="w-full lg:px-0 px-3">
-      <.user_info_bar class="lg:rounded-t-3xl" id={"#{@id}-scry-orb-#{@orb.id}"} user={@orb.initiator}>
+      <.user_info_bar class="lg:rounded-t-3xl" id={"#{@id}-scry-orb-#{@orb.id}"} user={@orb.initiator} show_padding={@show_padding} profile_img={@profile_img} show_user={@show_user} show_location={@show_location} dark={@dark}>
         <:information :if={!is_nil(@orb_location)}>
           <span class="mr-1">
             <.location type="location" class="h-8 dark:fill-teal-600"></.location>
@@ -1574,11 +1592,15 @@ defmodule PhosWeb.CoreComponents do
 
     ~H"""
     <div class="w-full mx-auto dark:bg-gray-900 dark:lg:bg-gray-800 bg-white flex h-screen w-full flex-col">
-      <div class="px-2 md:px-6 lg:px-4 flex w-full items-center gap-4">
+      <div class="px-2 md:px-6 lg:px-2 flex w-full items-center gap-4">
         <.user_info_bar
           class="dark:bg-gray-900"
           id={"#{@id}-scry-orb-#{@orb.id}"}
-          user={@orb.initiator}>
+          user={@orb.initiator}
+          profile_img={false}
+          show_padding={true}
+
+>
           <:information :if={!is_nil(@orb_location)}>
             <span class="mr-1">
               <.location type="location" class="h-8 dark:fill-teal-600"></.location>
@@ -1670,6 +1692,8 @@ end
   attr(:title, :string, default: "")
   attr(:class, :string, default: nil)
   attr(:username, :string)
+    attr(:dark, :boolean, default: true)
+
 
   attr(:info_color, :string,
     default:
@@ -1691,9 +1715,11 @@ end
     ~H"""
     <div class={[
       @class,
+       @dark == true && "lg:dark:bg-gray-900",
       "px-2 py-1 font-poppins break-words lg:dark:bg-gray-800 dark:bg-gray-900",
       @info_color
     ]}>
+
       <span class={[
         "prose prose-a:text-blue-500 dark:prose-a:text-white lg:text-base text-sm break-words overflow-hidden font-medium dark:prose-invert w-full dark:text-white",
         @info_color
@@ -1749,6 +1775,8 @@ end
   attr(:class, :string, default: nil)
   attr(:show_comment, :boolean, default: true)
   attr(:show_information, :boolean, default: true)
+  attr(:dark, :boolean, default: true)
+
 
   # TODO orb_actions wiring with data
   def orb_action(assigns) do
@@ -1758,6 +1786,7 @@ end
       class={[
         @show_information == false && "lg:rounded-b-3xl",
         @show_information == true && "rounded-none",
+        @dark == true && "lg:dark:bg-gray-900",
         "w-full lg:text-sm text-xs px-2 p-2 mt-1.5 lg:mt-0 font-poppins bg-white lg:dark:bg-gray-800 dark:bg-gray-900",
         @class
       ]}

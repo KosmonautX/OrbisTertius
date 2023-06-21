@@ -67,6 +67,10 @@
               orb={@orb}
               timezone={@timezone}
               show_information={true}
+              show_padding={false}
+              profile_img={false}
+              show_user={true}
+              show_location={false}
               class="bg-white"
             />
             <.live_component
@@ -108,6 +112,9 @@
           id="infinite-home"
           data={@streams.orbs}
           timezone1={@timezone}
+          dark={false}
+          profile_img={true}
+          show_user={false}
           meta={@orbs}
         />
       </div>

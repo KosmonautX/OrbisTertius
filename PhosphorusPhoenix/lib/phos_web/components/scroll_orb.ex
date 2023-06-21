@@ -20,7 +20,12 @@ defmodule PhosWeb.Components.ScrollOrb do
             id={"orb-history-#{dom_id}"}
             orb={orb}
             timezone={@timezone1}
+            profile_img={@profile_img}
+            show_user={@show_user}
             show_information={false}
+            show_padding={true}
+            show_location={true}
+            dark={@dark}
           />
         </div>
       </div>
