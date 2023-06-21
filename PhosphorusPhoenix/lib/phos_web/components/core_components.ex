@@ -1425,9 +1425,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:show_comment, :boolean, default: true)
   attr(:show_media, :boolean, default: true)
   attr(:img_size, :string, default: "h-96 lg:rounded-none rounded-3xl px-1 lg:px-0 object-cover")
-
   attr(:video_size, :string, default: "h-96 lg:rounded-none rounded-3xl px-1 lg:px-0 object-cover")
-
   attr(:media, :any)
 
   def media_carousel(assigns) do
@@ -1556,7 +1554,6 @@ defmodule PhosWeb.CoreComponents do
         |> (fn
               nil ->
                 []
-
               media ->
                 for {path, url} <- media do
                   %Phos.Orbject.Structure.Media{
@@ -1581,8 +1578,7 @@ defmodule PhosWeb.CoreComponents do
         <.user_info_bar
           class="dark:bg-gray-900"
           id={"#{@id}-scry-orb-#{@orb.id}"}
-          user={@orb.initiator}
-        >
+          user={@orb.initiator}>
           <:information :if={!is_nil(@orb_location)}>
             <span class="mr-1">
               <.location type="location" class="h-8 dark:fill-teal-600"></.location>
@@ -1597,15 +1593,10 @@ defmodule PhosWeb.CoreComponents do
       </div>
 
       <div class="flex flex-1 items-center justify-center">
-        <.media_carousel
+        <.img_preview
           :if={@media != []}
-          archetype="ORB"
-          uuid={@orb.id}
-          path="public/banner"
           id={"#{@id}-scry-orb-#{@orb.id}"}
           orb={@orb}
-          img_size="h-min	w-full rounded-none object-contain"
-          timezone={@timezone}
           media={@media}
         />
       </div>
@@ -1620,7 +1611,6 @@ defmodule PhosWeb.CoreComponents do
           orb={@orb}
           date={@timezone}
           show_comment={false}
-
         />
         <p class="font-medium text-sm dark:text-white text-gray-700 px-2 py-1">
           Liked by bbeebbub and others
@@ -1634,6 +1624,47 @@ defmodule PhosWeb.CoreComponents do
     </div>
     """
   end
+
+  attr(:media, :any)
+  attr(:id, :string, required: true)
+  attr(:orb, :any)
+
+def img_preview(assigns) do
+  ~H"""
+  <div class="relative flex items-center">
+    <div :if={!is_nil(@media)} id={"#{@id}-carousel"}>
+      <div :for={m <- @media} class="w-full">
+        <img
+          class="max-h-full max-w-full object-contain"
+          src={m.url}
+        />
+      </div>
+    </div>
+    <div
+      :if={length(@media) > 1}
+      class="absolute top-0 right-0 bottom-0 flex items-center justify-center px-2">
+      <button
+        class="p-2 rounded-full bg-gray-600 text-white"
+        phx-click="next"
+        phx-value-len={length(@media)}>
+        <Heroicons.chevron_right class="h-6 w-6" />
+      </button>
+    </div>
+    <div
+      :if={length(@media) > 1}
+      class="absolute top-0 left-0 bottom-0 flex items-center justify-center px-2">
+      <button
+        class="p-2 rounded-full bg-gray-600 text-white"
+        phx-click="previous"
+        phx-value-len={length(@media)}>
+        <Heroicons.chevron_left class="h-6 w-6" />
+      </button>
+    </div>
+  </div>
+  """
+end
+
+
 
   attr(:id, :string, required: true)
   attr(:title, :string, default: "")
@@ -1727,7 +1758,9 @@ defmodule PhosWeb.CoreComponents do
       class={[
         @show_information == false && "lg:rounded-b-3xl",
         @show_information == true && "rounded-none",
-        "w-full lg:text-sm text-xs px-2 p-2 mt-1.5 lg:mt-0 font-poppins bg-white lg:dark:bg-gray-800 dark:bg-gray-900",@class]}
+        "w-full lg:text-sm text-xs px-2 p-2 mt-1.5 lg:mt-0 font-poppins bg-white lg:dark:bg-gray-800 dark:bg-gray-900",
+        @class
+      ]}
     >
       <span class="dark:text-white text-black"><%= get_date(@orb.inserted_at, @date) %></span>
       <div id={"#{@id}-actions"} class="flex justify-between mt-1 mb-1">
@@ -2318,7 +2351,8 @@ defmodule PhosWeb.CoreComponents do
               <header :if={@title != []} class="p-2 pb-3">
                 <h1
                   id={"#{@id}-title"}
-                  class="text-lg font-semibold leading-8 text-zinc-800 dark:text-white text-center">
+                  class="text-lg font-semibold leading-8 text-zinc-800 dark:text-white text-center"
+                >
                   <%= render_slot(@title) %>
                 </h1>
               </header>

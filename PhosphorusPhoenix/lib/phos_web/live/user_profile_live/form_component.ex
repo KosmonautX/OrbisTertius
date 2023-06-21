@@ -8,11 +8,11 @@ defmodule PhosWeb.UserProfileLive.FormComponent do
     changeset = Users.change_user(user)
 
     {:ok,
-      socket
-      |> assign(assigns)
-      |> assign(:changeset, changeset)
-      |> assign(:uploaded_files, [])
-      |> allow_upload(:image, accept: ~w(.jpg .jpeg .png), max_entries: 1, max_file_size: 8888888)}
+     socket
+     |> assign(assigns)
+     |> assign(:changeset, changeset)
+     |> assign(:uploaded_files, [])
+     |> allow_upload(:image, accept: ~w(.jpg .jpeg .png), max_entries: 1, max_file_size: 8_888_888)}
   end
 
   @impl true
@@ -21,6 +21,7 @@ defmodule PhosWeb.UserProfileLive.FormComponent do
       socket.assigns.user
       |> Users.change_user(profile_params)
       |> Map.put(:action, :validate)
+
     {:noreply, assign(socket, :changeset, changeset)}
   end
 
@@ -30,18 +31,26 @@ defmodule PhosWeb.UserProfileLive.FormComponent do
     file_uploaded =
       consume_uploaded_entries(socket, :image, fn %{path: path}, _entry ->
         for res <- ["150x150", "1920x1080"] do
-          {:ok, dest} = Phos.Orbject.S3.put("USR", profile_params["user_id"], "public/profile/#{resolution[res]}")
-          #compressed_image_path = ImageHandler.resize_file(path, res, Path.extname(entry.client_name))
-          compressed_image =path
-          |> Mogrify.open()
-          #|> Mogrify.gravity("Center")
-          |> Mogrify.resize(res)
-          |> Mogrify.save()
+          {:ok, dest} =
+            Phos.Orbject.S3.put(
+              "USR",
+              profile_params["user_id"],
+              "public/profile/#{resolution[res]}"
+            )
+
+          # compressed_image_path = ImageHandler.resize_file(path, res, Path.extname(entry.client_name))
+          compressed_image =
+            path
+            |> Mogrify.open()
+            # |> Mogrify.gravity("Center")
+            |> Mogrify.resize(res)
+            |> Mogrify.save()
 
           HTTPoison.put(dest, {:file, compressed_image.path})
         end
+
         {:ok, path}
-       end)
+      end)
 
     if Enum.empty?(file_uploaded) and profile_params["media"] == "false" do
       save_profile(socket, socket.assigns.action, profile_params)
@@ -50,9 +59,6 @@ defmodule PhosWeb.UserProfileLive.FormComponent do
       save_profile(socket, socket.assigns.action, profile_params)
     end
   end
-
-  defp error_to_string(:too_large), do: "Image too large"
-  defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
 
   defp save_profile(socket, :edit, profile_params) do
     case Users.update_user(socket.assigns.current_user, profile_params) do

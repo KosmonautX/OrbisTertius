@@ -20,7 +20,7 @@ defmodule Phos.MixProject do
     [
       mod: {Phos.Application, []},
       extra_applications: [:logger, :runtime_tools, :inets]
-      #extra_applications: [:logger, :runtime_tools, :wx]
+      # extra_applications: [:logger, :runtime_tools, :wx]
     ]
   end
 
@@ -84,28 +84,21 @@ defmodule Phos.MixProject do
       {:decorator, "~> 1.4"},
       {:fcmex, github: "KosmonautX/fcmex"},
       {:retry, "~> 0.17"},
-      {:uuid, "~> 1.1" },
+      {:uuid, "~> 1.1"},
       {:link_preview, github: "appunite/link_preview"},
       # comments
       {:ecto_ltree, "~> 0.3.0"},
       {:sparrow, github: "Scratchbac/sparrow", tag: "062400e"},
-      #debugging
+      # debugging
       {:rexbug, "~> 1.0"},
       {:poison, "4.0.1", override: true},
-      {:phoenix_view, "~> 2.0"}, # for error warning removal
+      # for error warning removal
+      {:phoenix_view, "~> 2.0"},
       # { :uuid, "~> 1.1" },
       # {:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
-      {:phx_live_storybook, github: "phenixdigital/phx_live_storybook", tag: "992062c", runtime: Mix.env() == :dev}
+      {:phx_live_storybook,
+       github: "phenixdigital/phx_live_storybook", tag: "992062c", runtime: Mix.env() == :dev}
     ]
-  end
-
-  defp sparrow_dep() do
-    if path = System.get_env("SPARROW_PATH") do
-      [path: path]
-    else
-      #[github: "esl/sparrow"]
-      [github: "KosmonautX/sparrow"]
-    end
   end
 
   # Aliases are shortcuts or tasks specific to the current project.
@@ -120,7 +113,12 @@ defmodule Phos.MixProject do
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
-      "assets.deploy": ["tailwind default --minify", "tailwind admin --minify", "esbuild default --minify", "phx.digest"]
+      "assets.deploy": [
+        "tailwind default --minify",
+        "tailwind admin --minify",
+        "esbuild default --minify",
+        "phx.digest"
+      ]
     ]
   end
 end

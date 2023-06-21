@@ -78,6 +78,8 @@ window.addEventListener("phos:clipcopy", (event) => {
   }
 });
 
+
+
 // dark mode js code
 
 var themeToggleDarkIcon = document.getElementById("theme-toggle-dark-icon");

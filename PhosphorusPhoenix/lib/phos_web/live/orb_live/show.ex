@@ -4,7 +4,6 @@ defmodule PhosWeb.OrbLive.Show do
   alias Phos.Action
   alias Phos.Comments
   alias PhosWeb.Utility.Encoder
-  alias PhosWeb.Components.ScrollAlly
   alias PhosWeb.Components.ScrollOrb
 
   @impl true
@@ -13,7 +12,9 @@ defmodule PhosWeb.OrbLive.Show do
      socket
      |> assign(:ally, false)
      |> assign(:media, nil)
-     |> assign(:comment, %Comments.Comment{})}
+     |> assign(:comment, %Comments.Comment{})
+
+    }
   end
 
   @impl true
@@ -38,7 +39,10 @@ defmodule PhosWeb.OrbLive.Show do
          :comments,
          Comments.get_root_comments_by_orb(orb.id) |> decode_to_comment_tuple_structure()
        )
-       |> stream_assign(:orbs, Action.orbs_by_initiators([orb.initiator.id], 1))}
+       |> stream_assign(:orbs, Action.orbs_by_initiators([orb.initiator.id], 1))
+       |> assign_new(:index, fn -> 0 end)
+       |> assign_new(:media, fn -> socket.assigns.media end)
+      }
     else
       {:error, :not_found} -> raise PhosWeb.ErrorLive.FourOFour, message: "Orb Not Found"
     end
@@ -310,6 +314,27 @@ defmodule PhosWeb.OrbLive.Show do
      socket
      |> assign(:comments, updated_comments)}
   end
+
+  def handle_event("previous", %{"len" => len, "value" => value}, socket) do
+    url_list = String.to_charlist(value)
+    length = :erlang.length(url_list)
+    previous_url = if length > 0 do
+      Enum.at(url_list, length - 1)
+    else
+      "No URLs found."
+    end
+    IO.puts("Previous URL: #{previous_url}")
+    {:noreply, socket}
+  end
+
+  def handle_event("next", %{"value" => value}, socket) do
+    index = Map.get(socket.assigns, :index, 0)
+    next_index = index + 1
+    new_assigns = Map.put(socket.assigns, :index, next_index)
+    {:noreply, assign(socket, :index, next_index)}
+  end
+
+
 
   defp save_comment(socket, :reply, comment_params) do
     case Comments.create_comment_and_publish(comment_params) do

@@ -40,6 +40,8 @@ defmodule PhosWeb.UserProfileLive.Show do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
+  @impl true
+
   def handle_event(
         "load-more",
         _,
@@ -64,8 +66,7 @@ defmodule PhosWeb.UserProfileLive.Show do
     {:noreply,
      socket
      |> assign(:ally, Phos.Users.get_public_user(ally_id, nil))
-     |> assign(:live_action, :ally)
-    }
+     |> assign(:live_action, :ally)}
   end
 
   def handle_event("hide_ally", _, socket) do
@@ -192,7 +193,7 @@ defmodule PhosWeb.UserProfileLive.Show do
     |> assign(ally_list: allies_meta)
   end
 
-  defp stream_assign(socket, key, %{data: data, meta: meta} = params) do
+  defp stream_assign(socket, key, %{data: data, meta: meta} = _params) do
     socket
     |> stream(key, data)
     |> assign(key, meta)

@@ -123,9 +123,9 @@
       url={@media}
       orb={@orb}
       timezone={@timezone}
-      id="orb-preview show_information={false}"
-    />
-    <:title><%= "#{@orb.initiator.username}'s Post" %></:title>
+      id="orb-preview"
+  />
+      <:title><%= "#{@orb.initiator.username}'s Post" %></:title>
   </.gallery_modal>
   <span :if={@streams.orbs |> Enum.count() < 3} class="hidden lg:block h-96 bg-gray-100" />
 </div>
