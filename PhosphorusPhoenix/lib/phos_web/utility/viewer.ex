@@ -48,7 +48,6 @@ defmodule PhosWeb.Util.Viewer do
 
         Map.new([{k, %{data: PhosWeb.Util.Viewer.memory_mapper(memory)}}])
 
-
       {k, %Phos.Users.RelationRoot{} = relation} ->
 
         Map.new([{k, %{data: %{PhosWeb.Util.Viewer.user_relation_mapper(relation) | self_initiated: relation.initiator_id != entity.id},
@@ -108,6 +107,9 @@ defmodule PhosWeb.Util.Viewer do
       confirmed_at: user.confirmed_at,
       fyr_id: user.fyr_id,
       profile: user_profile_mapper(user),
+      ally_count: user.ally_count,
+      mutual_count: user.mutual_count,
+      mutual_username: user.mutual_username,
       relationships: relationship_reducer(user),
       creationtime: DateTime.from_naive!(user.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
       mutationtime: DateTime.from_naive!(user.updated_at, "Etc/UTC") |> DateTime.to_unix(),
