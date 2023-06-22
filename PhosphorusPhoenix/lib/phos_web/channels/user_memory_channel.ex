@@ -18,6 +18,11 @@ defmodule PhosWeb.UserMemoryChannel do
     {:noreply, socket}
   end
 
+  def handle_in("memory", {:action, memory}, socket) do
+    broadcast(socket, "memory_action", memory)
+    {:noreply, socket}
+  end
+
   def handle_in("ping", payload, socket) do
     {:reply, {:ok, payload}, socket}
   end
@@ -36,7 +41,9 @@ defmodule PhosWeb.UserMemoryChannel do
     {:noreply, socket}
   end
 
+
   def handle_info(msg, socket) do
+    IO.inspect(msg)
     push(socket, "memory_", %{"data" => [msg] |> Viewer.memory_mapper()})
     {:noreply, socket}
   end

@@ -1968,7 +1968,7 @@ defmodule PhosWeb.CoreComponents do
             module={PhosWeb.Component.AllyButton}
             current_user={ally.current_user}
             user={ally.user}
-            socket={ally.socket}
+            parent_pid={ally.parent_pid}
           />
         </div>
       </div>

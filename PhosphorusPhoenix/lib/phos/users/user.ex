@@ -24,9 +24,13 @@ defmodule Phos.Users.User do
     field :self_relation, :string, virtual: true
     field :profile_image, :string, virtual: true
 
+    field :ally_count, :integer, default: 0, virtual: true
+    field :mutual_count, :integer, default: 0, virtual: true
+    field :mutual_username, :string, virtual: true
+
     # has_many :pending_relations, RelationBranch, foreign_key: :user_id, where: [completed_at: nil]
-    # has_many :completed_relations, RelationBranch, foreign_key: :user_id, where: [completed_at: {:not, nil}]
-    # #has_many :friends, through: [:completed_relations, :friend]
+    has_many :allies, RelationBranch, foreign_key: :user_id, where: [completed_at: {:not, nil}]
+    #has_many :allies, through: [:branches, :friend]
 
     has_one :personal_orb, Orb, foreign_key: :id
     has_one :private_profile, Private_Profile, references: :id, foreign_key: :user_id
@@ -145,7 +149,7 @@ defmodule Phos.Users.User do
 
   defp validate_username(changeset, _opts \\ []) do
     changeset
-    |> validate_format(:username, ~r/^\w+$/, message: "letters and numbers only")
+    |> validate_format(:username, ~r/^[a-z0-9]*$/, message: "lower-case letters and numbers only")
     |> validate_length(:username, min: 5, max: 16)
     |> unique_constraint(:username, name: :unique_username)
   end

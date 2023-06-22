@@ -39,7 +39,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
     orb_params =
       try do
         central_hash =
-          List.last(Map.get(addrs, String.to_atom(loc), []))
+          List.last(Map.get(addrs, String.to_existing_atom(loc), []))
           |> :h3.parent(String.to_integer(orb_params["radius"]))
 
         geohashes =

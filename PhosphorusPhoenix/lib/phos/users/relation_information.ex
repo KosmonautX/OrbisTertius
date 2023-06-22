@@ -3,7 +3,7 @@ defmodule Phos.Users.RelationRoot do
   use Fsmx.Struct, transitions: %{
     "requested" => ["ghosted", "completed", "blocked"],
     "ghosted" => "living",
-    "living" => ["requested"],
+    "living" => ["requested", "blocked"],
     "completed" => "living",
     "blocked" => "living"
   }
@@ -30,7 +30,6 @@ defmodule Phos.Users.RelationRoot do
 
   def gen_branches_changeset(root, params) do
     root
-    |> Map.put(:state, "requested")
     |> cast(params, [:acceptor_id, :initiator_id, :state])
     |> cast_assoc(:branches, with: &RelationBranch.changeset/2)
     |> validate_required([:initiator_id])

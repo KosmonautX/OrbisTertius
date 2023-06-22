@@ -27,7 +27,11 @@
             user={@orb.initiator}
             flex=""
           >
-            <:ally_button current_user={@current_user} user={@orb.initiator} socket={@socket} />
+            <:ally_button
+              current_user={@current_user}
+              user={@orb.initiator}
+              parent_pid={@parent_pid}
+            />
           </.user_information_card_orb>
         </div>
       </div>
@@ -55,7 +59,7 @@
           </div>
         </.link>
 
-        <div class="w-full lg:rounded-3xl">
+        <div class="w-full lg:rounded-3xl pb-5">
           <.scry_orb id="orb" orb={@orb} timezone={@timezone} show_information={false} />
           <.live_component
             module={PhosWeb.CommentLive.IndexComponent}
@@ -72,7 +76,6 @@
             live_action={@live_action}
           />
           <div
-            :if={not is_nil(@current_user)}
             class="lg:hidden block bottom-0 z-10 fixed w-full px-4 bg-white dark:bg-gray-900"
           >
             <.live_component
@@ -95,20 +98,20 @@
         <.live_component
           module={PhosWeb.Components.ScrollOrb}
           id="infinite-home"
-          orbs={@orbs}
-          page={@page}
+          data={@streams.orbs}
           timezone1={@timezone}
+          meta={@orbs}
         />
       </div>
     </div>
   </div>
   <.modal
-  :if={@live_action in [:show] and not is_nil(@media)}
-  id="orb-media-preview"
-  close_button={true}
-  show={@live_action in [:show] and not is_nil(@media)}
+    :if={@live_action in [:show] and not is_nil(@media)}
+    id="orb-media-preview"
+    close_button={true}
+    show={@live_action in [:show] and not is_nil(@media)}
   >
-  <.media_preview url={@media}/>
-</.modal>
-  <span :if={length(@orbs) < 3} class="hidden lg:block h-96 bg-gray-100"/>
+    <.media_preview url={@media} />
+  </.modal>
+  <span :if={@streams.orbs |> Enum.count() < 3} class="hidden lg:block h-96 bg-gray-100" />
 </div>

@@ -25,10 +25,10 @@ defmodule PhosWeb.UserMemoryChannelTest do
     memory = %{}
 
     push(socket, "memory", {:formation, memory})
-    assert_broadcast "memory_formation", memory
+    assert_broadcast "memory_formation", ^memory
   end
 
-  test "broadcast memory from pubsub", %{socket: socket} do
+  test "broadcast memory from pubsub", %{socket: _socket} do
     memory = %{}
 
     send(self(), {Phos.PubSub, {:memory, "event"}, memory})

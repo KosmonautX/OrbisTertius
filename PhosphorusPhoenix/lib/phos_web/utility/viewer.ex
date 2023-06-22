@@ -26,6 +26,11 @@ defmodule PhosWeb.Util.Viewer do
           %{data: PhosWeb.Util.Viewer.orb_mapper(orbs),
           links: %{history: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{entity.id}/history")}}}
 
+      {k, [%Phos.Comments.Comment{} | _] = comment} ->
+
+        Map.new([{k, %{data: PhosWeb.Util.Viewer.comment_mapper(comment)}}])
+
+
       {k , %Phos.Users.User{} = user} ->
         Map.new([{k,
                   %{data: PhosWeb.Util.Viewer.user_mapper(user),
@@ -42,7 +47,6 @@ defmodule PhosWeb.Util.Viewer do
       {k, %Phos.Message.Memory{} = memory} ->
 
         Map.new([{k, %{data: PhosWeb.Util.Viewer.memory_mapper(memory)}}])
-
 
       {k, %Phos.Users.RelationRoot{} = relation} ->
 
@@ -103,6 +107,9 @@ defmodule PhosWeb.Util.Viewer do
       confirmed_at: user.confirmed_at,
       fyr_id: user.fyr_id,
       profile: user_profile_mapper(user),
+      ally_count: user.ally_count,
+      mutual_count: user.mutual_count,
+      mutual_username: user.mutual_username,
       relationships: relationship_reducer(user),
       creationtime: DateTime.from_naive!(user.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
       mutationtime: DateTime.from_naive!(user.updated_at, "Etc/UTC") |> DateTime.to_unix(),
@@ -165,7 +172,8 @@ defmodule PhosWeb.Util.Viewer do
            profile_pic: user.public_profile.profile_pic,
            banner_pic: user.public_profile.banner_pic,
            traits: user.public_profile.traits,
-           territories: user.public_profile.territories
+           territories: user.public_profile.territories,
+           places: user.public_profile.places
         }
       }
     end)
@@ -205,7 +213,8 @@ defmodule PhosWeb.Util.Viewer do
         hash: orb.central_geohash
       },
       parent: parent_orb_mapper(orb.parent),
-      media: (if orb.media, do: S3.get_all!("ORB", orb.id, "public"))
+      media: (if orb.media, do: S3.get_all!("ORB", orb.id, "public")),
+      comment_count: orb.comment_count
     }
   end
 
@@ -232,6 +241,7 @@ defmodule PhosWeb.Util.Viewer do
   defp parent_orb_mapper(_), do: %{}
 
   ## Comment Mapper
+  def comment_mapper(comments = [%Phos.Comments.Comment{} | _]), do: Enum.map(comments, &comment_mapper/1)
   def comment_mapper(comment= %Phos.Comments.Comment{}) do
     %{
       id: comment.id,
@@ -239,6 +249,7 @@ defmodule PhosWeb.Util.Viewer do
       child_count: comment.child_count,
       body: comment.body,
       path: to_string(comment.path),
+      initiator_id: comment.initiator_id,
       parent_id: comment.parent_id,
       orb_id: comment.orb_id,
       relationships:  PhosWeb.Util.Viewer.relationship_reducer(comment),

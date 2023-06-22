@@ -34,13 +34,13 @@ defmodule Phos.MixProject do
   defp deps do
     [
       {:bcrypt_elixir, "~> 3.0"},
-      {:phoenix, "~> 1.7.0-rc.2", override: true},
+      {:phoenix, "~> 1.7.6", override: true},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.9"},
       {:postgrex, ">= 0.0.0"},
-      {:phoenix_html, "~> 3.0"},
+      {:phoenix_html, "~> 3.3"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 0.18.11"},
+      {:phoenix_live_view, "~> 0.19.2", override: true},
       {:floki, ">= 0.34.0"},
       {:phoenix_live_dashboard, "~> 0.7"},
       {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
@@ -55,7 +55,7 @@ defmodule Phos.MixProject do
       {:joken, "~> 2.5"},
       {:h3, github: "helium/erlang-h3"},
       {:libcluster, "~> 3.3"},
-      {:heroicons, "~> 0.5.0"},
+      {:heroicons, "~> 0.5.2"},
       # support aws s3
       {:ex_aws, "~> 2.3"},
       {:ex_aws_s3, "~> 2.3"},
@@ -86,8 +86,7 @@ defmodule Phos.MixProject do
       {:link_preview, github: "appunite/link_preview"},
       # comments
       {:ecto_ltree, "~> 0.3.0"},
-      {:sparrow, github: "Scratchbac/sparrow", tag: "48d5ae0"},
-
+      {:sparrow, github: "Scratchbac/sparrow", tag: "062400e"},
       #debugging
       {:rexbug, "~> 1.0"},
       {:poison, "4.0.1", override: true},
