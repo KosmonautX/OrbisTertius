@@ -14,7 +14,7 @@ config :phos, Phos.Repo,
   hostname: "localhost",
   database: "phos_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
-  pool_size: 10,
+  pool_size: 40,
   types: Phos.PostgresTypes
 
 # We don't run a server during test. If one is required,
