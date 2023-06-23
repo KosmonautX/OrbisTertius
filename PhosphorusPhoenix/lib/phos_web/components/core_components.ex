@@ -926,6 +926,7 @@ defmodule PhosWeb.CoreComponents do
     |> JS.pop_focus()
   end
 
+
   @doc """
   Translates an error message using gettext.
   """
@@ -1338,7 +1339,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:profile_img, :boolean, default: true)
   attr(:show_user, :boolean, default: true)
   attr(:show_location, :boolean, default: true)
-    attr(:dark, :boolean, default: true)
+  attr(:dark, :boolean, default: true)
 
 
   attr(:class, :string, default: nil)
@@ -1396,6 +1397,7 @@ defmodule PhosWeb.CoreComponents do
       <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}>
         <.orb_information
           id={"#{@id}-orb-info-#{@orb.id}"}
+          dark={@dark}
           title={(@orb.payload && @orb.payload.inner_title) || @orb.title}
         />
         <.orb_information
@@ -1405,6 +1407,7 @@ defmodule PhosWeb.CoreComponents do
           id={"#{@id}-scry-orb-#{@orb.id}"}
           title={@orb.payload.info}
           show_link={true}
+          dark={@dark}
         />
       </.link>
 
@@ -1423,6 +1426,7 @@ defmodule PhosWeb.CoreComponents do
         id={"#{@id}-scry-orb-#{@orb.id}"}
         orb={@orb}
         date={@timezone}
+        dark={@dark}
         show_information={@show_information}
       />
     </div>
@@ -1551,6 +1555,7 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+
   attr(:id, :string, required: true)
   attr(:orb, :map)
   attr(:timezone, :map)
@@ -1587,8 +1592,8 @@ defmodule PhosWeb.CoreComponents do
                   }
                 end
             end).()
-        |> Enum.filter(fn m -> m.resolution == "lossless" end)
-      )
+          |> Enum.filter(fn m -> m.resolution == "lossless" end)
+          |> List.wrap())
 
     ~H"""
     <div class="w-full mx-auto dark:bg-gray-900 dark:lg:bg-gray-800 bg-white flex h-screen w-full flex-col">
@@ -1599,8 +1604,7 @@ defmodule PhosWeb.CoreComponents do
           user={@orb.initiator}
           profile_img={false}
           show_padding={true}
-
->
+          dark={false}>
           <:information :if={!is_nil(@orb_location)}>
             <span class="mr-1">
               <.location type="location" class="h-8 dark:fill-teal-600"></.location>
@@ -1626,11 +1630,14 @@ defmodule PhosWeb.CoreComponents do
       <div class="w-full space-y-1 px-2 md:px-6 lg:px-4 bg-white dark:bg-gray-900 dark:lg:bg-gray-800 mb-10 lg:mb-24">
         <.orb_information
           id={"#{@id}-orb-info-#{@orb.id}"}
+          dark={false}
           title={(@orb.payload && @orb.payload.inner_title) || @orb.title}
+
         />
         <.orb_action
           id={"#{@id}-scry-orb-#{@orb.id}"}
           orb={@orb}
+          dark={false}
           date={@timezone}
           show_comment={false}
         />
@@ -1647,44 +1654,48 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  attr(:media, :any)
-  attr(:id, :string, required: true)
-  attr(:orb, :any)
+  def img_preview(assigns) do
+    index = Map.get(assigns, :index, 0)
+    media = Map.get(assigns, :media, [])
+    myself = Map.get(assigns, :myself, nil)
+    length = Enum.count(media)
 
-def img_preview(assigns) do
-  ~H"""
-  <div class="relative flex items-center">
-    <div :if={!is_nil(@media)} id={"#{@id}-carousel"}>
-      <div :for={m <- @media} class="w-full">
-        <img
-          class="max-h-full max-w-full object-contain"
-          src={m.url}
-        />
+    ~H"""
+    <div class="relative flex items-center" id={"#{@id}-carousel"}>
+      <div :if={!is_nil(@media)}>
+        <div>
+          <img
+            class="max-h-full max-w-full object-contain flex justify-center items-center"
+            src={Enum.at(media, index) |> Map.get(:url, "")}
+            loading="lazy"
+          />
+        </div>
+      </div>
+      <div
+        :if={length > 1}
+        class="absolute top-0 right-0 bottom-0 flex items-center justify-center px-2">
+        <button
+          class="p-2 rounded-full bg-gray-600 text-white"
+          phx-click="nextImage"
+          phx-value-len={length}
+          phx-target={myself}>
+          <Heroicons.chevron_right class="h-6 w-6" />
+        </button>
+      </div>
+      <div
+        :if={length > 1}
+        class="absolute top-0 left-0 bottom-0 flex items-center justify-center px-2">
+        <button
+          class="p-2 rounded-full bg-gray-600 text-white"
+          phx-click="prevImage"
+          phx-value-len={length}
+          phx-target={myself}>
+          <Heroicons.chevron_left class="h-6 w-6" />
+        </button>
       </div>
     </div>
-    <div
-      :if={length(@media) > 1}
-      class="absolute top-0 right-0 bottom-0 flex items-center justify-center px-2">
-      <button
-        class="p-2 rounded-full bg-gray-600 text-white"
-        phx-click="next"
-        phx-value-len={length(@media)}>
-        <Heroicons.chevron_right class="h-6 w-6" />
-      </button>
-    </div>
-    <div
-      :if={length(@media) > 1}
-      class="absolute top-0 left-0 bottom-0 flex items-center justify-center px-2">
-      <button
-        class="p-2 rounded-full bg-gray-600 text-white"
-        phx-click="previous"
-        phx-value-len={length(@media)}>
-        <Heroicons.chevron_left class="h-6 w-6" />
-      </button>
-    </div>
-  </div>
-  """
-end
+    """
+  end
 
 
 
@@ -1692,7 +1703,7 @@ end
   attr(:title, :string, default: "")
   attr(:class, :string, default: nil)
   attr(:username, :string)
-    attr(:dark, :boolean, default: true)
+  attr(:dark, :boolean, default: true)
 
 
   attr(:info_color, :string,
@@ -1976,7 +1987,7 @@ end
     """
   end
 
-  @doc """
+   @doc """
    Render a User_inforamtion_card in Mobile view
      ## User Profile , location, Bio , trait...
 
@@ -1988,7 +1999,7 @@ end
           flex="">
           <:ally_button current_user={@current_user} user={@orb.initiator} socket={@socket} />
         </.user_information_card>
-  """
+     """
 
   attr(:user, :map, required: true)
   attr(:flex, :any, default: nil)
