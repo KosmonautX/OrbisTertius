@@ -17,7 +17,7 @@ defmodule PhosWeb.Components.ScrollOrb do
       >
         <div :for={{dom_id, orb} <- @data} id={"orb-divided-#{dom_id}"}>
           <.scry_orb
-            id={"orb-history-#{dom_id}"}
+            id={"#{@id}-orb-history-#{dom_id}"}
             orb={orb}
             timezone={@timezone1}
             profile_img={@profile_img}

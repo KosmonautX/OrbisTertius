@@ -199,7 +199,7 @@ defmodule Phos.PlatformNotification.Global do
                  Sparrow.FCM.V1.Notification.new(:token,
                    tokens,
                    data.title, data.body,
-                   %{action_path: action_path <> "/" <> id,
+                   %{action_path: action_path <> "/#{id}",
                      cluster_id: "platform"})
                end)
                |> Enum.map(fn geonotif ->

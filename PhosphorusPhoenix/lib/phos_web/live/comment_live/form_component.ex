@@ -8,13 +8,13 @@ defmodule PhosWeb.CommentLive.FormComponent do
 
   @impl true
   def update(assigns, socket) do
-    changeset = Comments.change_comment(%Comments.Comment{})
+    IO.inspect(socket)
     {:ok,
       socket
       |> assign_new(:text, fn -> "" end)
       |> assign_new(:reply_comment, fn -> nil end)
       |> assign(assigns)
-      |> assign(changeset: changeset)}
+      |> assign_new(:changeset, fn -> Comments.change_comment(%Comments.Comment{}) end)}
   end
 
   @impl true

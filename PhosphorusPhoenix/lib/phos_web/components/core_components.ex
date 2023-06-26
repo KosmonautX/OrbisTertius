@@ -477,7 +477,7 @@ defmodule PhosWeb.CoreComponents do
         rows="1"
         id={@id || @name}
         name={@name}
-        class="peer block w-full appearance-none border-0  bg-transparent px-0 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-0 dark:text-white"
+        class={[input_border(@errors), "peer block w-full border-0 appearance-none bg-transparent px-0 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-0 dark:text-white"]}
         {@rest}
       >
     <%= @value %></textarea>
@@ -511,7 +511,7 @@ defmodule PhosWeb.CoreComponents do
     do: "border-zinc-300 focus:border-zinc-400 focus:ring-zinc-800/5"
 
   defp input_border([_ | _] = _errors),
-    do: "border-rose-400 focus:border-rose-400 focus:ring-rose-400/10"
+    do: "placeholder-rose-300 border-rose-400 focus:border-rose-400 focus:ring-rose-400/10"
 
   @doc """
   Renders a label.
@@ -1854,7 +1854,7 @@ defmodule PhosWeb.CoreComponents do
         "lg:dark:bg-gray-800 dark:bg-gray-900 lg:bg-white w-full lg:text-sm text-xs px-2 p-2 lg:mt-0 font-poppins",
         @class]}>
       <span class="dark:text-white text-black"><%= get_date(@orb.inserted_at, @date) %></span>
-      <div id={"#{@id}-actions"} class="flex justify-between mt-1 mb-1">
+      <div id={"#{@id}-actions-bar"} class="flex justify-between mt-1 mb-1">
         <button class="text-center inline-flex items-center ">
           <.save type="save" class="dark:fill-white w-5 h-5" />
         </button>

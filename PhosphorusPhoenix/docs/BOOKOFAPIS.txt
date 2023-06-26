@@ -41,7 +41,7 @@ Content-Type: application/json
 User-Agent: Emacs27
 ##
 ## Generate Client-side JWT
-GET :localipAddress/devland/flameon?user=:antoine_id
+GET :localipAddress/devland/flameon?user=:lky_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
@@ -194,7 +194,7 @@ PUT :ipAddress/userland/self/beacon
         "location": {
           "scope": true
           }
-          }
+    }
 }
 
 ## ! Folkland Calls
@@ -217,7 +217,7 @@ GET :ipAddress/folkland/stream/discovery/614510498785787903,614510497487650815?p
 :auth-headers
 
 ## Show Relation Resource
-GET :ipAddress/folkland/friends/7dcd842a-8d07-4407-8ca4-6346d54b0f86
+GET :ipAddress/folkland/friends/271e111a-8146-45a4-bf34-954fa7e8a744
 -> run-hook (restclient-set-var ":rel" (cdr (assq 'relation_id (assq 'data (json-read)))))
 :auth-headers
 

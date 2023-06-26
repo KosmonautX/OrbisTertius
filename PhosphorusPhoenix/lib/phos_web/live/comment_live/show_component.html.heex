@@ -24,6 +24,12 @@
               <%= PhosWeb.Util.DOMParser.extract_html_from_md(elem(@comment, 1).body) %>
             </span>
           </p>
+
+          <div :if={not elem(@comment, 1).active}>
+            <p class="font-light text-[#000000] dark:text-white">
+            --Comment deleted--
+            </p>
+          </div>
         </div>
         <div>
           <Heroicons.ellipsis_horizontal class="lg:h-8 lg:w-8 h-6 w-6 hover:text-gray-300 dark:text-white text-gray-900 font-semibold -mt-2" />
@@ -49,6 +55,29 @@
         </p>
       </div>
 
+      <div :if={not is_nil(@current_user)} class="text-xs font-poppins">
+        <p class="font-medium text-[#687684] hover:text-gray-400 hover:underline mr-6">
+        <.link
+          :if={elem(@comment, 1).active and elem(@comment, 1).initiator_id == @current_user.id}
+          href="#edit"
+          phx-click="edit-comment"
+          phx-value-comment-id={elem(@comment, 1).id}
+          phx-target={"#comment-#{elem(@comment, 1).id}"}
+        >
+          Edit
+        </.link>
+        </p>
+        <p class="font-medium text-[#687684] hover:text-gray-400 hover:underline mr-6" >
+        <.link
+          :if={elem(@comment, 1).active and elem(@comment, 1).initiator_id == @current_user.id}
+          phx-click={JS.push("delete", value: %{id: elem(@comment, 1).id})}
+          data-confirm="Are you sure?"
+        >
+          Delete
+        </.link>
+        </p>
+      </div>
+
       <.live_component
         :if={not is_nil(@edit_comment)}
         module={PhosWeb.CommentLive.FormComponent}
@@ -63,12 +92,6 @@
         id={"edit-comment-#{elem(@comment, 1).id}"}
         action={:edit}
       />
-
-      <div :if={not elem(@comment, 1).active}>
-        <p class="text-sm text-gray-500 font-medium ml-2 dark:text-gray-400">
-          --Comment deleted--
-        </p>
-      </div>
     </div>
   </div>
 

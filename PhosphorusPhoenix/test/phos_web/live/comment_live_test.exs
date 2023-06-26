@@ -54,7 +54,7 @@ defmodule PhosWeb.CommentLiveTest do
         |> form("#create-root-comment-#{orb.id}", comment: @invalid_attrs)
         |> render_submit()
 
-      assert view =~ "border-rose-400"
+      assert view =~ "placeholder-rose-300"
     end
 
     test "edit comment", %{conn: conn, orb: orb, user: user} do
@@ -87,7 +87,7 @@ defmodule PhosWeb.CommentLiveTest do
       comment = CommentsFixtures.comment_fixture(%{orb_id: orb.id, initiator_id: user.id})
 
       {:ok, index_live, _html} = live(conn, ~p"/orb/#{orb.id}")
-      assert index_live |> element("#comment-#{comment.id} a", "Reply") |> render_click() =~
+      assert index_live |> element("#comment-#{comment.id} a", "reply") |> render_click() =~
       "reply"
 
       index_live
@@ -111,7 +111,7 @@ defmodule PhosWeb.CommentLiveTest do
 
       assert html =~ root_comment.body
 
-      new_html = index_live |> element("#initshowreply-#{root_comment.id} a", "View replies [1]") |> render_click()
+      new_html = index_live |> element("#initshowreply-#{root_comment.id} a", "View replies[1]") |> render_click()
       assert new_html =~ second_level_comment.body
     end
   end

@@ -1,15 +1,24 @@
 defmodule PhosWeb.Components.CropUploadInput do
   use PhosWeb, :live_component
 
+  defp random_id, do: Enum.random(1..1_000_000)
+
+
+  def update(assigns, socket) do
+    {:ok, assign(socket,
+        id: assigns.id,
+        uploaded: assigns.uploads)}
+  end
+
   def render(assigns) do
     ~H"""
     <div id={@id}>
-      <%= for entry <- @uploads.image.entries do %>
+      <%= for entry <- @uploaded.image.entries do %>
         <.modal
-          id={@id <> "-modal"}
+          id={@id <> "-modal-#{random_id()}"}
           show={true}
-          on_cancel={JS.push("close-modal")}
-          on_confirm={JS.push("close-and-select")}
+          on_cancel={JS.push("close-modal", target: @myself)}
+          on_confirm={JS.push("close-and-select", target: @myself)}
         >
           <:title>Crop Image</:title>
           <article class="upload-entry">
@@ -29,13 +38,13 @@ defmodule PhosWeb.Components.CropUploadInput do
               &times;
             </button>
                 <%!-- Phoenix.Component.upload_errors/2 returns a list of error atoms --%>
-            <%= for err <- upload_errors(@uploads.image, entry) do %>
+            <%= for err <- upload_errors(@uploaded.image, entry) do %>
               <p class="alert alert-danger"><%= error_to_string(err) %></p>
             <% end %>
 
           </article>
 
-          <%= for err <- upload_errors(@uploads.image) do %>
+          <%= for err <- upload_errors(@uploaded.image) do %>
             <p class="alert alert-danger"><%= error_to_string(err) %></p>
           <% end %>
 
@@ -45,6 +54,9 @@ defmodule PhosWeb.Components.CropUploadInput do
     </div>
     """
   end
+
+  def handle_event("close-modal", _, socket), do: {:noreply, assign(socket, show_modal: false)}
+
 
   defp error_to_string(:too_large), do: "Image too large choose another one"
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"

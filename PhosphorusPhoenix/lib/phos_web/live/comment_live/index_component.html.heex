@@ -1,6 +1,6 @@
 <div class="w-full bg-white px-2 mt-2 lg:mt-0 lg:rounded-b-3xl dark:bg-gray-900 lg:dark:bg-gray-800 font-poppins">
-  <h2 class="text-gray-900 font-normal lg:text-base text-sm dark:text-white ml-2 lg:hidden block">
-    commented by <strong>topusername</strong> and <strong>others</strong>
+  <h2 :if={length(@root_comments) > 1} class="text-gray-900 font-normal lg:text-base text-sm dark:text-white ml-2 lg:hidden block">
+    commented by <strong><%= elem(hd(@root_comments), 1).initiator.username %> </strong> and <strong>others</strong>
   </h2>
 
   <div class="hidden lg:block">
@@ -17,7 +17,7 @@
 
   <div class="ui threaded comments overflow-y-auto h-full lg:rounded-b-3xl mb-14 lg:mb-0">
     <.live_component
-      :for={comment <- filter_root_comments_chrono(@comments)}
+      :for={comment <- @root_comments}
       module={PhosWeb.CommentLive.ShowComponent}
       comment={comment}
       comments={@comments}

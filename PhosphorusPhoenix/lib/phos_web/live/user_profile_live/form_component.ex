@@ -8,11 +8,17 @@ defmodule PhosWeb.UserProfileLive.FormComponent do
     changeset = Users.change_user(user)
 
     {:ok,
-     socket
-     |> assign(assigns)
-     |> assign(:changeset, changeset)
-     |> assign(:uploaded_files, [])
-     |> allow_upload(:image, accept: ~w(.jpg .jpeg .png), max_entries: 1, max_file_size: 8_888_888)}
+      socket
+      |> assign(assigns)
+      |> assign(:changeset, changeset)
+      |> assign(:uploaded_files, [])
+      |> assign(:crop_image, false)
+      |> allow_upload(:image, accept: ~w(.jpg .jpeg .png .gif), max_entries: 1, max_file_size: 8888888)}
+  end
+
+  @impl true
+  def handle_event("validate", %{"_target" => ["image"]}, socket) do
+    {:noreply, assign(socket, :crop_image, true)}
   end
 
   @impl true
@@ -21,8 +27,10 @@ defmodule PhosWeb.UserProfileLive.FormComponent do
       socket.assigns.user
       |> Users.change_user(profile_params)
       |> Map.put(:action, :validate)
-
-    {:noreply, assign(socket, :changeset, changeset)}
+    {:noreply,
+     socket
+     |> assign(:changeset, changeset)
+     |> assign(:crop_image, false)}
   end
 
   def handle_event("save", %{"user" => profile_params}, socket) do
