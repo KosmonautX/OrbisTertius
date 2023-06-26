@@ -264,7 +264,7 @@ end
 
 ```elixir
 token =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmeXJfaWQiOiJCWDFCeE05S2t3ZEZteTJKNEZOTmtGeGNscFMyIiwidGVycml0b3J5Ijp7ImhvbWUiOnsiaGFzaCI6NjI4MDIxMjk3NjY2MjI0MTI3LCJyYWRpdXMiOjE2NjU4MzA5NTV9LCJ3b3JrIjp7Imhhc2giOjYyNzk4NjQ0Njk1MjM0OTY5NSwicmFkaXVzIjoxNjY1ODMwOTU1fX0sInVzZXJfaWQiOiJiMmY4YmU3OC1jZjA5LTRkZGItYWE2Ny0xODU2NDI1Yzc1Y2YiLCJ1c2VybmFtZSI6InNva2thIiwiZXhwIjoxNjY2MjQxMTMzLCJpYXQiOjE2NjYyMzk5MjEsImlzcyI6IlByaW5jZXRvbiIsInJvbGUiOiJwbGViIiwic3ViIjoiU2NyYXRjaEJhYyJ9.kCiPpjPBcWMRwpAhS-dNlCiK3yAR2MRxziR-nx4npzI"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmeXJfaWQiOiJkMXdreVFkNEJpUzlSenZwUURSTDgybGY3WnIxIiwidGVycml0b3J5Ijp7ImhvbWUiOnsiaGFzaCI6NjI4MDIxMjk3NjY2MjI0MTI3LCJyYWRpdXMiOjE2ODQ5OTIzNzN9LCJsaXZlIjp7Imhhc2giOjYyNzc3OTQxMjUyMDE3NzY2MywicmFkaXVzIjoxNjg0OTkyMzczfX0sInVzZXJfaWQiOiIzZDUzNDU0Ny1lZWQyLTRhYjItYWNjOC1lYmYwYWUwM2FhYTUiLCJ1c2VybmFtZSI6ImRlZXh1cGVyeSIsImV4cCI6MTY4NjY2MDk5NSwiaWF0IjoxNjg2NjU5NzgzLCJpc3MiOiJQcmluY2V0b24iLCJyb2xlIjoicGxlYiIsInN1YiI6IlNjcmF0Y2hCYWMifQ.8mkg3m7bX83PymJ-kGQtqF91wJxXzNpk8KUIFjGdlaw"
 
 # @domain "wss://nyx.scrb.ac"
 domain = "ws://localhost:4000"
@@ -288,6 +288,10 @@ message = %{
 }
 
 GenServer.call(pid, {:shout, message})
+```
+
+```elixir
+
 ```
 
 ## Cleaning up

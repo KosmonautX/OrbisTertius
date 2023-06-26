@@ -53,6 +53,11 @@ defmodule PhosWeb.Util.Viewer do
         Map.new([{k, %{data: %{PhosWeb.Util.Viewer.user_relation_mapper(relation) | self_initiated: relation.initiator_id != entity.id},
             links: %{self: path(PhosWeb.Endpoint, Router, ~p"/api/folkland/others/#{relation.initiator_id}")}}}])
 
+      {:mutual , user} when is_map(user) ->
+        Map.new([{:mutual,
+                  %{data: PhosWeb.Util.Viewer.user_mapper(user),
+                    links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{user.id}")}}}])
+
       _ -> %{}
 
     end
@@ -109,7 +114,6 @@ defmodule PhosWeb.Util.Viewer do
       profile: user_profile_mapper(user),
       ally_count: user.ally_count,
       mutual_count: user.mutual_count,
-      mutual_username: user.mutual_username,
       relationships: relationship_reducer(user),
       creationtime: DateTime.from_naive!(user.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
       mutationtime: DateTime.from_naive!(user.updated_at, "Etc/UTC") |> DateTime.to_unix(),
