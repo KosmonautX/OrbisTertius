@@ -769,4 +769,13 @@ defmodule Phos.Action do
       action_path: "/orbland/orbs/#{orb.id}",
       cluster_id: "folk_orb")
   end
+
+  def search(search_term) do
+    query =
+      from o in Orb,
+        where: fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^search_term),
+        or_where: fragment("to_tsvector(?, title) @@ websearch_to_tsquery(?, ?)", "english", "english", ^search_term)
+
+    Repo.all(query)
+  end
 end
