@@ -142,6 +142,41 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+ attr(:show, :boolean, default: false)
+ attr(:id, :string, required: true)
+
+  def orb_modal(assigns) do
+   ~H"""
+   <div class="fixed right-0 top-0 z-50 w-44">
+    <div class="h-full w-44 list-none rounded-2xl bg-white text-base shadow-lg dark:bg-gray-700">
+     <ul class="space-y-3 p-4 px-2">
+       <li class="flex gap-4 hover:bg-gray-100 dark:hover:bg-gray-600">
+         <Heroicons.bookmark class="h-5 w-5 text-gray-600 dark:text-white" />
+         <a href="#" class="text-sm text-gray-600 dark:text-gray-200 dark:hover:text-white">Pin</a>
+       </li>
+       <li class="flex gap-4 hover:bg-gray-100 dark:hover:bg-gray-600">
+         <Heroicons.bookmark-slash class="h-5 w-5 text-gray-600 dark:text-white" />
+         <a href="#" class="text-sm text-gray-600 dark:text-gray-200 dark:hover:text-white">Unpin</a>
+       </li>
+       <li class="flex gap-4 hover:bg-gray-100 dark:hover:bg-gray-600">
+         <Heroicons.x-mark class="h-5 w-5 text-gray-600 dark:text-white" />
+         <a href="#" class="text-sm text-gray-600 dark:text-gray-200 dark:hover:text-white">Deactivate</a>
+       </li>
+       <li class="flex gap-4 hover:bg-gray-100 dark:hover:bg-gray-600">
+         <Heroicons.check class="h-5 w-5 text-gray-600 dark:text-white" />
+         <a href="#" class="text-sm text-gray-600 dark:text-gray-200 dark:hover:text-white">Activate</a>
+       </li>
+       <li class="flex gap-4 hover:bg-gray-100 dark:hover:bg-gray-600">
+         <Heroicons.no-symbol class="h-5 w-5 text-gray-600 dark:text-white" />
+         <a href="#" class="text-sm text-gray-600 dark:text-gray-200 dark:hover:text-white">Destroy Post</a>
+       </li>
+      </ul>
+    </div>
+   </div>
+   """
+  end
+
+
   @doc """
   Renders flash notices.
 
@@ -227,16 +262,13 @@ defmodule PhosWeb.CoreComponents do
     default: nil,
     doc: "the server side parameter to collect all input under"
   )
-
+  attr(:color, :boolean, default: true)
   attr(:class, :string, default: nil, doc: "simple form class overide")
-
   attr(:rest, :global,
     include: ~w(autocomplete name rel action enctype method novalidate target),
     doc: "the arbitrary HTML attributes to apply to the form tag"
   )
-
   slot(:inner_block, required: true)
-
   slot(:actions, doc: "the slot for form actions, such as a submit button") do
     attr(:classes, :string, doc: "simple form class overide")
   end
@@ -244,10 +276,9 @@ defmodule PhosWeb.CoreComponents do
   def simple_form(assigns) do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
-      <div class={[
-        "bg-white font-poppins dark:bg-gray-900 lg:dark:bg-gray-800 w-full space-y-4",
-        @class
-      ]}>
+      <div class={[@color == false && "lg:dark:bg-gray-900 dark:bg-gray-800 bg-[#F3F4F8]",
+      "bg-white font-poppins dark:bg-gray-900 lg:dark:bg-gray-800 w-full space-y-4",
+      @class]}>
         <%= render_slot(@inner_block, f) %>
         <div :for={action <- @actions} class={"#{Map.get(action, :classes, "")}"}>
           <%= render_slot(action, f) %>
@@ -1249,6 +1280,28 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  attr(:action, :atom)
+  attr(:id, :string)
+
+  def tab_orb(assigns) do
+    ~H"""
+      <div class="mx-auto w-full py-4 lg:hidden block">
+         <div class="absolute inset-x-2 flex items-end justify-end">
+          <Heroicons.bell class="h-6 w-6  text-gray-700 dark:text-white font-semibold" />
+         </div>
+        <div class="flex">
+          <div class="flex flex-1 items-center justify-center">
+            <ul class="flex list-none flex-row flex-wrap gap-8 font-semibold text-base	dark:text-[#D1D1D1] text-[#{404252}]">
+             <li class="flex-auto text-center">PPL</li>
+             <li class="flex-auto text-center">AROUND</li>
+             <li class="flex-auto text-center">FLLW</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    """
+  end
+
   @doc """
   Render the user info bar is collect the user details
 
@@ -1271,7 +1324,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:show_padding, :boolean, default: true)
   attr(:profile_img, :boolean, default: true)
   attr(:show_user, :boolean, default: true)
-  attr(:dark, :boolean, default: true)
+  attr(:color, :boolean, default: true)
   attr(:show_location, :boolean, default: true)
   attr(:user, :any)
   slot(:actions)
@@ -1284,8 +1337,8 @@ defmodule PhosWeb.CoreComponents do
        class={[
         @show_padding == false && "lg:px-4",
         @show_padding == true && "lg:px-2",
-        @dark == true && "lg:dark:bg-gray-900",
-        "w-full bg-white lg:py-2 py-4 flex items-center justify-between lg:dark:bg-gray-800 dark:bg-gray-900 px-2 font-poppins",
+        @color == true && "lg:dark:bg-gray-900 dark:bg-gray-800 bg-[#F3F4F8]",
+        "lg:dark:bg-gray-800 dark:bg-gray-900 lg:bg-white w-full  lg:py-2 py-4 flex items-center justify-between  px-2 font-poppins",
         @class
       ]}
     >
@@ -1294,7 +1347,7 @@ defmodule PhosWeb.CoreComponents do
           :if={@user.username}
           navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}
           class="flex shrink-0"
-        >
+>
           <img
             src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossy")}
              class={[
@@ -1339,7 +1392,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:profile_img, :boolean, default: true)
   attr(:show_user, :boolean, default: true)
   attr(:show_location, :boolean, default: true)
-  attr(:dark, :boolean, default: true)
+  attr(:color, :boolean, default: true)
 
 
   attr(:class, :string, default: nil)
@@ -1381,7 +1434,7 @@ defmodule PhosWeb.CoreComponents do
 
     ~H"""
     <div class="w-full lg:px-0 px-3">
-      <.user_info_bar class="lg:rounded-t-3xl" id={"#{@id}-scry-orb-#{@orb.id}"} user={@orb.initiator} show_padding={@show_padding} profile_img={@profile_img} show_user={@show_user} show_location={@show_location} dark={@dark}>
+      <.user_info_bar class="rounded-t-3xl" id={"#{@id}-scry-orb-#{@orb.id}"} user={@orb.initiator} show_padding={@show_padding} profile_img={@profile_img} show_user={@show_user} show_location={@show_location} color={@color}>
         <:information :if={!is_nil(@orb_location)}>
           <span class="mr-1">
             <.location type="location" class="h-8 dark:fill-teal-600"></.location>
@@ -1389,7 +1442,7 @@ defmodule PhosWeb.CoreComponents do
           <%= @orb_location %>
         </:information>
         <:actions>
-          <Heroicons.ellipsis_horizontal class="lg:h-8 lg:w-8 h-6 w-6 hover:text-gray-300 dark:text-white text-gray-900 font-semibold" />
+          <Heroicons.ellipsis_horizontal phx-click={show_modal("orb_modal")} class="lg:h-8 lg:w-8 h-6 w-6 hover:text-gray-300 dark:text-white text-gray-900 font-semibold" />
           <%= render_slot(@user_action) %>
         </:actions>
       </.user_info_bar>
@@ -1397,7 +1450,7 @@ defmodule PhosWeb.CoreComponents do
       <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}>
         <.orb_information
           id={"#{@id}-orb-info-#{@orb.id}"}
-          dark={@dark}
+          color={@color}
           title={(@orb.payload && @orb.payload.inner_title) || @orb.title}
         />
         <.orb_information
@@ -1407,7 +1460,7 @@ defmodule PhosWeb.CoreComponents do
           id={"#{@id}-scry-orb-#{@orb.id}"}
           title={@orb.payload.info}
           show_link={true}
-          dark={@dark}
+          color={@color}
         />
       </.link>
 
@@ -1420,13 +1473,14 @@ defmodule PhosWeb.CoreComponents do
         orb={@orb}
         timezone={@timezone}
         media={@media}
+        color={@color}
       />
 
       <.orb_action
         id={"#{@id}-scry-orb-#{@orb.id}"}
         orb={@orb}
         date={@timezone}
-        dark={@dark}
+        color={@color}
         show_information={@show_information}
       />
     </div>
@@ -1445,9 +1499,10 @@ defmodule PhosWeb.CoreComponents do
   attr(:orb, :any)
   attr(:timezone, :string)
   attr(:show_comment, :boolean, default: true)
+  attr(:color, :boolean, default: true)
   attr(:show_media, :boolean, default: true)
-  attr(:img_size, :string, default: "h-96 lg:rounded-none rounded-3xl px-1 lg:px-0 object-cover")
-  attr(:video_size, :string, default: "h-96 lg:rounded-none rounded-3xl px-1 lg:px-0 object-cover")
+  attr(:img_size, :string, default: "h-96 lg:rounded-none rounded-[25px] px-2 lg:px-0 object-cover")
+  attr(:video_size, :string, default: "h-96 lg:rounded-none rounded-[25px] px-2 lg:px-0 object-cover")
   attr(:media, :any)
 
   def media_carousel(assigns) do
@@ -1462,7 +1517,9 @@ defmodule PhosWeb.CoreComponents do
         <div id={"#{@id}-container"} data-glide-el="track" class="glide__track w-full">
           <div class="glide__slides">
             <div :for={m <- @media} class="glide__slide">
-              <div class="relative">
+              <div class={[
+                @color == true && "lg:dark:bg-gray-900 dark:bg-gray-800 bg-[#F3F4F8]",
+                "lg:dark:bg-gray-800 dark:bg-gray-900 lg:bg-white relative"]}>
                 <.link
                   class="relative"
                   navigate={
@@ -1604,7 +1661,7 @@ defmodule PhosWeb.CoreComponents do
           user={@orb.initiator}
           profile_img={false}
           show_padding={true}
-          dark={false}>
+          color={false}>
           <:information :if={!is_nil(@orb_location)}>
             <span class="mr-1">
               <.location type="location" class="h-8 dark:fill-teal-600"></.location>
@@ -1630,14 +1687,14 @@ defmodule PhosWeb.CoreComponents do
       <div class="w-full space-y-1 px-2 md:px-6 lg:px-4 bg-white dark:bg-gray-900 dark:lg:bg-gray-800 mb-10 lg:mb-24">
         <.orb_information
           id={"#{@id}-orb-info-#{@orb.id}"}
-          dark={false}
+          color={false}
           title={(@orb.payload && @orb.payload.inner_title) || @orb.title}
 
         />
         <.orb_action
           id={"#{@id}-scry-orb-#{@orb.id}"}
           orb={@orb}
-          dark={false}
+          color={false}
           date={@timezone}
           show_comment={false}
         />
@@ -1697,15 +1754,11 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-
-
   attr(:id, :string, required: true)
   attr(:title, :string, default: "")
   attr(:class, :string, default: nil)
   attr(:username, :string)
-  attr(:dark, :boolean, default: true)
-
-
+  attr(:color, :boolean, default: true)
   attr(:info_color, :string,
     default:
       "prose-zinc text-gray-600 w-full bg-white lg:dark:bg-gray-800  dark:bg-gray-900 prose-a:text-teal-400 dark:prose-a:text-white prose-a:underline dark:prose-a:underline dark:decoration-white decoration-teal-500 decoration-2"
@@ -1726,8 +1779,8 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <div class={[
       @class,
-       @dark == true && "lg:dark:bg-gray-900",
-      "px-2 py-1 font-poppins break-words lg:dark:bg-gray-800 dark:bg-gray-900",
+      @color == true && "lg:dark:bg-gray-900 dark:bg-gray-800 bg-[#F3F4F8]",
+      "px-2 py-1 font-poppins break-words lg:dark:bg-gray-800 dark:bg-gray-900 lg:bg-white",
       @info_color
     ]}>
 
@@ -1786,7 +1839,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:class, :string, default: nil)
   attr(:show_comment, :boolean, default: true)
   attr(:show_information, :boolean, default: true)
-  attr(:dark, :boolean, default: true)
+  attr(:color, :boolean, default: true)
 
 
   # TODO orb_actions wiring with data
@@ -1797,11 +1850,9 @@ defmodule PhosWeb.CoreComponents do
       class={[
         @show_information == false && "lg:rounded-b-3xl",
         @show_information == true && "rounded-none",
-        @dark == true && "lg:dark:bg-gray-900",
-        "w-full lg:text-sm text-xs px-2 p-2 mt-1.5 lg:mt-0 font-poppins bg-white lg:dark:bg-gray-800 dark:bg-gray-900",
-        @class
-      ]}
-    >
+        @color == true && "lg:dark:bg-gray-900 dark:bg-gray-800 bg-[#F3F4F8]",
+        "lg:dark:bg-gray-800 dark:bg-gray-900 lg:bg-white w-full lg:text-sm text-xs px-2 p-2 lg:mt-0 font-poppins",
+        @class]}>
       <span class="dark:text-white text-black"><%= get_date(@orb.inserted_at, @date) %></span>
       <div id={"#{@id}-actions"} class="flex justify-between mt-1 mb-1">
         <button class="text-center inline-flex items-center ">
@@ -2364,8 +2415,7 @@ defmodule PhosWeb.CoreComponents do
     <div
       id={@id}
       phx-mounted={@show && show_modal(@id)}
-      class="relative z-50 hidden fixed inset-0 w-full h-screen mx-auto"
-    >
+      class="relative z-50 hidden fixed inset-0 w-full h-screen mx-auto">
       <div id={"#{@id}-bg"} class="fixed inset-0 bg-zinc-50/90 transition-opacity" aria-hidden="true" />
       <div class="fixed inset-0 overflow-y-auto" role="dialog" aria-modal="true" tabindex="0">
         <div class="w-full flex items-center justify-center">
@@ -2375,20 +2425,18 @@ defmodule PhosWeb.CoreComponents do
             phx-window-keydown={hide_modal(@on_cancel, @id)}
             phx-key="escape"
             phx-click-away={hide_modal(@on_cancel, @id)}
-            class="hidden relative shadow-zinc-700/10 ring-1 ring-zinc-700/10 transition dark:bg-gray-900 dark:lg:bg-gray-800 bg-white"
-          >
+            class="hidden relative shadow-zinc-700/10 ring-1 ring-zinc-700/10 transition dark:bg-gray-900 dark:lg:bg-gray-800 bg-white">
             <div :if={@close_button} class="absolute top-4 right-4 lg:top-6 lg:right-6">
               <button
                 phx-click={hide_modal(@on_cancel, @id)}
                 type="button"
                 class="-m-3 flex-none p-3 hover:opacity-40"
-                aria-label={gettext("close")}
-              >
+                aria-label={gettext("close")}>
                 <Heroicons.x_mark solid class="h-5 w-5 stroke-current dark:text-white" />
               </button>
             </div>
             <div id={"#{@id}-content"}>
-              <header :if={@title != []} class="p-2 pb-3">
+              <header :if={@title != []} class="p-2">
                 <h1
                   id={"#{@id}-title"}
                   class="text-lg font-semibold leading-8 text-zinc-800 dark:text-white text-center"

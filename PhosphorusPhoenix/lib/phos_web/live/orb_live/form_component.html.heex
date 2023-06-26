@@ -1,5 +1,5 @@
 <div>
-  <h2 class="text-2xl font-bold mt-6"><%= @title %></h2>
+  <h2 class="text-2xl font-bold mt-3 ml-3 text-gray-700 dark:text-white"><%= @title %></h2>
 
   <section phx-drop-target={@uploads.image.ref}>
     <.simple_form
@@ -9,49 +9,26 @@
       phx-target={@myself}
       phx-change="validate"
       phx-submit="save"
-    >
+      class="px-4 w-full">
       <.input field={{f, :title}} label="Title" required={true} />
       <.input field={{f, :active}} type="hidden" value="true" />
       <.input field={{f, :media}} type="hidden" />
       <.input field={{f, :source}} type="hidden" value="web" />
       <.input field={{f, :initiator_id}} type="hidden" value={@current_user.id} />
-      <.input
-        field={{f, :extinguish}}
-        type="datetime-local"
-        label="Extinguish"
-        value="2023-06-01T08:30"
-      />
-      <.input
-        field={{f, :radius}}
-        type="select"
-        label="Extinguish"
-        options={["2km": 8, "1km": 9, "500m": 10]}
-        value={10}
-      />
-      <.input
-        :if={not is_nil(@addresses)}
-        field={{f, :location}}
-        type="select"
-        options={Map.keys(@addresses)}
-        value={:live}
-      />
-      <.input
-        field={{f, :traits}}
-        type="select"
-        multiple={true}
-        label="Traits"
-        options={[Pinned: "pin", "Treasure Hunt": "treasurehunt", Music: "music"]}
-        value="treasurehunt"
-      />
-
+      <.input field={{f, :extinguish}} type="datetime-local" label="Extinguish" value="2023-06-01T08:30"/>
+      <.input field={{f, :radius}} type="select" label="Extinguish" options={["2km": 8, "1km": 9, "500m": 10]}
+        value={10}/>
+      <.input :if={not is_nil(@addresses)} field={{f, :location}} type="select" options={Map.keys(@addresses)}
+        value={:live}/>
+      <.input field={{f, :traits}} type="select" multiple={true} label="Traits"
+        options={[Pinned: "pin", "Treasure Hunt": "treasurehunt", Music: "music"]} value="treasurehunt"/>
       <%= inputs_for f, :payload, fn ff -> %>
         <.input field={{ff, :when}} label="When" />
         <.input field={{ff, :where}} label="Where" />
         <.input field={{ff, :tip}} label="Tip" />
         <.input field={{ff, :inner_title}} label="Inner Title" />
-        <.input type="textarea" field={{ff, :info}} label="Info" />
+        <.input field={{ff, :info}} label="Info" />
       <% end %>
-
       <.input field={{f, :media}} type="hidden" />
       <%= label(f, :past_image) %>
       <%= if @orb.media do %>
@@ -66,15 +43,12 @@
                   <.live_img_preview entry={entry} />
                   <figcaption><%= entry.client_name %></figcaption>
                 </figure>
-
                 <progress value={entry.progress} max="100"><%= entry.progress %>%</progress>
-
                 <button
                   type="button"
                   phx-click="cancel-upload"
                   phx-value-ref={entry.ref}
-                  aria-label="cancel"
-                >
+                  aria-label="cancel">
                   &times;
                 </button>
 

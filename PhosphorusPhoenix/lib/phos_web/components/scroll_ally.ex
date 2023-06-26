@@ -19,6 +19,7 @@ defmodule PhosWeb.Components.ScrollAlly do
           :if={!is_nil(Map.get(ally, :username))}
           id={"user-#{dom_id}-infobar"}
           user={ally}
+          show_user={false}
           show_padding={false}
           dark={false}
           class="dark:bg-gray-900 lg:bg-[#F9F9F9] bg-white lg:px-0">

@@ -59,7 +59,6 @@
             </span>
           </div>
         </.link>
-        <!--Main Orb in Mobile View and Desktop View-->
         <div class="w-full lg:px-0 md:px-10">
           <div class="w-full lg:rounded-3xl pb-5 ">
             <.scry_orb
@@ -71,7 +70,7 @@
               profile_img={false}
               show_user={true}
               show_location={false}
-              dark={false}
+              color={false}
               class="bg-white"
             />
             <.live_component
@@ -88,8 +87,10 @@
               socket={@socket}
               live_action={@live_action}
             />
-            <div class="lg:hidden block bottom-0 fixed w-full mx-auto bg-white dark:bg-gray-900">
-              <hr class="border md:hidden block dark:border-white" />
+          </div>
+        </div>
+         <div class="lg:hidden block bottom-0 fixed w-full mx-auto bg-white dark:bg-gray-900 md:px-10 px-0">
+              <hr class="border dark:border-white" />
               <.live_component
                 module={PhosWeb.CommentLive.FormComponent}
                 changeset={@changeset}
@@ -98,10 +99,9 @@
                 id={"create-root-comment-#{@orb.id}"}
                 target={nil}
                 action={:new}
+                color={true}
               />
-            </div>
-          </div>
-        </div>
+         </div>
       </div>
       <!--Desktop Related Post-->
       <div class="hidden lg:block w-full lg:w-[26rem]  lg:flex-none">
@@ -113,7 +113,7 @@
           id="infinite-home"
           data={@streams.orbs}
           timezone1={@timezone}
-          dark={false}
+          color={false}
           profile_img={true}
           show_user={false}
           meta={@orbs}

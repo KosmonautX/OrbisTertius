@@ -127,6 +127,15 @@
   /*outline: 1px solid slategrey;*/
 }
 
+.tab-active::after {
+  content: "";
+  display: block;
+  height: 3px;
+  background-color: #000; /* Replace with your desired underline color */
+  margin-top: -3px;
+}
+
+
 @keyframes fade-in-scale-keys {
   0% {
     scale: 0.95;

@@ -20,7 +20,8 @@ defmodule PhosWeb.OrbLive.Index do
     {:noreply,
      socket
      |> assign(:params, params)
-     |> apply_action(socket.assigns.live_action, params)}
+     |> apply_action(socket.assigns.live_action, params)
+    }
   end
 
   defp apply_action(socket, :sethome, _params) do
@@ -216,4 +217,5 @@ defmodule PhosWeb.OrbLive.Index do
   defp location_fetcher(value, geolocation) do
     value |> Enum.reduce([], fn hash, _acc -> geolocation[hash] end)
   end
+
 end

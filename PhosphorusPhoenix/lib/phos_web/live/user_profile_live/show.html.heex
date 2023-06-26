@@ -70,7 +70,7 @@
     </.user_information_card>
   </div>
 
-  <div class="lg:hidden block sticky top-[311px] z-10 bg-white w-full items-center justitruefy-center ">
+  <div class="lg:hidden block sticky top-[311px] z-10 bg-white w-full items-center justify-center ">
     <.tabs_profile id="orb-user-tabs-profile" action={@live_action} username={@user.username} />
   </div>
 
@@ -80,8 +80,7 @@
     </h5>
     <p
       :if={@streams.orbs |> Enum.count() == 0}
-      class="w-full mx-auto text-center py-6 text-gray-600 font-medium lg:text-base text-sm dark:text-white"
-    >
+      class="w-full mx-auto text-center py-6 text-gray-600 font-medium lg:text-base text-sm dark:text-white">
       <%= "#{@user.username} has no post yet" %>
     </p>
 
@@ -92,7 +91,7 @@
       timezone1={@timezone}
       profile_img={false}
       show_user={false}
-      dark={true}
+      color={false}
       meta={@orbs}
     />
   </div>

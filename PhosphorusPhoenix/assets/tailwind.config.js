@@ -28,7 +28,7 @@ module.exports = {
         428: "26rem",
       },
       borderRadius: {
-        19: "19px",
+        25: "25px",
       },
       margin: {
         "550px": "550px",
