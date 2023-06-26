@@ -11,10 +11,17 @@
       class="lg:px-0 px-2 lg:py-1 py-4 flex"
       phx-submit={@action}
     >
+
+      <div :if={@action == :edit and not is_nil(@comment)}>
+        <.input field={{f, :body}} type="textarea" value={@comment.body} />
+        <.input field={{f, :comment_id}} type="hidden" value={@comment.id} />
+      </div>
+
       <div class="flex items-center justify-center w-full gap-2">
         <img
           class="lg:w-12 lg:h-12 h-10 w-10 rounded-full object-cover shrink-0"
-          src="https://picsum.photos/200/300"
+          src={not is_nil(@current_user) and Phos.Orbject.S3.get!("USR", Map.get(@current_user, :id), "public/profile/lossy") || "https://picsum.photos/200/300"}
+              onerror="this.src='https://picsum.photos/200/300';"
         />
 
         <.input
