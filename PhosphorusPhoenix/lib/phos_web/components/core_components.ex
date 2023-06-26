@@ -1803,7 +1803,7 @@ defmodule PhosWeb.CoreComponents do
       ]}
     >
       <span class="dark:text-white text-black"><%= get_date(@orb.inserted_at, @date) %></span>
-      <div id={"#{@id}-actions"} class="flex justify-between mt-1 mb-1">
+      <div id={"#{@id}-actions-bar"} class="flex justify-between mt-1 mb-1">
         <button class="text-center inline-flex items-center ">
           <.save type="save" class="dark:fill-white w-5 h-5" />
         </button>

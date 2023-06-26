@@ -111,8 +111,9 @@ defmodule Phos.Folk do
          {:ok, rel} = data ->
            rel = rel |> Repo.preload([:acceptor])
            spawn(fn ->
-             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.initiator_id}", "", "",
-               %{title: "#{rel.acceptor.username} accepted your ally request 💪️",
+             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.initiator_id}", "#{rel.acceptor.username}", "Accepted your Ally Request. Start Chatting! ✅",
+               %{title: "#{rel.acceptor.username}",
+                 body: "Accepted your Ally Request. Start Chatting! ✅",
                  action_path: "/userland/others/#{rel.acceptor_id}",
                  cluster_id: "folk_req"})
              |> Sparrow.FCM.V1.Notification.add_apns(Phos.PlatformNotification.Config.APNS.gen())
@@ -174,8 +175,9 @@ defmodule Phos.Folk do
            rel = rel
            |> Repo.preload([:initiator])
            spawn(fn ->
-             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.acceptor_id}", "", "",
-               %{title: "#{rel.initiator.username} requested to be your ally 🤝",
+             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.acceptor_id}", "#{rel.initiator.username}", "Requested to be your Ally. Accept to Chat! 👋",
+               %{title: "#{rel.initiator.username}",
+                 body: "Requested to be your Ally. Accept to Chat! 👋",
                  action_path: "/folkland/self/requests",
                  cluster_id: "folk_req",
                  initiator_id: rel.initiator_id

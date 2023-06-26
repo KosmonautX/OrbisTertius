@@ -1,9 +1,9 @@
 # fly.toml app configuration file generated for nyx on 2023-06-01T20:21:36+08:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
 
 app = "nyx"
+primary_region= "sin"
 kill_signal = "SIGTERM"
 kill_timeout = "5s"
 
@@ -35,8 +35,8 @@ kill_timeout = "5s"
 
   [[services.tcp_checks]]
     interval = "20s"
-    timeout = "10s"
-    grace_period = "10s"
+    timeout = "30s"
+    grace_period = "20s"
     restart_limit = 5
 
 [metrics]

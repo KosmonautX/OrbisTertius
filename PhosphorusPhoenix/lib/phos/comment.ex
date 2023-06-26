@@ -68,9 +68,9 @@ defmodule Phos.Comments do
       memory: %{user_source_id: init_id, com_subject_id: comment.id, orb_subject_id: comment.orb_id},
       to: parent_init_id,
       notification: %{
-        title: "#{comment.initiator.username} replied",
+        title: "#{comment.initiator.username} commented",
         body: comment.body,
-        silent: true
+        silent: false
       }, data: %{
         cluster_id: comment.orb_id,
         action_path: "/comland/comments/children/#{comment.id}"
@@ -85,9 +85,9 @@ defmodule Phos.Comments do
       memory: %{user_source_id: init_id, com_subject_id: comment.id, orb_subject_id: orb.id},
       to: orb_init_id,
       notification: %{
-        title: "#{comment.initiator.username} replied to a comment within your post",
+        title: "#{comment.initiator.username} replied",
         body: comment.body,
-        silent: true
+        silent: false
       }, data: %{
         cluster_id: orb.id,
         action_path: "/comland/comments/children/#{comment.id}"
@@ -103,7 +103,7 @@ defmodule Phos.Comments do
       notification: %{
         title: "#{comment.initiator.username} replied",
         body: comment.body,
-        silent: true
+        silent: false
       }, data: %{
         cluster_id: orb.id,
         action_path: "/comland/comments/root/#{comment.id}"

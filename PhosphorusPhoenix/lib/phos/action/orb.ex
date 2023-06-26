@@ -27,7 +27,7 @@ defmodule Phos.Action.Orb do
     belongs_to :parent, __MODULE__, references: :id, type: Ecto.UUID
     #belongs_to :users, User, references: :id, foreign_key: :acceptor, type: Ecto.UUID
 
-    has_many :comments, Comment, references: :id
+    has_many :comments, Comment, references: :id, foreign_key: :orb_id
 
     has_many :locs, Orb_Location, references: :id, foreign_key: :orb_id
     

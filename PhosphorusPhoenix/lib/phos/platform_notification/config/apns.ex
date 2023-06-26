@@ -5,10 +5,10 @@ defmodule Phos.PlatformNotification.Config.APNS do
                                  alert_opts: [],
                                  aps_dictionary_opts: [],
                                  custom_data: []}
-                                 |> silent()
+                                 #|> silent()
                                  |> Sparrow.APNS.Notification.add_badge(0)
                                  |> Sparrow.APNS.Notification.add_apns_priority("5")
-                                 |> Sparrow.APNS.Notification.add_content_available(1),
+                                 |> Sparrow.APNS.Notification.add_content_available(0),
 
       fn -> {"authorization", ""} end)
   end
@@ -17,6 +17,7 @@ defmodule Phos.PlatformNotification.Config.APNS do
     config
     |> Sparrow.APNS.Notification.add_title("")
     |> Sparrow.APNS.Notification.add_body("")
+    |> Sparrow.APNS.Notification.add_content_available(1)
   end
 
 end
