@@ -5,7 +5,7 @@
   <div class="flex shrink-0">
     <.link navigate={~p"/user/#{elem(@comment, 1).initiator.username}"} class="flex shrink-0">
       <img
-        class="lg:w-14 lg:h-14 h-8 w-8  rounded-full object-cover"
+        class="lg:w-12 lg:h-12 h-8 w-8  rounded-full object-cover"
         src={Phos.Orbject.S3.get!("USR", elem(@comment, 1).initiator_id, "public/profile/lossy")}
         onerror="this.src='/images/default_hand.jpg';"
       />
@@ -26,7 +26,7 @@
           </p>
 
           <div :if={not elem(@comment, 1).active}>
-            <p class="font-light text-[#000000] dark:text-white">
+            <p class="font-light text-[#000000] dark:text-white text-xs">
             --Comment deleted--
             </p>
           </div>

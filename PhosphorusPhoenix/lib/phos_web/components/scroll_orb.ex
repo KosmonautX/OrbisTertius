@@ -22,8 +22,9 @@ defmodule PhosWeb.Components.ScrollOrb do
             timezone={@timezone1}
             profile_img={@profile_img}
             show_user={@show_user}
+            show_info={@show_info}
             show_information={false}
-            show_padding={true}
+            show_padding={@show_padding}
             show_location={true}
             color={@color}
           />

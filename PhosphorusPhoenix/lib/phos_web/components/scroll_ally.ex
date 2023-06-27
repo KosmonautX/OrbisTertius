@@ -21,7 +21,8 @@ defmodule PhosWeb.Components.ScrollAlly do
           user={ally}
           show_user={false}
           show_padding={false}
-          dark={false}
+          profile_border={false}
+          color={true}
           class="dark:bg-gray-900 lg:bg-[#F9F9F9] bg-white lg:px-0">
           <:information>
             <span class="text-gray-900 dark:text-[#D1D1D1] truncate w-56">

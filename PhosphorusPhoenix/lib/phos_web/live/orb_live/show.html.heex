@@ -18,6 +18,7 @@
             user={@orb.initiator}
             show_location={false}
             show_shadow=""
+            show_border={false}
             main_height="lg:h-56"
             text_color="text-white"
           />
@@ -26,8 +27,7 @@
           <.user_information_card_orb
             id="orb-initiator-public-profile"
             user={@orb.initiator}
-            flex=""
-          >
+            flex="">
             <:ally_button
               current_user={@current_user}
               user={@orb.initiator}
@@ -67,10 +67,10 @@
               timezone={@timezone}
               show_information={true}
               show_padding={false}
-              profile_img={false}
-              show_user={true}
+              show_user={false}
               show_location={false}
-              color={false}
+              show_info={true}
+              color={true}
               class="bg-white"
             />
             <.live_component
@@ -114,9 +114,11 @@
           id="infinite-home"
           data={@streams.orbs}
           timezone1={@timezone}
-          color={false}
-          profile_img={true}
-          show_user={false}
+          color={true}
+          profile_img={false}
+          show_user={true}
+          show_info={false}
+          show_padding={true}
           meta={@orbs}
         />
       </div>
