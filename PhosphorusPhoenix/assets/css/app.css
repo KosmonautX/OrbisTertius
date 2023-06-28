@@ -135,6 +135,51 @@
   margin-top: -3px;
 }
 
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.accordion-item:checked ~ .accordion-content {
+  max-height: 1000px; /* Adjust this value based on your content height */
+  transition: max-height 0.3s ease-in;
+}
+
+.closed-icon {
+  display: block;
+}
+
+.open-icon {
+  display: none;
+}
+
+.accordion-item:checked ~ .label .closed-icon {
+  display: none;
+}
+
+.accordion-item:checked ~ .label .open-icon {
+  display: block;
+}
+
+.modal-toggle {
+  display: none;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 44px;
+  height: 100vh;
+}
+
+.modal-toggle:checked + .modal {
+  display: block;
+}
+
+
 
 @keyframes fade-in-scale-keys {
   0% {

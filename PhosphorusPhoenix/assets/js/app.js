@@ -126,25 +126,7 @@ if (themeToggleDarkIcon && themeToggleLightIcon) {
     }
   });
 }
-
-const checkbox = document.getElementById("accordion-item-1");
-const openIcon = document.querySelector(".open-icon");
-const closedIcon = document.querySelector(".closed-icon");
-const content = document.querySelector(".accordion-content");
-
-if (checkbox) {
-  checkbox.addEventListener("change", () => {
-    if (checkbox.checked) {
-      content.style.display = "block";
-      openIcon.classList.remove("hidden");
-      closedIcon.classList.add("hidden");
-    } else {
-      content.style.display = "none";
-      openIcon.classList.add("hidden");
-      closedIcon.classList.remove("hidden");
-    }
-  });
-}
+ 
 
 // connect if there are any LiveViews on the page
 liveSocket.connect();

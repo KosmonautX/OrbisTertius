@@ -11,9 +11,7 @@ defmodule PhosWeb.Components.ScrollAlly do
         phx-value-archetype="ally"
         class={[
           if(@meta.pagination.downstream, do: "pb-[calc(200vh)]"),
-          "w-full px-3 lg:px-2 overflow-y-auto journal-scroll lg:h-48 h-96"
-        ]}
-      >
+          "w-full px-3 lg:px-2 overflow-y-auto journal-scroll lg:h-48 h-screen"]}>
         <.user_info_bar
           :for={{dom_id, ally} <- @data}
           :if={!is_nil(Map.get(ally, :username))}

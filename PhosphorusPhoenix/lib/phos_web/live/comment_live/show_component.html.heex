@@ -12,17 +12,15 @@
     </.link>
     <div class="flex flex-col w-full ml-1 space-y-0.5 font-poppins break-words px-2">
       <div class="flex justify-between w-full mx-auto">
-        <div class="flex gap-1 text-sm dark:text-white break-words">
-          <p
-            :if={elem(@comment, 1).active and is_nil(@edit_comment)}
-            class="font-bold text-[#000000] dark:text-white"
-          >
-            <.link navigate={~p"/user/#{elem(@comment, 1).initiator.username}"}>
-              <%= elem(@comment, 1).initiator.username %>
-            </.link>
-            <span class="font-light">
+        <div class="flex gap-1 text-sm dark:text-white">
+
+          <p :if={elem(@comment, 1).active and is_nil(@edit_comment)} class="text-[#000000] dark:text-white break-words">
+              <span class="font-bold">
+               <.link navigate={~p"/user/#{elem(@comment, 1).initiator.username}"}>
+                 <%= elem(@comment, 1).initiator.username %>
+               </.link>
+             </span>
               <%= PhosWeb.Util.DOMParser.extract_html_from_md(elem(@comment, 1).body) %>
-            </span>
           </p>
 
           <div :if={not elem(@comment, 1).active}>
@@ -104,10 +102,10 @@
       style="display: none"
       class="px-2 flex gap-2 mt-3"
     >
-      <hr class="-ml-1.5 lg:w-12 w-7 -mb-2 border-[#B3B5BD]" />
+      <hr class="-ml-3.5 lg:w-10 w-7 -mb-2 border-[#B3B5BD]" />
 
       <.link
-        class="lg:ml-14 ml-9"
+        class="lg:ml-10 ml-6"
         href="#"
         phx-click={
           JS.push("toggle_more_replies")
@@ -125,10 +123,10 @@
     </div>
 
     <div id={"hidereply-#{elem(@comment, 1).id}"} style="display: none" class="flex gap-2 mt-3">
-      <hr class="-ml-1.5 lg:w-12 w-7 -mb-2 border-[#B3B5BD]" />
+      <hr class="-ml-1.5 lg:w-10 w-7 -mb-2 border-[#B3B5BD]" />
 
       <.link
-        class="lg:ml-14 ml-9"
+        class="lg:ml-12 ml-8"
         href="#"
         phx-click={
           JS.push("toggle_more_replies")
@@ -139,16 +137,15 @@
         }
         phx-value-initmorecomments="false"
         phx-value-orb={@orb.id}
-        phx-value-path={to_string(elem(@comment, 1).path)}
-      >
+        phx-value-path={to_string(elem(@comment, 1).path)}>
         Hide replies[<%= elem(@comment, 1).child_count %>]
       </.link>
     </div>
 
     <div id={"initshowreply-#{elem(@comment, 1).id}"} class="flex gap-2 mt-3">
-      <hr class="-ml-1.5 lg:w-12 w-7 border-[#B3B5BD]" />
+      <hr class="-ml-1.5 lg:w-10 w-6 border-[#B3B5BD]" />
       <.link
-        class="lg:ml-2.5 ml-1.5 -mt-2"
+        class="lg:ml-2 ml-1.5 -mt-2"
         href="#"
         phx-click={
           JS.push("toggle_more_replies")
