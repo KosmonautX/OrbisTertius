@@ -382,13 +382,21 @@ defmodule Phos.Users do
   def get_public_user(user_id, your_id) do
     Phos.Repo.one(
       from u in User,
-        where: u.id == ^user_id,
-        left_join: branch in assoc(u, :relations),
-        on: branch.friend_id == ^your_id,
-        left_join: root in assoc(branch, :root),
-        select: u,
-        select_merge: %{self_relation: root}
-    )
+      as: :user,
+      where: u.id == ^user_id,
+      left_join: branch in assoc(u, :relations),
+      on: branch.friend_id == ^your_id,
+      left_join: root in assoc(branch, :root),
+      select: u,
+      select_merge: %{self_relation: root},
+      inner_lateral_join:
+      a_count in subquery(
+        from(r in Phos.Users.RelationBranch,
+          where: r.user_id == parent_as(:user).id and not is_nil(r.completed_at),
+          select: %{count: count()}
+        )
+      ),
+      select_merge: %{ally_count: a_count.count})
   end
 
   def get_public_user_by_username(username, your_id) do

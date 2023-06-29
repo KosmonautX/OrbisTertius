@@ -124,6 +124,35 @@ defmodule Phos.Message do
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
+  @doc """
+  Returns last  messages by location
+
+  ## Examples
+
+      iex> list_messages_by_pair()
+      [%Echo{}, ...]
+
+  """
+
+
+  @doc """
+  Returns paginated call of the messages by location
+
+  ## Examples
+
+      iex> list_messages_by_pair()
+      [%Echo{}, ...]
+
+  """
+  def list_messages_by_geohashes(hashes, opts\\ []) when is_list(hashes) do
+    Phos.Message.Memory
+    |> where([m], m.loc_subject_id in ^hashes)
+    |> preload([:user_source])
+    |> Repo.Paginated.all(opts)
+  end
+
+
+
   alias Phos.Message.Memory
 
   @doc """
@@ -183,6 +212,12 @@ defmodule Phos.Message do
 
       _ -> {:error, :not_found}
       end
+    end
+
+    def create_message(%{"id" => _mem_id, "user_source_id" => _u_id, "loc_subject" => _loc_id} = attrs) do
+      %Memory{}
+      |> Memory.changeset(attrs)
+      |> Repo.insert()
     end
 
   @doc """

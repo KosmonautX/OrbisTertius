@@ -76,6 +76,8 @@ defmodule PhosWeb.Util.Viewer do
         id: memory.id,
         relationships: %{},
         user_source_id: memory.user_source_id,
+        loc_subject_id: memory.loc_subject_id,
+        loc_subject_name: memory.loc_subject_id |> Phos.Mainland.Sphere.locate(),
         rel_subject_id: memory.rel_subject_id,
         orb_subject_id: memory.orb_subject_id,
         com_subject_id: memory.com_subject_id,
