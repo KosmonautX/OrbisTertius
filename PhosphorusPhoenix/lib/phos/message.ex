@@ -144,10 +144,10 @@ defmodule Phos.Message do
       [%Echo{}, ...]
 
   """
-  def list_messages_by_geohashes(hashes, opts\\ []) when is_list(hashes) do
+  def list_messages_by_geohashes(hash, opts\\ []) when is_integer(hash) do
     Phos.Message.Memory
-    |> where([m], m.loc_subject_id in ^hashes)
-    |> preload([:user_source])
+    |> where([m], m.loc_subject_id == ^hash)
+    |> preload([:user_source, :orb_subject])
     |> Repo.Paginated.all(opts)
   end
 
@@ -214,10 +214,15 @@ defmodule Phos.Message do
       end
     end
 
-    def create_message(%{"id" => _mem_id, "user_source_id" => _u_id, "loc_subject" => _loc_id} = attrs) do
-      %Memory{}
-      |> Memory.changeset(attrs)
-      |> Repo.insert()
+    def create_message(%{"id" => _mem_id, "user_source_id" => _u_id, "loc_subject_id" => _loc_id} = attrs) do
+      with {:ok, memory} <-  %Memory{} |> Memory.changeset(attrs) |> Repo.insert() do
+        memory
+        |> Repo.preload([:orb_subject, :user_source])
+        |> tap(&Phos.PubSub.publish(&1, {:memory, "formation"}, %Phos.Action.Location{id: &1.loc_subject_id}))
+        |> (&({:ok, &1})).()
+        else
+          {:error, err} -> {:error, err}
+      end
     end
 
   @doc """

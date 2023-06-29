@@ -27,7 +27,7 @@ defmodule Phos.Message.Memory do
   @doc false
   def changeset(memory, attrs) do
     memory
-    |> cast(attrs, [:id,:user_source_id, :orb_subject_id, :com_subject_id, :rel_subject_id, :message, :media])
+    |> cast(attrs, [:id,:user_source_id, :orb_subject_id, :com_subject_id, :rel_subject_id, :loc_subject_id, :message, :media])
     |> cast_assoc(:loc_subject)
     |> validate_required([:message, :media])
     |> foreign_key_constraint(:user_source_id)
@@ -35,7 +35,7 @@ defmodule Phos.Message.Memory do
 
   def gen_changeset(memory, attrs) do
     memory
-    |> cast(attrs, [:id, :user_source_id, :orb_subject_id, :loc_subject_id, :rel_subject_id, :message, :media])
+    |> cast(attrs, [:id, :user_source_id, :orb_subject_id, :rel_subject_id, :message, :media])
     |> validate_required([:id, :user_source_id, :message, :media, :rel_subject_id])
     |> foreign_key_constraint(:user_source_id)
     |> foreign_key_constraint(:rel_subject_id)

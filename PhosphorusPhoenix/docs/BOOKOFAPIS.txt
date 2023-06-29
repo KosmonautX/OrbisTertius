@@ -422,6 +422,9 @@ GET :ipAddress/memland/friends/?cursor=16813190790
 GET :ipAddress/memland/orbs/:orb?page=1
 :auth-headers
 
+## Index by unique territories
+GET :ipAddress/memland/territories/614268611149692927?cursor=1693502948407
+:auth-headers
 
 ## Show by specific relation_id through cursor
 GET :ipAddress/memland/friends/:rel?cursor=1673502948407&asc=false
@@ -440,7 +443,7 @@ POST :ipAddress/memland/memories
 {
     "message": "14",
     "orb_subject_id": ":orb",
-    "loc_subject": {"id": 614268611149692927}
+    "loc_subject_id": 614268611149692927
 }
 
 ### Medialand

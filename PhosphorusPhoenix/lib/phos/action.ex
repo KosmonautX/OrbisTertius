@@ -346,7 +346,7 @@ defmodule Phos.Action do
     |> case do
          {:ok, orb} = data ->
            orb = orb |> Repo.preload([:initiator])
-           spawn(fn ->
+           Task.start(fn ->
              experimental_notify(orb)
            end)
            #spawn(fn -> user_feeds_publisher(orb) end)

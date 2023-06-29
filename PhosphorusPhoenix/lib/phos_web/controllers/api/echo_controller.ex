@@ -1,7 +1,7 @@
 defmodule PhosWeb.API.EchoController do
   use PhosWeb, :controller
   use Phos.ParamsValidator, [
-    :id, :message, :user_source_id, :orb_subject_id, :loc_subject, :user_destination_id, :rel_subject_id, :media
+    :id, :message, :user_source_id, :orb_subject_id, :loc_subject_id, :user_destination_id, :rel_subject_id, :media
   ]
   alias Phos.Message
   alias Phos.Message.Memory
@@ -26,10 +26,10 @@ defmodule PhosWeb.API.EchoController do
     do: render(conn, :paginated, memories: Message.list_messages_by_relation({rel_id, your_id}, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond)]))
 
   def show_territories(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => territory_id, "cursor" => cursor, "asc" => "true"}),
-    do: render(conn, :paginated, memories: Message.list_messages_by_geohashes({territory_id, your_id}, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond), asc: true]))
+    do: render(conn, :paginated, memories: Message.list_messages_by_geohashes(String.to_integer(territory_id), [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond), asc: true]))
 
   def show_territories(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => territory_id, "cursor" => cursor}),
-    do: render(conn, :paginated, memories: Message.list_messages_by_geohashes({territory_id, your_id}, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond)]))
+    do: render(conn, :paginated, memories: Message.list_messages_by_geohashes(String.to_integer(territory_id), [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond)]))
 
   def show_orbs(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => orb_id, "page" => page}),
     do: render(conn, :paginated, memories: Message.list_messages_by_orb({orb_id, your_id}, page))

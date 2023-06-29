@@ -49,6 +49,11 @@ defmodule Phos.PubSub do
     message
   end
 
+  def publish(%Phos.Message.Memory{} = message, event, %Phos.Action.Location{id: geohash}) do
+    PubSub.broadcast(__MODULE__, "memory:erth:#{geohash}", {__MODULE__, event, message})
+    message
+  end
+
   def publish(message, event, topic) when not is_nil(topic) do
     PubSub.broadcast(Phos.PubSub, topic, {__MODULE__, event, message})
     message
