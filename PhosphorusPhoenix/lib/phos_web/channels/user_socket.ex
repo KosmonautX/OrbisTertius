@@ -39,7 +39,7 @@ defmodule PhosWeb.UserSocket do
     case Auth.validate_user(token) do
       {:ok, %{"user_id" => user} = claims} ->
         from = self()
-        spawn(fn -> track_user_location(from, claims) end)
+        Task.start(fn -> track_user_location(from, claims) end)
         {:ok,
           socket
           |> assign(user_agent: claims, session_token: token, current_user: Phos.Users.get_user!(user))

@@ -194,7 +194,7 @@ PUT :ipAddress/userland/self/beacon
         "location": {
           "scope": true
           }
-          }
+    }
 }
 
 ## ! Folkland Calls

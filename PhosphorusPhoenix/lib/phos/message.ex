@@ -217,8 +217,8 @@ defmodule Phos.Message do
     def create_message(%{"id" => _mem_id, "user_source_id" => _u_id, "loc_subject_id" => _loc_id} = attrs) do
       with {:ok, memory} <-  %Memory{} |> Memory.changeset(attrs) |> Repo.insert() do
         memory
-        |> Repo.preload([:orb_subject, :user_source])
-        |> tap(&Phos.PubSub.publish(&1, {:memory, "formation"}, %Phos.Action.Location{id: &1.loc_subject_id}))
+        |> Repo.preload([:orb_subject, :user_source, :loc_subject])
+        |> tap(&Phos.PubSub.publish(&1, {:memory, "formation"}, &1.loc_subject))
         |> (&({:ok, &1})).()
         else
           {:error, err} -> {:error, err}
