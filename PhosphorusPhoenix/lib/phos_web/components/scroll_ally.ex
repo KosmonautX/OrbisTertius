@@ -23,12 +23,13 @@ defmodule PhosWeb.Components.ScrollAlly do
           color={true}
           class="dark:bg-gray-900 lg:bg-[#F9F9F9] bg-white lg:px-0">
           <:information>
-            <span class="text-gray-900 dark:text-[#D1D1D1] truncate w-56">
+            <span class="text-gray-900 dark:text-[#D1D1D1] truncate w-52 md:max-w-md lg:max-w-xl">
               <%= ally
               |> get_in([
                 Access.key(:public_profile, %{}),
-                Access.key(:occupation, "Community Member")
-              ]) %>
+                Access.key(:bio, "Community Member")
+              ])
+              %>
             </span>
           </:information>
           <:actions>

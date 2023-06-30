@@ -179,7 +179,10 @@
   display: block;
 }
 
-
+#book-search-form {
+  display: none;
+ }
+ 
 
 @keyframes fade-in-scale-keys {
   0% {

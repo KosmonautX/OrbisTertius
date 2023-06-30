@@ -144,17 +144,14 @@ defmodule PhosWeb.CoreComponents do
 
   def orb_modal(assigns) do
    ~H"""
-   <div class="modal">
-   <div class="h-full w-44 list-none rounded-2xl bg-[#F3F4F8] py-2 text-base shadow-lg dark:bg-[#282828]">
-     <ul class="font-poppins font flex flex-col divide-y-2 text-base font-light text-[#404252] dark:text-[#D1D1D1]">
-       <li class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">Share</li>
-       <li class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">Block User</li>
-       <li class="px-4 py-2 text-[#CE395F] hover:bg-gray-100 dark:text-[#EF426F] dark:hover:bg-gray-600">Report User</li>
+   <div id="book-search-form" class="w-44 list-none rounded-2xl bg-[#F3F4F8] py-2 text-base shadow-lg dark:bg-[#282828]">
+     <ul class="font-poppins font flex flex-col divide-y divide-gray-300 dark:divide-[#D1D1D1] text-base font-light text-[#404252] dark:text-[#D1D1D1]">
+       <li class="px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer	">Share</li>
+       <li class="px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer	">Block User</li>
+       <li class="px-4 py-2 text-[#CE395F] hover:bg-gray-200 dark:text-[#EF426F] dark:hover:bg-gray-600 cursor-pointer">Report User</li>
      </ul>
    </div>
- </div>
-
-   """
+  """
   end
 
 
@@ -994,7 +991,7 @@ defmodule PhosWeb.CoreComponents do
 
   def banner(assigns) do
     ~H"""
-    <nav class="lg:bg-[#EEEFF3] bg-white fixed w-full z-10 top-0 left-0 border-b-2 dark:border-white text-base font-bold dark:bg-gray-900 px-4 py-3 font-poppins border-gray-200">
+    <nav class="lg:bg-[#EEEFF3] bg-white fixed w-full z-10 top-0 left-0 border-b dark:text-white lg:dark:border-none text-base font-bold dark:bg-gray-900 px-4 py-3 font-poppins border-gray-200">
       <div class="flex flex-wrap items-center justify-between mx-auto">
         <a href="/" class="flex items-center">
           <.logo type="banner" class="h-8 dark:fill-white"></.logo>
@@ -1412,7 +1409,11 @@ defmodule PhosWeb.CoreComponents do
       )
 
     ~H"""
-    <div class="w-full lg:px-0 px-3">
+    <div class="w-full lg:px-0 px-3 relative">
+       <div class="absolute right-0 z-10 mr-4 lg:mt-10 mt-12">
+          <.orb_modal/>
+       </div>
+
       <.user_info_bar class="rounded-t-3xl" id={"#{@id}-scry-orb-#{@orb.id}"} user={@orb.initiator} show_padding={@show_padding} profile_img={@profile_img} show_user={@show_user} show_location={@show_location} color={@color}>
         <:information :if={!is_nil(@orb_location)}>
           <span class="mr-1">
@@ -1421,7 +1422,7 @@ defmodule PhosWeb.CoreComponents do
           <%= @orb_location %>
         </:information>
         <:actions>
-          <Heroicons.ellipsis_horizontal class="lg:h-8 lg:w-8 h-6 w-6 hover:text-gray-300 dark:text-white text-gray-900 font-semibold" />
+          <Heroicons.ellipsis_horizontal phx-click={JS.toggle(to: "#book-search-form")} class="lg:h-8 lg:w-8 h-6 w-6 hover:text-gray-300 dark:text-white text-gray-900 font-semibold" />
           <%= render_slot(@user_action) %>
         </:actions>
       </.user_info_bar>
@@ -1966,11 +1967,15 @@ defmodule PhosWeb.CoreComponents do
         src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/banner/lossless")}
         onerror="this.src='/images/default_banner.jpg';"/>
           <div class="absolute inset-0 flex flex-col w-full justify-center items-center bg-opacity-50">
+
              <div class={[@show_shadow]}>
                 <div  class={[class="relative w-full lg:max-w-3xl"]}>
+                <div :if={@show_location} class="absolute right-0 z-50 mt-8 mr-2 lg:mr-0 md:mr-10">
+                <.orb_modal/>
+             </div>
                    <div :if={@show_location} class="absolute inset-x-2 lg:inset-x-0 md:inset-x-10 flex items-end justify-end gap-1">
                     <Heroicons.bookmark class="w-5 h-6 text-gray-900 group-hover:text-teal-500 dark:text-white cursor-pointer"/>
-                    <Heroicons.ellipsis_vertical class="w-6 h-6 text-gray-900 group-hover:text-teal-500 dark:text-white cursor-pointer" />
+                    <Heroicons.ellipsis_vertical phx-click={JS.toggle(to: "#book-search-form")} class="w-6 h-6 text-gray-900 group-hover:text-teal-500 dark:text-white cursor-pointer" />
                    </div>
                   <div class="flex">
                    <div class="flex flex-1 items-center justify-center">
@@ -2128,7 +2133,7 @@ defmodule PhosWeb.CoreComponents do
       end)
 
     ~H"""
-    <div class="flex flex-col p-4 w-full space-y-1 rounded-3xl bg-white dark:bg-gray-800 font-poppins space-y-2">
+    <div class="flex flex-col p-4 w-full space-y-1 rounded-3xl bg-[#EEEFF3] dark:bg-gray-800 font-poppins space-y-2">
       <h5 class="lg:text-2xl  text-lg font-bold text-[#000000] dark:text-white font-Poppins break-words">
         <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
       </h5>
@@ -2137,7 +2142,7 @@ defmodule PhosWeb.CoreComponents do
         <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
       </p>
 
-      <div class="flex gap-2 items-center justify-center">
+      <div class="flex gap-4 items-center justify-center">
         <a class="cursor-pointer" id={"#{@id}-sharebtn"} phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}>
           <div id={"#{@id}-copylink"} class="hidden">
             <%= PhosWeb.Endpoint.url() <>

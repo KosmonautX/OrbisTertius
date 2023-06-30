@@ -15,7 +15,7 @@ defmodule PhosWeb.Components.ScrollOrb do
           "flex flex-col gap-2"
         ]}
       >
-        <div :for={{dom_id, orb} <- @data} id={"orb-divided-#{dom_id}"}>
+        <div :for={{dom_id, orb} <- @data} id={"orb-divided-#{dom_id}"} class="absloute">
           <.scry_orb
             id={"#{@id}-orb-history-#{dom_id}"}
             orb={orb}

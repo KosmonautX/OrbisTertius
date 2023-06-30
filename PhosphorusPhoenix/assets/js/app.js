@@ -126,7 +126,9 @@ if (themeToggleDarkIcon && themeToggleLightIcon) {
     }
   });
 }
- 
+
+
+
 
 // connect if there are any LiveViews on the page
 liveSocket.connect();
@@ -154,3 +156,9 @@ window.liveSocket = liveSocket;
 window.addEventListener("NextCarousel", (e) =>
   console.log("clicked!", e.detail)
 );
+
+window.addEventListener("click", e => {
+  JS.exec("click", phxEvent, view, target, ["push", {data: this.eventMeta("click", e, target)}]);
+}, capture);
+
+
