@@ -185,6 +185,7 @@ defmodule PhosWeb.Router do
       put "/reveries/:id", EchoController, :update_reverie
       get "/friends", FriendController, :index_last_memories
       get "/orbs/:id", EchoController, :show_orbs
+      get "/territories/:id", EchoController, :show_territories
       get "/friends/:id", EchoController, :show_relations
       get "/friends/:id/orbs", EchoController, :show_relations_jump_orbs
     end

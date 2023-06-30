@@ -22,6 +22,7 @@ defmodule Phos.Application do
       Phos.Cache,
 
       {Cluster.Supervisor, [topologies, [name: Phos.ClusterSupervisor]]},
+      PhosWeb.Presence,
       # Start the Firbase Cloud Messaging Dispatcher
       # Phos.Fyr.Message
       Phos.Notification,

@@ -6,6 +6,7 @@ defmodule Phos.Action.Location do
   @primary_key {:id, :integer, autogenerate: false}
   schema "locations" do
     many_to_many :orbs, Orb, join_through: Orb_Location, on_replace: :delete
+    has_many :memories, Phos.Message.Memory, references: :id, foreign_key: :loc_subject_id
 
     timestamps()
   end

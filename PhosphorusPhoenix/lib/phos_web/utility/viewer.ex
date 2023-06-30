@@ -36,6 +36,10 @@ defmodule PhosWeb.Util.Viewer do
                   %{data: PhosWeb.Util.Viewer.user_mapper(user),
                     links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{user.id}")}}}])
 
+      {k, %Phos.Action.Location{} = loc} ->
+
+        Map.new([{k, %{data: PhosWeb.Util.Viewer.loc_mapper(loc)}}])
+
       {k, %Phos.Action.Orb{} = orb} ->
 
         Map.new([{k, %{data: PhosWeb.Util.Viewer.orb_mapper(orb)}}])
@@ -81,6 +85,7 @@ defmodule PhosWeb.Util.Viewer do
         id: memory.id,
         relationships: %{},
         user_source_id: memory.user_source_id,
+        loc_subject_id: memory.loc_subject_id,
         rel_subject_id: memory.rel_subject_id,
         orb_subject_id: memory.orb_subject_id,
         com_subject_id: memory.com_subject_id,
@@ -177,6 +182,7 @@ defmodule PhosWeb.Util.Viewer do
            banner_pic: user.public_profile.banner_pic,
            traits: user.public_profile.traits,
            territories: user.public_profile.territories,
+           assemblies: Enum.reduce(user.public_profile.territories, [], fn terr, acc -> [loc_mapper(terr) | acc] end) |> Enum.uniq_by(&(&1.midhash)),
            places: user.public_profile.places
         }
       }
@@ -358,6 +364,22 @@ defmodule PhosWeb.Util.Viewer do
   # Index Live Orbs
   def live_orb_mapper(orbs) do
     Enum.filter(orbs, fn orb -> orb.active == true end)
+  end
+
+  def loc_mapper(loc) when is_integer(loc )do
+    %{
+      hash: loc,
+      midhash: loc |> Phos.Mainland.Sphere.middle(),
+      town: loc |> Phos.Mainland.Sphere.locate()
+    }
+  end
+
+  def loc_mapper(loc) do
+    %{
+      hash: loc.id,
+      midhash: loc.id |> Phos.Mainland.Sphere.middle(),
+      town: loc.id |> Phos.Mainland.Sphere.locate()
+    }
   end
 
 

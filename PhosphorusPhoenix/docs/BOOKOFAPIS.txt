@@ -217,7 +217,7 @@ GET :ipAddress/folkland/stream/discovery/614510498785787903,614510497487650815?p
 :auth-headers
 
 ## Show Relation Resource
-GET :ipAddress/folkland/friends/271e111a-8146-45a4-bf34-954fa7e8a744
+GET :ipAddress/folkland/friends/58118a48-3f1d-48b7-8d9f-267b7dbace9a
 -> run-hook (restclient-set-var ":rel" (cdr (assq 'relation_id (assq 'data (json-read)))))
 :auth-headers
 
@@ -422,6 +422,9 @@ GET :ipAddress/memland/friends/?cursor=16813190790
 GET :ipAddress/memland/orbs/:orb?page=1
 :auth-headers
 
+## Index by unique territories
+GET :ipAddress/memland/territories/614268611149692927?cursor=1693502948407
+:auth-headers
 
 ## Show by specific relation_id through cursor
 GET :ipAddress/memland/friends/:rel?cursor=1673502948407&asc=false
@@ -438,10 +441,9 @@ POST :ipAddress/memland/memories
 -> run-hook (restclient-set-var ":echo" (cdr (assq 'orb_uuid (assq 'data (json-read)))))
 :auth-headers
 {
-    "user_destination_id": ":lky_id",
     "message": "14",
-    "rel_subject_id": ":rel",
-    "orb_subject_id": ":orb"
+    "orb_subject_id": ":orb",
+    "loc_subject_id": 614268611149692927
 }
 
 ### Medialand
