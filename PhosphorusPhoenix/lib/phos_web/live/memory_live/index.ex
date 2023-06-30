@@ -14,7 +14,7 @@ defmodule PhosWeb.MemoryLive.Index do
 
     {:ok,
      socket
-     |> assign(usersearch: "", search_memories: map_last_memory(search_memories), metadata: metadata)}
+     |> assign(usersearch: "", search_memories: search_memories, metadata: metadata)}
   end
 
   @impl true
@@ -127,10 +127,10 @@ defmodule PhosWeb.MemoryLive.Index do
   end
 
   defp memories_by_user(user, opts \\ []) do
-    Message.list_messages_by_user(user, opts)
+    Phos.Folk.last_messages_by_relation(user.id, opts)
   end
 
   defp map_last_memory(relationships) do
-    Enum.map(relationships, &(&1.last_memory)) |> Enum.reverse()
+    Enum.map(relationships, &(&1.self_relation.last_memory)) |> Enum.reverse()
   end
 end

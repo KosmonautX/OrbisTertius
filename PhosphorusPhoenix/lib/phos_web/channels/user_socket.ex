@@ -11,7 +11,7 @@ defmodule PhosWeb.UserSocket do
 
   ## Channels
 
-  channel "archetype:usr:*", PhosWeb.UserChannel
+  # channel "archetype:usr:*", PhosWeb.UserChannel
   # channel "archetype:loc:*", PhosWeb.UserLocationChannel
   # channel "userfeed:*", PhosWeb.UserFeedChannel
   # channel "discovery:usr:*", PhosWeb.DiscoveryChannel
@@ -42,7 +42,9 @@ defmodule PhosWeb.UserSocket do
         Task.start(fn -> track_user_location(from, claims) end)
         {:ok,
           socket
-          |> assign(user_agent: claims, session_token: token, current_user: Phos.Users.get_user!(user))
+          |> assign(user_agent: claims,
+          session_token: token,
+          current_user: Phos.Users.get_user!(user))
         }
       {:error, reason} ->
         {:error, reason}
