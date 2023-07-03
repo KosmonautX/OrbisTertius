@@ -10,13 +10,17 @@ defmodule Phos.Models.TokenClassification do
   def start_link(opts), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
 
   def classify(text) do
-    GenServer.call(__MODULE__, {:classify, text})
+    try do
+      GenServer.call(__MODULE__, {:classify, text})
+    catch
+      :exit, _ -> {:error, []}
+    end
   end
 
   @impl true
   def handle_call({:classify, text}, _from, serving) do
     %{entities: result} = Nx.Serving.run(serving, text)
-    {:reply, result, serving}
+    {:reply, {:ok, result}, serving}
   end
 
   @impl true

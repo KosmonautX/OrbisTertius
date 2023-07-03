@@ -771,11 +771,29 @@ defmodule Phos.Action do
   end
 
   def search(search_term) do
-    query =
-      from o in Orb,
-        where: fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^search_term),
-        or_where: fragment("to_tsvector(?, title) @@ websearch_to_tsquery(?, ?)", "english", "english", ^search_term)
+    case Phos.Models.TokenClassification.classify(search_term) do
+      {:ok, [_ | _] = terms} -> build_search_query(terms)
+      _ -> build_base_search_query(search_term)
+    end
+    |> Repo.all()
+  end
 
-    Repo.all(query)
+  defp build_search_query(terms) do
+    query = from o in Orb
+    Enum.reduce(terms, query, fn %{phrase: term, label: label}, q ->
+      case label do
+        "LOC" -> 
+          case Phos.Mainland.World.find_hash(term) do
+            nil -> q
+            hash -> from r in q, join: l in Orb_Location, on: r.id == l.orb_id, or_where: l.location_id == ^hash
+          end
+        _ -> or_where(q, fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^term))
+      end
+    end)
+  end
+  defp build_base_search_query(term) do
+    from o in Orb,
+      where: fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^term),
+      or_where: fragment("to_tsvector(?, title) @@ websearch_to_tsquery(?, ?)", "english", "english", ^term)
   end
 end
