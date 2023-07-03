@@ -35,8 +35,8 @@ defmodule PhosWeb.UserMemoryChannel do
   def handle_info(:after_join, %{assigns: %{current_user: user}} = socket) do
     topic = Presence.user_topic(user.id)
     Phoenix.PubSub.subscribe(socket.pubsub_server, topic, fastlane: {socket.transport_pid, socket.serializer, []})
-    push(socket, "presence_state", Presence.list(topic))
     Presence.track(self(), topic, "status", %{online: System.system_time(:second)})
+    push(socket, "presence_state", Presence.list(topic))
 
     {:noreply, socket}
   end

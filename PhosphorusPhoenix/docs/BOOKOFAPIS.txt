@@ -423,7 +423,7 @@ GET :ipAddress/memland/orbs/:orb?page=1
 :auth-headers
 
 ## Index by unique territories
-GET :ipAddress/memland/territories/614268611149692927?cursor=1693502948407
+GET :ipAddress/memland/territories/614268611149692922?cursor=1693502948407
 :auth-headers
 
 ## Show by specific relation_id through cursor
