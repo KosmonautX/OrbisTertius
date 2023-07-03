@@ -38,8 +38,8 @@ defmodule PhosWeb.UserSocket do
     # Parsing of Authorising JWT vector and assigning to session
     case Auth.validate_user(token) do
       {:ok, %{"user_id" => user} = claims} ->
-        from = self()
-        Task.start(fn -> track_user_location(from, claims) end)
+        #from = self()
+        #Task.start(fn -> track_user_location(from, claims) end)
         {:ok,
           socket
           |> assign(user_agent: claims,
@@ -58,7 +58,8 @@ defmodule PhosWeb.UserSocket do
     Enum.map(territory, fn {key, val} ->
       case Map.get(val, "hash") do
         nil -> :ok
-        hash -> do_track_user_location(pid, key, Phos.Mainland.World.locate(hash), user_id)
+        hash ->
+          do_track_user_location(pid, key, Phos.Mainland.World.locate(hash), user_id)
       end
     end)
 

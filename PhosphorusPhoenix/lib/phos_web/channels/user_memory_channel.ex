@@ -19,7 +19,7 @@ defmodule PhosWeb.UserMemoryChannel do
   end
 
   def handle_in("memory", {:action, memory}, socket) do
-    broadcast(socket, "memory_action", memory)
+    broadcast(socket, "memory_assembly", memory)
     {:noreply, socket}
   end
 
@@ -33,13 +33,24 @@ defmodule PhosWeb.UserMemoryChannel do
   end
 
   def handle_info(:after_join, %{assigns: %{current_user: user}} = socket) do
+
+    case user do
+      %{public_profile: %{territories: terr}} ->
+        terr
+        |> Phos.Mainland.Sphere.middle()
+        |> Enum.map(&(terra_topic(&1)))
+
+      _ -> :ok
+    end
+    #Enum.map(&(Phos.PubSub.subscribe(&1)))
+
     topic = Presence.user_topic(user.id)
     Phoenix.PubSub.subscribe(socket.pubsub_server, topic, fastlane: {socket.transport_pid, socket.serializer, []})
     Presence.track(self(), topic, "status", %{online: System.system_time(:second)})
     push(socket, "presence_state", Presence.list(topic))
 
     {:noreply, socket}
-  end
+   end
 
 
   def handle_info(msg, socket) do
@@ -51,4 +62,9 @@ defmodule PhosWeb.UserMemoryChannel do
   def handle_out(_event, _payload, socket) do
     {:noreply, socket}
   end
+
+  def terra_topic(hash) when is_integer(hash) do
+    "memory:terra:" <> Integer.to_string(hash) |> Phos.PubSub.subscribe()
+  end
+
 end

@@ -218,7 +218,7 @@ defmodule Phos.Message do
       with {:ok, memory} <-  %Memory{} |> Memory.changeset(attrs) |> Repo.insert() do
         memory
         |> Repo.preload([:orb_subject, :user_source, :loc_subject])
-        |> tap(&Phos.PubSub.publish(&1, {:memory, "formation"}, &1.loc_subject))
+        |> tap(&Phos.PubSub.publish(&1, {:memory, "assembly"}, &1.loc_subject))
         |> (&({:ok, &1})).()
         else
           {:error, err} -> {:error, err}

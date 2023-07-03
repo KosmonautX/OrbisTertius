@@ -146,7 +146,7 @@ end
 
 ```elixir
 domain = "localhost:4000"
-id = "3d534547-eed2-4ab2-acc8-ebf0ae03aaa5"
+id = "6d7b0e7c-a633-4a8a-8d85-b8a493109bd4"
 
 token = Req.get!("http://" <> domain <> "/api/devland/flameon?user=#{id}").body["payload"]
 

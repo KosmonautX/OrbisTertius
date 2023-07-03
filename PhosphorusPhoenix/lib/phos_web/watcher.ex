@@ -14,7 +14,7 @@ defmodule PhosWeb.Watcher do
   end
 
   def handle_diff(diff, state) do
-    dbg()
+    IO.inspect diff
     for {topic, {joins, leaves}} <- diff do
       IO.inspect(topic)
       for {key, meta} <- joins do
