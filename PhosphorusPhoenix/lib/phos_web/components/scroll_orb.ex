@@ -25,6 +25,7 @@ defmodule PhosWeb.Components.ScrollOrb do
             show_info={@show_info}
             show_information={false}
             show_padding={@show_padding}
+            orb_color={false}
             show_location={true}
             color={@color}
           />

@@ -142,6 +142,8 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  attr(:id, :string, required: true)
+
   def orb_modal(assigns) do
    ~H"""
    <div id="book-search-form" class="w-44 list-none rounded-2xl bg-[#F3F4F8] py-2 text-base shadow-lg dark:bg-[#282828]">
@@ -1305,6 +1307,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:profile_border, :boolean, default: true)
   attr(:show_user, :boolean, default: true)
   attr(:color, :boolean, default: true)
+  attr(:orb_color, :boolean, default: true)
   attr(:show_location, :boolean, default: true)
   attr(:user, :any)
   slot(:actions)
@@ -1316,6 +1319,7 @@ defmodule PhosWeb.CoreComponents do
       id={@id}
        class={[
         @show_padding == false && "lg:px-4",
+        @orb_color == true && "dark:bg-gray-800 bg-[#F3F4F8]",
         @color == true && "lg:dark:bg-gray-800",
         "lg:dark:bg-gray-900 dark:bg-gray-900 lg:bg-white w-full lg:py-2 py-4 flex items-center justify-between px-2 font-poppins",
         @class
@@ -1368,9 +1372,8 @@ defmodule PhosWeb.CoreComponents do
   attr(:profile_img, :boolean, default: true)
   attr(:show_user, :boolean, default: true)
   attr(:show_location, :boolean, default: true)
+  attr(:orb_color, :boolean, default: true)
   attr(:color, :boolean, default: true)
-
-
   attr(:class, :string, default: nil)
 
   def scry_orb(assigns) do
@@ -1410,11 +1413,12 @@ defmodule PhosWeb.CoreComponents do
 
     ~H"""
     <div class="w-full lg:px-0 px-3 relative">
-       <div class="absolute right-0 z-10 mr-4 lg:mt-10 mt-12">
-          <.orb_modal/>
+        <div class="absolute right-0 z-10 mr-4 lg:mt-10 mt-12">
+          <.orb_modal
+            id={"#{@id}-orb-modal-#{@orb.id}"}/>
        </div>
 
-      <.user_info_bar class="rounded-t-3xl" id={"#{@id}-scry-orb-#{@orb.id}"} user={@orb.initiator} show_padding={@show_padding} profile_img={@profile_img} show_user={@show_user} show_location={@show_location} color={@color}>
+      <.user_info_bar class="rounded-t-3xl" id={"#{@id}-scry-orb-#{@orb.id}"} user={@orb.initiator} show_padding={@show_padding} profile_img={@profile_img} show_user={@show_user} show_location={@show_location} color={@color} orb_color={@orb_color}>
         <:information :if={!is_nil(@orb_location)}>
           <span class="mr-1">
             <.location type="location" class="h-8 dark:fill-teal-600"></.location>
@@ -1434,6 +1438,7 @@ defmodule PhosWeb.CoreComponents do
           color={@color}
           show_padding={@show_padding}
           show_info={@show_info}
+          orb_color={@orb_color}
           title={(@orb.payload && @orb.payload.inner_title) || @orb.title}
         />
         <.orb_information
@@ -1445,6 +1450,7 @@ defmodule PhosWeb.CoreComponents do
           show_link={true}
           show_padding={@show_padding}
           show_info={@show_info}
+          orb_color={@orb_color}
           color={@color}
         />
       </.link>
@@ -1456,6 +1462,7 @@ defmodule PhosWeb.CoreComponents do
         path="public/banner"
         id={"#{@id}-scry-orb-#{@orb.id}"}
         orb={@orb}
+        orb_color={@orb_color}
         timezone={@timezone}
         media={@media}
         color={@color}
@@ -1468,6 +1475,7 @@ defmodule PhosWeb.CoreComponents do
         color={@color}
         show_info={@show_info}
         show_padding={@show_padding}
+        orb_color={@orb_color}
         show_information={@show_information}
       />
     </div>
@@ -1487,6 +1495,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:timezone, :string)
   attr(:show_comment, :boolean, default: true)
   attr(:color, :boolean, default: true)
+  attr(:orb_color, :boolean, default: true)
   attr(:show_media, :boolean, default: true)
   attr(:img_size, :string, default: "h-96 lg:rounded-none rounded-[25px] px-2 lg:px-0 object-cover")
   attr(:video_size, :string, default: "h-96 lg:rounded-none rounded-[25px] px-2 lg:px-0 object-cover")
@@ -1505,6 +1514,7 @@ defmodule PhosWeb.CoreComponents do
           <div class="glide__slides">
             <div :for={m <- @media} class="glide__slide">
               <div class={[
+                @orb_color == true && "dark:bg-gray-800 bg-[#F3F4F8]",
                 @color == true && "lg:dark:bg-gray-800",
                 "lg:dark:bg-gray-900 dark:bg-gray-900 lg:bg-white relative"]}>
                 <.link
@@ -1646,6 +1656,7 @@ defmodule PhosWeb.CoreComponents do
           id={"#{@id}-scry-orb-#{@orb.id}"}
           user={@orb.initiator}
           profile_img={false}
+          orb_color={@orb_color}
           show_padding={true}
           color={true}>
           <:information :if={!is_nil(@orb_location)}>
@@ -1747,6 +1758,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:color, :boolean, default: true)
   attr(:show_padding, :boolean, default: true)
   attr(:show_info, :boolean, default: true)
+  attr(:orb_color, :boolean, default: true)
   attr(:info_color, :string,
     default:
       "prose-zinc text-gray-600 w-full bg-white lg:dark:bg-gray-900  dark:bg-gray-900 prose-a:text-teal-400 dark:prose-a:text-white prose-a:underline dark:prose-a:underline dark:decoration-white decoration-teal-500 decoration-2 text-sm"
@@ -1768,6 +1780,7 @@ defmodule PhosWeb.CoreComponents do
     <div class={[
       @class,
       @show_padding == false && "lg:px-4",
+      @orb_color == true && "dark:bg-gray-800 bg-[#F3F4F8]",
       @color == true && "lg:dark:bg-gray-800",
       "px-2 font-poppins break-words lg:dark:bg-gray-900 dark:bg-gray-900 lg:bg-white",
       @info_color
@@ -1831,49 +1844,41 @@ defmodule PhosWeb.CoreComponents do
   attr(:show_padding, :boolean, default: true)
   attr(:show_info, :boolean, default: true)
   attr(:color, :boolean, default: true)
+  attr(:orb_color, :boolean, default: true)
 
 
   # TODO orb_actions wiring with data
   def orb_action(assigns) do
     ~H"""
-    <div
-      id={"#{@id}-actions"}
-      class={[
-        @show_padding == false && "lg:px-4",
-        @show_information == false && "lg:rounded-b-3xl",
-        @color == true && "lg:dark:bg-gray-800",
-        "lg:dark:bg-gray-900 rounded-none  dark:bg-gray-900 lg:bg-white w-full px-2 p-2 lg:mt-0 font-poppins",
-        @class]}>
-
-      <span class={[@show_info == false && "lg:text-xs","dark:text-white text-black text-sm"]}><%= get_date(@orb.inserted_at, @date) %></span>
-
-      <div id={"#{@id}-actions-bar"} class="flex justify-between items-center mt-1 mb-1">
-       <div class="flex">
-       <button class="text-center inline-flex items-center ">
-       <.save type="save" class={[@show_info == false && "lg:h-4 lg:w-4", "dark:fill-white w-5 h-5"]}/>
-     </button>
-       </div>
-        <div class="flex flex-cols gap-2">
-          <.link
-            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}>
-            <button class="text-center inline-flex items-center">
-              <.comment type="comment" class={[@show_info == false && "lg:h-4 lg:w-4", "dark:fill-white w-5 h-5"]}/>
-              <span class={[@show_info == false && "lg:text-sm", "ml-1 dark:text-white text-base font-poppins"]}><%= @orb.comment_count %></span>
-            </button>
-          </.link>
-          <button
-            id={"#{@id}-scry-orb-#{@orb.id}-sharebtn"}
-            phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-scry-orb-#{@orb.id}-copylink")}
-            class="text-center inline-flex items-center">
-            <div id={"#{@id}-scry-orb-#{@orb.id}-copylink"} class="hidden">
-              <%= PhosWeb.Endpoint.url() <>
-                path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %>
-            </div>
-            <.share type="share" class={[@show_info == false && "lg:h-4 lg:w-4","dark:fill-white w-5 h-5 -mt-1.5"]}/>
-          </button>
-        </div>
-      </div>
-    </div>
+    <div id={"#{@id}-actions"} class={[@show_padding == false && "lg:px-4",
+      @orb_color == true && "dark:bg-gray-800 bg-[#F3F4F8]",
+      @show_information == false && "lg:rounded-b-3xl",@color == true && "lg:dark:bg-gray-800",
+      "lg:dark:bg-gray-900 rounded-none  dark:bg-gray-900 lg:bg-white w-full px-2 p-1 lg:mt-0 font-poppins",@class]}>
+        <span class={[@show_info == false && "lg:text-xs","dark:text-white text-black text-sm"]}><%= get_date(@orb.inserted_at, @date) %></span>
+          <div id={"#{@id}-actions-bar"} class="flex justify-between items-center mb-1">
+            <div class="flex">
+              <button class="text-center inline-flex items-center ">
+                     <.save type="save" class={[@show_info == false && "lg:h-4 lg:w-4", "dark:fill-white w-5 h-5"]}/>
+                   </button>
+                </div>
+                <div class="flex flex-cols gap-2">
+                  <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}")}>
+                    <button class="text-center inline-flex items-center">
+                       <.comment type="comment" class={[@show_info == false && "lg:h-4 lg:w-4", "dark:fill-white w-5 h-5"]}/>
+                      <span class={[@show_info == false && "lg:text-sm", "ml-1 dark:text-white text-base font-poppins"]}><%= @orb.comment_count %></span>
+                    </button>
+                  </.link>
+                  <button id={"#{@id}-scry-orb-#{@orb.id}-sharebtn"}
+                    phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-scry-orb-#{@orb.id}-copylink")} class="text-center inline-flex items-center">
+                     <div id={"#{@id}-scry-orb-#{@orb.id}-copylink"} class="hidden">
+                       <%= PhosWeb.Endpoint.url() <>
+                       path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/orb/#{@orb.id}") %>
+                     </div>
+                     <.share type="share" class={[@show_info == false && "lg:h-4 lg:w-4","dark:fill-white w-5 h-5 -mt-1.5"]}/>
+                  </button>
+                </div>
+              </div>
+           </div>
     """
   end
 
@@ -1971,7 +1976,8 @@ defmodule PhosWeb.CoreComponents do
              <div class={[@show_shadow]}>
                 <div  class={[class="relative w-full lg:max-w-3xl"]}>
                 <div :if={@show_location} class="absolute right-0 z-50 mt-8 mr-2 lg:mr-0 md:mr-10">
-                <.orb_modal/>
+                <.orb_modal
+                id={"#{@id}-orb-modal-#{@user.username}"}/>
              </div>
                    <div :if={@show_location} class="absolute inset-x-2 lg:inset-x-0 md:inset-x-10 flex items-end justify-end gap-1">
                     <Heroicons.bookmark class="w-5 h-6 text-gray-900 group-hover:text-teal-500 dark:text-white cursor-pointer"/>

@@ -56,8 +56,6 @@ defmodule PhosWeb.Components.CropUploadInput do
   end
 
   def handle_event("close-modal", _, socket), do: {:noreply, assign(socket, show_modal: false)}
-
-
   defp error_to_string(:too_large), do: "Image too large choose another one"
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
 end

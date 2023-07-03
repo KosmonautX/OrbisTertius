@@ -1,7 +1,6 @@
 <div
   class="mt-2 bg-white dark:bg-gray-900 lg:dark:bg-gray-800 font-poppins px-2"
-  id={"comment-#{elem(@comment, 1).id}"}
->
+  id={"comment-#{elem(@comment, 1).id}"}>
   <div class="flex shrink-0">
     <.link navigate={~p"/user/#{elem(@comment, 1).initiator.username}"} class="flex shrink-0">
       <img

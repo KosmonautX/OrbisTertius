@@ -33,6 +33,7 @@ module.exports = {
       },
       margin: {
         "550px": "550px",
+        "600px": "600px",
       },
       maxHeight: {
         464: "29rem",
