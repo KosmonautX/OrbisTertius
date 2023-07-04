@@ -1,4 +1,5 @@
-<.link phx-click={JS.push("renew")} class="button button-xs bg-emerald-600">Renew</.link>
+<section class="lg:p-4 mt-4">
+  <.link phx-click={JS.push("renew")} class="button button-xs bg-emerald-600 pb-2 mx-4">Renew</.link>
 <.card title="Notification">
   <p :if={length(@notifications) == 0} class="w-full text-center italic">Fetching the data or data not found</p>
   <.table :if={length(@notifications) > 0} id="notification-table" rows={@notifications}>
@@ -16,3 +17,4 @@
     </:action>
   </.table>
 </.card>
+</section>

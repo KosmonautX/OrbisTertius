@@ -184,6 +184,10 @@
  }
  
 
+#nav-form {
+  display: none;
+ }
+
 @keyframes fade-in-scale-keys {
   0% {
     scale: 0.95;

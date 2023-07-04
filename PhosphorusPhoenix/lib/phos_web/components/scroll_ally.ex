@@ -20,6 +20,7 @@ defmodule PhosWeb.Components.ScrollAlly do
           show_user={false}
           show_padding={false}
           profile_border={false}
+          orb_color={false}
           color={true}
           class="dark:bg-gray-900 lg:bg-[#F9F9F9] bg-white lg:px-0">
           <:information>

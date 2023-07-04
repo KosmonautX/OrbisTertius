@@ -61,8 +61,8 @@
    </form>
 
    <div class="mt-44 lg:mt-16 lg:px-[600px]">
-    <h1 class="text-2xl font-bold dark:text-white lg:px-0 px-2">Listing Orbs</h1>
-      <div :if={not is_nil(@current_user)} class="lg:px-0 px-2">
+    <h1 class="text-2xl font-bold dark:text-white lg:px-0 px-2 md:px-10">Listing Orbs</h1>
+      <div :if={not is_nil(@current_user)} class="lg:px-0 px-2 md:px-10">
         <.link class="dark:text-white" patch={~p"/orb/sethome"}>Set Home</.link>
         <.link class="dark:text-white" patch={~p"/orb/setwork"}>Set Work</.link>
       </div>
@@ -72,11 +72,13 @@
       </div>
       <div :for={{key, value} <- @addresses}}>
         <h2 class="lg:block hidden text-left font-semibold text-2xl dark:text-white border-b-2 border-black dark:border-white mb-2.5 py-2"><%= String.capitalize(to_string(key)) %> Orbs</h2>
-        <div id={"table_for_#{key}"} :for={orb <- location_fetcher(value, @geolocation)}>
+         <div id={"table_for_#{key}"} :for={orb <- location_fetcher(value, @geolocation)}>
            <div class="my-2 rounded-b-3xl md:px-10 lg:px-0">
             <.scry_orb id="orb"
              orb={orb}
              timezone={@timezone}
+             orb_color={true}
+             show_orb={true}
              show_information={true}
              show_padding={false}
              profile_img={false}
@@ -84,14 +86,16 @@
              show_info={true}
              show_location={false}
              color={true}/>
-            <div id={"#{key}orb-#{orb.id}"} class="text-sm font-bold text-gray-600 lg:px-3 lg:bg-white px-2 mx-3 dark:bg-gray-800 lg:mx-0 lg:dark:bg-gray-800 bg-[#F3F4F8]">
-             <.link href={~p"/orb/#{orb.id}"}>Show</.link>
-             <.link navigate={~p"/orb/#{orb.id}/edit"}>Edit</.link>
-             <.link phx-click={JS.push("delete", value: %{id: orb.id})} data-confirm="Are you sure?">
-              Delete
-             </.link>
+
+            <div id={"#{key}orb-#{orb.id}"} class="text-xs font-bold text-gray-600 lg:px-3 lg:bg-white px-2  mx-3 dark:bg-gray-800 lg:mx-0 lg:dark:bg-gray-800 bg-[#F3F4F8]">
+              <.link href={~p"/orb/#{orb.id}"}>Show</.link>
+              <.link navigate={~p"/orb/#{orb.id}/edit"}>Edit</.link>
+              <.link phx-click={JS.push("delete", value: %{id: orb.id})} data-confirm="Are you sure?">
+               Delete
+              </.link>
             </div>
-             <div class="flex items-center lg:bg-white dark:bg-gray-900 gap-2 lg:dark:bg-gray-800 break-words lg:px-2 px-1 mx-3 lg:mx-0 dark:bg-gray-800 bg-[#F3F4F8]">
+
+             <div class="flex items-center lg:bg-white dark:bg-gray-900 gap-2 lg:dark:bg-gray-800 break-words lg:px-2 px-1 mx-3 lg:mx-0 dark:bg-gray-800 bg-[#F3F4F8] rounded-b-3xl pb-2">
                <div class="flex flex-shrink-0 -space-x-1">
                  <img class="h-6 w-6 overflow-hidden rounded-full border-2 border-white dark:border-gray-800" src="https://picsum.photos/200/300" />
                  <img class="h-6 w-6 overflow-hidden rounded-full border-2 border-white dark:border-gray-800" src="https://picsum.photos/200/300" />
@@ -101,19 +105,10 @@
                    commented by <strong>username</strong> and <strong>others</strong>
                 </p>
               </div>
-            <.live_component
-              module={PhosWeb.CommentLive.FormComponent}
-              current_user={@current_user}
-              orb={orb}
-              id={"create-root-comment-#{orb.id}"}
-              target={nil}
-              color={false}
-              action={:new}/>
+            </div>
            </div>
          </div>
       </div>
-
-</div>
 
 <div :if={not is_nil(@current_user)} class="fixed bottom-4 right-4">
   <.link  patch={~p"/orb/new"}>
