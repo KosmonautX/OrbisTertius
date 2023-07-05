@@ -18,7 +18,7 @@
 </.modal>
 
   <div class="w-full max-h-fit">
-    <div class="flex fixed w-full z-10 top-14 bg-gray-50 px-2 py-2 border border-gray-100 md:px-10">
+    <div class="flex fixed w-full z-10 top-14 lg:bg-gray-50 bg-white px-2 py-2 border border-gray-100 md:px-10">
       <.form :let={f} for={%{}} as={:search} phx-change="change">
         <%= text_input(f, :username,
           value: @search,
@@ -32,13 +32,13 @@
 
     <div class="hidden lg:block  relative w-full flex flex-col bg-white p-2">
       <table class="w-full align-top text-slate-500 font-serif mt-16">
-      <tr class="font-bold text-left uppercase text-slate-400">
+       <tr class="font-bold text-left uppercase text-slate-400">
         <th></th>
         <th>User</th>
         <th>Title Tag</th>
         <th>Age</th>
         <th>Joined on</th>
-      </tr>
+       </tr>
       <tbody
         id="users"
         phx-viewport-bottom={@user_meta.pagination.downstream && "load-more"}
@@ -79,7 +79,7 @@
       </table>
     </div>
 
-    <div class="w-full lg:hidden block bg-white px-4 md:px-14 mt-20">
+    <div class="w-full lg:hidden block bg-white px-4 md:px-14 mt-16">
       <h5 class="text-xl font-bold leading-none text-gray-900 font-serif">UserDetails</h5>
       <div id="users" phx-viewport-bottom={@user_meta.pagination.downstream && "load-more"}
         phx-update="stream">

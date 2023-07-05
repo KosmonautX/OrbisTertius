@@ -19,7 +19,7 @@
     </div>
   </div>
 
-    <div class="pb-24 hidden lg:block relative">
+    <div class="pb-16 hidden lg:block relative mt-16">
       <.table id="orbs" rows={@orbs} >
        <:col :let={orb} classes="sticky left-0" label="Initiator">
         <.admin_user_preview user={orb.initiator} id={"admin_user_preview_for_#{orb.id}"} />
@@ -59,11 +59,11 @@
     </div>
     
     <div class="lg:hidden block">
-      <div class="grid md:grid-cols-2 gird-col gap-4 mt-24 px-2 md:px-4 pb-24">
+      <div class="grid md:grid-cols-2 gird-col gap-4 mt-20 px-2 md:px-4 pb-24">
        <.admin_grid :for={orb <- @orbs} user={orb.initiator} id={"admin-grid-for-#{orb.id}"} />
        </div>
     </div>
-</div>
+  </div>
 
 
 

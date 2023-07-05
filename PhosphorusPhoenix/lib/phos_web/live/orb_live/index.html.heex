@@ -87,7 +87,7 @@
              show_location={false}
              color={true}/>
 
-            <div id={"#{key}orb-#{orb.id}"} class="text-xs font-bold text-gray-600 lg:px-3 lg:bg-white px-2  mx-3 dark:bg-gray-800 lg:mx-0 lg:dark:bg-gray-800 bg-[#F3F4F8]">
+            <div id={"#{key}orb-#{orb.id}"} class="text-xs font-bold text-gray-600 lg:px-3 lg:bg-white px-2  mx-3 dark:bg-gray-800 lg:mx-0 lg:dark:bg-gray-800 bg-[#F3F4F8] dark:text-white">
               <.link href={~p"/orb/#{orb.id}"}>Show</.link>
               <.link navigate={~p"/orb/#{orb.id}/edit"}>Edit</.link>
               <.link phx-click={JS.push("delete", value: %{id: orb.id})} data-confirm="Are you sure?">
