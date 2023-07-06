@@ -34,12 +34,22 @@ defmodule PhosWeb.UserMemoryChannel do
 
   def handle_info(:after_join, %{assigns: %{current_user: user}} = socket) do
     case user do
-      %{public_profile: %{territories: terr}} ->
+      %{private_profile: %{geolocation: terr}} ->
         terr
-        |> Phos.Mainland.Sphere.middle()
-        |> Enum.map(&(terra_track(&1, socket)))
+        |> Enum.map(&({&1.id, &1.geohash}))
+        |> Enum.map(fn {"live", hash} ->
+          :h3.parent(hash, 8)
+          |> :h3.k_ring(1)
+          |> Phos.Mainland.Sphere.middle()
+          _ -> []
+        end)
+        |> List.flatten()
+        |> Enum.map(&({&1, terra_mapper(&1)}))
+        |> Enum.into(%{})
+        |> tap(&push(socket, "assembly_initiation", &1))
+        |> Enum.map(fn {hash, _} -> terra_track(hash, socket) end)
 
-      _ -> :ok
+        _ -> :ok
     end
 
     #Enum.map(&(Phos.PubSub.subscribe(&1)))
@@ -65,9 +75,19 @@ defmodule PhosWeb.UserMemoryChannel do
   end
 
   def terra_track(hash, %{assigns: %{current_user: user}} = socket) when is_integer(hash) do
-    "memory:terra:" <> Integer.to_string(hash)
+    terra_topic(hash)
     |> tap(&Phos.PubSub.subscribe(&1, fastlane: {socket.transport_pid, socket.serializer, []}))
     |> tap(&PhosWeb.Watcher.track(self(), &1, user))
   end
 
+  defp terra_mapper(hash) when is_integer(hash) do
+    %{
+      hash: hash,
+      midhash: hash |> Phos.Mainland.Sphere.middle(),
+      town: hash |> Phos.Mainland.Sphere.locate(),
+      living: terra_topic(hash) |> PhosWeb.Watcher.list_users() |> Viewer.user_presence_mapper()
+    }
+  end
+
+  defp terra_topic(hash), do: "memory:terra:" <> Integer.to_string(hash)
 end

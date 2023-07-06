@@ -47,6 +47,8 @@ defmodule PhosWeb.Watcher do
     |> Phoenix.Tracker.State.get_by_topic(topic)
   end
 
+  def list_users(topic) , do: Enum.map(list(topic), fn {_k, meta} -> meta end)
+
   defp pool_size() do
     [{:pool_size, size}] = :ets.lookup(__MODULE__, :pool_size)
     size

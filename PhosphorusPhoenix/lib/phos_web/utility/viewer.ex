@@ -126,6 +126,7 @@ defmodule PhosWeb.Util.Viewer do
     }
   end
 
+  def user_presence_mapper(users) when is_list(users), do: Enum.map(users, &user_presence_mapper/1)
   def user_presence_mapper(user) do
     %{
       data: %{
@@ -380,7 +381,7 @@ defmodule PhosWeb.Util.Viewer do
     Enum.filter(orbs, fn orb -> orb.active == true end)
   end
 
-  def loc_mapper(loc) when is_integer(loc )do
+  def loc_mapper(loc) when is_integer(loc) do
     %{
       hash: loc,
       midhash: loc |> Phos.Mainland.Sphere.middle(),
