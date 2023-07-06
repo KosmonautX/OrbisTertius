@@ -1,7 +1,7 @@
 defmodule PhosWeb.Watcher do
   use Phoenix.Tracker
 
-  # quis custodiet ipsos custodes
+  # User-centered Tracker ::: quis custodiet ipsos custodes
 
   def start_link(opts) do
     opts = Keyword.merge([name: __MODULE__], opts)
@@ -16,19 +16,40 @@ defmodule PhosWeb.Watcher do
   def handle_diff(diff, state) do
     IO.inspect diff
     for {topic, {joins, leaves}} <- diff do
-      IO.inspect(topic)
       for {key, meta} <- joins do
-        IO.puts "presence join: key \"#{key}\" with meta #{inspect meta}"
-        msg = {:join, key, meta}
-        # each tracker takes care of its own node
-        Phoenix.PubSub.direct_broadcast!(state.node_name, state.pubsub_server, topic, msg)
+        Task.start(fn ->
+          msg = {:join, topic, Map.put(meta, :topic, topic)}
+          # each tracker takes care of its own node
+          Phoenix.PubSub.direct_broadcast!(state.node_name, state.pubsub_server, topic, msg)
+        end)
       end
       for {key, meta} <- leaves do
-        IO.puts "presence leave: key \"#{key}\" with meta #{inspect meta}"
-        msg = {:leave, key, meta}
-        Phoenix.PubSub.direct_broadcast!(state.node_name, state.pubsub_server, topic, msg)
+        Task.start(fn ->
+          msg = {:leave, topic, Map.put(meta, :topic, topic)}
+          Phoenix.PubSub.direct_broadcast!(state.node_name, state.pubsub_server, topic, msg)
+        end)
       end
     end
     {:ok, state}
   end
+
+  def track(pid, topic, %Phos.Users.User{id: id, media: media, username: username}) do
+    Phoenix.Tracker.track(__MODULE__, pid, topic, id, %{id: id,
+                                                        media: media,
+                                                        username: username,
+                                                        online_at: System.os_time(:second)})
+  end
+
+  def list(topic, timeout \\ 5000) do
+    __MODULE__
+    |> Phoenix.Tracker.Shard.name_for_topic(topic, pool_size())
+    |> GenServer.call({:list, topic}, timeout)
+    |> Phoenix.Tracker.State.get_by_topic(topic)
+  end
+
+  defp pool_size() do
+    [{:pool_size, size}] = :ets.lookup(__MODULE__, :pool_size)
+    size
+  end
+
 end

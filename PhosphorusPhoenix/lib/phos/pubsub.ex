@@ -4,8 +4,8 @@ defmodule Phos.PubSub do
   """
   alias Phoenix.PubSub
 
-  def subscribe(topic) do
-    PubSub.subscribe(Phos.PubSub, topic)
+  def subscribe(topic, opts \\ []) do
+    PubSub.subscribe(Phos.PubSub, topic, opts)
   end
 
   def unsubscribe(topic) do

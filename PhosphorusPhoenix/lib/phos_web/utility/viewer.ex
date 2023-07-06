@@ -126,6 +126,20 @@ defmodule PhosWeb.Util.Viewer do
     }
   end
 
+  def user_presence_mapper(user) do
+    %{
+      data: %{
+      id: user.id,
+      username: user.username,
+      online_at: user.online_at,
+      media: (if user.media, do:  %{"public/profile/lossy" => Phos.Orbject.S3.get!("USR", user.id, "public/profile/lossy")})
+      },
+      meta: Map.take(user, [:phx_ref, :phx_ref_prev, :topic]) |> topic_mapper()
+    }
+  end
+
+  def topic_mapper(%{topic: "memory:terra:" <> hash} = meta), do: %{meta | topic: hash}
+
   def user_profile_mapper(user) do
     %{private: user_private_mapper(user),
       public: user_public_mapper(user),

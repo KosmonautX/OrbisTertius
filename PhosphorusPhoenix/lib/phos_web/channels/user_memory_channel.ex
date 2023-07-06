@@ -33,29 +33,30 @@ defmodule PhosWeb.UserMemoryChannel do
   end
 
   def handle_info(:after_join, %{assigns: %{current_user: user}} = socket) do
-
     case user do
       %{public_profile: %{territories: terr}} ->
         terr
         |> Phos.Mainland.Sphere.middle()
-        |> Enum.map(&(terra_topic(&1)))
+        |> Enum.map(&(terra_track(&1, socket)))
 
       _ -> :ok
     end
-    #Enum.map(&(Phos.PubSub.subscribe(&1)))
 
-    topic = Presence.user_topic(user.id)
-    Phoenix.PubSub.subscribe(socket.pubsub_server, topic, fastlane: {socket.transport_pid, socket.serializer, []})
-    Presence.track(self(), topic, "status", %{online: System.system_time(:second)})
-    push(socket, "presence_state", Presence.list(topic))
+    #Enum.map(&(Phos.PubSub.subscribe(&1)))
+    #topic = Presence.user_topic(user.id)
+    #Phoenix.PubSub.subscribe(socket.pubsub_server, topic, fastlane: {socket.transport_pid, socket.serializer, []})
+    #Presence.track(self(), topic, "status", %{online: System.system_time(:second)})
+    #push(socket, "presence_state", Presence.list(topic))
 
     {:noreply, socket}
-   end
+  end
 
+  def handle_info({presence_event, "memory:terra:" <> _hash, data}, socket) do
+    push(socket, "assembly_" <> to_string(presence_event), Viewer.user_presence_mapper(data))
+    {:noreply, socket}
+  end
 
   def handle_info(msg, socket) do
-    IO.inspect(msg)
-    push(socket, "memory_", %{"data" => [msg] |> Viewer.memory_mapper()})
     {:noreply, socket}
   end
 
@@ -63,8 +64,10 @@ defmodule PhosWeb.UserMemoryChannel do
     {:noreply, socket}
   end
 
-  def terra_topic(hash) when is_integer(hash) do
-    "memory:terra:" <> Integer.to_string(hash) |> Phos.PubSub.subscribe()
+  def terra_track(hash, %{assigns: %{current_user: user}} = socket) when is_integer(hash) do
+    "memory:terra:" <> Integer.to_string(hash)
+    |> tap(&Phos.PubSub.subscribe(&1, fastlane: {socket.transport_pid, socket.serializer, []}))
+    |> tap(&PhosWeb.Watcher.track(self(), &1, user))
   end
 
 end
