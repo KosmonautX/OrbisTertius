@@ -140,6 +140,7 @@ defmodule PhosWeb.Util.Viewer do
   end
 
   def topic_mapper(%{topic: "memory:terra:" <> hash} = meta), do: %{meta | topic: hash}
+  def topic_mapper(meta), do: meta
 
   def user_profile_mapper(user) do
     %{private: user_private_mapper(user),
