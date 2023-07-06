@@ -1,20 +1,38 @@
 <section class="lg:p-4 mt-4">
-  <.link phx-click={JS.push("renew")} class="button button-xs bg-emerald-600 pb-2 mx-4">Renew</.link>
-<.card title="Notification">
-  <p :if={length(@notifications) == 0} class="w-full text-center italic">Fetching the data or data not found</p>
-  <.table :if={length(@notifications) > 0} id="notification-table" rows={@notifications}>
-    <:col :let={n} label="ID"><%= String.slice(n.id, 0..6) %></:col>
-    <:col :let={n} label="Archetype"><%= n.archetype %></:col>
-    <:col :let={n} label="Title">
-      <span :if={String.length(n.title) < 70}><%= n.title %></span>
-      <span :if={String.length(n.title) > 70}><%= String.slice(n.title, 0..70) %> ...</span>
-    </:col>
-    <:col :let={n} label="Regions"><%= inspect n.regions %></:col>
-    <:action :let={n}>
-      <.button phx-click={JS.push("execute", value: %{id: n.id})} class="button button-xs">Execute</.button>
-      <.link :if={n.active} phx-click="disable" phx-value-id={n.id} class="button button-xs button-danger">Disable</.link>
-      <.link :if={!n.active} phx-click="enable" phx-value-id={n.id} class="button button-xs button-primary">Enable</.link>
-    </:action>
-  </.table>
-</.card>
+ <.link phx-click={JS.push("renew")} class="button button-xs bg-emerald-600 pb-2 mx-4">Renew</.link>
+  <.card title="Notification">
+    <p :if={length(@notifications) == 0} class="w-full text-center italic">Fetching the data or data not found</p>
+    <div class="hidden lg:block">
+      <.table :if={length(@notifications) > 0} id="notification-table" rows={@notifications}>
+        <:col :let={n} label="ID"><%= String.slice(n.id, 0..6) %></:col>
+        <:col :let={n} label="Archetype"><%= n.archetype %></:col>
+        <:col :let={n} label="Title">
+          <span :if={String.length(n.title) < 70}><%= n.title %></span>
+          <span :if={String.length(n.title) > 70}><%= String.slice(n.title, 0..70) %> ...</span>
+        </:col>
+        <:col :let={n} label="Regions"><%= inspect n.regions %></:col>
+        <:action :let={n}>
+          <.button phx-click={JS.push("execute", value: %{id: n.id})} class="button button-xs">Execute</.button>
+          <.link :if={n.active} phx-click="disable" phx-value-id={n.id} class="button button-xs button-danger">Disable</.link>
+          <.link :if={!n.active} phx-click="enable" phx-value-id={n.id} class="button button-xs button-primary">Enable</.link>
+       </:action>
+     </.table>
+    </div>
+  </.card>
+  <div class="grid md:grid-cols-2 gird-col gap-4  px-2 md:px-4 pb-24 block lg:hidden">
+    <div :for={n <- @notifications} class="w-full max-w-sm bg-gray-50 rounded-2xl">
+      <div class="flex flex-col items-center justify-center p-4 font-serif">
+        <span class="text-lg font-semibold text-gray-900 uppercase"><%= String.slice(n.id, 0..6) %></span>
+        <span><%= n.archetype %></span>
+        <span class="text-base text-gray-500 font-bold" :if={String.length(n.title) < 70}><%= n.title %></span>
+        <span class="text-base text-gray-500 font-bold" :if={String.length(n.title) > 70}><%= String.slice(n.title, 0..70) %></span>
+        <span class="text-base text-teal-400 font-bold"><%= inspect n.regions %></span>
+         <div class="mt-4 flex space-x-3 md:mt-6">
+           <.button phx-click={JS.push("execute", value: %{id: n.id})} class="button button-xs">Execute</.button>
+           <.link :if={n.active} phx-click="disable" phx-value-id={n.id} class="button button-xs button-danger">Disable</.link>
+           <.link :if={!n.active} phx-click="enable" phx-value-id={n.id} class="button button-xs button-primary">Enable</.link>
+         </div>
+      </div>
+    </div>
+  </div>
 </section>

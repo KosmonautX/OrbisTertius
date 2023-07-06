@@ -257,10 +257,10 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
       <div class={[@color == false && "lg:dark:bg-gray-900 dark:bg-gray-800 bg-[#F3F4F8]",
-      "bg-white font-poppins dark:bg-gray-900 lg:dark:bg-gray-800 w-full space-y-4",
+      "bg-white font-poppins dark:bg-gray-900 lg:dark:bg-gray-800 w-full space-y-4 py-2",
       @class]}>
         <%= render_slot(@inner_block, f) %>
-        <div :for={action <- @actions} class={"#{Map.get(action, :classes, "")}"}>
+        <div  :for={action <- @actions} class={"#{Map.get(action, :classes, "")}"}>
           <%= render_slot(action, f) %>
         </div>
       </div>
@@ -582,7 +582,7 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <div
       id={@id}
-      class="relative w-full flex flex-col bg-white p-2 overflow-scroll font-poppins"
+      class="relative w-full flex flex-col bg-white p-2  font-poppins"
     >
       <table class="w-full align-top text-slate-500">
         <thead class=" py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-base tracking-none whitespace-nowrap text-slate-400">
@@ -650,14 +650,14 @@ defmodule PhosWeb.CoreComponents do
      <div class="flex items-center space-x-4">
        <div class="flex-shrink-0">
          <.link if={@user.username} navigate={"/user/#{@user.username}?bac"}>
-           <img class="w-12 h-12 rounded-full object-cover" src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossy")}
+           <img class="lg:w-12 lg:h-12 h-10 w-10 rounded-full object-cover" src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossy")}
            onerror="this.src='/images/default_banner.jpg';">
          </.link>
        </div>
        <div class="flex-1 min-w-0">
          <p class="text-sm font-medium text-gray-900 truncate dark:text-white">
             <%= "#{@user.username}" %></p>
-         <p href={"mailto: #{@user.email}"} class="text-sm text-gray-500 truncate dark:text-gray-400"><%= "#{@user.email}" %></p>
+         <p href={"mailto: #{@user.email}"} class="lg:text-sm text-xs text-gray-500 truncate dark:text-gray-400"><%= "#{@user.email}" %></p>
        </div>
     </div>
     """
@@ -677,7 +677,7 @@ defmodule PhosWeb.CoreComponents do
   @spec admin_grid(map) :: Phoenix.LiveView.Rendered.t()
   def admin_grid(assigns) do
     ~H"""
-    <div class="w-full bg-white rounded-2xl flex flex-col items-center py-2 font-poppins justify-center">
+    <div class="w-full bg-gray-50 rounded-2xl flex flex-col items-center py-2 font-poppins justify-center">
       <img
         class="md:w-24 md:h-24 h-20 w-20 rounded-full shadow-lg object-cover img-double-border"
         src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
@@ -806,10 +806,10 @@ defmodule PhosWeb.CoreComponents do
   def card(assigns) do
     ~H"""
     <div class={["flex flex-col min-w-0 break-words w-full mb-6 ", @class]} {@rest}>
-      <div class="rounded-t mb-0 px-4 py-3 border-0 font-poppins">
+      <div class="rounded-t mb-0 px-4 border-0 font-poppins">
         <h1 class="font-semibold text-lg text-gray-700"><%= @title %></h1>
       </div>
-      <div class="block w-full overflow-none px-2 py-3">
+      <div class="block w-full px-2">
         <%= render_slot(@inner_block) %>
       </div>
       <div :for={action <- @actions} class="px-2 mt-2 mb-4 flex items-center justify-between gap-6">
