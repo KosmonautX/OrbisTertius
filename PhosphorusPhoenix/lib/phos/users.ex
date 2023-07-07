@@ -255,13 +255,15 @@ defmodule Phos.Users do
     User.changeset(user, attrs)
   end
 
-  def get_user_by_telegram(id) do
+  def get_user_by_telegram(id) when is_binary(id) do
     case do_query_from_auth(id, "telegram") do
       %Auth{user: user} ->
         {:ok, user |> Map.put(:telegram_user, id) }
       err -> err
     end
   end
+
+  def get_user_by_telegram(id), do: to_string(id) |> get_user_by_telegram()
 
   def telegram_user_exists?(id) when is_binary(id) do
     case do_query_from_auth(id, "telegram") do
