@@ -22,7 +22,8 @@ config :phos, PhosWeb.Endpoint,
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   ## 0,0,0,0 to postgres for docker
   http: [ip: {0, 0, 0, 0}, port: System.get_env("PORT") || 4000],
-  check_origin: ["//*.ngrok.io", "http://localhost"],
+  # check_origin: ["//*.ngrok.io", "http://localhost", "//*.ngrok-free.app"],
+  check_origin: false,
   code_reloader: true,
   # true for error message
   debug_errors: true,

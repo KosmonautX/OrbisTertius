@@ -31,12 +31,14 @@ defmodule Phos.Application do
       # Phos.Fyr.Message
       Phos.Notification,
       Phos.PlatformNotification,
+      Phos.TelegramNotification,
       #restart: :temporary supervisor strategy?
       # Start a worker by calling: Phos.Worker.start_link(arg)
       # {Phos.Worker, arg}
       ExGram, # This will setup the Registry.ExGram
-      {Phos.TeleBot, [method: :polling, token: token]},
-      Phos.TeleBot.Remainder
+      # {Phos.TeleBot, [method: :polling, token: token]},
+      {Phos.TeleBot, [method: :webhook, token: token]},
+      Phos.TeleBot.StateManager
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

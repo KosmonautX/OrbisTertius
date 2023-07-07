@@ -94,7 +94,7 @@ defmodule Phos.MixProject do
       {:phoenix_view, "~> 2.0"}, # for error warning removal
       # { :uuid, "~> 1.1" },
       # {:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
-      {:ex_gram, "~> 0.34.0"},
+      {:ex_gram, "~> 0.40.0"},
       {:tesla, "~> 1.2"},
       {:phx_live_storybook, github: "phenixdigital/phx_live_storybook", tag: "992062c", runtime: Mix.env() == :dev}
     ]

@@ -7,6 +7,7 @@ defmodule Phos.Action do
 
   alias Phos.Repo
   alias Phos.Action.{Orb, Orb_Location}
+  alias Phos.TelegramNotification, as: TN
 
   @doc """
   Returns the list of orbs.
@@ -107,12 +108,15 @@ defmodule Phos.Action do
   def active_orbs_by_geohashes(hashes) do
     from(l in Orb_Location,
       where: l.location_id in ^hashes,
-      left_join: orbs in assoc(l, :orbs),
-      where: orbs.active == true,
-      preload: [orbs: :initiator],
-      order_by: [desc: orbs.inserted_at])
-      |> Repo.all(limit: 32)
-      |> Enum.map(fn orb -> orb.orbs end)
+      inner_join: orbs in assoc(l, :orbs),
+      where: orbs.active == true and orbs.userbound != true,
+      select: orbs,
+      inner_join: initiator in assoc(orbs, :initiator),
+      select_merge: %{initiator: initiator},
+      order_by: [desc: orbs.inserted_at],
+      limit: 8)
+      |> Repo.all()
+      # |> Enum.map(fn orb -> orb.orbs end)
   end
 
   def orbs_by_geohashes({hashes, your_id}, page, opts \\ []) do
@@ -190,6 +194,18 @@ defmodule Phos.Action do
       inner_join: initiator in assoc(orbs, :initiator),
       on: initiator.integrations["beacon"]["location"]["scope"] == true,
       distinct: initiator.integrations["fcm_token"],
+      select: initiator.integrations)
+      |> Repo.all()
+  end
+
+  def telegram_chat_id_by_geohashes(hashes) do
+    from(l in Orb_Location,
+      as: :l,
+      where: l.location_id in ^hashes,
+      left_join: orbs in assoc(l, :orbs),
+      # on: orbs.userbound == true,
+      inner_join: initiator in assoc(orbs, :initiator),
+      distinct: initiator.integrations["telegram_chat_id"],
       select: initiator.integrations)
       |> Repo.all()
   end
@@ -331,6 +347,7 @@ defmodule Phos.Action do
   #   """
 
   def create_orb(attrs \\ %{}) do
+    IO.inspect(attrs)
     %Orb{}
     |> Orb.changeset(attrs)
     |> Repo.insert()
@@ -367,7 +384,9 @@ defmodule Phos.Action do
            end)
            #spawn(fn -> user_feeds_publisher(orb) end)
            data
-         err -> err
+         err ->
+          IO.inspect(err)
+          err
        end
   end
 
@@ -418,6 +437,8 @@ defmodule Phos.Action do
       {:ok, orb} ->
         orb = orb |> Repo.preload([:locations])
         orb_loc_publisher(orb, :genesis, orb.locations)
+        IO.inspect("Creating Orb...")
+        # notify_telegram(orb)
         {:ok, orb}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -780,5 +801,9 @@ defmodule Phos.Action do
       })
 
     create_orb(attrs)
+  end
+
+  defp notify_telegram(%{initiator_id: init_id} = orb) do
+    TN.add(orb)
   end
 end

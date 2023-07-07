@@ -72,7 +72,7 @@ config :phos, Phos.OAuthStrategy,
   ],
   telegram: [
     # https://endpoint.com
-    host: {System, :get_env, ["TELEGRAM_REDIRECT_HOST"]},
+    host:  "5fba-220-255-157-189.ngrok-free.app/telegram_signup", #{System, :get_env, ["TELEGRAM_REDIRECT_HOST"]},
     bot_id: {System, :get_env, ["TELEGRAM_BOT_ID"]}
   ]
 
@@ -114,8 +114,18 @@ config :fcmex,
   json_library: Jason
 
 config :phos, Phos.TeleBot,
-  callback_url: {PhosWeb.Router.Helpers, :telegram_url, [PhosWeb.Endpoint, :create]},
-  bot_username: {System, :get_env, ["TELEGRAM_BOT_NAME"]}
+  callback_url: "//5fba-220-255-157-189.ngrok-free.app/bot/telegram_signup", #{PhosWeb.Router.Helpers, :telegram_url, [PhosWeb.Endpoint, :create]},
+  bot_username: {System, :get_env, ["TELEGRAM_BOT_NAME"]},
+  bot_token: {System, :get_env, ["TELEGRAM_BOT_ID"]}
+
+config :ex_gram, :webhook,
+# allowed_updates: ["message", "poll"],       # array of strings
+# certificate: "priv/cert/selfsigned.pem",    # string (file path)
+drop_pending_updates: true,                # boolean
+# ip_address: "1.1.1.1",                      # string
+# max_connections: 50,                        # integer
+# secret_token: "some_super_secret_key",      # string
+  url: "5fba-220-255-157-189.ngrok-free.app"   # string (only domain name)
 
 config :phos, Phos.External.Notion,
   token: {System, :get_env, "NOTION_TOKEN"},
@@ -127,6 +137,12 @@ config :phos, Phos.PlatformNotification,
   time_interval: 3,
   min_demand: 5,
   max_demand: 8
+
+config :phos, Phos.TelegramNotification,
+  worker: 8,
+  time_interval: 3,
+  min_demand: 2,
+  max_demand: 5
 
 # config :sparrow,
 #   pool_enabled: true,

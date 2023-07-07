@@ -76,4 +76,24 @@ defmodule Phos.Users.UserNotifier do
     ==============================
     """)
   end
+
+  @doc """
+  Deliver instructions to link telegram account.
+  """
+  def deliver_telegram_link_instructions(user, url) do
+    deliver(user.email, "Link instructions", """
+
+    ==============================
+
+    Hi #{user.username},
+
+    You can link your telegram account to your Scratchbac account by visiting the URL below:
+
+    #{url}
+
+    If you didn't request to link your account with us, please ignore this.
+
+    ==============================
+    """)
+  end
 end

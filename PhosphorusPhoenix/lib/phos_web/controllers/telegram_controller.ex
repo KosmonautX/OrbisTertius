@@ -1,38 +1,78 @@
 defmodule PhosWeb.TelegramController do
   use PhosWeb, :controller
 
-  def create(conn, %{"hash" => hash, "id" => id} = params) do
-    case valid_hash?(hash, Map.drop(params, ["hash"])) do
-      true -> create_user(params)
-        _ -> ExGram.send_message(id, "Error occured when receiving a callback", reply_markup: Phos.TeleBot.build_registration_button())
+  # DEPRECATED. Use create_user
+  # def create(conn, %{"hash" => hash, "id" => id} = params) do
+  #   case valid_hash?(hash, Map.drop(params, ["hash"])) do
+  #     true -> create_user(params)
+  #       _ -> ExGram.send_message(id, "Error occured when receiving a callback", reply_markup: Phos.TeleBot.build_registration_button())
+  #   end
+  #   IO.inspect(params, pretty: true)
+  #   render(conn, :home, %{success: true, telegram: Phos.OAuthStrategy.telegram()})
+  # end
+
+  # defp valid_hash?(challanger, params) do
+  #   secret = :crypto.hash(:sha256, ExGram.Token.fetch())
+  #   data =
+  #     Enum.map(params, fn {k, v} -> k <> "=" <> v end)
+  #     |> Enum.join("\n")
+
+  #   :crypto.mac(:hmac, :sha256, secret, data)
+  #   |> Base.encode16()
+  #   |> String.downcase()
+  #   |> String.equivalent?(challanger)
+  # end
+
+  def webhook(conn, _params) do
+    case parse_update(conn.body_params) do
+      {:ok, update} ->
+          # context = %ExGram.Cnt{
+          #   update: update
+          # }
+          # |> Map.put(:fsm, %Phos.TeleBot{state: "home", data: nil})
+        Phos.TeleBot.handle(update)
+        send_resp(conn, 200, "OK")
+      {:error, reason} ->
+        send_response(reason, conn, 400)
     end
-    IO.inspect(params, pretty: true)
-    render(conn, "index.html", %{success: true, telegram: Phos.OAuthStrategy.telegram()})
   end
 
-  defp valid_hash?(challanger, params) do
-    secret = :crypto.hash(:sha256, ExGram.Token.fetch())
-    data =
-      Enum.map(params, fn {k, v} -> k <> "=" <> v end)
-      |> Enum.join("\n")
-
-    :crypto.mac(:hmac, :sha256, secret, data)
-    |> Base.encode16()
-    |> String.downcase()
-    |> String.equivalent?(challanger)
+  defp parse_update(body_params) do
+  # require IEx; IEx.pry()
+    case body_params do
+      %{"message" => %{"location" => location} = message} ->
+        {:ok, {:location, message}}
+        %{"message" => %{"photo" => photo} = message} ->
+        {:ok, {:photo, message}}
+      %{"message" => message} ->
+        {:ok, {:message, extract_command(message), message}}
+      %{"callback_query" => query} ->
+        {:ok, {:callback_query, query}}
+      %{"inline_query" => query} ->
+        {:ok, {:inline_query, query}}
+      _ ->
+        {:error, "Invalid update payload"}
+    end
   end
 
-  defp create_user(%{"id" => id} = params) do
-    options =
-      Map.merge(params, %{
-        "sub" => id,
-        "provider" => "telegram",
-      })
-
-    case Phos.Users.from_auth(options) do
-      {:ok, _user} -> ExGram.send_message(id, "Registered successfully", reply_markup: Phos.TeleBot.build_menu_button())
-      {:error, msg} -> ExGram.send_message(id, msg, reply_markup: Phos.TeleBot.build_menu_button())
+  # TODO: refactor this and tidy so that we don't have to explicitly edit this codeblock when adding new commands
+  def extract_command(%{"text" => text}) do
+    case String.trim(text) do
+      "/start" -> :start
+      "/help" -> :help
+      "/register" -> :register
+      "/post" -> :post
+      "/profile" -> :profile
+      # "/debug" -> :debug
+      _ -> :text
     end
+  end
+
+  defp send_response(response, conn, status) do
+    conn
+    |> put_status(status)
+    |> put_resp_content_type("application/json")
+    |> send_resp(status, response)
   end
 end
 

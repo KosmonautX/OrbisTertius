@@ -77,6 +77,9 @@ defmodule Phos.Users.User do
     user
     |> cast(attrs, [:username, :email])
     |> cast_assoc(:auths, with: &Auth.changeset/2)
+    |> cast_assoc(:private_profile)
+    |> cast_embed(:integrations, with: &Integrations.telegram_changeset/2)
+    |> cast_embed(:public_profile, with: &Public_Profile.changeset/2)
   end
 
   def post_registration_changeset(%__MODULE__{} = user, attrs) do

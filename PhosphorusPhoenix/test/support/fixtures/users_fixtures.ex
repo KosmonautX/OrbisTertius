@@ -25,6 +25,17 @@ defmodule Phos.UsersFixtures do
     user
   end
 
+  def temp_tele_user_fixture(attrs \\ %{}) do
+    options =
+      %{
+        "sub" => "#{Enum.random(1000000..3999999)}",
+        "provider" => "telegram",
+      }
+
+    {:ok, user} = Phos.Users.from_auth(options)
+    user
+  end
+
   def user_pte_prof_fixture(attrs \\ %{}) do
     {:ok, user_created} = valid_user_attributes() |> Phos.Users.register_user()
 

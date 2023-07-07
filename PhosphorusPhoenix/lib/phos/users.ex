@@ -257,7 +257,8 @@ defmodule Phos.Users do
 
   def get_user_by_telegram(id) do
     case do_query_from_auth(id, "telegram") do
-      %Auth{user: user} -> {:ok, user}
+      %Auth{user: user} ->
+        {:ok, user |> Map.put(:telegram_user, id) }
       err -> err
     end
   end
@@ -275,7 +276,7 @@ defmodule Phos.Users do
   Authenticate a user from oauth provider
   """
   def from_auth(%{"sub" => id, "provider" => provider} = resp) do
-    case do_query_from_auth(id, provider) do
+    case do_query_from_auth(to_string(id), provider) do
       nil -> create_new_user(id, provider, resp)
       %Auth{} = auth -> {:ok, auth.user}
       _ -> {:error, "Error occured"}
@@ -298,10 +299,20 @@ defmodule Phos.Users do
     params = %{
       auths: [
         %{
-          auth_id: id,
+          auth_id: to_string(id),
           auth_provider: to_string(provider)
         }
-      ]
+      ],
+      integrations: %{
+        telegram_chat_id: to_string(id)
+      },
+      public_profile: %{birthday: "",
+                        bio: "I'm new to Scratchbac!",
+                        public_name: "",
+                        occupation: "",
+                        traits: [],
+                        profile_pic: Enum.random(1..6),
+                        banner_pic: Enum.random(1..6)}
     }
 
     %User{}
@@ -326,6 +337,28 @@ defmodule Phos.Users do
       {:ok, auth} -> {:ok, auth.user}
       error -> error
     end
+  end
+
+  def get_telegram_chat_ids_by_orb(orb) do
+    orb = orb |> Repo.preload([:initiator])
+    # tele_sender_id = orb.initiator.integrations.telegram_chat_id
+
+    telegram_chat_ids =
+      Enum.map([8,9,10], &(:h3.parent(orb.central_geohash, &1)))
+      |> Phos.Action.telegram_chat_id_by_geohashes()
+      |> Enum.reduce([], fn notifier, acc ->
+        case notifier.telegram_chat_id do
+          nil -> acc
+          chat_id ->
+            [%{orb: orb, chat_id: chat_id} | acc]
+        end
+      end)
+
+    # DO WE NEED TO SEND THE SENDER A NOTIFICATION?
+    # Map.new()
+    # |> Map.put(:orb, orb)
+    # |> Map.put(:telegram_chat_ids, telegram_chat_ids)
+    # |> Map.put(:telegram_chat_ids, List.delete(telegram_chat_ids, tele_sender_id)) # remove sender from list
   end
 
   alias Phos.Users.{User, UserToken, UserNotifier}
@@ -687,7 +720,7 @@ defmodule Phos.Users do
          {:ok, %{user: user}} <- Repo.transaction(confirm_user_multi(user)) do
       {:ok, user}
     else
-      _ -> :error
+      {:error, error} -> IO.inspect(error)
     end
   end
 
@@ -758,5 +791,82 @@ defmodule Phos.Users do
       {:ok, %{user: user}} -> {:ok, user}
       {:error, :user, changeset, _} -> {:error, changeset}
     end
+  end
+
+    ## Link Telegram -> Web
+
+  @doc """
+  Delivers the confirmation email instructions to the given user.
+
+  ## Examples
+
+  iex> deliver_user_confirmation_instructions(user, &Routes.user_confirmation_url(conn, :edit, &1))
+  {:ok, %{to: ..., body: ...}}
+
+  iex> deliver_user_confirmation_instructions(confirmed_user, &Routes.user_confirmation_url(conn, :edit, &1))
+  {:error, :already_confirmed}
+
+  """
+  def deliver_telegram_bind_confirmation_instructions(%User{} = user, telegram_id, bindtelegram_url_fun)
+      when is_function(bindtelegram_url_fun, 1) do
+
+      {encoded_token, user_token} = UserToken.build_email_token_for_bind_account(user, telegram_id, "bind_telegram")
+      Repo.insert!(user_token)
+      UserNotifier.deliver_telegram_link_instructions(user, bindtelegram_url_fun.(encoded_token))
+  end
+
+  @doc """
+  Confirms a user by the given token.
+
+  If the token matches, the user account is marked as confirmed
+  and the token is deleted.
+  """
+  # def confirm_user(token) do
+  #   with {:ok, query} <- UserToken.verify_email_token_query(token, "confirm"),
+  #        %User{} = user <- Repo.one(query),
+  #        {:ok, %{user: user}} <- Repo.transaction(confirm_user_multi(user)) do
+  #     {:ok, user}
+  #   else
+  #     _ -> :error
+  #   end
+  # end
+
+  def bind_user(token) do
+    with {:ok, query} <- UserToken.verify_bindaccount_token_query(token, "bind_telegram"),
+        user when not is_nil(user) <- Repo.one(query),
+        {:ok, %{user: user}} <- Repo.transaction(bind_user_multi(user)) do
+      {:ok, user}
+    else
+    _ ->
+      :error
+    end
+  end
+
+  defp bind_user_multi(%{tele_user: tele_user, email: email} = user) do
+    main_user = get_user_by_email(email) |> Repo.preload([:auths])
+    telegram_id = tele_user.integrations.telegram_chat_id
+
+    params = %{
+      auths: [
+        %{
+          auth_id: telegram_id,
+          auth_provider: "telegram"
+        }
+      ],
+      integrations: %{
+        telegram_chat_id: to_string(telegram_id)
+      }
+    }
+
+    query =
+      from a in Auth,
+        where: a.auth_id == ^telegram_id and a.auth_provider == "telegram"
+
+    auth = Repo.one(query)
+
+    Multi.new()
+    |> Multi.delete(:auth, auth)
+    |> Multi.update(:user, User.telegram_changeset(main_user, params))
+    |> Multi.delete_all(:tokens, UserToken.user_and_contexts_query(tele_user, ["bind_telegram"]))
   end
 end

@@ -27,6 +27,30 @@ defmodule PhosWeb.UserConfirmationLive do
     """
   end
 
+  def render(%{live_action: :bind_telegram} = assigns) do
+    ~H"""
+    <div class="flex flex-col h-screen justify-center items-center">
+      <.header>Confirm Link</.header>
+
+      <.simple_form :let={f} for={:user} id="bind_account_form" phx-submit="bind_account">
+        <.input field={{f, :token}} type="hidden" value={@token} />
+        <:actions>
+          <.button phx-disable-with="Linking..." type="submit">Link my account</.button>
+        </:actions>
+      </.simple_form>
+      <p class="text-gray-600 font-bold mt-2 hidden">
+        <.link href={~p"/users/register"} class="font-semibold text-base text-teal-500 underline">
+          Register
+        </.link>
+        Or
+        <.link href={~p"/users/log_in"} class="font-semibold text-base text-teal-500 underline">
+          Log in
+        </.link>
+      </p>
+    </div>
+    """
+  end
+
   def mount(params, _session, socket) do
     {:ok, assign(socket, token: params["token"]), temporary_assigns: [token: nil]}
   end
@@ -54,6 +78,36 @@ defmodule PhosWeb.UserConfirmationLive do
             {:noreply,
              socket
              |> put_flash(:error, "User confirmation link is invalid or it has expired.")
+             |> redirect(to: ~p"/")}
+        end
+    end
+  end
+
+
+  # Do not log in the user after confirmation to avoid a
+  # leaked token giving the user access to the account.
+  def handle_event("bind_account", %{"user" => %{"token" => token}}, socket) do
+    case Users.bind_user(token) do
+      {:ok, _} ->
+        IO.inspect("Telegram binded successfully")
+        {:noreply,
+         socket
+         |> put_flash(:info, "Telegram Binded successfully.")
+         |> redirect(to: ~p"/")}
+
+      :error ->
+        # If there is a current user and the account was already confirmed,
+        # then odds are that the confirmation link was already visited, either
+        # by some automation or by the user themselves, so we redirect without
+        # a warning message.
+        case socket.assigns do
+          %{current_user: %{confirmed_at: confirmed_at}} when not is_nil(confirmed_at) ->
+            {:noreply, redirect(socket, to: ~p"/")}
+
+          %{} ->
+            {:noreply,
+             socket
+             |> put_flash(:error, "Telegram bind confirmation link is invalid or it has expired.")
              |> redirect(to: ~p"/")}
         end
     end

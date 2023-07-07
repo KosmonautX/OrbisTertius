@@ -57,7 +57,7 @@ defmodule PhosWeb.API.OrbController do
     end
   end
 
-  defp orb_constructor(user, params) do
+  def orb_constructor(user, params) do
     constructor = sanitize(params)
     try do
       options = case params do
@@ -74,6 +74,8 @@ defmodule PhosWeb.API.OrbController do
         _ -> %{}
       end
       |> Map.put("initiator_id", user.id)
+
+      # IO.inspect(Map.merge(constructor, options))
       {:ok, Map.merge(constructor, options)}
     rescue
       ArgumentError -> {:error, :unprocessable_entity}

@@ -61,7 +61,6 @@ defmodule PhosWeb.Router do
       live "/users/reset_password", UserForgotPasswordLive, :new
       live "/users/reset_password/:token", UserResetPasswordLive, :edit
     end
-
     post "/users/log_in", UserSessionController, :create
   end
 
@@ -73,7 +72,6 @@ defmodule PhosWeb.Router do
       live "/begin", UserWelcomeLive, :onboard
       end
 
-    get "/telegram_signup", TelegramController, :create
 
     live_session :required_authenticated_user,
       on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Timezone, :timezone}] do
@@ -205,6 +203,10 @@ defmodule PhosWeb.Router do
     post "/:provider/callback", AuthController, :apple_callback
   end
 
+  scope "/telegram", PhosWeb do
+    post "/:token", TelegramController, :webhook
+  end
+
   # Enables LiveDashboard only for development
   #
   # If you want to use the LiveDashboard in production, you should put
@@ -279,10 +281,13 @@ defmodule PhosWeb.Router do
 
     get "/users/log_out", UserSessionController, :delete
 
+    get "/bot/telegram_signup", TelegramController, :create
+
     live_session :current_user,
       on_mount: [{PhosWeb.Menshen.Gate, :mount_current_user}] do
       live "/users/confirm/:token", UserConfirmationLive, :edit
       live "/users/confirm", UserConfirmationInstructionsLive, :new
+      live "/users/bind/telegram/:token", UserConfirmationLive, :bind_telegram
     end
 
     live_session :guest_if_not_logged_in,
