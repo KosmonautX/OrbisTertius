@@ -2,8 +2,7 @@ defmodule Phos.PlatformNotification.Consumer.Fcm do
   use Phos.PlatformNotification.Specification
 
   @impl true
-  def send(%{recipient: %{integrations: %{fcm_token: token}}} = store) do
-    IO.inspect "#{store.recipient.username} << #{get_in(store.spec, ["options", "notification", "title"])}"
+  def send(%{recipient: %{integrations: %{fcm_token: _token}}} = store) do
     %{"body" => body, "title" => title} = get_template(store)
     data = get_data(store)
 

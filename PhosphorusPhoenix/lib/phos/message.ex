@@ -125,17 +125,6 @@ defmodule Phos.Message do
   end
 
   @doc """
-  Returns last  messages by location
-
-  ## Examples
-
-      iex> list_messages_by_pair()
-      [%Echo{}, ...]
-
-  """
-
-
-  @doc """
   Returns paginated call of the messages by location
 
   ## Examples

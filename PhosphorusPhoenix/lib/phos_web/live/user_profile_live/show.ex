@@ -40,6 +40,7 @@ defmodule PhosWeb.UserProfileLive.Show do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
+  @impl true
   def handle_event("load-more", _, %{assigns: %{ally_list: allies_meta, orbs: orbs_meta, current_user: curr, user: user}} = socket) do
     expected_ally_page = allies_meta.pagination.current + 1
     expected_orb_page = orbs_meta.pagination.current + 1
@@ -168,7 +169,7 @@ defmodule PhosWeb.UserProfileLive.Show do
     |> assign(ally_list: allies_meta)
   end
 
-  defp stream_assign(socket, key, %{data: data, meta: meta} = params) do
+  defp stream_assign(socket, key, %{data: data, meta: meta} = _params) do
     socket
     |> stream(key, data)
     |> assign(key, meta)

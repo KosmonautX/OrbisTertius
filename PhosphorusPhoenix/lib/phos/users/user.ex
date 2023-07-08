@@ -3,7 +3,7 @@ defmodule Phos.Users.User do
   use Ecto.Schema
   import Ecto.Changeset
   alias Phos.Action.{Orb}
-  alias Phos.Users.{Public_Profile, Private_Profile, Auth, RelationBranch, Integrations, User}
+  alias Phos.Users.{Public_Profile, Private_Profile, Auth, RelationBranch, Integrations}
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "users" do
@@ -139,7 +139,7 @@ defmodule Phos.Users.User do
     |> validate_username(opts)
   end
 
-  defp validate_email(changeset, opts \\ []) do
+  defp validate_email(changeset, opts) do
     changeset
     |> validate_required([:email])
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")

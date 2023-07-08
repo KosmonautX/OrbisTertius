@@ -100,7 +100,7 @@ defmodule PhosWeb.MemoryLive.Index do
         user_cursor: Map.get(meta.pagination, :cursor))}
   end
 
-  def handle_info({Phos.PubSub, {:memory, "formation"}, %{rel_subject_id: rel_id} = data}, %{assigns: %{current_user: user, memories: memories}} = socket) do
+  def handle_info({Phos.PubSub, {:memory, "formation"}, %{rel_subject_id: _rel_id} = data}, %{assigns: %{current_user: user, memories: memories}} = socket) do
     %{data: search_memories, meta: _meta} = memories_by_user(user)
     {:noreply, assign(socket, memories: memories ++ [data], search_memories: map_last_memory(search_memories), memory: %Memory{})}
   end

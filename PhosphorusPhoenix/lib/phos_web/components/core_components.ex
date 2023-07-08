@@ -644,7 +644,7 @@ defmodule PhosWeb.CoreComponents do
   def admin_user_preview(assigns) do
     ~H"""
     <div class="flex max-w-sm font-poppins">
-      <.link if={@user.username} navigate={"/user/#{@user.username}?bac"}>
+      <.link :if={@user.username} navigate={"/user/#{@user.username}?bac"}>
       <div>
         <img
           src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossy")}
@@ -1854,6 +1854,7 @@ defmodule PhosWeb.CoreComponents do
   slot(:ally_button) do
     attr(:user, :map, doc: "user want to attached to")
     attr(:current_user, :map, doc: "current active user")
+    attr(:parent_pid, :any, doc: "current active pid")
     attr(:socket, :map, doc: "current active socket")
   end
 
@@ -1926,6 +1927,7 @@ defmodule PhosWeb.CoreComponents do
   slot(:ally_button) do
     attr(:user, :map, doc: "user want to attached to")
     attr(:current_user, :map, doc: "current active user")
+    attr(:parent_pid, :any, doc: "current active pid")
     attr(:socket, :map, doc: "current active socket")
   end
 

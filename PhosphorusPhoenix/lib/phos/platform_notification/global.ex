@@ -3,8 +3,6 @@ defmodule Phos.PlatformNotification.Global do
 
   defstruct [:action_path, :active, :archetype, :archetype_id, :frequency, :id, :regions, :target_group, :title, :body , :time_condition, :trigger]
 
-  alias Phos.PlatformNotification, as: PN
-
   def start_link(opts), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
 
   @impl true

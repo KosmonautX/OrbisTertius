@@ -4,11 +4,10 @@ defmodule PhosWeb.OrbLive.Show do
   alias Phos.Action
   alias Phos.Comments
   alias PhosWeb.Utility.Encoder
-  alias PhosWeb.Components.ScrollAlly
   alias PhosWeb.Components.ScrollOrb
 
   @impl true
-  def mount(%{"id" => id} = params, _session, socket) do
+  def mount(%{"id" => _id} = _params, _session, socket) do
     {:ok,
      socket
      |> assign(:ally, false)
@@ -19,7 +18,7 @@ defmodule PhosWeb.OrbLive.Show do
 
   @impl true
   def handle_params(%{"id" => id} = params, _, socket) do
-    with %{assigns: %{current_user: %Phos.Users.User{} = user}} <- socket do
+    with %{assigns: %{current_user: %Phos.Users.User{} = _user}} <- socket do
       Phos.PubSub.subscribe("folks")
     end
 
@@ -313,7 +312,7 @@ defmodule PhosWeb.OrbLive.Show do
     end
   end
 
-  defp stream_assign(socket, key, %{data: data, meta: meta} = params) do
+  defp stream_assign(socket, key, %{data: data, meta: meta} = _params) do
     socket
     |> stream(key, data)
     |> assign(key, meta)

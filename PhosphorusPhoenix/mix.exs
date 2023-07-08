@@ -97,15 +97,6 @@ defmodule Phos.MixProject do
     ]
   end
 
-  defp sparrow_dep() do
-    if path = System.get_env("SPARROW_PATH") do
-      [path: path]
-    else
-      #[github: "esl/sparrow"]
-      [github: "KosmonautX/sparrow"]
-    end
-  end
-
   # Aliases are shortcuts or tasks specific to the current project.
   # For example, to install project dependencies and perform other setup tasks, run:
   #

@@ -395,7 +395,7 @@ defmodule Phos.Users do
           where: r.user_id == parent_as(:user).id and not is_nil(r.completed_at),
           select: %{count: count()}
         )
-      ),
+      ), on: true,
       select_merge: %{ally_count: a_count.count})
   end
 

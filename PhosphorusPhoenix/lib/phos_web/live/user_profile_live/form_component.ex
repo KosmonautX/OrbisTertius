@@ -58,9 +58,6 @@ defmodule PhosWeb.UserProfileLive.FormComponent do
     end
   end
 
-  defp error_to_string(:too_large), do: "Image too large"
-  defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
-
   defp save_profile(socket, :edit, profile_params) do
     case Users.update_user(socket.assigns.current_user, profile_params) do
       {:ok, _user} ->

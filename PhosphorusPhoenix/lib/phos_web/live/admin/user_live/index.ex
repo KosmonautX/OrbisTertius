@@ -36,7 +36,7 @@ defmodule PhosWeb.Admin.UserLive.Index do
 
   end
 
-  def handle_params(%{"search" => %{"username" => search_value}} = params, _url, socket) do
+  def handle_params(%{"search" => %{"username" => _search_value}} = params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
@@ -48,7 +48,7 @@ defmodule PhosWeb.Admin.UserLive.Index do
 
   def handle_event(
     "load-more",
-    params,
+    _params,
     %{assigns: %{search: search, limit: limit, user_meta: %{pagination: pagination}}} = socket
     ) do
 

@@ -32,7 +32,7 @@ defmodule PhosWeb.Component.AllyButton do
      |> assign(:rel, rel)}
   end
 
-  def update(_,%{assigns: %{current_user: user, user: acceptor, parent_pid: parent_pid}} = socket) do
+  def update(_,%{assigns: %{current_user: user, user: _acceptor, parent_pid: _parent_pid}} = socket) do
     {:ok, assign(socket, ally: false, current_user: user)}
   end
 
@@ -168,10 +168,10 @@ defmodule PhosWeb.Component.AllyButton do
     """
   end
 
-  def render(%{ally: "completed", user: user} = assigns) do
+  def render(%{ally: "completed"} = assigns) do
     ~H"""
     <a class="flex">
-      <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{user.username}")}>
+      <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{@user.username}")}>
         <button
           type="button"
           class="text-black bg-amber-500 hover:bg-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-300 font-bold rounded-2xl lg:text-base px-6 py-2.5 text-center mr-2 dark:focus:ring-amber-900 font-poppins"

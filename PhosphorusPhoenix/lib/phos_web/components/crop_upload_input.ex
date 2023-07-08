@@ -42,10 +42,6 @@ defmodule PhosWeb.Components.CropUploadInput do
 
           </article>
 
-          <%= for err <- upload_errors(@uploads.image) do %>
-            <p class="alert alert-danger"><%= error_to_string(err) %></p>
-          <% end %>
-
           <.button type="submit" phx-disable-with="Saving...">Save</.button>
         </.modal>
       <% end %>
