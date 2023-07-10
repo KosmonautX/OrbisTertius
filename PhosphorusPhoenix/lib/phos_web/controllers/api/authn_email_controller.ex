@@ -28,7 +28,7 @@ defmodule PhosWeb.API.AuthNEmailController do
   #
   def register(%Plug.Conn{assigns: %{current_user: anon}} = conn, %{"email" => email, "password" => _password} = params) do
     with {:ok, user} <- Users.claim_anon_user(anon, params),
-         Phos.External.GoogleIdentity.link_email(anon.fyr_id, email) do
+         _ <- Phos.External.GoogleIdentity.link_email(anon.fyr_id, email) do
 
       Users.deliver_user_confirmation_instructions(user, &url(~p"/users/confirm/#{&1}"))
 

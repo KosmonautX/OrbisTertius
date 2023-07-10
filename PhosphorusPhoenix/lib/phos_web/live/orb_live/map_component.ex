@@ -27,79 +27,70 @@ defmodule PhosWeb.OrbLive.MapComponent do
   end
 
   @impl true
-  def handle_event("save_loc", %{"lng" => longitude, "lat" => latitude}, socket) do
-    user = socket.assigns.current_user
+  def handle_event("save_loc", %{"lng" => longitude, "lat" => latitude}, %{assigns: assigns} = socket) do
+    cond do
+      # Create private_profile with geolocation flow
+      socket.assigns.current_user.private_profile == nil ->
+        insert_private_profile(assigns.current_user, assigns.setloc, {latitude, longitude})
 
-    record =
-      cond do
-        # Create private_profile with geolocation flow
-        socket.assigns.current_user.private_profile == nil ->
-          ecto_insert =
-            %Users.PrivateProfile{}
-            |> Users.PrivateProfile.changeset(%{user_id: user.id})
-            |> Ecto.Changeset.put_embed(:geolocation, [%{id: to_string(socket.assigns.setloc), geohash: :h3.from_geo({String.to_float(latitude), String.to_float(longitude)}, 10), chronolock: DateTime.utc_now() |> DateTime.add(14 * 3600 * 24, :second) |> DateTime.to_unix(), location_description: nil}])
-            |> Phos.Repo.insert()
+      # Insert geolocation where other loc already exists
+      Enum.find(assigns.user.private_profile.geolocation, fn map -> map.id == to_string(assigns.setloc) end) == nil ->
+        insert_existing_geoloc(assigns.current_user, assigns.setloc, {latitude, longitude})
 
-          case ecto_insert do
-            {:ok, record} ->
-              send(self(), {:static_location_update, %{"locname" => socket.assigns.setloc, "longitude" => String.to_float(longitude), "latitude" => String.to_float(latitude)}})
-              {:ok, record}
-            {:error, changeset} ->
-              {:error, changeset}
-          end
-
-        # Insert geolocation where other loc already exists
-        Enum.find(user.private_profile.geolocation, fn map -> map.id == to_string(socket.assigns.setloc) end) == nil ->
-            changeset = Ecto.Changeset.change(user.private_profile)
-            geolocation_changeset = Ecto.Changeset.change(%Users.Geolocation{}, %{id: to_string(socket.assigns.setloc), geohash: :h3.from_geo({String.to_float(latitude), String.to_float(longitude)}, 10), chronolock: DateTime.utc_now() |> DateTime.add(14 * 3600 * 24, :second) |> DateTime.to_unix(), location_description: nil})
-            ecto_update =
-              Ecto.Changeset.put_embed(changeset, :geolocation, [geolocation_changeset | user.private_profile.geolocation])
-              |> Phos.Repo.update()
-
-          case ecto_update do
-            {:ok, record} ->
-              send(self(), {:static_location_update, %{"locname" => socket.assigns.setloc, "longitude" => String.to_float(longitude), "latitude" => String.to_float(latitude)}})
-              {:ok, record}
-            {:error, changeset} ->
-              {:error, changeset}
-          end
-
-        # Update flow
-        true ->
-          {loc_updating, loc_no_update} = Enum.split_with(user.private_profile.geolocation, fn u -> u.id == to_string(socket.assigns.setloc) end)
-          if DateTime.utc_now() |> DateTime.to_unix() < List.first(loc_updating).chronolock do
-            {:chronolocked, %{}}
-          else
-            changeset = Ecto.Changeset.change(user.private_profile)
-            geolocation_changeset = Ecto.Changeset.change(List.first(loc_updating), %{id: to_string(socket.assigns.setloc), geohash: :h3.from_geo({String.to_float(latitude), String.to_float(longitude)}, 10), chronolock: DateTime.utc_now() |> DateTime.add(14 * 3600 * 24, :second) |> DateTime.to_unix(), location_description: nil})
-            ecto_update =
-              Ecto.Changeset.put_embed(changeset, :geolocation, [geolocation_changeset | loc_no_update])
-              |> Phos.Repo.update()
-
-            case ecto_update do
-              {:ok, record} ->
-                send(self(), {:static_location_update, %{"locname" => socket.assigns.setloc, "longitude" => String.to_float(longitude), "latitude" => String.to_float(latitude)}})
-                {:ok, record}
-              {:error, changeset} ->
-                {:error, changeset}
-            end
-          end
-      end
-
-    case record do
+      # Update flow
+      true -> save_location_default(assigns.current_user, assigns.setloc, {latitude, longitude})
+    end
+    |> case do
       {:ok, record} ->
         send(self(), {:user_profile_loc_update, %{"profile" => record}})
         {:noreply, socket
-          |> put_flash(:info, "#{String.capitalize(to_string(socket.assigns.setloc))} location saved")
-          |> push_patch(to: socket.assigns.return_to)}
+          |> put_flash(:info, "#{String.capitalize(to_string(assigns.setloc))} location saved")
+          |> push_patch(to: assigns.return_to)}
       {:chronolocked, _} ->
         {:noreply, socket
-          |> put_flash(:error, "#{String.capitalize(to_string(socket.assigns.setloc))} location not saved. Not yet 14 days")
-          |> push_patch(to: socket.assigns.return_to)}
+          |> put_flash(:error, "#{String.capitalize(to_string(assigns.setloc))} location not saved. Not yet 14 days")
+          |> push_patch(to: assigns.return_to)}
       {:error, _changeset} ->
         {:noreply, socket
           |> put_flash(:error, "Changeset error")
-          |> push_patch(to: socket.assigns.return_to)}
+          |> push_patch(to: assigns.return_to)}
     end
   end
+
+  defp insert_private_profile(user, name, {latitude, longitude} = location) do
+    %Users.PrivateProfile{}
+    |> Users.PrivateProfile.changeset(%{user_id: user.id})
+    |> Ecto.Changeset.put_embed(:geolocation, [%{id: to_string(name), geohash: :h3.from_geo({String.to_float(latitude), String.to_float(longitude)}, 10), chronolock: DateTime.utc_now() |> DateTime.add(14 * 3600 * 24, :second) |> DateTime.to_unix(), location_description: nil}])
+    |> Phos.Repo.insert()
+    |> cast_error(name, location)
+  end
+
+  defp insert_existing_geoloc(user, name, {latitude, longitude} = location) do
+    changeset = Ecto.Changeset.change(user.private_profile)
+    geolocation_changeset = Ecto.Changeset.change(%Users.Geolocation{}, %{id: to_string(name), geohash: :h3.from_geo({String.to_float(latitude), String.to_float(longitude)}, 10), chronolock: DateTime.utc_now() |> DateTime.add(14 * 3600 * 24, :second) |> DateTime.to_unix(), location_description: nil})
+    Ecto.Changeset.put_embed(changeset, :geolocation, [geolocation_changeset | user.private_profile.geolocation])
+    |> Phos.Repo.update()
+    |> cast_error(name, location)
+  end
+
+  defp save_location_default(user, name, {latitude, longitude} = location) do
+    {loc_updating, loc_no_update} = Enum.split_with(user.private_profile.geolocation, fn u -> u.id == to_string(name) end)
+
+    if DateTime.utc_now() |> DateTime.to_unix() < List.first(loc_updating).chronolock do
+      {:chronolocked, %{}}
+    else
+      changeset = Ecto.Changeset.change(user.private_profile)
+      geolocation_changeset = Ecto.Changeset.change(List.first(loc_updating), %{id: to_string(name), geohash: :h3.from_geo({String.to_float(latitude), String.to_float(longitude)}, 10), chronolock: DateTime.utc_now() |> DateTime.add(14 * 3600 * 24, :second) |> DateTime.to_unix(), location_description: nil})
+      Ecto.Changeset.put_embed(changeset, :geolocation, [geolocation_changeset | loc_no_update])
+      |> Phos.Repo.update()
+      |> cast_error(name, location)
+    end
+  end
+
+  defp cast_error({:ok, _} = returnable, name, {latitude, longitude}) do
+    send(self(), {:static_location_update, %{"locname" => name, "longitude" => String.to_float(longitude), "latitude" => String.to_float(latitude)}})
+
+    returnable
+  end
+  defp cast_error(returnable, _name, _location), do: returnable
 end

@@ -24,25 +24,15 @@ defmodule PhosWeb.UserLocationChannel do
   def handle_in("location_update", %{"name"=> name,"geohash"=> hash}, socket) when name in ["home", "work", "live"] do
     # check name against jwt using authorized
     #IO.puts " in paris #{inspect(socket.assigns.geolocation)}"
-    updated_geolocation = get_and_update_in(socket.assigns.geolocation, Enum.map([name, :geohash], &Access.key(&1, %{})), &{&1, %{hash: :h3.parent(hash, 10), radius: 10}})
-    |> case do
-         {past, present} ->
-           unless past == present[name][:geohash] do
-             message = Enum.map(@territorial_radius, fn res -> :h3.parent(present[name][:geohash].hash, res) end)
-             |> loc_subscriber(present[name][:geosub])
-             |> loc_fetch(present[name][:geosub])
-             |> Map.put("name", name)
-
-             push(socket, "loc_reverie", message)
-
-             put_in(present, [name, :geosub], message["subscribed"])
-           else
-             present
-           end
-       end
+    updated_geolocation =
+      get_and_update_in(socket.assigns.geolocation, Enum.map([name, :geohash], &Access.key(&1, %{})), &{&1, %{hash: :h3.parent(hash, 10), radius: 10}})
+      |> case do
+        {past, present} -> push_loc_reverie(socket, present, name, past == present[name][:geohash])
+      end
     {:noreply, assign(socket, :geolocation, updated_geolocation)}
   end
 
+  @impl true
   def handle_in("location_update", _payload, socket) do
     IO.puts("invalid payload location update")
     {:noreply, socket}
@@ -51,6 +41,7 @@ defmodule PhosWeb.UserLocationChannel do
 
   # Channels can be used in a request/response fashion
   # by sending replies to requests from the client
+  @impl true
   def handle_in("ping", payload, socket) do
     {:reply, {:ok, payload}, socket}
   end
@@ -96,4 +87,16 @@ defmodule PhosWeb.UserLocationChannel do
 
   defp loc_topic(hash) when is_integer(hash), do: "LOC.#{hash}"
 
+
+  defp push_loc_reverie(socket, present, name, false) do
+    message = Enum.map(@territorial_radius, fn res -> :h3.parent(present[name][:geohash].hash, res) end)
+      |> loc_subscriber(present[name][:geosub])
+      |> loc_fetch(present[name][:geosub])
+      |> Map.put("name", name)
+
+    push(socket, "loc_reverie", message)
+
+    put_in(present, [name, :geosub], message["subscribed"])
+  end
+  defp push_loc_reverie(_socket, present, _name, _), do: present
 end

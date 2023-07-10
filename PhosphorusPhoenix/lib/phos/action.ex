@@ -360,17 +360,20 @@ defmodule Phos.Action do
     |> Orb.admin_changeset(attrs)
     |> Repo.insert()
     |> case do
-         {:ok, orb} = data ->
-           orb = orb |> Repo.preload([:initiator])
-           spawn(fn ->
-             unless(Enum.member?(orb.traits, "mirage")) do
-               experimental_notify(orb)
-             end
-             #spawn(fn -> user_feeds_publisher(orb) end)
-           end)
-           data
+         {:ok, orb} -> notify_mirage(orb)
          err -> err
        end
+  end
+
+  defp notify_mirage(orb) do
+    orb = Repo.preload(orb, [:initiator])
+
+    case Enum.member?(orb.traits, "mirage") do
+      false -> spawn(fn -> experimental_notify(orb)end)
+      _ -> :ok
+    end
+
+    {:ok, orb}
   end
 
   # defp user_feeds_publisher(%{initiator_id: user_id} = orb) do

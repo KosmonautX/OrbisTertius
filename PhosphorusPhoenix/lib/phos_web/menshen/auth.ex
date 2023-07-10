@@ -89,9 +89,12 @@ defmodule PhosWeb.Menshen.Auth do
   # defp cert_legit(_), do: false
 
   defp verify_expiry(exp) do
-    cond do
-      exp > DateTime.utc_now() |> DateTime.to_unix() -> {:ok, exp}
-      true -> {:expired, exp}
+    DateTime.utc_now()
+    |> DateTime.to_unix()
+    |> Kernel.<(exp)
+    |> case do
+      true -> {:ok, exp}
+        _ -> {:expired, exp}
     end
   end
 end

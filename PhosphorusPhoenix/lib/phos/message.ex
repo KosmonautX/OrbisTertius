@@ -188,7 +188,7 @@ defmodule Phos.Message do
   """
 
     def create_message(%{"id" => _mem_id, "user_source_id" => _u_id, "rel_subject_id" => rel_id} = attrs) do
-      with rel = Phos.Folk.get_relation!(rel_id),
+      with rel <- Phos.Folk.get_relation!(rel_id),
            mem_changeset <- Phos.Message.Memory.gen_changeset(%Memory{}, attrs) |> Ecto.Changeset.put_assoc(:last_rel_memory, rel),
            {:ok, memory} <- Repo.insert(mem_changeset) do
         memory

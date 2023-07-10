@@ -12,60 +12,43 @@ defmodule PhosWeb.Util.Viewer do
   alias Phos.Orbject.S3
 
   # Relationship Mapper
+  def relationship_mapper({:self_relation, %Phos.Users.RelationRoot{} = self_relation}, entity) do
+    %{self:
+      %{data: %{PhosWeb.Util.Viewer.user_relation_mapper(self_relation) | self_initiated: self_relation.initiator_id != entity.id},
+        links: %{self: path(PhosWeb.Endpoint, Router, ~p"/api/folkland/others/#{entity.id}")}}}
+  end
+
+  def relationship_mapper({:orbs, [_ | _] = orbs}, entity) do
+    %{orbs:
+      %{data: PhosWeb.Util.Viewer.orb_mapper(orbs),
+        links: %{history: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{entity.id}/history")}}}
+  end
+  def relationship_mapper({:mutual, user}, _entity) when is_map(user) do
+    Map.new([{:mutual,
+      %{data: PhosWeb.Util.Viewer.user_mapper(user),
+        links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{user.id}")}}}])
+
+  end
+
   def relationship_mapper(field, entity) do
     case field do
-      {:self_relation, %Phos.Users.RelationRoot{} = self_relation} ->
-
-        %{self:
-          %{data: %{PhosWeb.Util.Viewer.user_relation_mapper(self_relation) | self_initiated: self_relation.initiator_id != entity.id},
-            links: %{self: path(PhosWeb.Endpoint, Router, ~p"/api/folkland/others/#{entity.id}")}}}
-
-
-      {:orbs, [%Phos.Action.Orb{} | _] = orbs} ->
-        %{orbs:
-          %{data: PhosWeb.Util.Viewer.orb_mapper(orbs),
-          links: %{history: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{entity.id}/history")}}}
-
-      {k, [%Phos.Comments.Comment{} | _] = comment} ->
-
-        Map.new([{k, %{data: PhosWeb.Util.Viewer.comment_mapper(comment)}}])
-
-
+      {k, [%Phos.Comments.Comment{} | _] = comment} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.comment_mapper(comment)}}])
       {k , %Phos.Users.User{} = user} ->
         Map.new([{k,
                   %{data: PhosWeb.Util.Viewer.user_mapper(user),
                     links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{user.id}")}}}])
 
-      {k, %Phos.Action.Location{} = loc} ->
-
-        Map.new([{k, %{data: PhosWeb.Util.Viewer.loc_mapper(loc)}}])
-
-      {k, %Phos.Action.Orb{} = orb} ->
-
-        Map.new([{k, %{data: PhosWeb.Util.Viewer.orb_mapper(orb)}}])
-
-      {k, %Phos.Comments.Comment{} = comment} ->
-
-        Map.new([{k, %{data: PhosWeb.Util.Viewer.comment_mapper(comment)}}])
-
-      {k, %Phos.Message.Memory{} = memory} ->
-
-        Map.new([{k, %{data: PhosWeb.Util.Viewer.memory_mapper(memory)}}])
-
+      {k, %Phos.Action.Location{} = loc} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.loc_mapper(loc)}}])
+      {k, %Phos.Action.Orb{} = orb} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.orb_mapper(orb)}}])
+      {k, %Phos.Comments.Comment{} = comment} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.comment_mapper(comment)}}])
+      {k, %Phos.Message.Memory{} = memory} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.memory_mapper(memory)}}])
       {k, %Phos.Users.RelationRoot{} = relation} ->
-
         Map.new([{k, %{data: %{PhosWeb.Util.Viewer.user_relation_mapper(relation) | self_initiated: relation.initiator_id != entity.id},
             links: %{self: path(PhosWeb.Endpoint, Router, ~p"/api/folkland/others/#{relation.initiator_id}")}}}])
-
-      {:mutual , user} when is_map(user) ->
-        Map.new([{:mutual,
-                  %{data: PhosWeb.Util.Viewer.user_mapper(user),
-                    links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{user.id}")}}}])
-
       _ -> %{}
-
     end
   end
+
 
 
   def relationship_reducer(entity) do
@@ -156,13 +139,14 @@ defmodule PhosWeb.Util.Viewer do
                 {:scope, v}
               _ ->
                 {k,
-                  (unless is_nil(v) do
-                    %{scope: v.scope,
+                  (if is_nil(v) do 
+                    %{}
+                  else
+                    %{
+                      scope: v.scope,
                       subscribe: v.subscribe,
                       unsubscribe: v.unsubscribe
                     }
-                  else
-                    %{}
                   end)}
             end
           end
@@ -265,9 +249,7 @@ defmodule PhosWeb.Util.Viewer do
       creationtime: DateTime.from_naive!(comment.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
       mutationtime: DateTime.from_naive!(comment.updated_at, "Etc/UTC") |> DateTime.to_unix()
     }
-
   end
-
 
   def post_orb_mapper(orbs) do
     Enum.map(orbs, fn orb ->
@@ -291,7 +273,7 @@ defmodule PhosWeb.Util.Viewer do
           %{
             populate: !Enum.member?(orb.traits, "pin"),
             geohashes: Enum.reduce_while(orb.locations, [], fn o, acc ->
-              unless length(acc) > 8, do: {:cont, [o.id |> :h3.to_string |> to_string() | acc]}, else: {:halt, acc} end),
+              if length(acc) > 8, do: {:halt, acc}, else: {:cont, [o.id |> :h3.to_string() |> to_string() | acc]} end),
             target: :h3.get_resolution(orb.central_geohash),
             geolock: true
           }}}

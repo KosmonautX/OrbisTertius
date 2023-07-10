@@ -17,31 +17,32 @@ defmodule PhosWeb.Util.Geographer do
   # end
 
   # Returns true if target territory's parent = socket's claim territory
-  def check_territory?(socket, target_territory) do
-    case Auth.validate_user(socket.assigns.session_token) do
-      {:ok , claims} ->
-        case Map.keys(target_territory) do
-          ["hash", "radius"] ->
-            targeth3index =
-              target_territory["hash"]
-              |> to_charlist()
-              |> :h3.from_string()
-
-            claims["territory"]
-            |> Map.values()
-            |> Enum.map(fn %{"hash" => jwt_hash, "radius" => jwt_radius} ->
-              if (:h3.parent(targeth3index, jwt_radius) |> :h3.to_string()) == to_charlist(jwt_hash) do
-                true
-              else
-                false
-              end
-            end)
-            |> Enum.member?(true)
-
-          _ -> false
-        end
+  def check_territory?(%{assigns: assigns} = _socket, target_territory) do
+    case Auth.validate_user(assigns.session_token) do
+      {:ok , claims} -> check_territory_validity(target_territory, claims)
       { :error, _error } ->
         {:error,  :authentication_required}
+    end
+  end
+
+  defp check_territory_validity(target_territory, claims) do
+    case Map.keys(target_territory) do
+      ["hash", "radius"] ->
+        targeth3index =
+          target_territory["hash"]
+          |> to_charlist()
+          |> :h3.from_string()
+
+        claims["territory"]
+        |> Map.values()
+        |> Enum.map(fn %{"hash" => jwt_hash, "radius" => jwt_radius} ->
+          :h3.parent(targeth3index, jwt_radius)
+          |> :h3.to_string()
+          |> Kernel.==(to_charlist(jwt_hash))
+        end)
+        |> Enum.member?(true)
+
+      _ -> false
     end
   end
 end
