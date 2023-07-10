@@ -128,7 +128,7 @@ defmodule PhosWeb.UserProfileLive.Show do
   end
 
   defp apply_action(socket, :edit, params) do
-    if(socket.assigns.current_user.username == params["username"]) do
+    if socket.assigns.current_user.username == params["username"] do
       socket
       |> assign(:page_title, "Updating Profile")
     else

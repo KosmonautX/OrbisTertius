@@ -245,7 +245,7 @@ defmodule PhosWeb.OrbLive.Show do
     orbs = ScrollOrb.check_more_orb(orb.initiator_id, expected_orb_page)
 
     newsocket =
-      if (Enum.empty?(orbs.data)) do
+      if Enum.empty?(orbs.data) do
         assign(socket, orbs: orbs.meta)
       else
         Enum.reduce(orbs.data, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)

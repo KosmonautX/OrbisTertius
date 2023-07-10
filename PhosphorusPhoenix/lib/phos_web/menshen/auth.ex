@@ -73,7 +73,7 @@ defmodule PhosWeb.Menshen.Auth do
   defp get_cert() do
     case Cache.get({Phos.External.GoogleCert, :get_cert}) do
       nil ->
-        case Phos.External.GoogleCert.get_Cert() do
+        case Phos.External.GoogleCert.get_cert() do
           {:ok, %{cert: cert, exp: ttl}} ->
             Cache.put({Phos.External.GoogleCert, :get_cert}, cert, ttl: ttl*1000)
           {:ok, cert}

@@ -110,9 +110,10 @@ defmodule PhosWeb.API.OrbController do
     try do
       geohashes = String.split(hashes, ",")
       |> Enum.map(fn hash ->
-        Enum.map([8,9,10], &(:h3.parent(String.to_integer(hash), &1))) end)
+        Enum.map([8, 9, 10], &(:h3.parent(String.to_integer(hash), &1))) end)
         |> List.flatten()
         |> Enum.uniq()
+
       traits = String.split(trait, ",") |> Enum.uniq()
       loc_orbs = Action.orbs_by_geotraits({geohashes, user.id}, traits, [page: page])
       render(conn, :paginated, orbs: loc_orbs)

@@ -42,7 +42,7 @@ defmodule PhosWeb.OrbLive.MapComponent do
 
           case ecto_insert do
             {:ok, record} ->
-              send(self(), {:static_location_update, %{"locname" => socket.assigns.setloc ,"longitude" => String.to_float(longitude), "latitude" => String.to_float(latitude)}})
+              send(self(), {:static_location_update, %{"locname" => socket.assigns.setloc, "longitude" => String.to_float(longitude), "latitude" => String.to_float(latitude)}})
               {:ok, record}
             {:error, changeset} ->
               {:error, changeset}
@@ -58,7 +58,7 @@ defmodule PhosWeb.OrbLive.MapComponent do
 
           case ecto_update do
             {:ok, record} ->
-              send(self(), {:static_location_update, %{"locname" => socket.assigns.setloc ,"longitude" => String.to_float(longitude), "latitude" => String.to_float(latitude)}})
+              send(self(), {:static_location_update, %{"locname" => socket.assigns.setloc, "longitude" => String.to_float(longitude), "latitude" => String.to_float(latitude)}})
               {:ok, record}
             {:error, changeset} ->
               {:error, changeset}
@@ -78,7 +78,7 @@ defmodule PhosWeb.OrbLive.MapComponent do
 
             case ecto_update do
               {:ok, record} ->
-                send(self(), {:static_location_update, %{"locname" => socket.assigns.setloc ,"longitude" => String.to_float(longitude), "latitude" => String.to_float(latitude)}})
+                send(self(), {:static_location_update, %{"locname" => socket.assigns.setloc, "longitude" => String.to_float(longitude), "latitude" => String.to_float(latitude)}})
                 {:ok, record}
               {:error, changeset} ->
                 {:error, changeset}

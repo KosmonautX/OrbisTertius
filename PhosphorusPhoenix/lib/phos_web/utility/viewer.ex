@@ -69,44 +69,43 @@ defmodule PhosWeb.Util.Viewer do
 
 
   def relationship_reducer(entity) do
-        entity
-        |> Map.from_struct()
-        |> Enum.reduce(%{}, fn({k,v}, acc) -> Map.merge(acc, relationship_mapper({k,v}, entity)) end)
+    entity
+    |> Map.from_struct()
+    |> Enum.reduce(%{}, fn({k, v}, acc) -> Map.merge(acc, relationship_mapper({k, v}, entity)) end)
   end
-
 
   def memory_mapper(memories = [%Phos.Message.Memory{} | _]), do: Enum.map(memories, &memory_mapper/1)
   def memory_mapper(memory) do
-      %{just_a_memory_mapper(memory) | relationships: relationship_reducer(memory)}
+    %{just_a_memory_mapper(memory) | relationships: relationship_reducer(memory)}
   end
 
   def just_a_memory_mapper(memory) do
-      %{
-        id: memory.id,
-        relationships: %{},
-        user_source_id: memory.user_source_id,
-        loc_subject_id: memory.loc_subject_id,
-        rel_subject_id: memory.rel_subject_id,
-        orb_subject_id: memory.orb_subject_id,
-        com_subject_id: memory.com_subject_id,
-        cluster_subject_id: memory.cluster_subject_id,
-        action_path: memory.action_path,
-        message: memory.message,
-        creationtime: memory.inserted_at |> DateTime.to_unix(:millisecond),
-        mutationtime: memory.updated_at |> DateTime.to_unix(:millisecond),
-        media: (if memory.media, do: S3.get_all!("MEM", memory.id, "public")),
-        media_exists: memory.media
-      }
+    %{
+      id: memory.id,
+      relationships: %{},
+      user_source_id: memory.user_source_id,
+      loc_subject_id: memory.loc_subject_id,
+      rel_subject_id: memory.rel_subject_id,
+      orb_subject_id: memory.orb_subject_id,
+      com_subject_id: memory.com_subject_id,
+      cluster_subject_id: memory.cluster_subject_id,
+      action_path: memory.action_path,
+      message: memory.message,
+      creationtime: memory.inserted_at |> DateTime.to_unix(:millisecond),
+      mutationtime: memory.updated_at |> DateTime.to_unix(:millisecond),
+      media: (if memory.media, do: S3.get_all!("MEM", memory.id, "public")),
+      media_exists: memory.media
+    }
   end
 
   def reverie_mapper(reverie) do
-      %{
-        id: reverie.id,
-        relationships: relationship_reducer(reverie),
-        read: reverie.read,
-        creationtime: DateTime.from_naive!(reverie.inserted_at, "Etc/UTC") |> DateTime.to_unix(:millisecond),
-        mutationtime: DateTime.from_naive!(reverie.updated_at, "Etc/UTC") |> DateTime.to_unix(:millisecond),
-      }
+    %{
+      id: reverie.id,
+      relationships: relationship_reducer(reverie),
+      read: reverie.read,
+      creationtime: DateTime.from_naive!(reverie.inserted_at, "Etc/UTC") |> DateTime.to_unix(:millisecond),
+      mutationtime: DateTime.from_naive!(reverie.updated_at, "Etc/UTC") |> DateTime.to_unix(:millisecond),
+    }
   end
 
   # User Mapper
@@ -149,26 +148,26 @@ defmodule PhosWeb.Util.Viewer do
   def user_integration_mapper(%{integrations: profile}) do
     (if profile && !is_nil(profile) && Ecto.assoc_loaded?(profile) do
       %{data: %{
-           fcm_token: profile.fcm_token,
-           beacon: (if profile.beacon do
-             for {k , v}  <- Map.from_struct(profile.beacon), into: %{} do
-                     case k do
-                       :scope ->
-                         {:scope, v}
-                       _ ->
-                     {k,
-                      (unless is_nil(v) do
-                       %{scope: v.scope,
-                           subscribe: v.subscribe,
-                           unsubscribe: v.unsubscribe
-                          }
-                       else
-                         %{}
-                       end)}
-                    end
-                  end
-           end)}}
-      end)
+        fcm_token: profile.fcm_token,
+        beacon: (if profile.beacon do
+          for {k , v}  <- Map.from_struct(profile.beacon), into: %{} do
+            case k do
+              :scope ->
+                {:scope, v}
+              _ ->
+                {k,
+                  (unless is_nil(v) do
+                    %{scope: v.scope,
+                      subscribe: v.subscribe,
+                      unsubscribe: v.unsubscribe
+                    }
+                  else
+                    %{}
+                  end)}
+            end
+          end
+        end)}}
+    end)
   end
 
   def user_public_mapper(user) do
@@ -291,7 +290,7 @@ defmodule PhosWeb.Util.Viewer do
         %{live:
           %{
             populate: !Enum.member?(orb.traits, "pin"),
-            geohashes: Enum.reduce_while(orb.locations,[],fn o, acc ->
+            geohashes: Enum.reduce_while(orb.locations, [], fn o, acc ->
               unless length(acc) > 8, do: {:cont, [o.id |> :h3.to_string |> to_string() | acc]}, else: {:halt, acc} end),
             target: :h3.get_resolution(orb.central_geohash),
             geolock: true
@@ -340,7 +339,7 @@ defmodule PhosWeb.Util.Viewer do
         subject_archetype: echo.subject_archetype,
         subject: echo.subject,
         message: echo.message,
-        time: DateTime.from_naive!(echo.inserted_at,"Etc/UTC") |> DateTime.to_unix(),
+        time: DateTime.from_naive!(echo.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
         creationtime: DateTime.from_naive!(echo.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
         mutationtime: DateTime.from_naive!(echo.updated_at, "Etc/UTC") |> DateTime.to_unix()
       }

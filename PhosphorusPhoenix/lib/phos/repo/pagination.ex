@@ -118,7 +118,7 @@ defmodule Phos.Repo.Paginated do
                 current: page,
                 count: count,
                 total: total,
-                start: (unless (count==0), do: (page - 1) * limit + 1, else: (page - 1) * limit + count),
+                start: (unless count==0, do: (page - 1) * limit + 1, else: (page - 1) * limit + count),
                 end: (page - 1) * limit + count
               }}}
         end

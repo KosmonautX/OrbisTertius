@@ -50,7 +50,7 @@ defmodule PhosWeb.OrbLiveTest do
       {:ok, _ecto_insert} =
         %Users.Private_Profile{}
         |> Users.Private_Profile.changeset(%{user_id: user.id})
-        |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623276216934563839, chronolock: 1653079771, location_description: nil}])
+        |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623_276_216_934_563_839, chronolock: 1_653_079_771, location_description: nil}])
         |> Phos.Repo.insert()
 
       {:ok, index_live, _html} = live(conn, ~p"/orb")
@@ -74,7 +74,7 @@ defmodule PhosWeb.OrbLiveTest do
       {:ok, _ecto_insert} =
         %Users.Private_Profile{}
         |> Users.Private_Profile.changeset(%{user_id: user.id})
-        |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623276216934563839, chronolock: 1653079771, location_description: nil}])
+        |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623_276_216_934_563_839, chronolock: 1_653_079_771, location_description: nil}])
         |> Phos.Repo.insert()
       {:ok, index_live, _html} = live(conn, ~p"/orb")
 
@@ -100,7 +100,7 @@ defmodule PhosWeb.OrbLiveTest do
       {:ok, _ecto_insert} =
         %Users.Private_Profile{}
         |> Users.Private_Profile.changeset(%{user_id: user.id})
-        |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623276216934563839, chronolock: 1653079771, location_description: nil}])
+        |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623_276_216_934_563_839, chronolock: 1_653_079_771, location_description: nil}])
         |> Phos.Repo.insert()
       {:ok, index_live, _html} = live(conn, ~p"/orb")
       assert index_live

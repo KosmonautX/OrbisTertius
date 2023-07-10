@@ -33,8 +33,10 @@ defmodule PhosWeb.API.UserProfileController do
 
   def update_self(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, params) do
     user = Users.get_user!(id)
-    with {:ok, %User{} = user} <- Users.update_user(user, profile_constructor(user,params)) do
-      render(conn, :show, user_profile: user)
+
+    case Users.update_user(user, profile_constructor(user, params)) do
+      %User{} = updated_user -> render(conn, :show, user_profile: updated_user)
+      _ -> render(conn, :show, user_profile: user)
     end
   end
 
@@ -55,7 +57,7 @@ defmodule PhosWeb.API.UserProfileController do
   end
 
   defp validate_territory(%{private_profile: %{geolocation: past_territory}}, wished_territory) when is_list(wished_territory) do
-    past = past_territory |> Enum.into(%{},fn loc -> {loc.id, loc} end)
+    past = past_territory |> Enum.into(%{}, fn loc -> {loc.id, loc} end)
     wished_territory |> Enum.reject(fn wish -> !(!Map.has_key?(past, wish["id"]) or (past[wish["id"]].geohash != wish["geohash"]))   end)
   end
 

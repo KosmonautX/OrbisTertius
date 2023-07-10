@@ -13,7 +13,7 @@ defmodule PhosWeb.UserProfileLive.FormComponent do
       |> assign(:changeset, changeset)
       |> assign(:uploaded_files, [])
       |> assign(:crop_image, false)
-      |> allow_upload(:image, accept: ~w(.jpg .jpeg .png .gif), max_entries: 1, max_file_size: 8888888)}
+      |> allow_upload(:image, accept: ~w(.jpg .jpeg .png .gif), max_entries: 1, max_file_size: 8_888_888)}
   end
 
   @impl true

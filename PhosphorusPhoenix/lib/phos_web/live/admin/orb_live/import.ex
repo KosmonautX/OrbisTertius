@@ -77,7 +77,7 @@ defmodule PhosWeb.Admin.OrbLive.Import do
       data when data == [] ->
         {:noreply, assign(socket, [message: "No Orbs scheduled for Today 🔮", loading: false])}
       data when is_list(data) ->
-        {:noreply, assign(socket, [loading: false, orbs: Enum.reject(data,&(&1.done))])}
+        {:noreply, assign(socket, [loading: false, orbs: Enum.reject(data, &(&1.done))])}
       _ -> {:noreply, assign(socket, [message: "Error fetching orbs", loading: false])}
     end
   end

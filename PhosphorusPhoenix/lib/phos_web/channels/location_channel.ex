@@ -4,7 +4,6 @@ defmodule PhosWeb.UserLocationChannel do
   alias Phos.Action
   alias Phos.PubSub
 
-
   @impl true
   @territorial_radius [8]
 
@@ -29,7 +28,7 @@ defmodule PhosWeb.UserLocationChannel do
     |> case do
          {past, present} ->
            unless past == present[name][:geohash] do
-             message = Enum.map(@territorial_radius, fn res -> :h3.parent(present[name][:geohash].hash,res) end)
+             message = Enum.map(@territorial_radius, fn res -> :h3.parent(present[name][:geohash].hash, res) end)
              |> loc_subscriber(present[name][:geosub])
              |> loc_fetch(present[name][:geosub])
              |> Map.put("name", name)
