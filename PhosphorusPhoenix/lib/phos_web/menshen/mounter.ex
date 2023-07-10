@@ -31,8 +31,7 @@ defmodule PhosWeb.Menshen.Mounter do
 
     {:cont,
        socket
-       |> assign(:locale, locale)
-       |> assign(:timezone, %{timezone: timezone, timezone_offset: timezone_offset})}
+       |> assign(locale: locale, timezone: %{timezone: timezone, timezone_offset: timezone_offset})}
   end
 
   def init(opts), do: opts
