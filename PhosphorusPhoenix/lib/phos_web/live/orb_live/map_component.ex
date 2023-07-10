@@ -35,8 +35,8 @@ defmodule PhosWeb.OrbLive.MapComponent do
         # Create private_profile with geolocation flow
         socket.assigns.current_user.private_profile == nil ->
           ecto_insert =
-            %Users.Private_Profile{}
-            |> Users.Private_Profile.changeset(%{user_id: user.id})
+            %Users.PrivateProfile{}
+            |> Users.PrivateProfile.changeset(%{user_id: user.id})
             |> Ecto.Changeset.put_embed(:geolocation, [%{id: to_string(socket.assigns.setloc), geohash: :h3.from_geo({String.to_float(latitude), String.to_float(longitude)}, 10), chronolock: DateTime.utc_now() |> DateTime.add(14 * 3600 * 24, :second) |> DateTime.to_unix(), location_description: nil}])
             |> Phos.Repo.insert()
 

@@ -2,7 +2,7 @@ defmodule PhosWeb.Menshen.Auth do
   use Nebulex.Caching
 
   alias PhosWeb.Menshen.Role
-  alias Phos.Users.{Private_Profile}
+  alias Phos.Users.{PrivateProfile}
   alias Phos.Cache
 
   def generate_user!(id), do: generate_boni!(id)
@@ -56,7 +56,7 @@ defmodule PhosWeb.Menshen.Auth do
   end
 
   # geo utilities?
-  defp parse_territories(%{private_profile: %Private_Profile{geolocation: geolocations}}) do
+  defp parse_territories(%{private_profile: %PrivateProfile{geolocation: geolocations}}) do
     Enum.reduce(geolocations, %{}, fn %{id: name, chronolock: chronolock, geohash: hash}, acc ->
       Map.put(acc, String.downcase(name), %{radius: chronolock, hash: hash})
     end)
