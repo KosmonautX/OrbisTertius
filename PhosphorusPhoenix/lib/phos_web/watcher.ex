@@ -14,7 +14,6 @@ defmodule PhosWeb.Watcher do
   end
 
   def handle_diff(diff, state) do
-    IO.inspect diff
     for {topic, {joins, leaves}} <- diff do
       for {key, meta} <- joins do
         Task.start(fn ->
@@ -32,6 +31,18 @@ defmodule PhosWeb.Watcher do
     end
     {:ok, state}
   end
+
+  def track(pid, topic, %Phos.Users.User{id: id, media: media, username: username, public_profile: %{places: [%Phos.Users.Geolocation{} | _] = places}}) do
+    Phoenix.Tracker.track(__MODULE__, pid, topic, id, %{id: id,
+                                                        media: media,
+                                                        username: username,
+                                                        town: places
+                                                        |> Enum.find(fn l -> l.id == "home" end)
+                                                        |> Map.get(:geohash, nil)
+                                                        |> Phos.Mainland.World.locate(),
+                                                        online_at: System.os_time(:second)})
+  end
+
 
   def track(pid, topic, %Phos.Users.User{id: id, media: media, username: username}) do
     Phoenix.Tracker.track(__MODULE__, pid, topic, id, %{id: id,

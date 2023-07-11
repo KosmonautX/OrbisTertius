@@ -71,10 +71,21 @@ defmodule Echolocation do
   end
 
   @impl Slipstream
-  def handle_message(topic, "memory_activity", message, socket) do
+  def handle_message(topic, "assembly_initiation", message, socket) do
     Logger.info(
       # <>
-      "Memories Acted"
+      "Entering into the Assembly"
+    )
+
+    IO.inspect(message)
+
+    {:ok, socket}
+  end
+
+  def handle_message(topic, "assembly_" <> presence_event, message, socket) do
+    Logger.info(
+      # <>
+      "Something happened in your Assembly::" <> presence_event
     )
 
     IO.inspect(message)
@@ -197,7 +208,7 @@ config = %{
 ```
 
 ```elixir
-GenServer.call(pid, {:add, %{}})
+GenServer.call(pid, {:say, 3})
 ```
 
 <!-- livebook:{"branch_parent_index":0} -->

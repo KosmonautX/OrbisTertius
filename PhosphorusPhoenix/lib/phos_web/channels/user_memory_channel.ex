@@ -44,12 +44,12 @@ defmodule PhosWeb.UserMemoryChannel do
           _ -> []
         end)
         |> List.flatten()
-        |> Enum.map(&({&1, terra_mapper(&1)}))
-        |> Enum.into(%{})
+        |> terra_mapper()
         |> tap(&push(socket, "assembly_initiation", &1))
         |> Enum.map(fn {hash, _} -> terra_track(hash, socket) end)
 
-        _ -> :ok
+        _ ->
+        push(socket, "assembly_initiation", %{})
     end
 
     #Enum.map(&(Phos.PubSub.subscribe(&1)))
@@ -80,13 +80,19 @@ defmodule PhosWeb.UserMemoryChannel do
     |> tap(&PhosWeb.Watcher.track(self(), &1, user))
   end
 
-  defp terra_mapper(hash) when is_integer(hash) do
-    %{
-      hash: hash,
-      midhash: hash |> Phos.Mainland.Sphere.middle(),
-      town: hash |> Phos.Mainland.Sphere.locate(),
-      living: terra_topic(hash) |> PhosWeb.Watcher.list_users() |> Viewer.user_presence_mapper()
-    }
+  defp terra_mapper(hashes) do
+    locations = Phos.Terra.location_by_hash(hashes)
+    Enum.reduce(hashes, %{}, fn hash, acc ->
+      Map.put(acc, hash,
+        Map.get(locations, hash, %Phos.Action.Location{id: hash})
+        |> loc_mapper()
+      ) end)
+  end
+
+  def loc_mapper(%Phos.Action.Location{} = loc) do
+    loc
+    |> Viewer.loc_mapper()
+    |> Map.put(:living, terra_topic(loc.id) |> PhosWeb.Watcher.list_users() |> Viewer.user_presence_mapper())
   end
 
   defp terra_topic(hash), do: "memory:terra:" <> Integer.to_string(hash)

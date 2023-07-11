@@ -129,12 +129,8 @@ defmodule PhosWeb.Util.Viewer do
   def user_presence_mapper(users) when is_list(users), do: Enum.map(users, &user_presence_mapper/1)
   def user_presence_mapper(user) do
     %{
-      data: %{
-      id: user.id,
-      username: user.username,
-      online_at: user.online_at,
-      media: (if user.media, do:  %{"public/profile/lossy" => Phos.Orbject.S3.get!("USR", user.id, "public/profile/lossy")})
-      },
+      data: Map.take(user, [:id, :username, :town, :online_at])
+      |> Map.put(:media, (if user.media, do:  %{"public/profile/lossy" => Phos.Orbject.S3.get!("USR", user.id, "public/profile/lossy")})),
       meta: Map.take(user, [:phx_ref, :phx_ref_prev, :topic]) |> topic_mapper()
     }
   end
@@ -198,7 +194,7 @@ defmodule PhosWeb.Util.Viewer do
            banner_pic: user.public_profile.banner_pic,
            traits: user.public_profile.traits,
            territories: user.public_profile.territories,
-           assemblies: Enum.reduce(user.public_profile.territories, [], fn terr, acc -> [loc_mapper(terr) | acc] end) |> Enum.uniq_by(&(&1.midhash)),
+           # assemblies: Enum.reduce(user.public_profile.territories, [], fn terr, acc -> [loc_mapper(terr) | acc] end) |> Enum.uniq_by(&(&1.midhash)),
            places: user.public_profile.places
         }
       }
@@ -390,11 +386,14 @@ defmodule PhosWeb.Util.Viewer do
     }
   end
 
-  def loc_mapper(loc) do
+  def loc_mapper(locs = [%Phos.Action.Location{} | _]), do: Enum.map(locs, &loc_mapper/1)
+  def loc_mapper(%Phos.Action.Location{} = loc) do
     %{
       hash: loc.id,
       midhash: loc.id |> Phos.Mainland.Sphere.middle(),
-      town: loc.id |> Phos.Mainland.Sphere.locate()
+      town: loc.id |> Phos.Mainland.Sphere.locate(),
+      last_memory_id: loc.last_memory_id,
+      relationships: relationship_reducer(loc),
     }
   end
 
