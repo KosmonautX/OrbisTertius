@@ -12,15 +12,11 @@ defmodule Phos.TeleBot do
 
   alias Phos.{Users, Orbject, Action}
   alias Phos.Users.User
-  alias __MODULE__.{Config, StateManager}
+  alias __MODULE__.{Config, StateManager, CreateOrbPath}
   alias Phos.TeleBot.Components.{Button, Template}
-  alias Phos.TelegramNotification, as: TN
 
-  @keyboard_button_messages ["❌ Cancel", "🔭 Latest Posts", "👤 Profile",
-   "❓ Help", "📎 Media", "📍 Location", "🏡 Home", "🏢 Work", "✈️ Post"]
-
-  # command("debug", description: "DEBUG MENU")
   command("start", description: "Start the interactive bot")
+  command("menu", description: "Show the main menu")
   command("help", description: "Print the bot's help")
   command("post", description: "Post something")
   command("register", description: "Register an account")
@@ -34,21 +30,32 @@ defmodule Phos.TeleBot do
   # GENERIC MESSAGES
   # ====================
 
-  def handle({:message, com, %{"chat" => chat} = payload}) when com in [:start] do
+  def handle({:message, :start, payload}) do
     telegram_id = payload |> get_in(["from", "id"])
+    start_menu(telegram_id)
+  end
+
+  def handle({:message, :menu, payload}) do
+    telegram_id = payload |> get_in(["from", "id"])
+    {:ok, user} = get_user_by_telegram(telegram_id)
     # pattern match confirmed_at is not nil
     with {:user_exist, true} <- {:user_exist, Users.telegram_user_exists?(telegram_id)},
-         {:user, {:ok, %User{confirmed_at: date}}} when not is_nil(date) <- {:user, get_user_by_telegram(telegram_id)} do
-          main_menu(payload)
+         {:user, {:ok, %User{confirmed_at: date} = user}} when not is_nil(date) <- {:user, get_user_by_telegram(telegram_id)} do
+          IO.inspect "1"
+          main_menu(telegram_id)
           StateManager.delete_state(telegram_id)
         else
           {:user_exist, false} ->
             create_user(%{"id" => telegram_id})
-            ExGram.send_photo(telegram_id, PhosWeb.Endpoint.url <> "/images/guest_splash.jpg",
-            caption: Template.onboarding_text_builder(%{}), reply_markup: Button.build_location_button())
+            # ExGram.send_photo(telegram_id, PhosWeb.Endpoint.url <> "/images/guest_splash.jpg",
+            ExGram.send_photo(telegram_id, "https://i.ytimg.com/vi/xGytDsqkQY8/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLB2HR-65iZ2FkpmfRWnPXyOVj9CHA",
+            caption: Template.onboarding_text_builder(%{}), reply_markup: Button.build_location_button(user))
+            IO.inspect "2"
           {:user, _} ->
-            ExGram.send_photo(telegram_id, PhosWeb.Endpoint.url <> "/images/guest_splash.jpg",
-            caption: Template.onboarding_text_builder(%{}), reply_markup: Button.build_location_button())
+            # ExGram.send_photo(telegram_id, PhosWeb.Endpoint.url <> "/images/guest_splash.jpg",
+            IO.inspect "3"
+            ExGram.send_photo(telegram_id, "https://i.ytimg.com/vi/xGytDsqkQY8/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLB2HR-65iZ2FkpmfRWnPXyOVj9CHA",
+            caption: Template.onboarding_text_builder(%{}), reply_markup: Button.build_location_button(user))
         end
   end
 
@@ -59,108 +66,35 @@ defmodule Phos.TeleBot do
   @doc """
   Handle the keyboard button messages
   """
-  def handle({:message, :text, %{"text" => text} = payload}) when text in @keyboard_button_messages do
-    telegram_id = payload |> get_in(["chat", "id"])
-    {:ok, user} = get_user_by_telegram(telegram_id)
-    user_state = StateManager.get_state(telegram_id)
+  # def handle({:message, :text, %{"text" => text} = payload}) when text in @keyboard_button_messages do
+  #   telegram_id = payload |> get_in(["chat", "id"])
+  #   {:ok, user} = get_user_by_telegram(telegram_id)
+  #   user_state = StateManager.get_state(telegram_id)
 
-    if is_nil(user.confirmed_at) do
-      Template.onboarding_text(payload)
-    else
-      case text do
-        "❌ Cancel" ->
-          StateManager.delete_state(telegram_id)
-          main_menu(payload)
-        "🔭 Latest Posts" ->
-          ExGram.send_message(telegram_id, Template.latest_posts_text_builder(user),
-            parse_mode: "HTML", reply_markup: Button.build_latest_posts_inline_button())
-        "👤 Profile" ->
-          open_user_profile(user)
-        "❓ Help" ->
-          ExGram.send_message(telegram_id, "Choose section below:", parse_mode: "HTML",
-            reply_markup: Button.build_help_button())
-        "📎 Media" ->
-          ExGram.send_message(telegram_id, Template.orb_creation_media_builder(%{}), parse_mode: "HTML")
-        "📍 Location" ->
-          ExGram.send_message(telegram_id, Template.orb_creation_location_builder(user),
-            parse_mode: "HTML", reply_markup: Button.build_createorb_location_button())
-        "🏡 Home" ->
-          if is_nil(user.private_profile) do
-            ExGram.send_message(telegram_id, Template.update_location_text_builder(%{location_type: "home"}),
-              parse_mode: "HTML", reply_markup: Button.build_location_specific_button("Home"))
-          else
-            geohash =
-              case Enum.find(user.private_profile.geolocation, fn loc -> loc.id == "home" end) do
-                nil -> nil
-                %{geohash: geohash} -> geohash
-              end
-            if is_nil(geohash) do
-              ExGram.send_message(telegram_id, Template.update_location_text_builder(%{location_type: "home"}),
-                parse_mode: "HTML", reply_markup: Button.build_location_specific_button("Home"))
-            else
-              {_prev, user_state} = get_and_update_in(user_state.data.geolocation.central_geohash, &{&1, geohash})
-              {_prev, user_state} = get_and_update_in(user_state.data.location_type, &{&1, :home} )
-              StateManager.set_state(telegram_id, user_state)
-              ExGram.send_message(telegram_id, Template.orb_creation_preview_builder(user_state.data),
-                parse_mode: "HTML", reply_markup: Button.build_orb_create_keyboard_button())
-            end
-          end
-
-        "🏢 Work" ->
-          if is_nil(user.private_profile) do
-            ExGram.send_message(telegram_id, Template.update_location_text_builder(%{location_type: "work"}),
-              parse_mode: "HTML", reply_markup: Button.build_location_specific_button("Work"))
-          else
-            geohash =
-              case Enum.find(user.private_profile.geolocation, fn loc -> loc.id == "work" end) do
-                nil -> nil
-                %{geohash: geohash} -> geohash
-              end
-            if is_nil(geohash) do
-              ExGram.send_message(telegram_id, Template.update_location_text_builder(%{location_type: "work"}),
-                parse_mode: "HTML", reply_markup: Button.build_location_specific_button("Work"))
-            else
-              {_prev, user_state} = get_and_update_in(user_state.data.geolocation.central_geohash, &{&1, geohash})
-              {_prev, user_state} = get_and_update_in(user_state.data.location_type, &{&1, :work} )
-              StateManager.set_state(telegram_id, user_state)
-              ExGram.send_message(telegram_id, Template.orb_creation_preview_builder(user_state.data),
-                parse_mode: "HTML", reply_markup: Button.build_orb_create_keyboard_button())
-            end
-          end
-
-        "✈️ Post" when user_state.state in ["create_orb"] ->
-          user_state = StateManager.get_state(telegram_id)
-          params = %{
-            "id" => Ecto.UUID.generate(),
-            "expires_in" => "10000",
-            "title" => "deprecated",
-            "media" => user_state.data.media,
-            "inner_title" => user_state.data.inner_title,
-            "info" => user_state.data.inner_title,
-            "active" => "true",
-            "source" => "tele",
-            "geolocation" => %{"central_geohash" => user_state.data.geolocation.central_geohash}
-          }
-
-          with {:ok, attrs} <- PhosWeb.API.OrbController.orb_constructor(user, params),
-              {:ok, media} <- Phos.Orbject.Structure.apply_media_changeset(%{id: attrs["id"], archetype: "ORB",
-                media: user_state.data.media}),
-              {:ok, %Phos.Action.Orb{} = orb} <- Phos.Action.create_orb(%{attrs | "media" => true}) do
-                  TN.Collector.add(orb)
-                  ExGram.send_message(telegram_id, "Orb created successfully!", reply_markup: remove_keyboard())
-                  StateManager.delete_state(telegram_id)
-              else
-                err ->
-                  IO.inspect(user_state.data.media)
-                  IO.inspect(err)
-                  ExGram.send_message(telegram_id, "Please ensure you have filled in all the required fields.")
-                  ExGram.send_message(telegram_id, Template.orb_creation_preview_builder(user_state.data),
-                    parse_mode: "HTML", reply_markup: Button.build_orb_create_keyboard_button())
-          end
-        _ -> nil
-      end
-    end
-  end
+  #   if is_nil(user.confirmed_at) do
+  #     Template.onboarding_text(payload)
+  #   else
+  #     case text do
+  #       "❌ Cancel" ->
+  #         StateManager.delete_state(telegram_id)
+  #         main_menu(payload)
+  #       "🔭 Latest Posts" ->
+  #         ExGram.send_message(telegram_id, Template.latest_posts_text_builder(user),
+  #           parse_mode: "HTML", reply_markup: Button.build_latest_posts_inline_button())
+  #       "👤 Profile" ->
+  #         open_user_profile(user)
+  #       "❓ Help" ->
+  #         ExGram.send_message(telegram_id, "Choose section below:", parse_mode: "HTML",
+  #           reply_markup: Button.build_help_button())
+  #       "📎 Media" ->
+  #         ExGram.send_message(telegram_id, Template.orb_creation_media_builder(%{}), parse_mode: "HTML")
+  #       "📍 Location" ->
+  #         ExGram.send_message(telegram_id, Template.orb_creation_location_builder(user),
+  #           parse_mode: "HTML", reply_markup: Button.build_createorb_location_button())
+  #       _ -> nil
+  #     end
+  #   end
+  # end
 
   @doc """
   Handle messages as requested by menus (Postal codes, email addresses, createorb inner_title etc.)
@@ -184,24 +118,23 @@ defmodule Phos.TeleBot do
       %{state: "finish_profile_to_post"} ->
         text = payload |> get_in(["text"])
         # validate text is a valid public name
-        if text not in @keyboard_button_messages do
-          profilefsm = StateManager.get_state(telegram_id)
-          case Users.update_pub_user(user, %{"username" => text}) do
-            {:ok, _} ->
-              # set username from data.profile_fields_checklist
-              {_prev, profilefsm} = get_and_update_in(profilefsm.data.profile_fields_checklist, &{&1, true})
-              case Fsmx.transition(profilefsm, "set_profile_picture") do
-                {:ok, _} ->
-                  # {_prev, profilefsm} = get_and_update_in(profilefsm.state, &{&1, "set_profile_picture"})
-                  # StateManager.set_state(telegram_id, profilefsm)
-                  ExGram.send_message(telegram_id, "Great #{text}! Now let's set your profile picture! \n\nSend a photo.")
-                {:error, err} ->
-                  ExGram.send_message(telegram_id, "Error transitioning to profile pic.")
-              end
-            {:error, changeset} ->
-              ExGram.send_message(telegram_id, "Username taken. Please choose another username.")
-          end
+        profilefsm = StateManager.get_state(telegram_id)
+        case Users.update_pub_user(user, %{"username" => text}) do
+          {:ok, _} ->
+            # set username from data.profile_fields_checklist
+            {_prev, profilefsm} = get_and_update_in(profilefsm.data.profile_fields_checklist, &{&1, true})
+            case Fsmx.transition(profilefsm, "set_profile_picture") do
+              {:ok, _} ->
+                # {_prev, profilefsm} = get_and_update_in(profilefsm.state, &{&1, "set_profile_picture"})
+                # StateManager.set_state(telegram_id, profilefsm)
+                ExGram.send_message(telegram_id, "Great #{text}! Now let's set your profile picture! \n\nSend a photo.")
+              {:error, err} ->
+                ExGram.send_message(telegram_id, "Error transitioning to profile pic.")
+            end
+          {:error, changeset} ->
+            ExGram.send_message(telegram_id, "Username taken. Please choose another username.")
         end
+
 
       %{state: "edit_profile_" <> type} ->
         text = payload |> get_in(["text"])
@@ -248,17 +181,9 @@ defmodule Phos.TeleBot do
             ExGram.send_message(telegram_id, "Your email is invalid, please try again or return to /start")
         end
 
-      %{state: "create_orb"} ->
+      %{state: "createorb_" <> type} when type in ["description"] ->
         text = payload |> get_in(["text"])
-        # get orb inner_title
-        if text not in @keyboard_button_messages do
-          user_state = StateManager.get_state(telegram_id)
-          # update inner_title in the createorbfsm data if it exists
-          {_prev, user_state} = get_and_update_in(user_state.data.inner_title, &{&1, text})
-          StateManager.set_state(telegram_id, user_state)
-          ExGram.send_message(telegram_id, Template.orb_creation_preview_builder(user_state.data),
-            parse_mode: "HTML", reply_markup: Button.build_orb_create_keyboard_button())
-        end
+        CreateOrbPath.create_orb_path_transition(user, String.to_atom(type), text)
       _ ->
         nil
     end
@@ -269,38 +194,14 @@ defmodule Phos.TeleBot do
   # """
   def handle({:message, :post, payload}) do
     telegram_id = payload |> get_in(["chat", "id"])
-    user_state = StateManager.get_state(telegram_id)
-    {:ok, user} = get_user_by_telegram(telegram_id)
-
-    if is_nil(user.confirmed_at) do
-      onboarding_text(payload)
-    else
-      profile_fields_checklist = %{
-        username: not is_nil(user.username),
-        profile_picture: user.media,
-      }
-      has_completed_profile_to_post = Enum.all?(profile_fields_checklist, fn {_, v} -> v end)
-
-      case user_state do
-        _ when has_completed_profile_to_post ->
-          create_fresh_orb_form(telegram_id)
-        _ when not has_completed_profile_to_post ->
-          ExGram.send_message(telegram_id, Template.incomplete_profile_text_builder(profile_fields_checklist),
-            reply_markup: Button.complete_profile_for_post_button())
-        %{state: "create_orb"} ->
-          ExGram.send_message(telegram_id, "You have a post creation ongoing, do you wish to continue or restart?",
-            reply_markup: Button.build_existing_post_creation_inline_button())
-        _ ->
-          nil
-      end
-    end
+    post_orb(telegram_id)
   end
 
   def handle({:message, :register, payload}) do
     telegram_id = payload |> get_in(["chat", "id"])
     with {:user_exist, user_exist} <- {:user_exist, Users.telegram_user_exists?(telegram_id)},
          {:user, {:ok, %{integrations: %{telegram_chat_id: _}} = user}}  <- {:user, get_user_by_telegram(telegram_id)} do
-          ExGram.send_message(telegram_id, "You have completed onboarding and a full member with us!")
+          ExGram.send_message(telegram_id, "You have completed onboarding!")
         else
           {:user_exist, false} ->
             ExGram.send_message(telegram_id, Template.onboarding_text_builder(%{}), reply_markup: Button.build_onboarding_button())
@@ -326,19 +227,8 @@ defmodule Phos.TeleBot do
       %{state: "set_profile_picture"} ->
         set_user_profile_picture(user, payload, "Profile picture updated!")
 
-      %{state: "create_orb"} = user_state ->
-        media = %{
-          access: "public",
-          essence: "profile",
-          resolution: "lossy",
-          count: user_state.data.mediacount
-        }
-        mediacount = user_state.data.mediacount + 1
-        {_prev, user_state} = get_and_update_in(user_state.data.media, &{&1, [media | user_state.data.media]})
-        {_prev, user_state} = get_and_update_in(user_state.data.mediacount, &{&1, mediacount})
-        StateManager.set_state(telegram_id, user_state)
-
-        ExGram.send_photo(telegram_id, payload |> get_in(["photo"]) |> Enum.reverse() |> List.first() |> get_in(["file_id"]), caption: "Media ##{mediacount - 1} attached!\n" <> Template.orb_creation_preview_builder(user_state.data), parse_mode: "HTML", reply_markup: Button.build_orb_create_keyboard_button())
+      %{state: "createorb"} = user_state ->
+        CreateOrbPath.create_orb_path_transition(user, :media, payload)
         # ExGram.send_photo(telegram_id, payload, caption: "Media attached!\n" <> orb_creation_preview_builder(user_state.data), parse_mode: "HTML", reply_markup: build_orb_create_keyboard_button())
         # with {:ok, media} <- Phos.Orbject.Structure.apply_media_changeset(%{id: attrs["id"], archetype: "ORB", media: media}) do
         #   ExGram.send_photo(telegram_id, Phos.Orbject.S3.get!("ORB", attrs["id"], "public/profile/lossless"), caption: "Media attached!\n" <> orb_creation_preview_builder(user_state.data), parse_mode: "HTML", reply_markup: build_orb_create_keyboard_button())
@@ -351,6 +241,11 @@ defmodule Phos.TeleBot do
   # CALLBACK QUERY
   # ====================
 
+  def handle({:callback_query, %{"data" => "start_mainmenu"} = payload}) do
+    telegram_id = payload |> get_in(["message", "chat", "id"])
+    main_menu(telegram_id)
+  end
+
   def handle({:callback_query, %{"data" => "onboarding"} = payload}) do
     telegram_id = payload |> get_in(["message", "chat", "id"])
     user_state = StateManager.get_state(telegram_id)
@@ -359,19 +254,58 @@ defmodule Phos.TeleBot do
     ExGram.send_message(telegram_id, "What is your email?\n\nPlease provide us with a valid email, you will receive a confirmation email to confirm your registration.", parse_mode: "HTML")
   end
 
-  def handle({:callback_query, %{"data" => "createorb_" <> type } = payload}) when type in ["continue", "restart"] do
+  def handle({:callback_query, %{"data" => "menu_" <> type} = payload}) when type in ["post", "openprofile", "nearbyposts"] do
     telegram_id = payload |> get_in(["message", "chat", "id"])
-
+    {:ok, user} = get_user_by_telegram(telegram_id)
     case type do
-      "continue" ->
-        user_state = StateManager.get_state(telegram_id)
-        ExGram.send_message(telegram_id, Template.orb_creation_preview_builder(user_state.data),
-          parse_mode: "HTML", reply_markup: Button.build_orb_create_keyboard_button())
-      "restart" ->
-        StateManager.delete_state(telegram_id)
-        create_fresh_orb_form(telegram_id)
+      "post" ->
+        post_orb(telegram_id)
+      "openprofile" ->
+        open_user_profile(user)
+      "nearbyposts" ->
+        ExGram.send_message(telegram_id, Template.latest_posts_text_builder(user),
+            parse_mode: "HTML", reply_markup: Button.build_latest_posts_inline_button())
     end
   end
+
+  def handle({:callback_query, %{"data" => "createorb_back_" <> type } = payload}) when type in ["description", "location", "media"] do
+    telegram_id = payload |> get_in(["message", "chat", "id"])
+    {:ok, user} = get_user_by_telegram(telegram_id)
+    CreateOrbPath.create_orb_path(user, String.to_atom(type))
+  end
+
+  def handle({:callback_query, %{"data" => "createorb_" <> type } = payload}) when type in ["location_home", "location_work",
+     "location_live", "description", "location", "media", "preview", "post"] do
+    telegram_id = payload |> get_in(["message", "chat", "id"])
+    {:ok, user} = get_user_by_telegram(telegram_id)
+    case type do
+      "location_home" ->
+        CreateOrbPath.create_orb_path_transition(user, :location, "home")
+      "location_work" ->
+        CreateOrbPath.create_orb_path_transition(user, :location, "work")
+      "location_live" ->
+        CreateOrbPath.create_orb_path_transition(user, :location, "live")
+      "preview" ->
+        CreateOrbPath.create_orb_path_transition(user, :preview)
+      "post" ->
+        CreateOrbPath.create_orb_path(user, :post)
+    end
+  end
+
+  # def handle({:callback_query, %{"data" => "createorb_" <> type } = payload}) when type in ["description", "location", "media", "preview", "post", "continue", "restart"] do
+  #   telegram_id = payload |> get_in(["message", "chat", "id"])
+  #   {:ok, user} = get_user_by_telegram(telegram_id)
+  #   CreateOrbPath.create_orb_path_transition(user, String.to_atom(type))
+      # "post" ->
+      #   CreateOrbPath.create_orb_path(user, :post)
+      # "continue" ->
+      #   user_state = StateManager.get_state(telegram_id)
+      #   ExGram.send_message(telegram_id, Template.orb_creation_preview_builder(user_state.data),
+      #     parse_mode: "HTML")
+      # "restart" ->
+      #   StateManager.delete_state(telegram_id)
+      #   create_fresh_orb_form(telegram_id)
+  # end
 
   # PROFILE - LINK ACCOUNT
   def handle({:callback_query, %{"data" => "link_account" } = payload}) do
@@ -439,8 +373,8 @@ defmodule Phos.TeleBot do
         ExGram.send_message(telegram_id, "Let's setup your bio. Share your hobbies or skills",
           parse_mode: "HTML" , reply_markup: Button.build_cancel_button())
       "location" ->
-        ExGram.send_message(telegram_id, "You can set up your home, work and live location\n
-          Just send your pinned location or live location after hitting the button", reply_markup: Button.build_location_button())
+        ExGram.send_message(telegram_id, "You can set up your home, work and live location\n\nJust send your pinned location or live location after hitting the button",
+          parse_mode: "HTML", reply_markup: Button.build_location_button(user))
       "picture" ->
         profilefsm = %Phos.TeleBot.ProfileFSM{state: "set_profile_picture"}
         StateManager.set_state(telegram_id, profilefsm)
@@ -493,13 +427,13 @@ defmodule Phos.TeleBot do
       case user_state.state do
         "set_location" ->
           update_user_location(telegram_id, {lat, lon}, desc = Phos.Mainland.World.locate(:h3.from_geo({lat, lon}, 11)))
-        "create_orb" ->
+        "createorb_" <> _type ->
           user_state = StateManager.get_state(telegram_id)
           {_prev, user_state} = get_and_update_in(user_state.data.geolocation.central_geohash, &{&1, :h3.from_geo({lat, lon}, 10)} )
           {_prev, user_state} = get_and_update_in(user_state.data.location_type, &{&1, :live} )
           StateManager.set_state(telegram_id, user_state)
-          ExGram.send_message(telegram_id, Template.orb_creation_preview_builder(user_state.data),
-            parse_mode: "HTML", reply_markup: Button.build_orb_create_keyboard_button())
+          # ExGram.send_message(telegram_id, Template.orb_creation_preview_builder(user_state.data),
+          #   parse_mode: "HTML", reply_markup: Button.build_orb_create_keyboard_button())
         _ ->
           ExGram.send_message(telegram_id, "Your location not set.")
       end
@@ -509,13 +443,13 @@ defmodule Phos.TeleBot do
   def handle({_, _}), do: []
   def handle({_, _, _}), do: []
 
+  def get_user_by_telegram(telegram_id), do: Users.get_user_by_telegram(telegram_id |> to_string())
+
   defp create_fresh_orb_form(telegram_id) do
     {:ok, user} = get_user_by_telegram(telegram_id)
-    createorbfsm = %Phos.TeleBot.CreateOrbFSM{state: "create_orb", data: %{inner_title: "", media: %{}, mediacount: 1,
-      location_type: "", geolocation: %{central_geohash: ""}}}
-    StateManager.set_state(telegram_id, createorbfsm)
-    ExGram.send_message(telegram_id, Template.orb_creation_desc_builder(createorbfsm.data),
-      parse_mode: "HTML", reply_markup: Button.build_orb_create_keyboard_button())
+    user_state = %Phos.TeleBot.CreateOrbFSM{telegram_id: telegram_id, state: "home", data: %{}}
+    {:ok, user_state} = Fsmx.transition(user_state, "createorb_description")
+    StateManager.set_state(telegram_id, user_state)
   end
 
   defp build_inlinequery_orbs(orbs) do
@@ -550,30 +484,20 @@ defmodule Phos.TeleBot do
     end
   end
 
-  defp registration_menu(payload) do
-    texts = [
-      "Hi",
-      "Welcome to ScratchBac Telegram Bot.",
-      "You can posting register and posting an orb and join with the community.",
-      "To register click the link below",
-      "\n",
-      "Thanks.",
-      "ScratchBac Team."
-    ]
-
-    # answer(context, Enum.join(texts, "\n"), reply_markup: build_registration_button())
-    ExGram.send_message(payload |> get_in(["chat", "id"]), Enum.join(texts, "\n"), reply_markup: Button.build_registration_button())
+  defp start_menu(telegram_id) do
+    ExGram.send_photo(telegram_id, "https://i.ytimg.com/vi/1WHPExTeOwg/hqdefault.jpg?sqp=-oaymwE1CKgBEF5IVfKriqkDKAgBFQAAiEIYAXABwAEG8AEB-AH-CYAC0AWKAgwIABABGGUgVihWMA8=&rs=AOn4CLAHoaGoaZT-uzdJEA6N62NgNSlWrw",
+      caption: Template.start_menu_text_builder(%{}),
+      parse_mode: "HTML", reply_markup: Button.build_start_inlinekeyboard())
   end
 
-  defp get_user_by_telegram(telegram_id), do: Users.get_user_by_telegram(telegram_id |> to_string())
-
-  defp main_menu(payload) do
-    ExGram.send_photo(payload |> get_in(["chat", "id"]), PhosWeb.Endpoint.url <> "/images/guest_splash.jpg",
-      caption: Template.main_menu_text_builder(%{}), parse_mode: "HTML", reply_markup: Button.build_menu_keyboard())
+  defp main_menu(telegram_id) do
+    ExGram.send_photo(telegram_id, "https://i.ytimg.com/vi/Cwkej79U3ek/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLDQSTgDQFkMm3-ciBrY-WZmq9JK3A",
+      caption: Template.main_menu_text_builder(%{}), parse_mode: "HTML",
+      reply_markup: Button.build_menu_inlinekeyboard())
   end
 
-  defp onboarding_text(payload) do
-    ExGram.send_message(payload |> get_in(["chat", "id"]), "We have so many features here and can't wait for you to join us but
+  defp onboarding_text(telegram_id) do
+    ExGram.send_message(telegram_id, "We have so many features here and can't wait for you to join us but
     you need to be verified to use them.\n\n<u>Please click on the button below to register an account with us!</u>\n\n
     <i>Note: If you have already registered, do check your email or register again</i>", parse_mode: "HTML",
     reply_markup: Button.build_onboarding_button())
@@ -608,21 +532,20 @@ defmodule Phos.TeleBot do
       {:ok, user} ->
         open_user_profile(user, "Your #{type} location is set")
         StateManager.delete_state(telegram_id)
-      _ -> ExGram.send_message(telegram_id, "Your #{type} location is not set.", reply_markup: Button.build_menu_keyboard())
+      _ -> ExGram.send_message(telegram_id, "Your #{type} location is not set.", reply_markup: Button.build_menu_inlinekeyboard())
     end
-  end
-
-  def remove_keyboard() do
-    %ExGram.Model.ReplyKeyboardRemove{remove_keyboard: true}
   end
 
   def dispatch_messages(events) do
     Enum.map(events, fn %{chat_id: chat_id, orb: orb} ->
       text = case orb.media do
         true ->
-          url = Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless")
-          "#{url}\n\n#{Template.orb_telegram_orb_builder(orb)}"
-        _ -> Template.orb_telegram_orb_builder(orb)
+          ExGram.send_photo(chat_id, Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless"),
+            caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
+            reply_markup: Button.build_orb_notification_button(orb))
+        _ ->
+          ExGram.send_message(chat_id, Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
+            reply_markup: Button.build_orb_notification_button(orb))
       end
       ExGram.send_message(chat_id, text, parse_mode: "HTML", reply_markup: Button.build_orb_notification_button(orb))
     end)
@@ -666,17 +589,38 @@ defmodule Phos.TeleBot do
   end
 
   defp open_user_profile(user), do: open_user_profile(user, "")
-  defp open_user_profile(user, text) do
-    case user do
-      %{integrations: %{telegram_chat_id: telegram_id}} ->
-        if user.media do
-          # ExGram.send_photo(telegram_id, Phos.Orbject.S3.get!("USR", user.id, "public/profile/lossless"), caption: "#{text}" <> profile_text_builder(user), parse_mode: "HTML", reply_markup: remove_keyboard())
-          ExGram.send_photo(telegram_id, "https://i.ytimg.com/vi/k4V3Mo61fJM/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLBbg_2SMrVOg8JQQOfmCfVsjy-Dlg", caption: "#{text}" <> Template.profile_text_builder(user), parse_mode: "HTML", reply_markup: Button.build_settings_button())
-        else
-          ExGram.send_message(telegram_id, text <> Template.profile_text_builder(user), reply_markup: Button.build_settings_button())
-        end
-      _ ->
-        nil
+  defp open_user_profile(%{integrations: %{telegram_chat_id: telegram_id}, media: true} = user, text) do
+    IO.inspect user
+    ExGram.send_photo(telegram_id, "https://i.ytimg.com/vi/k4V3Mo61fJM/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLBbg_2SMrVOg8JQQOfmCfVsjy-Dlg",
+      caption: "#{text}" <> Template.profile_text_builder(user), parse_mode: "HTML", reply_markup: Button.build_settings_button())
+  end
+  defp open_user_profile(%{integrations: %{telegram_chat_id: telegram_id}} = user, text), do: ExGram.send_message(telegram_id, text <> Template.profile_text_builder(user), reply_markup: Button.build_settings_button())
+
+  defp post_orb(telegram_id) do
+    user_state = StateManager.get_state(telegram_id)
+    {:ok, user} = get_user_by_telegram(telegram_id)
+
+    if is_nil(user.confirmed_at) do
+      onboarding_text(telegram_id)
+    else
+      profile_fields_checklist = %{
+        username: not is_nil(user.username),
+        profile_picture: user.media,
+      }
+      has_completed_profile_to_post = Enum.all?(profile_fields_checklist, fn {_, v} -> v end)
+
+      case user_state do
+        _ when has_completed_profile_to_post ->
+          create_fresh_orb_form(telegram_id)
+        _ when not has_completed_profile_to_post ->
+          ExGram.send_message(telegram_id, Template.incomplete_profile_text_builder(profile_fields_checklist),
+            reply_markup: Button.complete_profile_for_post_button())
+        %{state: "createorb_" <> _path} ->
+          ExGram.send_message(telegram_id, "You have a post creation ongoing, do you wish to continue or restart?",
+            reply_markup: Button.build_existing_post_creation_inline_button())
+        _ ->
+          nil
+      end
     end
   end
 end

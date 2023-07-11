@@ -42,8 +42,12 @@ defmodule PhosWeb.TelegramController do
     case body_params do
       %{"message" => %{"location" => location} = message} ->
         {:ok, {:location, message}}
-        %{"message" => %{"photo" => photo} = message} ->
+      %{"message" => %{"photo" => photo} = message} ->
         {:ok, {:photo, message}}
+      %{"message" => %{"sticker" => sticker} = message} ->
+        {:ok, {:sticker, message}}
+      %{"message" => %{"document" => document} = message} ->
+        {:ok, {:document, document}}
       %{"message" => message} ->
         {:ok, {:message, extract_command(message), message}}
       %{"callback_query" => query} ->
@@ -59,11 +63,11 @@ defmodule PhosWeb.TelegramController do
   def extract_command(%{"text" => text}) do
     case String.trim(text) do
       "/start" -> :start
+      "/menu" -> :menu
       "/help" -> :help
       "/register" -> :register
       "/post" -> :post
       "/profile" -> :profile
-      # "/debug" -> :debug
       _ -> :text
     end
   end

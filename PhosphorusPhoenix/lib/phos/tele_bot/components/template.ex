@@ -3,6 +3,17 @@ defmodule Phos.TeleBot.Components.Template do
   import PhosWeb.Endpoint, only: [url: 0]
   use PhosWeb, :html
 
+  def start_menu_text_builder(assigns) do
+    ~H"""
+    <b>About us!</b>
+
+    Our goal is to help people stay connected with their community. We want to help people find out what's happening around them, and to help them share their thoughts and feelings with their community.
+
+    Press /start or /menu if bot hangs
+    """
+    |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
+  end
+
   def main_menu_text_builder(assigns) do
     ~H"""
     Welcome to the ScratchBac Telegram Bot!
@@ -61,7 +72,7 @@ defmodule Phos.TeleBot.Components.Template do
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
   end
 
-  def orb_creation_desc_builder(assigns) do
+  def orb_creation_description_builder(assigns) do
     ~H"""
     <b>Type and send your post description below.</b> <i>(max 300 characters)</i>
 
@@ -131,7 +142,9 @@ defmodule Phos.TeleBot.Components.Template do
     if user.private_profile do
       case Enum.find(user.private_profile.geolocation, fn loc -> loc.id == type end) do
         nil -> "Not set"
-        %{location_description: desc} -> desc
+        %{location_description: description} ->
+          # remove any digits and set the description to uppcase
+          Regex.replace(~r/\d+/, description, "") |> String.upcase()
       end
     else
       "Not set"

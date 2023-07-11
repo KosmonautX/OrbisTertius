@@ -1,4 +1,6 @@
 defmodule Phos.TeleBot.Components.Button do
+  alias Phos.TeleBot.Components.Template
+
   def build_registration_button() do
     %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [[
       %ExGram.Model.InlineKeyboardButton{
@@ -31,16 +33,38 @@ defmodule Phos.TeleBot.Components.Button do
     ]]}
   end
 
-  def build_menu_keyboard() do
-    %ExGram.Model.ReplyKeyboardMarkup{resize_keyboard: true, keyboard:  [
+  def build_start_inlinekeyboard() do
+    %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [
       [
-        %ExGram.Model.KeyboardButton{text: "🔭 Latest Posts"},
+        %ExGram.Model.InlineKeyboardButton{text: "📔 Main Menu", callback_data: "start_mainmenu"},
       ],
       [
-        %ExGram.Model.KeyboardButton{text: "👤 Profile"},
-        %ExGram.Model.KeyboardButton{text: "❓ Help"},
+        %ExGram.Model.InlineKeyboardButton{text: "FAQ", callback_data: "start_faq"},
+        %ExGram.Model.InlineKeyboardButton{text: "Feedback", callback_data: "start_feedback"},
       ]
-    ]}
+      ]}
+  end
+
+  def build_menu_inlinekeyboard() do
+    # %ExGram.Model.ReplyKeyboardMarkup{resize_keyboard: true, keyboard:  [
+    #   [
+    #     %ExGram.Model.KeyboardButton{text: "🔭 Latest Posts"},
+    #   ],
+    #   [
+    #     %ExGram.Model.KeyboardButton{text: "👤 Profile"},
+    #     %ExGram.Model.KeyboardButton{text: "❓ Help"},
+    #   ]
+    # ]}
+    %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [
+      [
+        %ExGram.Model.InlineKeyboardButton{text: "✈️ Post", callback_data: "menu_post"},
+        %ExGram.Model.InlineKeyboardButton{text: "🔭 Nearby Posts", callback_data: "menu_nearbyposts"},
+      ],
+      [
+        %ExGram.Model.InlineKeyboardButton{text: "👤 Profile", callback_data: "menu_openprofile"},
+        %ExGram.Model.InlineKeyboardButton{text: "📕 My Posts", callback_data: "menu_myposts"},
+      ]
+      ]}
   end
 
   def build_choose_username_keyboard(username) do
@@ -60,6 +84,9 @@ defmodule Phos.TeleBot.Components.Button do
       [
         %ExGram.Model.InlineKeyboardButton{text: "Set Location", callback_data: "edit_profile_location"},
         %ExGram.Model.InlineKeyboardButton{text: "Edit Picture", callback_data: "edit_profile_picture"},
+      ],
+      [
+        %ExGram.Model.InlineKeyboardButton{text: "📔 Main Menu", callback_data: "start_mainmenu"},
       ]
       ]}
   end
@@ -67,7 +94,7 @@ defmodule Phos.TeleBot.Components.Button do
   def build_link_account_button() do
     %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [
       [
-        %ExGram.Model.InlineKeyboardButton{text: "Link Account", callback_data: "link_account"},
+        %ExGram.Model.InlineKeyboardButton{text: "🔗 Link Account", callback_data: "link_account"},
       ]
       ]}
   end
@@ -84,12 +111,23 @@ defmodule Phos.TeleBot.Components.Button do
       ]}
   end
 
-  def build_location_button() do
-    %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [[
-      %ExGram.Model.InlineKeyboardButton{text: "Home", callback_data: "edit_profile_locationtype_home"},
-      %ExGram.Model.InlineKeyboardButton{text: "Work", callback_data: "edit_profile_locationtype_work"},
-      %ExGram.Model.InlineKeyboardButton{text: "Live", callback_data: "edit_profile_locationtype_live"},
-    ]]}
+  def build_location_button(user) do
+    %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [
+      [
+        %ExGram.Model.InlineKeyboardButton{text: "#1: " <> Template.get_location_desc_from_user(user, "home"), callback_data: "edit_profile_locationtype_home"},
+      ],
+      [
+        %ExGram.Model.InlineKeyboardButton{text: "#2 : " <> Template.get_location_desc_from_user(user, "work"), callback_data: "edit_profile_locationtype_work"},
+      ],
+      [
+        %ExGram.Model.InlineKeyboardButton{text: "Live: " <> Template.get_location_desc_from_user(user, "live"), callback_data: "edit_profile_locationtype_live"},
+      ]
+      ]}
+    # %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [[
+    #   %ExGram.Model.InlineKeyboardButton{text: "Home", callback_data: "edit_profile_locationtype_home"},
+    #   %ExGram.Model.InlineKeyboardButton{text: "Work", callback_data: "edit_profile_locationtype_work"},
+    #   %ExGram.Model.InlineKeyboardButton{text: "Live", callback_data: "edit_profile_locationtype_live"},
+    # ]]}
   end
 
   def build_location_specific_button(loc_type) do
@@ -101,14 +139,6 @@ defmodule Phos.TeleBot.Components.Button do
   def build_current_location_button() do
     %ExGram.Model.ReplyKeyboardMarkup{one_time_keyboard: true, resize_keyboard: true, keyboard:  [[
       %ExGram.Model.KeyboardButton{text: "Send Current Location", request_location: true}
-    ]]}
-  end
-
-  def build_createorb_location_button() do
-    %ExGram.Model.ReplyKeyboardMarkup{one_time_keyboard: true, resize_keyboard: true, keyboard:  [[
-      %ExGram.Model.KeyboardButton{text: "🏡 Home"},
-      %ExGram.Model.KeyboardButton{text: "🏢 Work"},
-      %ExGram.Model.KeyboardButton{text: "📍 Live", request_location: true}
     ]]}
   end
 
@@ -155,16 +185,85 @@ defmodule Phos.TeleBot.Components.Button do
     ]}
   end
 
-  def build_orb_create_keyboard_button() do
-    %ExGram.Model.ReplyKeyboardMarkup{one_time_keyboard: false, resize_keyboard: true, keyboard:  [
+  def build_createorb_description_inlinekeyboard() do
+    # %ExGram.Model.ReplyKeyboardMarkup{one_time_keyboard: false, resize_keyboard: true, keyboard:  [
+    #   [
+    #     %ExGram.Model.KeyboardButton{text: "📎 Media"},
+    #     %ExGram.Model.KeyboardButton{text: "📍 Location"},
+    #   ],
+    #   [
+    #     %ExGram.Model.KeyboardButton{text: "❌ Cancel"},
+    #     %ExGram.Model.KeyboardButton{text: "✈️ Post"},
+    #   ]
+    # ]}
+    %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [
       [
-        %ExGram.Model.KeyboardButton{text: "📎 Media"},
-        %ExGram.Model.KeyboardButton{text: "📍 Location"},
+        %ExGram.Model.InlineKeyboardButton{text: "📔 Main Menu", callback_data: "start_mainmenu"},
+      ]
+      ]}
+  end
+
+  def build_createorb_location_inlinekeyboard(user) do
+    %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [
+      [
+        %ExGram.Model.InlineKeyboardButton{text: "#1: " <> Template.get_location_desc_from_user(user, "home"), callback_data: "createorb_location_home"},
       ],
       [
-        %ExGram.Model.KeyboardButton{text: "❌ Cancel"},
-        %ExGram.Model.KeyboardButton{text: "✈️ Post"},
+        %ExGram.Model.InlineKeyboardButton{text: "#2 : " <> Template.get_location_desc_from_user(user, "work"), callback_data: "createorb_location_work"},
+      ],
+      [
+        %ExGram.Model.InlineKeyboardButton{text: "Live: " <> Template.get_location_desc_from_user(user, "live"), callback_data: "createorb_location_live"},
+      ],
+      [
+        %ExGram.Model.InlineKeyboardButton{text: "📔 Main Menu", callback_data: "start_mainmenu"},
+        %ExGram.Model.InlineKeyboardButton{text: "↩️ Back", callback_data: "createorb_back_description"},
       ]
-    ]}
+      ]}
   end
+
+  def build_createorb_media_inlinekeyboard() do
+    %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [
+      [
+        %ExGram.Model.InlineKeyboardButton{text: "📔 Main Menu", callback_data: "start_mainmenu"},
+        %ExGram.Model.InlineKeyboardButton{text: "↩️ Back", callback_data: "createorb_back_location"},
+      ],
+      [
+        %ExGram.Model.InlineKeyboardButton{text: "⏭️ Skip", callback_data: "createorb_preview"},
+      ]
+      ]}
+  end
+
+  def build_createorb_preview_inlinekeyboard() do
+    %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [
+      [
+        %ExGram.Model.InlineKeyboardButton{text: "📔 Main Menu", callback_data: "start_mainmenu"},
+        %ExGram.Model.InlineKeyboardButton{text: "↩️ Back", callback_data: "createorb_back_media"},
+      ],
+      [
+        %ExGram.Model.InlineKeyboardButton{text: "✈️ Post", callback_data: "createorb_post"},
+      ]
+      ]}
+  end
+
+  # def build_createorb_location_button() do
+  #   %ExGram.Model.ReplyKeyboardMarkup{one_time_keyboard: true, resize_keyboard: true, keyboard:  [[
+  #     %ExGram.Model.KeyboardButton{text: "🏡 Home"},
+  #     %ExGram.Model.KeyboardButton{text: "🏢 Work"},
+  #     %ExGram.Model.KeyboardButton{text: "📍 Live", request_location: true}
+  #   ]]}
+  # end
+
+  # def build_createorb__location_inlinekeyboard(%{home: home_desc, work: work_desc, live: live_desc} = payload) do
+  #   %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [
+  #     [
+  #       %ExGram.Model.InlineKeyboardButton{text: "#1: " <> home_desc, callback_data: "createorb_location_home"},
+  #     ],
+  #     [
+  #       %ExGram.Model.InlineKeyboardButton{text: "#2 : " <> work_desc, callback_data: "createorb_location_work"},
+  #     ],
+  #     [
+  #       %ExGram.Model.InlineKeyboardButton{text: live_desc, callback_data: "createorb_location_live"},
+  #     ]
+  #     ]}
+  # end
 end
