@@ -164,12 +164,12 @@ PUT :ipAddress/userland/self/territory
     "territory": [
         {
             "id": "home",
-            "geohash": 628021297666224127,
+            "geohash": 627779412520177663,
             "location_description": "Keong Saik"
         },
         {
             "id": "live",
-            "geohash": 627779412520177663,
+            "geohash": 627779410029711359,
             "location_description": "Bukit Panjang"
         }
     ]
@@ -423,7 +423,7 @@ GET :ipAddress/memland/orbs/:orb?page=1
 :auth-headers
 
 ## Index by unique territories
-GET :ipAddress/memland/territories/614268611149692927?cursor=1693502948407
+GET :ipAddress/memland/territories/614268611149692927?cursor=1688355938000
 :auth-headers
 
 ## Show by specific relation_id through cursor
@@ -442,8 +442,7 @@ POST :ipAddress/memland/memories
 :auth-headers
 {
     "message": "14",
-    "orb_subject_id": ":orb",
-    "loc_subject_id": 614268611149692927
+    "loc_subject_id": 614554999420092415
 }
 
 ### Medialand

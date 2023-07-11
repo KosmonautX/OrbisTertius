@@ -16,6 +16,7 @@ defmodule Phos.Message.Memory do
     belongs_to :com_subject, Phos.Comments.Comment, references: :id, type: Ecto.UUID
     belongs_to :loc_subject, Phos.Action.Location, references: :id, type: :integer
     has_one :last_rel_memory, Phos.Users.RelationRoot, foreign_key: :last_memory_id
+    has_one :last_loc_memory, Phos.Action.Location, foreign_key: :last_memory_id
 
     field :cluster_subject_id, :binary_id, default: nil, virtual: true
 

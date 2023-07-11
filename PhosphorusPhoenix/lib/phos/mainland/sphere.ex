@@ -6,6 +6,8 @@ defmodule Phos.Mainland.Sphere do
     @external_resource path
     Map.merge(acc, path |> File.read!() |> Jason.decode!() ) end)
 
+
+  def middle([_ | _] = hash ), do: Enum.map(hash, &middle(&1)) |> Enum.uniq() |> Enum.reject(&is_nil/1)
   def middle(hash) when is_integer(hash) do
     @world[to_string(:h3.parent(hash, 8))]["mid"]
   end

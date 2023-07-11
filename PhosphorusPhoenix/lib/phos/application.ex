@@ -23,6 +23,7 @@ defmodule Phos.Application do
 
       {Cluster.Supervisor, [topologies, [name: Phos.ClusterSupervisor]]},
       PhosWeb.Presence,
+      {PhosWeb.Watcher, [name: PhosWeb.Watcher, pubsub_server: Phos.PubSub, pool_size: :erlang.system_info(:schedulers_online)]},
       # Start the Firbase Cloud Messaging Dispatcher
       # Phos.Fyr.Message
       Phos.Notification,

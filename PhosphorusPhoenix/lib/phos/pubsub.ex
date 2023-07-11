@@ -4,8 +4,8 @@ defmodule Phos.PubSub do
   """
   alias Phoenix.PubSub
 
-  def subscribe(topic) do
-    PubSub.subscribe(Phos.PubSub, topic)
+  def subscribe(topic, opts \\ []) do
+    PubSub.subscribe(Phos.PubSub, topic, opts)
   end
 
   def unsubscribe(topic) do
@@ -50,7 +50,7 @@ defmodule Phos.PubSub do
   end
 
   def publish(%Phos.Message.Memory{} = message, event, %Phos.Action.Location{id: geohash}) do
-    PubSub.broadcast(__MODULE__, "memory:erth:#{geohash}", {__MODULE__, event, message})
+    PubSub.broadcast(__MODULE__, "memory:terra:#{geohash}", {__MODULE__, event, message})
     message
   end
 

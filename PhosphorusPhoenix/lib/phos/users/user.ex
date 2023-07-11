@@ -27,6 +27,7 @@ defmodule Phos.Users.User do
     field :ally_count, :integer, default: 0, virtual: true
     field :mutual_count, :integer, default: 0, virtual: true
     field :mutual, :any, virtual: true
+    field :online_at, :integer, virtual: true
 
     # has_many :pending_relations, RelationBranch, foreign_key: :user_id, where: [completed_at: nil]
     has_many :allies, RelationBranch, foreign_key: :user_id, where: [completed_at: {:not, nil}]
