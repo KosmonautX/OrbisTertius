@@ -6,14 +6,6 @@ defmodule PhosWeb.UserProfileLive.Show do
   alias PhosWeb.Components.ScrollAlly
   alias PhosWeb.Components.ScrollOrb
 
-  defguard is_uuid?(value)
-           when is_bitstring(value) and
-                  byte_size(value) == 36 and
-                  binary_part(value, 8, 1) == "-" and
-                  binary_part(value, 13, 1) == "-" and
-                  binary_part(value, 18, 1) == "-" and
-                  binary_part(value, 23, 1) == "-"
-
   @impl true
   def mount(
         %{"username" => id} = params,
@@ -25,14 +17,17 @@ defmodule PhosWeb.UserProfileLive.Show do
 
     {:ok, user} = mount_user(id)
 
+    allies = ScrollAlly.check_more_ally(current_user, user.id, 1, 24)
+
     {:ok,
      socket
      |> assign(:user, user)
      |> assign(:current_user, current_user)
      |> assign_meta(user, params)
      |> assign(:parent_pid, socket.transport_pid)
+     |> assign(:ally_count, allies.meta.pagination.total)
      |> stream_assign(:orbs, Action.orbs_by_initiators([user.id], 1))
-     |> stream_assign(:ally_list, ScrollAlly.check_more_ally(current_user, user.id, 1, 24))}
+     |> stream_assign(:ally_list, allies)}
   end
 
   @impl true
@@ -129,15 +124,8 @@ defmodule PhosWeb.UserProfileLive.Show do
      |> push_patch(to: ~p"/user/#{socket.assigns.user.username}")}
   end
 
-  defp mount_user(id) when is_uuid?(id) do
-    case Users.find_user_by_id(id) do
-      {:ok, %Users.User{} = user} -> {:ok, user}
-      nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
-    end
-  end
-
-  defp mount_user(username) do
-    case Users.get_user_by_username(username) do
+  defp mount_user(id_or_username) do
+    case Users.get_user(id_or_username) do
       %Users.User{} = user -> {:ok, user}
       nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
     end

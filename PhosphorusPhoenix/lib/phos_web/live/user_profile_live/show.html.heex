@@ -2,7 +2,8 @@
   :if={@live_action in [:edit]}
   id="edit_profile_modal"
   show={@live_action in [:edit]}
-  on_cancel={JS.navigate(~p"/user/#{@current_user.username}")}>
+  on_cancel={JS.navigate(~p"/user/#{@current_user.username}")}
+>
   <div class="p-4">
     <.live_component
       module={PhosWeb.UserProfileLive.FormComponent}
@@ -22,66 +23,92 @@
       user={@user}
       show_location={true}
       show_img={false}
-      show_border={true}/>
-   </div>
-    <div class="lg:block hidden w-full mt-3">
+      show_border={true}
+    />
+  </div>
+  <div class="lg:block hidden w-full mt-3">
     <.user_profile_banner
       id="orb-user-profile-desktop"
       user={@user}
       show_location={true}
       show_img={false}
-      show_border={true}/>
-   </div>
-   <div class="w-full px-4 md:px-10 mt-72 lg:mt-6 lg:max-w-3xl lg:px-0">
+      show_border={true}
+    />
+  </div>
+  <div class="w-full px-4 md:px-10 mt-72 lg:mt-6 lg:max-w-3xl lg:px-0">
     <.user_information_card
       :if={not is_nil(@user.public_profile)}
       id="user_info"
       user={@user}
-      username={@user.username}>
-        <:actions>
-          <.live_component
+      username={@user.username}
+      ally_count={@ally_count}
+    >
+      <:actions>
+        <.live_component
           id="user-information-card-ally"
           module={PhosWeb.Component.AllyButton}
           current_user={@current_user}
           user={@user}
-          parent_pid={@parent_pid}/>
-            <.link :if={@current_user && @user.id == @current_user.id}
-              patch={~p"/user/#{@current_user.username}/edit"}>
-              <button class="bg-black text-white hover:black focus:outline-none focus:ring-4   focus:ring-black font-semibold rounded-2xl text-base px-6 py-2.5 text-center dark:focus:ring-black font-Poppins">Edit</button>
-           </.link>
-        </:actions>
-        <:allies>
-          <div class="hidden lg:block">
-           <input id="accordion-item" type="checkbox" name="accordion" class="hidden accordion-item" />
-            <label for="accordion-item" class="flex cursor-pointer items-center justify-between label">
-              <span class="text-sm dark:text-white text-black font-semibold">
-                <%= "25 allies | allies with @#{@user.username}'s and Others" %>
-              </span>
-                <Heroicons.chevron_down class="closed-icon h-5 w-5 text-gray-500" />
-                <Heroicons.chevron_up class="open-icon hidden h-5 w-5 text-gray-500" />
-            </label>
-            <div class="accordion-content">
-              <p :if={@streams.ally_list |> Enum.count() == 0} class="w-full mx-auto text-center py-6 text-gray-600 font-medium text-sm lg:text-base dark:text-white">
-                  <%= "#{@user.username} has no allies yet" %>
-              </p>
-              <.live_component module={PhosWeb.Components.ScrollAlly} id="infinite-ally-home-desktop"
-                data={@streams.ally_list} parent_pid={@parent_pid} current_user={@current_user}
-                meta={@ally_list}/>
-            </div>
+          parent_pid={@parent_pid}
+        />
+        <.link
+          :if={@current_user && @user.id == @current_user.id}
+          patch={~p"/user/#{@current_user.username}/edit"}
+        >
+          <button class="bg-black text-white hover:black focus:outline-none focus:ring-4   focus:ring-black font-semibold rounded-2xl text-base px-6 py-2.5 text-center dark:focus:ring-black font-Poppins">
+            Edit
+          </button>
+        </.link>
+      </:actions>
+      <:allies>
+        <div class="hidden lg:block">
+          <input
+            id="accordion-item"
+            type="checkbox"
+            name="accordion"
+            class="hidden accordion-item"
+          />
+          <label
+            for="accordion-item"
+            class="flex cursor-pointer items-center justify-between label"
+          >
+            <span class="text-sm dark:text-white text-black font-semibold">
+              <%= "#{@ally_count} allies | allies with @#{@user.username}'s and Others" %>
+            </span>
+            <Heroicons.chevron_down class="closed-icon h-5 w-5 text-gray-500" />
+            <Heroicons.chevron_up class="open-icon hidden h-5 w-5 text-gray-500" />
+          </label>
+          <div class="accordion-content">
+            <p
+              :if={@streams.ally_list |> Enum.count() == 0}
+              class="w-full mx-auto text-center py-6 text-gray-600 font-medium text-sm lg:text-base dark:text-white"
+            >
+              <%= "#{@user.username} has no allies yet" %>
+            </p>
+            <.live_component
+              module={PhosWeb.Components.ScrollAlly}
+              id="infinite-ally-home-desktop"
+              data={@streams.ally_list}
+              parent_pid={@parent_pid}
+              current_user={@current_user}
+              meta={@ally_list}
+            />
           </div>
-        </:allies>
+        </div>
+      </:allies>
     </.user_information_card>
-   </div>
-   <div class="lg:hidden block sticky top-[311px] z-10 bg-white w-full items-center justify-center ">
+  </div>
+  <div class="lg:hidden block sticky top-[311px] z-10 bg-white w-full items-center justify-center ">
     <.tabs_profile id="orb-user-tabs-profile" action={@live_action} username={@user.username} />
-   </div>
-   <div class="w-full flex flex-col px-2 md:px-10  lg:max-w-3xl lg:px-0">
+  </div>
+  <div class="w-full flex flex-col px-2 md:px-10  lg:max-w-3xl lg:px-0">
     <h5 class="lg:block hidden text-left font-semibold text-xl dark:text-white border-b-2 border-black dark:border-white mb-2.5 py-2">
       Posts
     </h5>
     <p
       :if={@streams.orbs |> Enum.count() == 0}
-      class="w-full mx-auto text-center py-6 text-gray-600 font-medium lg:text-base text-sm dark:text-white">
+      class="w-full mx-auto text-center py-6 text-gray-600 font-medium lg:text-base text-sm dark:text-white"
+    >
       <%= "#{@user.username} has no post yet" %>
     </p>
 
@@ -97,7 +124,7 @@
       color={false}
       meta={@orbs}
     />
-   </div>
+  </div>
 </section>
 
 <.ally_modal
@@ -105,12 +132,9 @@
   id="User_ally"
   main_width="lg:max-w-2xl"
   show={@live_action in [:ally]}
-  on_cancel={JS.navigate(~p"/user/#{@user.username}/allies")}>
-  <.redirect_user
-    id="redirect-user"
-    user={@ally}
-    show_location={true}
-    username={@user.username}>
+  on_cancel={JS.navigate(~p"/user/#{@user.username}/allies")}
+>
+  <.redirect_user id="redirect-user" user={@ally} show_location={true} username={@user.username}>
     <:actions>
       <.live_component
         id="user-information-card-ally"
