@@ -83,7 +83,6 @@ defmodule Phos.MixProject do
       {:fcmex, github: "KosmonautX/fcmex"},
       {:retry, "~> 0.17"},
       {:uuid, "~> 1.1" },
-      {:link_preview, github: "appunite/link_preview"},
       # comments
       {:ecto_ltree, "~> 0.3.0"},
       {:sparrow, github: "Scratchbac/sparrow", tag: "062400e"},
