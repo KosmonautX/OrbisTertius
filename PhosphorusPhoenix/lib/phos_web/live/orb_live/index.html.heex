@@ -26,7 +26,7 @@
     return_to={~p"/orb"}
   />
 </.modal>
-<.gallery_modal
+<.gallerymodal
   :if={@live_action in [:new, :edit]}
   id={"modal_for_#{@live_action}"}
   show={@live_action in [:edit, :new]}
@@ -42,13 +42,20 @@
     addresses={@addresses}
     return_to={~p"/orb"}
   />
-</.gallery_modal>
-<div class="fixed top-[60px] w-full bg-white z-10 dark:bg-gray-900">
-  <.tab_orb/>
-</div>
+</.gallerymodal>
+    <div class="fixed top-14 w-full bg-white z-10 dark:bg-gray-900">
+     <.tabs_mobile_view title="ScratchBac Admin" action={@live_action} home_path={~p"/orb"} >
+      <:information>
+        <Heroicons.bell class="h-6 w-6  text-gray-700 dark:text-white -mt-1 font-semibold" />
+      </:information>
+       <:item to={~p"/orb"} title="PPL" id="posts" icon="fa-clock"/>
+       <:item to={~p"/orb"} title="AROUND" id="posts" icon="fa-clock"/>
+       <:item to={~p"/orb"} title="FLLW" id="posts" icon="fa-clock"/>
+     </.tabs_mobile_view>
+    </div>
 
 <section class="flex flex-col h-screen w-full">
-   <form class="flex items-center gap-1 top-28 fixed z-10 bg-white w-full dark:bg-gray-900 p-2 lg:hidden block">
+   <form class="flex items-center gap-1 top-20 mt-1 fixed z-10 bg-white w-full dark:bg-gray-900 p-2 lg:hidden block md:px-10">
      <div class="flex flex-shrink-0 -space-x-4">
       <img class="h-8 w-8 overflow-hidden rounded-full border-2 border-white dark:border-gray-800" src="https://picsum.photos/200/300" />
       <img class="h-8 w-8 overflow-hidden rounded-full border-2 border-white dark:border-gray-800" src="https://picsum.photos/200/300" />
@@ -60,7 +67,7 @@
      <button type="submit" class="ml-2 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#EEEFF3] dark:bg-[#282828]"><Heroicons.map class="h-5 w-5 text-[#B3B5BD]" /></button>
    </form>
 
-   <div class="mt-44 lg:mt-16 lg:px-[600px]">
+   <div class="mt-36 lg:mt-16 lg:px-[600px]">
     <h1 class="text-2xl font-bold dark:text-white lg:px-0 px-2 md:px-10">Listing Orbs</h1>
       <div :if={not is_nil(@current_user)} class="lg:px-0 px-2 md:px-10">
         <.link class="dark:text-white" patch={~p"/orb/sethome"}>Set Home</.link>

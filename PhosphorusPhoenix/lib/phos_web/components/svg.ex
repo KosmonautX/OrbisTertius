@@ -239,6 +239,15 @@ defmodule PhosWeb.SVG do
     """
   end
 
+
+  def chat_send(assigns) do
+    ~H"""
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="16" viewBox="0 0 18 16" fill="none">
+    <path d="M0.778153 16L17.8498 8L0.778153 0L0.77002 6.22222L12.9699 8L0.77002 9.77778L0.778153 16Z" fill="#777777"/>
+  </svg>
+    """
+   end
+
   def comment(%{type: "comment"} = assigns) do
     ~H"""
     <svg viewBox="0 0 27 27" fill="none" class={@class} xmlns="http://www.w3.org/2000/svg">

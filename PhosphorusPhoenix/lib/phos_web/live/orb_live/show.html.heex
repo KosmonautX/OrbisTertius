@@ -126,15 +126,14 @@
       </div>
     </div>
   </div>
-  <.gallery_modal
+  <.gallerymodal
     :if={@live_action in [:show] and not is_nil(@media)}
     id="orb-media-preview"
     close_button={true}
-    show={@live_action in [:show] and not is_nil(@media)}
-  >
+    show={@live_action in [:show] and not is_nil(@media)}>
     <.media_preview url={@media} orb={@orb} timezone={@timezone} id="orb-preview" />
     <:title><%= "#{@orb.initiator.username}'s Post" %></:title>
-  </.gallery_modal>
+  </.gallerymodal>
   <span
     :if={@streams.orbs |> Enum.count() < 3}
     class="hidden lg:block h-96 bg-gray-100 dark:bg-gray-900"

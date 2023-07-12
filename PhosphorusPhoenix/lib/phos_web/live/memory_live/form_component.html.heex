@@ -37,32 +37,28 @@
 
   <.simple_form
     :let={f}
-    class="flex relative lg:py-4 py-3 px-1 bg-[#F3F4F8] lg:bg-white dark:bg-gray-900 lg:dark:bg-gray-800"
+    class="flex relative lg:py-2 py-3 lg:py-3.5 px-1 bg-[#F3F4F8] lg:bg-white dark:bg-gray-900 lg:dark:bg-gray-800"
     for={@changeset}
-    padding={false}
     id={"#{@id}-memory-form"}
     phx-target={@myself}
     phx-change="validate"
     phx-submit="save"
-    phx-hook="EnterSubmit"
-  >
+    phx-hook="EnterSubmit">
     <label class="flex items-center px-1.5">
       <Heroicons.plus class="h-5 w-5 lg:h-6 lg:w-6 dark:text-white text-gray-700" />
       <.live_file_input upload={@uploads.image} class="hidden" />
     </label>
-
     <.input
       field={{f, :message}}
-      class="flex relative w-full"
-      type="textarea"
+      class="flex relative w-full bg-[#F9F9F9] dark:bg-[#282828]  text-sm rounded-2xl block dark:placeholder-[#D1D1D1] dark:text-white px-3 py-1 text-gray-900 placeholder-[#B3B5BD]"
       hide_error={true}
-      placeholder="Scratching..."
-    />
+      type="textarea" 
+      placeholder="Scratching..."/>
     <.input field={{f, :user_source_id}} type="hidden" value={@current_user.id} />
     <.input :if={!is_nil(@rel)} field={{f, :rel_subject_id}} type="hidden" value={@rel} />
     <:actions>
-      <button type="submit" phx-disable-with="Saving..." class="absolute inset-y-1 right-4">
-        <Heroicons.paper_airplane class="h-8 w-8 text-teal-400 font-bold" />
+      <button type="submit" phx-disable-with="Saving..." class="absolute right-4 inset-y-0">
+        <.chat_send type="send" />
       </button>
     </:actions>
   </.simple_form>
