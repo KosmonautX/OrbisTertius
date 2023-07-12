@@ -23,7 +23,7 @@ defmodule Phos.Terra do
     # seed hashes for sg or map into enum
     from(l in Phos.Action.Location,
           where: l.id in ^hashes,
-          preload: [:last_memory],
+          preload: [last_memory: [:user_source]],
           select: {l.id, l})
           |> Phos.Repo.all()
           |> Enum.into(%{})
