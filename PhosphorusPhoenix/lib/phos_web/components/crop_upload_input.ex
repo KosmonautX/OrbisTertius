@@ -1,14 +1,7 @@
 defmodule PhosWeb.Components.CropUploadInput do
   use PhosWeb, :live_component
 
-  defp random_id, do: Enum.random(1..1_000_000)
-
-
-  def update(assigns, socket) do
-    {:ok, assign(socket,
-        id: assigns.id,
-        uploaded: assigns.uploads)}
-  end
+  defp random_id, do: "edit"
 
   def render(assigns) do
     ~H"""

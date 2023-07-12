@@ -5,35 +5,35 @@
         <i class="fa-solid fa-plus cursor-pointer mr-2 hidden lg:block"></i>Import orbs
       </.link>
     </div>
-      <.form :let={f} for={:search} phx-change="search">
-        <%= text_input(f, :traits,
-          phx_debounce: 200,
-          value: @traits,
-          placeholder: "Filter traits",
-          autocomplete: "off",
-          class:
-            "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-        ) %>
-      </.form>
+    <.form :let={f} for={:search} phx-change="search">
+      <%= text_input(f, :traits,
+        phx_debounce: 200,
+        value: @traits,
+        placeholder: "Filter traits",
+        autocomplete: "off",
+        class:
+          "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+      ) %>
+    </.form>
   </div>
 
-    <div class="pb-16 hidden lg:block relative mt-16">
-      <.table id="orbs" rows={@orbs} >
-       <:col :let={orb} classes="sticky left-0" label="Initiator">
+  <div class="pb-16 hidden lg:block relative mt-16">
+    <.table id="orbs" rows={@orbs}>
+      <:col :let={orb} classes="sticky left-0" label="Initiator">
         <.admin_user_preview user={orb.initiator} id={"admin_user_preview_for_#{orb.id}"} />
-       </:col>
-       <:col :let={orb} label="Public Name">
+      </:col>
+      <:col :let={orb} label="Public Name">
         <%= orb
         |> get_in([
           Access.key(:initiator, %{}),
           Access.key(:public_profile, %{}),
           Access.key(:public_name, "")
         ]) %>
-       </:col>
-       <:col :let={orb} label="Created at">
+      </:col>
+      <:col :let={orb} label="Created at">
         <%= Timex.format!(orb.inserted_at, "{D} {Mshort} {YY} {h24}:{m}") %>
-       </:col>
-       <:col :let={orb} label="Title">
+      </:col>
+      <:col :let={orb} label="Title">
         <.link navigate={~p"/admin/orbs/#{orb}"}>
           <%= orb.title ||
             orb
@@ -42,28 +42,25 @@
               Access.key(:inner_title, "nil")
             ]) %>
         </.link>
-       </:col>
-       <:col :let={orb} label="Birthday">
+      </:col>
+      <:col :let={orb} label="Birthday">
         <%= orb
         |> get_in([
           Access.key(:initiator, %{}),
           Access.key(:public_profile, %{}),
           Access.key(:birthday, nil)
         ]) %>
-       </:col>
-       <:col :let={orb} label="Traits"><%= inspect(orb.traits) %>
-       </:col>
-     </.table>
-    </div>
-    
-    <div class="lg:hidden block">
-      <div class="grid md:grid-cols-2 gird-col gap-4 mt-20 px-2 md:px-4 pb-24">
-       <.admin_grid :for={orb <- @orbs} user={orb.initiator} id={"admin-grid-for-#{orb.id}"} />
-       </div>
-    </div>
+      </:col>
+      <:col :let={orb} label="Traits"><%= inspect(orb.traits) %></:col>
+    </.table>
   </div>
 
-
+  <div class="lg:hidden block">
+    <div class="grid md:grid-cols-2 gird-col gap-4 mt-20 px-2 md:px-4 pb-24">
+      <.admin_grid :for={orb <- @orbs} user={orb.initiator} id={"admin-grid-for-#{orb.id}"} />
+    </div>
+  </div>
+</div>
 
 <div class="px-4 py-3 w-full sm:flex sm:flex-1 sm:items-center sm:justify-between bottom-0 fixed bg-white ">
   <.live_component

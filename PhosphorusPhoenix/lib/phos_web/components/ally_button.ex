@@ -244,7 +244,7 @@ defmodule PhosWeb.Component.AllyButton do
         }
       >
         <:title>Unally?</:title>
-        <a>
+        <a class="px-4 text-sm">
           Are you sure want to delete your request to <%= @user.username %> ?
         </a>
         <:confirm tone={:danger}>Yes, delete</:confirm>

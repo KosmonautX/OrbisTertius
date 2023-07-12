@@ -69,7 +69,7 @@ defmodule PhosWeb.CoreComponents do
         aria-hidden="true"
       />
       <div
-        class="fixed inset-0 overflow-y-auto"
+        class="fixed inset-0 overflow-y-auto journal-scroll"
         aria-labelledby={"#{@id}-title"}
         aria-describedby={"#{@id}-description"}
         role="dialog"
@@ -197,7 +197,7 @@ defmodule PhosWeb.CoreComponents do
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("#flash")}
       role="alert"
       class={[
-        "absolute  hidden top-2 right-2 w-80 sm:w-96 z-50 rounded-lg p-3 shadow-lg shadow-zinc-900/5 ring-1",
+        "absolute  hidden top-2 right-2 w-80 sm:w-96 z-50 rounded-lg p-3 shadow-lg shadow-zinc-900/5 ring-1 font-poppins",
         @kind == :info && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
         @kind == :error && "bg-rose-50 p-3 text-rose-900 shadow-lg ring-rose-500 fill-rose-900"
       ]}
@@ -1275,6 +1275,42 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  attr(:action, :atom)
+
+  def tabs_chat(assigns) do
+    ~H"""
+    <div class="border-b border-gray-300 bg-white font-poppins lg:hidden block fixed w-full z-10 top-0 left-0 z-10">
+      <ul class="flex justify-center font-semibold text-sm  text-gray-500 dark:text-white bg-white">
+        <li class={[
+          (@action == :show && "text-black border-black active") ||
+            "border-transparent hover:text-gray-600  hover:border-gray-700",
+          "flex-1 border-b-2 GROUP text-center py-4"
+        ]}>
+          <.link patch={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories")}>
+            Chats
+          </.link>
+        </li>
+
+        <li class={[
+          (@action == :allies && "text-black border-black active") ||
+            "border-transparent hover:text-gray-300  hover:border-gray-700",
+          "flex-1 border-b-2 GROUP text-center py-4"
+        ]}>
+          Activity
+        </li>
+
+        <li class={[
+          (@action == :allies && "text-black border-black active") ||
+            "border-transparent hover:text-gray-300  hover:border-gray-700",
+          "flex-1 border-b-2 GROUP text-center py-4"
+        ]}>
+          Requests
+        </li>
+      </ul>
+    </div>
+    """
+  end
+
   @doc """
   Render the user info bar is collect the user details
 
@@ -1572,11 +1608,11 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-
-  attr(:id, :string, required: true)
-  attr(:orb, :map)
-  attr(:timezone, :map)
-  slot(:user_action)
+    attr(:id, :string, required: true)
+    attr(:url, :string, default: "")
+    attr(:orb, :map)
+    attr(:timezone, :map)
+    slot(:user_action)
 
   def media_preview(assigns) do
     assigns =
@@ -1674,49 +1710,6 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  def img_preview(assigns) do
-    index = Map.get(assigns, :index, 0)
-    media = Map.get(assigns, :media, [])
-    myself = Map.get(assigns, :myself, nil)
-    length = Enum.count(media)
-
-    ~H"""
-    <div class="relative flex items-center" id={"#{@id}-carousel"}>
-      <div :if={!is_nil(@media)}>
-        <div>
-          <img
-            class="max-h-full max-w-full object-contain flex justify-center items-center"
-            src={Enum.at(media, index) |> Map.get(:url, "")}
-            loading="lazy"
-          />
-        </div>
-      </div>
-      <div
-        :if={length > 1}
-        class="absolute top-0 right-0 bottom-0 flex items-center justify-center px-2">
-        <button
-          class="p-2 rounded-full bg-gray-600 text-white"
-          phx-click="nextImage"
-          phx-value-len={length}
-          phx-target={myself}>
-          <Heroicons.chevron_right class="h-6 w-6" />
-        </button>
-      </div>
-      <div
-        :if={length > 1}
-        class="absolute top-0 left-0 bottom-0 flex items-center justify-center px-2">
-        <button
-          class="p-2 rounded-full bg-gray-600 text-white"
-          phx-click="prevImage"
-          phx-value-len={length}
-          phx-target={myself}>
-          <Heroicons.chevron_left class="h-6 w-6" />
-        </button>
-      </div>
-    </div>
-    """
-  end
-
   attr(:id, :string, required: true)
   attr(:title, :string, default: "")
   attr(:class, :string, default: nil)
@@ -1798,6 +1791,33 @@ defmodule PhosWeb.CoreComponents do
         </p>
       </div>
     </a>
+    """
+  end
+
+  attr(:orb, :any)
+
+  def orb_link(assigns) do
+    ~H"""
+    <div
+      href="#"
+      class="w-full mx-auto rounded-xl py-1 hover:bg-gray-100 items-start relative w-full justify-between"
+    >
+      <div class="flex">
+        <div class="flex-1 font-Poppins px-2 py-2 border-l-4 rounded-lg  border-black ml-2">
+          <p class="text-xs font-bold text-black mb-1">
+            You're Chatting about
+          </p>
+          <p class="text-xs font-normal text-gray-600 break-all">
+            <%= @orb.title %>
+          </p>
+        </div>
+        <img
+          :if={@orb.media}
+          class="h-20 w-20 rounded-lg object-cover p-1 mr-1"
+          src={Map.values(Phos.Orbject.S3.get_all!("ORB", @orb.id, "public/banner/lossy"))}
+        />
+      </div>
+    </div>
     """
   end
 
@@ -2241,76 +2261,210 @@ defmodule PhosWeb.CoreComponents do
   end
 
   attr(:id, :string, required: true)
-  attr(:action, :atom)
   attr(:memories, :any)
-  attr(:date, :string)
-
-  @spec last_message(map) :: Phoenix.LiveView.Rendered.t()
-  def last_message(assigns) do
-    ~H"""
-    <ul class="overflow-y-auto h-screen font-poppins">
-      <li :for={memory <- @memories}>
-        <.link navigate={
-          path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{memory.user_source.username}")
-        }>
-          <div class="flex items-center px-3 py-2 text-sm transition  duration-150 ease-in-out border-b border-gray-300 cursor-pointer hover:bg-gray-50 focus:outline-none">
-            <img
-              src={Phos.Orbject.S3.get!("USR", memory.user_source.id, "public/profile/lossless")}
-              class="w-14 h-14 border-2 border-teal-500 rounded-full object-cover"
-              onerror="this.src='/images/default_hand.jpg';"
-            />
-            <div class="w-full flex flex-col -mt-4">
-              <div class="flex justify-between">
-                <span class=" ml-2 text-sm font-bold text-gray-900 dark:text-white ">
-                  <%= memory |> get_in([Access.key(:user_source, %{}), Access.key(:username, "-")]) %>
-                </span>
-                <span class="text-gray-600"><%= get_date(memory.inserted_at, @date) %></span>
-              </div>
-              <span class="text-gray-700 dark:text-gray-400 ml-2">
-                <%= memory.message %>
-              </span>
-            </div>
-          </div>
-        </.link>
-      </li>
-    </ul>
-    """
-  end
-
-  attr(:id, :string, required: true)
   attr(:current_user, :map, required: true)
-  attr(:memories, :any)
   attr(:timezone, :string)
 
   def list_message(assigns) do
     ~H"""
-    <div id={"#{@id}-list"} class="overflow-y-auto h-[calc(100vh_-_16rem)]">
-      <ul :for={msg <- @memories} class="relative w-full p-1.5">
-        <%= if msg.user_source_id != @current_user.id do %>
-          <li class="flex justify-start">
-            <div class="relative max-w-xl px-4 py-2 text-gray-700 bg-white rounded shadow rounded-l-xl">
-              <span class="flex-1 text-xs font-medium leading-relaxed	">
-                <%= msg.message %>
-                <span class="text-xs flex justify-end">
-                  <%= get_time(msg.inserted_at, @timezone) %>
-                </span>
-              </span>
+    <div id={"#{@id}-list"}>
+      <div
+        class="relative object-fill lg:h-[44rem] h-screen">
+        <img
+        src="/images/light_bg.jpeg"
+        class="absolute inset-0 w-full h-full object-cover"/>
+        <div
+          id={"#{@id}-message_container"}
+          phx-hook="ScrollTop"
+          class={[
+          if(@metadata.pagination.downstream, do: "pt-[calc(10vh)]"),
+          "journal-scroll absolute inset-0 bg-transparent overflow-y-auto dark:bg-black dark:bg-opacity-50"
+          ]}
+        >
+          <div id={"#{@id}-message_stream"} phx-update="stream" class="relative w-full lg:mb-0 py-2 mb-16">
+            <div :for={{dom_id, memory} <- @memories}} id={dom_id}>
+              <.scry_memory
+                id={dom_id <> @id}
+                memory={memory}
+                current_user={@current_user}
+                timezone={@timezone}
+              />
             </div>
-          </li>
-        <% end %>
-        <%= if msg.user_source_id == @current_user.id do %>
-          <li class="flex justify-end">
-            <div class="relative max-w-xl px-4 py-2 text-gray-700 bg-amber-300 rounded shadow rounded-l-xl">
-              <span class="flex-1 text-xs font-medium leading-relaxed	">
-                <%= msg.message %>
-                <span class="text-xs flex justify-end">
-                  <%= get_time(msg.inserted_at, @timezone) %>
-                </span>
-              </span>
-            </div>
-          </li>
-        <% end %>
-      </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  defp memory_reader(assigns, memory, {mem_list, prev_date}) do
+    date = get_date(memory.inserted_at, assigns.timezone)
+    {
+      [
+        ~H"""
+        <div class="">
+          <span
+            :if={prev_date != date}
+            class="font-poppins flex justify-center text-xs text-gray-600 font-light mb-1.5"
+          >
+            <%= prev_date %>
+          </span>
+          <div class="relative p-1.5">
+            <.scry_memory
+              id={"memory-history-#{@id}"}
+              memory={memory}
+              memories={mem_list}
+              current_user={@current_user}
+              timezone={@timezone}
+            />
+          </div>
+        </div>
+        """
+        | mem_list
+      ],
+      date
+    }
+  end
+
+  attr(:id, :string, required: true)
+  attr(:memory, :any)
+  attr(:current_user, :map, required: true)
+  attr(:timezone, :string)
+
+  @spec scry_memory(map) :: Phoenix.LiveView.Rendered.t()
+  def scry_memory(assigns) do
+    assigns =
+      assigns
+      |> assign(
+        :media,
+        Phos.Orbject.S3.get_all!("MEM", assigns.memory.id, "public/profile")
+        |> (fn
+              nil ->
+                []
+
+              media ->
+                for {path, url} <- media do
+                  %Phos.Orbject.Structure.Media{
+                    ext: MIME.from_path(path),
+                    path: "public/profile" <> path,
+                    url: url,
+                    resolution:
+                      path |> String.split(".") |> hd() |> String.split("/") |> List.last()
+                  }
+                end
+            end).()
+        |> Enum.filter(fn m -> m.resolution == "lossless" end)
+      )
+
+    ~H"""
+    <div id={"#{@id}-list"} class="overflow-y-auto my-2">
+    <ul class="relative w-full lg:px-2 font-poppins px-4 md:px-10">
+      <%= if @memory.user_source_id != @current_user.id do %>
+        <li class="flex justify-start">
+          <div class="max-w-xs bg-[#F9F9F9] rounded-2xl dark:bg-[#404252]">
+            <.img_preview
+              :if={@media != []}
+              archetype="MEM"
+              uuid={@memory.id}
+              path="public/profile"
+              current_user={@current_user}
+              id={"#{@id}-scry-memory-#{@memory.id}"}
+              media={@media}
+              memory={@memory}/>
+            <.memory_information
+              memory={@memory}
+              timezone={@timezone}
+              id={"#{@id}-scry-memory-#{@memory.id}"}
+            />
+          </div>
+        </li>
+      <% end %>
+      <%= if @memory.user_source_id == @current_user.id do %>
+        <li class="flex justify-end">
+          <div class="max-w-xs bg-[#C9F8F3] dark:bg-[#00615A] rounded-2xl">
+            <.img_preview
+              :if={@media != []}
+              archetype="MEM"
+              uuid={@memory.id}
+              path="public/profile"
+              id={"#{@id}-scry-memory-#{@memory.id}"}
+              media={@media}
+              memory={@memory}
+              current_user={@current_user}
+            />
+            <.memory_information
+              memory={@memory}
+              timezone={@timezone}
+              id={"#{@id}-scry-memory-#{@memory.id}"}
+            />
+          </div>
+        </li>
+      <% end %>
+    </ul>
+    </div>
+    """
+  end
+
+  attr(:id, :string, required: true)
+  attr(:class, :string, default: nil)
+  attr(:archetype, :string, required: true)
+  attr(:uuid, :string, required: true)
+  attr(:path, :string)
+  attr(:media, :any)
+  attr(:memory, :any)
+  attr(:current_user, :map, required: true)
+
+  def img_preview(assigns) do
+    num_images = min(length(assigns.media), 5)
+
+    ~H"""
+    <div :if={!is_nil(@media)} id={"#{@id}-image-wrapper"}>
+      <div class="grid grid-cols-2">
+        <div :for={m <- Enum.take(@media, floor(num_images / 2) * 2)}>
+          <.link
+            class="relative"
+            patch={unverified_path(PhosWeb.Endpoint, PhosWeb.Router, "/memories/media/#{@memory.id}")}
+          >
+            <img
+              class={["cursor-zoom-in", "h-40 w-40 object-cover", @class]}
+              src={m.url}
+              loading="lazy"
+            />
+          </.link>
+        </div>
+        <div :if={rem(num_images, 2) == 1} class="col-span-2">
+          <.link
+            class="relative"
+            patch={unverified_path(PhosWeb.Endpoint, PhosWeb.Router, "/memories/media/#{@memory.id}")}
+          >
+            <img
+              class={["cursor-zoom-in", "h-40 w-full object-cover", @class]}
+              src={@media |> Enum.at(-1) |> Map.get(:url)}
+              loading="lazy"
+            />
+          </.link>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  attr(:id, :string, required: true)
+  attr(:memory, :any)
+  attr(:timezone, :string)
+
+  def memory_information(assigns) do
+    ~H"""
+    <div id={"#{@id}-memory-info"}>
+      <div class="relative px-2 py-1.5 font-poppins">
+        <span class="flex flex-col text-sm font-normal text[#404252] dark:text-[#D1D1D1]">
+          <%= @memory.message %>
+        </span>
+        <span class="text-[10px] flex justify-end text-gray-700 dark:text-[#D2D4DA]">
+          <%= get_time(@memory.inserted_at, @timezone) %> <%= if true do %> <.double_tick/> <% else %> <.single_tick/> <% end %>
+        </span>
+        <.orb_link :if={not is_nil(@memory.orb_subject_id)} orb={@memory.orb_subject} />
+      </div>
     </div>
     """
   end
@@ -2582,19 +2736,260 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  # attr(:id, :string, required: true)
+  # attr(:show, :boolean, default: false)
+  # attr(:on_cancel, JS, default: %JS{}, doc: "JS cancel action")
+  # attr(:on_confirm, JS, default: %JS{}, doc: "JS confirm action")
+  # attr(:close_button, :boolean, default: true)
+
+  # slot(:inner_block, required: true)
+  # slot(:title)
+
+  # slot(:confirm) do
+  #   attr(:tone, :atom)
+  # end
+
+  # slot(:cancel)
+
+  # def gallery_modal(assigns) do
+  #   ~H"""
+  #   <div
+  #     id={@id}
+  #     phx-mounted={@show && show_modal(@id)}
+  #     class="relative z-50 hidden fixed inset-0 w-full h-screen mx-auto">
+  #     <div id={"#{@id}-bg"} class="fixed inset-0 bg-zinc-50/90 transition-opacity" aria-hidden="true" />
+  #     <div class="fixed inset-0 overflow-y-auto" role="dialog" aria-modal="true" tabindex="0">
+  #       <div class="w-full flex items-center justify-center">
+  #         <.focus_wrap
+  #           id={"#{@id}-container"}
+  #           phx-mounted={@show && show_modal(@id)}
+  #           phx-window-keydown={hide_modal(@on_cancel, @id)}
+  #           phx-key="escape"
+  #           phx-click-away={hide_modal(@on_cancel, @id)}
+  #           class="hidden relative shadow-zinc-700/10 ring-1 ring-zinc-700/10 transition dark:bg-gray-900 dark:lg:bg-gray-800 bg-white">
+  #           <div :if={@close_button} class="absolute top-4 right-4 lg:top-6 lg:right-6">
+  #             <button
+  #               phx-click={hide_modal(@on_cancel, @id)}
+  #               type="button"
+  #               class="-m-3 flex-none p-3 hover:opacity-40"
+  #               aria-label={gettext("close")}>
+  #               <Heroicons.x_mark solid class="h-5 w-5 stroke-current dark:text-white" />
+  #             </button>
+  #           </div>
+  #           <div id={"#{@id}-content"}>
+  #             <header :if={@title != []} class="p-2">
+  #               <h1
+  #                 id={"#{@id}-title"}
+  #                 class="text-md lg:text-lg font-semibold leading-8 text-zinc-800 dark:text-white text-center"
+  #               >
+  #                 <%= render_slot(@title) %>
+  #               </h1>
+  #             </header>
+  #             <div id={"#{@id}-main"} class="w-full dg-red-500">
+  #               <%= render_slot(@inner_block) %>
+  #             </div>
+  #           </div>
+  #         </.focus_wrap>
+  #       </div>
+  #     </div>
+  #   </div>
+  #   """
+  # end
+
+  # attr(:id, :string, required: true)
+  # attr(:show, :boolean, default: false)
+  # attr(:on_cancel, JS, default: %JS{}, doc: "JS cancel action")
+  # attr(:on_confirm, JS, default: %JS{}, doc: "JS confirm action")
+  # attr(:background, :string, default: "bg-white")
+  # attr(:close_button, :boolean, default: true)
+  # attr(:main_width, :string, default: "w-full")
+
+  # slot(:inner_block, required: true)
+
+  # slot(:confirm) do
+  #   attr(:tone, :atom)
+  # end
+
+  # slot(:cancel)
+
+  # def ally_modal(assigns) do
+  #   ~H"""
+  #   <div
+  #     id={@id}
+  #     phx-mounted={@show && show_modal(@id)}
+  #     class="relative z-50 hidden bg-white w-full mx-auto h-screen bg-white/50 dark:bg-black/50 transition-opacity"
+  #   >
+  #     <div
+  #       id={"#{@id}-bg"}
+  #       class={["fixed inset-0 bg-zinc-50/90 transition-opacity", @background]}
+  #       aria-hidden="true"
+  #     />
+  #     <div class="fixed inset-0 w-full flex">
+  #       <div
+  #         aria-describedby={"#{@id}-description"}
+  #         role="dialog"
+  #         aria-modal="true"
+  #         tabindex="0"
+  #         class="w-full"
+  #       >
+  #         <div class="flex w-full h-screen lg:items-center lg:justify-center items-end justify-end">
+  #           <div class={["w-full lg:py-8", @main_width]}>
+  #             <.focus_wrap
+  #               id={"#{@id}-container"}
+  #               phx-mounted={@show && show_modal(@id)}
+  #               phx-window-keydown={hide_modal(@on_cancel, @id)}
+  #               phx-key="escape"
+  #               phx-click-away={hide_modal(@on_cancel, @id)}
+  #               class="hidden relative flex w-full bg-white shadow-zinc-700/10 ring-1 ring-zinc-700/10 transition lg:rounded-3xl lg:shadow-2xl"
+  #             >
+  #               <div :if={@close_button} class="absolute top-4 right-4">
+  #                 <button
+  #                   phx-click={hide_modal(@on_cancel, @id)}
+  #                   type="button"
+  #                   class="-m-3 flex-none p-3 opacity-80 hover:opacity-40"
+  #                   aria-label={gettext("close")}
+  #                 >
+  #                   <Heroicons.x_mark class="h-5 w-5 dark:text-white text-gray-900" />
+  #                 </button>
+  #               </div>
+  #               <div id={"#{@id}-content"}>
+  #                 <div
+  #                   id={"#{@id}-main"}
+  #                   class="w-full lg:max-w-2xl lg:items-center lg:justify-center flex"
+  #                 >
+  #                   <%= render_slot(@inner_block) %>
+  #                 </div>
+  #                 <div
+  #                   :if={@confirm != [] or @cancel != []}
+  #                   class="p-4 flex flex-row-reverse items-center gap-5"
+  #                 >
+  #                   <.button
+  #                     :for={confirm <- @confirm}
+  #                     id={"#{@id}-confirm"}
+  #                     tone={Map.get(confirm, :tone, :primary)}
+  #                     phx-click={@on_confirm}
+  #                     phx-disable-with
+  #                     class="py-2 px-3"
+  #                   >
+  #                     <%= render_slot(confirm) %>
+  #                   </.button>
+  #                   <.link
+  #                     :for={cancel <- @cancel}
+  #                     phx-click={hide_modal(@on_cancel, @id)}
+  #                     class="text-sm font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
+  #                   >
+  #                     <%= render_slot(cancel) %>
+  #                   </.link>
+  #                 </div>
+  #               </div>
+  #             </.focus_wrap>
+  #           </div>
+  #         </div>
+  #       </div>
+  #     </div>
+  #   </div>
+  #   """
+  # end
+
+  # attr(:id, :string, required: true)
+  # attr(:navigate, :any)
+  # slot(:inner_block)
+  # attr(:user, :map, required: true)
+  # attr(:show_location, :boolean)
+  # slot(:actions)
+  # attr(:username, :string)
+
+  # slot(:ally_button) do
+  #   attr(:user, :map, doc: "user want to attached to")
+  #   attr(:current_user, :map, doc: "current active user")
+  #   attr(:socket, :map, doc: "current active socket")
+  # end
+
+  # def redirect_user(assigns) do
+  #   assigns =
+  #     assigns
+  #     |> assign(:user, Map.from_struct(assigns.user))
+  #     |> then(fn
+  #       %{show_location: true, user: %{public_profile: %{territories: terr}}} = state ->
+  #         assign(state, :locations, Phos.Utility.Geo.top_occuring(terr, 2))
+
+  #       state ->
+  #         assign(state, :show_location, false)
+  #     end)
+
+  #   ~H"""
+  #   <div class="font-poppins relative w-full">
+  #      <img class="object-cover w-full h-[26rem] lg:h-[32rem]" src="/images/bg.jpg" />
+  #       <div class="absolute dark:bg-[#000000] bg-white inset-0 bg-opacity-50 dark:bg-opacity-70 px-4 md:px-10">
+  #       <div class="flex flex-col items-center justify-center">
+  #         <img
+  #           src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
+  #           class="h-36 w-36 lg:h-44 lg:w-44 rounded-full object-cover mt-8 img-double-border"
+  #           onerror="this.src='/images/default_hand.jpg';"
+  #         />
+  #         <div :if={@show_location} class="flex-1 flex flex-col items-center mt-4 lg:px-8">
+  #           <div class="flex items-center space-x-4">
+  #             <div
+  #               :for={location <- @locations}
+  #               class="flex items-center bg-white opacity-75 dark:opacity-100 text-black  px-1.5 py-0.5 rounded-full text-sm lg:text-base font-semibold font-poppins"
+  #             >
+  #               <.white_location type="white_location" class=""></.white_location>
+  #               <span class="ml-1"><%= location %></span>
+  #             </div>
+  #           </div>
+  #         </div>
+  #       </div>
+  #       <div class="flex flex-col font-poppins mt-4 mx-auto w-full px-4 md:px-10 py-2 rounded-[19px] bg-gray-200 bg-opacity-80 dark:bg-[#FCFCFC] dark:bg-opacity-10">
+  #         <div class="flex justify-between items-center w-full gap-2">
+  #           <p class="lg:text-3xl md:text-2xl text-xl break-words font-bold text-gray-900  dark:text-white text-left  mb-1 lg:mb-0">
+  #             <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
+  #           </p>
+  #           <div class="flex gap-2">
+  #             <a
+  #               id={"#{@id}-sharebtn"}
+  #               phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
+  #             >
+  #               <div id={"#{@id}-copylink"} class="hidden">
+  #                 <%= PhosWeb.Endpoint.url() <>
+  #                   path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
+  #               </div>
+  #               <.share_btn type="banner" class="h-8 ml-4 dark:fill-white"></.share_btn>
+  #             </a>
+  #             <%= render_slot(@actions) %>
+  #           </div>
+  #         </div>
+  #         <div class="space-y-1 md:space-y-2 break-words">
+  #           <p class="lg:text-base md:text-sm text-xs text-black font-semibold mt-0.5 dark:text-[#D1D1D1]">
+  #             <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
+  #           </p>
+  #           <p class="text-black font-normal text-sm md:text-base dark:text-[#D1D1D1]">
+  #             <%= @user |> get_in([:public_profile, Access.key(:bio, "-")]) %>
+  #           </p>
+  #           <span
+  #             :for={trait <- @user |> get_in([:public_profile, Access.key(:traits, "-")])}
+  #             class="text-gray-500 text-sm  md:text-base font-medium dark:text-[#777986]">
+  #             <%= "##{trait}" %>
+  #           </span>
+  #         </div>
+  #       </div>
+  #     </div>
+  #   </div>
+  #   """
+  # end
+
   defp get_date(time, timezone) do
     time
-    |> DateTime.from_naive!(timezone.timezone)
+    |> DateTime.from_naive!("UTC")
     |> Timex.shift(minutes: trunc(timezone.timezone_offset))
-    |> Timex.format("{D}-{0M}-{YYYY}")
+    |> Timex.format("{0D}-{0M}-{YYYY}")
     |> elem(1)
   end
 
   defp get_time(time, timezone) do
     time
-    |> DateTime.from_naive!(timezone.timezone)
-    |> Timex.shift(hours: trunc(timezone.timezone_offset))
-    |> Timex.format("{h12}:{m} {am}")
+    |> DateTime.from_naive!("UTC")
+    |> Timex.shift(minutes: trunc(timezone.timezone_offset))
+    |> Timex.format("{h12}:{m} {AM}")
     |> elem(1)
   end
 end

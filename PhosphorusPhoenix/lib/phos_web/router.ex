@@ -91,6 +91,8 @@ defmodule PhosWeb.Router do
       live "/memories", MemoryLive.Index, :index
       live "/memories/new", MemoryLive.Index, :new
       live "/memories/user/:username", MemoryLive.Index, :show
+      live "/memories/media/:id", MemoryLive.Index, :media
+
     end
   end
 

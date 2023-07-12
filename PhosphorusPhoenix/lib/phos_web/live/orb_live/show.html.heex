@@ -6,8 +6,10 @@
     <br />
   </div>
   <div class="md:mt-0 mt-14 lg:flex lg:justify-center lg:items-center lg:gap-4 ">
-    <div :if={not is_nil(@orb.initiator) && @orb.initiator}
-      class="flex lg:flex-row flex-col items-start mt-6 lg:gap-4">
+    <div
+      :if={not is_nil(@orb.initiator) && @orb.initiator}
+      class="flex lg:flex-row flex-col items-start mt-6 lg:gap-4"
+    >
       <!-- Desktop View in Orb View Profile-->
       <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full lg:w-[26rem] lg:flex-none">
         <div>
@@ -25,11 +27,13 @@
           <.user_information_card_orb
             id="orb-initiator-public-profile"
             user={@orb.initiator}
-            flex="">
+            flex=""
+          >
             <:ally_button
               current_user={@current_user}
               user={@orb.initiator}
-              parent_pid={@parent_pid}/>
+              parent_pid={@parent_pid}
+            />
           </.user_information_card_orb>
         </div>
       </div>
@@ -88,19 +92,19 @@
             />
           </div>
         </div>
-         <div class="lg:hidden block bottom-0 fixed w-full mx-auto bg-white dark:bg-gray-900 md:px-10 px-0">
-              <hr class="border dark:border-white" />
-              <.live_component
-                module={PhosWeb.CommentLive.FormComponent}
-                changeset={@changeset}
-                current_user={@current_user}
-                orb={@orb}
-                id={"create-root-comment-#{@orb.id}"}
-                target={nil}
-                action={:new}
-                color={true}
-              />
-         </div>
+        <div class="lg:hidden block bottom-0 fixed w-full mx-auto bg-white dark:bg-gray-900 md:px-10 px-0">
+          <hr class="border dark:border-white" />
+          <.live_component
+            module={PhosWeb.CommentLive.FormComponent}
+            changeset={@changeset}
+            current_user={@current_user}
+            orb={@orb}
+            id={"create-root-comment-#{@orb.id}"}
+            target={nil}
+            action={:new}
+            color={true}
+          />
+        </div>
       </div>
       <!--Desktop Related Post-->
       <div class="hidden lg:block w-full lg:w-[26rem]  lg:flex-none">
@@ -128,13 +132,11 @@
     close_button={true}
     show={@live_action in [:show] and not is_nil(@media)}
   >
-    <.media_preview
-      url={@media}
-      orb={@orb}
-      timezone={@timezone}
-      id="orb-preview"
-  />
-      <:title><%= "#{@orb.initiator.username}'s Post" %></:title>
+    <.media_preview url={@media} orb={@orb} timezone={@timezone} id="orb-preview" />
+    <:title><%= "#{@orb.initiator.username}'s Post" %></:title>
   </.gallery_modal>
-  <span :if={@streams.orbs |> Enum.count() < 3} class="hidden lg:block h-96 bg-gray-100 dark:bg-gray-900" />
+  <span
+    :if={@streams.orbs |> Enum.count() < 3}
+    class="hidden lg:block h-96 bg-gray-100 dark:bg-gray-900"
+  />
 </div>

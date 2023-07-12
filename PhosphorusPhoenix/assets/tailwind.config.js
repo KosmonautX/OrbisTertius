@@ -11,6 +11,23 @@ module.exports = {
         '577': '36rem',
         '416': '26rem',
       },
+      width: {
+        '577': '36rem',
+        '416': '26rem',
+      },
+      height: {
+        '712': '44rem',
+        '784': '49rem',
+        '848': '53rem',
+        '880': '55rem',
+      },
+      borderRadius: {
+        'xxl': '20px',
+      },
+      spacing: {
+        '55px': '55px',
+        '60px': '60px',
+      },
 
       padding: {
         2.8: "44.8rem",

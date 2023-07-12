@@ -25,7 +25,7 @@ defmodule PhosWeb.MemoryLiveTest do
 
       {:ok, _index_live, html} = live(conn, ~p"/memories/user/#{initiator.username}")
 
-      assert html =~ "form phx-submit=\"search\""
+      assert html =~ "form phx-change=\"search\""
       assert html =~ memory.message
     end
 
@@ -107,7 +107,7 @@ defmodule PhosWeb.MemoryLiveTest do
 
       assert show_live
              |> form("##{memory.id}-memory-form", memory: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
+             |> render_change() =~ "border-rose-400"
 
       {:ok, _, html} =
         show_live

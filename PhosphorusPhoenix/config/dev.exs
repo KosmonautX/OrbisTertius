@@ -5,7 +5,7 @@ config :phos, Phos.Repo,
   username: System.get_env("PGUSERNAME") || "postgres",
   password: System.get_env("PGPASSWORD") || "root",
   hostname: System.get_env("PGDOMAIN") || "localhost", ## domain change to postgres for docker
-  database: "phos_dev",
+  database: "nyx",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10,
   types: Phos.PostgresTypes

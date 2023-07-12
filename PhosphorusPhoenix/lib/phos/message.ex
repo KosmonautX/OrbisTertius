@@ -41,6 +41,18 @@ defmodule Phos.Message do
 
   """
 
+  def last_messages_by_relation(id, page, sort_attribute \\ :updated_at, limit \\ 12) do
+    Phos.Users.RelationBranch
+    |> where([b], b.user_id == ^id)
+    |> join(:inner, [b], r in assoc(b, :root), as: :relation)
+    |> select([_b, r], r)
+    |> join(:inner, [_b, r], m in assoc(r, :last_memory))
+    |> join(:left, [_b, r, m], o in assoc(m, :orb_subject))
+    |> select_merge([_b, r, m, o], %{last_memory: %{m | orb_subject: o}})
+    |> order_by([_b, r, _m], desc: r.updated_at)
+    |> Repo.Paginated.all(page: page, sort_attribute: {:relation, sort_attribute}, limit: limit)
+  end
+
   def last_messages_by_orb_within_relation({rel_id, _yours}, opts) when is_list(opts) do
     Phos.Message.Memory
     |> where([m], m.rel_subject_id == ^rel_id and not is_nil(m.orb_subject_id))
@@ -48,7 +60,12 @@ defmodule Phos.Message do
     |> Repo.Paginated.all(opts)
   end
 
-  def last_messages_by_orb_within_relation({rel_id, _yours}, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+  def last_messages_by_orb_within_relation(
+        {rel_id, _yours},
+        page,
+        sort_attribute \\ :inserted_at,
+        limit \\ 12
+      ) do
     Phos.Message.Memory
     |> where([m], m.rel_subject_id == ^rel_id and not is_nil(m.orb_subject_id))
     |> preload([:orb_subject])
@@ -82,22 +99,29 @@ defmodule Phos.Message do
 
   def list_messages_by_user(user, opts \\ [])
   def list_messages_by_user(%Phos.Users.User{id: id}, opts), do: list_messages_by_user(id, opts)
+
   def list_messages_by_user(user_id, opts) when is_bitstring(user_id) do
     user_id
     |> query_message_by_user()
-    |> preload([last_memory: [:user_source, :rel_subject]])
+    |> preload(last_memory: [:user_source, :rel_subject])
     |> Repo.Paginated.all(opts)
   end
 
   def search_message_by_user(user, search_keyword, opts \\ [])
-  def search_message_by_user(%Phos.Users.User{id: id}, keyword, opts), do: search_message_by_user(id, keyword, opts)
+
+  def search_message_by_user(%Phos.Users.User{id: id}, keyword, opts),
+    do: search_message_by_user(id, keyword, opts)
+
   def search_message_by_user(user_id, keyword, opts) do
     keyword = "%#{keyword}%"
+
     user_id
     |> query_message_by_user()
     |> join(:inner, [r], m in assoc(r, :last_memory))
-    |> join(:inner, [r], a in Phos.Users.User, on: (r.acceptor_id == a.id or r.initiator_id == a.id) and ilike(a.username, ^keyword))
-    |> preload([last_memory: [:user_source, :rel_subject]])
+    |> join(:inner, [r], a in Phos.Users.User,
+      on: (r.acceptor_id == a.id or r.initiator_id == a.id) and ilike(a.username, ^keyword)
+    )
+    |> preload(last_memory: [:user_source, :rel_subject])
     |> Repo.Paginated.all(opts)
   end
 
@@ -154,36 +178,41 @@ defmodule Phos.Message do
       ** (Ecto.NoResultsError)
 
   """
-  def get_memory!(id), do: Repo.get!(Memory, id)
+  def get_memory!(id),
+    do:
+      Repo.get!(Memory, id)
+      |> Repo.preload([:orb_subject, :user_source, :rel_subject])
 
   @doc """
   Create a Message.
 
   ## Examples
 
-  iex> create_message(%{field: value})
-  {:ok, %Memory{}}
+    iex> create_message(%{field: value})
+    {:ok, %Memory{}}
 
-  iex> create_message(%{field: bad_value})
-  {:error, %Ecto.Changeset{}}
+    iex> create_message(%{field: bad_value})
+    {:error, %Ecto.Changeset{}}
 
   """
 
-    def create_message(%{"id" => _mem_id, "user_source_id" => _u_id, "rel_subject_id" => rel_id} = attrs) do
-      with rel = Phos.Folk.get_relation!(rel_id),
-           mem_changeset <- Phos.Message.Memory.gen_changeset(%Memory{}, attrs) |> Ecto.Changeset.put_assoc(:last_rel_memory, rel),
-           {:ok, memory} <- Repo.insert(mem_changeset) do
-        memory
-        |> Repo.preload([:orb_subject, :user_source, [rel_subject: :branches]])
-        |> tap(&Phos.PubSub.publish(&1, {:memory, "formation"}, &1.rel_subject.branches))
-        |> (&({:ok, &1})).()
-
-      else
-        {:error, err} -> {:error, err}
-
+  def create_message(
+        %{"id" => _mem_id, "user_source_id" => _u_id, "rel_subject_id" => rel_id} = attrs
+      ) do
+    with rel = Phos.Folk.get_relation!(rel_id),
+         mem_changeset <-
+           Phos.Message.Memory.gen_changeset(%Memory{}, attrs)
+           |> Ecto.Changeset.put_assoc(:last_rel_memory, rel),
+         {:ok, memory} <- Repo.insert(mem_changeset) do
+      memory
+      |> Repo.preload([:orb_subject, :user_source, [rel_subject: :branches]])
+      |> tap(&Phos.PubSub.publish(&1, {:memory, "formation"}, &1.rel_subject.branches))
+      |> (&{:ok, &1}).()
+    else
+      {:error, err} -> {:error, err}
       _ -> {:error, :not_found}
-      end
     end
+  end
 
   @doc """
   Creates a memory.
@@ -210,7 +239,6 @@ defmodule Phos.Message do
     |> Memory.changeset(attrs |> Map.put(:id, Ecto.UUID.generate()))
     |> Repo.insert()
   end
-
 
   @doc """
   Updates a memory.

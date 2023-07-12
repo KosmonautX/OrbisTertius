@@ -7,14 +7,7 @@ defmodule PhosWeb.MemoryLive.Index do
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
     Phos.PubSub.subscribe("memory:user:#{user.id}")
-    %{
-      data: search_memories,
-      meta: metadata,
-    } = memories_by_user(user)
-
-    {:ok,
-     socket
-     |> assign(usersearch: "", search_memories: search_memories, metadata: metadata)}
+    {:ok, init_relations(socket)}
   end
 
   @impl true
@@ -23,24 +16,25 @@ defmodule PhosWeb.MemoryLive.Index do
   end
 
   defp apply_action(%{assigns: %{current_user: your}} = socket, :show, %{"username" => username})
-    when your.username == username, do: push_navigate(socket, to: ~p"/memories")
+       when your.username == username,
+       do: push_navigate(socket, to: ~p"/memories")
 
   defp apply_action(%{assigns: %{current_user: your}} = socket, :show, %{"username" => username}) do
     {%{data: mems, meta: meta}, rel_id} =
       case user = Phos.Users.get_public_user_by_username(username, your.id) do
         %{self_relation: nil} -> {%{meta: %{}, data: []}, nil}
-        %{self_relation: rel} -> {list_memories(user, rel.id), rel.id}
+        %{self_relation: rel} -> {list_memories(user, rel.id, limit: 24), rel.id}
       end
 
     send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_dekstop, memory: %Memory{})
-    send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_mobile, memory: %Memory{})
 
     socket
     |> assign(:page_title, "Chatting with @" <> username)
     |> assign(:memory, %Memory{})
     |> assign(:relation_id, rel_id)
     |> assign(user: user, message_cursor: Map.get(meta, :pagination, %{}) |> Map.get(:cursor))
-    |> assign(:memories, mems)
+    |> stream(:message_memories, mems |> Enum.reverse(), reset: true)
+    |> assign(:message_meta, meta)
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
@@ -63,6 +57,38 @@ defmodule PhosWeb.MemoryLive.Index do
     |> assign(:user, nil)
   end
 
+  defp apply_action(socket, :media, %{"id" => id} = _params) do
+    memory = Message.get_memory!(id)
+
+    media =
+      Phos.Orbject.S3.get_all!("MEM", memory.id, "public/profile")
+      |> (fn
+            nil ->
+              []
+
+            media ->
+              for {path, url} <- media do
+                %Phos.Orbject.Structure.Media{
+                  ext: MIME.from_path(path),
+                  path: path,
+                  url: url,
+                  resolution:
+                    path |> String.split(".") |> hd() |> String.split("/") |> List.last()
+                }
+              end
+          end).()
+      |> Enum.filter(fn m -> m.resolution == "lossless" end)
+
+    socket
+    |> assign(:page_title, "Memory Media")
+    |> assign(:relation_id, memory.rel_subject_id)
+    |> assign(:memory, memory)
+    |> assign(:media, media)
+    |> assign_new(:user, fn -> memory.user_source end)
+    |> assign(:memories, [])
+    |> assign(:message_cursor, nil)
+  end
+
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     memory = Message.get_memory!(id)
@@ -72,50 +98,116 @@ defmodule PhosWeb.MemoryLive.Index do
   end
 
   @impl true
-  def handle_event("load-more", _, socket) do
-    {:noreply, list_more_mesage(socket)}
-  end
+  def handle_event("load-messages", _, socket), do: {:noreply, list_more_mesage(socket)}
 
-  def handle_event("search", %{"usersearch" => usersearch}, socket) do
-    send(self(), {:run_search, usersearch})
+  def handle_event("load-relations", _, socket), do: {:noreply, list_more_chats(socket)}
 
-    socket =
-      assign(socket,
-        usersearch: usersearch,
-        search_memories: []
-      )
+  def handle_event("search", %{"usersearch" => usersearch}, %{assigns: %{current_user: user}} = socket) do
 
-    {:noreply, socket}
+    case search_memories(user, usersearch) do
+      %{data: relation_memories, meta: %{pagination: %{cursor: cursor}} = meta} ->
+        {:noreply,
+          socket
+          |> assign(relation_meta: meta)
+          |> assign(relation_cursor: cursor)
+          |> stream(:relation_memories, relation_memories, reset: true)
+        }
+      %{meta: meta} ->
+        {:noreply,
+          socket
+          |> assign(relation_meta: meta)
+          |> assign(relation_cursor: nil)
+          |> stream(:relation_memories, [], reset: true)
+        }
+    end
   end
 
   @impl true
-  def handle_info({:run_search, usersearch}, %{assigns: %{current_user: user}} = socket) do
-    %{data: data, meta: meta} = Message.search_message_by_user(user, usersearch)
 
-    {:noreply, 
-      assign(socket, 
-        search_memories: Enum.map(data, &(&1.last_memory)) |> Enum.reverse(),
-        user_cursor: Map.get(meta.pagination, :cursor))}
+  def handle_info(
+        {Phos.PubSub, {:memory, "formation"}, %{rel_subject_id: rel_id} = data},
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    %{data: relation_memories, meta: _meta} = memories_by_user(user)
+    {:noreply,
+    socket
+      |> assign(:memory, %Memory{})
+      |> stream(:message_memories, [data])
+      |> stream(:relation_memories, relation_memories, reset: true)
+    }
   end
 
-  def handle_info({Phos.PubSub, {:memory, "formation"}, %{rel_subject_id: rel_id} = data}, %{assigns: %{current_user: user, memories: memories}} = socket) do
-    %{data: search_memories, meta: _meta} = memories_by_user(user)
-    {:noreply, assign(socket, memories: memories ++ [data], search_memories: map_last_memory(search_memories), memory: %Memory{})}
-  end
+  defp list_more_mesage(
+          %{
+           assigns: %{
+              message_cursor: cursor,
+              current_user: user,
+              relation_id: rel_id,
+              message_meta: %{pagination: %{downstream: true}}
+           }
+         } = socket
+       )
+       when not is_nil(cursor) do
 
-  defp list_more_mesage(%{assigns: %{message_cursor: cursor, current_user: user, memories: [memory | _tail] = memories}} = socket) when not is_nil(cursor) do
-    time = DateTime.from_unix!(cursor, :millisecond)
-    %{meta: %{pagination: pagination}, data: data} = list_memories(user, memory.rel_subject_id, filter: time)
-    new_data = Kernel.++(data, memories) |> Enum.sort(&(DateTime.compare(&1.inserted_at, &2.inserted_at) == :lt))
+
+    time = DateTime.from_unix!(cursor, :second)
+    %{data: data, meta: %{pagination: %{cursor: new_cursor}} = metadata} = list_memories(user, rel_id, filter: time, limit: 12)
+
 
     socket
-    |> assign(message_cursor: Map.get(pagination, :cursor, nil))
-    |> assign(memories: new_data)
+    |> assign(message_cursor: new_cursor)
+    |> assign(message_meta: metadata)
+    |> stream(:message_memories, data, at: 0)
+
   end
+
+  defp init_relations(%{assigns: %{current_user: user}} = socket) do
+      %{
+        data: relation_memories,
+        meta: %{pagination: %{cursor: cursor}} = metadata
+      }
+      = memories_by_user(user)
+
+      socket
+      |> assign(
+        usersearch: "",
+        media: [],
+        relation_meta: metadata,
+        relation_cursor: cursor
+      )
+      |> stream(:relation_memories, relation_memories)
+  end
+
   defp list_more_mesage(socket), do: socket
 
+  defp list_more_chats(
+        %{assigns: %{
+          current_user: user,
+          relation_cursor: cursor,
+          relation_meta: %{pagination: %{downstream: true}}
+          }
+        } = socket
+      )
+      when not is_nil(cursor) do
+    %{
+      data: relation_memories,
+      meta: %{pagination: %{cursor: new_cursor}} = metadata
+    } = memories_by_user(user, filter: cursor)
+
+    socket
+    |> stream(:relation_memories, relation_memories)
+    |> assign(:relation_cursor, new_cursor)
+    |> assign(:relation_meta, metadata)
+
+  end
+
+  defp list_more_chats(socket), do: socket
+
   defp list_memories(user, relation_id, opts \\ [])
-  defp list_memories(%{id: user_id} = _current_user, relation_id, opts), do: list_memories(user_id, relation_id, opts)
+
+  defp list_memories(%{id: user_id} = _current_user, relation_id, opts),
+    do: list_memories(user_id, relation_id, opts)
+
   defp list_memories(user_id, relation_id, opts) do
     Message.list_messages_by_relation({relation_id, user_id}, opts)
   end
@@ -124,7 +216,16 @@ defmodule PhosWeb.MemoryLive.Index do
     Phos.Folk.last_messages_by_relation(user.id, opts)
   end
 
-  defp map_last_memory(relationships) do
-    Enum.map(relationships, &(&1.self_relation.last_memory)) |> Enum.reverse()
+  defp search_memories(user, search) do
+    Phos.Folk.search_last_messages(user.id, search, [])
   end
+
+  defp get_date_time(time, timezone) do
+    time
+    |> DateTime.from_naive!("UTC")
+    |> Timex.shift(minutes: trunc(timezone.timezone_offset))
+    |> Timex.format("{0D}-{0M}-{YYYY},{h12}:{m} {AM}")
+    |> elem(1)
+  end
+
 end

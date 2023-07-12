@@ -15,7 +15,12 @@
 
 <.back navigate={~p"/memories"}>Back to memories</.back>
 
-<.modal :if={@live_action == :edit} id="memory-modal" show on_cancel={JS.patch(~p"/memories/#{@memory}")}>
+<.modal
+  :if={@live_action == :edit}
+  id="memory-modal"
+  show
+  on_cancel={JS.patch(~p"/memories/#{@memory}")}
+>
   <.live_component
     module={PhosWeb.MemoryLive.FormComponent}
     id={@memory.id}

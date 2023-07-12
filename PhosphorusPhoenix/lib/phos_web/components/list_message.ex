@@ -5,15 +5,14 @@ defmodule PhosWeb.Components.ListMessage do
 
   def render(assigns) do
     ~H"""
-    <div>
-      <div id={"#{@id}-infinite-scroll-body"} phx-update="prepend" phx-hook="ScrollTop">
-        <.list_message
-          id={"list-more-message-#{random_id()}"}
-          memories={@memories}
-          current_user={@current_user}
-          timezone={@timezone}
-        />
-      </div>
+    <div id={"#{@id}-infinite-scroll-body"} class="lg:mt-0">
+      <.list_message
+        id={@id}
+        memories={@memories}
+        current_user={@current_user}
+        timezone={@timezone}
+        metadata={@metadata}
+      />
     </div>
     """
   end

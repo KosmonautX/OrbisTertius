@@ -1,0 +1,69 @@
+<section class="bg-white" phx-drop-target={@uploads.image.ref}>
+  <div class="flex w-full flex-wrap gap-4 px-6 bg-[#F3F4F8] dark:bg-gray-900 lg:dark:bg-gray-800">
+    <%= for entry <- @uploads.image.entries do %>
+      <article class="upload-entry relative">
+        <figure class="w-32">
+          <.live_img_preview
+            class="h-32 w-32 object-cover lg:rounded-none rounded-2xl"
+            entry={entry}
+          />
+          <!--<figcaption class="text-[6px] lg:text-xs text-teal-500 break-words">
+            <%= entry.client_name %>
+          </figcaption>-->
+        </figure>
+        <!-- <progress class="h-1 w-24 lg:h-2 lg:w-32" value={entry.progress} max="100">
+          <%= entry.progress %>%
+        </progress>-->
+        <button
+          class="absolute right-0 top-0 rounded-full border px-2"
+          type="button"
+          phx-click="cancel-upload"
+          phx-value-ref={entry.ref}
+          aria-label="cancel"
+        >
+          &times;
+        </button>
+
+        <%= for err <- upload_errors(@uploads.image, entry) do %>
+          <p class="alert alert-danger"><%= error_to_string(err) %></p>
+        <% end %>
+      </article>
+    <% end %>
+
+    <%= for err <- upload_errors(@uploads.image) do %>
+      <p class="alert alert-danger"><%= error_to_string(err) %></p>
+    <% end %>
+  </div>
+
+  <.simple_form
+    :let={f}
+    class="flex relative lg:py-4 py-3 px-1 bg-[#F3F4F8] lg:bg-white dark:bg-gray-900 lg:dark:bg-gray-800"
+    for={@changeset}
+    padding={false}
+    id={"#{@id}-memory-form"}
+    phx-target={@myself}
+    phx-change="validate"
+    phx-submit="save"
+    phx-hook="EnterSubmit"
+  >
+    <label class="flex items-center px-1.5">
+      <Heroicons.plus class="h-5 w-5 lg:h-6 lg:w-6 dark:text-white text-gray-700" />
+      <.live_file_input upload={@uploads.image} class="hidden" />
+    </label>
+
+    <.input
+      field={{f, :message}}
+      class="flex relative w-full"
+      type="textarea"
+      hide_error={true}
+      placeholder="Scratching..."
+    />
+    <.input field={{f, :user_source_id}} type="hidden" value={@current_user.id} />
+    <.input :if={!is_nil(@rel)} field={{f, :rel_subject_id}} type="hidden" value={@rel} />
+    <:actions>
+      <button type="submit" phx-disable-with="Saving..." class="absolute inset-y-1 right-4">
+        <Heroicons.paper_airplane class="h-8 w-8 text-teal-400 font-bold" />
+      </button>
+    </:actions>
+  </.simple_form>
+</section>
