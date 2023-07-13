@@ -3,7 +3,6 @@ defmodule Phos.TeleBot.ProfileFSM do
 
   use Fsmx.Struct, transitions: %{
     "home" => "onboarding",
-    "finish_profile_to_post" => "set_profile_picture",
     "profile" => ["edit_profile_name", "edit_profile_bio", "edit_profile_traits", "edit_profile_picture"],
     "*" => ["home"]
   }

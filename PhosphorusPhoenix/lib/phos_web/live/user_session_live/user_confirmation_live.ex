@@ -2,6 +2,7 @@ defmodule PhosWeb.UserConfirmationLive do
   use PhosWeb, :live_view
 
   alias Phos.Users
+  alias Phos.TeleBot
 
   def render(%{live_action: :edit} = assigns) do
     ~H"""
@@ -9,6 +10,30 @@ defmodule PhosWeb.UserConfirmationLive do
       <.header>Confirm Account</.header>
 
       <.simple_form :let={f} for={:user} id="confirmation_form" phx-submit="confirm_account">
+        <.input field={{f, :token}} type="hidden" value={@token} />
+        <:actions>
+          <.button phx-disable-with="Confirming..." type="submit">Confirm my account</.button>
+        </:actions>
+      </.simple_form>
+      <p class="text-gray-600 font-bold mt-2 hidden">
+        <.link href={~p"/users/register"} class="font-semibold text-base text-teal-500 underline">
+          Register
+        </.link>
+        Or
+        <.link href={~p"/users/log_in"} class="font-semibold text-base text-teal-500 underline">
+          Log in
+        </.link>
+      </p>
+    </div>
+    """
+  end
+
+  def render(%{live_action: :edit_tg} = assigns) do
+    ~H"""
+    <div class="flex flex-col h-screen justify-center items-center">
+      <.header>Confirm Account</.header>
+
+      <.simple_form :let={f} for={:user} id="confirmation_form" phx-submit="confirm_account_tg">
         <.input field={{f, :token}} type="hidden" value={@token} />
         <:actions>
           <.button phx-disable-with="Confirming..." type="submit">Confirm my account</.button>
@@ -83,6 +108,32 @@ defmodule PhosWeb.UserConfirmationLive do
     end
   end
 
+  def handle_event("confirm_account_tg", %{"user" => %{"token" => token}}, socket) do
+    case Users.confirm_user(token) do
+      {:ok, %{integrations: %{telegram_chat_id: telegram_id}} = user} ->
+        ExGram.send_message(telegram_id, "Your account has been confirmed successfully! You can now /post")
+        {:noreply,
+         socket
+         |> put_flash(:info, "User confirmed successfully.")
+         |> redirect(to: ~p"/")}
+
+      :error ->
+        # If there is a current user and the account was already confirmed,
+        # then odds are that the confirmation link was already visited, either
+        # by some automation or by the user themselves, so we redirect without
+        # a warning message.
+        case socket.assigns do
+          %{current_user: %{confirmed_at: confirmed_at}} when not is_nil(confirmed_at) ->
+            {:noreply, redirect(socket, to: ~p"/")}
+
+          %{} ->
+            {:noreply,
+             socket
+             |> put_flash(:error, "User confirmation link is invalid or it has expired.")
+             |> redirect(to: ~p"/")}
+        end
+    end
+  end
 
   # Do not log in the user after confirmation to avoid a
   # leaked token giving the user access to the account.

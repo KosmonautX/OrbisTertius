@@ -286,6 +286,7 @@ defmodule PhosWeb.Router do
     live_session :current_user,
       on_mount: [{PhosWeb.Menshen.Gate, :mount_current_user}] do
       live "/users/confirm/:token", UserConfirmationLive, :edit
+      live "/users/confirmtg/:token", UserConfirmationLive, :edit_tg
       live "/users/confirm", UserConfirmationInstructionsLive, :new
       live "/users/bind/telegram/:token", UserConfirmationLive, :bind_telegram
     end
