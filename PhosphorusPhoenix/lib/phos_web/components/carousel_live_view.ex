@@ -40,33 +40,25 @@ defmodule PhosWeb.Components.CarouselLiveView do
     ~H"""
     <div class="relative">
       <div :if={!is_nil(@media)} id={"#{@id}-carousel"}>
-        <div class="h-screen w-full flex justify-center items-center">
           <img
-            class="max-h-full max-w-full object-contain flex justify-center items-center"
+            class="max-h-full max-w-full object-contain"
             src={Enum.at(@media, @index).url}
             loading="lazy"
           />
-        </div>
       </div>
-      <div
-        :if={length(@media) > 1}
-        class="absolute top-0 right-0 bottom-0 flex items-center justify-center px-2"
-      >
-        <button
-          class="p-2 rounded-full bg-gray-600 text-white"
-          phx-click="previous"
-          phx-target={@myself}
-        >
-          <Heroicons.chevron_right class="h-6 w-6" />
-        </button>
-      </div>
-      <div
-        :if={length(@media) > 1}
-        class="absolute top-0 left-0 bottom-0 flex items-center justify-center px-2"
-      >
-        <button class="p-2 rounded-full bg-gray-600 text-white" phx-click="next" phx-target={@myself}>
-          <Heroicons.chevron_left class="h-6 w-6" />
-        </button>
+      <div :if={length(@media) > 1}>
+       <button type="button" phx-click="previous" phx-target={@myself}
+        class="absolute inset-y-2/4	 right-0  flex items-center justify-center px-2 cursor-pointer group focus:outline-none">
+          <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none dark:group-focus:ring-gray-800/70 dark:bg-gray-800/30 dark:group-hover:bg-gray-800/60">
+             <Heroicons.chevron_right class="h-5 w-5 dark:text-white" />
+          </span>
+       </button>
+       <button type="button"  phx-click="next" phx-target={@myself}
+        class="absolute inset-y-2/4	 left-0  flex items-center justify-center px-2 cursor-pointer group focus:outline-none">
+         <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none dark:group-focus:ring-gray-800/70 dark:bg-gray-800/30 dark:group-hover:bg-gray-800/60">
+           <Heroicons.chevron_left class="h-6 w-6 dark:text-white" />
+        </span>
+       </button>
       </div>
     </div>
     """

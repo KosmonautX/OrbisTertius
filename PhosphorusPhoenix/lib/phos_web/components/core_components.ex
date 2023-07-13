@@ -348,6 +348,10 @@ defmodule PhosWeb.CoreComponents do
   defp button_class(:success), do: "bg-green-400 hover:bg-green-600"
   defp button_class(:dark), do: "bg-slate-800 hover:bg-black text-white"
 
+  defp button_class(:inlinebutton),
+    do:
+      "inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none"
+
   defp button_class(:icons),
     do:
       "font-poppins inline-block text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 dark:focus:ring-gray-700 rounded-sm text-sm"
@@ -703,7 +707,6 @@ defmodule PhosWeb.CoreComponents do
         alt=""
         onerror="this.src='/images/default_hand.jpg';"
       />
-
       <h5 class="text-lg md:text-xl font-bold tracking-tight text-gray-900">
         <%= "#{@user.username}" %>
       </h5>
@@ -1141,6 +1144,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:title, :string, required: true)
   attr(:home_path, :string, required: true)
   slot(:information)
+
   slot :item,
     required: true,
     doc: "the slot for form actions, such as a submit button" do
@@ -1223,7 +1227,8 @@ defmodule PhosWeb.CoreComponents do
         @color == true && "lg:dark:bg-gray-800",
         "lg:dark:bg-gray-900 dark:bg-gray-900 lg:bg-white w-full lg:py-2 py-4 flex items-center justify-between px-2 font-poppins",
         @class
-      ]}>
+      ]}
+    >
       <div class="flex">
         <.link
           :if={@user.username}
@@ -1634,13 +1639,11 @@ defmodule PhosWeb.CoreComponents do
   def preview_modal(assigns) do
     index = Map.get(assigns, :index, 0)
     media = Map.get(assigns, :media, [])
-    myself = Map.get(assigns, :myself, nil)
-    length = Enum.count(media)
 
     ~H"""
     <div class="relative flex items-center" id={"#{@id}-carousel"}>
       <div :if={!is_nil(@media)}>
-        <div>
+        <div class="relative">
           <img
             class="max-h-full max-w-full object-contain flex justify-center items-center"
             src={Enum.at(media, index) |> Map.get(:url, "")}
@@ -1648,31 +1651,21 @@ defmodule PhosWeb.CoreComponents do
           />
         </div>
       </div>
-      <div
-        :if={length > 1}
-        class="absolute top-0 right-0 bottom-0 flex items-center justify-center px-2"
-      >
-        <button
-          class="p-2 rounded-full bg-gray-600 text-white"
-          phx-click="nextImage"
-          phx-value-len={length}
-          phx-target={myself}
-        >
-          <Heroicons.chevron_right class="h-6 w-6" />
-        </button>
-      </div>
-      <div
-        :if={length > 1}
-        class="absolute top-0 left-0 bottom-0 flex items-center justify-center px-2"
-      >
-        <button
-          class="p-2 rounded-full bg-gray-600 text-white"
-          phx-click="prevImage"
-          phx-value-len={length}
-          phx-target={myself}
-        >
-          <Heroicons.chevron_left class="h-6 w-6" />
-        </button>
+      <div :if={length(@media) > 1}>
+      <button
+        type="button"
+        class="absolute inset-y-2/4	 right-0  flex items-center justify-center px-2 cursor-pointer group focus:outline-none">
+        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none dark:group-focus:ring-gray-800/70 dark:bg-gray-800/30 dark:group-hover:bg-gray-800/60">
+          <Heroicons.chevron_right class="h-6 w-6 dark:text-white" />
+        </span>
+      </button>
+      <button
+        type="button"
+        class="absolute inset-y-2/4	 left-0  flex items-center justify-center px-2 cursor-pointer group focus:outline-none">
+        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none dark:group-focus:ring-gray-800/70 dark:bg-gray-800/30 dark:group-hover:bg-gray-800/60">
+          <Heroicons.chevron_left class="h-6 w-6 dark:text-white" />
+        </span>
+      </button>
       </div>
     </div>
     """
@@ -2518,7 +2511,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:on_cancel, JS, default: %JS{}, doc: "JS cancel action")
   attr(:on_confirm, JS, default: %JS{}, doc: "JS confirm action")
   attr(:close_button, :boolean, default: true)
-
+  attr(:background, :string, default: "bg-white")
   slot(:inner_block, required: true)
   slot(:title)
   slot(:subtitle)
@@ -2529,43 +2522,35 @@ defmodule PhosWeb.CoreComponents do
     <div
       id={@id}
       phx-mounted={@show && show_modal(@id)}
-      class="fixed z-10 inset-0 hidden bg-zinc-50/90 transition-opacity"
+      class="fixed z-10 inset-0 hidden  w-full mx-auto h-screen bg-white/50 dark:bg-black/50 transition-opacity"
       aria-hidden="true"
     >
-      <div class="w-full h-screen">
+      <div class="w-full h-screen fixed inset-0 overflow-y-auto journal-scroll bg-zinc-50/90 transition-opacity">
         <.focus_wrap
           id={"#{@id}-container"}
           phx-mounted={@show && show_modal(@id)}
           phx-window-keydown={hide_modal(@on_cancel, @id)}
           phx-key="escape"
           phx-click-away={hide_modal(@on_cancel, @id)}
-          class="hidden relative bg-transparent"
-        >
-          <div :if={@close_button} class="absolute top-4 right-2">
+          class="hidden relative h-screen flex flex-col">
+          <div :if={@close_button} class="absolute top-4 right-4 lg:top-0 lg:right-0">
             <button
               phx-click={hide_modal(@on_cancel, @id)}
               type="button"
               class="opacity-80 hover:opacity-40 "
-              aria-label={gettext("close")}
-            >
-              <Heroicons.x_mark solid class="h-5 w-5 stroke-current" />
+              aria-label={gettext("close")}>
+              <Heroicons.x_mark class="h-6 w-6 dark:text-white" />
             </button>
           </div>
           <div id={"#{@id}-content"}>
-            <header class="flex border-b px-2 py-2 bg-white">
-              <div>
-                <%= render_slot(@information) %>
-              </div>
-              <div class="flex flex-col justify-center -mt-2 ml-1.5">
-                <h1 id={"#{@id}-title"} class="lg:text-base text-sm font-semibold text-gray-800">
-                  <%= render_slot(@title) %>
-                </h1>
-                <p class="text-xs text-gray-600 lg:text-sm">
-                  <%= render_slot(@subtitle) %>
-                </p>
-              </div>
-            </header>
-            <div id={"#{@id}-main"}>
+            <div>
+            <header class="flex px-2 py-3 bg-white dark:bg-gray-900 items-center justify-center">
+            <h1 id={"#{@id}-title"} class="dark:text-white lg:text-2xl text-lg font-semibold text-gray-800">
+              <%= render_slot(@title) %>
+            </h1>
+        </header>
+            </div>
+            <div id={"#{@id}-main"} class="flex flex-1 items-center justify-center">
               <%= render_slot(@inner_block) %>
             </div>
           </div>
@@ -2596,7 +2581,7 @@ defmodule PhosWeb.CoreComponents do
     <div
       id={@id}
       phx-mounted={@show && show_modal(@id)}
-      class="relative z-50 hidden bg-white w-full mx-auto h-screen bg-white/50 dark:bg-black/50 transition-opacity"
+      class="relative z-50 hidden w-full mx-auto h-screen bg-white/50 dark:bg-black/50 transition-opacity"
     >
       <div
         id={"#{@id}-bg"}

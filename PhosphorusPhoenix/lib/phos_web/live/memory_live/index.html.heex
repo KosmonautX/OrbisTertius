@@ -100,7 +100,9 @@
       onerror="this.src='/images/default_hand.jpg';"
     />
   </:information>
+  
   <:title :if={@user}><%= @user.username %></:title>
+
   <:subtitle><%= get_date_time(@memory.inserted_at, @timezone) %></:subtitle>
   <.live_component
     :if={@media != []}

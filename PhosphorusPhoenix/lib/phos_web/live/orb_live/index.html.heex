@@ -26,7 +26,7 @@
     return_to={~p"/orb"}
   />
 </.modal>
-<.gallerymodal
+<.modal
   :if={@live_action in [:new, :edit]}
   id={"modal_for_#{@live_action}"}
   show={@live_action in [:edit, :new]}
@@ -42,7 +42,8 @@
     addresses={@addresses}
     return_to={~p"/orb"}
   />
-</.gallerymodal>
+</.modal>
+
     <div class="fixed top-14 w-full bg-white z-10 dark:bg-gray-900">
      <.tabs_mobile_view title="ScratchBac Admin" action={@live_action} home_path={~p"/orb"} >
       <:information>
