@@ -36,8 +36,8 @@
           id="user-information-card-ally"
           module={PhosWeb.Component.AllyButton}
           current_user={@current_user}
-          socket={@socket}
           user={@user}
+          parent_pid={@parent_pid}
         />
         <.link
           :if={@current_user && @user.id == @current_user.id}
@@ -69,8 +69,8 @@
               id="user-information-card-ally-desktop"
               module={PhosWeb.Component.AllyButton}
               current_user={@current_user}
-              socket={@socket}
               user={@user}
+              parent_pid={@parent_pid}
             />
             <.link
               :if={@current_user && @user.id == @current_user.id}
@@ -88,20 +88,19 @@
         Posts
       </h5>
       <p
-        :if={@orbs == []}
+        :if={@streams.orbs |> Enum.count() == 0}
         class="w-full mx-auto text-center py-6 text-gray-600 font-medium lg:text-base text-sm dark:text-white"
       >
         <%= "#{@user.username} has no post yet" %>
       </p>
 
       <.live_component
-          module={PhosWeb.Components.ScrollOrb}
-          id="infinite-orb-home"
-          orbs={@orbs}
-          page={@orb_page}
-          timezone1={@timezone}
-        />
-
+        module={PhosWeb.Components.ScrollOrb}
+        id="infinite-orb-home"
+        data={@streams.orbs}
+        timezone1={@timezone}
+        meta={@orbs}
+      />
     </div>
     <!--Allies Tab Details in Mobile View Using action Button its go to new Route in Mobile View -->
     <div
@@ -117,7 +116,7 @@
       </h5>
 
       <p
-        :if={@allies == []}
+        :if={@streams.ally_list |> Enum.count() == 0}
         class="w-full mx-auto text-center py-6 text-gray-600 font-medium text-sm lg:text-base dark:text-white"
       >
         <%= "#{@user.username} has no allies yet" %>
@@ -127,9 +126,10 @@
         <.live_component
           module={PhosWeb.Components.ScrollAlly}
           id="infinite-ally-home-desktop"
-          ally_list={@allies}
+          data={@streams.ally_list}
+          parent_pid={@parent_pid}
           current_user={@current_user}
-          page={@ally_page}
+          meta={@ally_list}
         />
       </div>
     </div>

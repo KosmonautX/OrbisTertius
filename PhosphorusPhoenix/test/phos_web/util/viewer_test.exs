@@ -8,13 +8,13 @@ defmodule PhosWeb.Util.ViewerTest do
   describe "orb_mapper/1" do
     test "when given data is single orb" do
       orb = orb_fixture(%{"title" => "First orb"})
-      keys = ~w(expiry_time active orb_uuid title relationships creationtime mutationtime source payload geolocation parent media traits)a
+      keys = ~w(expiry_time comment_count active orb_uuid title relationships creationtime mutationtime source payload geolocation parent media traits)a
       assert data = Viewer.orb_mapper(orb)
       assert Enum.sort(Map.keys(data)) == Enum.sort(keys)
     end
 
     test "when given data is list" do
-      keys = ~w(expiry_time active orb_uuid title relationships creationtime mutationtime source payload geolocation parent media traits)a
+      keys = ~w(expiry_time comment_count active orb_uuid title relationships creationtime mutationtime source payload geolocation parent media traits)a
       orb_1 = orb_fixture(%{"title" => "First orb"})
       orb_2 = orb_fixture(%{"title" => "Second orb"})
       data = [orb_1, orb_2]

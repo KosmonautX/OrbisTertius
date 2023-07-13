@@ -106,8 +106,15 @@ defmodule PhosWeb.Router do
 
     live "/", DashboardLive, :index
     live "/orbs", OrbLive.Index, :index
-    live "/orbs/import", OrbLive.Import, :import
+    live "/orbs/import", OrbLive.Import, :imports
     live "/orbs/:id", OrbLive.Show, :show
+
+    live "/users", UserLive.Index, :index
+    live "/users/:page", UserLive.Index, :index
+    live "/users/:id/edit", UserLive.Index, :edit
+
+    live "/leaderboard", LeaderboardLive.Index, :user
+    live "/leaderboard/orb", LeaderboardLive.Index, :orb
 
     live "/notifications", NotificationLive.Index, :index
   end
@@ -159,6 +166,7 @@ defmodule PhosWeb.Router do
     get "/orbland/comments/root/:id", CommentController, :show_root
     get "/orbland/comments/children/:id", CommentController, :show_children
     get "/orbland/comments/ancestor/:id", CommentController, :show_ancestor
+    put "/orbland/comments/root/:id/report", TribunalController, :report_comment
 
     scope "/folkland" do
       get "/stream/self", OrbController, :show_friends
@@ -168,6 +176,7 @@ defmodule PhosWeb.Router do
       put "/friends/accept", FriendController, :accept
       get "/self/requests", FriendController, :requests
       get "/self/pending", FriendController, :pending
+      get "/self/blocked", FriendController, :blocked
       resources "/friends", FriendController, except: [:new, :edit, :update]
     end
 

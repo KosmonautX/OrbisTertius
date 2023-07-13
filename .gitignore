@@ -6,3 +6,4 @@ WolfSmoke/node_modules
 *.pyc
 .localstack/data/recorded_api_calls.json
 /PhosphorusPhoenix/log
+/PhosphorusPhoenix/priv/data/sparrow_config.json
