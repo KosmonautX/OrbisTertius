@@ -19,9 +19,11 @@ defmodule Phos.Repo.Preloader do
   def lateral(nil, _, _), do: nil
   def lateral([%source_queryable{} | _] = entities, assoc, opts) do
     limit = Keyword.get(opts, :limit, 2)
+    where = Keyword.get(opts, :where, true)
     {order_direction, order_field} = Keyword.get(opts, :order_by, {:desc, :inserted_at})
 
     _fields = source_queryable.__schema__(:fields)
+
     %{
       related_key: related_key,
       queryable: assoc_queryable
@@ -29,9 +31,11 @@ defmodule Phos.Repo.Preloader do
 
     ids = Enum.map(entities, fn entity -> entity.id end)
 
+    where = dynamic([p], field(p, ^related_key) in ^ids and ^where)
+
     sub = from(
       p in assoc_queryable,
-      where: field(p, ^related_key) in ^ids,
+      where: ^where,
       # select: map(p, ^fields),
       select_merge: %{
         _n: row_number() |> over(

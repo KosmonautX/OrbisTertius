@@ -101,6 +101,7 @@ defmodule PhosWeb.Menshen.Gate do
   def fetch_current_user(conn, _opts) do
     {user_token, conn} = ensure_user_token(conn)
     user = user_token && Users.get_user_by_session_token(user_token)
+
     conn
     |> assign(:current_user, user)
   end
@@ -166,7 +167,9 @@ defmodule PhosWeb.Menshen.Gate do
         {:cont, Phoenix.Component.assign(socket, :guest, true)}
       %Users.User{username: nil} ->
         {:halt, Phoenix.LiveView.redirect(socket, to: onboarding_path(socket))}
-      _user ->
+      user ->
+        topic = PhosWeb.Presence.user_topic(user.id)
+        PhosWeb.Presence.track(self(), topic, "status", %{online: System.system_time(:second)})
         {:cont, Phoenix.Component.assign(socket, :guest, false)}
     end
   end

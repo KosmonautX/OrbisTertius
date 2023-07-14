@@ -14,12 +14,12 @@ defmodule PhosWeb.MemoryLive.Index do
 
     {:ok,
      socket
-     |> assign(usersearch: "", search_memories: map_last_memory(search_memories), metadata: metadata)}
+     |> assign(usersearch: "", search_memories: search_memories, metadata: metadata)}
   end
 
   @impl true
-  def handle_params(params, _url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  def handle_params(params, _url, %{assigns: assigns} = socket) do
+    {:noreply, apply_action(socket, assigns.live_action, params)}
   end
 
   defp apply_action(%{assigns: %{current_user: your}} = socket, :show, %{"username" => username})
@@ -34,6 +34,8 @@ defmodule PhosWeb.MemoryLive.Index do
 
     send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_dekstop, memory: %Memory{})
     send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_mobile, memory: %Memory{})
+
+    PhosWeb.Presence.track(self(), "memory:user:#{your.id}", "last_read", %{rel_id: rel_id})
 
     socket
     |> assign(:page_title, "Chatting with @" <> username)
@@ -56,7 +58,7 @@ defmodule PhosWeb.MemoryLive.Index do
     |> assign(:user, nil)
   end
 
-  defp apply_action(%{assigns: %{current_user: user}} = socket, :index, _params) do
+  defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Listing Memories")
     |> assign(:memory, nil)
@@ -103,6 +105,10 @@ defmodule PhosWeb.MemoryLive.Index do
     {:noreply, assign(socket, memories: memories ++ [data], search_memories: map_last_memory(search_memories), memory: %Memory{})}
   end
 
+  def handle_info(_data, socket) do
+    {:noreply, socket}
+  end
+
   defp list_more_mesage(%{assigns: %{message_cursor: cursor, current_user: user, memories: [memory | _tail] = memories}} = socket) when not is_nil(cursor) do
     time = DateTime.from_unix!(cursor, :millisecond)
     %{meta: %{pagination: pagination}, data: data} = list_memories(user, memory.rel_subject_id, filter: time)
@@ -121,10 +127,10 @@ defmodule PhosWeb.MemoryLive.Index do
   end
 
   defp memories_by_user(user, opts \\ []) do
-    Message.list_messages_by_user(user, opts)
+    Phos.Folk.last_messages_by_relation(user.id, opts)
   end
 
   defp map_last_memory(relationships) do
-    Enum.map(relationships, &(&1.last_memory)) |> Enum.reverse()
+    Enum.map(relationships, &(&1.self_relation.last_memory)) |> Enum.reverse()
   end
 end

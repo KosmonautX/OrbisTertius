@@ -19,7 +19,7 @@ defmodule PhosWeb.API.UserProfileController do
 
   def show_self(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, _params) do
     user = Users.get_user!(id)
-    render(conn, :show, user_profile: user)
+    render(conn, :show, my_profile: user)
   end
 
   def update_self(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, %{"media" => [_|_] = media} = params) do

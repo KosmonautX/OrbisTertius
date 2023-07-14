@@ -34,7 +34,7 @@ defmodule Phos.MixProject do
   defp deps do
     [
       {:bcrypt_elixir, "~> 3.0"},
-      {:phoenix, "~> 1.7.3", override: true},
+      {:phoenix, "~> 1.7.6", override: true},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.9"},
       {:postgrex, ">= 0.0.0"},
@@ -83,7 +83,6 @@ defmodule Phos.MixProject do
       {:fcmex, github: "KosmonautX/fcmex"},
       {:retry, "~> 0.17"},
       {:uuid, "~> 1.1" },
-      {:link_preview, github: "appunite/link_preview"},
       # comments
       {:ecto_ltree, "~> 0.3.0"},
       {:sparrow, github: "Scratchbac/sparrow", tag: "062400e"},

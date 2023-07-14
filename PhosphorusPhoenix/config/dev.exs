@@ -81,6 +81,7 @@ config :phos, PhosWeb.Endpoint,
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console,
+  level: :info,
  format: "[$level] $message\n"
 
 # Log Filter for Development
@@ -116,4 +117,4 @@ config :ex_aws, :retries,
 config :phos, Phos.External.HeimdallrClient,
   base_url: {System, :get_env, ["HEIMDALLR_ENDPOINT"]}
 
-config :link_preview, parsers: [LinkPreview.Parsers.Opengraph]
+#config :link_preview, parsers: [LinkPreview.Parsers.Opengraph]

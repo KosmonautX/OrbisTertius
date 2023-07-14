@@ -163,14 +163,35 @@ defmodule Phos.Action do
       inner_join: orbs in assoc(l, :orbs),
       where: orbs.userbound == true and fragment("? != '[]'", orbs.traits),
       inner_join: initiator in assoc(orbs, :initiator),
+      as: :user,
       select: initiator,
       distinct: initiator.id,
       left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,
       left_join: root in assoc(branch, :root),
-      select_merge: %{self_relation: root})
+      select_merge: %{self_relation: root},
+      inner_lateral_join:
+      a_count in subquery(
+        from(r in Phos.Users.RelationBranch,
+          where: r.user_id == parent_as(:user).id and not is_nil(r.completed_at),
+          select: %{count: count()}
+        )
+      ),
+      left_lateral_join:
+      mutual in subquery(
+        from(r in Phos.Users.RelationBranch,
+          where: r.user_id == parent_as(:user).id and not is_nil(r.completed_at),
+          inner_join: friend in assoc(r, :friend),
+          inner_join: mutual in assoc(friend, :relations),
+          on: mutual.friend_id == ^your_id and not is_nil(r.completed_at),
+          select: %{friend | count: over(count(), :ally_partition)},
+          windows: [ally_partition: [partition_by: :user_id]]
+        )
+      ),
+      select_merge: %{mutual_count: mutual.count, ally_count: a_count.count, mutual: mutual})
       |> Repo.Paginated.all([page: page, sort_attribute: sort_attribute, limit: limit])
       |> (&(Map.put(&1, :data, &1.data |> Repo.Preloader.lateral(:orbs, [limit: 5])))).()
+      #|> (&(Map.put(&1, :data, &1.data |> Repo.Preloader.lateral(:allies, [limit: 3, order_by: {:desc, :completed_at}, assocs: [:friend]])))).()
   end
 
   def notifiers_by_geohashes(hashes) do
@@ -342,7 +363,7 @@ defmodule Phos.Action do
     |> case do
          {:ok, orb} = data ->
            orb = orb |> Repo.preload([:initiator])
-           spawn(fn ->
+           Task.start(fn ->
              experimental_notify(orb)
            end)
            #spawn(fn -> user_feeds_publisher(orb) end)
@@ -768,7 +789,7 @@ defmodule Phos.Action do
       |> MapSet.delete(get_in(orb.initiator, [Access.key(:integrations, %{}), Access.key(:fcm_token, nil)]))
       |> tap(fn batch ->
       Phos.PlatformNotification.Batch.push(batch,
-        title: "#{orb.initiator.username} just posted across your street 🧭",
+        title: "#{orb.initiator.username} from Around Me",
         body: orb.title,
         initiator_id: orb.initiator_id,
         action_path: "/orbland/orbs/#{orb.id}",
@@ -783,7 +804,7 @@ defmodule Phos.Action do
       |> MapSet.difference(geonotifiers)
       |> MapSet.delete(get_in(orb.initiator, [Access.key(:integrations, %{}), Access.key(:fcm_token, nil)]))
       |> Phos.PlatformNotification.Batch.push(
-        title: "Your ally 🤝 #{orb.initiator.username} just posted 💫",
+        title: "#{orb.initiator.username} from Following",
       body: orb.title,
       initiator_id: orb.initiator_id,
       action_path: "/orbland/orbs/#{orb.id}",
