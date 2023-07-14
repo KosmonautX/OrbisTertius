@@ -140,7 +140,7 @@
   id="User_ally"
   main_width="lg:max-w-2xl"
   show={@live_action in [:ally]}
-  on_cancel={JS.navigate(~p"/user/#{@user.username}/allies")}
+  on_cancel={JS.navigate(~p"/user/#{@user.username}")}
 >
   <.redirect_user id="redirect-user" user={@ally} show_location={true} username={@user.username}>
     <:actions>

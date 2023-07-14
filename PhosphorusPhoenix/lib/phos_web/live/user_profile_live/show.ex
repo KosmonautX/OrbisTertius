@@ -1,6 +1,5 @@
 defmodule PhosWeb.UserProfileLive.Show do
   use PhosWeb, :live_view
-
   alias Phos.Users
   alias Phos.Action
   alias PhosWeb.Components.ScrollAlly
@@ -70,10 +69,10 @@ defmodule PhosWeb.UserProfileLive.Show do
     }
   end
 
-  def handle_event("show_ally", %{"ally" => ally_id}, socket) do
+  def handle_event("show_ally", %{"ally" => ally_id}, %{assigns: %{current_user: curr}} = socket) do
     {:noreply,
      socket
-     |> assign(:ally, Phos.Users.get_public_user(ally_id, nil))
+     |> assign(:ally, Phos.Users.get_public_user(ally_id, curr.id))
      |> assign(:live_action, :ally)}
   end
 

@@ -144,7 +144,12 @@
   margin-top: -3px;
 }
 
-/* .accordion-content {
+.accordion-content {
+  display: none;
+}
+
+/*
+ .accordion-content {
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease-out;
