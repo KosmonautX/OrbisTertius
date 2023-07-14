@@ -9,10 +9,16 @@ defmodule PhosWeb.Timezone do
     locale = get_connect_params(socket)["_locale"] || @default_locale
     timezone = get_connect_params(socket)["_timezone"] || @timezone
     timezone_offset = get_connect_params(socket)["_timezone_offset"] || @timezone_offset
+
     {:cont,
      socket
      |> assign(:locale, locale)
-     |> assign(:timezone, %{timezone: timezone, timezone_offset: timezone_offset})
-    }
+     |> assign(:timezone, %{timezone: timezone, timezone_offset: timezone_offset})}
+  end
+
+  def render(assigns) do
+    ~H"""
+    <!-- Your LiveView template code here -->
+    """
   end
 end

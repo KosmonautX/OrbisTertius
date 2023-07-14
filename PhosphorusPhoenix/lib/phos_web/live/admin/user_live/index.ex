@@ -4,39 +4,35 @@ defmodule PhosWeb.Admin.UserLive.Index do
   alias Phos.Users
   alias Phos.Leaderboard
 
-
   def mount(_params, _session, socket) do
     limit = 20
     page = 1
     search = ""
 
     %{data: users, meta: meta} = Users.filter_user_by_username(search, limit, page)
+
     {:ok,
-      socket
-      |> assign(search: search)
-      |> assign(limit: limit)
-      |> assign(admin: true)
-      |> assign(user_meta: meta )
-      |> assign(today: NaiveDateTime.utc_now())
-      |> stream(:users, users)
-    }
+     socket
+     |> assign(search: search)
+     |> assign(limit: limit)
+     |> assign(admin: true)
+     |> assign(user_meta: meta)
+     |> assign(today: NaiveDateTime.utc_now())
+     |> stream(:users, users)}
   end
 
   def handle_params(%{"id" => id} = params, _url, socket) do
-
     with %Users.User{} = user <- Users.get_user!(id) do
       {:noreply,
-        socket
-        |> assign(:user, user)
-        |> apply_action(socket.assigns.live_action, params)
-      }
+       socket
+       |> assign(:user, user)
+       |> apply_action(socket.assigns.live_action, params)}
     else
-      {:error,_} -> {:noreply, socket}
+      {:error, _} -> {:noreply, socket}
     end
-
   end
 
-  def handle_params(%{"search" => %{"username" => search_value}} = params, _url, socket) do
+  def handle_params(%{"search" => %{"username" => _search_value}} = params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
@@ -47,24 +43,25 @@ defmodule PhosWeb.Admin.UserLive.Index do
   end
 
   def handle_event(
-    "load-more",
-    params,
-    %{assigns: %{search: search, limit: limit, user_meta: %{pagination: pagination}}} = socket
-    ) do
-
+        "load-more",
+        _params,
+        %{assigns: %{search: search, limit: limit, user_meta: %{pagination: pagination}}} = socket
+      ) do
     expected_page = pagination.current + 1
 
-    %{data: new_users, meta: new_meta} = Users.filter_user_by_username(search, limit, expected_page)
-    {:noreply,
-      socket
-      |> assign(user_meta: new_meta)
-      |> stream(:users, new_users)
-    }
+    %{data: new_users, meta: new_meta} =
+      Users.filter_user_by_username(search, limit, expected_page)
 
+    {:noreply,
+     socket
+     |> assign(user_meta: new_meta)
+     |> stream(:users, new_users)}
   end
 
   defp apply_action(socket, :index, %{"search" => %{"username" => search_value}}) do
-    %{data: users, meta: meta} = Users.filter_user_by_username(search_value, socket.assigns.limit, 1)
+    %{data: users, meta: meta} =
+      Users.filter_user_by_username(search_value, socket.assigns.limit, 1)
+
     socket
     |> assign(:page_title, "Viewing Users")
     |> assign(:user_meta, meta)
@@ -76,5 +73,4 @@ defmodule PhosWeb.Admin.UserLive.Index do
     socket
     |> assign(:page_title, "Updating Profile")
   end
-
 end

@@ -30,17 +30,10 @@ defmodule PhosWeb.Components.CropUploadInput do
             >
               &times;
             </button>
-                <%!-- Phoenix.Component.upload_errors/2 returns a list of error atoms --%>
-            <%= for err <- upload_errors(@uploaded.image, entry) do %>
-              <p class="alert alert-danger"><%= error_to_string(err) %></p>
-            <% end %>
-
+            <div :for={err <- upload_errors(@uploads.image, entry)} class="alert alert-danger">
+              <%= error_to_string(err) %>
+            </div>
           </article>
-
-          <%= for err <- upload_errors(@uploaded.image) do %>
-            <p class="alert alert-danger"><%= error_to_string(err) %></p>
-          <% end %>
-
           <.button type="submit" phx-disable-with="Saving...">Save</.button>
         </.modal>
       <% end %>
@@ -51,4 +44,5 @@ defmodule PhosWeb.Components.CropUploadInput do
   def handle_event("close-modal", _, socket), do: {:noreply, assign(socket, show_modal: false)}
   defp error_to_string(:too_large), do: "Image too large choose another one"
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
+  defp error_to_string(:too_many_files), do: "You have selected too many files"
 end

@@ -50,7 +50,7 @@ defmodule PhosWeb.MemoryLive.Index do
     |> assign(:user, nil)
   end
 
-  defp apply_action(%{assigns: %{current_user: user}} = socket, :index, _params) do
+  defp apply_action(%{assigns: %{current_user: _user}} = socket, :index, _params) do
     socket
     |> assign(:page_title, "Listing Memories")
     |> assign(:memory, nil)
@@ -102,93 +102,91 @@ defmodule PhosWeb.MemoryLive.Index do
 
   def handle_event("load-relations", _, socket), do: {:noreply, list_more_chats(socket)}
 
-  def handle_event("search", %{"usersearch" => usersearch}, %{assigns: %{current_user: user}} = socket) do
-
+  def handle_event(
+        "search",
+        %{"usersearch" => usersearch},
+        %{assigns: %{current_user: user}} = socket
+      ) do
     case search_memories(user, usersearch) do
       %{data: relation_memories, meta: %{pagination: %{cursor: cursor}} = meta} ->
         {:noreply,
-          socket
-          |> assign(relation_meta: meta)
-          |> assign(relation_cursor: cursor)
-          |> stream(:relation_memories, relation_memories, reset: true)
-        }
+         socket
+         |> assign(relation_meta: meta)
+         |> assign(relation_cursor: cursor)
+         |> stream(:relation_memories, relation_memories, reset: true)}
+
       %{meta: meta} ->
         {:noreply,
-          socket
-          |> assign(relation_meta: meta)
-          |> assign(relation_cursor: nil)
-          |> stream(:relation_memories, [], reset: true)
-        }
+         socket
+         |> assign(relation_meta: meta)
+         |> assign(relation_cursor: nil)
+         |> stream(:relation_memories, [], reset: true)}
     end
   end
 
   @impl true
 
   def handle_info(
-        {Phos.PubSub, {:memory, "formation"}, %{rel_subject_id: rel_id} = data},
+        {Phos.PubSub, {:memory, "formation"}, %{rel_subject_id: _rel_id} = data},
         %{assigns: %{current_user: user}} = socket
       ) do
     %{data: relation_memories, meta: _meta} = memories_by_user(user)
+
     {:noreply,
-    socket
-      |> assign(:memory, %Memory{})
-      |> stream(:message_memories, [data])
-      |> stream(:relation_memories, relation_memories, reset: true)
-    }
+     socket
+     |> assign(:memory, %Memory{})
+     |> stream(:message_memories, [data])
+     |> stream(:relation_memories, relation_memories, reset: true)}
   end
 
   defp list_more_mesage(
-          %{
+         %{
            assigns: %{
-              message_cursor: cursor,
-              current_user: user,
-              relation_id: rel_id,
-              message_meta: %{pagination: %{downstream: true}}
+             message_cursor: cursor,
+             current_user: user,
+             relation_id: rel_id,
+             message_meta: %{pagination: %{downstream: true}}
            }
          } = socket
        )
        when not is_nil(cursor) do
-
-
     time = DateTime.from_unix!(cursor, :second)
-    %{data: data, meta: %{pagination: %{cursor: new_cursor}} = metadata} = list_memories(user, rel_id, filter: time, limit: 12)
 
+    %{data: data, meta: %{pagination: %{cursor: new_cursor}} = metadata} =
+      list_memories(user, rel_id, filter: time, limit: 12)
 
     socket
     |> assign(message_cursor: new_cursor)
     |> assign(message_meta: metadata)
     |> stream(:message_memories, data, at: 0)
-
   end
 
   defp init_relations(%{assigns: %{current_user: user}} = socket) do
-      %{
-        data: relation_memories,
-        meta: %{pagination: %{cursor: cursor}} = metadata
-      }
-      = memories_by_user(user)
+    %{
+      data: relation_memories,
+      meta: %{pagination: %{cursor: cursor}} = metadata
+    } = memories_by_user(user)
 
-      socket
-      |> assign(
-        usersearch: "",
-        media: [],
-        relation_meta: metadata,
-        relation_cursor: cursor
-      )
-      |> stream(:relation_memories, relation_memories)
+    socket
+    |> assign(
+      usersearch: "",
+      media: [],
+      relation_meta: metadata,
+      relation_cursor: cursor
+    )
+    |> stream(:relation_memories, relation_memories)
   end
 
-  defp list_more_mesage(socket), do: socket
-
   defp list_more_chats(
-        %{assigns: %{
-          current_user: user,
-          relation_cursor: cursor,
-          relation_meta: %{pagination: %{downstream: true}}
-          }
-        } = socket
-      )
-      when not is_nil(cursor) do
+         %{
+           assigns: %{
+             current_user: user,
+             relation_cursor: cursor,
+             relation_meta: %{pagination: %{downstream: true}}
+           }
+         } = socket
+       )
+       when not is_nil(cursor) do
     %{
       data: relation_memories,
       meta: %{pagination: %{cursor: new_cursor}} = metadata
@@ -198,7 +196,6 @@ defmodule PhosWeb.MemoryLive.Index do
     |> stream(:relation_memories, relation_memories)
     |> assign(:relation_cursor, new_cursor)
     |> assign(:relation_meta, metadata)
-
   end
 
   defp list_more_chats(socket), do: socket
@@ -227,5 +224,4 @@ defmodule PhosWeb.MemoryLive.Index do
     |> Timex.format("{0D}-{0M}-{YYYY},{h12}:{m} {AM}")
     |> elem(1)
   end
-
 end

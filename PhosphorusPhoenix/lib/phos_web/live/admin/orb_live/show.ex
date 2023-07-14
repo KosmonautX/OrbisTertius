@@ -14,7 +14,8 @@ defmodule PhosWeb.Admin.OrbLive.Show do
 
     case Action.get_orb(id) do
       {:ok, orb} ->
-        {:ok, assign(socket, orb: orb, traits_form: orb.traits, changeset: Ecto.Changeset.change(orb))}
+        {:ok,
+         assign(socket, orb: orb, traits_form: orb.traits, changeset: Ecto.Changeset.change(orb))}
 
       _ ->
         raise PhosWeb.ErrorLive.FourOFour, message: "Orb Not Found Nomore"
@@ -126,6 +127,7 @@ defmodule PhosWeb.Admin.OrbLive.Show do
 
           HTTPoison.put(dest, {:file, compressed_image.path})
         end
+
         {:ok, path}
       end)
 
@@ -139,6 +141,7 @@ defmodule PhosWeb.Admin.OrbLive.Show do
     end
   end
 
-  defp error_to_string(:too_large), do: "Image too large"
+  defp error_to_string(:too_large), do: "Image too large choose another one"
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
+  defp error_to_string(:too_many_files), do: "You have selected too many files"
 end

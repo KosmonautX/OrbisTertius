@@ -11,7 +11,9 @@ defmodule PhosWeb.Components.ScrollAlly do
         phx-value-archetype="ally"
         class={[
           if(@meta.pagination.downstream, do: "pb-[calc(200vh)]"),
-          "w-full px-3 lg:px-2 overflow-y-auto journal-scroll lg:h-48 h-screen"]}>
+          "w-full px-3 lg:px-2 overflow-y-auto journal-scroll lg:h-48 h-screen"
+        ]}
+      >
         <.user_info_bar
           :for={{dom_id, ally} <- @data}
           :if={!is_nil(Map.get(ally, :username))}
@@ -22,15 +24,15 @@ defmodule PhosWeb.Components.ScrollAlly do
           profile_border={false}
           orb_color={false}
           color={true}
-          class="dark:bg-gray-900 lg:bg-[#F9F9F9] bg-white lg:px-0">
+          class="dark:bg-gray-900 lg:bg-[#F9F9F9] bg-white lg:px-0"
+        >
           <:information>
             <span class="text-gray-900 dark:text-[#D1D1D1] truncate w-52 md:max-w-md lg:max-w-xl">
               <%= ally
               |> get_in([
                 Access.key(:public_profile, %{}),
                 Access.key(:bio, "Community Member")
-              ])
-              %>
+              ]) %>
             </span>
           </:information>
           <:actions>
