@@ -71,7 +71,8 @@ config :phos, Phos.OAuthStrategy,
     http_adapter: Assent.HTTPAdapter.Mint
   ],
   telegram: [
-    host: {System, :get_env, ["TELEGRAM_REDIRECT_HOST"]}, #"5fba-220-255-157-189.ngrok-free.app/telegram_signup"
+    # https://endpoint.com
+    host: {System, :get_env, ["TELEGRAM_REDIRECT_HOST"]}, #"5fba-220-255-157-189.ngrok-free.app/telegram_signup",
     bot_id: {System, :get_env, ["TELEGRAM_BOT_ID"]}
   ]
 
@@ -116,15 +117,6 @@ config :phos, Phos.TeleBot,
   callback_url: {PhosWeb.Router.Helpers, :telegram_url, [PhosWeb.Endpoint, :create]}, #"//5fba-220-255-157-189.ngrok-free.app/bot/telegram_signup",
   bot_username: {System, :get_env, ["TELEGRAM_BOT_NAME"]},
   bot_token: {System, :get_env, ["TELEGRAM_BOT_ID"]}
-
-config :ex_gram, :webhook,
-# allowed_updates: ["message", "poll"],       # array of strings
-# certificate: "priv/cert/selfsigned.pem",    # string (file path)
-drop_pending_updates: true,                # boolean
-# ip_address: "1.1.1.1",                      # string
-# max_connections: 50,                        # integer
-# secret_token: "some_super_secret_key",      # string
-  url: {System, :get_env, ["TELEGRAM_CALLBACK_URL"]}  # string (only domain name)
 
 config :phos, Phos.External.Notion,
   token: {System, :get_env, "NOTION_TOKEN"},

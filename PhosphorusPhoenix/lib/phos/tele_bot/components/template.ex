@@ -132,6 +132,7 @@ defmodule Phos.TeleBot.Components.Template do
     📋 <b>What's happening today?</b>
     <%= @inner_title %>
     <%!-- 💚 <b>Info:</b> <%= @info %> --%>
+
     <i>(You can edit your post by pressing ↩️ Back)</i>
     """
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()

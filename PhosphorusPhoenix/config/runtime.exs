@@ -92,11 +92,19 @@ unless config_env() == :prod do
   password: System.get_env("ADMIN_TUNNEL"),
   algorithm: :sha256
 
-
   # Telegram Bot
   config :ex_gram,
   token: System.get_env("TELEGRAM_BOT_ID"),
   json_engine: Jason
+
+  config :ex_gram, :webhook,
+# allowed_updates: ["message", "poll"],       # array of strings
+# certificate: "priv/cert/selfsigned.pem",    # string (file path)
+  drop_pending_updates: true,                # boolean
+# ip_address: "1.1.1.1",                      # string
+# max_connections: 50,                        # integer
+# secret_token: "some_super_secret_key",      # string
+  url: System.get_env("TELEGRAM_WEBHOOK_URI") #{S
 
 end
 

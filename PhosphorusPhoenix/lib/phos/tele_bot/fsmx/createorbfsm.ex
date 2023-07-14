@@ -9,8 +9,7 @@ defmodule Phos.TeleBot.CreateOrbFSM do
     "createorb_location" => ["createorb_description", "createorb_current_location", "createorb_media"],
     "createorb_current_location" => "createorb_media",
     "createorb_media" => ["createorb_location", "createorb_preview"],
-    "createorb_preview" => "createorb_media",
-    "*" => ["home"]
+    "createorb_preview" => "createorb_media"
   }
 
   # /post -> createorb_description <-> createorb_location <-> createorb_media <-> createorb_preview

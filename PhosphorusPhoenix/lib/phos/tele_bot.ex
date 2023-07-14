@@ -26,10 +26,6 @@ defmodule Phos.TeleBot do
 
   def bot(), do: @bot
 
-  # ====================
-  # GENERIC MESSAGES
-  # ====================
-
   def handle({:message, :start, payload}) do
     telegram_id = payload |> get_in(["from", "id"])
     StateManager.delete_state(telegram_id)
@@ -253,7 +249,6 @@ defmodule Phos.TeleBot do
     telegram_id = payload |> get_in(["message", "chat", "id"])
     {:ok, user} = get_user_by_telegram(telegram_id)
     user_state = StateManager.get_state(telegram_id)
-
     # Check if user already set his username
     profilefsm = %Phos.TeleBot.ProfileFSM{state: "complete_profile_to_post"}
     StateManager.set_state(telegram_id, profilefsm)
@@ -267,7 +262,6 @@ defmodule Phos.TeleBot do
   def handle({:callback_query, %{"data" => "edit_profile_locationtype_" <> type } = payload}) when type in ["home", "work", "live"] do
     telegram_id = payload |> get_in(["message", "chat", "id"])
     text = "Please type your postal code or send your location for #{type} location."
-
     locationfsm = %Phos.TeleBot.LocationFSM{state: "set_location", data: %{location_type: type}}
     StateManager.set_state(telegram_id, locationfsm)
     ExGram.send_message(telegram_id, text, reply_markup: Button.build_current_location_button())
@@ -287,15 +281,6 @@ defmodule Phos.TeleBot do
         UserProfile.edit_user_profile_location(telegram_id, message_id)
       "picture" <> message_id ->
         UserProfile.edit_user_profile_picture(telegram_id, message_id)
-    end
-  end
-
-  def handle({:callback_query, %{"data" => "help_" <> type} = payload}) do
-    telegram_id = payload |> get_in(["message", "chat", "id"])
-    case type do
-      "guidelines" -> ExGram.send_message(telegram_id, "Here's some details about our guidelines.")
-      "about" -> ExGram.send_message(telegram_id, "Here's some details about us.")
-      "feedback" -> ExGram.send_message(telegram_id, "You can provide your feedback to our admins directly at @Scratchbac_Admin")
     end
   end
 
@@ -321,7 +306,6 @@ defmodule Phos.TeleBot do
       case Enum.find(user.private_profile.geolocation, fn loc -> loc.id == type end) do
         nil -> ExGram.send_message(telegram_id, Template.update_location_text_builder(%{location_type: type}),
           parse_mode: "HTML", reply_markup: Button.build_location_specific_button(type))
-        # ExGram.send_message(telegram_id, "Please set your #{type} location first.")
         %{geohash: geohash} ->
           %{data: orbs} = Phos.Action.orbs_by_geohashes({[:h3.parent(geohash, 8)], user.id}, 1)
           build_inlinequery_orbs(orbs)
@@ -339,21 +323,17 @@ defmodule Phos.TeleBot do
   def handle({:location, %{"location" => %{"latitude" => lat, "longitude" => lon}} = payload}) do
     telegram_id = payload |> get_in(["chat", "id"])
     user_state = StateManager.get_state(telegram_id)
-    if user_state do
-      case user_state.state do
-        "set_location" ->
-          update_user_location(telegram_id, {lat, lon}, desc = Phos.Mainland.World.locate(:h3.from_geo({lat, lon}, 11)))
-        "createorb_current_location" ->
-          {:ok, user} = get_user_by_telegram(telegram_id)
-          {_prev, user_state} = get_and_update_in(user_state.data.geolocation.central_geohash, &{&1, :h3.from_geo({lat, lon}, 10)} )
-          {_prev, user_state} = get_and_update_in(user_state.data.location_type, &{&1, :live} )
-          StateManager.set_state(telegram_id, user_state)
-          CreateOrbPath.create_orb_path_transition(user, :current_location)
-          # ExGram.send_message(telegram_id, Template.orb_creation_preview_builder(user_state.data),
-          #   parse_mode: "HTML", reply_markup: Button.build_orb_create_keyboard_button())
-        _ ->
-          ExGram.send_message(telegram_id, "Your location not set.")
-      end
+    case user_state do
+      %{state: "set_location"} ->
+        update_user_location(telegram_id, {lat, lon}, desc = Phos.Mainland.World.locate(:h3.from_geo({lat, lon}, 11)))
+      %{state: "createorb_current_location"} ->
+        {:ok, user} = get_user_by_telegram(telegram_id)
+        {_prev, user_state} = get_and_update_in(user_state.data.geolocation.central_geohash, &{&1, :h3.from_geo({lat, lon}, 10)} )
+        {_prev, user_state} = get_and_update_in(user_state.data.location_type, &{&1, :live} )
+        StateManager.set_state(telegram_id, user_state)
+        CreateOrbPath.create_orb_path_transition(user, :current_location)
+      _ ->
+        ExGram.send_message(telegram_id, "Your location not set.")
     end
   end
 
@@ -413,6 +393,13 @@ defmodule Phos.TeleBot do
     end
   end
 
+  defp start_menu_text(telegram_id, message_id) do
+    {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id,
+      Template.start_menu_text_builder(%{}), parse_mode: "HTML")
+    ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id,
+      reply_markup: Button.build_start_inlinekeyboard(message_id))
+  end
+
   defp main_menu(telegram_id), do: main_menu(telegram_id, nil)
   defp main_menu(telegram_id, message_id) do
     start_main_menu_check_and_register(telegram_id)
@@ -422,6 +409,18 @@ defmodule Phos.TeleBot do
       _ ->
         onboard_text(telegram_id)
     end
+  end
+
+  defp main_menu_text(telegram_id), do: main_menu_text(telegram_id, nil)
+  defp main_menu_text(telegram_id, ""), do: main_menu_text(telegram_id, nil)
+  defp main_menu_text(telegram_id, nil) do
+    {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id,
+      Template.main_menu_text_builder(%{}), parse_mode: "HTML")
+    ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id, reply_markup: Button.build_menu_inlinekeyboard(message_id))
+  end
+  defp main_menu_text(telegram_id, message_id) do
+    ExGram.edit_message_text(Template.main_menu_text_builder(%{}), chat_id: telegram_id, message_id: message_id |> String.to_integer(),
+      parse_mode: "HTML", reply_markup: Button.build_menu_inlinekeyboard(message_id))
   end
 
   defp faq(telegram_id), do: faq(telegram_id, nil)
@@ -448,25 +447,6 @@ defmodule Phos.TeleBot do
   defp feedback(telegram_id, message_id) do
     ExGram.edit_message_text(Template.feedback_text_builder(%{}), chat_id: telegram_id, message_id: message_id |> String.to_integer(),
       reply_markup: Button.build_main_menu_inlinekeyboard(message_id))
-  end
-
-  defp start_menu_text(telegram_id, message_id) do
-    {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id,
-      Template.start_menu_text_builder(%{}), parse_mode: "HTML")
-    ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id,
-      reply_markup: Button.build_start_inlinekeyboard(message_id))
-  end
-
-  defp main_menu_text(telegram_id), do: main_menu_text(telegram_id, nil)
-  defp main_menu_text(telegram_id, ""), do: main_menu_text(telegram_id, nil)
-  defp main_menu_text(telegram_id, nil) do
-    {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id,
-      Template.main_menu_text_builder(%{}), parse_mode: "HTML")
-    ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id, reply_markup: Button.build_menu_inlinekeyboard(message_id))
-  end
-  defp main_menu_text(telegram_id, message_id) do
-    ExGram.edit_message_text(Template.main_menu_text_builder(%{}), chat_id: telegram_id, message_id: message_id |> String.to_integer(),
-      parse_mode: "HTML", reply_markup: Button.build_menu_inlinekeyboard(message_id))
   end
 
   defp onboard_text(telegram_id) do
