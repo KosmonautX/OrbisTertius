@@ -1,20 +1,6 @@
 defmodule Phos.TeleBot.Components.Button do
   alias Phos.TeleBot.Components.Template
 
-  def build_registration_button() do
-    %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [[
-      %ExGram.Model.InlineKeyboardButton{
-        text: "Register to ScratchBac",
-        login_url: %ExGram.Model.LoginUrl{
-          url: Config.get(:callback_url),
-          forward_text: "Sample text",
-          bot_username: Config.get(:bot_username),
-          request_write_access: true
-        },
-      }
-    ]]}
-  end
-
   def build_onboarding_register_button() do
     %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [[
       %ExGram.Model.InlineKeyboardButton{

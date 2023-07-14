@@ -1,28 +1,6 @@
 defmodule PhosWeb.TelegramController do
   use PhosWeb, :controller
 
-  # DEPRECATED. Use create_user
-  # def create(conn, %{"hash" => hash, "id" => id} = params) do
-  #   case valid_hash?(hash, Map.drop(params, ["hash"])) do
-  #     true -> create_user(params)
-  #       _ -> ExGram.send_message(id, "Error occured when receiving a callback", reply_markup: Phos.TeleBot.build_registration_button())
-  #   end
-  #   IO.inspect(params, pretty: true)
-  #   render(conn, :home, %{success: true, telegram: Phos.OAuthStrategy.telegram()})
-  # end
-
-  # defp valid_hash?(challanger, params) do
-  #   secret = :crypto.hash(:sha256, ExGram.Token.fetch())
-  #   data =
-  #     Enum.map(params, fn {k, v} -> k <> "=" <> v end)
-  #     |> Enum.join("\n")
-
-  #   :crypto.mac(:hmac, :sha256, secret, data)
-  #   |> Base.encode16()
-  #   |> String.downcase()
-  #   |> String.equivalent?(challanger)
-  # end
-
   def webhook(conn, _params) do
     case parse_update(conn.body_params) do
       {:ok, update} ->

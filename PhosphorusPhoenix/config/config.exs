@@ -115,7 +115,6 @@ config :fcmex,
 
 config :phos, Phos.TeleBot,
   callback_url: {PhosWeb.Router.Helpers, :telegram_url, [PhosWeb.Endpoint, :create]}, #"//5fba-220-255-157-189.ngrok-free.app/bot/telegram_signup",
-  bot_username: {System, :get_env, ["TELEGRAM_BOT_NAME"]},
   bot_token: {System, :get_env, ["TELEGRAM_BOT_ID"]}
 
 config :phos, Phos.External.Notion,
