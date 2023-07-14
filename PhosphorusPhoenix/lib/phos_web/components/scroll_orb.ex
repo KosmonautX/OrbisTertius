@@ -8,7 +8,7 @@ defmodule PhosWeb.Components.ScrollOrb do
       <div
         id={@id <> "infinite-scroll-body"}
         phx-update="stream"
-        phx-viewport-bottom={@meta.pagination.downstream && "load-more"}
+        phx-viewport-bottom={@meta.pagination.downstream && "load-orbs"}
         phx-value-archetype="orb"
         class={[
           if(@meta.pagination.downstream, do: "pb-[calc(200vh)]"),

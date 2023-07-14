@@ -59,7 +59,6 @@
 }
 
 .phx-loading {
-.phx-loading {
   cursor: wait;
 }
 
@@ -145,7 +144,7 @@
   margin-top: -3px;
 }
 
-.accordion-content {
+/* .accordion-content {
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease-out;
@@ -153,8 +152,8 @@
 
 .accordion-item:checked ~ .accordion-content {
   max-height: 1000px; /* Adjust this value based on your content height */
-  transition: max-height 0.3s ease-in;
-}
+  /* transition: max-height 0.3s ease-in;
+} */ 
 
 .closed-icon {
   display: block;
@@ -164,13 +163,13 @@
   display: none;
 }
 
-.accordion-item:checked ~ .label .closed-icon {
+/* .accordion-item:checked ~ .label .closed-icon {
   display: none;
 }
 
 .accordion-item:checked ~ .label .open-icon {
   display: block;
-}
+} */
 
 .modal-toggle {
   display: none;

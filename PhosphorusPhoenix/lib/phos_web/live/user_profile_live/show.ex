@@ -38,23 +38,36 @@ defmodule PhosWeb.UserProfileLive.Show do
   @impl true
 
   def handle_event(
-        "load-more",
+        "load-orbs",
         _,
-        %{assigns: %{ally_list: allies_meta, orbs: orbs_meta, current_user: curr, user: user}} =
+        %{assigns: %{orbs: orbs_meta, current_user: curr, user: user}} =
           socket
       ) do
-    expected_ally_page = allies_meta.pagination.current + 1
     expected_orb_page = orbs_meta.pagination.current + 1
 
-    newsocket =
-      with orbs <- ScrollOrb.check_more_orb(user.id, expected_orb_page),
-           allies <- ScrollAlly.check_more_ally(curr, user.id, expected_ally_page, 24) do
-        load_more_streams(socket, %{orbs: %{data: orbs.data, meta: orbs.meta}}, %{
-          allies: %{data: allies.data, meta: allies.meta}
-        })
-      end
+    %{data: data, meta: meta} = ScrollOrb.check_more_orb(user.id, expected_orb_page)
 
-    {:noreply, newsocket}
+    {:noreply,
+      socket
+      |> stream(:orbs, data)
+      |> assign(:orbs, meta)
+    }
+  end
+
+  def handle_event(
+    "load-relations",
+    _,
+    %{assigns: %{ally_list: allies_meta, current_user: curr, user: user}} = socket
+  ) do
+    expected_ally_page = allies_meta.pagination.current + 1
+
+    %{data: data, meta: meta} = ScrollAlly.check_more_ally(curr, user.id, expected_ally_page, 24)
+
+    {:noreply,
+      socket
+      |> stream(:ally_list, data)
+      |> assign(:ally_list, meta)
+    }
   end
 
   def handle_event("show_ally", %{"ally" => ally_id}, socket) do

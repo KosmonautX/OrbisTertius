@@ -42,7 +42,7 @@ defmodule PhosWeb.UserProfileLive.Index do
     @impl true
 
     def handle_event(
-          "load-more",
+          "load-orbs",
           _,
           %{assigns: %{ally_list: allies_meta, orbs: orbs_meta, current_user: curr, user: user}} =
             socket
@@ -59,6 +59,22 @@ defmodule PhosWeb.UserProfileLive.Index do
         end
 
       {:noreply, newsocket}
+    end
+
+    def handle_event(
+      "load-relations",
+      _,
+      %{assigns: %{ally_list: allies_meta, current_user: curr, user: user}} = socket
+    ) do
+      expected_ally_page = allies_meta.pagination.current + 1
+
+      %{data: data, meta: meta} = ScrollAlly.check_more_ally(curr, user.id, expected_ally_page, 24)
+
+      {:noreply,
+        socket
+        |> stream(:ally_list, data)
+        |> assign(:ally_list, meta)
+      }
     end
 
     def handle_event("show_ally", %{"ally" => ally_id}, socket) do

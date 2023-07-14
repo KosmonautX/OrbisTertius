@@ -7,10 +7,10 @@ defmodule PhosWeb.Components.ScrollAlly do
       <div
         id={@id <> "infinite-scroll-body"}
         phx-update="stream"
-        phx-viewport-bottom={@meta.pagination.downstream && "load-more"}
         phx-value-archetype="ally"
+        phx-hook="ScrollBottom"
         class={[
-          if(@meta.pagination.downstream, do: "pb-[calc(200vh)]"),
+          if(@meta.pagination.downstream, do: "pb-[calc(10vh)]"),
           "w-full px-3 lg:px-2 overflow-y-auto journal-scroll lg:h-48 h-screen"]}>
         <.user_info_bar
           :for={{dom_id, ally} <- @data}
