@@ -1,8 +1,8 @@
-defmodule Phos.TelegramNotification.Pusher do
+defmodule Phos.TeleBot.TelegramNotification.Pusher do
   use GenStage, restart: :permanent
 
-  alias Phos.TelegramNotification, as: TN
-  alias Phos.Telebot
+  alias Phos.TeleBot.TelegramNotification, as: TN
+  alias Phos.TeleBot.Core, as: BotCore
 
   def start_link(_ok) do
     GenStage.start_link(__MODULE__, :ok)
@@ -15,7 +15,7 @@ defmodule Phos.TelegramNotification.Pusher do
   end
 
   def handle_events(events, from, producers) do
-    Phos.TeleBot.dispatch_messages(events)
+    BotCore.dispatch_messages(events)
 
     {:noreply, [], producers}
   end

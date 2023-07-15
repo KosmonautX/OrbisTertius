@@ -1,5 +1,5 @@
-defmodule Phos.TeleBot.UserProfile do
-  alias Phos.TeleBot
+defmodule Phos.TeleBot.Core.UserProfile do
+  alias Phos.TeleBot.Core, as: BotCore
   alias Phos.TeleBot.StateManager
   alias Phos.TeleBot.Components.{Template, Button}
 
@@ -31,12 +31,12 @@ defmodule Phos.TeleBot.UserProfile do
 
   def edit_user_profile_location(telegram_id, ""), do: edit_user_profile_location(telegram_id, nil)
   def edit_user_profile_location(telegram_id, nil) do
-    {:ok, user} = TeleBot.get_user_by_telegram(telegram_id)
+    {:ok, user} = BotCore.get_user_by_telegram(telegram_id)
     ExGram.send_message(telegram_id, "You can set up your home, work and live location\n\nJust send your pinned location or live location after hitting the button",
           parse_mode: "HTML", reply_markup: Button.build_location_button(user))
   end
   def edit_user_profile_location(telegram_id, message_id) do
-    {:ok, user} = TeleBot.get_user_by_telegram(telegram_id)
+    {:ok, user} = BotCore.get_user_by_telegram(telegram_id)
     ExGram.edit_message_text("You can set up your home, work and live location\n\nJust send your pinned location or live location after hitting the button",
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), parse_mode: "HTML", reply_markup: Button.build_location_button(user, message_id))
   end
@@ -65,12 +65,5 @@ defmodule Phos.TeleBot.UserProfile do
   def open_user_profile(%{integrations: %{telegram_chat_id: telegram_id}} = user, message_id) do
     ExGram.edit_message_text(Template.profile_text_builder(user), chat_id: telegram_id, message_id: message_id |> String.to_integer(),
       parse_mode: "HTML", reply_markup: Button.build_settings_button(message_id))
-  end
-
-  def open_latest_posts(user), do: open_latest_posts(user, nil)
-  def open_latest_posts(user, ""), do: open_latest_posts(user, nil)
-  def open_latest_posts(%{integrations: %{telegram_chat_id: telegram_id}} = user, nil) do
-    ExGram.send_message(telegram_id, Template.latest_posts_text_builder(user),
-      parse_mode: "HTML", reply_markup: Button.build_latest_posts_inline_button())
   end
 end

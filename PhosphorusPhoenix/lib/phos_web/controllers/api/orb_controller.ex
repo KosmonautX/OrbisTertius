@@ -7,7 +7,7 @@ defmodule PhosWeb.API.OrbController do
 
   alias Phos.Action
   alias Phos.Action.Orb
-  alias Phos.TelegramNotification, as: TN
+  alias Phos.TeleBot.TelegramNotification, as: TN
 
   action_fallback PhosWeb.API.FallbackController
 
@@ -38,7 +38,6 @@ defmodule PhosWeb.API.OrbController do
     with {:ok, attrs} <- orb_constructor(user, params),
          {:ok, media} <- Phos.Orbject.Structure.apply_media_changeset(%{id: attrs["id"], archetype: "ORB", media: media}),
          {:ok, %Orb{} = orb} <- Action.create_orb(%{attrs | "media" => true}) do
-          TN.Collector.add(orb)
       conn
       |> put_status(:created)
       |> put_resp_header("location", ~p"/api/orbland/orbs/#{orb.id}")
@@ -52,7 +51,6 @@ defmodule PhosWeb.API.OrbController do
 
     with {:ok, attrs} <- orb_constructor(user, params),
          {:ok, %Orb{} = orb} <- Action.create_orb(attrs) do
-          TN.Collector.add(orb)
       conn
       |> put_status(:created)
       |> put_resp_header("location", ~p"/api/orbland/orbs/#{orb.id}")

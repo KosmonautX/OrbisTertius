@@ -2,7 +2,6 @@ defmodule PhosWeb.UserConfirmationLive do
   use PhosWeb, :live_view
 
   alias Phos.Users
-  alias Phos.TeleBot
 
   def render(%{live_action: :edit} = assigns) do
     ~H"""

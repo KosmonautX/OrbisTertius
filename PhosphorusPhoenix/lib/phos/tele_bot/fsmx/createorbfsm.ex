@@ -2,6 +2,7 @@ defmodule Phos.TeleBot.CreateOrbFSM do
   defstruct [:telegram_id, :state, :data]
   alias Phos.TeleBot.{StateManager, CreateOrbPath}
   alias Phos.TeleBot.Components.{Template, Button}
+  alias Phos.TeleBot.Core, as: BotCore
 
   use Fsmx.Struct, transitions: %{
     "home" => "createorb_description",
@@ -39,7 +40,7 @@ defmodule Phos.TeleBot.CreateOrbFSM do
   end
 
   defp createorb_print_location_text(struct) do
-    {:ok, user} = Phos.TeleBot.get_user_by_telegram(struct.telegram_id)
+    {:ok, user} = BotCore.get_user_by_telegram(struct.telegram_id)
     ExGram.send_message(struct.telegram_id, "Great! Where should we post to?", parse_mode: "HTML",
       reply_markup: Button.build_createorb_location_inlinekeyboard(user))
     {:ok, struct}
@@ -57,7 +58,7 @@ defmodule Phos.TeleBot.CreateOrbFSM do
   end
 
   defp createorb_print_preview_text(struct) do
-    {:ok, user} = Phos.TeleBot.get_user_by_telegram(struct.telegram_id)
+    {:ok, user} = BotCore.get_user_by_telegram(struct.telegram_id)
     user_state = StateManager.get_state(struct.telegram_id)
 
     if Enum.empty?(user_state.data.media) do

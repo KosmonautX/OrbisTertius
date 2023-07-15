@@ -350,26 +350,22 @@ defmodule Phos.Users do
     end
   end
 
+  def get_telegram_chat_ids_by_orb(%Phos.Action.Orb{central_geohash: nil}), do: nil
   def get_telegram_chat_ids_by_orb(orb) do
     orb = orb |> Repo.preload([:initiator])
-    # tele_sender_id = orb.initiator.integrations.telegram_chat_id
-
+    dbg
     telegram_chat_ids =
-      Enum.map([8,9,10], &(:h3.parent(orb.central_geohash, &1)))
+      :h3.parent(orb.central_geohash, 8)
+      |> List.wrap()
       |> Phos.Action.telegram_chat_id_by_geohashes()
       |> Enum.reduce([], fn notifier, acc ->
-        case notifier.telegram_chat_id do
+        case notifier do
           nil -> acc
-          chat_id ->
+          %{telegram_chat_id: chat_id} ->
             [%{orb: orb, chat_id: chat_id} | acc]
+          # _ -> acc
         end
       end)
-
-    # DO WE NEED TO SEND THE SENDER A NOTIFICATION?
-    # Map.new()
-    # |> Map.put(:orb, orb)
-    # |> Map.put(:telegram_chat_ids, telegram_chat_ids)
-    # |> Map.put(:telegram_chat_ids, List.delete(telegram_chat_ids, tele_sender_id)) # remove sender from list
   end
 
   alias Phos.Users.{User, UserToken, UserNotifier}
@@ -738,7 +734,7 @@ defmodule Phos.Users do
          {:ok, %{user: user}} <- Repo.transaction(confirm_user_multi(user)) do
       {:ok, user}
     else
-      {:error, error} -> IO.inspect(error)
+      _ -> :error
     end
   end
 

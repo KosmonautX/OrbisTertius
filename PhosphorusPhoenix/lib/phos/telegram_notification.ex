@@ -1,12 +1,5 @@
-defmodule Phos.TelegramNotification do
+defmodule Phos.TeleBot.TelegramNotification do
   use Supervisor
-
-  @type notification_type :: :email | :push
-  @type entity :: String.t()
-  @type entity_id :: String.t() | integer()
-  @type message_type :: integer()
-
-  @type t :: {notification_type(), entity(), entity_id(), message_type()}
 
   alias __MODULE__.{Collector, Dispatcher, Pusher}
 

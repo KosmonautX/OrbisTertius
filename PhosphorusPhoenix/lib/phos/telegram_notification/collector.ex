@@ -1,10 +1,10 @@
-defmodule Phos.TelegramNotification.Collector do
+defmodule Phos.TeleBot.TelegramNotification.Collector do
   use GenStage
 
   @moduledoc """
 
   """
-  alias Phos.TelegramNotification, as: TN
+  alias Phos.TeleBot.TelegramNotification, as: TN
 
   def start_link(_number) do
     GenStage.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -18,7 +18,7 @@ defmodule Phos.TelegramNotification.Collector do
     events =
       Phos.Users.get_telegram_chat_ids_by_orb(orb) # List of %{orb: %Phos.Action.Orb{}}, chat_ids: "1234"}
 
-    GenStage.call(__MODULE__, {:notify, events}, timeout)
+    unless is_nil(events), do: GenStage.call(__MODULE__, {:notify, events}, timeout)
   end
 
   def handle_call({:notify, event}, from, queue) do

@@ -113,7 +113,7 @@ config :phos, Phos.Cache,
 config :fcmex,
   json_library: Jason
 
-config :phos, Phos.TeleBot,
+config :phos, Phos.TeleBot.Core,
   callback_url: {PhosWeb.Router.Helpers, :telegram_url, [PhosWeb.Endpoint, :create]}, #"//5fba-220-255-157-189.ngrok-free.app/bot/telegram_signup",
   bot_token: {System, :get_env, ["TELEGRAM_BOT_ID"]}
 
@@ -128,7 +128,7 @@ config :phos, Phos.PlatformNotification,
   min_demand: 5,
   max_demand: 8
 
-config :phos, Phos.TelegramNotification,
+config :phos, Phos.TeleBot.TelegramNotification,
   worker: 8,
   time_interval: 3,
   min_demand: 2,

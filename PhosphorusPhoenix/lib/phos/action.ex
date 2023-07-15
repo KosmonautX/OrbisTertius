@@ -7,7 +7,7 @@ defmodule Phos.Action do
 
   alias Phos.Repo
   alias Phos.Action.{Orb, Orb_Location}
-  alias Phos.TelegramNotification, as: TN
+  alias Phos.TeleBot.TelegramNotification, as: TN
 
   @doc """
   Returns the list of orbs.
@@ -212,7 +212,7 @@ defmodule Phos.Action do
       as: :l,
       where: l.location_id in ^hashes,
       left_join: orbs in assoc(l, :orbs),
-      # on: orbs.userbound == true,
+      on: orbs.userbound == true,
       inner_join: initiator in assoc(orbs, :initiator),
       distinct: initiator.integrations["telegram_chat_id"],
       select: initiator.integrations)
@@ -356,16 +356,18 @@ defmodule Phos.Action do
   #   """
 
   def create_orb(attrs \\ %{}) do
-    IO.inspect(attrs)
     %Orb{}
     |> Orb.changeset(attrs)
     |> Repo.insert()
     |> case do
          {:ok, orb} = data ->
-           orb = orb |> Repo.preload([:initiator])
-           Task.start(fn ->
-             experimental_notify(orb)
-           end)
+            orb = orb |> Repo.preload([:initiator])
+            Task.start(fn ->
+              experimental_notify(orb)
+            end)
+            Task.start(fn ->
+              TN.Collector.add(orb)
+            end)
            #spawn(fn -> user_feeds_publisher(orb) end)
            data
          err ->
@@ -416,7 +418,6 @@ defmodule Phos.Action do
       {:ok, orb} ->
         orb = orb |> Repo.preload([:locations])
         orb_loc_publisher(orb, :genesis, orb.locations)
-        IO.inspect("Creating Orb...")
         {:ok, orb}
 
       {:error, %Ecto.Changeset{} = changeset} ->

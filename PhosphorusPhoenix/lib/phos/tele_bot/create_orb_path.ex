@@ -2,7 +2,11 @@ defmodule Phos.TeleBot.CreateOrbPath do
   alias Phos.TeleBot.{Config, StateManager}
   alias Phos.TeleBot.Components.{Button, Template}
 
-  alias Phos.TelegramNotification, as: TN
+  alias Phos.TeleBot.TelegramNotification, as: TN
+
+  def create_orb_path(%{integrations: %{telegram_chat_id: nil}} = user, _), do: IO.inspect("User does not have telegram_id..")
+  def create_orb_path_transition(%{integrations: %{telegram_chat_id: nil}} = user, _), do: IO.inspect("User does not have telegram_id..")
+  def create_orb_path_transition(%{integrations: %{telegram_chat_id: nil}} = user, _, _), do: IO.inspect("User does not have telegram_id..")
 
   def create_orb_path(%{integrations: %{telegram_chat_id: telegram_id}} = user, :description) do
     user_state = StateManager.get_state(telegram_id)
@@ -160,26 +164,32 @@ defmodule Phos.TeleBot.CreateOrbPath do
 
   def create_orb_path(%{integrations: %{telegram_chat_id: telegram_id}} = user, :post) do
     user_state = StateManager.get_state(telegram_id)
-    params = %{
-      "id" => Ecto.UUID.generate(),
-      "expires_in" => "10000",
-      "title" => user_state.data.inner_title |> String.slice(0, 50),
-      "media" => user_state.data.media,
-      "inner_title" => user_state.data.inner_title,
-      "active" => true,
-      "source" => :tele,
-      "geolocation" => %{"central_geohash" => user_state.data.geolocation.central_geohash}
-    }
+    IO.inspect(user_state)
+    case user_state do
+      %{data: %{inner_title: inner_title, media: media, geolocation: %{central_geohash: central_geohash}}} ->
+        params = %{
+          "id" => Ecto.UUID.generate(),
+          "expires_in" => "10000",
+          "title" => inner_title |> String.slice(0, 50),
+          "media" => media,
+          "inner_title" => inner_title,
+          "active" => true,
+          "source" => :tele,
+          "geolocation" => %{"central_geohash" => central_geohash}
+        }
 
-    with {:ok, attrs} <- PhosWeb.API.OrbController.orb_constructor(user, params),
-        {:ok, %Phos.Action.Orb{} = orb} <- Phos.Action.create_orb(%{attrs | "media" => not Enum.empty?(user_state.data.media)}) do
-            TN.Collector.add(orb)
-            ExGram.send_message(telegram_id, "Creating post..")
-            StateManager.delete_state(telegram_id)
-        else
-          err ->
-            IO.inspect(err)
-            ExGram.send_message(telegram_id, "Please ensure you have filled in all the required fields.")
+        with {:ok, attrs} <- PhosWeb.API.OrbController.orb_constructor(user, params),
+            {:ok, %Phos.Action.Orb{} = orb} <- Phos.Action.create_orb(%{attrs | "media" => not Enum.empty?(user_state.data.media)}) do
+                TN.Collector.add(orb)
+                ExGram.send_message(telegram_id, "Creating post..")
+                StateManager.delete_state(telegram_id)
+            else
+              err ->
+                IO.inspect(err)
+                ExGram.send_message(telegram_id, "Please ensure you have filled in all the required fields.")
+        end
+      _ ->
+        ExGram.send_message(telegram_id, "Something went wrong. Please run /start again.")
     end
   end
 end

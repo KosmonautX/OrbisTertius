@@ -1,8 +1,8 @@
-defmodule Phos.TelegramNotification.Dispatcher do
+defmodule Phos.TeleBot.TelegramNotification.Dispatcher do
   use GenStage, restart: :permanent
 
-  alias Phos.TelegramNotification, as: TN
-  alias Phos.Telebot
+  alias Phos.TeleBot.TelegramNotification, as: TN
+  alias Phos.Telebot.Core, as: BotCore
 
   def start_link(_ok) do
     GenStage.start_link(__MODULE__, :ok, name: __MODULE__)

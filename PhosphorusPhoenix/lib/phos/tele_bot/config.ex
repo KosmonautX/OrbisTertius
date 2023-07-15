@@ -1,10 +1,10 @@
 defmodule Phos.TeleBot.Config do
   def load() do
-    Registry.put_meta(Registry.ExGram, {Phos.TeleBot, :config}, config())
+    Registry.put_meta(Registry.ExGram, {Phos.TeleBot.Core, :config}, config())
   end
 
   def get(key, default \\ "") do
-    case Registry.meta(Registry.ExGram, {Phos.TeleBot, :config}) do
+    case Registry.meta(Registry.ExGram, {Phos.TeleBot.Core, :config}) do
       {:ok, config} -> Keyword.get(config, key, default) |> eval()
       _ -> default
     end
@@ -23,6 +23,6 @@ defmodule Phos.TeleBot.Config do
   defp ensure_https(data, _key), do: data
 
   defp config() do
-    Application.get_env(:phos, Phos.TeleBot, [])
+    Application.get_env(:phos, Phos.TeleBot.Core, [])
   end
 end

@@ -1,5 +1,6 @@
 defmodule PhosWeb.TelegramController do
   use PhosWeb, :controller
+  alias Phos.TeleBot.Core, as: BotCore
 
   def webhook(conn, _params) do
     case parse_update(conn.body_params) do
@@ -8,7 +9,7 @@ defmodule PhosWeb.TelegramController do
           #   update: update
           # }
           # |> Map.put(:fsm, %Phos.TeleBot{state: "home", data: nil})
-        Phos.TeleBot.handle(update)
+        BotCore.handle(update)
         send_resp(conn, 200, "OK")
       {:error, reason} ->
         send_response(reason, conn, 400)
