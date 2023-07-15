@@ -353,7 +353,6 @@ defmodule Phos.Users do
   def get_telegram_chat_ids_by_orb(%Phos.Action.Orb{central_geohash: nil}), do: nil
   def get_telegram_chat_ids_by_orb(orb) do
     orb = orb |> Repo.preload([:initiator])
-    dbg
     telegram_chat_ids =
       :h3.parent(orb.central_geohash, 8)
       |> List.wrap()
