@@ -104,7 +104,7 @@ unless config_env() == :prod do
 # ip_address: "1.1.1.1",                      # string
 # max_connections: 50,                        # integer
 # secret_token: "some_super_secret_key",      # string
-  url: System.get_env("TELEGRAM_WEBHOOK_URI") #{S
+  url: System.get_env("TELEGRAM_REDIRECT_HOST") #
 
 end
 

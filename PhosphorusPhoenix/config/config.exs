@@ -71,7 +71,6 @@ config :phos, Phos.OAuthStrategy,
     http_adapter: Assent.HTTPAdapter.Mint
   ],
   telegram: [
-    # https://endpoint.com
     host: {System, :get_env, ["TELEGRAM_REDIRECT_HOST"]}, #"5fba-220-255-157-189.ngrok-free.app/telegram_signup",
     bot_id: {System, :get_env, ["TELEGRAM_BOT_ID"]}
   ]
