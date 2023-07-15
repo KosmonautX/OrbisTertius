@@ -243,6 +243,11 @@ if config_env() == :prod do
   token: System.get_env("TELEGRAM_BOT_ID"),
   json_engine: Jason
 
+  config :ex_gram, :webhook,
+  drop_pending_updates: true,                # boolean
+  url: System.get_env("TELEGRAM_REDIRECT_HOST")
+# certificate: "priv/cert/selfsigned.pem",    # string (file path)
+
   # ## Using releases
   #
   # If you are doing OTP releases, you need to instruct Phoenix
