@@ -38,6 +38,8 @@ defmodule PhosWeb do
       use Phoenix.LiveView,
         layout: {PhosWeb.Layouts, :app}
 
+      import PhosWeb.UserPresence
+
       unquote(html_helpers())
     end
   end

@@ -11,8 +11,8 @@ defmodule PhosWeb.MemoryLive.Index do
   end
 
   @impl true
-  def handle_params(params, _url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  def handle_params(params, _url, %{assigns: assigns} = socket) do
+    {:noreply, apply_action(socket, assigns.live_action, params)}
   end
 
   defp apply_action(%{assigns: %{current_user: your}} = socket, :show, %{"username" => username})
@@ -27,6 +27,8 @@ defmodule PhosWeb.MemoryLive.Index do
       end
 
     send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_dekstop, memory: %Memory{})
+
+    PhosWeb.Presence.track(self(), "memory:user:#{your.id}", "last_read", %{rel_id: rel_id})
 
     socket
     |> assign(:page_title, "Chatting with @" <> username)
@@ -50,7 +52,7 @@ defmodule PhosWeb.MemoryLive.Index do
     |> assign(:user, nil)
   end
 
-  defp apply_action(%{assigns: %{current_user: user}} = socket, :index, _params) do
+  defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Listing Memories")
     |> assign(:memory, nil)
@@ -136,6 +138,8 @@ defmodule PhosWeb.MemoryLive.Index do
       |> stream(:relation_memories, relation_memories, reset: true)
     }
   end
+
+  def handle_info(_, socket), do: {:noreply, socket}
 
   defp list_more_mesage(
           %{
