@@ -2356,28 +2356,49 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <div id={"#{@id}-list"} class="overflow-y-auto my-2">
     <ul class="relative w-full lg:px-2 font-poppins px-4 md:px-10">
-      <li class=<%= class_names(["flex", if @memory.user_source_id != @current_user.id, do: "justify-start", else: "justify-end"]) %>>
-        <div class=<%= class_names(["max-w-xs", if @memory.user_source_id != @current_user.id, do: "bg-[#F9F9F9]", else: "bg-[#C9F8F3]", if @memory.user_source_id != @current_user.id, do: "dark:bg-[#404252]", else: "dark:bg-[#00615A]"]) %>>
-          <.img_preview
-            :if={@media != []}
-            archetype="MEM"
-            uuid={@memory.id}
-            path="public/profile"
-            current_user={@current_user}
-            id={"#{@id}-scry-memory-#{@memory.id}"}
-            media={@media}
-            memory={@memory}
-          />
-          <.memory_information
-            memory={@memory}
-            timezone={@timezone}
-            id={"#{@id}-scry-memory-#{@memory.id}"}
-          />
-        </div>
-      </li>
+      <%= if @memory.user_source_id != @current_user.id do %>
+        <li class="flex justify-start">
+          <div class="max-w-xs bg-[#F9F9F9] rounded-2xl dark:bg-[#404252]">
+            <.img_preview
+              :if={@media != []}
+              archetype="MEM"
+              uuid={@memory.id}
+              path="public/profile"
+              current_user={@current_user}
+              id={"#{@id}-scry-memory-#{@memory.id}"}
+              media={@media}
+              memory={@memory}/>
+            <.memory_information
+              memory={@memory}
+              timezone={@timezone}
+              id={"#{@id}-scry-memory-#{@memory.id}"}
+            />
+          </div>
+        </li>
+      <% end %>
+      <%= if @memory.user_source_id == @current_user.id do %>
+        <li class="flex justify-end">
+          <div class="max-w-xs bg-[#C9F8F3] dark:bg-[#00615A] rounded-2xl">
+            <.img_preview
+              :if={@media != []}
+              archetype="MEM"
+              uuid={@memory.id}
+              path="public/profile"
+              id={"#{@id}-scry-memory-#{@memory.id}"}
+              media={@media}
+              memory={@memory}
+              current_user={@current_user}
+            />
+            <.memory_information
+              memory={@memory}
+              timezone={@timezone}
+              id={"#{@id}-scry-memory-#{@memory.id}"}
+            />
+          </div>
+        </li>
+      <% end %>
     </ul>
-  </div>
-
+    </div>
     """
   end
 
