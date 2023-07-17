@@ -51,19 +51,34 @@ export const ScrollTop = {
     this.scrolledElement = this.el
 
     if (!this.scrolledElement) return
-    if (this.scrolledElement.clientHeight > 0) this.scrolledElement.scrollTop = this.scrolledElement.clientHeight
+    this.scrolledElement.scrollTop = this.scrolledElement.scrollHeight
     prevHeight = this.scrolledElement.scrollHeight    
     this.scrolledElement.addEventListener('scroll', ({ target }) => {
+      prevScrollTop = target.scrollTop
       if (target.scrollTop <= 150) {
           this.pushEvent("load-messages", {})
-          prevScrollTop = target.scrollTop
+          this.el.scrollTop = this.el.scrollHeight - prevHeight + prevScrollTop
+          console.log(this.el.scrollTop)
+          prevScrollTop = this.el.scrollTop
+          prevHeight = this.el.scrollHeight
       }
     });
+
+    this.handleEvent("scroll-on-send", () => {
+      this.el.scrollTop = this.el.scrollHeight
+      console.log(this.el.scrollTop)
+      console.log(this.el.clientHeight)
+    })
+
+
   },
 
   updated() {
-    this.el.scrollTop = this.el.scrollHeight - prevHeight + prevScrollTop
-    prevScrollTop = this.el.scrollTop
-    prevHeight = this.el.scrollHeight
-  }
+    if (prevScrollTop != undefined) {
+      this.el.scrollTop = this.el.scrollHeight - prevHeight + prevScrollTop
+      prevScrollTop = this.el.scrollTop
+      prevHeight = this.el.scrollHeight
+    }
+    
+    }
 }
