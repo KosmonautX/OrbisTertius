@@ -64,6 +64,7 @@ defmodule Phos.Users do
   #   """
   def get_user_by_fyr(id), do: Repo.get_by(User, fyr_id: id) |> Repo.preload([:private_profile])
 
+  @decorate cacheable(cache: Phos.Cache, key: {User, username})
   def get_user_by_username(username), do: Repo.get_by(User, username: username)
 
   def filter_user_by_username(username, limit, page) do
@@ -129,6 +130,7 @@ defmodule Phos.Users do
   @decorate cacheable(cache: Cache, key: {User, :find, id}, opts: [ttl: @ttl])
   def find_user_by_id(id) when is_uuid?(id) do
     query = from u in User,
+    as: :user,
     where: u.id == ^id,
     limit: 1,
     inner_lateral_join:
@@ -234,18 +236,17 @@ defmodule Phos.Users do
     user
     |> User.territorial_changeset(attrs)
     |> Repo.update()
-
-    # |> case do
-    #      {:ok, user} = data ->
-    #        spawn(fn -> discovery_publisher(user, attrs) end)
+    # |> tap(fn x -> case x do
+    #      {:ok, %User{private_profile: %{geolocation: geolocation}}} = data ->
+    #        Task.start(fn -> self_publisher(geolocation, user.id) end)
     #      err -> err
-    #    end
+    #    end)
   end
 
-  # defp discovery_publisher(past, present) do
-  #   dbg() ## add topic virtual feed to user object and send it down discovery feed
-  #   #Phos.PubSub.publish(%{orb | topic: loc}, {:orb, event}, loc_topic(loc))
+  # defp self_publisher(past, user_id) do
+  #   Phos.PubSub.publish(user, {:orb, event}, loc_topic(loc))
   # end
+
   @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
   def update_integrations_user(%User{} = user, attrs) do
     user

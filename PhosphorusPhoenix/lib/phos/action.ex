@@ -274,7 +274,7 @@ defmodule Phos.Action do
       from l in Orb_Location,
       as: :l,
       where: l.location_id in ^ids,
-      preload: [:orbs, :locations],
+      preload: [:orbs, :locations, :initiator],
       inner_lateral_join: c in subquery(
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:l).orb_id,
@@ -346,7 +346,7 @@ defmodule Phos.Action do
     |> case do
          {:ok, orb} = data ->
            orb = orb |> Repo.preload([:initiator])
-           spawn(fn ->
+           Task.start(fn ->
              experimental_notify(orb)
            end)
            #spawn(fn -> user_feeds_publisher(orb) end)

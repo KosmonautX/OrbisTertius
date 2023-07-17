@@ -13,6 +13,7 @@ defmodule Phos.Users.RelationBranch do
     belongs_to :root , RelationRoot, references: :id, type: Ecto.UUID, on_replace: :update
 
     field :completed_at, :naive_datetime
+    field :last_read_at, :naive_datetime
   end
 
   def changeset(relation, attrs) do

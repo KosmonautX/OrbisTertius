@@ -54,7 +54,7 @@ defmodule PhosWeb.OrbLiveTest do
         |> Phos.Repo.insert()
 
       {:ok, index_live, _html} = live(conn, ~p"/orb")
-      assert index_live |> element("a", "New Orb")
+      assert index_live |> element(~s{[id="New Orb"]})
       |> render_click() =~
                "New Orb"
 
