@@ -27,8 +27,7 @@ defmodule PhosWeb.Component.LastMessage do
         class={[
           if(@metadata.pagination.downstream, do: "pb-[calc(10vh)]"),
           "lg:h-[49rem] h-screen journal-scroll overflow-y-auto bg-[#F9F9F9] lg:bg-white dark:bg-gray-800"
-        ]}
-      >
+        ]}>
         <li :for={{dom_id, memory} <- @memories} id={dom_id}>
           <.link navigate={
             path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{memory.username}")

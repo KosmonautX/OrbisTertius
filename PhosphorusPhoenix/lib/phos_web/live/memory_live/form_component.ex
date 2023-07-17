@@ -104,7 +104,10 @@ defmodule PhosWeb.MemoryLive.FormComponent do
       {:noreply,
        socket
        |> put_flash(:info, "Memory created successfully")
-       |> push_patch(to: socket.assigns.navigate)}
+       |> push_patch(to: socket.assigns.navigate)
+       |> push_event("scroll-on-send", %{})
+
+      }
     else
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, changeset: changeset)}

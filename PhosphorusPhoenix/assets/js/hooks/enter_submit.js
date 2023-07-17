@@ -27,11 +27,7 @@ export const EnterSubmit = {
   },
 
   updated(){
-    let timer
-    clearTimeout(timer)
-    timer = setTimeout(() => {
-      let scrollDivDesktop = document.getElementById("infinite-home-desktop-message_container")
-      scrollDivDesktop.scrollTop = scrollDivDesktop.scrollHeight
-    }, 300)
+    let scrollDivDesktop = document.getElementById("message_container")
+    scrollDivDesktop.scrollTop = scrollDivDesktop.clientHeight
   }
 }
