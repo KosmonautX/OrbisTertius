@@ -35,7 +35,6 @@ defmodule PhosWeb.UserMemoryChannel do
 
 
   def handle_info(msg, socket) do
-    IO.inspect(msg)
     push(socket, "memory_", %{"data" => [msg] |> Viewer.memory_mapper()})
     {:noreply, socket}
   end

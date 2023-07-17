@@ -8,7 +8,6 @@ defmodule PhosWeb.CommentLive.FormComponent do
 
   @impl true
   def update(assigns, socket) do
-    IO.inspect(socket)
     {:ok,
       socket
       |> assign_new(:text, fn -> "" end)

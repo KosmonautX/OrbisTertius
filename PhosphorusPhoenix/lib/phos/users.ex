@@ -129,6 +129,7 @@ defmodule Phos.Users do
   @decorate cacheable(cache: Cache, key: {User, :find, id}, opts: [ttl: @ttl])
   def find_user_by_id(id) when is_uuid?(id) do
     query = from u in User,
+    as: :user,
     where: u.id == ^id,
     limit: 1,
     inner_lateral_join:
