@@ -145,15 +145,21 @@
 }
 
 .accordion-content {
+  display: none;
+}
+
+/*
+ .accordion-content {
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease-out;
 }
+*/
 
 .accordion-item:checked ~ .accordion-content {
   max-height: 1000px; /* Adjust this value based on your content height */
   transition: max-height 0.3s ease-in;
-}
+} 
 
 .closed-icon {
   display: block;

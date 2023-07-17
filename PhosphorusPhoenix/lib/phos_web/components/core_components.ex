@@ -153,8 +153,8 @@ defmodule PhosWeb.CoreComponents do
   def user_modal(assigns) do
     ~H"""
     <div
-      id="book-search-form"
-      class="w-44 list-none rounded-2xl bg-[#F3F4F8] py-2 text-base shadow-lg dark:bg-[#282828]"
+      id={@id}
+      class="hidden w-44 list-none rounded-2xl bg-[#F3F4F8] py-2 text-base shadow-lg dark:bg-[#282828]"
     >
       <ul class="font-poppins font flex flex-col divide-y divide-gray-300 dark:divide-[#D1D1D1] text-base font-light text-[#404252] dark:text-[#D1D1D1]">
         <li class="px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer">Share</li>
@@ -1343,7 +1343,7 @@ defmodule PhosWeb.CoreComponents do
         </:information>
         <:actions>
           <Heroicons.ellipsis_horizontal
-            phx-click={JS.toggle(to: "#book-search-form")}
+            phx-click={JS.toggle(to: "##{@id}-orb-modal-#{@orb.id}")}
             class="lg:h-8 lg:w-8 h-6 w-6 hover:text-gray-300 dark:text-white text-gray-900 font-semibold"
           />
           <%= render_slot(@user_action) %>
@@ -1957,7 +1957,7 @@ defmodule PhosWeb.CoreComponents do
             >
               <Heroicons.bookmark class="w-5 h-6 text-gray-900 group-hover:text-teal-500 dark:text-white cursor-pointer" />
               <Heroicons.ellipsis_vertical
-                phx-click={JS.toggle(to: "#book-search-form")}
+                phx-click={JS.toggle(to: "##{@id}-orb-modal-#{@user.username}")}
                 class="w-6 h-6 text-gray-900 group-hover:text-teal-500 dark:text-white cursor-pointer"
               />
             </div>
