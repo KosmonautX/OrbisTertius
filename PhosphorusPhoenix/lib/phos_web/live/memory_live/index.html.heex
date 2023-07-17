@@ -1,33 +1,17 @@
-<!--Desktop View-->
-<div class="w-full font-poppins lg:bg-gray-100 bg-white dark:bg-gray-900 h-screen">
-  <div class="hidden lg:block">
-    <br />
-    <br />
-  </div>
-  <div class="lg:mt-6 mt-14  w-full mx-auto">
-    <div class="lg:flex lg:justify-center lg:items-center flex-none">
-      <div class={[
-        "lg:w-3/12 w-full lg:border-r-2 lg:border-gray-200 dark:border-[#F3F4F8] dark:border-r-2",
+    <div class="flex h-screen w-full font-poppins lg:bg-red-100 bg-white dark:bg-gray-900 ">
+      <div class={["lg:w-3/12 w-full",
         @live_action == :show && "hidden lg:block"]}>
-        <form
-          phx-change="search"
-          class="relative text-gray-600 px-2 py-3 lg:bg-white bg-[#FBFBFB] hidden lg:block lg:shadow-none shadow-lg shadow-[FBFBFB] dark:bg-gray-900 lg:dark:bg-gray-800">
-          <input
-            phx-debounce="300"
-            type="text"
-            name="usersearch"
-            value={@usersearch}
-            placeholder="Search in chat......"
-            autofocus
-            autocomplete="off"
-            list="matches"
-            class="block py-3 pl-3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-2xl focus:ring-teal-500 focus:border-teal-500 w-full p-2.5"
-          />
-          <span class="absolute inset-y-0 right-0 flex items-center pr-2">
+        <form phx-change="search"
+          class="relative text-gray-600 px-2 py-3 top-0 sticky z-10 lg:bg-white bg-[#FBFBFB] hidden lg:block lg:shadow-none shadow-lg shadow-[FBFBFB] dark:bg-gray-900 lg:dark:bg-gray-800">
+           <input phx-debounce="300" type="text" name="usersearch"
+             value={@usersearch} placeholder="Search in chat......"
+             autofocus autocomplete="off" list="matches"
+             class="block py-3 pl-3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-2xl focus:ring-teal-500 focus:border-teal-500 w-full p-2.5"/>
+            <span class="absolute inset-y-0 right-0 flex items-center pr-2">
             <Heroicons.magnifying_glass class="w-5 h-5 mr-2" />
-          </span>
+            </span>
         </form>
-        <div class="flex w-full items-center justify-between bg-[#FBFBFB] px-6 py-3 shadow-2xl shadow-gray-300 dark:shadow-none block lg:hidden sticky z-20 top-14 md:px-12 dark:bg-gray-800">
+        <div class="flex w-full items-center justify-between bg-[#FBFBFB] px-6 py-3 shadow-2xl shadow-gray-300 dark:shadow-none block lg:hidden sticky z-20 top-0 md:px-12 dark:bg-gray-800">
           <Heroicons.archive_box class="h-5 w-5 text-gray-800 dark:text-zinc-300" />
           <div class="flex items-center">
             <p class="text-base font-semibold text-[#404252] dark:text-white">Chat</p>
@@ -43,11 +27,10 @@
           metadata={@relation_meta}
         />
       </div>
-      <div :if={@user} class="lg:w-4/12  w-full">
-        <div class="text-gray-600 w-full sticky  top-14 lg:top-[60px] z-10">
-          <.chat_profile id={"dekstop-chat-profile-for-#{@user.username}"} user={@user} />
-        </div>
-        <div>
+      <div :if={@user} class="lg:w-9/12  w-full flex flex-col">
+          <div class="top-0 sticky z-10">
+            <.chat_profile id={"dekstop-chat-profile-for-#{@user.username}"} user={@user} />
+          </div>
           <.live_component
             module={PhosWeb.Components.ListMessage}
             id="infinite-home-desktop"
@@ -57,22 +40,8 @@
             cursor={@message_cursor}
             metadata={@message_meta}
           />
-        </div>
-        <div class="hidden lg:block ">
-          <.live_component
-            module={PhosWeb.MemoryLive.FormComponent}
-            id={:new_on_dekstop}
-            title={@page_title}
-            action={:new}
-            rel={@relation_id}
-            current_user={@current_user}
-            memory={@memory}
-            navigate={~p"/memories/user/#{@user.username}"}
-          />
-        </div>
-
-        <div class="lg:hidden block bottom-0 left-0 z-10 fixed w-full">
-          <.live_component
+         <div class="bottom-0 z-10 fixed flex-1 w-full">
+            <.live_component
             module={PhosWeb.MemoryLive.FormComponent}
             id={:new}
             title={@page_title}
@@ -82,11 +51,9 @@
             memory={%Phos.Message.Memory{}}
             navigate={~p"/memories/user/#{@user.username}"}
           />
-        </div>
+         </div>
       </div>
     </div>
-  </div>
-</div>
 
 <.gallerymodal
   :if={@live_action in [:media] and not is_nil(@media)}

@@ -1012,7 +1012,7 @@ defmodule PhosWeb.CoreComponents do
 
   def banner(assigns) do
     ~H"""
-    <nav class="lg:bg-[#EEEFF3] bg-white fixed w-full z-10 top-0 left-0 border-b dark:text-white lg:dark:border-none text-base font-bold dark:bg-gray-900 px-4 lg:py-3 py-2 font-poppins border-gray-300">
+    <nav class="lg:bg-[#EEEFF3] bg-white fixed w-full z-10 top-0 left-0 border-b dark:text-white lg:border-none text-base font-bold dark:bg-gray-900 px-4 lg:py-3 py-2 font-poppins border-gray-300">
       <div class="flex flex-wrap items-center justify-between mx-auto">
         <a href="/" class="flex items-center">
           <.logo type="banner" class="h-8 dark:fill-white"></.logo>
@@ -1631,7 +1631,7 @@ defmodule PhosWeb.CoreComponents do
 
   def preview_modal(assigns) do
     ~H"""
-    <div class="relative flex items-center" id={"#{@id}-carousel"}>
+    <div class="relative flex items-center dark:bg-gray-900 dark:lg:bg-gray-800 bg-white" id={"#{@id}-carousel"}>
       <div :if={!is_nil(@media)}>
         <div :for={m <- @media} class="relative">
           <img
@@ -2271,14 +2271,18 @@ defmodule PhosWeb.CoreComponents do
   def list_message(assigns) do
     ~H"""
     <div id={"#{@id}-list"}>
-      <div class="relative object-fill lg:h-[44rem] h-screen">
-        <img src="/images/light_bg.jpeg" class="absolute inset-0 w-full h-full object-cover" />
+      <div class="relative lg:h-[53.813rem] h-[56rem]">
+        <img src="/images/light_bg.jpeg" class="inset-0 w-full h-full object-cover" />
         <div
           id="message_container"
           phx-hook="ScrollTop"
           class="journal-scroll absolute inset-0 bg-gray-100 bg-opacity-80 overflow-y-auto"
         >
-          <div id="message_stream" phx-update="stream" class="relative w-full lg:mb-0 py-2 mb-16">
+          <div
+            id="message_stream"
+            phx-update="stream"
+            class="relative w-full py-2 mb-20 lg:px-56 px-0"
+          >
             <div :for={{dom_id, memory} <- @memories} } id={dom_id}>
               <.scry_memory
                 id={dom_id}
@@ -2355,49 +2359,50 @@ defmodule PhosWeb.CoreComponents do
 
     ~H"""
     <div id={"#{@id}-list"} class="overflow-y-auto my-2">
-    <ul class="relative w-full lg:px-2 font-poppins px-4 md:px-10">
-      <%= if @memory.user_source_id != @current_user.id do %>
-        <li class="flex justify-start">
-          <div class="max-w-xs bg-[#F9F9F9] rounded-2xl dark:bg-[#404252]">
-            <.img_preview
-              :if={@media != []}
-              archetype="MEM"
-              uuid={@memory.id}
-              path="public/profile"
-              current_user={@current_user}
-              id={"#{@id}-scry-memory-#{@memory.id}"}
-              media={@media}
-              memory={@memory}/>
-            <.memory_information
-              memory={@memory}
-              timezone={@timezone}
-              id={"#{@id}-scry-memory-#{@memory.id}"}
-            />
-          </div>
-        </li>
-      <% end %>
-      <%= if @memory.user_source_id == @current_user.id do %>
-        <li class="flex justify-end">
-          <div class="max-w-xs bg-[#C9F8F3] dark:bg-[#00615A] rounded-2xl">
-            <.img_preview
-              :if={@media != []}
-              archetype="MEM"
-              uuid={@memory.id}
-              path="public/profile"
-              id={"#{@id}-scry-memory-#{@memory.id}"}
-              media={@media}
-              memory={@memory}
-              current_user={@current_user}
-            />
-            <.memory_information
-              memory={@memory}
-              timezone={@timezone}
-              id={"#{@id}-scry-memory-#{@memory.id}"}
-            />
-          </div>
-        </li>
-      <% end %>
-    </ul>
+      <ul class="relative w-full lg:px-2 font-poppins px-4 md:px-10">
+        <%= if @memory.user_source_id != @current_user.id do %>
+          <li class="flex justify-start">
+            <div class="max-w-xs bg-[#F9F9F9] rounded-2xl dark:bg-[#404252]">
+              <.img_preview
+                :if={@media != []}
+                archetype="MEM"
+                uuid={@memory.id}
+                path="public/profile"
+                current_user={@current_user}
+                id={"#{@id}-scry-memory-#{@memory.id}"}
+                media={@media}
+                memory={@memory}
+              />
+              <.memory_information
+                memory={@memory}
+                timezone={@timezone}
+                id={"#{@id}-scry-memory-#{@memory.id}"}
+              />
+            </div>
+          </li>
+        <% end %>
+        <%= if @memory.user_source_id == @current_user.id do %>
+          <li class="flex justify-end">
+            <div class="max-w-xs bg-[#C9F8F3] dark:bg-[#00615A] rounded-2xl">
+              <.img_preview
+                :if={@media != []}
+                archetype="MEM"
+                uuid={@memory.id}
+                path="public/profile"
+                id={"#{@id}-scry-memory-#{@memory.id}"}
+                media={@media}
+                memory={@memory}
+                current_user={@current_user}
+              />
+              <.memory_information
+                memory={@memory}
+                timezone={@timezone}
+                id={"#{@id}-scry-memory-#{@memory.id}"}
+              />
+            </div>
+          </li>
+        <% end %>
+      </ul>
     </div>
     """
   end
@@ -2512,10 +2517,10 @@ defmodule PhosWeb.CoreComponents do
     <div
       id={@id}
       phx-mounted={@show && show_modal(@id)}
-      class="fixed z-10 inset-0 hidden  w-full mx-auto h-screen bg-white/50 dark:bg-black/50 transition-opacity"
+      class="fixed z-10 inset-0 hidden  w-full mx-auto h-screen"
       aria-hidden="true"
     >
-      <div class="w-full h-screen fixed inset-0 overflow-y-auto journal-scroll bg-zinc-50/90 transition-opacity">
+      <div class="w-full h-screen fixed inset-0 overflow-y-auto journal-scroll transition-opacity bg-white/70 dark:bg-black/50">
         <.focus_wrap
           id={"#{@id}-container"}
           phx-mounted={@show && show_modal(@id)}
@@ -2524,7 +2529,7 @@ defmodule PhosWeb.CoreComponents do
           phx-click-away={hide_modal(@on_cancel, @id)}
           class="hidden relative h-screen flex flex-col"
         >
-          <div :if={@close_button} class="absolute top-4 right-4 lg:top-0 lg:right-0">
+          <div :if={@close_button} class="absolute top-4 right-4 lg:top-4 lg:right-6">
             <button
               phx-click={hide_modal(@on_cancel, @id)}
               type="button"
@@ -2536,7 +2541,7 @@ defmodule PhosWeb.CoreComponents do
           </div>
           <div id={"#{@id}-content"}>
             <div>
-              <header class="flex px-2 py-3 bg-white dark:bg-gray-900 items-center justify-center">
+              <header class="flex px-2 py-3 bg-white dark:bg-gray-900 lg:dark:bg-gray-800 items-center justify-center">
                 <h1
                   id={"#{@id}-title"}
                   class="dark:text-white lg:text-2xl text-lg font-semibold text-gray-800"

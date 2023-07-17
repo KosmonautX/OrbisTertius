@@ -26,34 +26,36 @@ defmodule PhosWeb.Component.LastMessage do
         phx-hook="ScrollBottom"
         class={[
           if(@metadata.pagination.downstream, do: "pb-[calc(10vh)]"),
-          "lg:h-[49rem] h-screen journal-scroll overflow-y-auto bg-[#F9F9F9] lg:bg-white dark:bg-gray-800"
-        ]}>
+          "h-screen lg:h-[54rem] journal-scroll overflow-y-auto bg-[#F9F9F9] lg:bg-green-100 dark:bg-gray-800"
+        ]}
+      >
         <li :for={{dom_id, memory} <- @memories} id={dom_id}>
-          <.link navigate={
-            path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{memory.username}")
-          }>
-            <div class="flex items-center lg:px-3 lg:py-2 md:px-10 px-2 py-3 transition duration-150 ease-in-out border-b border-zinc-300 dark:border-none  cursor-pointer hover:bg-gray-100 focus:outline-none bg-[#F9F9F9] lg:bg-white lg:dark:bg-gray-800 dark:bg-gray-900">
-              <div class="relative shrink-0">
+          <.link
+            navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{memory.username}")}
+            class=""
+          >
+            <div class="flex flex-wrap items-center space-x-2 px-2 py-2 transition duration-150 ease-in-out cursor-pointer hover:bg-gray-100 focus:outline-none bg-[#F9F9F9] lg:bg-white lg:dark:bg-gray-800 dark:bg-gray-900">
+              <div class="flex shrink-0">
                 <img
                   src={Phos.Orbject.S3.get!("USR", memory.id, "public/profile/lossless")}
-                  class="w-14 h-14 rounded-full object-cover"
+                  class="w-14 h-14 rounded-full object-cover  shrink-0"
                   onerror="this.src='/images/default_hand.jpg';"
                 />
               </div>
-              <div class="w-full flex flex-col text-sm ml-2">
-                <div class="flex justify-between">
+              <div class="min-w-0 flex-1">
+                <div class="flex justify-between truncate">
                   <span class="font-semibold text-[#000000] dark:text-white">
                     <%= memory.username %>
                   </span>
-                  <span class="font-light text-[#777986]">
+                  <span class="font-light text-[#777986] text-[10px]">
                     <%= get_date(get_last_memory(memory).inserted_at, @date) %>
                   </span>
                 </div>
                 <div class="flex justify-between">
-                  <span class="font-normal text-[#777986] truncate lg:w-80 w-60 md:w-96">
+                  <span class="font-normal text-[#777986] truncate ">
                     <%= get_last_memory(memory).message %>
                   </span>
-                  <span class="w-6 h-6 inline-flex items-center rounded-full text-white bg-[#00BFB2] font-semibold justify-center text-xs">
+                  <span class="w-5 h-5 inline-flex items-center justify-center rounded-full text-white bg-[#00BFB2] font-semibold justify-center text-[10px] shrink-0">
                     10
                   </span>
                 </div>
