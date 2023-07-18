@@ -124,6 +124,20 @@ defmodule PhosWeb.MemoryLive.Index do
     end
   end
 
+  def handle_event("show_ally", %{"ally" => ally_id}, %{assigns: %{current_user: curr}} = socket) do
+    {:noreply,
+     socket
+     |> assign(:ally, Phos.Users.get_public_user(ally_id, curr.id))
+     |> assign(:live_action, :ally)}
+  end
+
+  def handle_event("hide_ally", _, socket) do
+    {:noreply,
+     socket
+     |> assign(:ally, nil)
+     |> assign(:live_action, :show)}
+  end
+
   @impl true
 
   def handle_info(
