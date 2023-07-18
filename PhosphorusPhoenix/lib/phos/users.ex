@@ -300,7 +300,7 @@ defmodule Phos.Users do
   defp do_query_from_auth(id, provider) do
     Repo.one(
       from a in Auth,
-      preload: [user: [:private_profile]],
+      preload: [user: [[:private_profile, personal_orb: :locations]]],
       where: a.auth_id == ^id and a.auth_provider == ^provider,
       limit: 1
     )
@@ -353,7 +353,6 @@ defmodule Phos.Users do
   def get_telegram_chat_ids_by_orb(%Phos.Action.Orb{central_geohash: nil}), do: nil
   def get_telegram_chat_ids_by_orb(orb) do
     orb = orb |> Repo.preload([:initiator])
-    dbg
     telegram_chat_ids =
       :h3.parent(orb.central_geohash, 8)
       |> List.wrap()
@@ -363,7 +362,6 @@ defmodule Phos.Users do
           nil -> acc
           %{telegram_chat_id: chat_id} ->
             [%{orb: orb, chat_id: chat_id} | acc]
-          # _ -> acc
         end
       end)
   end

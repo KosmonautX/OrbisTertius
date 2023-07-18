@@ -10,7 +10,7 @@ defmodule Phos.TeleBot.CreateOrbPath do
 
   def create_orb_path(%{integrations: %{telegram_chat_id: telegram_id}} = user, :description) do
     user_state = StateManager.get_state(telegram_id)
-    case Fsmx.transition(user_state, "createorb_description") do
+    case Fsmx.transition(user_state, "description") do
       {:ok, user_state} ->
         StateManager.set_state(telegram_id, user_state)
       {:error, err} ->
@@ -23,7 +23,7 @@ defmodule Phos.TeleBot.CreateOrbPath do
     user_state = StateManager.get_state(telegram_id)
     {_prev, user_state} = get_and_update_in(user_state.data.inner_title, &{&1, text})
 
-    case Fsmx.transition(user_state, "createorb_location") do
+    case Fsmx.transition(user_state, "location") do
       {:ok, user_state} ->
         StateManager.set_state(telegram_id, user_state)
       {:error, err} ->
@@ -33,7 +33,7 @@ defmodule Phos.TeleBot.CreateOrbPath do
 
   def create_orb_path(%{integrations: %{telegram_chat_id: telegram_id}} = user, :location) do
     user_state = StateManager.get_state(telegram_id)
-    case Fsmx.transition(user_state, "createorb_location") do
+    case Fsmx.transition(user_state, "location") do
       {:ok, user_state} ->
         StateManager.set_state(telegram_id, user_state)
       {:error, err} ->
@@ -51,7 +51,7 @@ defmodule Phos.TeleBot.CreateOrbPath do
       "work" ->
         handle_locaton_transaction(user_state, user, telegram_id, "work")
       "live" ->
-        case Fsmx.transition(user_state, "createorb_current_location") do
+        case Fsmx.transition(user_state, "current_location") do
           {:ok, user_state} ->
             StateManager.set_state(telegram_id, user_state)
           {:error, err} ->
@@ -77,7 +77,7 @@ defmodule Phos.TeleBot.CreateOrbPath do
         {_prev, user_state} = get_and_update_in(user_state.data.location_type, &{&1, location_type} )
         StateManager.set_state(telegram_id, user_state)
         user_state = StateManager.get_state(telegram_id)
-        case Fsmx.transition(user_state, "createorb_media") do
+        case Fsmx.transition(user_state, "media") do
           {:ok, user_state} ->
             StateManager.set_state(telegram_id, user_state)
           {:error, err} ->
@@ -95,7 +95,7 @@ defmodule Phos.TeleBot.CreateOrbPath do
 
   def create_orb_path_transition(%{integrations: %{telegram_chat_id: telegram_id}} = user, :current_location) do
     user_state = StateManager.get_state(telegram_id)
-    case Fsmx.transition(user_state, "createorb_media") do
+    case Fsmx.transition(user_state, "media") do
       {:ok, user_state} ->
         StateManager.set_state(telegram_id, user_state)
       {:error, err} ->
@@ -106,7 +106,7 @@ defmodule Phos.TeleBot.CreateOrbPath do
 
   def create_orb_path(%{integrations: %{telegram_chat_id: telegram_id}} = user, :media) do
     user_state = StateManager.get_state(telegram_id)
-    case Fsmx.transition(user_state, "createorb_media") do
+    case Fsmx.transition(user_state, "media") do
       {:ok, user_state} ->
         StateManager.set_state(telegram_id, user_state)
       {:error, err} ->
@@ -143,7 +143,7 @@ defmodule Phos.TeleBot.CreateOrbPath do
     {_prev, user_state} = get_and_update_in(user_state.data.media, &{&1, media})
     StateManager.set_state(telegram_id, user_state)
 
-    case Fsmx.transition(user_state, "createorb_preview") do
+    case Fsmx.transition(user_state, "preview") do
       {:ok, _} ->
         StateManager.set_state(telegram_id, user_state)
       {:error, err} ->
@@ -153,7 +153,7 @@ defmodule Phos.TeleBot.CreateOrbPath do
 
   def create_orb_path_transition(%{integrations: %{telegram_chat_id: telegram_id}} = user, :preview) do
     user_state = StateManager.get_state(telegram_id)
-    case Fsmx.transition(user_state, "createorb_preview") do
+    case Fsmx.transition(user_state, "preview") do
       {:ok, user_state} ->
         StateManager.set_state(telegram_id, user_state)
       {:error, err} ->

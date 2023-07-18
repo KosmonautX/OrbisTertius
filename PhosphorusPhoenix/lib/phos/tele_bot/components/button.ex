@@ -124,7 +124,7 @@ defmodule Phos.TeleBot.Components.Button do
 
   def build_location_specific_button(loc_type) do
     %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [[
-      %ExGram.Model.InlineKeyboardButton{text: "Set #{loc_type}", callback_data: "edit_profile_locationtype_#{String.downcase(loc_type)}"},
+      %ExGram.Model.InlineKeyboardButton{text: "Set #{loc_type}", callback_data: "edit_profile_locationtype#{String.downcase(loc_type)}"},
     ]]}
   end
 

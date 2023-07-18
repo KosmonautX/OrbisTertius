@@ -76,7 +76,7 @@ defmodule Phos.MixProject do
       {:earmark, "~>1.4.36"},
       {:html_sanitize_ex, "~> 1.4"},
       {:prom_ex, github: "KosmonautX/prom_ex"},
-      {:fsmx, "~> 0.2.0"},
+      {:fsmx, "~> 0.4"},
       {:nebulex, "~> 2.4"},
       {:shards, "~> 1.0"},
       {:decorator, "~> 1.4"},

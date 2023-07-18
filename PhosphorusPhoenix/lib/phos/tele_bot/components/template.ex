@@ -190,4 +190,11 @@ defmodule Phos.TeleBot.Components.Template do
       "Not set"
     end
   end
+
+  def fallback_text_builder(assigns) do
+    ~H"""
+    <b>Something went wrong...</b>
+    """
+    |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
+  end
 end
