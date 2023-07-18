@@ -68,7 +68,7 @@
      <button type="submit" class="ml-2 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#EEEFF3] dark:bg-[#282828]"><Heroicons.map class="h-5 w-5 text-[#B3B5BD]" /></button>
    </form>
 
-   <div class="mt-36 lg:mt-16 lg:px-[600px]">
+   <div class="mt-36 lg:mt-16 2xl:px-[600px] lg:px-36 xl:px-36">
     <h1 class="text-2xl font-bold dark:text-white lg:px-0 px-2 md:px-10">Listing Orbs</h1>
       <div :if={not is_nil(@current_user)} class="lg:px-0 px-2 md:px-10">
         <.link class="dark:text-white" patch={~p"/orb/sethome"}>Set Home</.link>

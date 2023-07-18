@@ -35,7 +35,7 @@
       show_border={true}
     />
   </div>
-  <div class="w-full px-4 md:px-10 mt-72 lg:mt-6 lg:max-w-3xl lg:px-0">
+  <div class="w-full px-4 md:px-10 mt-72 lg:mt-6 lg:max-w-3xl lg:px-4">
     <.user_information_card
       :if={not is_nil(@user.public_profile)}
       id="user_info"
@@ -103,14 +103,13 @@
   <div class="lg:hidden block sticky top-[311px] z-10 bg-white w-full items-center justify-center ">
     <.tabs_mobile_view
       title="ScratchBac Admin"
-      action={@live_action}
       home_path={~p"/admin"}
       username={@user.username}
     >
       <:item to={~p"/user/{@username}"} title="POSTS" id="posts" icon="fa-clock" />
     </.tabs_mobile_view>
   </div>
-  <div class="w-full flex flex-col px-2 md:px-10  lg:max-w-3xl lg:px-0">
+  <div class="w-full flex flex-col px-2 md:px-10  lg:max-w-3xl lg:px-4">
     <h5 class="lg:block hidden text-left font-semibold text-xl dark:text-white border-b-2 border-black dark:border-white mb-2.5 py-2">
       Posts
     </h5>

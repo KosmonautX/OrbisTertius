@@ -15,9 +15,8 @@ defmodule PhosWeb.UserLoginLive do
         </:subtitle>
       </.header>
 
-      <.simple_form
+      <.simple_form class="max-w-2xl p-4 space-y-4 rounded-2xl mt-4"
         :let={f}
-        class="w-108 p-4"
         id="login_form"
         for={:user}
         action={~p"/users/log_in"}
@@ -29,7 +28,7 @@ defmodule PhosWeb.UserLoginLive do
         <.input field={{f, :return_to}} type="hidden" value={@return_to} />
         <:actions :let={f} classes="relative h-12 w-108">
           <.input field={{f, :remember_me}} type="checkbox" label="Remember Me?" />
-          <.link href={~p"/users/reset_password"} class="absolute bottom-0 right-0 text-sm font-semibold dark:text-white">
+          <.link href={~p"/users/reset_password"} class="absolute bottom-0 right-0 text-sm font-semibold dark:text-white hover:underline">
             Forgot your password?
           </.link>
         </:actions>
@@ -46,6 +45,7 @@ defmodule PhosWeb.UserLoginLive do
 
   def mount(params, _session, socket) do
     email = live_flash(socket.assigns.flash, :email)
+
     {:ok,
      assign(socket, email: email)
      |> assign_new(:return_to, fn -> Map.get(params, "return_to", "/welcome") end),

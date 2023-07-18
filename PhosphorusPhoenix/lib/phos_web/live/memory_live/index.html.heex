@@ -1,8 +1,8 @@
-    <div class="flex h-screen w-full font-poppins lg:bg-red-100 bg-white dark:bg-gray-900 ">
+    <div class="flex h-screen w-full font-poppins lg:bg-gray-100 bg-white dark:bg-gray-900 ">
       <div class={["lg:w-3/12 w-full",
         @live_action == :show && "hidden lg:block"]}>
         <form phx-change="search"
-          class="relative text-gray-600 px-2 py-3 top-0 sticky z-10 lg:bg-white bg-[#FBFBFB] hidden lg:block lg:shadow-none shadow-lg shadow-[FBFBFB] dark:bg-gray-900 lg:dark:bg-gray-800">
+          class="relative text-gray-600 px-2 py-3 top-0 sticky z-10 lg:bg-white bg-[#FBFBFB] hidden lg:block dark:bg-gray-900 lg:dark:bg-gray-800">
            <input phx-debounce="300" type="text" name="usersearch"
              value={@usersearch} placeholder="Search in chat......"
              autofocus autocomplete="off" list="matches"
@@ -11,35 +11,37 @@
             <Heroicons.magnifying_glass class="w-5 h-5 mr-2" />
             </span>
         </form>
-        <div class="flex w-full items-center justify-between bg-[#FBFBFB] px-6 py-3 shadow-2xl shadow-gray-300 dark:shadow-none block lg:hidden sticky z-20 top-0 md:px-12 dark:bg-gray-800">
+        <div class="flex w-full items-center justify-between bg-white px-6 py-3  block lg:hidden sticky z-20 top-14 md:px-12 dark:bg-gray-900">
           <Heroicons.archive_box class="h-5 w-5 text-gray-800 dark:text-zinc-300" />
           <div class="flex items-center">
             <p class="text-base font-semibold text-[#404252] dark:text-white">Chat</p>
           </div>
           <Heroicons.pencil_square class="h-5 w-5 text-gray-800 dark:text-zinc-300" />
         </div>
-        <.live_component
+        <div class="mt-14 lg:mt-0">
+          <.live_component
           module={PhosWeb.Component.LastMessage}
           id="dekstop-last-message"
           memories={@streams.relation_memories}
           current_user={@current_user}
           date={@timezone}
-          metadata={@relation_meta}
-        />
+          metadata={@relation_meta}/>
+        </div>
       </div>
       <div :if={@user} class="lg:w-9/12  w-full flex flex-col">
-          <div class="top-0 sticky z-10">
+          <div class="top-14 lg:top-0 sticky z-10 w-full">
             <.chat_profile id={"dekstop-chat-profile-for-#{@user.username}"} user={@user} />
           </div>
-          <.live_component
+          <div class="mt-12 lg:mt-0">
+            <.live_component
             module={PhosWeb.Components.ListMessage}
             id="infinite-home-desktop"
             memories={@streams.message_memories}
             current_user={@current_user}
             timezone={@timezone}
             cursor={@message_cursor}
-            metadata={@message_meta}
-          />
+            metadata={@message_meta}/>
+          </div>
          <div class="bottom-0 z-10 fixed flex-1 w-full">
             <.live_component
             module={PhosWeb.MemoryLive.FormComponent}

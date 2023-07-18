@@ -395,10 +395,13 @@ defmodule PhosWeb.CoreComponents do
   )
 
   attr(:value, :any)
+
   attr(:field, :any, doc: "a %Phoenix.HTML.Form{}/field name tuple, for example: {f, :email}")
+
   attr(:errors, :list)
   attr(:checked, :boolean, doc: "the checked flag for checkbox inputs")
   attr(:prompt, :string, default: nil, doc: "the prompt for select inputs")
+
   attr(:options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2")
 
   attr(:multiple, :boolean,
@@ -441,7 +444,7 @@ defmodule PhosWeb.CoreComponents do
         name={@name}
         value="true"
         checked={@checked}
-        class="font-poppins rounded text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 focus:ring-teal-900 dark:focus:ring-teal-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+        class="font-poppins rounded text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-purple-900 dark:focus:ring-purple-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
         {@rest}
       />
       <%= @label %>
@@ -1220,7 +1223,7 @@ defmodule PhosWeb.CoreComponents do
         @show_padding == false && "lg:px-4",
         @orb_color == true && "dark:bg-gray-800 bg-[#F3F4F8]",
         @color == true && "lg:dark:bg-gray-800",
-        "lg:dark:bg-gray-900 dark:bg-gray-900 lg:bg-white w-full lg:py-2 py-4 flex items-center justify-between px-2 font-poppins",
+        "lg:dark:bg-gray-900 dark:bg-gray-900 lg:bg-white w-full lg:py-2 py-3 flex items-center justify-between px-2 font-poppins",
         @class
       ]}
     >
@@ -1631,7 +1634,10 @@ defmodule PhosWeb.CoreComponents do
 
   def preview_modal(assigns) do
     ~H"""
-    <div class="relative flex items-center dark:bg-gray-900 dark:lg:bg-gray-800 bg-white" id={"#{@id}-carousel"}>
+    <div
+      class="relative flex items-center dark:bg-gray-900 dark:lg:bg-gray-800 bg-white"
+      id={"#{@id}-carousel"}
+    >
       <div :if={!is_nil(@media)}>
         <div :for={m <- @media} class="relative">
           <img
@@ -1939,7 +1945,7 @@ defmodule PhosWeb.CoreComponents do
       <img
         class={[
           @show_img == true && "lg:rounded-3xl",
-          "object-cover w-full h-64 lg:h-72 rounded-none",
+          "object-cover w-full h-64 rounded-none",
           @main_height
         ]}
         src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/banner/lossless")}
@@ -1947,7 +1953,7 @@ defmodule PhosWeb.CoreComponents do
       />
       <div class="absolute inset-0 flex flex-col w-full bg-opacity-50">
         <div class={[@show_shadow]}>
-          <div class={[class = "relative w-full lg:max-w-3xl"]}>
+          <div class="relative w-full lg:max-w-3xl">
             <div :if={@show_location} class="absolute right-0 z-50 mt-8 mr-2 lg:mr-0 md:mr-10">
               <.user_modal id={"#{@id}-orb-modal-#{@user.username}"} />
             </div>
@@ -1972,13 +1978,13 @@ defmodule PhosWeb.CoreComponents do
           :if={@user.username}
           navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}
         >
-          <div class="relative flex justify-center items-center mt-2">
+          <div class="relative flex justify-center items-center mt-6">
             <div class="relative">
               <img
                 src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
                 class={[
                   @show_border == true && "dark:border-black",
-                  "h-36 w-36 lg:h-44 lg:w-44 border-4 border-white rounded-full object-cover"
+                  "h-36 w-36 lg:h-40 lg:w-40 border-4 border-white rounded-full object-cover"
                 ]}
                 onerror="this.src='/images/default_hand.jpg';"
               />
@@ -2055,7 +2061,7 @@ defmodule PhosWeb.CoreComponents do
         </div>
       </div>
       <div class="space-y-1 lg:space-y-2 break-words lg:px-3.5 px-3">
-        <p class="lg:text-base text-xs text-black font-semibold	dark:text-[#D1D1D1]">
+        <p class="lg:text-sm text-xs text-black font-semibold	dark:text-[#D1D1D1]">
           <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
         </p>
         <p class="text-black font-normal text-sm dark:text-[#D1D1D1]">
@@ -2271,12 +2277,12 @@ defmodule PhosWeb.CoreComponents do
   def list_message(assigns) do
     ~H"""
     <div id={"#{@id}-list"}>
-      <div class="relative lg:h-[53.813rem] h-[56rem]">
+      <div class="relative lg:h-[850px] h-[800px]">
         <img src="/images/light_bg.jpeg" class="inset-0 w-full h-full object-cover" />
         <div
           id="message_container"
           phx-hook="ScrollTop"
-          class="journal-scroll absolute inset-0 bg-gray-100 bg-opacity-80 overflow-y-auto"
+          class="journal-scroll absolute inset-0 overflow-y-auto"
         >
           <div
             id="message_stream"
@@ -2293,35 +2299,6 @@ defmodule PhosWeb.CoreComponents do
             </div>
           </div>
         </div>
-      </div>
-    </div>
-    """
-  end
-
-  defp memory_reader(assigns, memory, {mem_list, prev_date}) do
-    assigns =
-      assigns
-      |> assign(:prev_date, prev_date)
-      |> assign(:date, get_date(memory.inserted_at, assigns.timezone))
-      |> assign(:memory, memory)
-      |> assign(:mem_list, mem_list)
-
-    ~H"""
-    <div class="">
-      <span
-        :if={@prev_date != @date}
-        class="font-poppins flex justify-center text-xs text-gray-600 font-light mb-1.5"
-      >
-        <%= @prev_date %>
-      </span>
-      <div class="relative p-1.5">
-        <.scry_memory
-          id={"memory-history-#{@id}"}
-          memory={@memory}
-          memories={@mem_list}
-          current_user={@current_user}
-          timezone={@timezone}
-        />
       </div>
     </div>
     """
@@ -2350,7 +2327,11 @@ defmodule PhosWeb.CoreComponents do
                     path: "public/profile" <> path,
                     url: url,
                     resolution:
-                      path |> String.split(".") |> hd() |> String.split("/") |> List.last()
+                      path
+                      |> String.split(".")
+                      |> hd()
+                      |> String.split("/")
+                      |> List.last()
                   }
                 end
             end).()

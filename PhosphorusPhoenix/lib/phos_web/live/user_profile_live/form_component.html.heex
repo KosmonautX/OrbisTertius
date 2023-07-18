@@ -2,7 +2,7 @@
   <h2 class="text-xl font-Poppins font-semibold text-teal-400"><%= @title %></h2>
 
   <section phx-drop-target={@uploads.image.ref}>
-    <.simple_form
+    <.simple_form class="max-w-2xl p-4 space-y-4 rounded-2xl mt-4"
       :let={f}
       for={@changeset}
       id="userprofile-form"

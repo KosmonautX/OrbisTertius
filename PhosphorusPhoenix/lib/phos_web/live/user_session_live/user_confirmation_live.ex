@@ -8,7 +8,8 @@ defmodule PhosWeb.UserConfirmationLive do
     <div class="flex flex-col h-screen justify-center items-center">
       <.header>Confirm Account</.header>
 
-      <.simple_form :let={f} for={:user} id="confirmation_form" phx-submit="confirm_account">
+      <.simple_form class="max-w-2xl p-4 space-y-4 rounded-2xl mt-4"
+       :let={f} for={:user} id="confirmation_form" phx-submit="confirm_account">
         <.input field={{f, :token}} type="hidden" value={@token} />
         <:actions>
           <.button phx-disable-with="Confirming..." type="submit">Confirm my account</.button>

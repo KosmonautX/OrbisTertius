@@ -15,7 +15,8 @@
     class="w-full mx-auto text-center py-6 text-gray-600 font-medium text-sm lg:text-base dark:text-white">
     <%= "#{@user.username} has no allies yet" %>
   </p>
-    <.live_component
+  <div>
+        <.live_component
       module={PhosWeb.Components.ScrollAlly}
       id="infinite-ally-home-desktop"
       data={@streams.ally_list}
@@ -23,6 +24,7 @@
       current_user={@current_user}
       meta={@ally_list}
     />
+  </div>
 </div>
 
 <.ally_modal

@@ -11,7 +11,7 @@ defmodule PhosWeb.Components.ScrollAlly do
         phx-hook="ScrollBottom"
         class={[
           if(@meta.pagination.downstream, do: "pb-[calc(10vh)]"),
-          "w-full px-3 lg:px-2 overflow-y-auto journal-scroll lg:h-48 h-screen"
+          "w-full px-3 lg:px-2 overflow-y-auto journal-scroll lg:h-48 h-screen pb-28 lg:pb-0"
         ]}
       >
         <.user_info_bar

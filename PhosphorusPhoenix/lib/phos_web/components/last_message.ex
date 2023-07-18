@@ -26,7 +26,7 @@ defmodule PhosWeb.Component.LastMessage do
         phx-hook="ScrollBottom"
         class={[
           if(@metadata.pagination.downstream, do: "pb-[calc(10vh)]"),
-          "h-screen lg:h-[54rem] journal-scroll overflow-y-auto bg-[#F9F9F9] lg:bg-green-100 dark:bg-gray-800"
+          "h-screen lg:h-[54rem] journal-scroll overflow-y-auto bg-[#F9F9F9] lg:bg-white dark:bg-gray-900"
         ]}
       >
         <li :for={{dom_id, memory} <- @memories} id={dom_id}>
@@ -42,12 +42,12 @@ defmodule PhosWeb.Component.LastMessage do
                   onerror="this.src='/images/default_hand.jpg';"
                 />
               </div>
-              <div class="min-w-0 flex-1">
+              <div class="min-w-0 flex-1 text-sm">
                 <div class="flex justify-between truncate">
                   <span class="font-semibold text-[#000000] dark:text-white">
                     <%= memory.username %>
                   </span>
-                  <span class="font-light text-[#777986] text-[10px]">
+                  <span class="font-light text-[#777986] text-xs">
                     <%= get_date(get_last_memory(memory).inserted_at, @date) %>
                   </span>
                 </div>
