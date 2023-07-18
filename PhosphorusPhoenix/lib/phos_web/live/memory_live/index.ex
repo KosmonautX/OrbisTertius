@@ -104,24 +104,8 @@ defmodule PhosWeb.MemoryLive.Index do
 
   def handle_event("load-relations", _, socket), do: {:noreply, list_more_chats(socket)}
 
-  def handle_event("search", %{"usersearch" => usersearch}, %{assigns: %{current_user: user}} = socket) do
-
-    case search_memories(user, usersearch) do
-      %{data: relation_memories, meta: %{pagination: %{cursor: cursor}} = meta} ->
-        {:noreply,
-          socket
-          |> assign(relation_meta: meta)
-          |> assign(relation_cursor: cursor)
-          |> stream(:relation_memories, relation_memories, reset: true)
-        }
-      %{meta: meta} ->
-        {:noreply,
-          socket
-          |> assign(relation_meta: meta)
-          |> assign(relation_cursor: nil)
-          |> stream(:relation_memories, [], reset: true)
-        }
-    end
+  def handle_event("search", params, socket) do
+    {:noreply, socket |> search_memories(params)}
   end
 
   def handle_event("show_ally", %{"ally" => ally_id}, %{assigns: %{current_user: curr}} = socket) do
@@ -234,8 +218,12 @@ defmodule PhosWeb.MemoryLive.Index do
     Phos.Folk.last_messages_by_relation(user.id, opts)
   end
 
-  defp search_memories(user, search) do
-    Phos.Folk.search_last_messages(user.id, search, [])
+  defp search_memories(%{assigns: %{current_user: user}} = socket, %{"usersearch" => usersearch}) do
+    %{data: relation_memories, meta: %{pagination: %{cursor: cursor}} = meta} =  Phos.Folk.search_last_messages(user.id, usersearch, [])
+    socket
+    |> assign(relation_meta: meta)
+    |> assign(relation_cursor: cursor)
+    |> stream(:relation_memories, relation_memories, reset: true)
   end
 
   defp get_date_time(time, timezone) do
