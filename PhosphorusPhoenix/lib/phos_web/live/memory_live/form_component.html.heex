@@ -49,7 +49,7 @@
       <.live_file_input upload={@uploads.image} class="hidden" />
     </label>
     <.input
-      disabled = {is_nil(@rel)}
+      disabled = {is_nil(@rel) and !is_nil(@user)}
       field={{f, :message}}
       class="flex relative w-full bg-[#F9F9F9] dark:bg-[#282828]  text-sm rounded-2xl block dark:placeholder-[#D1D1D1] dark:text-white px-3 py-1 text-gray-900 placeholder-[#B3B5BD]"
       hide_error={true}
@@ -62,7 +62,7 @@
         <.chat_send type="send" />
       </button>
       <.live_component
-        :if={is_nil(@rel)}
+        :if={is_nil(@rel) and !is_nil(@user)}
         id={"#{@id}-ally-button"}
         module={PhosWeb.Component.AllyButton}
         current_user={@current_user}
