@@ -2079,7 +2079,7 @@ defmodule PhosWeb.CoreComponents do
         </p>
         <p class="lg:hidden block text-sm dark:text-white text-black font-semibold hover:underline hover:decoration-purple-600 dark:hover:decoration-white hover:decoration-solid hover:decoration-2 cursor-pointer">
           <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@username}/allies")}>
-            <%= "25 allies | allies with @#{@user.username}'s and Others" %>
+            <%= "#{@ally_count} | allies with @#{@user.username}'s and Others" %>
           </.link>
         </p>
         <%= render_slot(@allies) %>
