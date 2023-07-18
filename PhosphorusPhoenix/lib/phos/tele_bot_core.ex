@@ -83,12 +83,13 @@ defmodule Phos.TeleBot.Core do
 
   def handle({:photo, %{"chat" => %{"id" => telegram_id}} = payload}) do
     with {:ok, user} <- get_user_by_telegram(telegram_id),
-         {:ok, user_state} <- StateManager.get_state(telegram_id),
+         {:ok, %{branch: branch}} <- StateManager.get_state(telegram_id),
          {:ok, %{message_id: message_id}} <- ExGram.send_message(telegram_id, "Setting photo...") do
-      case user_state do
-        %{state: "picture", path: "editprofile"} ->
-          UserProfile.set_user_profile_picture(user, payload)
-          transition_to_start(telegram_id, user_state)
+      case branch do
+        %{state: "picture", path: "self/update"} ->
+          UserProfile.set_picture(user, payload)
+          UserProfile.open_user_profile(user)
+          StateManager.delete_state(telegram_id)
         %{state: "createorb" <> _type} = user_state ->
           CreateOrbPath.create_orb_path_transition(user, :media, payload)
         err -> error_fallback(telegram_id, err)
@@ -204,7 +205,7 @@ defmodule Phos.TeleBot.Core do
   #   Handle callback query for edit private_profile location to set the location based on the chosen type
   # """
   def handle({:callback_query, %{"data" => "edit_profile_locationtype_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}} = payload}) when type in ["home", "work", "live"] do
-    UserProfile.edit_user_profile_locationtype(telegram_id, type)
+    UserProfile.edit_locationtype(telegram_id, type)
   end
 
   # @doc """
@@ -213,13 +214,13 @@ defmodule Phos.TeleBot.Core do
   def handle({:callback_query, %{"data" => "edit_profile_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}} = payload}) do
     case type do
       "name" <> message_id ->
-        UserProfile.edit_user_profile_name(telegram_id, message_id)
+        UserProfile.edit_name(telegram_id, message_id)
       "bio" <> message_id ->
-        UserProfile.edit_user_profile_bio(telegram_id, message_id)
+        UserProfile.edit_bio(telegram_id, message_id)
       "location" <> message_id ->
-        UserProfile.edit_user_profile_location(telegram_id, message_id)
+        UserProfile.edit_location(telegram_id, message_id)
       "picture" <> message_id ->
-        UserProfile.edit_user_profile_picture(telegram_id, message_id)
+        UserProfile.edit_picture(telegram_id, message_id)
     end
   end
 
@@ -260,11 +261,12 @@ defmodule Phos.TeleBot.Core do
   # ====================
 
   def handle({:location, %{"location" => %{"latitude" => lat, "longitude" => lon}, "chat" => %{"id" => telegram_id}} = payload}) do
-    with {:ok, user_state} <- StateManager.get_state(telegram_id) do
-      case user_state do
-        %{state: "location", path: "editprofile"} ->
-          update_user_location(telegram_id, {lat, lon}, desc = Phos.Mainland.World.locate(:h3.from_geo({lat, lon}, 11)))
-        %{state: "createorb_current_location"} ->
+    with {:ok, %{branch: branch } = user_state} <- StateManager.get_state(telegram_id) do
+      case branch do
+        %{path: "self/update", state: "location"} ->
+          ProfileFSM.update_user_location(telegram_id, {lat, lon}, desc = Phos.Mainland.World.locate(:h3.from_geo({lat, lon}, 11)))
+          |> UserProfile.open_user_profile()
+        %{path: "orb/create", state: "createorb_current_location"} ->
           {:ok, user} = get_user_by_telegram(telegram_id)
           {_prev, user_state} = get_and_update_in(user_state.data.geolocation.central_geohash, &{&1, :h3.from_geo({lat, lon}, 10)} )
           {_prev, user_state} = get_and_update_in(user_state.data.location_type, &{&1, :live} )
@@ -327,11 +329,9 @@ defmodule Phos.TeleBot.Core do
   defp start_menu(telegram_id, message_id) do
     start_main_menu_check_and_register(telegram_id)
     with {:ok, %{confirmed_at: date} = user} when not is_nil(date) <- get_user_by_telegram(telegram_id) do
-      StateManager.new_state(telegram_id)
       start_menu_text(telegram_id, message_id)
     else
       _ ->
-        StateManager.new_state(telegram_id)
         onboard_text(telegram_id)
     end
   end
@@ -357,13 +357,11 @@ defmodule Phos.TeleBot.Core do
   defp main_menu_text(telegram_id), do: main_menu_text(telegram_id, nil)
   defp main_menu_text(telegram_id, ""), do: main_menu_text(telegram_id, nil)
   defp main_menu_text(telegram_id, nil) do
-    StateManager.new_state(telegram_id)
     {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id,
       Template.main_menu_text_builder(%{}), parse_mode: "HTML")
     ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id, reply_markup: Button.build_menu_inlinekeyboard(message_id))
   end
   defp main_menu_text(telegram_id, message_id) do
-    StateManager.new_state(telegram_id)
     ExGram.edit_message_text(Template.main_menu_text_builder(%{}), chat_id: telegram_id, message_id: message_id |> String.to_integer(),
       parse_mode: "HTML", reply_markup: Button.build_menu_inlinekeyboard(message_id))
   end
@@ -434,72 +432,6 @@ defmodule Phos.TeleBot.Core do
     main_menu(telegram_id)
   end
 
-  defp update_user_location(telegram_id, geo, desc) do
-    with {:ok, user_state} <- StateManager.get_state(telegram_id) do
-      type =
-        case user_state do
-          %{data: %{location_type: type}} -> type
-          _ -> nil
-        end
-      validate_user_update_location(type, telegram_id, geo, desc)
-    else
-       err -> error_fallback(telegram_id, err)
-    end
-  end
-
-  defp validate_user_update_location(nil, telegram_id, _, _), do: ExGram.send_message(telegram_id, "You must set your location type")
-  defp validate_user_update_location(type, telegram_id, geo, desc) do
-    {:ok, %{private_profile: priv} = user} = get_user_by_telegram(telegram_id)
-    geos = case priv do
-      nil ->
-        []
-      _ ->
-        Map.get(priv, :geolocation, []) |> Enum.map(&Map.from_struct(&1) |> Enum.reduce(%{}, fn {k, v}, acc ->
-          Map.put(acc, to_string(k), v) end)) |> Enum.reduce([], fn loc, acc ->
-            case Map.get(loc, "id") == type do
-              true -> acc
-              _ -> [loc | acc]
-            end
-          end)
-    end
-    present_territory = geos
-      |> Enum.map(fn loc -> :h3.parent(loc["geohash"], 11) end)
-      |> Enum.map(fn hash -> :h3.parent(hash, 8) |> :h3.k_ring(1) end)
-      |>  List.flatten() |> Enum.uniq()
-    places = geos
-      |> Enum.map(fn loc ->
-        hash = :h3.parent(loc["geohash"], 8)
-        %{"geohash" => hash,
-          "id" => loc["id"],
-          "location_description" => hash |> Phos.Mainland.World.locate()}
-      end)
-      |> Enum.reject(fn loc -> loc["id"] == "live" end)
-    params = %{
-      "private_profile" => %{"user_id" => user.id,
-        "geolocation" => [%{"id" => type,
-        "geohash" => :h3.from_geo(geo, 11),
-        "location_description" => desc} | geos]},
-      "public_profile" => %{"territories" => present_territory, "places" => places},
-      "personal_orb" => %{
-        "id" => (if is_nil(user.personal_orb), do: Ecto.UUID.generate(), else: user.personal_orb.id),
-        "active" => true,
-        "userbound" => true,
-        "initiator_id" => user.id,
-        "locations" =>  present_territory |> Enum.map(fn hash -> %{"id" => hash} end)
-      }
-    }
-
-    case Phos.Users.update_territorial_user(user, params) do
-      {:ok, user} ->
-        with {:ok, user_state} <- StateManager.get_state(telegram_id),
-             {:ok, user_state} <- Fsmx.transition(user_state, "start") do
-          StateManager.set_state(telegram_id, user_state)
-          UserProfile.open_user_profile(user)
-        end
-      _ -> ExGram.send_message(telegram_id, "Your #{type} location is not set.", reply_markup: Button.build_menu_inlinekeyboard())
-    end
-  end
-
   def dispatch_messages(events) do
     IO.inspect("im dispatching")
     IO.inspect(events)
@@ -552,8 +484,8 @@ defmodule Phos.TeleBot.Core do
           parse_mode: "HTML", reply_markup: Button.complete_profile_for_post_button())
       %User{media: false} ->
         with {:ok, user_state} <- StateManager.get_state(telegram_id) do
-          user_state = struct(ProfileFSM, Map.from_struct(%ProfileFSM{telegram_id: telegram_id, state: "picture", path: "editprofile",
-            data: %{return_to: "post"}, metadata: %{last_active: DateTime.utc_now() |> DateTime.to_unix()}}))
+          # user_state = struct(ProfileFSM, Map.from_struct(%ProfileFSM{telegram_id: telegram_id, state: "picture", path: "self/update",
+          #   data: %{return_to: "post"}, metadata: %{last_active: DateTime.utc_now() |> DateTime.to_unix()}}))
           case Fsmx.transition(user_state, "picture") do
             {:ok, user_state} ->
               ExGram.send_message(telegram_id, "Almost there! You need to set your user profile picture first.\n\n<i>(Use the 📎 button to attach image)</i>",
@@ -571,25 +503,20 @@ defmodule Phos.TeleBot.Core do
     end
   end
 
-  def transition_to_start(telegram_id, user_state) do
-    with {:ok, user_state} <- Fsmx.transition(user_state, "start") do
-      StateManager.set_state(telegram_id, user_state)
-    end
-  end
-
-  def message_route(%{state: state, path: path} = user_state, opts) do
+  def message_route(%{branch: %{state: state, path: path} = branch} = user_state, opts) do
     user = opts[:user]
     telegram_id = opts[:telegram_id]
     text = opts[:text]
-    case user_state do
-      %{state: "location", path: "editprofile"} ->
+    case branch do
+      %{state: "location", path: "self/update"} ->
         {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id, "Checking location...")
         case get_location_from_postal_json(text) do
           nil ->
             ExGram.send_message(telegram_id, "Invalid postal code. Please try again.")
           %{"road_name" => road_name, "lat" => lat, "lon" => lon} ->
-            update_user_location(telegram_id, {String.to_float(lat), String.to_float(lon)}, road_name)
-            transition_to_start(telegram_id, user_state)
+            ProfileFSM.update_user_location(telegram_id, {String.to_float(lat), String.to_float(lon)}, road_name)
+            |> UserProfile.open_user_profile()
+            StateManager.delete_state(telegram_id)
           err ->
             error_fallback(telegram_id, err)
         end
@@ -604,17 +531,17 @@ defmodule Phos.TeleBot.Core do
             err -> error_fallback(telegram_id, err)
         end
 
-      %{state: "name" <> message_id, path: "editprofile"} = user_state ->
+      %{state: "name" <> message_id, path: "self/update"} = user_state ->
         with {:ok, user} <- Users.update_user(user, %{public_profile: %{public_name: text}}) do
-          transition_to_start(telegram_id, user_state)
+          StateManager.delete_state(telegram_id)
           UserProfile.open_user_profile(user)
         else
           err -> error_fallback(telegram_id, err)
         end
 
-      %{state: "bio" <> message_id, path: "editprofile"} ->
+      %{state: "bio" <> message_id, path: "self/update"} ->
         with {:ok, user} <- Users.update_user(user, %{public_profile: %{bio: text}}) do
-          transition_to_start(telegram_id, user_state)
+          StateManager.delete_state(telegram_id)
           UserProfile.open_user_profile(user)
         else
           err -> error_fallback(telegram_id, err)

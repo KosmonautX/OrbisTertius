@@ -267,7 +267,7 @@ defmodule Phos.Users do
   def get_user_by_telegram(id) when is_binary(id) do
     case do_query_from_auth(id, "telegram") do
       %Auth{user: user} ->
-        {:ok, user |> Map.put(:telegram_user, id) }
+        {:ok, user |> Map.put(:tele_id, id) }
       err -> err
     end
   end

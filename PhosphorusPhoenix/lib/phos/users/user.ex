@@ -29,6 +29,8 @@ defmodule Phos.Users.User do
     field :mutual, :any, virtual: true
     field :online_at, :integer, virtual: true
 
+    field :tele_id, :integer, virtual: true
+
     # has_many :pending_relations, RelationBranch, foreign_key: :user_id, where: [completed_at: nil]
     has_many :allies, RelationBranch, foreign_key: :user_id, where: [completed_at: {:not, nil}]
     #has_many :allies, through: [:branches, :friend]

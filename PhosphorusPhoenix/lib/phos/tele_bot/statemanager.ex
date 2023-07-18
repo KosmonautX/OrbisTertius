@@ -1,11 +1,7 @@
 defmodule Phos.TeleBot.StateManager do
-  defstruct [:telegram_id, state: "start", path: "", data: %{return_to: ""}, metadata: %{message_id: "", last_active: DateTime.utc_now() |> DateTime.to_unix()}]
+  defstruct [:telegram_id,
+    branch: %{}, metadata: %{last_active: System.os_time(:second)}]
   use Agent
-
-  use Fsmx.Struct, transitions: %{
-    "start" => :*,
-    :* => "start"
-  }
 
   @expiry_timeout_in_sec 600
 
@@ -15,7 +11,9 @@ defmodule Phos.TeleBot.StateManager do
   end
 
   def new_state(user_id) when is_integer(user_id) do
-    Agent.update(__MODULE__, &Map.put(&1, user_id, %Phos.TeleBot.StateManager{}))
+    Agent.update(__MODULE__, &Map.put(&1, user_id, %__MODULE__{telegram_id: user_id}))
+    # Process.send_after(self(), :delete_expiry_states, @expiry_timeout_in_sec * 1000)
+    {:ok, %__MODULE__{telegram_id: user_id}}
   end
   def new_state(user_id), do: new_state(user_id |> String.to_integer())
 
@@ -33,6 +31,12 @@ defmodule Phos.TeleBot.StateManager do
   end
   def set_state(user_id, struct), do: set_state(user_id |> String.to_integer(), struct)
 
+
+  def update_state(struct, user_id) when is_integer(user_id) do
+    set_state(user_id, struct)
+  end
+  def update_state(struct, user_id), do: update_state(struct, user_id |> String.to_integer())
+
   def delete_state(user_id) do
     Agent.update(__MODULE__, &Map.drop(&1, [user_id]))
   end
@@ -46,7 +50,7 @@ defmodule Phos.TeleBot.StateManager do
         Process.send_after(self(), :delete_expiry_states, @expiry_timeout_in_sec * 1000)
       end
     else
-      err -> raise err
+      err -> IO.inspect("StateManager Error: #{inspect(err)}")
     end
   end
 
