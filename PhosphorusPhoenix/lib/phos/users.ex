@@ -796,14 +796,4 @@ defmodule Phos.Users do
     end
   end
 
-  def get_individual_ally_count(id) do
-    from(u in User,
-    join: r in assoc(u, :allies),
-    on: u.id == ^id,
-    group_by: u.id,
-    select: count(r)
-  )
-  |> Repo.all()
-  |> Enum.at(0)
-  end
 end
