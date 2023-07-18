@@ -26,7 +26,7 @@ defmodule PhosWeb.MemoryLive.Index do
         %{self_relation: rel} -> {list_memories(user, rel.id, limit: 24), rel.id}
       end
 
-    send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_dekstop, memory: %Memory{})
+    send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_desktop, memory: %Memory{})
 
     PhosWeb.Presence.track(self(), "memory:user:#{your.id}", "last_read", %{rel_id: rel_id})
 
@@ -100,7 +100,7 @@ defmodule PhosWeb.MemoryLive.Index do
   end
 
   @impl true
-  def handle_event("load-messages", _, socket), do: {:noreply, list_more_mesage(socket)}
+  def handle_event("load-messages", _, socket), do: {:noreply, list_more_message(socket)}
 
   def handle_event("load-relations", _, socket), do: {:noreply, list_more_chats(socket)}
 
@@ -141,7 +141,24 @@ defmodule PhosWeb.MemoryLive.Index do
 
   def handle_info(_, socket), do: {:noreply, socket}
 
-  defp list_more_mesage(
+  defp init_relations(%{assigns: %{current_user: user}} = socket) do
+    %{
+      data: relation_memories,
+      meta: %{pagination: %{cursor: cursor}} = metadata
+    }
+    = memories_by_user(user)
+
+    socket
+    |> assign(
+      usersearch: "",
+      media: [],
+      relation_meta: metadata,
+      relation_cursor: cursor
+    )
+    |> stream(:relation_memories, relation_memories)
+  end
+
+  defp list_more_message(
           %{
            assigns: %{
               message_cursor: cursor,
@@ -165,24 +182,7 @@ defmodule PhosWeb.MemoryLive.Index do
 
   end
 
-  defp init_relations(%{assigns: %{current_user: user}} = socket) do
-      %{
-        data: relation_memories,
-        meta: %{pagination: %{cursor: cursor}} = metadata
-      }
-      = memories_by_user(user)
-
-      socket
-      |> assign(
-        usersearch: "",
-        media: [],
-        relation_meta: metadata,
-        relation_cursor: cursor
-      )
-      |> stream(:relation_memories, relation_memories)
-  end
-
-  defp list_more_mesage(socket), do: socket
+  defp list_more_message(socket), do: socket
 
   defp list_more_chats(
         %{assigns: %{

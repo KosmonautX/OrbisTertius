@@ -36,7 +36,7 @@
         </div>
         <.live_component
           module={PhosWeb.Component.LastMessage}
-          id="dekstop-last-message"
+          id="desktop-last-message"
           memories={@streams.relation_memories}
           current_user={@current_user}
           date={@timezone}
@@ -45,7 +45,7 @@
       </div>
       <div :if={@user} class="lg:w-4/12  w-full">
         <div class="text-gray-600 w-full sticky  top-14 lg:top-[60px] z-10">
-          <.chat_profile id={"dekstop-chat-profile-for-#{@user.username}"} user={@user} />
+          <.chat_profile id={"desktop-chat-profile-for-#{@user.username}"} user={@user} />
         </div>
         <div>
           <.live_component
@@ -61,7 +61,7 @@
         <div class="hidden lg:block ">
           <.live_component
             module={PhosWeb.MemoryLive.FormComponent}
-            id={:new_on_dekstop}
+            id={:new_on_desktop}
             title={@page_title}
             action={:new}
             rel={@relation_id}
