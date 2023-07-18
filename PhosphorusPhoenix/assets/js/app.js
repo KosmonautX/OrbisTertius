@@ -153,12 +153,4 @@ window.liveSocket = liveSocket;
 //     import "some-package"
 //
 
-window.addEventListener("NextCarousel", (e) =>
-  console.log("clicked!", e.detail)
-);
-
-window.addEventListener("click", e => {
-  JS.exec("click", phxEvent, view, target, ["push", {data: this.eventMeta("click", e, target)}]);
-}, capture);
-
 

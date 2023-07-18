@@ -149,11 +149,11 @@
     username={@user.username}>
     <:actions>
       <.live_component
-        id="user-information-card-ally"
+        id="user-info-ally"
         module={PhosWeb.Component.AllyButton}
         current_user={@current_user}
         user={@user}
-        parent_pid={@parent_pid}
+        parent_pid={self()}
       />
     </:actions>
   </.redirect_user>
