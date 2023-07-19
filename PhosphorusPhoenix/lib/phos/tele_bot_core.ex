@@ -12,7 +12,7 @@ defmodule Phos.TeleBot.Core do
 
   alias Phos.{Users, Orbject, Action}
   alias Phos.Users.User
-  alias Phos.TeleBot.{Config, StateManager, CreateOrbPath, ProfileFSM}
+  alias Phos.TeleBot.{Config, StateManager, CreateOrb, ProfileFSM}
   alias Phos.TeleBot.Core.{UserProfile}
   alias Phos.TeleBot.Components.{Button, Template}
 
@@ -90,8 +90,8 @@ defmodule Phos.TeleBot.Core do
           UserProfile.set_picture(user, payload)
           UserProfile.open_user_profile(user)
           StateManager.delete_state(telegram_id)
-        %{state: "createorb" <> _type} = user_state ->
-          CreateOrbPath.create_orb_path_transition(user, :media, payload)
+        %{state: "media", path: "orb/create"} ->
+          CreateOrb.set_picture(user, payload)
         err -> error_fallback(telegram_id, err)
       end
       ExGram.delete_message(telegram_id, message_id)
@@ -142,27 +142,29 @@ defmodule Phos.TeleBot.Core do
 
   def handle({:callback_query, %{"data" => "createorb_back_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}} = payload})
       when type in ["description", "location", "media"] do
-    with {:ok, user} <- get_user_by_telegram(telegram_id) do
-      CreateOrbPath.create_orb_path(user, String.to_atom(type))
+    with {:ok, user} <- get_user_by_telegram(telegram_id),
+         {:ok, %{branch: branch}} <- StateManager.get_state(telegram_id) do
+      CreateOrb.transition(branch, type)
     else
       err -> error_fallback(telegram_id, err)
     end
   end
 
   def handle({:callback_query, %{"data" => "createorb_" <> type, "message" => %{"chat" => %{"id" => telegram_id}} } = payload})
-      when type in ["location_home", "location_work", "location_live", "description", "location", "media", "preview", "post"] do
-    with {:ok, user} <- get_user_by_telegram(telegram_id) do
-      case type do
-        "location_home" ->
-          CreateOrbPath.create_orb_path_transition(user, :location, "home")
-        "location_work" ->
-          CreateOrbPath.create_orb_path_transition(user, :location, "work")
-        "location_live" ->
-          CreateOrbPath.create_orb_path_transition(user, :location, "live")
-        "preview" ->
-          CreateOrbPath.create_orb_path_transition(user, :preview)
-        "post" ->
-          CreateOrbPath.create_orb_path(user, :post)
+    when type in ["location_home", "location_work", "location_live", "description", "location", "media", "preview", "post"] do
+    with {:ok, user} <- get_user_by_telegram(telegram_id),
+         {:ok, %{branch: branch}} <- StateManager.get_state(telegram_id) do
+      case {type, branch} do
+        {"location_home", %{path: "orb/create", state: "location"}} ->
+          CreateOrb.set_location(branch, "home")
+        {"location_work", %{path: "orb/create", state: "location"}} ->
+          CreateOrb.set_location(branch, "work")
+        {"location_live", %{path: "orb/create", state: "location"}} ->
+          ExGram.send_message(branch.telegram_id, "Send your location with the 📎 button below.", parse_mode: "HTML", reply_markup: Button.build_current_location_button())
+        {"preview", %{path: "orb/create"}} ->
+          CreateOrb.preview(branch)
+        {"post", %{path: "orb/create"}} ->
+          CreateOrb.post(branch, user)
       end
     else
       err -> error_fallback(telegram_id, err)
@@ -205,7 +207,7 @@ defmodule Phos.TeleBot.Core do
   #   Handle callback query for edit private_profile location to set the location based on the chosen type
   # """
   def handle({:callback_query, %{"data" => "edit_profile_locationtype_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}} = payload}) when type in ["home", "work", "live"] do
-    UserProfile.edit_locationtype(telegram_id, type)
+    UserProfile.edit_locationtype_prompt(telegram_id, type)
   end
 
   # @doc """
@@ -214,13 +216,13 @@ defmodule Phos.TeleBot.Core do
   def handle({:callback_query, %{"data" => "edit_profile_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}} = payload}) do
     case type do
       "name" <> message_id ->
-        UserProfile.edit_name(telegram_id, message_id)
+        UserProfile.edit_name_prompt(telegram_id, message_id)
       "bio" <> message_id ->
-        UserProfile.edit_bio(telegram_id, message_id)
+        UserProfile.edit_bio_prompt(telegram_id, message_id)
       "location" <> message_id ->
-        UserProfile.edit_location(telegram_id, message_id)
+        UserProfile.edit_location_prompt(telegram_id, message_id)
       "picture" <> message_id ->
-        UserProfile.edit_picture(telegram_id, message_id)
+        UserProfile.edit_picture_prompt(telegram_id, message_id)
     end
   end
 
@@ -266,12 +268,8 @@ defmodule Phos.TeleBot.Core do
         %{path: "self/update", state: "location"} ->
           ProfileFSM.update_user_location(telegram_id, {lat, lon}, desc = Phos.Mainland.World.locate(:h3.from_geo({lat, lon}, 11)))
           |> UserProfile.open_user_profile()
-        %{path: "orb/create", state: "createorb_current_location"} ->
-          {:ok, user} = get_user_by_telegram(telegram_id)
-          {_prev, user_state} = get_and_update_in(user_state.data.geolocation.central_geohash, &{&1, :h3.from_geo({lat, lon}, 10)} )
-          {_prev, user_state} = get_and_update_in(user_state.data.location_type, &{&1, :live} )
-          StateManager.set_state(telegram_id, user_state)
-          CreateOrbPath.create_orb_path_transition(user, :current_location)
+        %{path: "orb/create", state: "location"} ->
+          CreateOrb.set_location(branch, "live", [latlon: {lat, lon}])
         _ ->
           ExGram.send_message(telegram_id, "Your location not set.")
       end
@@ -285,13 +283,6 @@ defmodule Phos.TeleBot.Core do
   def handle({_, _, _}), do: []
 
   def get_user_by_telegram(telegram_id), do: Users.get_user_by_telegram(telegram_id |> to_string())
-
-  defp create_fresh_orb_form(telegram_id) do
-    {:ok, user} = get_user_by_telegram(telegram_id)
-    user_state = %Phos.TeleBot.CreateOrbFSM{telegram_id: telegram_id}
-    {:ok, user_state} = Fsmx.transition(user_state, "createorb_description")
-    StateManager.set_state(telegram_id, user_state)
-  end
 
   defp build_inlinequery_orbs(orbs) do
     orbs
@@ -423,11 +414,7 @@ defmodule Phos.TeleBot.Core do
     error_fallback(telegram_id)
   end
   def error_fallback(telegram_id) do
-    with {:ok, user_state} <- StateManager.get_state(telegram_id) do
-      Fsmx.transition(user_state, "start")
-    else
-      _ -> StateManager.new_state(telegram_id)
-    end
+    StateManager.delete_state(telegram_id)
     ExGram.send_message(telegram_id, Template.fallback_text_builder(%{}), parse_mode: "HTML")
     main_menu(telegram_id)
   end
@@ -498,12 +485,12 @@ defmodule Phos.TeleBot.Core do
           err -> error_fallback(telegram_id, err)
         end
       %User{confirmed_at: _date, media: true, username: _username} ->
-        create_fresh_orb_form(telegram_id)
+        CreateOrb.create_fresh_orb_form(telegram_id)
       err -> error_fallback(telegram_id, err)
     end
   end
 
-  def message_route(%{branch: %{state: state, path: path} = branch} = user_state, opts) do
+  def message_route(%{branch: branch} = user_state, opts) do
     user = opts[:user]
     telegram_id = opts[:telegram_id]
     text = opts[:text]
@@ -581,8 +568,11 @@ defmodule Phos.TeleBot.Core do
           err -> error_fallback(telegram_id, err)
         end
 
-      %{state: "description", path: "createorb"} ->
-        CreateOrbPath.create_orb_path_transition(user, :description, text)
+      %{state: "description", path: "orb/create"} = branch ->
+        CreateOrb.set_description(branch, text)
+        # CreateOrb.create_orb_path_transition(user, :description, text)
+      %{state: "location", path: "orb/create"} = branch ->
+        CreateOrb.set_location(branch, text)
       _ ->
         nil
     end

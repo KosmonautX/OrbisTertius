@@ -130,7 +130,7 @@ defmodule Phos.TeleBot.Components.Template do
 
     📍 <b>Posting to: </b><%= to_string(@location_type) %>
     📋 <b>What's happening today?</b>
-    <%= @inner_title %>
+    <%= @orb.payload.inner_title %>
     <%!-- 💚 <b>Info:</b> <%= @info %> --%>
 
     <i>(You can edit your post by pressing ↩️ Back)</i>
