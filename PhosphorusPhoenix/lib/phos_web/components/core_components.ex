@@ -2680,7 +2680,9 @@ defmodule PhosWeb.CoreComponents do
 
     ~H"""
     <div class="font-poppins relative w-full">
-      <img class="object-cover w-full h-[26rem] lg:h-[32rem]" src="/images/bg.jpg" />
+      <img class="object-cover w-full h-[26rem] lg:h-[32rem]"
+           src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/banner/lossless")}
+           onerror="this.src='/images/default_banner.jpg';" />
       <div class="absolute dark:bg-[#000000] bg-white inset-0 bg-opacity-50 dark:bg-opacity-70 px-4 md:px-10">
         <div class="flex flex-col items-center justify-center">
           <img
