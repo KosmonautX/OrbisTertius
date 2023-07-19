@@ -72,7 +72,7 @@ window.addEventListener("phos:clipcopy", (event) => {
     if ("share" in navigator) {
         const text = event.target.textContent;
         navigator.share({
-            title: document.querySelector('meta[property="og:title"]') ? .content,
+            title: document.querySelector('meta[property="og:title"]')?.content,
             url: text,
         });
     } else if ("clipboard" in navigator) {
@@ -159,9 +159,3 @@ window.liveSocket = liveSocket;
 //
 //     import "some-package"
 //
-
-window.addEventListener("click", function(e) {
-    JS.exec("click", phxEvent, view, target, ["push", {
-        data: this.eventMeta("click", e, target)
-    }]);
-}, capture);
