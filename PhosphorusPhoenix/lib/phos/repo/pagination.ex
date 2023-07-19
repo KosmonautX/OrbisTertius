@@ -38,8 +38,8 @@ defmodule Phos.Repo.Paginated do
   def all(query, opts) when is_list(opts) do
     limit = Keyword.get(opts, :limit, 12)
     sort = case Keyword.get(opts, :sort_attribute, :inserted_at) do
-             {_key, sort_attr} -> sort_attr
-             sort_attr -> sort_attr
+             {key, sort_attr} -> [key, sort_attr]
+             sort_attr -> [sort_attr]
            end
 
     dao = query
@@ -52,7 +52,7 @@ defmodule Phos.Repo.Paginated do
       # page-based
       {:ok, page} ->
         if Keyword.get(opts, :aggregate, true) do
-          total =  Phos.Repo.aggregate(query, :count, sort)
+          total =  Phos.Repo.aggregate(query, :count, List.last(sort))
           page_response(dao, page, total, limit)
         else
           page_response(dao, page, nil, limit)
@@ -67,7 +67,7 @@ defmodule Phos.Repo.Paginated do
               pagination: %{
                 downstream: true,
                 count: limit,
-                cursor: Map.get(head, sort) |> mutate_meta_attr}}}
+                cursor: get_in(head, sort |> Enum.map(&Access.key(&1))) |> mutate_meta_attr}}}
 
           count != 0 ->
             [head | _ ] = dao |> Enum.reverse()
@@ -76,7 +76,7 @@ defmodule Phos.Repo.Paginated do
                 pagination: %{
                   count: count,
                   downstream: false,
-                  cursor: Map.get(head, sort) |> mutate_meta_attr}}}
+                  cursor: get_in(head, sort |> Enum.map(&Access.key(&1))) |> mutate_meta_attr}}}
 
           count == 0 ->
             %{data: [],

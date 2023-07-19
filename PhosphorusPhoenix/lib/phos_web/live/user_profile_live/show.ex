@@ -61,7 +61,7 @@ defmodule PhosWeb.UserProfileLive.Show do
   def handle_event("show_ally", %{"ally" => ally_id}, %{assigns: %{current_user: curr}} = socket) do
     {:noreply,
      socket
-     |> assign(:ally, Phos.Users.get_public_user(ally_id, curr.id))
+     |> assign(:ally, Phos.Users.get_public_user(ally_id, curr && curr.id || nil))
      |> assign(:live_action, :ally)}
   end
 
