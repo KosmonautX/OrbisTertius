@@ -149,6 +149,14 @@ defmodule PhosWeb.CoreComponents do
   """
 
   attr(:id, :string, required: true)
+  attr(:class, :string, default: nil)
+
+  slot :item,
+    required: true,
+    doc: "the slot for form actions, such as a submit button" do
+    attr(:title, :string, required: true)
+    attr(:id, :string)
+  end
 
   def user_modal(assigns) do
     ~H"""
@@ -157,10 +165,11 @@ defmodule PhosWeb.CoreComponents do
       class="hidden w-44 list-none rounded-2xl bg-[#F3F4F8] py-2 text-base shadow-lg dark:bg-[#282828]"
     >
       <ul class="font-poppins font flex flex-col divide-y divide-gray-300 dark:divide-[#D1D1D1] text-base font-light text-[#404252] dark:text-[#D1D1D1]">
-        <li class="px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer">Share</li>
-        <li class="px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer">Block User</li>
-        <li class="px-4 py-2 text-[#CE395F] hover:bg-gray-200 dark:text-[#EF426F] dark:hover:bg-gray-600 cursor-pointer">
-          Report User
+        <li
+          :for={item <- @item}
+          class={["px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer", @class]}
+        >
+          <%= item.title %>
         </li>
       </ul>
     </div>
@@ -1015,7 +1024,7 @@ defmodule PhosWeb.CoreComponents do
 
   def banner(assigns) do
     ~H"""
-    <nav class="lg:bg-[#EEEFF3] bg-white fixed w-full z-10 top-0 left-0 border-b dark:text-white lg:border-none text-base font-bold dark:bg-gray-900 px-4 lg:py-3 py-2 font-poppins border-gray-300">
+    <nav class="lg:bg-[#EEEFF3] bg-white fixed w-full z-10 top-0 left-0 dark:text-white text-base font-bold dark:bg-gray-900 px-4 lg:py-3 py-2 font-poppins">
       <div class="flex flex-wrap items-center justify-between mx-auto">
         <a href="/" class="flex items-center">
           <.logo type="banner" class="h-8 dark:fill-white"></.logo>
@@ -1324,7 +1333,11 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <div class="w-full lg:px-0 px-3 relative">
       <div class="absolute right-0 z-10 mr-4 lg:mt-10 mt-12">
-        <.user_modal id={"#{@id}-orb-modal-#{@orb.id}"} />
+        <.user_modal id={"#{@id}-orb-modal-#{@orb.id}"}>
+          <:item title="Share" id="dashboard" />
+          <:item title="Block User" id="dashboard" />
+          <:item title="Report User" id="dashboard" />
+        </.user_modal>
       </div>
 
       <.user_info_bar
@@ -1596,8 +1609,7 @@ defmodule PhosWeb.CoreComponents do
           </:actions>
         </.user_info_bar>
       </div>
-
-      <div class="flex flex-1 items-center justify-center">
+      <div class="flex flex-1 items-center justify-center bg-white dark:bg-gray-900 lg:dark:bg-gray-800">
         <.preview_modal :if={@media != []} id={"#{@id}-scry-orb-#{@orb.id}"} media={@media} />
       </div>
 
@@ -1955,7 +1967,11 @@ defmodule PhosWeb.CoreComponents do
         <div class={[@show_shadow]}>
           <div class="relative w-full lg:max-w-3xl">
             <div :if={@show_location} class="absolute right-0 z-50 mt-8 mr-2 lg:mr-0 md:mr-10">
-              <.user_modal id={"#{@id}-orb-modal-#{@user.username}"} />
+              <.user_modal id={"#{@id}-orb-modal-#{@user.username}"}>
+                <:item title="Share" id="dashboard" />
+                <:item title="Block User" id="dashboard" />
+                <:item title="Report User" id="dashboard" />
+              </.user_modal>
             </div>
             <div
               :if={@show_location}
@@ -1978,7 +1994,7 @@ defmodule PhosWeb.CoreComponents do
           :if={@user.username}
           navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}")}
         >
-          <div class="relative flex justify-center items-center mt-6">
+          <div class="relative flex justify-center items-center mt-4">
             <div class="relative">
               <img
                 src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
@@ -2127,7 +2143,7 @@ defmodule PhosWeb.CoreComponents do
       end)
 
     ~H"""
-    <div class="flex flex-col p-4 w-full space-y-1 rounded-3xl bg-[#EEEFF3] dark:bg-gray-800 font-poppins space-y-2">
+    <div class="flex flex-col p-4 w-full space-y-1 rounded-3xl bg-[#F9F9F9] dark:bg-gray-800 font-poppins space-y-2">
       <h5 class="lg:text-2xl  text-lg font-bold text-[#000000] dark:text-white font-Poppins break-words">
         <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
       </h5>
@@ -2498,10 +2514,10 @@ defmodule PhosWeb.CoreComponents do
     <div
       id={@id}
       phx-mounted={@show && show_modal(@id)}
-      class="fixed z-10 inset-0 hidden  w-full mx-auto h-screen"
+      class="fixed z-10 inset-0 hidden  w-full mx-auto h-screen bg-white/70 dark:bg-black/70 transition-opacity"
       aria-hidden="true"
     >
-      <div class="w-full h-screen fixed inset-0 overflow-y-auto journal-scroll transition-opacity bg-white/90 dark:bg-black/90">
+      <div class="w-full h-screen fixed inset-0 overflow-y-auto journal-scroll bg-zinc/70 dark:bg-black/70 transition-opacity">
         <.focus_wrap
           id={"#{@id}-container"}
           phx-mounted={@show && show_modal(@id)}
@@ -2510,7 +2526,7 @@ defmodule PhosWeb.CoreComponents do
           phx-click-away={hide_modal(@on_cancel, @id)}
           class="hidden relative h-screen flex flex-col"
         >
-          <div :if={@close_button} class="absolute top-4 right-4 lg:top-4 lg:right-6">
+          <div :if={@close_button} class="absolute top-4 right-4">
             <button
               phx-click={hide_modal(@on_cancel, @id)}
               type="button"
