@@ -35,6 +35,14 @@ defmodule Phos.TeleBot.Core.UserProfile do
 
   # ExGram.send_message(telegram_id, text, reply_markup: Button.build_current_location_button())
 
+  def edit_locationtype_prompt(telegram_id, "live") do
+    ExGram.send_message(telegram_id, "Please send your location for live location.")
+    {:ok, user_state} = StateManager.new_state(telegram_id)
+    user_state
+    |> Map.put(:branch, %ProfileFSM{telegram_id: telegram_id, state: "location",
+      data: %{location_type: "live"}})
+    |> StateManager.update_state(telegram_id)
+  end
   def edit_locationtype_prompt(telegram_id, location_type) do
     ExGram.send_message(telegram_id, "Please type your postal code or send your location for #{location_type} location.")
     {:ok, user_state} = StateManager.new_state(telegram_id)

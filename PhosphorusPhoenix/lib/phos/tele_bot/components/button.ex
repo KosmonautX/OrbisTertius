@@ -5,16 +5,17 @@ defmodule Phos.TeleBot.Components.Button do
     %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [[
       %ExGram.Model.InlineKeyboardButton{
         text: "Register",
-        callback_data: "onboarding"
+        callback_data: "onboarding_register"
       }
     ]]}
   end
 
-  def complete_profile_for_post_button() do
+  # def complete_profile_for_post_button() do
+  def build_onboarding_username_button() do
     %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [[
       %ExGram.Model.InlineKeyboardButton{
         text: "Complete Profile",
-        callback_data: "complete_profile_for_post"
+        callback_data: "onboarding_username"
       }
     ]]}
   end
@@ -82,7 +83,7 @@ defmodule Phos.TeleBot.Components.Button do
   def build_link_account_button() do
     %ExGram.Model.InlineKeyboardMarkup{inline_keyboard:  [
       [
-        %ExGram.Model.InlineKeyboardButton{text: "🔗 Link Account", callback_data: "link_account"},
+        %ExGram.Model.InlineKeyboardButton{text: "🔗 Link Account", callback_data: "onboarding_linkaccount"},
       ]
       ]}
   end

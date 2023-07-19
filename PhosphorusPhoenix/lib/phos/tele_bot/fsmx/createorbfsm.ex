@@ -29,8 +29,8 @@ defmodule Phos.TeleBot.CreateOrbFSM do
   # def before_transition(struct, "current_location", "media"), do: print_media_text(struct)
   def before_transition(struct, "media", "location"), do: print_location_text(struct)
   def before_transition(%{data: %{location_type: type, orb: %{central_geohash: geohash}}} = struct, "location", "media"), do: print_media_text(struct)
-  # def before_transition(struct, "preview", "media"), do: print_media_text(struct)
-  # def before_transition(%{data: %{inner_title: inner_title, location_type: type, geolocation: %{central_geohash: geohash}}} = struct, _initial_state, "preview"), do: print_preview_text(struct)
+  def before_transition(struct, "preview", "media"), do: print_media_text(struct)
+  def before_transition(%{data: %{inner_title: inner_title, location_type: type, geolocation: %{central_geohash: geohash}}} = struct, _initial_state, "preview"), do: print_preview_text(struct)
 
   defp print_description_text(struct) do
     ExGram.send_message(struct.telegram_id, Template.orb_creation_description_builder(%{}),

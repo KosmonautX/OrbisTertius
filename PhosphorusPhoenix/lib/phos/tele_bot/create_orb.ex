@@ -33,6 +33,9 @@ defmodule Phos.TeleBot.CreateOrb do
       transition(branch, "media")
     end
   end
+  def set_location(%{telegram_id: telegram_id} = branch, text) do
+    ExGram.send_message(telegram_id, "Please use the location button to select.")
+  end
   def set_location(branch, location_type, opts) when location_type in ["live"] do
     latlon = opts[:latlon]
     {:ok, user} = BotCore.get_user_by_telegram(branch.telegram_id)
@@ -64,13 +67,14 @@ defmodule Phos.TeleBot.CreateOrb do
       {_prev, branch} = get_and_update_in(branch.data.media, &{&1, media_change})
       Map.put(user_state, :branch, branch)
       |> StateManager.update_state(telegram_id)
-      preview(branch)
+      transition(branch, "preview")
     else
       err -> BotCore.error_fallback(telegram_id, err)
     end
   end
 
   def preview(%{telegram_id: telegram_id, data: %{media: %{media: media}} = data } = branch) do
+    transition(branch, "preview")
     if Enum.empty?(media) do
       ExGram.send_message(telegram_id, Template.orb_creation_preview_builder(data),
         parse_mode: "HTML", reply_markup: Button.build_createorb_preview_inlinekeyboard())
