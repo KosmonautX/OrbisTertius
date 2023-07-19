@@ -13,7 +13,7 @@ export const EnterSubmit = {
           map["Control"] = false
           map["Enter"] = false
           document.getElementById("new-memory-form_message").value = ""          
-          document.getElementById("new_on_dekstop-memory-form_message").value=""
+          document.getElementById("new_on_desktop-memory-form_message").value=""
         }
 
       }

@@ -40,9 +40,10 @@
             cursor={@message_cursor}
             metadata={@message_meta}
           />
+
         </div>
-        <div class="bottom-0 z-10 fixed w-full lg:w-9/12">
-          <.live_component
+         <div class="bottom-0 z-10 fixed w-full lg:w-9/12">
+           <.live_component
             module={PhosWeb.MemoryLive.FormComponent}
             id={:new}
             title={@page_title}
@@ -51,8 +52,7 @@
             current_user={@current_user}
             memory={%Phos.Message.Memory{}}
             navigate={~p"/memories/user/#{@user.username}"}
-            user={@user}
-          />
+            user={@user}/>
          </div>
        </div>
  </div>
@@ -82,5 +82,3 @@
     media={@media}
   />
 </.gallerymodal>
-
-

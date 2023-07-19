@@ -33,7 +33,7 @@
 
   <.simple_form
     :let={f}
-    class="flex items-center justify-between relative lg:py-2 py-3 px-1 lg:px-0 bg-[#F3F4F8] lg:bg-white dark:bg-gray-900 lg:dark:bg-gray-800 "
+    class="flex items-center justify-between relative lg:py-2 py-3 px-1 lg:px-0 bg-[#F3F4F8] lg:bg-white dark:bg-gray-900 lg:dark:bg-gray-800"
     for={@changeset}
     id={"#{@id}-memory-form"}
     phx-target={@myself}
@@ -45,7 +45,7 @@
       <.live_file_input upload={@uploads.image} class="hidden" />
     </label>
     <.input
-      disabled = {is_nil(@rel)}
+      disabled = {is_nil(@rel) and !is_nil(@user)}
       field={{f, :message}}
       class="flex relative w-full bg-[#F9F9F9] dark:bg-gray-800 lg:dark:bg-gray-900 text-sm rounded-2xl block dark:placeholder-[#D1D1D1] dark:text-white px-3 py-1 text-gray-900 placeholder-[#B3B5BD]"
       hide_error={true}
@@ -58,7 +58,7 @@
         <.chat_send type="send" />
       </button>
       <.live_component
-        :if={is_nil(@rel)}
+        :if={is_nil(@rel) and !is_nil(@user)}
         id={"#{@id}-ally-button"}
         module={PhosWeb.Component.AllyButton}
         current_user={@current_user}
