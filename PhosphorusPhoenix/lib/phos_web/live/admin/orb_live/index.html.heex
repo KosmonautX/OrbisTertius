@@ -5,7 +5,7 @@
         <i class="fa-solid fa-plus cursor-pointer mr-2 hidden lg:block"></i>Import orbs
       </.link>
     </div>
-    <.form :let={f} for={:search} phx-change="search">
+    <.form :let={f} for= {%{}} as={:search} phx-change="search">
       <%= text_input(f, :traits,
         phx_debounce: 200,
         value: @traits,

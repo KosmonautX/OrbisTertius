@@ -18,7 +18,8 @@ defmodule PhosWeb.UserLoginLive do
       <.simple_form class="max-w-2xl p-4 space-y-4 rounded-2xl mt-4"
         :let={f}
         id="login_form"
-        for={:user}
+        for={%{}}
+        as={:user}
         action={~p"/users/log_in"}
         as={:user}
         phx-update="ignore"

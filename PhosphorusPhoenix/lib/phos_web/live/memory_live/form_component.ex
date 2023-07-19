@@ -96,11 +96,7 @@ defmodule PhosWeb.MemoryLive.FormComponent do
 
   defp save_memory(%{assigns: %{rel: relation, current_user: user}} = socket, :new, params) do
     with user_destination <- get_receiver_id(relation, user),
-         memory_params <-
-           Map.merge(params, %{
-             "user_destination_id" => user_destination
-           }),
-         {:ok, memory} <- Message.create_message(memory_params) do
+         {:ok, memory} <- Message.create_message(params) do
       {:noreply,
        socket
        |> put_flash(:info, "Memory created successfully")

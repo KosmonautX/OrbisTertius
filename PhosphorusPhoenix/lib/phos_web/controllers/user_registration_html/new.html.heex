@@ -75,7 +75,7 @@
 
 <div class="w-1/2 m-auto">
   <.simple_form 
-  :let={f} for={@changeset} action={~p"/users/register"}>
+  :let={f} for={%{}} as={@changeset} action={~p"/users/register"}>
     <div class="alert alert-danger" :if={@changeset.action}>
       <p>Oops, something went wrong! Please check the errors below.</p>
     </div>
