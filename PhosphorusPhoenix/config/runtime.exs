@@ -104,7 +104,7 @@ unless config_env() == :prod do
 # ip_address: "1.1.1.1",                      # string
 # max_connections: 50,                        # integer
 # secret_token: "some_super_secret_key",      # string
-  url: System.get_env("TELEGRAM_WEBHOOK_URI") #{S
+  url: System.get_env("TELEGRAM_REDIRECT_HOST") #
 
 end
 
@@ -242,6 +242,11 @@ if config_env() == :prod do
   config :ex_gram,
   token: System.get_env("TELEGRAM_BOT_ID"),
   json_engine: Jason
+
+  config :ex_gram, :webhook,
+  drop_pending_updates: true,                # boolean
+  url: System.get_env("TELEGRAM_REDIRECT_HOST")
+# certificate: "priv/cert/selfsigned.pem",    # string (file path)
 
   # ## Using releases
   #
