@@ -352,10 +352,9 @@ defmodule PhosWeb.OrbLive.Show do
     end
   end
 
-  defp stream_assign(socket, key, %{data: data, meta: meta} = _params) do
+  defp stream_assign(socket, key, %{data: data, meta: meta}, opts \\ []) do
     socket
-    |> stream(key, data)
+    |> stream(key, data, opts)
     |> assign(key, meta)
   end
-
 end

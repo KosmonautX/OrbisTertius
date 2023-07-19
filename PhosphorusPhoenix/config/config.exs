@@ -77,7 +77,7 @@ config :phos, Phos.OAuthStrategy,
   ]
 
 config :tailwind,
-  version: "3.1.6",
+  version: "3.2.7",
   admin: [
     args: ~w(
       --config=tailwind.config.js

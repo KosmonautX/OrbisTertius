@@ -43,11 +43,7 @@ defmodule PhosWeb.UserProfileLive.Index do
 
   %{data: data, meta: meta} = ScrollOrb.check_more_orb(user.id, expected_orb_page)
 
-  {:noreply,
-    socket
-    |> stream(:orbs, data)
-    |> assign(:orbs, meta)
-  }
+  {:noreply, socket |> stream_assign(:orbs, %{data: data, meta: meta})}
 end
 
     def handle_event(
@@ -59,17 +55,13 @@ end
 
       %{data: data, meta: meta} = ScrollAlly.check_more_ally(curr, user.id, expected_ally_page, 24)
 
-      {:noreply,
-        socket
-        |> stream(:ally_list, data)
-        |> assign(:ally_list, meta)
-      }
+      {:noreply, socket |> stream_assign(:ally_list, %{data: data, meta: meta})}
     end
 
     def handle_event("show_ally", %{"ally" => ally_id}, %{assigns: %{current_user: curr}} = socket) do
       {:noreply,
        socket
-       |> assign(:ally, Phos.Users.get_public_user(ally_id, curr.id))
+       |> assign(:ally, Phos.Users.get_public_user(ally_id, (curr && curr.id) || nil))
        |> assign(:live_action, :ally)}
     end
 
@@ -79,6 +71,7 @@ end
        |> assign(:ally, nil)
        |> assign(:live_action, :show)}
     end
+
 
     @impl true
     def handle_info(
@@ -179,20 +172,9 @@ end
       })
     end
 
-    # look to integrate Repo.Paginated.all() :meta
-
-    defp load_more_streams(socket, %{orbs: %{data: orbs, meta: orbs_meta}}, %{
-           allies: %{data: allies, meta: allies_meta}
-         }) do
-      Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
-      |> then(&Enum.reduce(orbs, &1, fn orb, acc -> stream_insert(acc, :orbs, orb) end))
-      |> assign(orbs: orbs_meta)
-      |> assign(ally_list: allies_meta)
-    end
-
-    defp stream_assign(socket, key, %{data: data, meta: meta} = _params) do
+    defp stream_assign(socket, key, %{data: data, meta: meta}, opts \\ []) do
       socket
-      |> stream(key, data)
+      |> stream(key, data, opts)
       |> assign(key, meta)
     end
 

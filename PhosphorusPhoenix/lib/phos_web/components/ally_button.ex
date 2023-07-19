@@ -279,7 +279,7 @@ defmodule PhosWeb.Component.AllyButton do
 
   def render(%{ally: false, size: "small"} = assigns) do
     ~H"""
-    <a class="flex" phx-click="show_ally" phx-value-ally={@user.id} )}>
+    <a class="flex" phx-click="show_ally" phx-value-ally={@user.id}>
       <.ally_btn />
     </a>
     """

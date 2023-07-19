@@ -30,23 +30,46 @@
     <% end %>
   </div>
 
-    <.simple_form :let={f} for={@changeset} id={"#{@id}-memory-form"}
-      phx-target={@myself} class="flex w-full items-center gap-2 py-2 px-1 bg-[#F3F4F8] lg:bg-white dark:bg-gray-900 lg:dark:bg-gray-800"
-      phx-change="validate" phx-submit="save" phx-hook="EnterSubmit">
-       <label class="flex items-center px-1.5">
-         <Heroicons.plus class="h-5 w-5 lg:h-6 lg:w-6 dark:text-white text-gray-700" />
-         <.live_file_input upload={@uploads.image} class="hidden" />
-       </label>
-       <.input field={{f, :message}}
-         class="bg-[#F9F9F9] dark:bg-[#282828]  text-sm rounded-2xl block dark:placeholder-[#D1D1D1] dark:text-white py-1 px-2 text-gray-900 placeholder-[#B3B5BD] flex-1 relative w-full"
-         hide_error={true} type="textarea" placeholder="Scratching..."/>
-       <.input field={{f, :user_source_id}} type="hidden" value={@current_user.id} />
-       <.input :if={!is_nil(@rel)} field={{f, :rel_subject_id}} type="hidden" value={@rel} />
-       <:actions>
-         <button type="submit" phx-disable-with="Saving..." class="absolute right-10 inset-y-0">
-          <.chat_send type="send" />
-         </button>
-       </:actions>
-    </.simple_form>
 
+  <.simple_form
+    :let={f}
+    class="flex items-center justify-between relative lg:py-2 py-3 px-1 lg:px-0 bg-[#F3F4F8] lg:bg-white dark:bg-gray-900 lg:dark:bg-gray-800 "
+    for={@changeset}
+    id={"#{@id}-memory-form"}
+    phx-target={@myself}
+    phx-change="validate"
+    phx-submit="save"
+    phx-hook="EnterSubmit">
+    <label class="flex items-center px-1.5">
+      <Heroicons.plus class="h-5 w-5 lg:h-6 lg:w-6 dark:text-white text-gray-700" />
+      <.live_file_input upload={@uploads.image} class="hidden" />
+    </label>
+    <.input
+      disabled = {is_nil(@rel)}
+      field={{f, :message}}
+      class="flex relative w-full bg-[#F9F9F9] dark:bg-gray-800 lg:dark:bg-gray-900 text-sm rounded-2xl block dark:placeholder-[#D1D1D1] dark:text-white px-3 py-1 text-gray-900 placeholder-[#B3B5BD]"
+      hide_error={true}
+      type="textarea" 
+      placeholder={if not is_nil(@rel), do: "Scratching...", else: "Request to ally before messaging! ->"}/>
+    <.input field={{f, :user_source_id}} type="hidden" value={@current_user.id} />
+    <.input :if={!is_nil(@rel)} field={{f, :rel_subject_id}} type="hidden" value={@rel} />
+    <:actions>
+      <button :if={!is_nil(@rel)} type="submit" phx-disable-with="Saving..." class="absolute right-4 inset-y-0">
+        <.chat_send type="send" />
+      </button>
+      <.live_component
+        :if={is_nil(@rel)}
+        id={"#{@id}-ally-button"}
+        module={PhosWeb.Component.AllyButton}
+        current_user={@current_user}
+        socket={@socket}
+        size="small"
+        parent_pid={self()}
+        user={@user}
+      />
+    </:actions>
+    
+
+  </.simple_form>
+  
 </section>

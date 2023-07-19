@@ -26,7 +26,7 @@ defmodule PhosWeb.Component.LastMessage do
         phx-hook="ScrollBottom"
         class={[
           if(@metadata.pagination.downstream, do: "pb-[calc(10vh)]"),
-          "h-screen lg:h-[54rem] journal-scroll overflow-y-auto bg-[#F9F9F9] lg:bg-white dark:bg-gray-900"
+          "h-screen lg:h-[54rem] journal-scroll overflow-y-auto bg-[#F9F9F9] lg:bg-white lg:dark:bg-gray-800 dark:bg-gray-900"
         ]}
       >
         <li :for={{dom_id, memory} <- @memories} id={dom_id}>
@@ -34,7 +34,7 @@ defmodule PhosWeb.Component.LastMessage do
             navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{memory.username}")}
             class=""
           >
-            <div class="flex flex-wrap items-center space-x-2 px-2 py-2 transition duration-150 ease-in-out cursor-pointer hover:bg-gray-100 focus:outline-none bg-[#F9F9F9] lg:bg-white lg:dark:bg-gray-800 dark:bg-gray-900">
+            <div class="flex flex-wrap items-center space-x-2 px-2 md:px-10 lg:px-3 py-2 transition duration-150 ease-in-out cursor-pointer hover:bg-gray-100 focus:outline-none bg-[#F9F9F9] lg:bg-white lg:dark:bg-gray-800 dark:bg-gray-900">
               <div class="flex shrink-0">
                 <img
                   src={Phos.Orbject.S3.get!("USR", memory.id, "public/profile/lossless")}

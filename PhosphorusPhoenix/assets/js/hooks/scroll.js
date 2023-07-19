@@ -58,7 +58,6 @@ export const ScrollTop = {
       if (target.scrollTop <= 150) {
           this.pushEvent("load-messages", {})
           this.el.scrollTop = this.el.scrollHeight - prevHeight + prevScrollTop
-          console.log(this.el.scrollTop)
           prevScrollTop = this.el.scrollTop
           prevHeight = this.el.scrollHeight
       }
@@ -66,8 +65,6 @@ export const ScrollTop = {
 
     this.handleEvent("scroll-on-send", () => {
       this.el.scrollTop = this.el.scrollHeight
-      console.log(this.el.scrollTop)
-      console.log(this.el.clientHeight)
     })
 
 

@@ -415,7 +415,7 @@ defmodule Phos.Users do
   def get_territorial_user!(id),
     do: Repo.get!(User, id) |> Repo.preload([:private_profile, personal_orb: :locations])
 
-  def get_public_user(user_id, your_id) do
+  def get_public_user(user_id, your_id) when is_uuid?(your_id) do
     Phos.Repo.one(
       from u in User,
       as: :user,
@@ -425,6 +425,21 @@ defmodule Phos.Users do
       left_join: root in assoc(branch, :root),
       select: u,
       select_merge: %{self_relation: root},
+      inner_lateral_join:
+      a_count in subquery(
+        from(r in Phos.Users.RelationBranch,
+          where: r.user_id == parent_as(:user).id and not is_nil(r.completed_at),
+          select: %{count: count()}
+        )
+      ),
+      select_merge: %{ally_count: a_count.count})
+  end
+
+  def get_public_user(user_id, _) do
+    Phos.Repo.one(
+      from u in User,
+      as: :user,
+      where: u.id == ^user_id,
       inner_lateral_join:
       a_count in subquery(
         from(r in Phos.Users.RelationBranch,
@@ -796,14 +811,4 @@ defmodule Phos.Users do
     end
   end
 
-  def get_individual_ally_count(id) do
-    from(u in User,
-    join: r in assoc(u, :allies),
-    on: u.id == ^id,
-    group_by: u.id,
-    select: count(r)
-  )
-  |> Repo.all()
-  |> Enum.at(0)
-  end
 end

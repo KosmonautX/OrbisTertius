@@ -33,7 +33,7 @@
   main_width="lg:max-w-2xl"
   background="bg-black/50"
   show={@live_action in [:ally]}
-  on_cancel={JS.navigate(~p"/user/#{@user.username}/allies")}>
+  on_cancel={JS.patch(~p"/user/#{@user.username}/allies")}>
   <.redirect_user
     id="redirect-user"
     user={@ally}

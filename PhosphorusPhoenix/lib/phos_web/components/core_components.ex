@@ -2077,7 +2077,7 @@ defmodule PhosWeb.CoreComponents do
         </p>
         <p class="lg:hidden block text-sm dark:text-white text-black font-semibold hover:underline hover:decoration-purple-600 dark:hover:decoration-white hover:decoration-solid hover:decoration-2 cursor-pointer">
           <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@username}/allies")}>
-            <%= "25 allies | allies with @#{@user.username}'s and Others" %>
+            <%= "#{@ally_count} | allies with @#{@user.username}'s and Others" %>
           </.link>
         </p>
         <%= render_slot(@allies) %>
@@ -2232,14 +2232,14 @@ defmodule PhosWeb.CoreComponents do
         >
           <.link
             navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/register")}
-            class="text-sm text-teal-400 font-bold hover:underline"
+            class="text-sm text-purple-400 font-bold hover:underline"
           >
             Sign up
           </.link>
           Or
           <.link
             navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/users/log_in")}
-            class="text-sm text-teal-400 font-bold hover:underline"
+            class="text-sm text-purple-400 font-bold hover:underline"
           >
             Sign in
           </.link>
@@ -2277,7 +2277,7 @@ defmodule PhosWeb.CoreComponents do
   def list_message(assigns) do
     ~H"""
     <div id={"#{@id}-list"}>
-      <div class="relative lg:h-[850px] h-[800px]">
+      <div class="relative lg:h-[860px] h-[800px]">
         <img src="/images/light_bg.jpeg" class="inset-0 w-full h-full object-cover" />
         <div
           id="message_container"
@@ -2501,7 +2501,7 @@ defmodule PhosWeb.CoreComponents do
       class="fixed z-10 inset-0 hidden  w-full mx-auto h-screen"
       aria-hidden="true"
     >
-      <div class="w-full h-screen fixed inset-0 overflow-y-auto journal-scroll transition-opacity bg-white/70 dark:bg-black/50">
+      <div class="w-full h-screen fixed inset-0 overflow-y-auto journal-scroll transition-opacity bg-white/90 dark:bg-black/90">
         <.focus_wrap
           id={"#{@id}-container"}
           phx-mounted={@show && show_modal(@id)}
