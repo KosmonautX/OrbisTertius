@@ -111,8 +111,9 @@ defmodule Phos.Folk do
          {:ok, rel} = data ->
            rel = rel |> Repo.preload([:acceptor])
            spawn(fn ->
-             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.initiator_id}", "#{rel.acceptor.username} accepted your ally request 💪️", "",
-               %{title: "#{rel.acceptor.username} accepted your ally request 💪️",
+             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.initiator_id}", "#{rel.acceptor.username}", "Accepted your Ally Request. Start Chatting! ✅",
+               %{title: "#{rel.acceptor.username}",
+                 body: "Accepted your Ally Request. Start Chatting! ✅",
                  action_path: "/userland/others/#{rel.acceptor_id}",
                  cluster_id: "folk_req"})
              |> Sparrow.FCM.V1.Notification.add_apns(Phos.PlatformNotification.Config.APNS.gen())
@@ -174,8 +175,9 @@ defmodule Phos.Folk do
            rel = rel
            |> Repo.preload([:initiator])
            spawn(fn ->
-             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.acceptor_id}", "#{rel.initiator.username} requested to be your ally 🤝", "",
-               %{title: "#{rel.initiator.username} requested to be your ally 🤝",
+             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.acceptor_id}", "#{rel.initiator.username}", "Requested to be your Ally. Accept to Chat! 👋",
+               %{title: "#{rel.initiator.username}",
+                 body: "Requested to be your Ally. Accept to Chat! 👋",
                  action_path: "/folkland/self/requests",
                  cluster_id: "folk_req",
                  initiator_id: rel.initiator_id
@@ -390,4 +392,10 @@ defmodule Phos.Folk do
 
   defp do_get_feeds(friend_ids), do: Phos.Action.list_orbs([initiator_id: friend_ids])
 
+  def set_last_read(relations, user_id) when is_list(relations) do
+    time  = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    from(r in RelationBranch, where: r.user_id == ^user_id and r.root_id in ^relations)
+    |> Repo.update_all(set: [last_read_at: time])
+  end
+  def set_last_read(relation, user_id), do: set_last_read([relation], user_id)
 end

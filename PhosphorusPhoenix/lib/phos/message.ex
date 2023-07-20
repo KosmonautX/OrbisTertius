@@ -124,6 +124,35 @@ defmodule Phos.Message do
     |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
+  @doc """
+  Returns last  messages by location
+
+  ## Examples
+
+      iex> list_messages_by_pair()
+      [%Echo{}, ...]
+
+  """
+
+
+  @doc """
+  Returns paginated call of the messages by location
+
+  ## Examples
+
+      iex> list_messages_by_pair()
+      [%Echo{}, ...]
+
+  """
+  def list_messages_by_geohashes(hash, opts\\ []) when is_integer(hash) do
+    Phos.Message.Memory
+    |> where([m], m.loc_subject_id == ^hash)
+    |> preload([:user_source, :orb_subject])
+    |> Repo.Paginated.all(opts)
+  end
+
+
+
   alias Phos.Message.Memory
 
   @doc """
@@ -183,9 +212,24 @@ defmodule Phos.Message do
 
       _ -> {:error, :not_found}
       end
+  end
+
+    def create_message(%{"id" => _mem_id, "user_source_id" => _u_id, "loc_subject_id" => loc_id} = attrs) do
+      with loc <- Phos.Terra.get_or_create_loc(loc_id),
+      {:ok, memory} <- %Memory{}
+      |> Memory.changeset(attrs)
+      |> Ecto.Changeset.put_assoc(:last_loc_memory, loc)
+      |> Repo.insert() do
+        memory
+        |> Repo.preload([:orb_subject, :user_source, :loc_subject])
+        |> tap(&Phos.PubSub.publish(&1, {:memory, "assembly"}, &1.loc_subject))
+        |> (&({:ok, &1})).()
+      else
+        {:error, err} -> {:error, err}
+      end
     end
 
-  @doc """
+    @doc """
   Creates a memory.
 
   ## Examples

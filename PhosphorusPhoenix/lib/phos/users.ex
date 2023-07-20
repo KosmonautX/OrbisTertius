@@ -54,6 +54,7 @@ defmodule Phos.Users do
   #   """
   def get_user_by_fyr(id), do: Repo.get_by(User, fyr_id: id) |> Repo.preload([:private_profile])
 
+  @decorate cacheable(cache: Phos.Cache, key: {User, username})
   def get_user_by_username(username), do: Repo.get_by(User, username: username)
 
   def filter_user_by_username(username, limit, page) do
@@ -198,18 +199,17 @@ defmodule Phos.Users do
     user
     |> User.territorial_changeset(attrs)
     |> Repo.update()
-
-    # |> case do
-    #      {:ok, user} = data ->
-    #        spawn(fn -> discovery_publisher(user, attrs) end)
+    # |> tap(fn x -> case x do
+    #      {:ok, %User{private_profile: %{geolocation: geolocation}}} = data ->
+    #        Task.start(fn -> self_publisher(geolocation, user.id) end)
     #      err -> err
-    #    end
+    #    end)
   end
 
-  # defp discovery_publisher(past, present) do
-  #   dbg() ## add topic virtual feed to user object and send it down discovery feed
-  #   #Phos.PubSub.publish(%{orb | topic: loc}, {:orb, event}, loc_topic(loc))
+  # defp self_publisher(past, user_id) do
+  #   Phos.PubSub.publish(user, {:orb, event}, loc_topic(loc))
   # end
+
   @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
   def update_integrations_user(%User{} = user, attrs) do
     user
@@ -381,13 +381,21 @@ defmodule Phos.Users do
   def get_public_user(user_id, your_id) do
     Phos.Repo.one(
       from u in User,
-        where: u.id == ^user_id,
-        left_join: branch in assoc(u, :relations),
-        on: branch.friend_id == ^your_id,
-        left_join: root in assoc(branch, :root),
-        select: u,
-        select_merge: %{self_relation: root}
-    )
+      as: :user,
+      where: u.id == ^user_id,
+      left_join: branch in assoc(u, :relations),
+      on: branch.friend_id == ^your_id,
+      left_join: root in assoc(branch, :root),
+      select: u,
+      select_merge: %{self_relation: root},
+      inner_lateral_join:
+      a_count in subquery(
+        from(r in Phos.Users.RelationBranch,
+          where: r.user_id == parent_as(:user).id and not is_nil(r.completed_at),
+          select: %{count: count()}
+        )
+      ),
+      select_merge: %{ally_count: a_count.count})
   end
 
   def get_public_user_by_username(username, your_id) do
