@@ -1,9 +1,9 @@
 <div id="ally_list"
-  class="w-full mx-auto top-20 fixed left-0 right-0 z-10 lg:px-5 block">
-  <div class="w-full dark:bg-gray-900 bg-white">
-    <div class="flex flex-wrap items-center justify-center px-2 mb-2">
+  class="w-full mx-auto md:top-14 top-12 fixed left-0 right-0 z-10 lg:px-5 block">
+  <div class="w-full dark:bg-gray-900 bg-white py-1">
+    <div class="flex flex-wrap items-center justify-center px-2 md:px-10">
       <.link patch={~p"/user/#{@user.username}"}>
-        <Heroicons.chevron_left class="w-6 h-6 dark:text-white
+        <Heroicons.chevron_left class="md:w-6 md:h-6 h-5 w-5 dark:text-white
             font-semibold" />
       </.link>
       <span class="text-center text-base font-semibold text-gray-800 dark:text-white flex-1 items-center justify-center">
@@ -15,16 +15,13 @@
     class="w-full mx-auto text-center py-6 text-gray-600 font-medium text-sm lg:text-base dark:text-white">
     <%= "#{@user.username} has no allies yet" %>
   </p>
-  <div>
-        <.live_component
+    <.live_component
       module={PhosWeb.Components.ScrollAlly}
       id="infinite-ally-home-desktop"
       data={@streams.ally_list}
       parent_pid={@parent_pid}
       current_user={@current_user}
-      meta={@ally_list}
-    />
-  </div>
+      meta={@ally_list}/>
 </div>
 
 <.ally_modal

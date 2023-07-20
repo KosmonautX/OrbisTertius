@@ -8,7 +8,7 @@
       for={@changeset}
       id={@id}
       phx-target={@myself}
-      class="lg:px-1 px-0 lg:py-1 py-4 flex rounded-b-3xl rounded-none"
+      class="lg:px-1 px-0 lg:py-1 py-2 flex rounded-b-3xl rounded-none"
       phx-submit={@action}>
       <div :if={@action == :edit and not is_nil(@comment)}>
         <.input field={{f, :body}} type="textarea" value={@comment.body} />
@@ -34,8 +34,8 @@
           :if={not is_nil(@current_user)}
           type="submit"
           phx-disable-with="Saving..."
-          class="absolute bottom-5 right-5 lg:bottom-3 lg:right-2 md:right-8 md:bottom-4">
-          <.send_btn type="send" />
+          class="absolute inset-y-0 right-3 lg:right-2 md:right-4">
+          <.send_btn type="send" class="h-4 md:h-5"/>
         </button>
 
         <button

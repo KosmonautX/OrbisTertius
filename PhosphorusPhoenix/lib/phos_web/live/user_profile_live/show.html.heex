@@ -17,7 +17,7 @@
   </div>
 </.modal>
 <section class="w-full flex flex-col items-center mt-12 lg:gap-4 gap-2 lg:mt-18 font-poppins bg-white lg:bg-[#EEEFF3] dark:bg-gray-900">
-  <div class="w-full fixed left-0 right-0 top-14 z-10 lg:hidden block">
+  <div class="w-full fixed left-0 right-0 md:top-14 top-12 z-10 lg:hidden block">
     <.user_profile_banner
       id="orb-user-profile-mobile"
       user={@user}
@@ -26,7 +26,7 @@
       show_border={true}
     />
   </div>
-  <div class="lg:block hidden w-full mt-3">
+  <div class="lg:block hidden w-full mt-2">
     <.user_profile_banner
       id="orb-user-profile-desktop"
       user={@user}
@@ -55,7 +55,7 @@
           :if={@current_user && @user.id == @current_user.id}
           patch={~p"/user/#{@current_user.username}/edit"}
         >
-          <button class="bg-black text-white hover:black focus:outline-none focus:ring-4   focus:ring-black font-semibold rounded-2xl text-base px-6 py-2.5 text-center dark:focus:ring-black font-Poppins">
+          <button class="bg-black text-white hover:black focus:outline-none focus:ring-4   focus:ring-black font-semibold rounded-2xl text-base md:px-6 px-4 md:py-2.5 py-1.5 text-center dark:focus:ring-black font-Poppins">
             Edit
           </button>
         </.link>
@@ -100,7 +100,7 @@
     </.user_information_card>
 
   </div>
-  <div class="lg:hidden block sticky top-[311px] z-10 bg-white w-full items-center justify-center ">
+  <div class="lg:hidden block sticky md:top-[311px] top-72 z-10 bg-white w-full items-center justify-center ">
     <.tabs_mobile_view
       title="ScratchBac Admin"
       home_path={~p"/admin"}

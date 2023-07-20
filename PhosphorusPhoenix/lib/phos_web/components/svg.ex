@@ -211,9 +211,16 @@ defmodule PhosWeb.SVG do
     """
   end
 
-  def plus_btn(assigns) do
+  def plus_btn(%{type: "plus_btn"} = assigns) do
     ~H"""
-    <svg width="81" height="45" viewBox="0 0 81 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width="81"
+      height="45"
+      viewBox="0 0 81 45"
+      fill="none"
+      class={@class}
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <rect width="81" height="45" rx="15" fill="#9747FF" />
       <path
         d="M29.472 23.28H26.448V26.384H24.336V23.28H21.312V21.328H24.336V18.224H26.448V21.328H29.472V23.28ZM38.7333 25.872H34.2853L33.5493 28H31.1973L35.2133 16.816H37.8213L41.8373 28H39.4693L38.7333 25.872ZM38.1253 24.08L36.5093 19.408L34.8932 24.08H38.1253ZM45.5784 16.16V28H43.3384V16.16H45.5784ZM50.0315 16.16V28H47.7915V16.16H50.0315ZM60.7246 19.136L55.2366 32.192H52.8526L54.7726 27.776L51.2206 19.136H53.7326L56.0206 25.328L58.3406 19.136H60.7246Z"
@@ -223,9 +230,16 @@ defmodule PhosWeb.SVG do
     """
   end
 
-  def share_btn(assigns) do
+  def share_btn(%{type: "share_btn"} = assigns) do
     ~H"""
-    <svg width="45" height="45" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width="45"
+      height="45"
+      viewBox="0 0 45 45"
+      fill="none"
+      class={@class}
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <rect width="45" height="45" rx="15" fill="#D2D4DA" />
       <path
         d="M18.6844 20.6578L25.3125 17.3438M25.3156 26.6578L18.6938 23.3469M31 16C31 17.6569 29.6569 19 28 19C26.3431 19 25 17.6569 25 16C25 14.3431 26.3431 13 28 13C29.6569 13 31 14.3431 31 16ZM19 22C19 23.6569 17.6569 25 16 25C14.3431 25 13 23.6569 13 22C13 20.3431 14.3431 19 16 19C17.6569 19 19 20.3431 19 22ZM31 28C31 29.6569 29.6569 31 28 31C26.3431 31 25 29.6569 25 28C25 26.3431 26.3431 25 28 25C29.6569 25 31 26.3431 31 28Z"
@@ -337,7 +351,14 @@ defmodule PhosWeb.SVG do
 
   def send_btn(%{type: "send"} = assigns) do
     ~H"""
-    <svg width="30" height="36" viewBox="0 0 21 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width="30"
+      height="36"
+      viewBox="0 0 21 17"
+      fill="none"
+      class={@class}
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <path
         d="M1.46227 16.8849L19.6884 9.40488C20.5344 9.05488 20.5344 7.91488 19.6884 7.56488L1.46227 0.0848802C0.772912 -0.20512 0.0104448 0.28488 0.0104448 0.99488L0 5.60488C0 6.10488 0.386456 6.53488 0.908694 6.59488L15.6671 8.48488L0.908694 10.3649C0.386456 10.4349 0 10.8649 0 11.3649L0.0104448 15.9749C0.0104448 16.6849 0.772912 17.1749 1.46227 16.8849Z"
         fill="#00BFB2"

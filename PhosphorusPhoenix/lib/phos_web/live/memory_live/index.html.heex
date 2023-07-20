@@ -8,14 +8,14 @@
              autofocus autocomplete="off" list="matches"
              class="block py-3 pl-3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-2xl focus:ring-purple-500 focus:border-purple-500 w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"/>
         </form>
-        <div class="flex w-full items-center justify-between bg-white px-6 py-3  block lg:hidden sticky z-20 top-14 md:px-12 dark:bg-gray-900">
+        <div class="flex w-full items-center justify-between bg-red-100 px-6 py-3  block lg:hidden fixed z-20 md:top-14 top-12 md:px-12 dark:bg-gray-900">
           <Heroicons.archive_box class="h-5 w-5 text-gray-800 dark:text-zinc-300" />
           <div class="flex items-center">
             <p class="text-base font-semibold text-[#404252] dark:text-white">Chat</p>
           </div>
           <Heroicons.pencil_square class="h-5 w-5 text-gray-800 dark:text-zinc-300" />
         </div>
-        <div class="mt-14 lg:mt-0">
+        <div class="md:mt-[104px] mt-24 lg:mt-0">
           <.live_component
           module={PhosWeb.Component.LastMessage}
           id="desktop-last-message"
@@ -27,10 +27,10 @@
         </div>
 
        <div :if={@user} class="lg:w-9/12 w-full">
-        <div class="text-gray-600 w-full sticky  top-14 lg:top-0 z-10">
+        <div class="text-gray-600 w-full fixed md:top-14 top-12 lg:top-0 z-10">
           <.chat_profile id={"desktop-chat-profile-for-#{@user.username}"} user={@user}/>
         </div>
-        <div class="lg:mt-0 mt-14">
+        <div class="lg:mt-14 md:mt-28 mt-24">
           <.live_component
             module={PhosWeb.Components.ListMessage}
             id="infinite-home-desktop"
@@ -40,7 +40,6 @@
             cursor={@message_cursor}
             metadata={@message_meta}
           />
-
         </div>
          <div class="bottom-0 z-10 fixed w-full lg:w-9/12">
            <.live_component
