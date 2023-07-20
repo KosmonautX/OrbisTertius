@@ -1024,7 +1024,7 @@ defmodule PhosWeb.CoreComponents do
 
   def banner(assigns) do
     ~H"""
-    <nav class="lg:bg-[#EEEFF3] bg-white fixed w-full z-10 top-0 left-0 dark:text-white text-base font-bold dark:bg-gray-900 md:px-4 px-1.5 lg:py-3 py-2 font-poppins">
+    <nav class="lg:bg-[#EEEFF3] bg-white fixed w-full z-10 top-0 left-0 dark:text-white text-base font-bold dark:bg-gray-900 md:px-4 px-4 lg:py-3 py-2 font-poppins">
       <div class="flex flex-wrap items-center justify-between mx-auto">
         <a href="/" class="flex items-center">
           <.logo type="banner" class="md:h-8 h-6 dark:fill-white"></.logo>
@@ -1115,7 +1115,7 @@ defmodule PhosWeb.CoreComponents do
 
   def guest_banner(assigns) do
     ~H"""
-    <nav class="lg:bg-[#EEEFF3] bg-white fixed w-full z-10 top-0 left-0 dark:text-white text-base font-bold dark:bg-gray-900 md:px-4 px-1.5 lg:py-3 py-2 font-poppins">
+    <nav class="lg:bg-[#EEEFF3] bg-white fixed w-full z-10 top-0 left-0 dark:text-white text-base font-bold dark:bg-gray-900 md:px-4 px-2 lg:py-3 py-2 font-poppins">
       <div class="flex flex-wrap items-center justify-between mx-auto">
         <a href="//www.scratchbac.com/blog" class="flex items-center">
           <.logo type="banner" class="md:h-8 h-6 dark:fill-white"></.logo>
@@ -2576,25 +2576,19 @@ defmodule PhosWeb.CoreComponents do
 
   def ally_modal(assigns) do
     ~H"""
-    <div
-      id={@id}
-      phx-mounted={@show && show_modal(@id)}
-      class="relative z-50 hidden w-full mx-auto h-screen bg-white/50 dark:bg-black/50 transition-opacity"
-    >
+    <div id={@id} phx-mounted={@show && show_modal(@id)} class="relative z-50 hidden w-full mx-auto">
       <div
         id={"#{@id}-bg"}
-        class={["fixed inset-0 bg-zinc-50/90 transition-opacity", @background]}
-        aria-hidden="true"
-      />
-      <div class="fixed inset-0 w-full flex">
+        class={["fixed inset-0 bg-gray-500 dark:bg-black opacity-90 dark:opacity-80", @background]}
+        aria-hidden="true"/>
         <div
           aria-describedby={"#{@id}-description"}
           role="dialog"
           aria-modal="true"
           tabindex="0"
-          class="w-full"
+          class="w-full fixed inset-0 flex"
         >
-          <div class="flex w-full h-screen lg:items-center lg:justify-center items-end justify-end">
+          <div class="flex w-full absolute lg:inset-0 bottom-0 lg:items-center lg:justify-center">
             <div class={["w-full lg:py-8", @main_width]}>
               <.focus_wrap
                 id={"#{@id}-container"}
@@ -2602,7 +2596,7 @@ defmodule PhosWeb.CoreComponents do
                 phx-window-keydown={hide_modal(@on_cancel, @id)}
                 phx-key="escape"
                 phx-click-away={hide_modal(@on_cancel, @id)}
-                class="hidden relative flex w-full bg-white shadow-zinc-700/10 ring-1 ring-zinc-700/10 transition lg:rounded-3xl lg:shadow-2xl"
+                class="hidden relative flex w-full bg-white lg:rounded-3xl lg:shadow-2xl"
               >
                 <div :if={@close_button} class="absolute top-4 right-4">
                   <button
@@ -2648,7 +2642,6 @@ defmodule PhosWeb.CoreComponents do
             </div>
           </div>
         </div>
-      </div>
     </div>
     """
   end

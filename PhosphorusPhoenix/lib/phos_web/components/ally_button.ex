@@ -198,7 +198,7 @@ defmodule PhosWeb.Component.AllyButton do
       when user in [nil, ""] do
     ~H"""
     <a class="flex" phx-click={show_modal("welcome_message")}>
-      <.plus_btn type="plus_btn" class="w-16 -mt-1 md:w-20 md:-mt-0" />
+      <.plus_btn type="plus_btn" class="w-16 -mt-1 md:w-20 lg:w-28 md:-mt-0" />
     </a>
     """
   end
