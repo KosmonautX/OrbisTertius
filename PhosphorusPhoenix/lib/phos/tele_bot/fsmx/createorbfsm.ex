@@ -30,7 +30,7 @@ defmodule Phos.TeleBot.CreateOrbFSM do
   def before_transition(struct, "media", "location"), do: print_location_text(struct)
   def before_transition(%{data: %{location_type: type, orb: %{central_geohash: geohash}}} = struct, "location", "media"), do: print_media_text(struct)
   def before_transition(struct, "preview", "media"), do: print_media_text(struct)
-  def before_transition(%{data: %{inner_title: inner_title, location_type: type, geolocation: %{central_geohash: geohash}}} = struct, _initial_state, "preview"), do: print_preview_text(struct)
+  def before_transition(%{data: %{location_type: type, orb: %{central_geohash: geohash, payload: %{inner_title: inner_title}}}} = struct, _initial_state, "preview"), do: print_preview_text(struct)
 
   defp print_description_text(struct) do
     ExGram.send_message(struct.telegram_id, Template.orb_creation_description_builder(%{}),
@@ -58,13 +58,13 @@ defmodule Phos.TeleBot.CreateOrbFSM do
 
   defp print_preview_text(struct) do
     {:ok, user} = BotCore.get_user_by_telegram(struct.telegram_id)
-    user_state = StateManager.get_state(struct.telegram_id)
+    {:ok, %{branch: %{data: %{media: %{media: media}} = data} = branch}} = StateManager.get_state(struct.telegram_id)
 
-    if Enum.empty?(user_state.data.media) do
-      ExGram.send_message(struct.telegram_id, Template.orb_creation_preview_builder(user_state.data),
+    if Enum.empty?(media) do
+      ExGram.send_message(struct.telegram_id, Template.orb_creation_preview_builder(data),
         parse_mode: "HTML", reply_markup: Button.build_createorb_preview_inlinekeyboard())
     else
-      ExGram.send_photo(struct.telegram_id, "https://media.cnn.com/api/v1/images/stellar/prod/191212182124-04-singapore-buildings.jpg?q=w_2994,h_1996,x_3,y_0,c_crop", caption: Template.orb_creation_preview_builder(user_state.data),
+      ExGram.send_photo(struct.telegram_id, "https://media.cnn.com/api/v1/images/stellar/prod/191212182124-04-singapore-buildings.jpg?q=w_2994,h_1996,x_3,y_0,c_crop", caption: Template.orb_creation_preview_builder(data),
         parse_mode: "HTML", reply_markup: Button.build_createorb_preview_inlinekeyboard())
     end
     {:ok, struct}

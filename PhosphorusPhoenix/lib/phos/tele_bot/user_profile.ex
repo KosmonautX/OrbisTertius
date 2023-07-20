@@ -39,7 +39,7 @@ defmodule Phos.TeleBot.Core.UserProfile do
     ExGram.send_message(telegram_id, "Please send your location for live location.")
     {:ok, user_state} = StateManager.new_state(telegram_id)
     user_state
-    |> Map.put(:branch, %ProfileFSM{telegram_id: telegram_id, state: "location",
+    |> Map.put(:branch, %ProfileFSM{telegram_id: telegram_id, state: "livelocation",
       data: %{location_type: "live"}})
     |> StateManager.update_state(telegram_id)
   end

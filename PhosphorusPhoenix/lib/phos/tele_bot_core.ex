@@ -43,11 +43,11 @@ defmodule Phos.TeleBot.Core do
   Handle messages as requested by menus (Postal codes, email addresses, createorb inner_title etc.)
   """
   def handle({:message, :text, %{"chat" => %{"id" => telegram_id}, "text" => text} = payload}) do
-    with {:ok, user} <- get_user_by_telegram(telegram_id),
-         {:ok, user_state} <- StateManager.get_state(telegram_id) do
+    with {:ok, user_state} <- StateManager.get_state(telegram_id),
+         {:ok, user} <- get_user_by_telegram(telegram_id) do
         message_route(user_state, [user: user, telegram_id: telegram_id, text: text])
       else
-        err -> error_fallback(telegram_id, err)
+        {:error, nil} -> error_fallback(telegram_id)
       end
   end
 
@@ -91,7 +91,9 @@ defmodule Phos.TeleBot.Core do
           StateManager.delete_state(telegram_id)
         %{state: "media", path: "orb/create"} ->
           CreateOrb.set_picture(user, payload)
-        err -> error_fallback(telegram_id, err)
+        %{path: "orb/create"} ->
+          ExGram.send_message(telegram_id, "Please type a description for your post before uploading a media.")
+        _ -> nil
       end
       ExGram.delete_message(telegram_id, message_id)
     else
@@ -270,13 +272,14 @@ defmodule Phos.TeleBot.Core do
   def handle({:location, %{"location" => %{"latitude" => lat, "longitude" => lon}, "chat" => %{"id" => telegram_id}} = payload}) do
     with {:ok, %{branch: branch } = user_state} <- StateManager.get_state(telegram_id) do
       case branch do
-        %{path: "self/update", state: "location"} ->
+        %{path: "self/update"} ->
           ProfileFSM.update_user_location(telegram_id, {lat, lon}, desc = Phos.Mainland.World.locate(:h3.from_geo({lat, lon}, 11)))
           |> UserProfile.open_user_profile()
         %{path: "orb/create", state: "location"} ->
           CreateOrb.set_location(branch, "live", [latlon: {lat, lon}])
-        _ ->
-          ExGram.send_message(telegram_id, "Your location not set.")
+        %{path: "orb/create"} ->
+          ExGram.send_message(telegram_id, "Please type a description for your post before setting your location.")
+        _ -> nil
       end
     else
       err -> error_fallback(telegram_id, err)
@@ -323,6 +326,7 @@ defmodule Phos.TeleBot.Core do
 
   defp start_menu(telegram_id), do: start_menu(telegram_id, nil)
   defp start_menu(telegram_id, message_id) do
+    StateManager.delete_state(telegram_id)
     start_main_menu_check_and_register(telegram_id)
     with {:ok, %{confirmed_at: date} = user} when not is_nil(date) <- get_user_by_telegram(telegram_id) do
       start_menu_text(telegram_id, message_id)
@@ -341,6 +345,7 @@ defmodule Phos.TeleBot.Core do
 
   defp main_menu(telegram_id), do: main_menu(telegram_id, nil)
   defp main_menu(telegram_id, message_id) do
+    StateManager.delete_state(telegram_id)
     start_main_menu_check_and_register(telegram_id)
     with {:ok, %{confirmed_at: date} = user} when not is_nil(date) <- get_user_by_telegram(telegram_id) do
       main_menu_text(telegram_id, message_id)
@@ -444,17 +449,6 @@ defmodule Phos.TeleBot.Core do
     end)
   end
 
-  def get_location_from_postal_json(postal) do
-    with {:ok, body} <- File.read("../HeimdallrNode/resources/postal_road_13_07_2023.json"),
-         {:ok, json} <- Poison.decode(body) do
-            if json[postal] do
-              json[postal]
-            else
-              nil
-            end
-    end
-  end
-
   defp open_latest_posts(user), do: open_latest_posts(user, nil)
   defp open_latest_posts(user, ""), do: open_latest_posts(user, nil)
   defp open_latest_posts(%{integrations: %{telegram_chat_id: telegram_id}} = user, nil) do
@@ -494,7 +488,7 @@ defmodule Phos.TeleBot.Core do
     case branch do
       %{path: "self/update", state: "location"} ->
         {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id, "Checking location...")
-        case get_location_from_postal_json(text) do
+        case Phos.Mainland.Postal.locate(text) do
           nil ->
             ExGram.send_message(telegram_id, "Invalid postal code. Please try again.")
           %{"road_name" => road_name, "lat" => lat, "lon" => lon} ->
@@ -505,6 +499,9 @@ defmodule Phos.TeleBot.Core do
             error_fallback(telegram_id, err)
         end
         ExGram.delete_message(telegram_id, message_id)
+
+      %{path: "self/update", state: "livelocation"} ->
+        ExGram.send_message(telegram_id, "You must share your live location to update your location.")
 
       %{path: "self/update", state: "name" <> message_id} = user_state ->
         with {:ok, user} <- Users.update_user(user, %{public_profile: %{public_name: text}}) do

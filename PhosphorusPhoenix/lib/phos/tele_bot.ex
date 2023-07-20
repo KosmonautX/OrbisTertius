@@ -18,7 +18,8 @@ defmodule Phos.TeleBot do
 
     children  = [
     {BotCore, [method: :webhook, token: token]},
-    StateManager,
+    # StateManager,
+    TeleBot.Cache,
     TelegramNotification]
 
     Supervisor.init(children, strategy: :one_for_one)
