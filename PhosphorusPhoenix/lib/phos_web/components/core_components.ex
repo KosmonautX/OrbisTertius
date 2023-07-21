@@ -1936,6 +1936,7 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:show_img, :boolean, default: true)
   attr(:show_border, :boolean, default: true)
+  attr(:show_padding, :boolean, default: true)
   attr(:main_height, :string, default: "lg:h-80")
   attr(:text_color, :string, default: "text-[#404252] dark:text-white")
 
@@ -1992,7 +1993,10 @@ defmodule PhosWeb.CoreComponents do
             </div>
           </div>
         </div>
-        <div class="relative flex justify-center items-center mt-4">
+        <div class={[
+          @show_padding == false && "lg:mt-4",
+          "relative flex justify-center items-center lg:mt-8 mt-5"
+        ]}>
           <div class="relative">
             <img
               src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
@@ -2153,7 +2157,7 @@ defmodule PhosWeb.CoreComponents do
         <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
       </p>
 
-      <div class="flex gap-4 items-center justify-center">
+      <div class="flex items-center justify-center">
         <a
           class="cursor-pointer"
           id={"#{@id}-sharebtn"}
@@ -2163,7 +2167,7 @@ defmodule PhosWeb.CoreComponents do
             <%= PhosWeb.Endpoint.url() <>
               path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
           </div>
-          <.share_btn type="share_btn" class="ml-4 dark:fill-white"></.share_btn>
+          <.share_btn type="share_btn" class="dark:fill-white"></.share_btn>
         </a>
         <div :if={@ally_button != []} class="cursor-pointer">
           <.live_component
@@ -2580,68 +2584,69 @@ defmodule PhosWeb.CoreComponents do
       <div
         id={"#{@id}-bg"}
         class={["fixed inset-0 bg-gray-500 dark:bg-black opacity-90 dark:opacity-80", @background]}
-        aria-hidden="true"/>
-        <div
-          aria-describedby={"#{@id}-description"}
-          role="dialog"
-          aria-modal="true"
-          tabindex="0"
-          class="w-full fixed inset-0 flex"
-        >
-          <div class="flex w-full absolute lg:inset-0 bottom-0 lg:items-center lg:justify-center">
-            <div class={["w-full lg:py-8", @main_width]}>
-              <.focus_wrap
-                id={"#{@id}-container"}
-                phx-mounted={@show && show_modal(@id)}
-                phx-window-keydown={hide_modal(@on_cancel, @id)}
-                phx-key="escape"
-                phx-click-away={hide_modal(@on_cancel, @id)}
-                class="hidden relative flex w-full bg-white lg:rounded-3xl lg:shadow-2xl"
-              >
-                <div :if={@close_button} class="absolute top-4 right-4">
-                  <button
+        aria-hidden="true"
+      />
+      <div
+        aria-describedby={"#{@id}-description"}
+        role="dialog"
+        aria-modal="true"
+        tabindex="0"
+        class="w-full fixed inset-0 flex"
+      >
+        <div class="flex w-full absolute lg:inset-0 bottom-0 lg:items-center lg:justify-center">
+          <div class={["w-full lg:py-8", @main_width]}>
+            <.focus_wrap
+              id={"#{@id}-container"}
+              phx-mounted={@show && show_modal(@id)}
+              phx-window-keydown={hide_modal(@on_cancel, @id)}
+              phx-key="escape"
+              phx-click-away={hide_modal(@on_cancel, @id)}
+              class="hidden relative flex w-full bg-white lg:rounded-3xl lg:shadow-2xl"
+            >
+              <div :if={@close_button} class="absolute top-4 right-4">
+                <button
+                  phx-click={hide_modal(@on_cancel, @id)}
+                  type="button"
+                  class="-m-3 flex-none p-3 opacity-80 hover:opacity-40"
+                  aria-label={gettext("close")}
+                >
+                  <Heroicons.x_mark class="h-5 w-5 dark:text-white text-gray-900" />
+                </button>
+              </div>
+              <div id={"#{@id}-content"}>
+                <div
+                  id={"#{@id}-main"}
+                  class="w-full lg:max-w-2xl lg:items-center lg:justify-center flex"
+                >
+                  <%= render_slot(@inner_block) %>
+                </div>
+                <div
+                  :if={@confirm != [] or @cancel != []}
+                  class="p-4 flex flex-row-reverse items-center gap-5"
+                >
+                  <.button
+                    :for={confirm <- @confirm}
+                    id={"#{@id}-confirm"}
+                    tone={Map.get(confirm, :tone, :primary)}
+                    phx-click={@on_confirm}
+                    phx-disable-with
+                    class="py-2 px-3"
+                  >
+                    <%= render_slot(confirm) %>
+                  </.button>
+                  <.link
+                    :for={cancel <- @cancel}
                     phx-click={hide_modal(@on_cancel, @id)}
-                    type="button"
-                    class="-m-3 flex-none p-3 opacity-80 hover:opacity-40"
-                    aria-label={gettext("close")}
+                    class="text-sm font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
                   >
-                    <Heroicons.x_mark class="h-5 w-5 dark:text-white text-gray-900" />
-                  </button>
+                    <%= render_slot(cancel) %>
+                  </.link>
                 </div>
-                <div id={"#{@id}-content"}>
-                  <div
-                    id={"#{@id}-main"}
-                    class="w-full lg:max-w-2xl lg:items-center lg:justify-center flex"
-                  >
-                    <%= render_slot(@inner_block) %>
-                  </div>
-                  <div
-                    :if={@confirm != [] or @cancel != []}
-                    class="p-4 flex flex-row-reverse items-center gap-5"
-                  >
-                    <.button
-                      :for={confirm <- @confirm}
-                      id={"#{@id}-confirm"}
-                      tone={Map.get(confirm, :tone, :primary)}
-                      phx-click={@on_confirm}
-                      phx-disable-with
-                      class="py-2 px-3"
-                    >
-                      <%= render_slot(confirm) %>
-                    </.button>
-                    <.link
-                      :for={cancel <- @cancel}
-                      phx-click={hide_modal(@on_cancel, @id)}
-                      class="text-sm font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
-                    >
-                      <%= render_slot(cancel) %>
-                    </.link>
-                  </div>
-                </div>
-              </.focus_wrap>
-            </div>
+              </div>
+            </.focus_wrap>
           </div>
         </div>
+      </div>
     </div>
     """
   end
