@@ -340,11 +340,39 @@ data = %{}
 
 <!-- livebook:{"branch_parent_index":0} -->
 
-## Section
+## 🧭 Terra Firma
 
 ```elixir
 import Ecto.Query
 
-Phos.Users.User
-|> Phos.Repo.all()
+hashes = [614_268_613_651_595_263, 614_268_617_290_153_983]
+# seed hashes for sg or map into enum
+locations =
+  Phos.Repo.all(
+    from(l in Phos.Action.Location,
+      where: l.id in ^hashes,
+      # join: message in assoc(l, :last_memory),
+      # select_merge: %{last_memory: message},
+      preload: [:last_memory],
+      select: {l.id, l}
+    )
+  )
+  |> Enum.into(%{})
+
+Enum.reduce(hashes, %{}, fn hash, acc ->
+  Map.put(acc, hash, Map.get(locations, hash, %Phos.Action.Location{id: hash}))
+end)
+```
+
+```elixir
+[
+  %Phos.Users.Geolocation{
+    id: "home",
+    location_description: nil,
+    geohash: 614_268_611_149_692_927,
+    chronolock: nil
+  }
+]
+|> Enum.find(fn l -> l.id == "home" end)
+|> (& &1.geohash).()
 ```

@@ -1,0 +1,49 @@
+<div id="ally_list"
+  class="w-full mx-auto md:top-14 top-12 fixed left-0 right-0 z-10 lg:px-5 block">
+  <div class="w-full dark:bg-gray-900 bg-white py-1">
+    <div class="flex flex-wrap items-center justify-center px-2 md:px-10">
+      <.link patch={~p"/user/#{@user.username}"}>
+        <Heroicons.chevron_left class="md:w-6 md:h-6 h-5 w-5 dark:text-white
+            font-semibold" />
+      </.link>
+      <span class="text-center text-base font-semibold text-gray-800 dark:text-white flex-1 items-center justify-center">
+        <%= "#{@user.username}'s allies" %>
+      </span>
+    </div>
+  </div>
+  <p :if={@streams.ally_list |> Enum.count() == 0}
+    class="w-full mx-auto text-center py-6 text-gray-600 font-medium text-sm lg:text-base dark:text-white">
+    <%= "#{@user.username} has no allies yet" %>
+  </p>
+    <.live_component
+      module={PhosWeb.Components.ScrollAlly}
+      id="infinite-ally-home-desktop"
+      data={@streams.ally_list}
+      parent_pid={@parent_pid}
+      current_user={@current_user}
+      meta={@ally_list}/>
+</div>
+
+<.ally_modal
+  :if={@live_action in [:ally] and @ally != nil}
+  id="User_ally"
+  main_width="lg:max-w-2xl"
+  background="bg-black/50"
+  show={@live_action in [:ally]}
+  on_cancel={JS.patch(~p"/user/#{@user.username}/allies")}>
+  <.redirect_user
+    id="redirect-user"
+    user={@ally}
+    show_location={true}
+    username={@user.username}>
+    <:actions>
+      <.live_component
+        id="user-information-card-ally"
+        module={PhosWeb.Component.AllyButton}
+        current_user={@current_user}
+        user={@user}
+        parent_pid={@parent_pid}
+      />
+    </:actions>
+  </.redirect_user>
+</.ally_modal>

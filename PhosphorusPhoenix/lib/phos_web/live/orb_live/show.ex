@@ -4,22 +4,20 @@ defmodule PhosWeb.OrbLive.Show do
   alias Phos.Action
   alias Phos.Comments
   alias PhosWeb.Utility.Encoder
-  alias PhosWeb.Components.ScrollAlly
   alias PhosWeb.Components.ScrollOrb
 
   @impl true
-  def mount(%{"id" => id} = params, _session, socket) do
+  def mount(%{"id" => _id} = _params, _session, socket) do
     {:ok,
      socket
      |> assign(:ally, false)
      |> assign(:media, nil)
-     |> assign(:comment, %Comments.Comment{})
-    }
+     |> assign(:comment, %Comments.Comment{})}
   end
 
   @impl true
   def handle_params(%{"id" => id} = params, _, socket) do
-    with %{assigns: %{current_user: %Phos.Users.User{} = user}} <- socket do
+    with %{assigns: %{current_user: %Phos.Users.User{} = _user}} <- socket do
       Phos.PubSub.subscribe("folks")
     end
 
@@ -27,18 +25,22 @@ defmodule PhosWeb.OrbLive.Show do
       {:noreply,
        socket
        |> assign(:orb, orb)
-       |> tap(fn socket -> Enum.member?(socket.assigns.orb.traits, "geolock") && raise PhosWeb.ErrorLive.FourOThree, message: "Go Outside Breathe Air" end)
+       |> tap(fn socket ->
+         Enum.member?(socket.assigns.orb.traits, "geolock") &&
+           raise PhosWeb.ErrorLive.FourOThree, message: "Go Outside Breathe Air"
+       end)
        |> assign_meta(orb, params)
        |> assign(:changeset, Comments.change_comment(%Comments.Comment{}))
        |> apply_action(socket.assigns.live_action, params)
        |> assign(:parent_pid, socket.transport_pid)
-       |> assign(:comments, Comments.get_root_comments_by_orb(orb.id) |> decode_to_comment_tuple_structure())
-       |> stream_assign(:orbs, Action.orbs_by_initiators([orb.initiator.id], 1))
-      }
+       |> assign(
+         :comments,
+         Comments.get_root_comments_by_orb(orb.id) |> decode_to_comment_tuple_structure()
+       )
+       |> stream_assign(:orbs, Action.orbs_by_initiators([orb.initiator.id], 1))}
     else
       {:error, :not_found} -> raise PhosWeb.ErrorLive.FourOFour, message: "Orb Not Found"
     end
-
   end
 
   @impl true
@@ -69,32 +71,51 @@ defmodule PhosWeb.OrbLive.Show do
   end
 
   @impl true
-  def handle_info(%Phoenix.Socket.Broadcast{topic: "folks", event: action, payload: root_id}, %{assigns: %{current_user: user}} = socket) when action in ["add", "reject", "accept"] do
+  def handle_info(
+        %Phoenix.Socket.Broadcast{topic: "folks", event: action, payload: root_id},
+        %{assigns: %{current_user: user}} = socket
+      )
+      when action in ["add", "reject", "accept"] do
     %{initiator_id: init_id, acceptor_id: acc_id} = root = Phos.Folk.get_relation!(root_id)
+
     case init_id == user.id or acc_id == user.id do
       true ->
-        send_update(PhosWeb.Component.AllyButton, id: "user_information_card_ally", root_id: root.id)
+        send_update(PhosWeb.Component.AllyButton,
+          id: "user_information_card_ally",
+          root_id: root.id
+        )
+
         {:noreply, put_flash(socket, :info, "Relation updated")}
-        _ -> {:noreply, put_flash(socket, :info, "no change on relation")}
+
+      _ ->
+        {:noreply, put_flash(socket, :info, "no change on relation")}
     end
   end
 
   @impl true
-  def handle_info(%Phoenix.Socket.Broadcast{topic: "folks", event: "delete", payload: {init_id, acc_id}}, %{assigns: %{current_user: user}} = socket) do
+  def handle_info(
+        %Phoenix.Socket.Broadcast{topic: "folks", event: "delete", payload: {init_id, acc_id}},
+        %{assigns: %{current_user: user}} = socket
+      ) do
     case init_id == user.id or acc_id == user.id do
       true ->
-        send_update(PhosWeb.Component.AllyButton, id: "user_information_card_ally", related_users: %{receiver_id: init_id, sender_id: user.id})
-        {:noreply, put_flash(socket, :error, "Ally request is deleted") }
-        _ -> {:noreply, put_flash(socket, :info, "handle info not matched")}
+        send_update(PhosWeb.Component.AllyButton,
+          id: "user_information_card_ally",
+          related_users: %{receiver_id: init_id, sender_id: user.id}
+        )
+
+        {:noreply, put_flash(socket, :error, "Ally request is deleted")}
+
+      _ ->
+        {:noreply, put_flash(socket, :info, "handle info not matched")}
     end
   end
 
-    def handle_info("unredirect", socket) do
+  def handle_info("unredirect", socket) do
     {:noreply,
      socket
      |> assign(:redirect, nil)
-     |> push_patch(to: ~p"/orb/#{socket.assigns.orb.id}")
-    }
+     |> push_patch(to: ~p"/orb/#{socket.assigns.orb.id}")}
   end
 
   defp apply_action(socket, :reply, %{"id" => _orb_id, "cid" => cid} = _params) do
@@ -121,12 +142,11 @@ defmodule PhosWeb.OrbLive.Show do
     |> assign(:page_title, "Editing Comments")
   end
 
-    defp apply_action(socket, :show, %{"id" => id, "media" => media}) do
+  defp apply_action(socket, :show, %{"id" => id, "media" => media}) do
     socket
     |> assign(:page_title, "")
     |> assign(:media, Phos.Orbject.S3.get!("ORB", id, media))
   end
-
 
   defp apply_action(socket, :show, %{"id" => _id}) do
     socket
@@ -138,21 +158,26 @@ defmodule PhosWeb.OrbLive.Show do
     |> assign(:page_title, "Editing")
   end
 
-  defp assign_meta(socket, orb, %{"bac" => _})  do
+  defp assign_meta(socket, orb, %{"bac" => _}) do
     Process.send_after(self(), "unredirect", 888)
     socket |> assign(:redirect, true) |> assign_meta(orb)
   end
+
   defp assign_meta(socket, orb, _), do: assign_meta(socket, orb)
+
   defp assign_meta(socket, orb) do
-    media = Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless")
-        |> (fn media ->
-        (for {path, url} <- media || [] do
-        %Phos.Orbject.Structure.Media{
-        ext: MIME.from_path(path) |> String.split("/") |> hd,
-        url: url,
-        mimetype: MIME.from_path(path)
-        } end) end).()
-        |> List.first()
+    media =
+      Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless")
+      |> (fn media ->
+            for {path, url} <- media || [] do
+              %Phos.Orbject.Structure.Media{
+                ext: MIME.from_path(path) |> String.split("/") |> hd,
+                url: url,
+                mimetype: MIME.from_path(path)
+              }
+            end
+          end).()
+      |> List.first()
 
     assign(socket, :meta, %{
       author: orb.initiator,
@@ -161,9 +186,9 @@ defmodule PhosWeb.OrbLive.Show do
       description:
         "#{get_in(orb, [Access.key(:payload, %{}), Access.key(:info, "")])} #{orb |> get_in([Access.key(:payload, %{}), Access.key(:inner_title, "-")])}",
       type: "website",
-      image: (if (!is_nil(media) && media.ext in ["application", "image"]), do: media.url),
-      video: (if (!is_nil(media) && media.ext in ["video"]), do: media.url),
-      "video:type": (if (!is_nil(media) && media.ext in ["video"]), do: media.mimetype),
+      image: if(!is_nil(media) && media.ext in ["application", "image"], do: media.url),
+      video: if(!is_nil(media) && media.ext in ["video"], do: media.url),
+      "video:type": if(!is_nil(media) && media.ext in ["video"], do: media.mimetype),
       url: url(socket, ~p"/orb/#{orb}")
     })
   end
@@ -246,7 +271,7 @@ defmodule PhosWeb.OrbLive.Show do
     orbs = ScrollOrb.check_more_orb(orb.initiator_id, expected_orb_page)
 
     newsocket =
-      if (Enum.empty?(orbs.data)) do
+      if Enum.empty?(orbs.data) do
         assign(socket, orbs: orbs.meta)
       else
         Enum.reduce(orbs.data, socket, fn orb, acc -> stream_insert(acc, :orbs, orb) end)
@@ -285,6 +310,20 @@ defmodule PhosWeb.OrbLive.Show do
      |> assign(:comments, updated_comments)}
   end
 
+  def handle_event("prevImage", _params, socket) do
+    current_index = Map.get(socket.assigns, :current_index, 0)
+    length = length(socket.assigns.media)
+    prev_index = if current_index == 0, do: length - 1, else: current_index - 1
+    {:noreply, assign(socket, %{current_index: prev_index})}
+  end
+
+  def handle_event("nextImage", _params, socket) do
+    current_index = Map.get(socket.assigns, :current_index, 0)
+    length = length(socket.assigns.media)
+    next_index = if current_index == length - 1, do: 0, else: current_index + 1
+    {:noreply, assign(socket, %{current_index: next_index})}
+  end
+
   defp save_comment(socket, :reply, comment_params) do
     case Comments.create_comment_and_publish(comment_params) do
       {:ok, comment} ->
@@ -313,9 +352,9 @@ defmodule PhosWeb.OrbLive.Show do
     end
   end
 
-  defp stream_assign(socket, key, %{data: data, meta: meta} = params) do
+  defp stream_assign(socket, key, %{data: data, meta: meta}, opts \\ []) do
     socket
-    |> stream(key, data)
+    |> stream(key, data, opts)
     |> assign(key, meta)
   end
 end

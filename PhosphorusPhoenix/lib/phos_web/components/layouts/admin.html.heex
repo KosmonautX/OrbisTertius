@@ -12,23 +12,32 @@
     Attempting to reconnect <Heroicons.arrow_path class="ml-1 w-3 h-3 inline animate-spin" />
   </.flash>
 
-  <div>
+  <div class="relative">
     <.nav_banner_admin></.nav_banner_admin>
-    <div class="flex ">
-      <.admin_navbar title="ScratchBac Admin" home_path={~p"/admin"}>
-        <:item to={~p"/admin/dashboard"} title="Dashboard" id="dashboard" icon="fa-tv" />
-        <:item to={~p"/admin/orbs"} title="Orbs" id="orb" icon="fa-dharmachakra" />
-        <:item to={~p"/admin/users"} title="Users" id="users" icon="fa-user" />
-        <:item to={~p"/admin/leaderboard"} title="Leaderboard" id="leaderboard" icon="fa-trophy" />
-        <:item
-          to={~p"/admin/notifications"}
-          title="Notifications"
-          id="notification"
-          icon="fa-clock"
-        />
-        
-      </.admin_navbar>
-      <div class="lg:ml-64 mt-16 lg:mr-4 w-full">
+    <div class="flex">
+       <div class="fixed top-14 left-0 hidden lg:block">
+         <.admin_navbar title="ScratchBac Admin" home_path={~p"/admin"}>
+          <:item to={~p"/admin/dashboard"} title="Dashboard" id="dashboard" icon="fa-tv" />
+          <:item to={~p"/admin/orbs"} title="Orbs" id="orb" icon="fa-dharmachakra" />
+          <:item to={~p"/admin/users"} title="Users" id="users" icon="fa-user" />
+          <:item to={~p"/admin/leaderboard"} title="Leaderboard" id="leaderboard" icon="fa-trophy" />
+          <:item to={~p"/admin/notifications"} title="Notifications" id="notification" icon="fa-clock"/>
+         </.admin_navbar>
+       </div>
+
+       <div id="nav-form" class="right-0 top-14 lg:hidden block fixed z-50" style="display: none;">
+         <div class="inset-0 bg-zinc-50/90 transition-opacity">
+           <.admin_navbar title="ScratchBac Admin" home_path={~p"/admin"}>
+          <:item to={~p"/admin/dashboard"} title="Dashboard" id="dashboard" icon="fa-tv" />
+          <:item to={~p"/admin/orbs"} title="Orbs" id="orb" icon="fa-dharmachakra" />
+          <:item to={~p"/admin/users"} title="Users" id="users" icon="fa-user" />
+          <:item to={~p"/admin/leaderboard"} title="Leaderboard" id="leaderboard" icon="fa-trophy" />
+          <:item to={~p"/admin/notifications"} title="Notifications" id="notification" icon="fa-clock"/>
+         </.admin_navbar>
+         </div>
+       </div>
+
+      <div class="lg:ml-64 mt-14 w-full">
         <%= @inner_content %>
       </div>
     </div>

@@ -18,7 +18,7 @@ defmodule Phos.MessageFixtures do
       })
       |> Phos.Message.create_memory()
 
-    memory
+    memory |> Phos.Repo.preload([:orb_subject, :user_source, :rel_subject])
   end
 
   @doc """

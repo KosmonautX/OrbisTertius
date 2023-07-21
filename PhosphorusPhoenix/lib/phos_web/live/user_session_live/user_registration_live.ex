@@ -18,7 +18,7 @@ defmodule PhosWeb.UserRegistrationLive do
         </:subtitle>
       </.header>
 
-      <.simple_form class="w-96 p-4"
+      <.simple_form class="max-w-2xl p-4 space-y-4 rounded-2xl mt-4"
         :let={f}
         id="registration_form"
         for={@changeset}
@@ -48,9 +48,11 @@ defmodule PhosWeb.UserRegistrationLive do
 
   def mount(params, _session, socket) do
     changeset = Users.change_user_registration(%User{})
-    socket = 
+
+    socket =
       assign(socket, changeset: changeset, trigger_submit: false)
       |> assign_new(:return_to, fn -> Map.get(params, "return_to", ~p"/welcome") end)
+
     {:ok, socket, temporary_assigns: [changeset: nil]}
   end
 
