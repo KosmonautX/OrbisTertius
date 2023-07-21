@@ -94,6 +94,7 @@ defmodule Phos.MixProject do
       {:rexbug, "~> 1.0"},
       {:poison, "4.0.1", override: true},
       {:phoenix_view, "~> 2.0"}, # for error warning removal
+      {:req, github: "wojtekmach/req"},
       # { :uuid, "~> 1.1" },
       # {:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
       {:phx_live_storybook, github: "phenixdigital/phx_live_storybook", tag: "992062c", runtime: Mix.env() == :dev}

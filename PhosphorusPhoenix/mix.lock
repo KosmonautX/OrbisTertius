@@ -93,6 +93,7 @@
   "prom_ex": {:git, "https://github.com/KosmonautX/prom_ex.git", "3b5fc8feb252b17a0a78963a6022107dcb71dd4a", []},
   "ranch": {:hex, :ranch, "1.8.0", "8c7a100a139fd57f17327b6413e4167ac559fbc04ca7448e9be9057311597a1d", [:make, :rebar3], [], "hexpm", "49fbcfd3682fab1f5d109351b61257676da1a2fdbe295904176d5e521a2ddfe5"},
   "redbug": {:hex, :redbug, "1.2.2", "366d8961770ddc7bb5d209fbadddfa7271005487f938c087a0e385a57abfee33", [:rebar3], [], "hexpm", "b5fe7b94e487be559cb0ec1c0e938c9761205d3e91a96bf263bdf1beaebea729"},
+  "req": {:git, "https://github.com/wojtekmach/req.git", "8a907aeba5d29c34d4f8a8a722484376f7320e39", []},
   "retry": {:hex, :retry, "0.17.0", "2582b6371155b6c1abdb95e5d35e82c0a3947be61ae8eb72085f1582ef47b652", [:mix], [], "hexpm", "27ab3fd96fc58c05b0a411abb6d150de8b6fe97a8327519171597498a6694024"},
   "rexbug": {:hex, :rexbug, "1.0.6", "024071c67d970151fbdc06f299faf8db3e1b2ac759a28623a9cc80a517fc74f2", [:mix], [{:mix_test_watch, ">= 0.5.0", [hex: :mix_test_watch, repo: "hexpm", optional: true]}, {:redbug, "~> 1.2", [hex: :redbug, repo: "hexpm", optional: false]}], "hexpm", "148ea724979413e9fd84ca3b4bb5d2d8b840ac481adfd645f5846fda409a642c"},
   "rustler_precompiled": {:hex, :rustler_precompiled, "0.6.1", "160b545bce8bf9a3f1b436b2c10f53574036a0db628e40f393328cbbe593602f", [:mix], [{:castore, "~> 0.1 or ~> 1.0", [hex: :castore, repo: "hexpm", optional: false]}, {:rustler, "~> 0.23", [hex: :rustler, repo: "hexpm", optional: true]}], "hexpm", "0dd269fa261c4e3df290b12031c575fff07a542749f7b0e8b744d72d66c43600"},

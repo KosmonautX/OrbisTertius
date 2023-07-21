@@ -141,4 +141,8 @@ config :phos, Phos.Models.TokenClassification,
   model: "dslim/bert-base-NER",
   token: "bert-base-cased"
 
+config :phos, Phos.Models.OpenAI,
+  model: "text-davinci-003",
+  token: {System, :fetch_env, "OPENAI_KEY"}
+
 import_config "#{config_env()}.exs"
