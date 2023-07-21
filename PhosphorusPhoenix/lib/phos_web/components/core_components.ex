@@ -2012,8 +2012,8 @@ defmodule PhosWeb.CoreComponents do
               module={PhosWeb.Component.AllyButton}
               current_user={nil}
               user={@user}
+              size="small"
               />
-              <Heroicons.plus_small class="md:w-7 md:h-7 h-5 w-5 group-hover:text-teal-500 text-white" />
             </span>
           </div>
 
