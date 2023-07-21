@@ -162,9 +162,6 @@ defmodule Phos.TeleBot.Components.Template do
 
   def profile_text_builder(assigns) do
     ~H"""
-    <%!-- 👤 User: <a href={"tg://user?id=#{@telegram_user}"}>@<%= @telegram_user["username"] %></a> --%>
-    <%!-- 👤 User: <%= @username %> --%>
-
     🔸Name: <%= @public_profile.public_name %>
     🔸Bio: <%= @public_profile.bio %>
     🔸Join Date: <%= @inserted_at |> DateTime.from_naive!("UTC") |> Timex.format("{D}-{0M}-{YYYY}") |> elem(1) %>
@@ -173,7 +170,7 @@ defmodule Phos.TeleBot.Components.Template do
        2️⃣ <%= get_location_desc_from_user(assigns, "work") %>
        🗺️ <%= get_location_desc_from_user(assigns, "live") %>
 
-    <% if @username do %>
+    <%= if @username do %>
     🔗 Share your profile:
     <%= PhosWeb.Endpoint.url %>/user/<%= @username %>
     <% end %>
@@ -205,6 +202,8 @@ defmodule Phos.TeleBot.Components.Template do
   def fallback_text_builder(assigns) do
     ~H"""
     <b>Something went wrong...</b>
+
+    Try again and contact @Scratchbac_admin if error keeps happening.
     """
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
   end

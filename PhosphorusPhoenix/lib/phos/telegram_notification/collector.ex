@@ -17,8 +17,7 @@ defmodule Phos.TeleBot.TelegramNotification.Collector do
   def add(%Phos.Action.Orb{} = orb, timeout \\ 5000) do
     events =
       Phos.Users.get_telegram_chat_ids_by_orb(orb) # List of %{orb: %Phos.Action.Orb{}}, chat_ids: "1234"}
-
-    unless is_nil(events), do: GenStage.call(__MODULE__, {:notify, events}, timeout)
+    unless Enum.empty?(events), do: GenStage.call(__MODULE__, {:notify, events}, timeout)
   end
 
   def handle_call({:notify, event}, from, queue) do

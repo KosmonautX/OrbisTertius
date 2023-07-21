@@ -73,16 +73,16 @@ defmodule Phos.TeleBot.CreateOrb do
     end
   end
 
-  def preview(%{telegram_id: telegram_id, data: %{media: %{media: media}} = data } = branch) do
-    transition(branch, "preview")
-    if Enum.empty?(media) do
-      ExGram.send_message(telegram_id, Template.orb_creation_preview_builder(data),
-        parse_mode: "HTML", reply_markup: Button.build_createorb_preview_inlinekeyboard())
-    else
-      ExGram.send_photo(telegram_id, "https://media.cnn.com/api/v1/images/stellar/prod/191212182124-04-singapore-buildings.jpg?q=w_2994,h_1996,x_3,y_0,c_crop",
-        caption: Template.orb_creation_preview_builder(data), parse_mode: "HTML", reply_markup: Button.build_createorb_preview_inlinekeyboard())
-    end
-  end
+  # def preview(%{telegram_id: telegram_id, data: %{media: %{media: media}} = data } = branch) do
+  #   transition(branch, "preview")
+  #   if Enum.empty?(media) do
+  #     ExGram.send_message(telegram_id, Template.orb_creation_preview_builder(data),
+  #       parse_mode: "HTML", reply_markup: Button.build_createorb_preview_inlinekeyboard())
+  #   else
+  #     ExGram.send_photo(telegram_id, "https://media.cnn.com/api/v1/images/stellar/prod/191212182124-04-singapore-buildings.jpg?q=w_2994,h_1996,x_3,y_0,c_crop",
+  #       caption: Template.orb_creation_preview_builder(data), parse_mode: "HTML", reply_markup: Button.build_createorb_preview_inlinekeyboard())
+  #   end
+  # end
 
   def post(%{data: %{orb: orb, media: %{media: media}}} = branch, %{integrations: %{telegram_chat_id: telegram_id}} = user) do
     params = %{
@@ -92,7 +92,7 @@ defmodule Phos.TeleBot.CreateOrb do
       "media" => media,
       "inner_title" => orb.payload.inner_title,
       "active" => true,
-      "source" => :tele,
+      "source" => :api,
       "geolocation" => %{"central_geohash" => orb.central_geohash}
     }
 

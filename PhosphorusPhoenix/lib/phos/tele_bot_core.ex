@@ -192,7 +192,7 @@ defmodule Phos.TeleBot.Core do
         {"location_live", %{path: "orb/create", state: "location"}} ->
           ExGram.send_message(branch.telegram_id, "Send your location with the 📎 button below.", parse_mode: "HTML", reply_markup: Button.build_current_location_button())
         {"preview", %{path: "orb/create"}} ->
-          CreateOrb.preview(branch)
+          CreateOrb.transition(branch, "preview")
         {"post", %{path: "orb/create"}} ->
           CreateOrb.post(branch, user)
       end
@@ -421,17 +421,15 @@ defmodule Phos.TeleBot.Core do
   end
 
   def dispatch_messages(events) do
-    IO.inspect("im dispatching")
-    IO.inspect(events)
     Enum.map(events, fn %{chat_id: chat_id, orb: orb} ->
       text = case orb.media do
         true ->
-          ExGram.send_photo(chat_id, "https://media.cnn.com/api/v1/images/stellar/prod/191212182124-04-singapore-buildings.jpg?q=w_2994,h_1996,x_3,y_0,c_crop",
-            caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
-            reply_markup: Button.build_orb_notification_button(orb))
-          # ExGram.send_photo(chat_id, Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless"),
+          # ExGram.send_photo(chat_id, "https://media.cnn.com/api/v1/images/stellar/prod/191212182124-04-singapore-buildings.jpg?q=w_2994,h_1996,x_3,y_0,c_crop",
           #   caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
           #   reply_markup: Button.build_orb_notification_button(orb))
+          ExGram.send_photo(chat_id, Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless"),
+            caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
+            reply_markup: Button.build_orb_notification_button(orb))
         _ ->
           ExGram.send_message(chat_id, Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
             reply_markup: Button.build_orb_notification_button(orb))
