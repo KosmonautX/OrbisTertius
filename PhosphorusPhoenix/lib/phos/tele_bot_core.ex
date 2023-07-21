@@ -47,7 +47,7 @@ defmodule Phos.TeleBot.Core do
          {:ok, user} <- get_user_by_telegram(telegram_id) do
         message_route(user_state, [user: user, telegram_id: telegram_id, text: text])
       else
-        {:error, nil} -> error_fallback(telegram_id)
+        _ -> nil
       end
   end
 
@@ -62,12 +62,7 @@ defmodule Phos.TeleBot.Core do
     case get_user_by_telegram(telegram_id) do
       {:ok, %{integrations: %{telegram_chat_id: _}, confirmed_at: date}} when not is_nil(date) ->
         ExGram.send_message(telegram_id, "You have completed registration!")
-      {:ok, %{integrations: %{telegram_chat_id: nil}} = user} ->
-        ExGram.send_message(telegram_id, "You already have an account with us. Would you like to link your telegram to your Scratchbac account?",
-          reply_markup: Button.build_link_account_button())
-      {:ok, %{confirmed_at: nil}} ->
-        ExGram.send_message(telegram_id, "You have not confirmed your email. Please check your inbox and follow the instructions to link your account.\n\n<u>Did not receive any emails? Do /register again </u>", parse_mode: "HTML")
-      _ ->
+      {:ok, _} ->
         onboarding_register_text(telegram_id)
     end
   end
@@ -116,22 +111,22 @@ defmodule Phos.TeleBot.Core do
     end
   end
 
-  def handle({:callback_query, %{"data" => "onboarding_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}} = payload}) when type in ["register", "linkaccount", "username"] do
-    with {:ok, user} <- get_user_by_telegram(telegram_id),
-         {:ok, %{branch: branch}} <- StateManager.get_state(telegram_id) do
-      case {type, branch} do
-        {"register", %{path: "self/onboarding", state: "register"}} ->
+  def handle({:callback_query, %{"data" => "onboarding_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}} = payload})
+    when type in ["register", "linkaccount", "username"] do
+    with {:ok, user} <- get_user_by_telegram(telegram_id) do
+      case type do
+        "register" ->
           onboarding_register(telegram_id)
-        {"linkaccount", %{path: "self/onboarding", state: "linkaccount"}} ->
-          onboarding_linkaccount(telegram_id, user)
-        {"username", %{path: "self/onboarding", state: "username"}} ->
+        "linkaccount" ->
+          onboarding_linkaccount(telegram_id)
+        "username" ->
           onboarding_username(telegram_id, payload)
         end
-      end
+    end
   end
 
   def onboarding_register(telegram_id) do
-    {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id, "What is your email?\n\nPlease provide us with a valid email, you will receive a confirmation email to confirm your registration.", parse_mode: "HTML")
+    {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id, Template.onboarding_register_text_builder(%{}), parse_mode: "HTML")
     {:ok, user_state} = StateManager.new_state(telegram_id)
     user_state
     |> Map.put(:branch, %OnboardingFSM{telegram_id: telegram_id, state: "register",
@@ -139,18 +134,14 @@ defmodule Phos.TeleBot.Core do
     |> StateManager.update_state(telegram_id)
   end
 
-  def onboarding_linkaccount(telegram_id, user) do
-    case user do
-      %{integrations: %{telegram_chat_id: _}} ->
-        ExGram.send_message(telegram_id, "You have already linked your telegram account to the Scratchbac App.")
-      _ ->
-        {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id, "To link your telegram to the Scratchbac App, please type the same email address you used to register on the Scratchbac App.", reply_markup: Button.build_cancel_button())
-        {:ok, user_state} = StateManager.new_state(telegram_id)
-        user_state
-        |> Map.put(:branch, %OnboardingFSM{telegram_id: telegram_id, state: "linkaccount",
-          metadata: %{message_id: message_id}})
-        |> StateManager.update_state(telegram_id)
-
+  def onboarding_linkaccount(telegram_id) do
+    with {:ok, %{branch: %{data: %{email: email}}} = user_state} <- StateManager.get_state(telegram_id),
+         %User{} = user <- Users.get_user_by_email(email) do
+      Users.deliver_telegram_bind_confirmation_instructions(user, telegram_id, &url(~p"/users/bind/telegram/#{&1}"))
+      ExGram.send_message(telegram_id, "An email has been sent to #{email} if it exists. Please check your inbox and follow the instructions to link your account.")
+      StateManager.delete_state(telegram_id)
+    else
+      err -> error_fallback(telegram_id, err)
     end
   end
 
@@ -416,7 +407,7 @@ defmodule Phos.TeleBot.Core do
 
   defp onboarding_register_text(telegram_id) do
     ExGram.send_message(telegram_id, Template.not_yet_registered_text_builder(%{}), parse_mode: "HTML",
-    reply_markup: Button.build_onboarding_register_button())
+      reply_markup: Button.build_onboarding_register_button())
   end
 
   def error_fallback(telegram_id, err) do
@@ -520,38 +511,23 @@ defmodule Phos.TeleBot.Core do
         end
 
       %{path: "self/onboarding", state: "register"} ->
-        with changeset <- User.email_changeset(user, %{email: text}),
-            :valid <- changeset.valid?,
-            user <- Users.get_user_by_email(text) do
-              Phos.Repo.update(changeset)
-              Users.deliver_user_confirmation_instructions(user, &url(~p"/users/confirmtg/#{&1}"))
-              ExGram.send_message(telegram_id, "An email has been sent to #{text} if it exists. Please check your inbox and follow the instructions to link your account.\n\nIf you have wrongly entered your email, restart the /register process.")
-              StateManager.delete_state(telegram_id)
+        with {:email_changeset, changeset} <- {:email_changeset, User.email_changeset(user, %{email: text})},
+             {:valid, %{valid?: true} = changeset} <- {:valid, changeset},
+             {:ok, %{branch: branch} = user_state} <- StateManager.get_state(telegram_id) do
+                {:ok, user} = Phos.Repo.update(changeset)
+                Users.deliver_user_confirmation_instructions(user, &url(~p"/users/confirmtg/#{&1}"))
+                ExGram.send_message(telegram_id, "An email has been sent to #{text} if it exists. Please check your inbox and follow the instructions to link your account.\n\nIf you have wrongly entered your email, restart the /register process.")
+                StateManager.delete_state(telegram_id)
           else
-            {:error, changeset} ->
-              ExGram.send_message(telegram_id, "This is not a valid email, please try again or return to /start to cancel")
-            nil ->
-              ExGram.send_message(telegram_id, "You already have an account with us. Would you like to link your telegram to your Scratchbac account?", reply_markup: Button.build_link_account_button())
+            {:valid, %{valid?: false, errors: [email: {"has already been taken",_}]} = changeset} ->
+              ExGram.send_message(telegram_id, "This email is in use. Would you like to link your telegram to your Scratchbac account?", parse_mode: "HTML", reply_markup: Button.build_link_account_button())
+              {_prev, branch} = get_and_update_in(branch.data.email, &{&1, text})
+              Map.put(user_state, :branch, branch)
+              |> StateManager.update_state(telegram_id)
+            {:valid, %{valid?: false} = changeset} ->
+              ExGram.send_message(telegram_id, "This email is not valid. Please try again or return to /start to cancel")
             err -> error_fallback(telegram_id, err)
           end
-
-      %{path: "self/onboarding", state: "linkaccount"} ->
-        case Regex.run(~r/^[\w.!#$%&’*+\-\/=?\^`{|}~]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/i, text) do
-          [email, _domain] ->
-            case Users.get_user_by_email(email) do
-              nil ->
-                ExGram.send_message(telegram_id, "No account found with that email. Please try again or return to /start")
-              %{integrations: %{telegram_chat_id: _}} ->
-                ExGram.send_message(telegram_id, "Your account is already linked to a telegram account. Unlink your account at web.scratchbac.com before linking to another telegram account.")
-              user ->
-                  Users.deliver_telegram_bind_confirmation_instructions(user, telegram_id, &url(~p"/users/bind/telegram/#{&1}"))
-                  ExGram.send_message(telegram_id, "An email has been sent to #{email} if it exists. Please check your inbox and follow the instructions to link your account.")
-                  StateManager.delete_state(telegram_id)
-            end
-          nil ->
-            ExGram.send_message(telegram_id, "Your email is invalid, please try again or return to /start")
-          err -> error_fallback(telegram_id, err)
-        end
 
       %{path: "self/onboarding", state: "username"} ->
         case Users.update_pub_user(user, %{"username" => text}) do

@@ -61,7 +61,7 @@ defmodule Phos.TeleBot.Components.Button do
           ),
           inline_keyboard_button(
             "🔭 View Latest Posts",
-            [switch_inline_query_current_chat: "menu_latestposts" <> to_string(message_id)]
+            [callback_data: "menu_latestposts"]
           )
         ],
         [
@@ -135,7 +135,7 @@ defmodule Phos.TeleBot.Components.Button do
         [
           inline_keyboard_button(
             "🔗 Link Account",
-            [callback_url: "onboarding_linkaccount"]
+            [callback_data: "onboarding_linkaccount"]
           )
         ]
       ]
@@ -365,9 +365,9 @@ defmodule Phos.TeleBot.Components.Button do
   def inline_keyboard_button(text) do
   end
   def inline_keyboard_button(text, opts) do
-    callback_data = opts[:callback_data] || ""
-    switch_inline_query_current_chat = opts[:switch_inline_query_current_chat] || ""
-    url = opts[:url] || ""
+    callback_data = opts[:callback_data] || nil
+    switch_inline_query_current_chat = opts[:switch_inline_query_current_chat] || nil
+    url = opts[:url] || nil
     %ExGram.Model.InlineKeyboardButton{text: text, callback_data: callback_data, switch_inline_query_current_chat: switch_inline_query_current_chat, url: url}
   end
 

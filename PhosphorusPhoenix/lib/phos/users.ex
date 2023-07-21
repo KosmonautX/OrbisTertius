@@ -828,12 +828,12 @@ defmodule Phos.Users do
   end
 
   @doc """
-  Confirms a user by the given token.
+  Binds a user by the given token.
 
-  If the token matches, the user account is marked as confirmed
-  and the token is deleted.
+  If the token matches, the user account is marked as confirmed, telegram_id is
+  added to the user integrations and the token is deleted.
   """
-  # def confirm_user(token) do
+  # def bind_user(token) do
   #   with {:ok, query} <- UserToken.verify_email_token_query(token, "confirm"),
   #        %User{} = user <- Repo.one(query),
   #        {:ok, %{user: user}} <- Repo.transaction(confirm_user_multi(user)) do
@@ -845,7 +845,7 @@ defmodule Phos.Users do
 
   def bind_user(token) do
     with {:ok, query} <- UserToken.verify_bindaccount_token_query(token, "bind_telegram"),
-        user when not is_nil(user) <- Repo.one(query),
+        user <- Repo.one(query), # this user struct is a special struct with only email and telegram user
         {:ok, %{user: user}} <- Repo.transaction(bind_user_multi(user)) do
       {:ok, user}
     else
@@ -854,9 +854,8 @@ defmodule Phos.Users do
     end
   end
 
-  defp bind_user_multi(%{tele_user: tele_user, email: email} = user) do
+  def bind_user_multi(%{tele_user: %{integrations: %{telegram_chat_id: telegram_id}} = tele_user, email: email} = user) do
     main_user = get_user_by_email(email) |> Repo.preload([:auths])
-    telegram_id = tele_user.integrations.telegram_chat_id
 
     params = %{
       auths: [
@@ -879,6 +878,7 @@ defmodule Phos.Users do
     Multi.new()
     |> Multi.delete(:auth, auth)
     |> Multi.update(:user, User.telegram_changeset(main_user, params))
+    # |> Multi.update(:user, User.confirm_changeset(user)) #might need another field? confirmed_at already exist before user is linked
     |> Multi.delete_all(:tokens, UserToken.user_and_contexts_query(tele_user, ["bind_telegram"]))
   end
 end

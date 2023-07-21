@@ -29,7 +29,18 @@ defmodule Phos.TeleBot.Components.Template do
     We have so many features here and can't wait for you to join us but
     you need to be verified to use them.
 
-    <u>Note: If you have already registered, do check your email or register again</u>
+    <u>Click on the "Register" button</u>
+
+    <i>Note: If you have already registered, do check your email or /register again</i>
+    """
+    |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
+  end
+
+  def onboarding_register_text_builder(assigns) do
+    ~H"""
+    What is your email?
+
+    Please provide us with a valid email, you will receive a confirmation email to confirm your registration.
     """
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
   end
@@ -76,9 +87,9 @@ defmodule Phos.TeleBot.Components.Template do
 
   def incomplete_profile_text_builder(assigns) do
     ~H"""
-    Hold on! Are you a robot?
+    Hold on! Are you a robot? Finish your profile to start posting.
 
-    <u>Click on the button to complete your profile before you start posting.</u>
+    <u>Click on the "Complete Profile" button.</u>
     """
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
   end
