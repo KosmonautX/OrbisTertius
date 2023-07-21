@@ -63,12 +63,26 @@ defmodule Phos.Folk do
     |> where([b], b.user_id == ^id)
     |> join(:inner, [b], f in assoc(b, :friend))
     |> select([_b, f], f)
-    |> join(:inner, [b, _f], r in assoc(b, :root), as: :relation)
+    |> join(:inner, [b, _f], r in assoc(b, :root), as: :self_relation)
     |> select_merge([_b, f, root], %{f | self_relation: root} )
     |> join(:inner, [_b, r,  f], m in assoc(f, :last_memory))
     |> join(:left, [_b, _f, r, m], o in assoc(m, :orb_subject))
     |> select_merge([_b, f, r, m, o], %{f| self_relation: %{r | last_memory: %{m | orb_subject: o}}})
-    |> Repo.Paginated.all([{:sort_attribute, {:relation , :updated_at}} | opts])
+    |> Repo.Paginated.all([{:sort_attribute, {:self_relation , :updated_at}} | opts])
+  end
+
+  def search_last_messages(id, search, opts) when is_list(opts) do
+    search = "%#{search}%"
+    RelationBranch
+    |> where([b], b.user_id == ^id)
+    |> join(:inner, [b], f in assoc(b, :friend), on: ilike(f.username, ^search))
+    |> select([_b, f], f)
+    |> join(:inner, [b, _f], r in assoc(b, :root), as: :self_relation)
+    |> select_merge([_b, f, root], %{f | self_relation: root} )
+    |> join(:inner, [_b, r,  f], m in assoc(f, :last_memory))
+    |> join(:left, [_b, _f, r, m], o in assoc(m, :orb_subject))
+    |> select_merge([_b, f, r, m, o], %{f| self_relation: %{r | last_memory: %{m | orb_subject: o}}})
+    |> Repo.Paginated.all([{:sort_attribute, {:self_relation , :updated_at}} | opts])
   end
 
   #   @doc """

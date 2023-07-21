@@ -4,9 +4,13 @@ defmodule PhosWeb.Component.AllyButton do
 
   defp random_id, do: Enum.random(1..1_000_000)
 
-  def update(%{current_user: curr, user: user, parent_pid: parent_pid} = assigns, socket) when not is_nil(curr) do
+  def update(
+        %{current_user: curr, user: user, parent_pid: parent_pid} = assigns,
+        socket
+      )
+      when not is_nil(curr) do
     {:ok,
-      socket
+     socket
      |> assign_new(:self, fn ->
        case Map.get(curr, :id) do
          nil -> false
@@ -17,12 +21,15 @@ defmodule PhosWeb.Component.AllyButton do
        ally_status(Map.get(curr, :id), user.id)
      end)
      |> assign_new(:parent_pid, fn -> parent_pid end)
+     |> assign_new(:size, fn -> Map.get(assigns, :size, nil) end)
      |> assign_new(:user, fn -> user end)
-     |> assign_new(:current_user, fn -> curr end)
-    }
+     |> assign_new(:current_user, fn -> curr end)}
   end
 
-  def update(%{root_id: root_id} = _assigns, %{assigns: %{current_user: user}} = socket) do
+  def update(
+        %{root_id: root_id} = _assigns,
+        %{assigns: %{current_user: user}} = socket
+      ) do
     rel = Phos.Folk.get_relation!(root_id)
     ally = rel |> ally_status(user.id)
 
@@ -32,18 +39,31 @@ defmodule PhosWeb.Component.AllyButton do
      |> assign(:rel, rel)}
   end
 
-  def update(_,%{assigns: %{current_user: user, user: acceptor, parent_pid: parent_pid}} = socket) do
-    {:ok, assign(socket, ally: false, current_user: user)}
+  def update(
+        _,
+        %{
+          assigns: %{current_user: user, user: acceptor}
+        } = socket
+      ) do
+    {:ok, assign(socket, ally: false, user: acceptor, current_user: user)}
   end
 
-  def update(_assigns, socket) do
-    {:ok, assign(socket, ally: false, current_user: nil)}
+  def update(%{user: acceptor} = assigns, socket) do
+    {:ok,
+     assign(socket,
+       ally: false,
+       user: acceptor,
+       current_user: nil,
+       size: Map.get(assigns, :size, nil)
+     )}
   end
 
   def handle_event(
         "add_ally",
         _,
-        %{assigns: %{user: acceptor, current_user: user, parent_pid: parent_pid}} = socket
+        %{
+          assigns: %{user: acceptor, current_user: user, parent_pid: parent_pid}
+        } = socket
       ) do
     case Phos.Folk.add_friend(user.id, acceptor.id) do
       {:ok, %Phos.Users.RelationRoot{} = relation} ->
@@ -62,7 +82,9 @@ defmodule PhosWeb.Component.AllyButton do
   def handle_event(
         "delete_ally_request",
         _,
-        %{assigns: %{current_user: user, user: acceptor, parent_pid: parent_pid}} = socket
+        %{
+          assigns: %{current_user: user, user: acceptor, parent_pid: parent_pid}
+        } = socket
       ) do
     with %Phos.Users.RelationBranch{root: root} <-
            Phos.Folk.get_relation_by_pair(user.id, acceptor.id),
@@ -82,7 +104,11 @@ defmodule PhosWeb.Component.AllyButton do
       {:error, changeset} ->
         {:noreply,
          Enum.reduce(changeset.errors, socket, fn soc, {field, error} ->
-           put_flash(soc, :error, to_string(field) <> " " <> translate_error(error))
+           put_flash(
+             soc,
+             :error,
+             to_string(field) <> " " <> translate_error(error)
+           )
          end)}
 
       _ ->
@@ -109,7 +135,11 @@ defmodule PhosWeb.Component.AllyButton do
       {:error, changeset} ->
         {:noreply,
          Enum.reduce(changeset.errors, socket, fn soc, {field, error} ->
-           put_flash(soc, :error, to_string(field) <> " " <> translate_error(error))
+           put_flash(
+             soc,
+             :error,
+             to_string(field) <> " " <> translate_error(error)
+           )
          end)}
 
       false ->
@@ -128,7 +158,8 @@ defmodule PhosWeb.Component.AllyButton do
     with %Phos.Users.RelationBranch{root: root} <-
            Phos.Folk.get_relation_by_pair(curr.id, user.id),
          true <- root.acceptor_id == curr.id,
-         {:ok, _rel} <- Phos.Folk.update_relation(root, %{"state" => "completed"}) do
+         {:ok, _rel} <-
+           Phos.Folk.update_relation(root, %{"state" => "completed"}) do
       PhosWeb.Endpoint.broadcast_from(self(), "folks", "accept", root.id)
 
       {:noreply,
@@ -139,7 +170,11 @@ defmodule PhosWeb.Component.AllyButton do
       {:error, changeset} ->
         {:noreply,
          Enum.reduce(changeset.errors, socket, fn soc, {field, error} ->
-           put_flash(soc, :error, to_string(field) <> " " <> translate_error(error))
+           put_flash(
+             soc,
+             :error,
+             to_string(field) <> " " <> translate_error(error)
+           )
          end)}
 
       false ->
@@ -150,10 +185,20 @@ defmodule PhosWeb.Component.AllyButton do
     end
   end
 
-  def render(%{current_user: user} = assigns) when user in [nil, ""] do
+  def render(%{current_user: your, size: "small"} = assigns)
+      when your in [nil, ""] do
+    ~H"""
+    <a class="flex" phx-click="show_ally" phx-value-ally={@user.id} )}>
+      <.ally_btn />
+    </a>
+    """
+  end
+
+  def render(%{current_user: user} = assigns)
+      when user in [nil, ""] do
     ~H"""
     <a class="flex" phx-click={show_modal("welcome_message")}>
-      <.ally_btn />
+      <.plus_btn type="plus_btn" class="w-16 -mt-1 md:w-20 lg:w-28 md:-mt-0" />
     </a>
     """
   end
@@ -172,20 +217,21 @@ defmodule PhosWeb.Component.AllyButton do
     ~H"""
     <a class="flex">
       <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/memories/user/#{user.username}")}>
-        <button
-          type="button"
-          class="text-black bg-amber-500 hover:bg-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-300 font-bold rounded-2xl lg:text-base px-6 py-2.5 text-center mr-2 dark:focus:ring-amber-900 font-poppins"
-        >
-          Chat
-        </button>
+        <Heroicons.paper_airplane class="md:w-7 md:h-7 h-6 w-6 dark:text-white font-semibold" />
       </.link>
     </a>
     """
   end
 
-  def render(%{ally: ally} = assigns) when ally == "requested" or ally == "blocked" do
+  def render(%{ally: ally} = assigns)
+      when ally == "requested" or ally == "blocked" do
     assigns =
-      assigns |> assign(:dom_id, "delete_friend_request_#{random_id()}_#{assigns.user.id}")
+      assigns
+      |> assign(
+        :dom_id,
+        "delete_friend_request_#{random_id()}_#{assigns.user.id}"
+      )
+
     ~H"""
     <a class="flex">
       <.button class="flex" phx-click={show_modal(@dom_id)}>
@@ -198,7 +244,7 @@ defmodule PhosWeb.Component.AllyButton do
         }
       >
         <:title>Unally?</:title>
-        <a>
+        <a class="px-4 text-sm">
           Are you sure want to delete your request to <%= @user.username %> ?
         </a>
         <:confirm tone={:danger}>Yes, delete</:confirm>
@@ -210,14 +256,25 @@ defmodule PhosWeb.Component.AllyButton do
 
   def render(%{ally: ally} = assigns) when ally == "requesting" do
     ~H"""
-    <a class="flex gap-2">
-      <a phx-target={@myself} phx-click="accept_ally_request" class="flex">
-        <.accept type="accept" />
-      </a>
+    <a class="flex">
+      <button phx-target={@myself} phx-click="accept_ally_request" type="button"
+       class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm md:px-5 px-2 md:py-2.5 py-1.5 mr-2 md:mb-2 mb-1 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+           <span class="hidden md:inline">Accept</span>
+           <span class="md:hidden"><Heroicons.check solid class="w-5 h-5"/></span>
+      </button>
+      <button phx-target={@myself} phx-click="reject_ally_request" type="button"
+        class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm md:px-5 px-2 md:py-2.5 py-1.5 mr-2 md:mb-2 mb-1 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
+          <span class="hidden md:inline">Reject</span>
+          <span class="md:hidden"><Heroicons.trash solid class="w-5 h-5"/></span>
+      </button>
+    </a>
+    """
+  end
 
-      <.button tone={:dark} phx-target={@myself} phx-click="reject_ally_request" class="flex">
-        Reject
-      </.button>
+  def render(%{ally: false, size: "small"} = assigns) do
+    ~H"""
+    <a class="flex" phx-click="show_ally" phx-value-ally={@user.id}>
+      <.ally_btn />
     </a>
     """
   end
@@ -225,12 +282,7 @@ defmodule PhosWeb.Component.AllyButton do
   def render(%{ally: false} = assigns) do
     ~H"""
     <a phx-target={@myself} phx-click="add_ally">
-      <button
-        type="button"
-        class="text-white bg-teal-500 hover:bg-teal-300 focus:outline-none focus:ring-4 focus:ring-teal-300 font-bold rounded-2xl lg:text-base px-6 py-2.5 text-center dark:focus:ring-teal-900 font-poppins"
-      >
-        <span class="h-5 w-5">+</span>Ally
-      </button>
+      <.plus_btn type="plus_btn" class="w-16 -mt-1 md:w-20 md:-mt-0" />
     </a>
     """
   end
@@ -248,7 +300,10 @@ defmodule PhosWeb.Component.AllyButton do
   defp ally_status(%Phos.Users.RelationBranch{root: root}, user_id),
     do: ally_status(root, user_id)
 
-  defp ally_status(%Phos.Users.RelationRoot{acceptor_id: acc_id, state: state} = _root, user_id)
+  defp ally_status(
+         %Phos.Users.RelationRoot{acceptor_id: acc_id, state: state} = _root,
+         user_id
+       )
        when acc_id == user_id do
     case state do
       "requested" -> "requesting"

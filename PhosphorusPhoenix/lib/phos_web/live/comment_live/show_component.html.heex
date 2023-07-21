@@ -1,45 +1,60 @@
-
 <div
-  class="mt-4 lg:mt-2 bg-white dark:bg-gray-900 lg:px-2 px-2 font-poppins lg:mb-0"
+  class="mt-2 bg-white dark:bg-gray-900 lg:dark:bg-gray-800 font-poppins px-2"
   id={"comment-#{elem(@comment, 1).id}"}>
   <div class="flex shrink-0">
     <.link navigate={~p"/user/#{elem(@comment, 1).initiator.username}"} class="flex shrink-0">
       <img
-        class="lg:w-14 lg:h-14 h-8 w-8  rounded-full object-cover"
+        class="lg:w-12 lg:h-12 h-8 w-8  rounded-full object-cover"
         src={Phos.Orbject.S3.get!("USR", elem(@comment, 1).initiator_id, "public/profile/lossy")}
         onerror="this.src='/images/default_hand.jpg';"
       />
     </.link>
-    <div class="flex flex-col w-full ml-2 font-poppins break-words">
-      <strong class="lg:text-base text-sm font-bold text-gray-800 dark:text-white">
-        <.link navigate={~p"/user/#{elem(@comment, 1).initiator.username}"}>
-          <%= elem(@comment, 1).initiator.username %>
-        </.link>
-        <span
-          :if={elem(@comment, 1).active and is_nil(@edit_comment)}
-          class="text-sm text-gray-700 font-medium dark:text-gray-400 ml-1"
-        >
-          <%= PhosWeb.Util.DOMParser.extract_html_from_md elem(@comment, 1).body %>
-        </span>
-      </strong>
+    <div class="flex flex-col w-full ml-1 space-y-0.5 font-poppins break-words px-2">
+      <div class="flex justify-between w-full mx-auto">
+        <div class="flex gap-1 text-sm dark:text-white">
 
-      <div class="flex w-full justify-between">
-        <p class="text-sm font-light text-gray-600 dark:text-white">
-          <%= Timex.from_now(elem(@comment, 1).inserted_at) %>
-        </p>
-        <p :if={not is_nil(@current_user)} class="text-sm font-bold text-gray-500 hover:text-gray-400 hover:underline mr-6">
+          <p :if={elem(@comment, 1).active and is_nil(@edit_comment)} class="text-[#000000] dark:text-white break-words">
+              <span class="font-bold">
+               <.link navigate={~p"/user/#{elem(@comment, 1).initiator.username}"}>
+                 <%= elem(@comment, 1).initiator.username %>
+               </.link>
+             </span>
+              <%= PhosWeb.Util.DOMParser.extract_html_from_md(elem(@comment, 1).body) %>
+          </p>
+
+          <div :if={not elem(@comment, 1).active}>
+            <p class="font-light text-[#000000] dark:text-white text-xs">
+            --Comment deleted--
+            </p>
+          </div>
+        </div>
+        <div>
+          <Heroicons.ellipsis_horizontal 
+          class="lg:h-8 lg:w-8 h-6 w-6 hover:text-gray-300 dark:text-white text-gray-900 font-semibold -mt-2" />
+        </div>
+      </div>
+
+      <div class="flex w-full justify-between text-xs dark:text-[#777986]">
+        <p
+          :if={not is_nil(@current_user)}
+          class="font-medium text-[#687684] hover:text-gray-400 hover:underline mr-6"
+        >
           <.link
             href="#reply"
             phx-click="reply-comment"
             phx-value-comment-id={elem(@comment, 1).id}
             phx-target={"#comment-#{elem(@comment, 1).id}"}
           >
-            Reply
+            reply
           </.link>
+        </p>
+        <p class="font-light text-[#687684]">
+          <%= Timex.from_now(elem(@comment, 1).inserted_at) %>
         </p>
       </div>
 
-      <div :if={not is_nil(@current_user)} class="text-sm font-bold text-gray-500 font-poppins">
+      <div :if={not is_nil(@current_user)} class="text-xs font-poppins">
+        <p class="font-medium text-[#687684] hover:text-gray-400 hover:underline mr-6">
         <.link
           :if={elem(@comment, 1).active and elem(@comment, 1).initiator_id == @current_user.id}
           href="#edit"
@@ -49,6 +64,8 @@
         >
           Edit
         </.link>
+        </p>
+        <p class="font-medium text-[#687684] hover:text-gray-400 hover:underline mr-6" >
         <.link
           :if={elem(@comment, 1).active and elem(@comment, 1).initiator_id == @current_user.id}
           phx-click={JS.push("delete", value: %{id: elem(@comment, 1).id})}
@@ -56,62 +73,7 @@
         >
           Delete
         </.link>
-      </div>
-
-      <div
-        :if={elem(@comment, 1).child_count > 0}
-        class="text-xs font-medium text-gray-500 font-poppins"
-      >
-        <div id={"showreply-#{elem(@comment, 1).id}"} style="display: none" class="px-2">
-          <.link
-            href="#"
-            phx-click={
-              JS.push("toggle_more_replies")
-              |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}")
-              |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}")
-              |> JS.toggle(to: "#showreply-#{elem(@comment, 1).id}")
-              |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")
-            }
-            phx-value-initmorecomments="false"
-            phx-value-orb={@orb.id}
-            phx-value-path={to_string(elem(@comment, 1).path)}
-          >
-            View replies [<%= elem(@comment, 1).child_count %>]
-          </.link>
-        </div>
-
-        <div id={"hidereply-#{elem(@comment, 1).id}"} style="display: none">
-          <.link
-            href="#"
-            phx-click={
-              JS.push("toggle_more_replies")
-              |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}")
-              |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}")
-              |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")
-              |> JS.toggle(to: "#showreply-#{elem(@comment, 1).id}")
-            }
-            phx-value-initmorecomments="false"
-            phx-value-orb={@orb.id}
-            phx-value-path={to_string(elem(@comment, 1).path)}
-          >
-            Hide replies  [<%= elem(@comment, 1).child_count %>]
-          </.link>
-        </div>
-        <div id={"initshowreply-#{elem(@comment, 1).id}"}>
-          <.link
-            href="#"
-            phx-click={
-              JS.push("toggle_more_replies")
-              |> JS.toggle(to: "#initshowreply-#{elem(@comment, 1).id}")
-              |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")
-            }
-            phx-value-initmorecomments="true"
-            phx-value-orb={@orb.id}
-            phx-value-path={to_string(elem(@comment, 1).path)}
-          >
-            View replies [<%= elem(@comment, 1).child_count %>]
-          </.link>
-        </div>
+        </p>
       </div>
 
       <.live_component
@@ -128,17 +90,76 @@
         id={"edit-comment-#{elem(@comment, 1).id}"}
         action={:edit}
       />
-
-
-      <div :if={not elem(@comment, 1).active}>
-        <p class="text-sm text-gray-500 font-medium ml-2 dark:text-gray-400">
-          --Comment deleted--
-        </p>
-      </div>
-
     </div>
   </div>
 
+  <div
+    :if={elem(@comment, 1).child_count > 0}
+    class="text-xs font-semibold text-[#687684] font-poppins ml-2 mt-2 dark:text-[#B3B5BD]" 
+  >
+    <div
+      id={"showreply-#{elem(@comment, 1).id}"}
+      style="display: none"
+      class="px-2 flex gap-2 mt-3"
+    >
+      <hr class="-ml-3.5 lg:w-10 w-7 -mb-2 border-[#B3B5BD]" />
+
+      <.link
+        class="lg:ml-10 ml-6"
+        href="#"
+        phx-click={
+          JS.push("toggle_more_replies")
+          |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}")
+          |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}")
+          |> JS.toggle(to: "#showreply-#{elem(@comment, 1).id}")
+          |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")
+        }
+        phx-value-initmorecomments="false"
+        phx-value-orb={@orb.id}
+        phx-value-path={to_string(elem(@comment, 1).path)}
+      >
+        View replies[<%= elem(@comment, 1).child_count %>]
+      </.link>
+    </div>
+
+    <div id={"hidereply-#{elem(@comment, 1).id}"} style="display: none" class="flex gap-2 mt-3">
+      <hr class="-ml-1.5 lg:w-10 w-7 -mb-2 border-[#B3B5BD]" />
+
+      <.link
+        class="lg:ml-12 ml-8"
+        href="#"
+        phx-click={
+          JS.push("toggle_more_replies")
+          |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}")
+          |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}")
+          |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")
+          |> JS.toggle(to: "#showreply-#{elem(@comment, 1).id}")
+        }
+        phx-value-initmorecomments="false"
+        phx-value-orb={@orb.id}
+        phx-value-path={to_string(elem(@comment, 1).path)}>
+        Hide replies[<%= elem(@comment, 1).child_count %>]
+      </.link>
+    </div>
+
+    <div id={"initshowreply-#{elem(@comment, 1).id}"} class="flex gap-2 mt-3">
+      <hr class="-ml-1.5 lg:w-10 w-6 border-[#B3B5BD]" />
+      <.link
+        class="lg:ml-2 ml-1.5 -mt-2"
+        href="#"
+        phx-click={
+          JS.push("toggle_more_replies")
+          |> JS.toggle(to: "#initshowreply-#{elem(@comment, 1).id}")
+          |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")
+        }
+        phx-value-initmorecomments="true"
+        phx-value-orb={@orb.id}
+        phx-value-path={to_string(elem(@comment, 1).path)}
+      >
+        View replies[<%= elem(@comment, 1).child_count %>]
+      </.link>
+    </div>
+  </div>
 
   <div :if={not is_nil(@reply_comment)} id={"reply-comment-for-#{elem(@comment, 1).id}"}>
     <.live_component

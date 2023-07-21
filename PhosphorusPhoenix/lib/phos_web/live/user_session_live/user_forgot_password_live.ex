@@ -11,7 +11,8 @@ defmodule PhosWeb.UserForgotPasswordLive do
         <:subtitle>We'll send a password reset link to your inbox</:subtitle>
       </.header>
 
-      <.simple_form :let={f} id="reset_password_form" for={:user} phx-submit="send_email">
+      <.simple_form class="max-w-2xl p-4 space-y-4 rounded-2xl mt-4"
+      :let={f} id="reset_password_form" for={%{}} as={:user} phx-submit="send_email">
         <.input field={{f, :email}} type="email" placeholder="Email" required />
         <:actions>
           <.button phx-disable-with="Sending..." class="w-full" type="submit">
@@ -20,11 +21,11 @@ defmodule PhosWeb.UserForgotPasswordLive do
         </:actions>
       </.simple_form>
       <div class="mt-3 text-sm text-gray-500 dark:text-white">
-        <.link patch={~p"/users/register"} class="text-sm text-teal-400 font-bold hover:underline">
+        <.link patch={~p"/users/register"} class="text-sm text-purple-600 font-bold hover:underline">
           Sign up
         </.link>
         Or
-        <.link patch={~p"/users/log_in"} class="text-sm text-teal-400 font-bold hover:underline">
+        <.link patch={~p"/users/log_in"} class="text-sm text-purple-600 font-bold hover:underline">
           Sign in
         </.link>
         via Web

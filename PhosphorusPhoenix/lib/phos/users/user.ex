@@ -1,42 +1,42 @@
 defmodule Phos.Users.User do
-
   use Ecto.Schema
   import Ecto.Changeset
   alias Phos.Action.{Orb}
-  alias Phos.Users.{Public_Profile, Private_Profile, Auth, RelationBranch, Integrations, User}
+  alias Phos.Users.{Public_Profile, Private_Profile, Auth, RelationBranch, Integrations}
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "users" do
-    field :email, :string
-    field :username, :string
-    field :role, :string
-    field :media, :boolean, default: false
-    field :fyr_id, :string
+    field(:email, :string)
+    field(:username, :string)
+    field(:role, :string)
+    field(:media, :boolean, default: false)
+    field(:fyr_id, :string)
 
-    field :password, :string, virtual: true, redact: true
-    field :hashed_password, :string, redact: true
-    field :confirmed_at, :naive_datetime
+    field(:password, :string, virtual: true, redact: true)
+    field(:hashed_password, :string, redact: true)
+    field(:confirmed_at, :naive_datetime)
 
-    has_many :orbs, Orb, references: :id, foreign_key: :initiator_id
-    has_many :auths, Auth, references: :id, foreign_key: :user_id
-    has_many :relations, RelationBranch, foreign_key: :user_id
+    has_many(:orbs, Orb, references: :id, foreign_key: :initiator_id)
+    has_many(:auths, Auth, references: :id, foreign_key: :user_id)
+    has_many(:relations, RelationBranch, foreign_key: :user_id)
 
-    field :self_relation, :string, virtual: true
-    field :profile_image, :string, virtual: true
+    field(:self_relation, :string, virtual: true)
+    field(:profile_image, :string, virtual: true)
 
     field :ally_count, :integer, default: 0, virtual: true
     field :mutual_count, :integer, default: 0, virtual: true
     field :mutual, :any, virtual: true
+    field :count, :integer, default: 0, virtual: true
     field :online_at, :integer, virtual: true
 
     # has_many :pending_relations, RelationBranch, foreign_key: :user_id, where: [completed_at: nil]
-    has_many :allies, RelationBranch, foreign_key: :user_id, where: [completed_at: {:not, nil}]
-    #has_many :allies, through: [:branches, :friend]
+    has_many(:allies, RelationBranch, foreign_key: :user_id, where: [completed_at: {:not, nil}])
+    # has_many :allies, through: [:branches, :friend]
 
-    has_one :personal_orb, Orb, foreign_key: :id
-    has_one :private_profile, Private_Profile, references: :id, foreign_key: :user_id
-    embeds_one :public_profile, Public_Profile, on_replace: :update
-    embeds_one :integrations, Integrations, on_replace: :update
+    has_one(:personal_orb, Orb, foreign_key: :id)
+    has_one(:private_profile, Private_Profile, references: :id, foreign_key: :user_id)
+    embeds_one(:public_profile, Public_Profile, on_replace: :update)
+    embeds_one(:integrations, Integrations, on_replace: :update)
 
     timestamps()
   end
@@ -45,7 +45,7 @@ defmodule Phos.Users.User do
   def changeset(%Phos.Users.User{} = user, attrs) do
     user
     |> cast(attrs, [:username, :media, :email, :fyr_id])
-    #|> validate_required(:email)
+    # |> validate_required(:email)
     |> cast_embed(:public_profile)
     |> cast_assoc(:private_profile)
     |> validate_username()
@@ -57,7 +57,7 @@ defmodule Phos.Users.User do
   def personal_changeset(%Phos.Users.User{} = user, attrs) do
     user
     |> cast(attrs, [:username, :media])
-    #|> validate_required(:email)
+    # |> validate_required(:email)
     |> cast_embed(:public_profile)
     |> cast_assoc(:personal_orb, with: &Orb.personal_changeset/2)
     |> validate_username()
@@ -94,7 +94,7 @@ defmodule Phos.Users.User do
   def migration_changeset(%Phos.Users.User{} = user, attrs) do
     user
     |> cast(attrs, [:username, :media, :fyr_id])
-    #|> validate_required(:email)
+    # |> validate_required(:email)
     |> cast_embed(:public_profile)
     |> cast_assoc(:private_profile)
     |> unique_constraint(:username, name: :unique_username)
@@ -140,7 +140,7 @@ defmodule Phos.Users.User do
     |> validate_username(opts)
   end
 
-  defp validate_email(changeset, opts \\ []) do
+  defp validate_email(changeset, opts) do
     changeset
     |> validate_required([:email])
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")

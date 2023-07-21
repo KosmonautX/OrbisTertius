@@ -20,7 +20,7 @@ defmodule PhosWeb.CommentLive.ReplyComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <.form :let={f} for={@changeset} phx-target={@myself} phx-submit="save">
+      <.form :let={f} for={%{}} as={@changeset} phx-target={@myself} phx-submit="save">
         <div class="relative flex flex-col justify-center gap-2">
           <.error :for={msg <- Keyword.get_values(f.errors, :body)}><%= elem(msg, 0) %></.error>
           <textarea
