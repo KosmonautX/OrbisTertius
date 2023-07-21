@@ -81,3 +81,27 @@
     media={@media}
   />
 </.gallerymodal>
+
+<.ally_modal
+  :if={@live_action in [:ally] and @ally != nil}
+  id="User_ally"
+  main_width="lg:max-w-2xl"
+  show={@live_action in [:ally]}
+  on_cancel={JS.patch(~p"/memories/user/#{@user.username}")}>
+  <.redirect_user
+    id="redirect-user"
+    user={@ally}
+    show_location={true}
+    show_img={false}
+    username={@user.username}>
+    <:actions>
+      <.live_component
+        id="user-info-ally"
+        module={PhosWeb.Component.AllyButton}
+        current_user={@current_user}
+        user={@user}
+        parent_pid={self()}
+      />
+    </:actions>
+  </.redirect_user>
+</.ally_modal>

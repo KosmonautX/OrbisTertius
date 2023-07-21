@@ -55,9 +55,11 @@ defmodule PhosWeb.Component.LastMessage do
                   <span class="font-normal text-[#777986] truncate ">
                     <%= get_last_memory(memory).message %>
                   </span>
+                  <!-- unread message
                   <span class="w-5 h-5 inline-flex items-center justify-center rounded-full text-white bg-[#00BFB2] font-semibold justify-center text-[10px] shrink-0">
                     10
                   </span>
+                  -->
                 </div>
               </div>
             </div>

@@ -230,7 +230,7 @@ defmodule PhosWeb.SVG do
     """
   end
 
-  def share_btn(%{type: "share_btn"} = assigns) do
+  def share_btn(assigns) do
     ~H"""
     <svg
       width="45"

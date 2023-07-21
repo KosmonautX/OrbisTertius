@@ -1786,7 +1786,7 @@ defmodule PhosWeb.CoreComponents do
         <img
           :if={@orb.media}
           class="h-20 w-20 rounded-lg object-cover p-1 mr-1"
-          src={Map.values(Phos.Orbject.S3.get_all!("ORB", @orb.id, "public/banner/lossy"))}
+          src={Map.values(Phos.Orbject.S3.get_all!("ORB", @orb.id, "public/banner/lossy") || %{})}
         />
       </div>
     </div>
@@ -2007,6 +2007,12 @@ defmodule PhosWeb.CoreComponents do
               onerror="this.src='/images/default_hand.jpg';"
             />
             <span class="lg:hidden block top-3 right-0 absolute md:w-9 md:h-9 h-7 w-7 bg-[#9747FF] rounded-full flex items-center justify-center">
+              <.live_component
+              id={"#{@id}-user-hero-ally"}
+              module={PhosWeb.Component.AllyButton}
+              current_user={nil}
+              user={@user}
+              />
               <Heroicons.plus_small class="md:w-7 md:h-7 h-5 w-5 group-hover:text-teal-500 text-white" />
             </span>
           </div>
@@ -2717,7 +2723,7 @@ defmodule PhosWeb.CoreComponents do
                   <%= PhosWeb.Endpoint.url() <>
                     path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
                 </div>
-                <.share_btn type="banner" class="h-8 ml-4 dark:fill-white"></.share_btn>
+                <.share_btn class="h-9 md:h-14 ml-2 md:-mt-1.5 -mt-0 dark:fill-white"></.share_btn>
               </a>
               <%= render_slot(@actions) %>
             </div>
