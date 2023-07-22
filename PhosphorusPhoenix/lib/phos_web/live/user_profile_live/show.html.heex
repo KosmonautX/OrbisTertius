@@ -138,7 +138,7 @@
 <.ally_modal
   :if={@live_action in [:ally] and @ally != nil}
   id="User_ally"
-  main_width="lg:max-w-2xl"
+  main_width="lg:max-w-xl"
   show={@live_action in [:ally]}
   on_cancel={JS.patch(~p"/user/#{@user.username}")}>
   <.redirect_user
