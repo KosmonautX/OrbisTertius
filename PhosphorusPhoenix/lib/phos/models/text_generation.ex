@@ -1,5 +1,17 @@
 defmodule Phos.Models.OpenAI do
-  def stream(prompt, context) do
+  def completions(prompt, opts \\ []) do
+    max_tokens = Keyword.get(opts, :max_tokens, 100)
+
+    stream("#{base_url()}/completions", %{
+      model: "text-davinci-003",
+      prompt: prompt,
+      max_tokens: max_tokens,
+      n: 2,
+      stream: true,
+    }, fn data -> data end)
+  end
+
+  def stream(url, data, context) do
     fun = fn(req, finch_req, name, opts) ->
       callback = fn
         {:status, status}, response -> %{response | status: status}
@@ -13,12 +25,7 @@ defmodule Phos.Models.OpenAI do
       end
     end
 
-    Req.post!(url(), json: %{
-      model: model(),
-      prompt: prompt,
-      max_tokens: 20,
-      stream: true
-    },
+    Req.post!(url, json: data,
     auth: {:bearer, token()},
     finch_request: fun)
   end
@@ -42,9 +49,7 @@ defmodule Phos.Models.OpenAI do
     %{response | body: old_body ++ body}
   end
 
-  defp url, do: "#{base_url()}/completions"
   defp base_url, do: Map.get(config(), :base_url, "https://api.openai.com/v1")
-  defp model, do: Map.get(config(), :model, "text-davinci-003")
   defp token, do: Map.get(config(), :token, "") |> eval()
   defp config, do: Application.get_env(:phos, __MODULE__, []) |> Enum.into(%{})
 
