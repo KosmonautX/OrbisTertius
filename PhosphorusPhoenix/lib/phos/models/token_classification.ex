@@ -29,6 +29,14 @@ defmodule Phos.Models.TokenClassification do
     {:ok, token} = Bumblebee.load_tokenizer(model_info(:token))
 
     serving = Bumblebee.Text.token_classification(model, token, aggregation: :same)
+    :logger.info(%{
+      message: "Model TokenClassification was loaded",
+      state: :finished
+    }, %{
+        module: __MODULE__,
+        action: :load_model,
+        state: :loaded}
+    )
     {:noreply, serving}
   end
 
