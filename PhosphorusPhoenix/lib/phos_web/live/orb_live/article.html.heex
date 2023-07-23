@@ -1,0 +1,31 @@
+<div class="mt-20 p-4">
+  <div class="flex">
+    <.simple_form :let={f} for={%Plug.Conn{}} method="get" phx-submit="search" class="flex items-center">
+      <.input field={{f, :q}} value={@search_query} label="Search article" required={true} placeholder="enter your keyword" />
+      <:actions>
+        <.button type="submit" phx-disable-with="Searching...">Search</.button>
+      </:actions>
+    </.simple_form>
+  </div>
+  <div :if={is_nil(@article) and @search_query != ""} class="mt-6">
+    <span>Searching article related for
+      <span class="font-bold italic"><%= inspect @search_query %></span>
+    </span>
+  </div>
+  <div id="search-result" class="flex flex-col" :if={not is_nil(@article)} class="mt-6">
+    <span>Related article for
+      <span class="font-bold italic"><%= inspect @search_query %></span>
+    </span>
+    <article class="mt-4">
+      <h2 class="text-bold text-4xl"><%= Map.get(@article, :title) %></h2>
+      <div :for={{par, index} <- Map.get(@article, :article) |> Enum.with_index()} class="">
+        <img src={Map.get(@article, :medias) |> Enum.at(index)} :if={not is_nil(Map.get(@article, :medias) |> Enum.at(index))} />
+        <p :for={text <- par} class="mt-2 px-2"><%= text %></p>
+      </div>
+      <div class="mt-4">
+        <span>Related categories:</span>
+        <span :for={category <- Map.get(@article, :traits)} class="text-sm leading-6 text-slate-600 md:order-first md:rounded-full ml-2 md:px-3 px-2 md:text-xs md:font-semibold md:leading-7 md:bg-slate-100 md:text-slate-500 md:group-hover:bg-slate-200"><%= category %></span>
+      </div>
+    </article>
+  </div>
+</div>

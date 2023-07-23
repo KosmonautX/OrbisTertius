@@ -838,10 +838,11 @@ defmodule Phos.Action do
     medias  = Enum.map(orbs, fn o -> if o.media, do: Phos.Orbject.S3.get!("ORB", o.id, "public/banner/lossy") end)
 
     %{
-      article: Task.await_many(article) |> Enum.join("\n\n"),
+      article: Task.await_many(article),
       traits: Enum.uniq(traits),
+      title: Enum.random(orbs) |> Map.get(:title),
       related_orbs: Enum.map(orbs, &(&1.id)),
-      medias: medias,
+      medias: Enum.reject(medias, &Kernel.is_nil/1),
     }
   end
 
