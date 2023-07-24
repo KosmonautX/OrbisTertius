@@ -6,7 +6,7 @@ POST /v1/projects/scratchbac-norbandy/messages:send
 Content-Type: application/json
 Accept: application/json
 
-{"message":{"android":{"notification":{"channel_id":"sb_irohs_tea","default_sound":false,"icon":"@drawable/ic_stat_sbhand","sound":"kabuki.wav"}},"apns":{"headers":{"apns-priority":"5","authorization":""},"payload":{"aps":{"badge":0,"content-available":0}}},"data":{"action_path":"/orbland/orbs/ebf28fff-ba5d-4ad4-8dcc-4bca33f94101","body":"aikido style","cluster_id":"folk_orb","initiator_id":"3d534547-eed2-4ab2-acc8-ebf0ae03aaa5","silent":"false","title":"deexupery from Following"},"notification":{"body":"aikido style","title":"deexupery from Following"},"token":null}}
+{"message":{"apns":{"headers":{"apns-priority":"5","authorization":""},"payload":{"aps":{"badge":1,"content-available":1,"alert":{"body":"","title":""}}}},"data":{},"notification":{"body":"","title":"another1"},"token":"emrBcVu5TXy3BlK6wIigqW:APA91bHUaT1VQJmVAsZois0XpmOVAA60OOuJ9ZRG9tPOV3znabGCweo5-slZwYBh6CCaKycyiQUljbE5yBHONx9ZcGMvmNLoDbPsT0HCTV-oqg7b3iuUrU-nqyvhrNRkTbg4NZaPu6wg"}}
 
 --subrequest_boundary
 Content-Type: application/http
@@ -16,6 +16,6 @@ POST /v1/projects/scratchbac-norbandy/messages:send
 Content-Type: application/json
 Accept: application/json
 
-{"message":{"android":{"notification":{"channel_id":"sb_irohs_tea","default_sound":false,"icon":"@drawable/ic_stat_sbhand","sound":"kabuki.wav"}},"apns":{"headers":{"apns-priority":"5","authorization":""},"payload":{"aps":{"badge":0,"content-available":0}}},"data":{"action_path":"/orbland/orbs/ebf28fff-ba5d-4ad4-8dcc-4bca33f94101","body":"aikido style","cluster_id":"folk_orb","initiator_id":"3d534547-eed2-4ab2-acc8-ebf0ae03aaa5","silent":"false","title":"deexupery from Following"},"notification":{"body":"aikido style","title":"deexupery from Following"},"token":"djMNQPoHR_6l5FlC3x_91Y:APA91bFPf8PiG7a0A0zwb9jKJD5JNFogFdPseKOyzyF9htiyM4HQhfl4NVo9j1C4dHnPuWFpR6qIYpGn13ABaKlB7EvI62U4l5ug_TlM-dwFRTETJKPhBVeNiC0Kn46uBSeut9_FIKOo"}}
+{"message":{"apns":{"headers":{"apns-priority":"5","authorization":""},"payload":{"aps":{"badge":1,"content-available":1,"alert":{"body":"","title":""}}}},"data":{},"notification":{"body":"","title":"another1"},"token":"emrBcVu5TXy3BlK6wIigqW:APA91bHUaT1VQJmVAsZois0XpmOVAA60OOuJ9ZRG9tPOV3znabGCweo5-slZwYBh6CCaKycyiQUljbE5yBHONx9ZcGMvmNLoDbPsT0HCTV-oqg7b3iuUrU-nqyvhrNRkTbg4NZaPu6wg"}}
 
 --subrequest_boundary--

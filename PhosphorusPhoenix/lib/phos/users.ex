@@ -350,19 +350,17 @@ defmodule Phos.Users do
     end
   end
 
-  def get_telegram_chat_ids_by_orb(%Phos.Action.Orb{central_geohash: nil}), do: nil
+  def get_telegram_chat_ids_by_orb(%Phos.Action.Orb{central_geohash: nil}), do: []
   def get_telegram_chat_ids_by_orb(orb) do
     orb = orb |> Repo.preload([:initiator])
     telegram_chat_ids =
       :h3.parent(orb.central_geohash, 8)
       |> List.wrap()
       |> Phos.Action.telegram_chat_id_by_geohashes()
-      |> Enum.reduce([], fn notifier, acc ->
-        case notifier do
-          nil -> acc
-          %{telegram_chat_id: chat_id} ->
+      |> Enum.reduce([],
+       fn %{telegram_chat_id: chat_id}, acc when not is_nil(chat_id) ->
             [%{orb: orb, chat_id: chat_id} | acc]
-        end
+          _, acc -> acc
       end)
   end
 
@@ -845,7 +843,7 @@ defmodule Phos.Users do
 
   def bind_user(token) do
     with {:ok, query} <- UserToken.verify_bindaccount_token_query(token, "bind_telegram"),
-        user <- Repo.one(query), # this user struct is a special struct with only email and telegram user
+        user when not is_nil(user) <- Repo.one(query), # this user struct is a special struct with only email and telegram user
         {:ok, %{user: user}} <- Repo.transaction(bind_user_multi(user)) do
       {:ok, user}
     else

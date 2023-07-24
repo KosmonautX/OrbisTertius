@@ -191,8 +191,9 @@ defmodule Phos.TeleBot.Components.Template do
     if user.private_profile do
       case Enum.find(user.private_profile.geolocation, fn loc -> loc.id == type end) do
         nil -> "Not set"
-        %{location_description: description} ->
-          Regex.replace(~r/\d+/, description, "") |> String.trim() |> String.upcase()
+        %{location_description: description} when not is_nil(description) ->
+          description |> String.upcase()
+        _ -> "Not set"
       end
     else
       "Not set"

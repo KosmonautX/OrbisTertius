@@ -16,7 +16,6 @@ defmodule Phos.TeleBot.TelegramNotification.Pusher do
 
   def handle_events(events, from, producers) do
     BotCore.dispatch_messages(events)
-
     {:noreply, [], producers}
   end
 end

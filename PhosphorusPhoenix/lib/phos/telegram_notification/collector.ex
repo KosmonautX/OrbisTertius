@@ -22,7 +22,6 @@ defmodule Phos.TeleBot.TelegramNotification.Collector do
 
   def handle_call({:notify, event}, from, queue) do
     # enqueue items
-
     updated_queue =
       Enum.reduce(event, queue, fn msg, acc ->
         updated_queue = :queue.in(msg, acc)

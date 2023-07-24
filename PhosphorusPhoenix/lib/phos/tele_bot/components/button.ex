@@ -257,7 +257,7 @@ defmodule Phos.TeleBot.Components.Button do
         [
           inline_keyboard_button(
             "Open on Web",
-            [url: "https://nyx.scrb.ac/orb/#{orb.id}"]
+            [url: parse_inline_orb_url(orb)]
           )
         ]
       ]
@@ -276,6 +276,14 @@ defmodule Phos.TeleBot.Components.Button do
         ]
       ]
     )
+  end
+
+  defp parse_inline_orb_url(orb) do
+    unless Mix.env() == :prod do
+      "web.scratchbac.com/"
+    else
+      "#{PhosWeb.Endpoint.url}/orb/#{orb.id}"
+    end
   end
 
   def build_createorb_location_inlinekeyboard(user) do

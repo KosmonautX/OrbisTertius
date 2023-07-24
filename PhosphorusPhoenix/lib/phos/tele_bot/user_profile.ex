@@ -83,11 +83,12 @@ defmodule Phos.TeleBot.Core.UserProfile do
       end
 
       {:ok, %{branch: branch } = user_state} = StateManager.get_state(telegram_id)
+      ExGram.send_message(telegram_id, "Your profile picture has been updated.")
+      StateManager.delete_state(telegram_id)
       case branch do
         %{data: %{return_to: "post"}} ->
           BotCore.post_orb(telegram_id)
-        _ ->
-          ExGram.send_message(telegram_id, "Your profile picture has been updated")
+        _ -> nil
       end
 
      else

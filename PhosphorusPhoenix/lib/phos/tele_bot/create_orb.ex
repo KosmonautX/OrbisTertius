@@ -98,7 +98,6 @@ defmodule Phos.TeleBot.CreateOrb do
 
     with {:ok, attrs} <- PhosWeb.API.OrbController.orb_constructor(user, params),
         {:ok, %Phos.Action.Orb{} = orb} <- Phos.Action.create_orb(%{attrs | "media" => not Enum.empty?(media)}) do
-            TN.Collector.add(orb)
             ExGram.send_message(telegram_id, "Creating post...")
             StateManager.delete_state(telegram_id)
         else

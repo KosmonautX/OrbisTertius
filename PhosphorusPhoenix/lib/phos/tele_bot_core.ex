@@ -80,11 +80,9 @@ defmodule Phos.TeleBot.Core do
          {:ok, %{branch: branch}} <- StateManager.get_state(telegram_id),
          {:ok, %{message_id: message_id}} <- ExGram.send_message(telegram_id, "Setting photo...") do
       case branch do
-        %{state: "picture", path: "self/update"} ->
+        %{path: "self/update", state: "picture", } ->
           UserProfile.set_picture(user, payload)
-          UserProfile.open_user_profile(user)
-          StateManager.delete_state(telegram_id)
-        %{state: "media", path: "orb/create"} ->
+        %{path: "orb/create", state: "media"} ->
           CreateOrb.set_picture(user, payload)
         %{path: "orb/create"} ->
           ExGram.send_message(telegram_id, "Please type a description for your post before uploading a media.")
@@ -264,6 +262,7 @@ defmodule Phos.TeleBot.Core do
     with {:ok, %{branch: branch } = user_state} <- StateManager.get_state(telegram_id) do
       case branch do
         %{path: "self/update"} ->
+          # TODO:
           ProfileFSM.update_user_location(telegram_id, {lat, lon}, desc = Phos.Mainland.World.locate(:h3.from_geo({lat, lon}, 11)))
           |> UserProfile.open_user_profile()
         %{path: "orb/create", state: "location"} ->
@@ -284,20 +283,29 @@ defmodule Phos.TeleBot.Core do
   def get_user_by_telegram(telegram_id), do: Users.get_user_by_telegram(telegram_id |> to_string())
 
   defp build_inlinequery_orbs(orbs) do
-    orbs
-    |> Enum.map(fn (orb)->
-      article = %ExGram.Model.InlineQueryResultArticle{}
-      %{article |
-          id: orb.id,
-          type: "article",
-          title: orb.title,
-          description: orb.payload.inner_title,
-          input_message_content: %ExGram.Model.InputTextMessageContent{ %ExGram.Model.InputTextMessageContent{} |
-            message_text: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML" },
-          # reply_markup: build_orb_notification_button(orb),
-          url: "https://nyx.scrb.ac/orb/#{orb.id}}",
-          thumbnail_url: "https://picsum.photos/200/300", #Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless"),
-        } end)
+
+    Enum.map(orbs, fn (%{payload: payload}= orb) when not is_nil(payload) ->
+      %ExGram.Model.InlineQueryResultArticle{
+        id: orb.id,
+        type: "article",
+        title: orb.title,
+        description: orb.payload.inner_title,
+        input_message_content: %ExGram.Model.InputTextMessageContent{ %ExGram.Model.InputTextMessageContent{} |
+          message_text: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML" },
+        url: "#{PhosWeb.Endpoint.url}/orb/#{orb.id}}",
+        thumbnail_url: parse_inline_orb_thumbnail_url(orb)
+      }
+      _ -> nil
+    end)
+    |> Enum.reject(&is_nil/1)
+  end
+
+  defp parse_inline_orb_thumbnail_url(orb) do
+    unless Mix.env() == :prod do
+      "https://picsum.photos/id/#{:rand.uniform(200)}/200/300"
+    else
+      Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless")
+    end
   end
 
   defp create_user(%{"id" => id} = params) do
@@ -427,10 +435,12 @@ defmodule Phos.TeleBot.Core do
           # ExGram.send_photo(chat_id, "https://media.cnn.com/api/v1/images/stellar/prod/191212182124-04-singapore-buildings.jpg?q=w_2994,h_1996,x_3,y_0,c_crop",
           #   caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
           #   reply_markup: Button.build_orb_notification_button(orb))
+          IO.inspect "Im sending photo message to #{chat_id}}"
           ExGram.send_photo(chat_id, Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless"),
             caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
             reply_markup: Button.build_orb_notification_button(orb))
         _ ->
+          IO.inspect("im sending message to #{chat_id}")
           ExGram.send_message(chat_id, Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
             reply_markup: Button.build_orb_notification_button(orb))
       end
@@ -449,7 +459,7 @@ defmodule Phos.TeleBot.Core do
       message_id: message_id |> String.to_integer(), parse_mode: "HTML", reply_markup: Button.build_latest_posts_inline_button(message_id |> String.to_integer()))
   end
 
-  defp post_orb(telegram_id) do
+  def post_orb(telegram_id) do
     {:ok, user} = get_user_by_telegram(telegram_id)
     case user do
       %User{confirmed_at: nil} ->
@@ -531,8 +541,10 @@ defmodule Phos.TeleBot.Core do
         case Users.update_pub_user(user, %{"username" => text}) do
           {:ok, _} ->
             post_orb(telegram_id)
-          {:error, changeset} ->
+          {:error, %{valid?: false, errors: [username: {"has already been taken",_}]} = changeset} ->
             ExGram.send_message(telegram_id, "Username taken. Please choose another username.")
+          {:error, %{valid?: false} = changeset} ->
+            ExGram.send_message(telegram_id, "Username does not meet requirements. Length 5\nlower-case letters and numbers only.\n Please try again.", parse_mode: "HTML")
         end
 
       %{path: "orb/create", state: "description"} = branch ->
