@@ -19,7 +19,7 @@ defmodule Phos.Users.RelationBranch do
 
   def changeset(relation, attrs) do
     relation
-    |> cast(attrs, [:user_id, :friend_id, :root_id])
+    |> cast(attrs, [:user_id, :friend_id, :root_id, :blocked_at])
     |> validate_required([:user_id, :friend_id])
     #|> unique_constraint([:user_id, :friend_id], name: :mutual_relation_index, message: "already exists")
     |> unique_constraint([:user_id, :friend_id], name: :user_relations_branches_pkey, message: "already exists")

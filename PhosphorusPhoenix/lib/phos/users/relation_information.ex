@@ -73,14 +73,15 @@ defmodule Phos.Users.RelationRoot do
   end
 
   def transition_changeset(root = %{data: %RelationRoot{initiator_id: init, acceptor_id: acpt}}, _, "blocked", params) do
+    now = NaiveDateTime.utc_now()
     branches = [
       %{
-        "blocked_at" => NaiveDateTime.utc_now(),
+        "blocked_at" => now,
         "friend_id" => init,
         "user_id" => acpt
       },
       %{
-        "blocked_at" => NaiveDateTime.utc_now(),
+        "blocked_at" => now,
         "friend_id" => acpt,
         "user_id" => init
       }
