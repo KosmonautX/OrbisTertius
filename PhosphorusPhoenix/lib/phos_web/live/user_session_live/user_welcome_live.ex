@@ -14,7 +14,7 @@ defmodule PhosWeb.UserWelcomeLive do
         <.header>Choose your Username</.header>
         <.simple_form
           :let={f}
-          class="w-96 p-4"
+          class="max-w-2xl p-4 space-y-4 rounded-2xl mt-4"
           id="email_form"
           for={@username_changeset}
           phx-submit="update_username"

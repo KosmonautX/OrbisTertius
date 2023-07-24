@@ -20,7 +20,8 @@ defmodule PhosWeb.OrbLive.Index do
     {:noreply,
      socket
      |> assign(:params, params)
-     |> apply_action(socket.assigns.live_action, params)}
+     |> apply_action(socket.assigns.live_action, params)
+    }
   end
 
   defp apply_action(socket, :sethome, _params) do
@@ -93,16 +94,16 @@ defmodule PhosWeb.OrbLive.Index do
   def handle_info(
         {:static_location_update,
          %{"locname" => locname, "longitude" => longitude, "latitude" => latitude}},
-        socket
+        %{assigns: %{current_user: curr}} = socket
       ) do
     geos =
       Enum.reduce([8, 9, 10], socket.assigns.geolocation, fn res, acc ->
         Map.put(
           acc,
           :h3.parent(:h3.from_geo({latitude, longitude}, 10), res),
-          Action.get_active_orbs_by_geohashes([
-            :h3.parent(:h3.from_geo({latitude, longitude}, 10), res)
-          ])
+          Action.orbs_by_geohashes({[
+            :h3.parent(:h3.from_geo({latitude, longitude}, 10), res),
+          ], curr.id}, [filter: DateTime.utc_now()]).data
         )
       end)
 
@@ -216,4 +217,5 @@ defmodule PhosWeb.OrbLive.Index do
   defp location_fetcher(value, geolocation) do
     value |> Enum.reduce([], fn hash, _acc -> geolocation[hash] end)
   end
+
 end

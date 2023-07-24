@@ -157,6 +157,8 @@ defmodule PhosWeb.OrbLive.FormComponent do
 
   defp error_to_string(:too_large), do: "Image too large"
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
+  defp error_to_string(:too_many_files), do: "You have selected too many files"
+
 
   defp save_orb(socket, :edit, orb_params) do
     case Action.update_orb(socket.assigns.orb, orb_params) do

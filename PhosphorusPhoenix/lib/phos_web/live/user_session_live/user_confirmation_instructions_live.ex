@@ -8,7 +8,13 @@ defmodule PhosWeb.UserConfirmationInstructionsLive do
     <div class="flex flex-col h-screen justify-center items-center">
       <.header>Resend confirmation instructions</.header>
 
-      <.simple_form :let={f} for={:user} id="resend_confirmation_form" phx-submit="send_instructions">
+      <.simple_form
+        :let={f}
+        class="max-w-2xl p-4 space-y-4 rounded-2xl mt-4"
+        for={:user}
+        id="resend_confirmation_form"
+        phx-submit="send_instructions"
+      >
         <.input field={{f, :email}} type="email" label="Email" required />
         <:actions>
           <.button phx-disable-with="Sending..." type="submit">

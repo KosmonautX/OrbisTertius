@@ -8,7 +8,7 @@ defmodule PhosWeb.UserSettingsLive do
     <div class="flex flex-col h-screen justify-center items-center">
       <.header>Change Email</.header>
 
-      <.simple_form class="w-96 p-4"
+      <.simple_form class="max-w-2xl p-4 space-y-4 rounded-2xl mt-4"
         :let={f}
         id="email_form"
         for={@email_changeset}
@@ -37,7 +37,7 @@ defmodule PhosWeb.UserSettingsLive do
 
       <.header>Change Password</.header>
 
-      <.simple_form class="w-96 p-4"
+      <.simple_form class="max-w-2xl p-4 space-y-4 rounded-2xl mt-4"
         :let={f}
         id="password_form"
         for={@password_changeset}
