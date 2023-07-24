@@ -162,8 +162,8 @@ defmodule Phos.TeleBot.Components.Template do
 
   def profile_text_builder(assigns) do
     ~H"""
-    🔸Name: <%= @public_profile.public_name %>
-    🔸Bio: <%= @public_profile.bio %>
+    🔸Name: <%= if @public_profile do %><%= @public_profile.public_name%><% else %>Not set<% end %>
+    🔸Bio: <%= if @public_profile do %><%=@public_profile.bio%><% else %>Not set<% end %>
     🔸Join Date: <%= @inserted_at |> DateTime.from_naive!("UTC") |> Timex.format("{D}-{0M}-{YYYY}") |> elem(1) %>
     🔸Locations:
        1️⃣ <%= get_location_desc_from_user(assigns, "home") %>

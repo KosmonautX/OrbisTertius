@@ -1,5 +1,6 @@
 defmodule Phos.TeleBot.Components.Button do
   alias Phos.TeleBot.Components.Template
+  alias PhosWeb.Menshen.Auth
 
   def build_onboarding_register_button() do
     inline_keyboard_markup(
@@ -251,17 +252,39 @@ defmodule Phos.TeleBot.Components.Button do
     )
   end
 
-  def build_orb_notification_button(orb) do
+  def build_orb_notification_button(orb, user) do
     inline_keyboard_markup(
       [
         [
           inline_keyboard_button(
-            "Open on Web",
-            [url: parse_inline_orb_url(orb)]
+            "🌐 Open on Web",
+            [url: parse_inline_orb_profileurl(orb)]
+          )
+        ],
+        [
+          inline_keyboard_button(
+            "💬 Chat",
+            [url: parse_inline_orb_chaturl(orb, user)]
           )
         ]
       ]
     )
+  end
+
+  defp parse_inline_orb_profileurl(orb) do
+    unless Mix.env() == :prod do
+      "web.scratchbac.com/"
+    else
+      "#{PhosWeb.Endpoint.url}/orb/#{orb.id}"
+    end
+  end
+
+  defp parse_inline_orb_chaturl(%{initiator_id: orb_initiator_id} = _orb, user) do
+    unless Mix.env() == :prod do
+      "web.scratchbac.com/"
+    else
+      "#{PhosWeb.Endpoint.url}/memories/user/#{orb_initiator_id}?token=#{Auth.generate_user!(user.id)}"
+    end
   end
 
   def build_main_menu_inlinekeyboard(), do: build_main_menu_inlinekeyboard("")
@@ -276,14 +299,6 @@ defmodule Phos.TeleBot.Components.Button do
         ]
       ]
     )
-  end
-
-  defp parse_inline_orb_url(orb) do
-    unless Mix.env() == :prod do
-      "web.scratchbac.com/"
-    else
-      "#{PhosWeb.Endpoint.url}/orb/#{orb.id}"
-    end
   end
 
   def build_createorb_location_inlinekeyboard(user) do

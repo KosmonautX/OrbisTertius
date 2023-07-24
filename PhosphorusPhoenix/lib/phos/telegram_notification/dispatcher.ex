@@ -44,6 +44,10 @@ defmodule Phos.TeleBot.TelegramNotification.Dispatcher do
     {:noreply, [], ask_and_schedule(producers, from)}
   end
 
+  def handle_demand({:ask, from}, producers) do
+    {:noreply, [], ask_and_schedule(producers, from)}
+  end
+
   defp ask_and_schedule(producers, from) do
     case producers do
       %{^from => {pending, interval}} ->

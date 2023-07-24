@@ -5,9 +5,20 @@ defmodule PhosWeb.MemoryLive.Index do
   alias Phos.Message.Memory
 
   @impl true
-  def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
+  def mount(_params, _session, %{assigns: %{current_user: user}} = socket) when not is_nil(user) do
     Phos.PubSub.subscribe("memory:user:#{user.id}")
     {:ok, init_relations(socket)}
+  end
+
+  def mount(%{token: token} = params, _session, %{assigns: %{current_user: user}} = socket) when is_nil(user) do
+    with {:ok, claims} <- Auth.validate_user(token),
+        user = Users.get_user(claims["user_id"]) do
+      Phos.PubSub.subscribe("memory:user:#{user.id}")
+      assign(socket, :current_user, user)
+      {:ok, init_relations(socket)}
+    else
+      _ -> push_navigate(socket, to: "/users/log_in")
+    end
   end
 
   @impl true
