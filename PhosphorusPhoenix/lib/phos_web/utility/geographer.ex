@@ -34,7 +34,7 @@ defmodule PhosWeb.Util.Geographer do
 
   def validate_territory(%{private_profile: %{geolocation: past_territory}}, wished_territory) when is_list(wished_territory) do
     past = past_territory |> Enum.into(%{},fn loc -> {loc.id, loc} end)
-    wished_territory |> Enum.reject(fn wish -> !(!Map.has_key?(past, wish["id"]) or (past[wish["id"]].geohash != wish["geohash"]))   end)
+    wished_territory |> Enum.reject(fn wish -> !(!Map.has_key?(past, wish.id) or (past[wish.id].geohash != wish.geohash))   end)
   end
 
   def validate_territory(%{private_profile: _}, wished_territory) when is_list(wished_territory) do

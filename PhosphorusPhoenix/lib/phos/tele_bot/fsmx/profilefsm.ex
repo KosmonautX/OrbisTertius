@@ -7,11 +7,17 @@ defmodule Phos.TeleBot.ProfileFSM do
 
   ## routing of state
   def update_user_location(telegram_id, latlon, desc) do
-    with {:ok, %{id: user_id, private_profile: %{geolocation: geolocation}} = _user} <- BotCore.get_user_by_telegram(telegram_id),
-      {:ok, %{branch: %{data: %{location_type: type}}}} <- StateManager.get_state(telegram_id) do
+    with {:ok, %{id: user_id, private_profile: private_profile} = user} <- BotCore.get_user_by_telegram(telegram_id),
+         {:ok, %{branch: %{data: %{location_type: type}}}} <- StateManager.get_state(telegram_id) do
+      # if private profile, geolocation
       geolocation =
-        Enum.map(geolocation, fn loc -> Map.from_struct(loc) |> Map.delete(:chronolock) end)
-
+        case private_profile do
+          nil ->
+            []
+          _ ->
+            geolocation =
+              Enum.map(private_profile.geolocation, fn loc -> Map.from_struct(loc) |> Map.delete(:chronolock) end)
+        end
       updated_geolocation =
         case Enum.find(geolocation, fn loc -> loc.id == type end) do
           nil ->
@@ -23,21 +29,22 @@ defmodule Phos.TeleBot.ProfileFSM do
               }
             ]
           _ ->
-            geolocation |> Enum.map(fn loc ->
-              case loc.id == type do
-                true ->
-                  %{
-                    id: type,
-                    geohash: :h3.from_geo(latlon, 11),
-                    location_description: desc
-                  }
-                _ -> loc
-              end
-            end)
+            Enum.map(geolocation, fn loc ->
+            case loc.id == type do
+              true ->
+                %{
+                  id: type,
+                  geohash: :h3.from_geo(latlon, 11),
+                  location_description: desc
+                }
+              _ -> loc
+            end
+          end)
         end
-      Geographer.update_territory(user_id, updated_geolocation)
+      user = Geographer.update_territory(user_id, updated_geolocation)
+      {:ok, user}
     else
-       err -> BotCore.error_fallback(telegram_id, err)
+       err -> {:error, err}
     end
   end
 

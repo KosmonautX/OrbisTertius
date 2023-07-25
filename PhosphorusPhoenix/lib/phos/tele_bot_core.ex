@@ -262,8 +262,11 @@ defmodule Phos.TeleBot.Core do
     with {:ok, %{branch: branch } = user_state} <- StateManager.get_state(telegram_id) do
       case branch do
         %{path: "self/update"} ->
-          ProfileFSM.update_user_location(telegram_id, {lat, lon}, desc = Phos.Mainland.World.locate(:h3.from_geo({lat, lon}, 11)))
-          |> UserProfile.open_user_profile()
+          with {:ok, user} <- ProfileFSM.update_user_location(telegram_id, {lat, lon}, desc = Phos.Mainland.World.locate(:h3.from_geo({lat, lon}, 11))) do
+            UserProfile.open_user_profile(user)
+          else
+            {:error, err} -> error_fallback(telegram_id, "Error updating self/update :location #{err}")
+          end
         %{path: "orb/create", state: "location"} ->
           CreateOrb.set_location(branch, "live", [latlon: {lat, lon}])
         %{path: "orb/create"} ->
@@ -435,12 +438,12 @@ defmodule Phos.TeleBot.Core do
           # ExGram.send_photo(chat_id, "https://media.cnn.com/api/v1/images/stellar/prod/191212182124-04-singapore-buildings.jpg?q=w_2994,h_1996,x_3,y_0,c_crop",
           #   caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
           #   reply_markup: Button.build_orb_notification_button(orb))
-          IO.inspect "Im sending photo message to #{chat_id}}"
+          IO.inspect "sending telegram photo message to #{chat_id}}"
           ExGram.send_photo(chat_id, Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless"),
             caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
             reply_markup: Button.build_orb_notification_button(orb, user))
         _ ->
-          IO.inspect("im sending message to #{chat_id}")
+          IO.inspect("sending telegram message to #{chat_id}")
           ExGram.send_message(chat_id, Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
             reply_markup: Button.build_orb_notification_button(orb, user))
       end
@@ -491,8 +494,12 @@ defmodule Phos.TeleBot.Core do
           nil ->
             ExGram.send_message(telegram_id, "Invalid postal code. Please try again.")
           %{"road_name" => road_name, "lat" => lat, "lon" => lon} ->
-            ProfileFSM.update_user_location(telegram_id, {String.to_float(lat), String.to_float(lon)}, road_name)
-            UserProfile.open_user_profile(user)
+            test1 =
+            with {:ok, user} <- ProfileFSM.update_user_location(telegram_id, {String.to_float(lat), String.to_float(lon)}, road_name) do
+              UserProfile.open_user_profile(user)
+            else
+              {:error, err} -> error_fallback(telegram_id, "Error updating self/update :location #{err}")
+            end
             StateManager.delete_state(telegram_id)
           err ->
             error_fallback(telegram_id, err)
