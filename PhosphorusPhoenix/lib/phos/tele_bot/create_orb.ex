@@ -52,9 +52,9 @@ defmodule Phos.TeleBot.CreateOrb do
       "essence": "banner"
     }]
     with {:ok, media_change} <- Phos.Orbject.Structure.apply_media_changeset(%{id: user.id, archetype: "ORB", media: media_map}) do
-      resolution = %{"150x150" => "lossy", "1920x1080" => "lossless"}
+      resolution = %{"150x150" => "public/banner/lossy", "1920x1080" => "public/banner/lossless"}
       for res <- ["150x150", "1920x1080"] do
-        {:ok, dest} = Phos.Orbject.S3.put("ORB", orb_id , "public/profile/#{resolution[res]}")
+        {:ok, dest} = Phos.Orbject.S3.put("ORB", orb_id , resolution[res])
         [hd | tail] = payload |> get_in(["photo"]) |> Enum.reverse()
         {:ok, %{file_path: path}} = ExGram.get_file(hd |> get_in(["file_id"]))
         {:ok, %HTTPoison.Response{body: image}} = HTTPoison.get("https://api.telegram.org/file/bot#{Config.get(:bot_token)}/#{path}")

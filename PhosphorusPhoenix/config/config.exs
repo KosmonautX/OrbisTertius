@@ -7,7 +7,7 @@
 # General application configuration
 import Config
 
-config :phos, TeleBot.Cache,
+config :phos, Phos.TeleBot.Cache,
   # When using :shards as backend
   # backend: :shards,
   # GC interval for pushing new generation: 12 hrs
@@ -123,7 +123,7 @@ config :phos, Phos.Cache,
     partitions: 2
   ]
 
-config :phos, TeleBot.Cache,
+config :phos, Phos.TeleBot.Cache,
 # When using :shards as backend
 backend: :shards,
 # GC interval for pushing new generation: 12 hrs

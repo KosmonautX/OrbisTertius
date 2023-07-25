@@ -20,7 +20,6 @@ defmodule PhosWeb.Util.Geographer do
 
   def update_territory(user_id, territory) do
     user = Users.get_territorial_user!(user_id)
-    # dbg
     with [_ | _]<- validate_territory(user, territory),
          payload = %{"private_profile" => _ , "personal_orb" => _} <- parse_territory(user, territory),
          {:ok, %User{} = user} <- Users.update_territorial_user(user, payload) do
@@ -33,14 +32,9 @@ defmodule PhosWeb.Util.Geographer do
     end
   end
 
-  def validate_territory(%{private_profile: %{geolocation: past_territory}}, [%{"id" => _id}|_] = wished_territory) when is_list(wished_territory) do
+  def validate_territory(%{private_profile: %{geolocation: past_territory}}, wished_territory) when is_list(wished_territory) do
     past = past_territory |> Enum.into(%{},fn loc -> {loc.id, loc} end)
     wished_territory |> Enum.reject(fn wish -> !(!Map.has_key?(past, wish["id"]) or (past[wish["id"]].geohash != wish["geohash"]))   end)
-  end
-
-  def validate_territory(%{private_profile: %{geolocation: past_territory}}, [%{id: _id}] = wished_territory) when is_list(wished_territory) do
-    past = past_territory |> Enum.into(%{},fn loc -> {loc.id, loc} end)
-    wished_territory |> Enum.reject(fn wish -> !(!Map.has_key?(past, wish.id) or (past[wish.id].geohash != wish.geohash))   end)
   end
 
   def validate_territory(%{private_profile: _}, wished_territory) when is_list(wished_territory) do
@@ -50,16 +44,16 @@ defmodule PhosWeb.Util.Geographer do
   def parse_territory(user, wished_territory) when is_list(wished_territory) do
     try do
       present_territory = wished_territory
-      |> Enum.map(fn loc -> :h3.parent(loc.geohash, 11) end)
+      |> Enum.map(fn loc -> :h3.parent(loc["geohash"], 11) end)
       |> Enum.map(fn hash -> :h3.parent(hash, 8) |> :h3.k_ring(1) end)
       |>  List.flatten() |> Enum.uniq()
 
       # Places does not include the live location of the user
       places = wished_territory
       |> Enum.map(fn loc ->
-        hash = :h3.parent(loc.geohash, 8)
+        hash = :h3.parent(loc["geohash"], 8)
         %{"geohash" => hash,
-          "id" => loc.id,
+          "id" => loc["id"],
           "location_description" => hash |> Phos.Mainland.World.locate()}
       end)
       |> Enum.reject(fn loc -> loc["id"] == "live" end)

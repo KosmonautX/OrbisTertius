@@ -180,7 +180,11 @@ defmodule Phos.TeleBot.Components.Template do
 
   def edit_profile_username_text_builder(assigns) do
     ~H"""
-    Choose a unique username.
+    <b>Choose a unique username.</b>
+
+    The username should be
+    - <u>5 characters long</u>
+    - <u>letters and numbers</u>
 
     <b>Note: you will not be able to change your username after this set up.</b>
     """

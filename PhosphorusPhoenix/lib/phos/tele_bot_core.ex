@@ -265,7 +265,7 @@ defmodule Phos.TeleBot.Core do
           with {:ok, user} <- ProfileFSM.update_user_location(telegram_id, {lat, lon}, desc = Phos.Mainland.World.locate(:h3.from_geo({lat, lon}, 11))) do
             UserProfile.open_user_profile(user)
           else
-            {:error, err} -> error_fallback(telegram_id, "Error updating self/update :location #{err}")
+            err -> error_fallback(telegram_id, "Error updating self/update :location #{err}")
           end
         %{path: "orb/create", state: "location"} ->
           CreateOrb.set_location(branch, "live", [latlon: {lat, lon}])
@@ -494,11 +494,10 @@ defmodule Phos.TeleBot.Core do
           nil ->
             ExGram.send_message(telegram_id, "Invalid postal code. Please try again.")
           %{"road_name" => road_name, "lat" => lat, "lon" => lon} ->
-            test1 =
             with {:ok, user} <- ProfileFSM.update_user_location(telegram_id, {String.to_float(lat), String.to_float(lon)}, road_name) do
               UserProfile.open_user_profile(user)
             else
-              {:error, err} -> error_fallback(telegram_id, "Error updating self/update :location #{err}")
+              err -> error_fallback(telegram_id, "Error updating self/update :location #{err}")
             end
             StateManager.delete_state(telegram_id)
           err ->
@@ -507,7 +506,7 @@ defmodule Phos.TeleBot.Core do
         ExGram.delete_message(telegram_id, message_id)
 
       %{path: "self/update", state: "livelocation"} ->
-        ExGram.send_message(telegram_id, "You must share your live location to update your location.")
+        ExGram.send_message(telegram_id, "You must share your current/live location to update your location.\n\n<i>(Use the 📎 button to attach image)</i>", parse_mode: "HTML")
 
       %{path: "self/update", state: "name" <> message_id} = user_state ->
         with {:ok, user} <- Users.update_user(user, %{public_profile: %{public_name: text}}) do
@@ -545,13 +544,14 @@ defmodule Phos.TeleBot.Core do
           end
 
       %{path: "self/onboarding", state: "username"} ->
+        text = String.downcase(text)
         case Users.update_pub_user(user, %{"username" => text}) do
           {:ok, _} ->
             post_orb(telegram_id)
           {:error, %{valid?: false, errors: [username: {"has already been taken",_}]} = changeset} ->
             ExGram.send_message(telegram_id, "Username taken. Please choose another username.")
           {:error, %{valid?: false} = changeset} ->
-            ExGram.send_message(telegram_id, "Username does not meet requirements. Length 5\nlower-case letters and numbers only.\n Please try again.", parse_mode: "HTML")
+            ExGram.send_message(telegram_id, "Username does not meet requirements.\n\n- <u>5 characters long</u>\n - <u>letters and numbers</u>\n\nPlease try again.", parse_mode: "HTML")
         end
 
       %{path: "orb/create", state: "description"} = branch ->

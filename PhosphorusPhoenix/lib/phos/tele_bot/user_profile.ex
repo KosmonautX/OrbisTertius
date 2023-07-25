@@ -29,14 +29,14 @@ defmodule Phos.TeleBot.Core.UserProfile do
 
   def edit_location_prompt(telegram_id, message_id) do
     {:ok, user} = BotCore.get_user_by_telegram(telegram_id)
-    ExGram.edit_message_text("You can set up your home, work and live location\n\nJust send your pinned location or live location after hitting the button",
+    ExGram.edit_message_text("<b>You can set up your home, work and live location</b>\n\n<u>Click on the button to set your location.</u>",
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), parse_mode: "HTML", reply_markup: Button.build_location_button(user, message_id))
   end
 
   # ExGram.send_message(telegram_id, text, reply_markup: Button.build_current_location_button())
 
   def edit_locationtype_prompt(telegram_id, "live") do
-    ExGram.send_message(telegram_id, "Please send your location for live location.")
+    ExGram.send_message(telegram_id, "You must share your current/live location to update your location.\n\n<i>(Use the 📎 button to send location)</i>", parse_mode: "HTML")
     {:ok, user_state} = StateManager.new_state(telegram_id)
     user_state
     |> Map.put(:branch, %ProfileFSM{telegram_id: telegram_id, state: "livelocation",
@@ -44,7 +44,7 @@ defmodule Phos.TeleBot.Core.UserProfile do
     |> StateManager.update_state(telegram_id)
   end
   def edit_locationtype_prompt(telegram_id, location_type) do
-    ExGram.send_message(telegram_id, "Please type your postal code or send your location for #{location_type} location.")
+    ExGram.send_message(telegram_id, "Please type your postal code or send your location for #{location_type} location.\n\n<i>(Use the 📎 button to send location)</i>", parse_mode: "HTML")
     {:ok, user_state} = StateManager.new_state(telegram_id)
     user_state
     |> Map.put(:branch, %ProfileFSM{telegram_id: telegram_id, state: "location",
@@ -58,7 +58,7 @@ defmodule Phos.TeleBot.Core.UserProfile do
     |> Map.put(:branch, %ProfileFSM{telegram_id: telegram_id, state: "picture",
       metadata: %{message_id: message_id}})
     |> StateManager.update_state(telegram_id)
-    ExGram.edit_message_text("Spice up your profile with a profile picture! Send a picture.",
+    ExGram.edit_message_text("<b>Send a picture</b>\n\nSpice up your profile with a profile picture!\n\n<i>(Use the 📎 button to attach image)</i>",
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), parse_mode: "HTML", reply_markup: Button.build_main_menu_inlinekeyboard(message_id))
   end
 
@@ -75,7 +75,7 @@ defmodule Phos.TeleBot.Core.UserProfile do
         {:ok, dest} = Phos.Orbject.S3.put("USR", user.id, "public/profile/#{resolution[res]}")
         [hd | tail] = payload |> get_in(["photo"]) |> Enum.reverse()
         {:ok, %{file_path: path}} = ExGram.get_file(hd |> get_in(["file_id"]))
-        {:ok, %HTTPoison.Response{body: image}} = HTTPoison.get("https://api.telegram.org/file/bot#{Config.get(:bot_token)}/#{path}")
+        {:ok, %HTTPoison.Response{body: image} = response} = HTTPoison.get("https://api.telegram.org/file/bot#{Config.get(:bot_token)}/#{path}")
         path = "/tmp/" <> (:crypto.strong_rand_bytes(30) |> Base.url_encode64()) <> ".png"
         File.write!(path , image)
         HTTPoison.put(dest, {:file, path})
@@ -83,12 +83,12 @@ defmodule Phos.TeleBot.Core.UserProfile do
       end
 
       {:ok, %{branch: branch } = user_state} = StateManager.get_state(telegram_id)
-      ExGram.send_message(telegram_id, "Your profile picture has been updated.")
+      ExGram.send_message(telegram_id, "Your profile picture has been updated!")
       StateManager.delete_state(telegram_id)
       case branch do
         %{data: %{return_to: "post"}} ->
           BotCore.post_orb(telegram_id)
-        _ -> nil
+        _ -> open_user_profile(user)
       end
 
      else

@@ -2,7 +2,7 @@ defmodule Phos.TeleBot.StateManager do
   defstruct [:telegram_id,
     branch: %{}]
 
-  alias TeleBot.Cache
+  alias Phos.TeleBot.Cache
 
   @ttl 600_000
 

@@ -1,11 +1,8 @@
 defmodule Phos.TeleBot do
   use Supervisor
-  alias __MODULE__.{StateManager, TelegramNotification}
-  alias Phos.TeleBot.Core, as: BotCore
-
-  alias Phos.Repo
 
   def start_link(opts) do
+    :ok = Phos.TeleBot.Config.load()
     Supervisor.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
@@ -17,10 +14,10 @@ defmodule Phos.TeleBot do
     end
 
     children  = [
-    {BotCore, [method: :webhook, token: token]},
+    {Phos.TeleBot.Core, [method: :webhook, token: token]},
     # StateManager,
-    TeleBot.Cache,
-    TelegramNotification]
+    Phos.TeleBot.Cache,
+    Phos.TeleBot.TelegramNotification]
 
     Supervisor.init(children, strategy: :one_for_one)
   end

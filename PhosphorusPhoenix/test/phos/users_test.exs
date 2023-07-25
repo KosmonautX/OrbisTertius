@@ -563,5 +563,4 @@ defmodule Phos.UsersTest do
       assert Repo.get_by(UserToken, user_id: tele_user.id)
     end
   end
-
 end
