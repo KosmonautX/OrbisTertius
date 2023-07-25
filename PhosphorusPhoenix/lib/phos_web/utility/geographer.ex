@@ -20,6 +20,7 @@ defmodule PhosWeb.Util.Geographer do
 
   def update_territory(user_id, territory) do
     user = Users.get_territorial_user!(user_id)
+    # dbg
     with [_ | _]<- validate_territory(user, territory),
          payload = %{"private_profile" => _ , "personal_orb" => _} <- parse_territory(user, territory),
          {:ok, %User{} = user} <- Users.update_territorial_user(user, payload) do
@@ -32,7 +33,12 @@ defmodule PhosWeb.Util.Geographer do
     end
   end
 
-  def validate_territory(%{private_profile: %{geolocation: past_territory}}, wished_territory) when is_list(wished_territory) do
+  def validate_territory(%{private_profile: %{geolocation: past_territory}}, [%{"id" => _id}|_] = wished_territory) when is_list(wished_territory) do
+    past = past_territory |> Enum.into(%{},fn loc -> {loc.id, loc} end)
+    wished_territory |> Enum.reject(fn wish -> !(!Map.has_key?(past, wish["id"]) or (past[wish["id"]].geohash != wish["geohash"]))   end)
+  end
+
+  def validate_territory(%{private_profile: %{geolocation: past_territory}}, [%{id: _id}] = wished_territory) when is_list(wished_territory) do
     past = past_territory |> Enum.into(%{},fn loc -> {loc.id, loc} end)
     wished_territory |> Enum.reject(fn wish -> !(!Map.has_key?(past, wish.id) or (past[wish.id].geohash != wish.geohash))   end)
   end

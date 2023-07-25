@@ -907,9 +907,15 @@ defmodule Phos.Users do
   def bind_user_multi(%{tele_user: %{integrations: %{telegram_chat_id: telegram_id}} = tele_user, email: email} = user) do
     main_user = get_user_by_email(email) |> Repo.preload([:auths])
 
+    query =
+      from a in Auth,
+        where: a.auth_id == ^telegram_id and a.auth_provider == "telegram"
+    auth = Repo.one(query)
+
     params = %{
       auths: [
         %{
+          id: auth.id,
           auth_id: telegram_id,
           auth_provider: "telegram"
         }
@@ -918,12 +924,6 @@ defmodule Phos.Users do
         telegram_chat_id: to_string(telegram_id)
       }
     }
-
-    query =
-      from a in Auth,
-        where: a.auth_id == ^telegram_id and a.auth_provider == "telegram"
-
-    auth = Repo.one(query)
 
     Multi.new()
     |> Multi.delete(:auth, auth)
