@@ -1586,7 +1586,7 @@ defmodule PhosWeb.CoreComponents do
       )
 
     ~H"""
-    <div class="w-full mx-auto dark:bg-gray-900 dark:lg:bg-gray-800 bg-white flex h-screen w-full flex-col">
+    <div class="w-full mx-auto dark:bg-gray-900 dark:lg:bg-gray-800 bg-white flex h-screen w-full flex-col bg-opacity-75">
       <div class="px-2 md:px-6 lg:px-2 flex w-full items-center gap-4">
         <.user_info_bar
           class="dark:bg-gray-900"
@@ -1609,7 +1609,7 @@ defmodule PhosWeb.CoreComponents do
           </:actions>
         </.user_info_bar>
       </div>
-      <div class="flex flex-1 items-center justify-center bg-white dark:bg-gray-900 lg:dark:bg-gray-800">
+      <div class="flex flex-1 items-center justify-center bg-white dark:bg-gray-900 lg:dark:bg-gray-800 bg-opacity-50">
         <.preview_modal :if={@media != []} id={"#{@id}-scry-orb-#{@orb.id}"} media={@media} />
       </div>
 
@@ -1629,11 +1629,11 @@ defmodule PhosWeb.CoreComponents do
           show_comment={false}
         />
         <p class="font-medium text-sm dark:text-white text-gray-700 px-2 py-1">
-          Liked by bbeebbub and others
+          <!-- Liked by bbeebbub and others -->
         </p>
         <hr />
         <span class="dark:text-white text-gray-400 font-normal text-sm lg:text-base mt-2 mb-2 px-2">
-          23 comments
+          <%= @orb.comment_count%> comments
         </span>
         <hr />
       </div>
@@ -1653,7 +1653,7 @@ defmodule PhosWeb.CoreComponents do
       <div :if={!is_nil(@media)}>
         <div :for={m <- @media} class="relative">
           <img
-            class="max-h-full max-w-full object-contain flex justify-center items-center"
+            class="max-h-full max-w-full object-contain flex justify-center items-center bg-opacity-100"
             src={m.url}
             loading="lazy"
           />
@@ -1662,7 +1662,7 @@ defmodule PhosWeb.CoreComponents do
       <div :if={length(@media) > 1}>
         <button
           type="button"
-          class="absolute inset-y-2/4	 right-0  flex items-center justify-center px-2 cursor-pointer group focus:outline-none"
+          class="absolute inset-y-2/4 right-0  flex items-center justify-center px-2 cursor-pointer group focus:outline-none"
         >
           <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none dark:group-focus:ring-gray-800/70 dark:bg-gray-800/30 dark:group-hover:bg-gray-800/60">
             <Heroicons.chevron_right class="h-6 w-6 dark:text-white" />
