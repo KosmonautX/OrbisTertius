@@ -884,7 +884,7 @@ defmodule PhosWeb.CoreComponents do
 
   def admin_navbar(assigns) do
     ~H"""
-    <nav class="lg:bg-gray-50 bg-white flex px-4 font-poppins py-4 w-64 h-screen border border-gray-100">
+    <nav class="lg:bg-gray-50 bg-white flex px-4 font-poppins py-4 w-64 h-screen">
       <ul class="flex-col min-w-full flex flex-col list-none" id="navbar">
         <li :for={item <- @item} class="items-center">
           <.link
@@ -907,7 +907,7 @@ defmodule PhosWeb.CoreComponents do
   @spec nav_banner_admin(any) :: Phoenix.LiveView.Rendered.t()
   def nav_banner_admin(assigns) do
     ~H"""
-    <nav class="bg-white fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold p-3 font-poppins">
+    <nav class="bg-white fixed w-full z-10 top-0 left-0 text-base font-bold p-3 font-poppins">
       <div class=" flex flex-wrap items-center justify-between mx-auto">
         <a href="" class="flex items-center">
           <.logo type="banner" class="h-8 ml-4"></.logo>
