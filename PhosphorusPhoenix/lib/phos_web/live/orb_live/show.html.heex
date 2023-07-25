@@ -5,13 +5,13 @@
     <br />
     <br />
   </div>
-  <div class="md:mt-0 mt-14 lg:flex lg:justify-center lg:items-center lg:gap-4">
+  <div class="md:mt-0 mt-14 lg:flex lg:justify-center lg:items-center xl:gap-4 lg:gap-2">
     <div
       :if={not is_nil(@orb.initiator) && @orb.initiator}
-      class="flex lg:flex-row flex-col items-start mt-6 lg:gap-4"
+      class="flex flex-row  mt-6 lg:gap-4"
     >
       <!-- Desktop View in Orb View Profile-->
-      <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full 2xl:max-w-sm xl:max-w-xs lg:max-w-xs">
+      <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full 2xl:w-[384px] xl:w-[320px] lg:w-[300px]">
         <div>
           <.user_profile_banner
             id="orb-initiator-username"
@@ -109,7 +109,7 @@
       </div>
 
       <!--Desktop Related Post-->
-      <div class="hidden lg:block w-full 2xl:max-w-md xl:max-w-sm lg:max-w-xs ">
+      <div class="hidden lg:block w-full 2xl:w-[448px] xl:w-[384px] lg:w-[320px] ">
         <h5 class="text-left font-semibold text-lg dark:text-white mb-1">
           <%= "Other Posts by #{@orb.initiator.username}" %>
         </h5>
