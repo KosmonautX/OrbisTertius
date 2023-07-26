@@ -234,7 +234,6 @@ defmodule Phos.TeleBot.Core do
   def handle({:inline_query, %{"id" => query_id, "query" => "myposts", "from" => %{"id" => telegram_id}}}) do
     with {:ok, user} <- get_user_by_telegram(telegram_id) do
       %{data: orbs} = Phos.Action.orbs_by_initiators([user.id], 1)
-      IO.inspect orbs
       build_inlinequery_orbs(orbs)
       |> then(fn ans -> ExGram.answer_inline_query(to_string(query_id), ans) end)
     else
@@ -251,7 +250,6 @@ defmodule Phos.TeleBot.Core do
             parse_mode: "HTML", reply_markup: Button.build_location_specific_button(type))
           %{geohash: geohash} ->
             %{data: orbs} = Phos.Action.orbs_by_geohashes({[:h3.parent(geohash, 8)], user.id}, limit: 12)
-            IO.inspect orbs
             build_inlinequery_orbs(orbs)
             |> then(fn ans -> ExGram.answer_inline_query(to_string(query_id), ans) end)
         end
@@ -303,7 +301,7 @@ defmodule Phos.TeleBot.Core do
         description: "No orbs found",
         input_message_content: %ExGram.Model.InputTextMessageContent{ %ExGram.Model.InputTextMessageContent{} |
           message_text: "No orbs found", parse_mode: "HTML" },
-        url: "#{PhosWeb.Endpoint.url}",
+        url: "web.scratchbac.com",
         thumbnail_url: "https://picsum.photos/200/300"
       }]
     else
