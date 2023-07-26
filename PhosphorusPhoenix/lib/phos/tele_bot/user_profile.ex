@@ -99,16 +99,16 @@ defmodule Phos.TeleBot.Core.UserProfile do
     end
   end
 
-  def open_user_profile(nil), do: []
   def open_user_profile(user), do: open_user_profile(user, nil)
   def open_user_profile(user, ""), do: open_user_profile(user, nil)
-  def open_user_profile(%{integrations: %{telegram_chat_id: telegram_id}} = user, nil) do
+  def open_user_profile(%{integrations: %{telegram_chat_id: telegram_id}} = user, nil) when not is_nil(user) do
     {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id, Template.profile_text_builder(user),
       parse_mode: "HTML")
     ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id, reply_markup: Button.build_settings_button(message_id))
   end
-  def open_user_profile(%{integrations: %{telegram_chat_id: telegram_id}} = user, message_id) do
+  def open_user_profile(%{integrations: %{telegram_chat_id: telegram_id}} = user, message_id) when not is_nil(user) do
     ExGram.edit_message_text(Template.profile_text_builder(user), chat_id: telegram_id, message_id: message_id |> String.to_integer(),
       parse_mode: "HTML", reply_markup: Button.build_settings_button(message_id))
   end
+  def open_user_profile(_,_), do: {:error, :user_not_found}
 end

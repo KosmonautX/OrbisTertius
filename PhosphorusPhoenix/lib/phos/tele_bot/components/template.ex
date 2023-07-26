@@ -154,6 +154,8 @@ defmodule Phos.TeleBot.Components.Template do
     📋 <b></b> <%= @payload.inner_title %>
 
     👤 From: <%= @initiator.username %>
+    <%!-- 🔸Posted On: <%= @inserted_at |> DateTime.from_naive!("UTC") |> Timex.format("{D}-{0M}-{YYYY}") |> elem(1) %> --%>
+    📍 <%= @central_geohash |> Phos.Mainland.World.locate() %>
     <%!-- 💚 <b>Info:</b> <%= @payload.info %> --%>
     <%!-- 💜 <b>By:</b> <% if is_nil(@initiator.username), do: %><a href={"tg://user?id=#{@telegram_user["id"]}"}>@<%= @telegram_user["username"] %></a> <% , else: %> <%= @initiator.username %> --%>
     """
