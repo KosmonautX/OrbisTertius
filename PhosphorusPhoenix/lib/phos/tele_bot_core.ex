@@ -70,7 +70,7 @@ defmodule Phos.TeleBot.Core do
     with {:ok, user} <- get_user_by_telegram(telegram_id) do
       UserProfile.open_user_profile(user)
     else
-      err -> error_fallback(telegram_id, err)
+      {:error, err} -> error_fallback(telegram_id, err)
     end
   end
 
@@ -89,7 +89,7 @@ defmodule Phos.TeleBot.Core do
       end
       ExGram.delete_message(telegram_id, message_id)
     else
-      err -> error_fallback(telegram_id, err)
+     {:error, err} -> error_fallback(telegram_id, err)
     end
   end
 
@@ -138,7 +138,7 @@ defmodule Phos.TeleBot.Core do
       ExGram.send_message(telegram_id, "An email has been sent to #{email} if it exists. Please check your inbox and follow the instructions to link your account.")
       StateManager.delete_state(telegram_id)
     else
-      err -> error_fallback(telegram_id, err)
+     {:error, err} -> error_fallback(telegram_id, err)
     end
   end
 
@@ -163,7 +163,7 @@ defmodule Phos.TeleBot.Core do
           open_latest_posts(user, message_id)
       end
     else
-      err -> error_fallback(telegram_id, err)
+     {:error, err} -> error_fallback(telegram_id, err)
     end
   end
 
@@ -173,7 +173,7 @@ defmodule Phos.TeleBot.Core do
          {:ok, %{branch: branch}} <- StateManager.get_state(telegram_id) do
       CreateOrb.transition(branch, type)
     else
-      err -> error_fallback(telegram_id, err)
+     {:error, err} -> error_fallback(telegram_id, err)
     end
   end
 
@@ -194,7 +194,7 @@ defmodule Phos.TeleBot.Core do
           CreateOrb.post(branch, user)
       end
     else
-      err -> error_fallback(telegram_id, err)
+     {:error, err} -> error_fallback(telegram_id, err)
     end
   end
 
@@ -230,7 +230,7 @@ defmodule Phos.TeleBot.Core do
       build_inlinequery_orbs(orbs)
       |> then(fn ans -> ExGram.answer_inline_query(to_string(query_id), ans) end)
     else
-      err -> error_fallback(telegram_id, err)
+     {:error, err} -> error_fallback(telegram_id, err)
     end
   end
 
@@ -249,7 +249,7 @@ defmodule Phos.TeleBot.Core do
         "Not set"
       end
     else
-      err -> error_fallback(telegram_id, err)
+     {:error, err} -> error_fallback(telegram_id, err)
     end
   end
 
@@ -273,7 +273,7 @@ defmodule Phos.TeleBot.Core do
         _ -> nil
       end
     else
-      err -> error_fallback(telegram_id, err)
+     {:error, err} -> error_fallback(telegram_id, err)
     end
   end
 
@@ -476,7 +476,7 @@ defmodule Phos.TeleBot.Core do
           parse_mode: "HTML")
       %User{confirmed_at: _date, media: true, username: _username} ->
         CreateOrb.create_fresh_orb_form(telegram_id)
-      err -> error_fallback(telegram_id, err)
+     {:error, err} -> error_fallback(telegram_id, err)
     end
   end
 
@@ -510,7 +510,7 @@ defmodule Phos.TeleBot.Core do
           StateManager.delete_state(telegram_id)
           UserProfile.open_user_profile(user)
         else
-          err -> error_fallback(telegram_id, err)
+         {:error, err} -> error_fallback(telegram_id, err)
         end
 
       %{path: "self/update", state: "bio" <> _message_id} ->
@@ -518,7 +518,7 @@ defmodule Phos.TeleBot.Core do
           StateManager.delete_state(telegram_id)
           UserProfile.open_user_profile(user)
         else
-          err -> error_fallback(telegram_id, err)
+         {:error, err} -> error_fallback(telegram_id, err)
         end
 
       %{path: "self/onboarding", state: "register"} ->
@@ -537,7 +537,7 @@ defmodule Phos.TeleBot.Core do
               |> StateManager.update_state(telegram_id)
             {:valid, %{valid?: false}} ->
               ExGram.send_message(telegram_id, "This email is not valid. Please try again or return to /start to cancel")
-            err -> error_fallback(telegram_id, err)
+           {:error, err} -> error_fallback(telegram_id, err)
           end
 
       %{path: "self/onboarding", state: "username"} ->

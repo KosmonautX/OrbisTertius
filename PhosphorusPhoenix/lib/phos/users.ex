@@ -305,7 +305,7 @@ defmodule Phos.Users do
     case do_query_from_auth(id, "telegram") do
       %Auth{user: user} ->
         {:ok, user |> Map.put(:tele_id, id) }
-      err -> err
+      err -> {:error, err}
     end
   end
 

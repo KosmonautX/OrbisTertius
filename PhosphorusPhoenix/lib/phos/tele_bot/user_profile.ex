@@ -99,6 +99,7 @@ defmodule Phos.TeleBot.Core.UserProfile do
     end
   end
 
+  def open_user_profile(nil), do: []
   def open_user_profile(user), do: open_user_profile(user, nil)
   def open_user_profile(user, ""), do: open_user_profile(user, nil)
   def open_user_profile(%{integrations: %{telegram_chat_id: telegram_id}} = user, nil) do
