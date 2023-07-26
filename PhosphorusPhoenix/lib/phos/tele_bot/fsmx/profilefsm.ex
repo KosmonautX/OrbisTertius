@@ -28,8 +28,7 @@ defmodule Phos.TeleBot.ProfileFSM do
       updated_geolocation =
         Map.put(geolocation, type, %{"id" => type, "geohash" => :h3.from_geo(latlon, 11), "location_description" => desc})
         |> Map.values()
-      user = Geographer.update_territory(user_id, updated_geolocation)
-      {:ok, user}
+      {:ok, user} = Geographer.update_territory(user_id, updated_geolocation)
     else
        err -> {:error, err}
     end

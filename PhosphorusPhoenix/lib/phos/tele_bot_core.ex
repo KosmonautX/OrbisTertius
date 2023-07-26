@@ -1,6 +1,5 @@
 defmodule Phos.TeleBot.Core do
   use Phoenix.Component
-  import PhosWeb.Endpoint, only: [url: 0]
   use PhosWeb, :html
 
   require Logger
@@ -10,9 +9,9 @@ defmodule Phos.TeleBot.Core do
     name: @bot,
     setup_commands: true
 
-  alias Phos.{Users, Orbject, Action}
+  alias Phos.{Users}
   alias Phos.Users.User
-  alias Phos.TeleBot.{Config, StateManager, CreateOrb, ProfileFSM, OnboardingFSM}
+  alias Phos.TeleBot.{StateManager, CreateOrb, ProfileFSM, OnboardingFSM}
   alias Phos.TeleBot.Core.{UserProfile}
   alias Phos.TeleBot.Components.{Button, Template}
 
@@ -27,22 +26,22 @@ defmodule Phos.TeleBot.Core do
 
   def bot(), do: @bot
 
-  def handle({:message, :start, %{"chat" => %{"id" => telegram_id}} = payload}) do
+  def handle({:message, :start, %{"chat" => %{"id" => telegram_id}}}) do
     start_menu(telegram_id)
   end
 
-  def handle({:message, :menu, %{"chat" => %{"id" => telegram_id}} = payload}) do
+  def handle({:message, :menu, %{"chat" => %{"id" => telegram_id}}}) do
     main_menu(telegram_id)
   end
 
-  def handle({:message, :help, %{"chat" => %{"id" => telegram_id}} = payload}) do
+  def handle({:message, :help, %{"chat" => %{"id" => telegram_id}}}) do
     ExGram.send_message(telegram_id, Template.help_text_builder(%{}))
   end
 
   @doc """
   Handle messages as requested by menus (Postal codes, email addresses, createorb inner_title etc.)
   """
-  def handle({:message, :text, %{"chat" => %{"id" => telegram_id}, "text" => text} = payload}) do
+  def handle({:message, :text, %{"chat" => %{"id" => telegram_id}, "text" => text}}) do
     with {:ok, user_state} <- StateManager.get_state(telegram_id),
          {:ok, user} <- get_user_by_telegram(telegram_id) do
         message_route(user_state, [user: user, telegram_id: telegram_id, text: text])
@@ -54,11 +53,11 @@ defmodule Phos.TeleBot.Core do
   # @doc """
   # Check if meets all necessary profile fields to post or user has a post ongoing, prompt to continue editing or reset
   # """
-  def handle({:message, :post, %{"chat" => %{"id" => telegram_id}} = payload}) do
+  def handle({:message, :post, %{"chat" => %{"id" => telegram_id}}}) do
     post_orb(telegram_id)
   end
 
-  def handle({:message, :register, %{"chat" => %{"id" => telegram_id}} = payload}) do
+  def handle({:message, :register, %{"chat" => %{"id" => telegram_id}}}) do
     case get_user_by_telegram(telegram_id) do
       {:ok, %{integrations: %{telegram_chat_id: _}, confirmed_at: date}} when not is_nil(date) ->
         ExGram.send_message(telegram_id, "You have completed registration!")
@@ -67,7 +66,7 @@ defmodule Phos.TeleBot.Core do
     end
   end
 
-  def handle({:message, :profile, %{"chat" => %{"id" => telegram_id}} = payload}) do
+  def handle({:message, :profile, %{"chat" => %{"id" => telegram_id}}}) do
     with {:ok, user} <- get_user_by_telegram(telegram_id) do
       UserProfile.open_user_profile(user)
     else
@@ -98,7 +97,7 @@ defmodule Phos.TeleBot.Core do
   # CALLBACK QUERY
   # ====================
 
-  def handle({:callback_query, %{"data" => "start_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}} = payload}) do
+  def handle({:callback_query, %{"data" => "start_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}}}) do
     case type do
       "mainmenu" <> message_id ->
         main_menu(telegram_id, message_id)
@@ -111,7 +110,7 @@ defmodule Phos.TeleBot.Core do
 
   def handle({:callback_query, %{"data" => "onboarding_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}} = payload})
     when type in ["register", "linkaccount", "username"] do
-    with {:ok, user} <- get_user_by_telegram(telegram_id) do
+    with {:ok, _user} <- get_user_by_telegram(telegram_id) do
       case type do
         "register" ->
           onboarding_register(telegram_id)
@@ -133,7 +132,7 @@ defmodule Phos.TeleBot.Core do
   end
 
   def onboarding_linkaccount(telegram_id) do
-    with {:ok, %{branch: %{data: %{email: email}}} = user_state} <- StateManager.get_state(telegram_id),
+    with {:ok, %{branch: %{data: %{email: email}}}} <- StateManager.get_state(telegram_id),
          %User{} = user <- Users.get_user_by_email(email) do
       Users.deliver_telegram_bind_confirmation_instructions(user, telegram_id, &url(~p"/users/bind/telegram/#{&1}"))
       ExGram.send_message(telegram_id, "An email has been sent to #{email} if it exists. Please check your inbox and follow the instructions to link your account.")
@@ -153,7 +152,7 @@ defmodule Phos.TeleBot.Core do
     |> StateManager.update_state(telegram_id)
   end
 
-  def handle({:callback_query, %{"data" => "menu_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}} = payload}) do
+  def handle({:callback_query, %{"data" => "menu_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}}}) do
     with {:ok, user} <- get_user_by_telegram(telegram_id) do
       case type do
         "post" ->
@@ -168,9 +167,9 @@ defmodule Phos.TeleBot.Core do
     end
   end
 
-  def handle({:callback_query, %{"data" => "createorb_back_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}} = payload})
+  def handle({:callback_query, %{"data" => "createorb_back_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}}})
       when type in ["description", "location", "media"] do
-    with {:ok, user} <- get_user_by_telegram(telegram_id),
+    with {:ok, _user} <- get_user_by_telegram(telegram_id),
          {:ok, %{branch: branch}} <- StateManager.get_state(telegram_id) do
       CreateOrb.transition(branch, type)
     else
@@ -178,7 +177,7 @@ defmodule Phos.TeleBot.Core do
     end
   end
 
-  def handle({:callback_query, %{"data" => "createorb_" <> type, "message" => %{"chat" => %{"id" => telegram_id}} } = payload})
+  def handle({:callback_query, %{"data" => "createorb_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}}})
     when type in ["location_home", "location_work", "location_live", "description", "location", "media", "preview", "post"] do
     with {:ok, user} <- get_user_by_telegram(telegram_id),
          {:ok, %{branch: branch}} <- StateManager.get_state(telegram_id) do
@@ -202,14 +201,14 @@ defmodule Phos.TeleBot.Core do
   # @doc """
   #   Handle callback query for edit private_profile location to set the location based on the chosen type
   # """
-  def handle({:callback_query, %{"data" => "edit_profile_locationtype_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}} = payload}) when type in ["home", "work", "live"] do
+  def handle({:callback_query, %{"data" => "edit_profile_locationtype_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}}}) when type in ["home", "work", "live"] do
     UserProfile.edit_locationtype_prompt(telegram_id, type)
   end
 
   # @doc """
   #   Handle callback query for edit profile name, bio, location type prompt, picture
   # """
-  def handle({:callback_query, %{"data" => "edit_profile_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}} = payload}) do
+  def handle({:callback_query, %{"data" => "edit_profile_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}}}) do
     case type do
       "name" <> message_id ->
         UserProfile.edit_name_prompt(telegram_id, message_id)
@@ -225,7 +224,7 @@ defmodule Phos.TeleBot.Core do
   # ====================
   # INLINE QUERY
   # ====================
-  def handle({:inline_query, %{"id" => query_id, "query" => "myposts", "from" => %{"id" => telegram_id}} = payload}) do
+  def handle({:inline_query, %{"id" => query_id, "query" => "myposts", "from" => %{"id" => telegram_id}}}) do
     with {:ok, user} <- get_user_by_telegram(telegram_id) do
       %{data: orbs} = Phos.Action.orbs_by_initiators([user.id], 1)
       build_inlinequery_orbs(orbs)
@@ -235,7 +234,7 @@ defmodule Phos.TeleBot.Core do
     end
   end
 
-  def handle({:inline_query, %{"id" => query_id, "query" => type, "from" => %{"id" => telegram_id}} = payload}) when type in ["home", "work", "live"] do
+  def handle({:inline_query, %{"id" => query_id, "query" => type, "from" => %{"id" => telegram_id}}}) when type in ["home", "work", "live"] do
     with {:ok, user} <- get_user_by_telegram(telegram_id) do
       if user.private_profile do
         case Enum.find(user.private_profile.geolocation, fn loc -> loc.id == type end) do
@@ -258,11 +257,11 @@ defmodule Phos.TeleBot.Core do
   # LOCATION MESSAGE
   # ====================
 
-  def handle({:location, %{"location" => %{"latitude" => lat, "longitude" => lon}, "chat" => %{"id" => telegram_id}} = payload}) do
-    with {:ok, %{branch: branch } = user_state} <- StateManager.get_state(telegram_id) do
+  def handle({:location, %{"location" => %{"latitude" => lat, "longitude" => lon}, "chat" => %{"id" => telegram_id}}}) do
+    with {:ok, %{branch: branch }} <- StateManager.get_state(telegram_id) do
       case branch do
         %{path: "self/update"} ->
-          with {:ok, user} <- ProfileFSM.update_user_location(telegram_id, {lat, lon}, desc = Phos.Mainland.World.locate(:h3.from_geo({lat, lon}, 11))) do
+          with {:ok, user} <- ProfileFSM.update_user_location(telegram_id, {lat, lon}, Phos.Mainland.World.locate(:h3.from_geo({lat, lon}, 11))) do
             UserProfile.open_user_profile(user)
           else
             err -> error_fallback(telegram_id, "Error updating self/update :location #{err}")
@@ -303,7 +302,7 @@ defmodule Phos.TeleBot.Core do
   end
 
   defp parse_inline_orb_thumbnail_url(orb) do
-    unless Mix.env() == :prod do
+    if String.contains?(PhosWeb.Endpoint.url, "localhost") do
       "https://picsum.photos/id/#{:rand.uniform(200)}/200/300"
     else
       Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless")
@@ -325,19 +324,18 @@ defmodule Phos.TeleBot.Core do
     end
   end
 
-  defp start_menu(telegram_id), do: start_menu(telegram_id, nil)
-  defp start_menu(telegram_id, message_id) do
+  defp start_menu(telegram_id) do
     StateManager.delete_state(telegram_id)
     start_main_menu_check_and_register(telegram_id)
-    with {:ok, %{confirmed_at: date} = user} when not is_nil(date) <- get_user_by_telegram(telegram_id) do
-      start_menu_text(telegram_id, message_id)
+    with {:ok, %{confirmed_at: date}} when not is_nil(date) <- get_user_by_telegram(telegram_id) do
+      start_menu_text(telegram_id)
     else
       _ ->
         onboard_text(telegram_id)
     end
   end
 
-  defp start_menu_text(telegram_id, message_id) do
+  defp start_menu_text(telegram_id) do
     {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id,
       Template.start_menu_text_builder(%{}), parse_mode: "HTML")
     ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id,
@@ -348,7 +346,7 @@ defmodule Phos.TeleBot.Core do
   defp main_menu(telegram_id, message_id) do
     StateManager.delete_state(telegram_id)
     start_main_menu_check_and_register(telegram_id)
-    with {:ok, %{confirmed_at: date} = user} when not is_nil(date) <- get_user_by_telegram(telegram_id) do
+    with {:ok, %{confirmed_at: date}} when not is_nil(date) <- get_user_by_telegram(telegram_id) do
       main_menu_text(telegram_id, message_id)
     else
       _ ->
@@ -356,8 +354,6 @@ defmodule Phos.TeleBot.Core do
     end
   end
 
-  defp main_menu_text(telegram_id), do: main_menu_text(telegram_id, nil)
-  defp main_menu_text(telegram_id, ""), do: main_menu_text(telegram_id, nil)
   defp main_menu_text(telegram_id, nil) do
     {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id,
       Template.main_menu_text_builder(%{}), parse_mode: "HTML")
@@ -368,7 +364,6 @@ defmodule Phos.TeleBot.Core do
       parse_mode: "HTML", reply_markup: Button.build_menu_inlinekeyboard(message_id))
   end
 
-  defp faq(telegram_id), do: faq(telegram_id, nil)
   defp faq(telegram_id, ""), do: faq(telegram_id, nil)
   defp faq(telegram_id, nil) do
     {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id,
@@ -381,7 +376,6 @@ defmodule Phos.TeleBot.Core do
       reply_markup: Button.build_main_menu_inlinekeyboard(message_id))
   end
 
-  defp feedback(telegram_id), do: feedback(telegram_id, nil)
   defp feedback(telegram_id, ""), do: feedback(telegram_id, nil)
   defp feedback(telegram_id, nil) do
     {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id,
@@ -404,14 +398,13 @@ defmodule Phos.TeleBot.Core do
 
   defp start_main_menu_check_and_register(telegram_id) do
     with {:user_exist, true} <- {:user_exist, Users.telegram_user_exists?(telegram_id)} do
-        telegram_id
+      :ok
     else
       {:user_exist, false} ->
-        user = create_user(%{"id" => telegram_id})
-        telegram_id
-
-      {:user, {:ok, user}} ->
-        telegram_id
+        create_user(%{"id" => telegram_id})
+        :ok
+      {:user, {:ok, _user}} ->
+        :ok
     end
   end
 
@@ -435,13 +428,18 @@ defmodule Phos.TeleBot.Core do
       {:ok, user} = get_user_by_telegram(chat_id)
       text = case orb.media do
         true ->
-          # ExGram.send_photo(chat_id, "https://media.cnn.com/api/v1/images/stellar/prod/191212182124-04-singapore-buildings.jpg?q=w_2994,h_1996,x_3,y_0,c_crop",
-          #   caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
-          #   reply_markup: Button.build_orb_notification_button(orb))
-          IO.inspect "sending telegram photo message to #{chat_id}}"
-          ExGram.send_photo(chat_id, Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless"),
-            caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
-            reply_markup: Button.build_orb_notification_button(orb, user))
+          if String.contains?(PhosWeb.Endpoint.url, "localhost") do
+            # For development
+            ExGram.send_photo(chat_id, "https://d1e00ek4ebabms.cloudfront.net/production/f046ab80-21a7-40e8-b56e-6e8076d47a82.jpg",
+              caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
+              reply_markup: Button.build_orb_notification_button(orb, user))
+          else
+            # For production
+            IO.inspect "sending telegram photo message to #{chat_id}}"
+            ExGram.send_photo(chat_id, Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless"),
+              caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
+              reply_markup: Button.build_orb_notification_button(orb, user))
+          end
         _ ->
           IO.inspect("sending telegram message to #{chat_id}")
           ExGram.send_message(chat_id, Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
@@ -451,7 +449,6 @@ defmodule Phos.TeleBot.Core do
     end)
   end
 
-  defp open_latest_posts(user), do: open_latest_posts(user, nil)
   defp open_latest_posts(user, ""), do: open_latest_posts(user, nil)
   defp open_latest_posts(%{integrations: %{telegram_chat_id: telegram_id}} = user, nil) do
     ExGram.send_message(telegram_id, Template.latest_posts_text_builder(user),
@@ -508,7 +505,7 @@ defmodule Phos.TeleBot.Core do
       %{path: "self/update", state: "livelocation"} ->
         ExGram.send_message(telegram_id, "You must share your current/live location to update your location.\n\n<i>(Use the 📎 button to attach image)</i>", parse_mode: "HTML")
 
-      %{path: "self/update", state: "name" <> message_id} = user_state ->
+      %{path: "self/update", state: "name" <> _message_id} ->
         with {:ok, user} <- Users.update_user(user, %{public_profile: %{public_name: text}}) do
           StateManager.delete_state(telegram_id)
           UserProfile.open_user_profile(user)
@@ -516,7 +513,7 @@ defmodule Phos.TeleBot.Core do
           err -> error_fallback(telegram_id, err)
         end
 
-      %{path: "self/update", state: "bio" <> message_id} ->
+      %{path: "self/update", state: "bio" <> _message_id} ->
         with {:ok, user} <- Users.update_user(user, %{public_profile: %{bio: text}}) do
           StateManager.delete_state(telegram_id)
           UserProfile.open_user_profile(user)
@@ -533,12 +530,12 @@ defmodule Phos.TeleBot.Core do
                 ExGram.send_message(telegram_id, "An email has been sent to #{text} if it exists. Please check your inbox and follow the instructions to link your account.\n\nIf you have wrongly entered your email, restart the /register process.")
                 StateManager.delete_state(telegram_id)
           else
-            {:valid, %{valid?: false, errors: [email: {"has already been taken",_}]} = changeset} ->
+            {:valid, %{valid?: false, errors: [email: {"has already been taken",_}]}} ->
               ExGram.send_message(telegram_id, "This email is in use. Would you like to link your telegram to your Scratchbac account?", parse_mode: "HTML", reply_markup: Button.build_link_account_button())
               {_prev, branch} = get_and_update_in(branch.data.email, &{&1, text})
               Map.put(user_state, :branch, branch)
               |> StateManager.update_state(telegram_id)
-            {:valid, %{valid?: false} = changeset} ->
+            {:valid, %{valid?: false}} ->
               ExGram.send_message(telegram_id, "This email is not valid. Please try again or return to /start to cancel")
             err -> error_fallback(telegram_id, err)
           end
@@ -548,16 +545,14 @@ defmodule Phos.TeleBot.Core do
         case Users.update_pub_user(user, %{"username" => text}) do
           {:ok, _} ->
             post_orb(telegram_id)
-          {:error, %{valid?: false, errors: [username: {"has already been taken",_}]} = changeset} ->
+          {:error, %{valid?: false, errors: [username: {"has already been taken",_}]}} ->
             ExGram.send_message(telegram_id, "Username taken. Please choose another username.")
-          {:error, %{valid?: false} = changeset} ->
+          {:error, %{valid?: false}} ->
             ExGram.send_message(telegram_id, "Username does not meet requirements.\n\n- <u>5 characters long</u>\n - <u>letters and numbers</u>\n\nPlease try again.", parse_mode: "HTML")
         end
 
       %{path: "orb/create", state: "description"} = branch ->
         CreateOrb.set_description(branch, text)
-      # %{path: "orb/create", state: "location"} = branch ->
-        # CreateOrb.set_location(branch, text)
       _ ->
         nil
     end

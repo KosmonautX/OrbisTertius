@@ -88,7 +88,9 @@ defmodule Phos.TeleBot.Core.UserProfile do
       case branch do
         %{data: %{return_to: "post"}} ->
           BotCore.post_orb(telegram_id)
-        _ -> open_user_profile(user)
+        _ ->
+          {:ok, user} = BotCore.get_user_by_telegram(telegram_id)
+          open_user_profile(user)
       end
 
      else

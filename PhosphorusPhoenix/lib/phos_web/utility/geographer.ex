@@ -23,10 +23,10 @@ defmodule PhosWeb.Util.Geographer do
     with [_ | _]<- validate_territory(user, territory),
          payload = %{"private_profile" => _ , "personal_orb" => _} <- parse_territory(user, territory),
          {:ok, %User{} = user} <- Users.update_territorial_user(user, payload) do
-          user
+          {:ok, user}
     else
       [] ->
-        user
+        {:ok, user}
       {:error, changeset} ->
         {:error, changeset}
     end

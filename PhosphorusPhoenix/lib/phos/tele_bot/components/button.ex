@@ -272,7 +272,7 @@ defmodule Phos.TeleBot.Components.Button do
   end
 
   defp parse_inline_orb_profileurl(orb) do
-    unless Mix.env() == :prod do
+    if String.contains?(PhosWeb.Endpoint.url, "localhost") do
       "web.scratchbac.com/"
     else
       "#{PhosWeb.Endpoint.url}/orb/#{orb.id}"
@@ -280,7 +280,7 @@ defmodule Phos.TeleBot.Components.Button do
   end
 
   defp parse_inline_orb_chaturl(%{initiator_id: orb_initiator_id} = _orb, user) do
-    unless Mix.env() == :prod do
+    if String.contains?(PhosWeb.Endpoint.url, "localhost") do
       "web.scratchbac.com/"
     else
       "#{PhosWeb.Endpoint.url}/memories/user/#{orb_initiator_id}?token=#{Auth.generate_user!(user.id)}"
