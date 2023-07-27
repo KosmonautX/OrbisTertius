@@ -431,10 +431,9 @@ defmodule Phos.TeleBot.Core do
       {:user_exist, false} ->
         create_user(%{"id" => telegram_id})
         :ok
-      {:integrations_exist, {:ok, %{email: email}}} ->
+      {:integrations_exist, {:ok, %{tele_id: tele_id} = user}} ->
         params = %{integrations: %{telegram_chat_id: telegram_id |> to_string()}}
-        Users.get_user_by_email(email)
-        |> User.telegram_changeset(params)
+        User.telegram_changeset(user, params)
         |> Phos.Repo.update()
     end
   end
