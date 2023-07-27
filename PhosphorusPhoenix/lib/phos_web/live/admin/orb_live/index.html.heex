@@ -1,5 +1,5 @@
-<div class="w-full max-h-fit">
-  <div class="flex items-center px-2 md:px-10 py-2 w-full lg:bg-gray-50 bg-white border border-gray-100 fixed z-10 fixed top-14">
+<section class="w-full max-h-fit transition duration-100 ease-out opacity-0 scale-95" {transition("opacity-0 scale-95", "opacity-100 scale-100")}>
+  <div class="flex items-center px-2 md:px-10 py-2 w-full lg:bg-gray-50 bg-white  top-14">
     <div class="block mr-4">
       <.link navigate={~p"/admin/orbs/import"} class="button button-sm inline-flex items-center">
         <i class="fa-solid fa-plus cursor-pointer mr-2 hidden lg:block"></i>Import orbs
@@ -17,7 +17,7 @@
     </.form>
   </div>
 
-  <div class="pb-16 hidden lg:block relative mt-16">
+  <div class="pb-16 hidden lg:block relative">
     <.table id="orbs" rows={@orbs}>
       <:col :let={orb} classes="sticky left-0" label="Initiator">
         <.admin_user_preview user={orb.initiator} id={"admin_user_preview_for_#{orb.id}"} />
@@ -56,11 +56,11 @@
   </div>
 
   <div class="lg:hidden block">
-    <div class="grid md:grid-cols-2 gird-col gap-4 mt-20 px-2 md:px-4 pb-24">
+    <div class="grid md:grid-cols-2 gird-col gap-4  px-2 md:px-4 pb-24">
       <.admin_grid :for={orb <- @orbs} user={orb.initiator} id={"admin-grid-for-#{orb.id}"} />
     </div>
   </div>
-</div>
+</section>
 
 <div class="px-4 py-3 w-full sm:flex sm:flex-1 sm:items-center sm:justify-between bottom-0 fixed bg-white ">
   <.live_component

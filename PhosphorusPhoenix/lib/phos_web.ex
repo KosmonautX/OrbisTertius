@@ -105,18 +105,23 @@ defmodule PhosWeb do
     quote do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
-
       # Import LiveView and .heex helpers (live_render, live_patch, <.form>, etc)
       import Phoenix.Component
       # import PhosWeb.LiveHelpers
-
       # Import basic rendering functionality (render, render_layout, etc)
       import Phoenix.View
-
       import PhosWeb.CoreComponents
       import PhosWeb.Gettext
-
       alias Phoenix.LiveView.JS
+
+      def transition(from, to) do
+        %{
+          id: Ecto.UUID.generate(),
+          "phx-hook": "TransitionHook",
+          "data-transition-from": from,
+          "data-transition-to": to
+        }
+      end
 
       unquote(verified_routes())
     end
@@ -130,8 +135,6 @@ defmodule PhosWeb do
         statics: PhosWeb.static_paths()
     end
   end
-
-
 
   @doc """
   When used, dispatch to the appropriate controller/view/etc.

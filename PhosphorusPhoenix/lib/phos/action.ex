@@ -190,13 +190,28 @@ defmodule Phos.Action do
       #|> (&(Map.put(&1, :data, &1.data |> Repo.Preloader.lateral(:allies, [limit: 3, order_by: {:desc, :completed_at}, assocs: [:friend]])))).()
   end
 
+  #TODO filter only blocked users instead of all users with potential relationships
   def notifiers_by_geohashes(hashes) do
     from(l in Orb_Location,
       as: :l,
       where: l.location_id in ^hashes,
-      left_join: orbs in assoc(l, :orbs),
+      inner_join: orbs in assoc(l, :orbs),
       on: orbs.userbound == true,
       inner_join: initiator in assoc(orbs, :initiator),
+      on: initiator.integrations["beacon"]["location"]["scope"] == true,
+      distinct: initiator.integrations["fcm_token"],
+      select: initiator.integrations)
+      |> Repo.all()
+  end
+  def notifiers_by_geohashes(hashes, your_id) do
+    from(l in Orb_Location,
+      as: :l,
+      where: l.location_id in ^hashes,
+      inner_join: orbs in assoc(l, :orbs),
+      on: orbs.userbound == true,
+      inner_join: initiator in assoc(orbs, :initiator),
+      right_join: branch in assoc(initiator, :relations),
+      on: branch.friend_id == ^your_id and not is_nil(branch.blocked_at),
       on: initiator.integrations["beacon"]["location"]["scope"] == true,
       distinct: initiator.integrations["fcm_token"],
       select: initiator.integrations)
@@ -763,7 +778,7 @@ defmodule Phos.Action do
 
   def experimental_notify(orb) do
     geonotifiers =
-      notifiers_by_geohashes([orb.central_geohash])
+      notifiers_by_geohashes([orb.central_geohash], orb.initiator_id)
       |> Enum.map(fn n -> n && Map.get(n, :fcm_token, nil) end)
       |> MapSet.new()
       |> MapSet.delete(get_in(orb.initiator, [Access.key(:integrations, %{}), Access.key(:fcm_token, nil)]))

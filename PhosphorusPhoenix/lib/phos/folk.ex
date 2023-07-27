@@ -102,6 +102,25 @@ defmodule Phos.Folk do
     %RelationRoot{}
     |> RelationRoot.gen_branches_changeset(attrs)
     |> Repo.insert()
+    |> case do
+         {:ok, %RelationRoot{state: "requested"} = rel} = data ->
+           rel = rel
+           |> Repo.preload([:initiator])
+           spawn(fn ->
+             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.acceptor_id}", "#{rel.initiator.username}", "Requested to be your Ally. Accept to Chat! 👋",
+               %{title: "#{rel.initiator.username}",
+                 body: "Requested to be your Ally. Accept to Chat! 👋",
+                 action_path: "/folkland/self/requests",
+                 cluster_id: "folk_req",
+                 initiator_id: rel.initiator_id
+               })
+               |> Sparrow.FCM.V1.Notification.add_apns(Phos.PlatformNotification.Config.APNS.gen())
+               |> Sparrow.API.push()
+           end)
+           data
+         {:ok, %RelationRoot{}} = data -> data
+         err -> err
+       end
   end
 
   #   @doc """
@@ -177,32 +196,24 @@ defmodule Phos.Folk do
 
   """
   def add_friend(requested_id, acceptor_id, state \\ "requested")
+  def add_friend(requester_id, acceptor_id, "blocked") when requester_id != acceptor_id do
+    now = NaiveDateTime.utc_now()
+    %{"initiator_id" => requester_id,
+      "acceptor_id" => acceptor_id,
+      "branches" => [%{"user_id" => acceptor_id, "friend_id"=> requester_id, "blocked_at" => now},
+                     %{"user_id" => requester_id, "friend_id"=> acceptor_id, "blocked_at" => now}],
+      "state" => "blocked"}
+    |>
+    create_relation()
+  end
   def add_friend(requester_id, acceptor_id, state) when requester_id != acceptor_id do
-    payload = %{"initiator_id" => requester_id,
-                "acceptor_id" => acceptor_id,
-                "branches" => [%{"user_id" => acceptor_id, "friend_id"=> requester_id},
-                               %{"user_id" => requester_id, "friend_id"=> acceptor_id}],
-               "state" => state}
-    create_relation(payload)
-    |> case do
-         {:ok, %RelationRoot{state: "requested"} = rel} = data ->
-           rel = rel
-           |> Repo.preload([:initiator])
-           spawn(fn ->
-             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.acceptor_id}", "#{rel.initiator.username}", "Requested to be your Ally. Accept to Chat! 👋",
-               %{title: "#{rel.initiator.username}",
-                 body: "Requested to be your Ally. Accept to Chat! 👋",
-                 action_path: "/folkland/self/requests",
-                 cluster_id: "folk_req",
-                 initiator_id: rel.initiator_id
-               })
-               |> Sparrow.FCM.V1.Notification.add_apns(Phos.PlatformNotification.Config.APNS.gen())
-               |> Sparrow.API.push()
-           end)
-           data
-         {:ok, %RelationRoot{}} = data -> data
-         err -> err
-       end
+    %{"initiator_id" => requester_id,
+      "acceptor_id" => acceptor_id,
+      "branches" => [%{"user_id" => acceptor_id, "friend_id"=> requester_id},
+                     %{"user_id" => requester_id, "friend_id"=> acceptor_id}],
+      "state" => state}
+    |>
+    create_relation()
   end
   def add_friend(_requester_id, _acceptor_id, _state), do: {:error, "API not needed to connect to your own inner self"}
 

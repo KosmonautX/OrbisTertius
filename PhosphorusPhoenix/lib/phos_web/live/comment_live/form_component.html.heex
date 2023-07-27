@@ -41,11 +41,11 @@
         <button
           :if={@action in [:reply, :edit]}
           type="reset"
-          class="absolute right-4 bottom-8"
+          class="absolute right-7  md:right-8"
           phx-click={"cancel-#{@action}"}
           phx-target={"#comment-#{@comment.id}"}
         >
-          <Heroicons.x_circle class="h-9 w-9 text-amber-400 font-bold mr-2 mb-1.5" />
+          <Heroicons.x_circle class="h-7 w-7 text-amber-400 mr-2 mb-1.5" />
         </button>
       </:actions>
 
