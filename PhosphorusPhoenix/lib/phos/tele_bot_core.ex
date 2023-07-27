@@ -515,11 +515,11 @@ defmodule Phos.TeleBot.Core do
             ExGram.send_message(telegram_id, "Invalid postal code. Please try again.")
           %{"road_name" => road_name, "lat" => lat, "lon" => lon} ->
             with {:ok, user} <- ProfileFSM.update_user_location(telegram_id, {String.to_float(lat), String.to_float(lon)}, road_name) do
+              StateManager.delete_state(telegram_id)
               UserProfile.open_user_profile(user)
             else
               err -> error_fallback(telegram_id, "Error updating self/update :location #{err}")
             end
-            StateManager.delete_state(telegram_id)
           err ->
             error_fallback(telegram_id, err)
         end
