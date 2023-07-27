@@ -310,7 +310,7 @@ defmodule Phos.TeleBot.Core do
         input_message_content: %ExGram.Model.InputTextMessageContent{ %ExGram.Model.InputTextMessageContent{} |
           message_text: "No orbs found", parse_mode: "HTML" },
         url: "web.scratchbac.com",
-        thumbnail_url: "https://picsum.photos/200/300"
+        thumbnail_url: "https://d1e00ek4ebabms.cloudfront.net/production/f046ab80-21a7-40e8-b56e-6e8076d47a82.jpg"
       }]
     else
       Enum.map(orbs, fn (%{payload: payload}= orb) when not is_nil(payload) ->
@@ -322,10 +322,10 @@ defmodule Phos.TeleBot.Core do
           input_message_content: %ExGram.Model.InputTextMessageContent{ %ExGram.Model.InputTextMessageContent{} |
             message_text: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML" },
           # Development
-          url: "web.scratchbac.com", #"#{PhosWeb.Endpoint.url}/orb/#{orb.id}}",
-          thumbnail_url: "https://d1e00ek4ebabms.cloudfront.net/production/f046ab80-21a7-40e8-b56e-6e8076d47a82.jpg", #Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless")
-          # url: "#{PhosWeb.Endpoint.url}/orb/#{orb.id}}",
-          # thumbnail_url: Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless")
+          # url: "web.scratchbac.com", #"#{PhosWeb.Endpoint.url}/orb/#{orb.id}}",
+          # thumbnail_url: "https://d1e00ek4ebabms.cloudfront.net/production/f046ab80-21a7-40e8-b56e-6e8076d47a82.jpg", #Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless")
+          url: "#{PhosWeb.Endpoint.url}/orb/#{orb.id}}",
+          thumbnail_url: Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless"),
           reply_markup: Button.build_orb_notification_button(orb, user)
         }
         _ -> nil

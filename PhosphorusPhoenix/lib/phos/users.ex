@@ -913,9 +913,9 @@ defmodule Phos.Users do
     auth = Repo.one(query)
 
     params = %{
+      id: main_user.id,
       auths: [
         %{
-          id: auth.id,
           auth_id: telegram_id,
           auth_provider: "telegram"
         }

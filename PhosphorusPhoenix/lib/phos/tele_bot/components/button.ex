@@ -299,11 +299,11 @@ defmodule Phos.TeleBot.Components.Button do
     end
   end
 
-  defp parse_inline_orb_chaturl(%{initiator_id: orb_initiator_id} = _orb, user) do
+  defp parse_inline_orb_chaturl(%{initiator: initiator} = _orb, user) do
     if String.contains?(PhosWeb.Endpoint.url, "localhost") do
       "web.scratchbac.com/"
     else
-      "#{PhosWeb.Endpoint.url}/memories/user/#{orb_initiator_id}?token=#{Auth.generate_user!(user.id)}"
+      "#{PhosWeb.Endpoint.url}/memories/user/#{initiator.username}?token=#{Auth.generate_user!(user.id)}"
     end
   end
 
