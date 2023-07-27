@@ -77,6 +77,9 @@ defmodule PhosWeb.Router do
       on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Timezone, :timezone}] do
       live "/welcome", UserWelcomeLive, :welcome
 
+      live "/orb/article", OrbLive.Article, :index
+      live "/orb/search", OrbLive.Search, :index
+
       live "/orb/:id/show/:cid", OrbLive.Show, :show_ancestor
       live "/orb/:id/reply/:cid", OrbLive.Show, :reply
       live "/orb/:id/edit/:cid", OrbLive.Show, :edit_comment

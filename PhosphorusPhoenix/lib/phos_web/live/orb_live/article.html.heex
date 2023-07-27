@@ -1,0 +1,66 @@
+<div id="w-full flex justify-center items-center">
+  <div class="flex w-full items-center justify-center py-4">
+    <div class="absolute inset-x-2 flex flex-col items-end justify-end">
+      <div class="flex items-center justify-center gap-2">
+        <button type="button" class="flex items-center  p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg hover:bg-gray-100">
+         <Heroicons.magnifying_glass mini class="lg:h-7 lg:w-7 h-6 w-6 fill-gray-100 search-icon" />
+         <Heroicons.x_mark mini  class="lg:h-7 lg:w-7 h-6 w-6 fill-gray-100 cancel-icon hidden" />
+        </button>
+        <.simple_form :let={f} for={%Plug.Conn{}} method="get" phx-submit="search" class="hidden search-input rounded-lg">  
+          <.input field={{f, :q}} value={@search_query} required={true} placeholder="Enter your keyword" id="searchInput"/>
+       </.simple_form>
+      </div>
+    </div>
+    <div class="flex">
+      <div class="flex flex-1 items-center justify-center">
+        <p class="head_new leading-normal lg:text-6xl md:text-4xl text-2xl uppercase font-semibold">Latest articles</p>
+      </div>
+    </div>
+  </div>
+  <div class="flex flex-col lg:gap-8 gap-2 lg:px-4 md:px-6 px-2 lg:flex-row lg:space-y-0 items-center justify-center">
+    <div class="flex lg:max-w-xl xl:max-w-2xl items-center justify-center w-full" id="search-result" :if={not is_nil(@article)}>
+      <article class="space-y-3 lg:pt-2 pt-6 lg:mb-4 mb-0">
+        <h2 class="heading-font lg:text-4xl text-3xl font-semibold text-black lg:text-left text-center"><%= Map.get(@article, :title) %></h2>
+        <p class="lg:text-left text-center text-lg">Related article for<span class="font-bold italic text-purple-600"><%= inspect @search_query %></span></p>
+        <div :for={{par, index} <- Map.get(@article, :article) |>
+          Enum.with_index()}>
+          <div class="flex flex-col items-center">
+            <img src={Map.get(@article, :medias) |> Enum.at(index)} :if={not is_nil(Map.get(@article, :medias) |> Enum.at(index))} class="lg:h-96 h-80 w-full object-cover rounded-lg"/>
+            <p :for={text <- par} class="paragraph-font"><%= text %></p>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center justify-center gap-3 font-serif font-bold">
+          <span>Related categories:</span>
+          <span :for={category <- Map.get(@article, :traits)} class="lg:rounded-lg rounded-2xl bg-purple-600 lg:px-2 px-1.5 lg:py-1.5 py-0.5 text-sm text-white"><%= category %></span>
+        </div>
+      </article>
+    </div>
+    <div class="flex-1 lg:max-w-sm w-full lg:items-start lg:justify-start lg:px-0 px-2">
+        <h5 class="julee-font text-center border-b-4 py-3 border-black lg:text-4xl text-3xl font-extrabold text-gray-900">Latest Customers</h5>
+        <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
+          <li class="py-3 sm:py-4">
+            <div class="flex items-center space-x-4">
+              <div class="flex-shrink-0">
+                <img class="h-20 w-20" src="https://picsum.photos/200/300" alt="Neil image" />
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="julee-font truncate text-lg font-bold text-gray-900">GILGO BEACH MURDERS</p>
+                <p class="font-poppins truncate text-base font-normal text-gray-500">GILGO BEACH MURDERS JULY 25, 2023 My Boss, the Monster What else Rex Heuermann was up to as he allegedly committed the Gilgo Beach murders.</p>
+              </div>
+            </div>
+          </li>
+          <li class="py-3 sm:py-4">
+            <div class="flex items-center space-x-4">
+              <div class="flex-shrink-0">
+                <img class="h-20 w-20" src="https://picsum.photos/200/300" alt="Bonnie image" />
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="julee-font truncate text-lg font-bold text-gray-900">CONCERT REVIEW</p>
+                <p class="font-poppins truncate text-base font-normal text-gray-500">Drake May Be on Tour But He’s Stuck in Neverland</p>
+              </div>
+            </div>
+          </li>
+        </ul>
+    </div>
+  </div>
+</div>
