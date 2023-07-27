@@ -44,7 +44,7 @@ defmodule Phos.TeleBot.CreateOrb do
     transition(branch, "media")
   end
 
-  def set_picture(%{integrations: %{telegram_chat_id: telegram_id}} = user, payload) do
+  def set_picture(%{tele_id: telegram_id} = user, payload) do
     {:ok, %{branch: branch} = user_state} = StateManager.get_state(telegram_id)
     orb_id = Ecto.UUID.generate()
     media_map = [%{
@@ -84,7 +84,7 @@ defmodule Phos.TeleBot.CreateOrb do
   #   end
   # end
 
-  def post(%{data: %{orb: orb, media: %{media: media}}} = branch, %{integrations: %{telegram_chat_id: telegram_id}} = user) do
+  def post(%{data: %{orb: orb, media: %{media: media}}} = branch, %{tele_id: telegram_id} = user) do
     params = %{
       "id" => orb.id,
       "expires_in" => "10000",
@@ -121,68 +121,4 @@ defmodule Phos.TeleBot.CreateOrb do
         BotCore.error_fallback(branch.telegram_id, err)
     end
   end
-
-  # def create_orb_path_transition(%{integrations: %{telegram_chat_id: telegram_id}} = user, :media, payload) do
-  #   user_state = StateManager.get_state(telegram_id)
-  #   media = [%{
-  #     "access": "public",
-  #     "essence": "banner"
-  #   }]
-  #   with {:ok, media} <- Phos.Orbject.Structure.apply_media_changeset(%{id: user.id, archetype: "ORB", media: media}) do
-  #     resolution = %{"150x150" => "lossy", "1920x1080" => "lossless"}
-  #     for res <- ["150x150", "1920x1080"] do
-  #       {:ok, dest} = Phos.Orbject.S3.put("ORB", user.id, "public/profile/#{resolution[res]}")
-  #       [hd | tail] = payload |> get_in(["photo"]) |> Enum.reverse()
-  #       {:ok, %{file_path: path}} = ExGram.get_file(hd |> get_in(["file_id"]))
-  #       {:ok, %HTTPoison.Response{body: image}} = HTTPoison.get("https://api.telegram.org/file/bot#{Config.get(:bot_token)}/#{path}")
-  #       path = "/tmp/" <> (:crypto.strong_rand_bytes(30) |> Base.url_encode64()) <> ".png"
-  #       File.write!(path , image)
-  #       HTTPoison.put(dest, {:file, path})
-  #       File.rm(path)
-  #     end
-  #   else
-  #     err ->
-  #       IO.inspect("Something went wrong: set_orb_picture #{err}")
-  #   end
-
-  #   {_prev, user_state} = get_and_update_in(user_state.data.media, &{&1, media})
-  #   StateManager.set_state(telegram_id, user_state)
-
-  #   case Fsmx.transition(user_state, "preview") do
-  #     {:ok, _} ->
-  #       StateManager.set_state(telegram_id, user_state)
-  #     {:error, err} ->
-  #       ExGram.send_message(telegram_id, "You must type a post <u>description</u> and <u>set a location</u> to post to before uploading a photo!", parse_mode: "HTML")
-  #   end
-  # end
-
-  # def create_orb_path(%{integrations: %{telegram_chat_id: telegram_id}} = user, :post) do
-  #   user_state = StateManager.get_state(telegram_id)
-  #   case user_state do
-  #     %{data: %{inner_title: inner_title, media: media, geolocation: %{central_geohash: central_geohash}}} ->
-  #       params = %{
-  #         "id" => Ecto.UUID.generate(),
-  #         "expires_in" => "10000",
-  #         "title" => inner_title |> String.slice(0, 50),
-  #         "media" => media,
-  #         "inner_title" => inner_title,
-  #         "active" => true,
-  #         "source" => :tele,
-  #         "geolocation" => %{"central_geohash" => central_geohash}
-  #       }
-
-  #       with {:ok, attrs} <- PhosWeb.API.OrbController.orb_constructor(user, params),
-  #           {:ok, %Phos.Action.Orb{} = orb} <- Phos.Action.create_orb(%{attrs | "media" => not Enum.empty?(user_state.data.media)}) do
-  #               TN.Collector.add(orb)
-  #               ExGram.send_message(telegram_id, "Creating post..")
-  #               StateManager.delete_state(telegram_id)
-  #           else
-  #             err ->
-  #               IO.inspect(err)
-  #               ExGram.send_message(telegram_id, "Please ensure you have filled in all the required fields.")
-  #       end
-  #     _ ->
-  #       ExGram.send_message(telegram_id, "Something went wrong. Please run /start again.")
-  #   end
-  # end
 end

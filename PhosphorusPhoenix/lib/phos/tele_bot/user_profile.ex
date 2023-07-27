@@ -62,7 +62,7 @@ defmodule Phos.TeleBot.Core.UserProfile do
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), parse_mode: "HTML", reply_markup: Button.build_main_menu_inlinekeyboard(message_id))
   end
 
-  def set_picture(%{integrations: %{telegram_chat_id: telegram_id}} = user, payload) do
+  def set_picture(%{tele_id: telegram_id} = user, payload) do
     media = [%{
       access: "public",
       essence: "profile",
@@ -101,16 +101,15 @@ defmodule Phos.TeleBot.Core.UserProfile do
 
   def open_user_profile(user), do: open_user_profile(user, nil)
   def open_user_profile(user, ""), do: open_user_profile(user, nil)
-  def open_user_profile(%{integrations: %{telegram_chat_id: telegram_id}} = user, nil) when not is_nil(user) do
+  def open_user_profile(%{tele_id: telegram_id} = user, nil) when not is_nil(telegram_id) do
     with {:ok, %{message_id: message_id}} <- ExGram.send_message(telegram_id, Template.profile_text_builder(user), parse_mode: "HTML") do
       ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id, reply_markup: Button.build_settings_button(message_id))
     else
       {:error, err} ->
-        IO.inspect("Something went wrong: open_user_profile for telegram_id: #{telegram_id}, #{err}")
         BotCore.error_fallback(telegram_id, err)
     end
   end
-  def open_user_profile(%{integrations: %{telegram_chat_id: telegram_id}} = user, message_id) when not is_nil(user) do
+  def open_user_profile(%{tele_id: telegram_id} = user, message_id) when not is_nil(telegram_id) do
     ExGram.edit_message_text(Template.profile_text_builder(user), chat_id: telegram_id, message_id: message_id |> String.to_integer(),
       parse_mode: "HTML", reply_markup: Button.build_settings_button(message_id))
   end

@@ -82,7 +82,7 @@ defmodule Phos.Users.User do
   @doc false
   def telegram_changeset(%__MODULE__{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :email])
+    |> cast(attrs, [:username, :email, :inserted_at])
     |> cast_assoc(:auths, with: &Auth.changeset/2)
     |> cast_assoc(:private_profile)
     |> cast_embed(:integrations, with: &Integrations.telegram_changeset/2)

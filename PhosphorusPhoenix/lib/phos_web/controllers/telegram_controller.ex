@@ -47,6 +47,8 @@ defmodule PhosWeb.TelegramController do
       "/register" -> :register
       "/post" -> :post
       "/profile" -> :profile
+      "/myposts" -> :myposts
+      "/latestposts" -> :latestposts
       _ -> :text
     end
   end

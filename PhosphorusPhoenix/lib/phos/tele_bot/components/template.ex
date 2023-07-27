@@ -9,7 +9,7 @@ defmodule Phos.TeleBot.Components.Template do
 
     Our goal is to help people stay connected with their community. We want to help people find out what's happening around them, and to help them share their thoughts and feelings with their community.
 
-    Press /start or /menu if bot hangs
+    To navigate around this bot, use the Menu button on the bottom left corner.
     """
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
   end
@@ -20,6 +20,8 @@ defmodule Phos.TeleBot.Components.Template do
 
     <u>Announcements</u>
       - Telegram Bot is now live!
+
+    To navigate around this bot, use the Menu button on the bottom left corner.
     """
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
   end

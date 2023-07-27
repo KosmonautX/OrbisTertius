@@ -60,12 +60,25 @@ defmodule Phos.TeleBot.Core do
 
   def handle({:message, :register, %{"chat" => %{"id" => telegram_id}}}) do
     case get_user_by_telegram(telegram_id) do
-      {:ok, %{integrations: %{telegram_chat_id: _}, confirmed_at: date}} when not is_nil(date) ->
+      {:ok, %{tele_id: telegram_id, confirmed_at: date}} when not is_nil(date) ->
         ExGram.send_message(telegram_id, "You have completed registration!")
       {:ok, _} ->
         onboarding_register_text(telegram_id)
       {:error, :user_not_found} ->
         error_fallback(telegram_id, "User not found")
+    end
+  end
+
+  def handle({:message, :myposts, %{"chat" => %{"id" => telegram_id}}}) do
+    open_myposts(telegram_id)
+  end
+
+  def handle({:message, :latestposts, %{"chat" => %{"id" => telegram_id}}}) do
+    with {:ok, user} <- get_user_by_telegram(telegram_id) do
+      open_latest_posts(user)
+    else
+      {:error, :user_not_found} -> error_fallback(telegram_id, "User not found")
+      err -> error_fallback(telegram_id, err)
     end
   end
 
@@ -232,14 +245,7 @@ defmodule Phos.TeleBot.Core do
   # INLINE QUERY
   # ====================
   def handle({:inline_query, %{"id" => query_id, "query" => "myposts", "from" => %{"id" => telegram_id}}}) do
-    with {:ok, user} <- get_user_by_telegram(telegram_id) do
-      %{data: orbs} = Phos.Action.orbs_by_initiators([user.id], 1)
-      build_inlinequery_orbs(orbs)
-      |> then(fn ans -> ExGram.answer_inline_query(to_string(query_id), ans) end)
-    else
-      {:error, :user_not_found} -> error_fallback(telegram_id, "User not found")
-      err -> error_fallback(telegram_id, err)
-    end
+    open_myposts(telegram_id, query_id)
   end
 
   def handle({:inline_query, %{"id" => query_id, "query" => type, "from" => %{"id" => telegram_id}}}) when type in ["home", "work", "live"] do
@@ -249,8 +255,9 @@ defmodule Phos.TeleBot.Core do
           nil -> ExGram.send_message(telegram_id, Template.update_location_text_builder(%{location_type: type}),
             parse_mode: "HTML", reply_markup: Button.build_location_specific_button(type))
           %{geohash: geohash} ->
+            ExGram.send_message(telegram_id, "Loading posts from #{type} area...")
             %{data: orbs} = Phos.Action.orbs_by_geohashes({[:h3.parent(geohash, 8)], user.id}, limit: 12)
-            build_inlinequery_orbs(orbs)
+            build_inlinequery_orbs(orbs, user)
             |> then(fn ans -> ExGram.answer_inline_query(to_string(query_id), ans) end)
         end
       else
@@ -261,6 +268,7 @@ defmodule Phos.TeleBot.Core do
       err -> error_fallback(telegram_id, err)
     end
   end
+
 
   # ====================
   # LOCATION MESSAGE
@@ -292,7 +300,7 @@ defmodule Phos.TeleBot.Core do
 
   def get_user_by_telegram(telegram_id), do: Users.get_user_by_telegram(telegram_id |> to_string())
 
-  defp build_inlinequery_orbs(orbs) do
+  defp build_inlinequery_orbs(orbs, user) do
     if Enum.empty?(orbs) do
       [%ExGram.Model.InlineQueryResultArticle{
         id: "no_orbs",
@@ -314,10 +322,11 @@ defmodule Phos.TeleBot.Core do
           input_message_content: %ExGram.Model.InputTextMessageContent{ %ExGram.Model.InputTextMessageContent{} |
             message_text: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML" },
           # Development
-          #   url: "web.scratchbac.com", #"#{PhosWeb.Endpoint.url}/orb/#{orb.id}}",
-          # thumbnail_url: "https://d1e00ek4ebabms.cloudfront.net/production/f046ab80-21a7-40e8-b56e-6e8076d47a82.jpg" #Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless")
-          url: "#{PhosWeb.Endpoint.url}/orb/#{orb.id}}",
-          thumbnail_url: Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless")
+          url: "web.scratchbac.com", #"#{PhosWeb.Endpoint.url}/orb/#{orb.id}}",
+          thumbnail_url: "https://d1e00ek4ebabms.cloudfront.net/production/f046ab80-21a7-40e8-b56e-6e8076d47a82.jpg", #Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless")
+          # url: "#{PhosWeb.Endpoint.url}/orb/#{orb.id}}",
+          # thumbnail_url: Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless")
+          reply_markup: Button.build_orb_notification_button(orb, user)
         }
         _ -> nil
       end)
@@ -414,14 +423,19 @@ defmodule Phos.TeleBot.Core do
   end
 
   defp start_main_menu_check_and_register(telegram_id) do
-    with {:user_exist, true} <- {:user_exist, Users.telegram_user_exists?(telegram_id)} do
+    with {:user_exist, true} <- {:user_exist, Users.telegram_user_exists?(telegram_id)},
+         {:integrations_exist, {:ok, %{integrations: %{telegram_chat_id: telegram_chat_id}}}}
+          when not is_nil(telegram_chat_id) <- {:integrations_exist, get_user_by_telegram(telegram_id)} do
       :ok
     else
       {:user_exist, false} ->
         create_user(%{"id" => telegram_id})
         :ok
-      {:user, {:ok, _user}} ->
-        :ok
+      {:integrations_exist, {:ok, %{email: email}}} ->
+        params = %{integrations: %{telegram_chat_id: telegram_id |> to_string()}}
+        Users.get_user_by_email(email)
+        |> User.telegram_changeset(params)
+        |> Phos.Repo.update()
     end
   end
 
@@ -469,15 +483,32 @@ defmodule Phos.TeleBot.Core do
     end)
   end
 
+  defp open_latest_posts(user), do: open_latest_posts(user, nil)
   defp open_latest_posts(user, ""), do: open_latest_posts(user, nil)
-  defp open_latest_posts(%{integrations: %{telegram_chat_id: telegram_id}} = user, nil) do
+  defp open_latest_posts(%{tele_id: telegram_id} = user, nil) do
     ExGram.send_message(telegram_id, Template.latest_posts_text_builder(user),
       parse_mode: "HTML", reply_markup: Button.build_latest_posts_inline_button())
   end
-  defp open_latest_posts(%{integrations: %{telegram_chat_id: telegram_id}} = user, message_id) do
+  defp open_latest_posts(%{tele_id: telegram_id} = user, message_id) do
     ExGram.edit_message_text(Template.latest_posts_text_builder(user), chat_id: telegram_id,
       message_id: message_id |> String.to_integer(), parse_mode: "HTML", reply_markup: Button.build_latest_posts_inline_button(message_id |> String.to_integer()))
   end
+
+  def open_myposts(telegram_id) do
+    ExGram.send_message(telegram_id, "Click on the Button to view your posts.", parse_mode: "HTML", reply_markup: Button.build_myposts_inlinekeyboard())
+  end
+  def open_myposts(telegram_id, query_id) do
+    with {:ok, user} <- get_user_by_telegram(telegram_id) do
+      ExGram.send_message(telegram_id, "Loading your posts...")
+      %{data: orbs} = Phos.Action.orbs_by_initiators([user.id], 1)
+      build_inlinequery_orbs(orbs, user)
+      |> then(fn ans -> ExGram.answer_inline_query(to_string(query_id), ans) end)
+    else
+      {:error, :user_not_found} -> error_fallback(telegram_id, "User not found")
+      err -> error_fallback(telegram_id, err)
+    end
+  end
+
 
   def post_orb(telegram_id) do
     with {:ok, user} = get_user_by_telegram(telegram_id) do

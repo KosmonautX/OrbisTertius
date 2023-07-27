@@ -62,7 +62,7 @@ defmodule Phos.TeleBot.Components.Button do
           ),
           inline_keyboard_button(
             "🔭 View Latest Posts",
-            [callback_data: "menu_latestposts"]
+            [callback_data: "menu_latestposts" <> to_string(message_id)]
           )
         ],
         [
@@ -73,6 +73,26 @@ defmodule Phos.TeleBot.Components.Button do
           inline_keyboard_button(
             "📕 My Posts",
             [switch_inline_query_current_chat: "myposts"]
+          )
+        ]
+      ]
+    )
+  end
+
+  def build_myposts_inlinekeyboard(), do: build_myposts_inlinekeyboard("")
+  def build_myposts_inlinekeyboard(message_id) do
+    inline_keyboard_markup(
+      [
+        [
+          inline_keyboard_button(
+            "📕 My Posts",
+            [switch_inline_query_current_chat: "myposts"]
+          )
+        ],
+        [
+          inline_keyboard_button(
+            "📔 Main Menu",
+            [callback_data: "start_mainmenu" <> to_string(message_id)]
           )
         ]
       ]
