@@ -1,10 +1,10 @@
-<div id="w-full flex justify-center items-center mt-14">
-  <div class="flex w-full items-center justify-center py-4">
-    <div class="absolute inset-x-2 flex flex-col items-end justify-end">
+<div id="w-full flex justify-center items-center font-miller">
+  <div class="flex w-full items-center justify-center lg:py-3 py-2 lg:top-16 md:top-14 top-12 z-10 fixed bg-white lg:bg-[#EEEFF3] dark:bg-gray-900">
+    <div class="absolute inset-x-1 md:inset-x-2 flex flex-col items-end justify-end">
       <div class="flex items-center justify-center gap-2">
-        <button type="button" class="flex items-center  p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg hover:bg-gray-100">
-         <Heroicons.magnifying_glass mini class="lg:h-7 lg:w-7 h-6 w-6 fill-gray-100 search-icon" />
-         <Heroicons.x_mark mini  class="lg:h-7 lg:w-7 h-6 w-6 fill-gray-100 cancel-icon hidden" />
+        <button type="button" class="flex items-center lg:w-9 lg:h-9 md:h-8 md:w-8 h-7 w-7 justify-center text-sm rounded-lg bg-purple-600">
+         <Heroicons.magnifying_glass mini class="lg:h-5 lg:w-5 h-4 w-4  fill-white search-icon" />
+         <Heroicons.x_mark mini  class="lg:h-5 lg:w-5 h-4 w-4 fill-white cancel-icon hidden" />
         </button>
         <.simple_form :let={f} for={%Plug.Conn{}} method="get" phx-submit="search" class="hidden search-input rounded-lg">  
           <.input field={{f, :q}} value={@search_query} required={true} placeholder="Enter your keyword" id="searchInput"/>
@@ -13,30 +13,30 @@
     </div>
     <div class="flex">
       <div class="flex flex-1 items-center justify-center">
-        <p class="head_new leading-normal lg:text-6xl md:text-4xl text-2xl uppercase font-semibold">Latest articles</p>
+        <p class="head_new lg:text-5xl md:text-4xl text-2xl uppercase font-semibold dark:text-white">Latest articles</p>
       </div>
     </div>
   </div>
-  <div class="flex flex-col lg:gap-8 gap-2 lg:px-4 md:px-6 px-2 lg:flex-row lg:space-y-0 justify-center">
+  <div class="flex flex-col lg:gap-8 gap-2 lg:px-4 md:px-6 px-2 lg:flex-row lg:space-y-0 justify-center md:pt-32  pt-24">
     <div class="flex lg:max-w-xl xl:max-w-2xl items-center justify-center w-full" id="search-result" :if={not is_nil(@article)}>
-      <article class="space-y-3 lg:pt-2 pt-6 lg:mb-4 mb-0">
-        <h2 class="heading-font lg:text-4xl text-3xl font-semibold text-black lg:text-left text-center"><%= Map.get(@article, :title) %></h2>
-        <p class="lg:text-left text-center text-lg">Related article for<span class="font-bold italic text-purple-600"><%= inspect @search_query %></span></p>
+      <article class="lg:space-y-3 md:space-y-2 space-y-0.5 lg:pt-2 pt-0 lg:mb-4 mb-0">
+        <h2 class="lg:text-4xl text-2xl font-semibold text-black lg:text-left text-center dark:text-gray-200"><%= Map.get(@article, :title) %></h2>
+        <p class="lg:text-left text-center text-lg dark:text-gray-300">Related article for<span class="font-bold italic text-purple-600"><%= inspect @search_query %></span></p>
         <div :for={{par, index} <- Map.get(@article, :article) |>
           Enum.with_index()}>
           <div class="flex flex-col items-center">
             <img src={Map.get(@article, :medias) |> Enum.at(index)} :if={not is_nil(Map.get(@article, :medias) |> Enum.at(index))} class="lg:h-96 h-80 w-full object-cover rounded-lg"/>
-            <p :for={text <- par} class="paragraph-font"><%= text %></p>
+            <p :for={text <- par} class="paragraph-font dark:text-gray-400"><%= text %></p>
           </div>
         </div>
-        <div class="flex flex-wrap items-center justify-center gap-3 font-serif font-bold">
-          <span>Related categories:</span>
+        <div class="flex flex-wrap items-center justify-center gap-3 font-bold">
+          <span class="dark:text-white">Related categories:</span>
           <span :for={category <- Map.get(@article, :traits)} class="lg:rounded-lg rounded-2xl bg-purple-600 lg:px-2 px-1.5 lg:py-1.5 py-0.5 text-sm text-white"><%= category %></span>
         </div>
       </article>
     </div>
     <div class="flex-1 lg:max-w-sm w-full lg:items-start lg:justify-start lg:px-0 px-2">
-        <h5 class="julee-font text-center border-b-4 py-3 border-black lg:text-4xl text-3xl font-extrabold text-gray-900">Latest Customers</h5>
+        <h5 class="text-center border-b-2 lg:py-3 py-2 border-black dark:border-gray-400 lg:text-4xl md:text-3xl text-2xl font-semibold text-gray-900 dark:text-gray-200">Latest Customers</h5>
         <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
           <li class="py-3 sm:py-4">
             <div class="flex items-center space-x-4">
@@ -44,8 +44,8 @@
                 <img class="h-20 w-20" src="https://picsum.photos/200/300" alt="Neil image" />
               </div>
               <div class="min-w-0 flex-1">
-                <p class="julee-font truncate text-lg font-bold text-gray-900">GILGO BEACH MURDERS</p>
-                <p class="font-poppins truncate text-base font-normal text-gray-500">GILGO BEACH MURDERS JULY 25, 2023 My Boss, the Monster What else Rex Heuermann was up to as he allegedly committed the Gilgo Beach murders.</p>
+                <p class="truncate text-lg font-bold text-gray-900 dark:text-gray-200">GILGO BEACH MURDERS</p>
+                <p class="truncate text-base font-normal text-gray-500 dark:text-gray-400">GILGO BEACH MURDERS JULY 25, 2023 My Boss, the Monster What else Rex Heuermann was up to as he allegedly committed the Gilgo Beach murders.</p>
               </div>
             </div>
           </li>
@@ -55,8 +55,8 @@
                 <img class="h-20 w-20" src="https://picsum.photos/200/300" alt="Bonnie image" />
               </div>
               <div class="min-w-0 flex-1">
-                <p class="julee-font truncate text-lg font-bold text-gray-900">CONCERT REVIEW</p>
-                <p class="font-poppins truncate text-base font-normal text-gray-500">Drake May Be on Tour But He’s Stuck in Neverland</p>
+                <p class="truncate text-lg font-bold text-gray-900 dark:text-gray-200">CONCERT REVIEW</p>
+                <p class="truncate text-base font-normal text-gray-500 dark:text-gray-400">Drake May Be on Tour But He’s Stuck in Neverland</p>
               </div>
             </div>
           </li>

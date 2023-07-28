@@ -138,27 +138,21 @@
   /*outline: 1px solid slategrey;*/
 }
 
-.heading-font {
-  font-family: "Franklin Gothic", "Helvetica Neue", sans-serif;
-}
+
 
 .paragraph-font {
   font-size: 1rem;
-  margin: 0;
+  margin: 10px; /* Set the margin to your desired value */
   text-align: center;
   text-align: justify;
   text-indent: 30px;
-  margin: 10px;
-  font-family: "Times New Roman", "Georgia", serif;
+  font-family: "Miller", "Georgia", serif; /* Use Miller font as the first choice, then fallback to Georgia and finally a generic serif font */
 }
+
 
 .date-time {
   font-family: "Helvetica Neue", Arial, sans-serif;
   font-size: 14px;
-}
-
-.julee-font {
-  font-family: 'Julee', cursive;
 }
 
 
@@ -170,7 +164,7 @@
 }
 
 .head_new {
-  font-family: 'Playfair Display', serif;
+  font-family: "Miller", "Georgia", serif; /* Use Miller font as the first choice, then fallback to Georgia and finally a generic serif font */
   display: inline-block;
 }
 

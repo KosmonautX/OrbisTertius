@@ -88,21 +88,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchIcon = document.querySelector('.search-icon');
     const cancelIcon = document.querySelector('.cancel-icon');
     const searchInput = document.querySelector('.search-input');
-  
+
     searchIcon.addEventListener('click', () => {
-      searchIcon.classList.add('hidden');
-      cancelIcon.classList.remove('hidden');
-      searchInput.style.display = 'block';
-      searchInput.focus();
+        searchIcon.classList.add('hidden');
+        cancelIcon.classList.remove('hidden');
+        searchInput.style.display = 'block';
+        searchInput.focus();
     });
-  
+
     cancelIcon.addEventListener('click', () => {
-      searchIcon.classList.remove('hidden');
-      cancelIcon.classList.add('hidden');
-      searchInput.style.display = 'none';
+        searchIcon.classList.remove('hidden');
+        cancelIcon.classList.add('hidden');
+        searchInput.style.display = 'none';
     });
-  });
-  
+});
+
 
 // Hide the input box initially
 searchInput.style.display = 'none';
