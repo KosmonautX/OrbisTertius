@@ -1,4 +1,12 @@
 defmodule Phos.Models.OpenAI do
+  def chat(prompt) do
+    stream("#{base_url()}/chat/completions", %{
+      model: "gpt-3.5-turbo",
+      messages: [%{role: "user", content: prompt}],
+      stream: true,
+    }, fn data -> data end)
+  end
+
   def completions(prompt, opts \\ []) do
     max_tokens = Keyword.get(opts, :max_tokens, 100)
 
