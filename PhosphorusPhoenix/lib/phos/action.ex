@@ -838,49 +838,4 @@ defmodule Phos.Action do
     String.split(text, " ")
     |> Enum.join(" or ")
   end
-
-  def build_article(search_term) do
-    search(search_term)
-    |> case do
-      [_ | _] = orbs -> build_article_from_orbs(orbs)
-      _ -> {:error, "Orbs not found"}
-    end
-  end
-
-  defp build_article_from_orbs(orbs) do
-    article = Enum.map(orbs, &request_to_openai/1)
-    traits  = Enum.map(orbs, &(&1.traits)) |> List.flatten()
-    medias  = Enum.map(orbs, fn o -> if o.media, do: Phos.Orbject.S3.get!("ORB", o.id, "public/banner/lossy") end)
-
-    %{
-      article: Task.await_many(article),
-      traits: Enum.uniq(traits),
-      title: Enum.random(orbs) |> Map.get(:title),
-      related_orbs: Enum.map(orbs, &(&1.id)),
-      medias: Enum.reject(medias, &Kernel.is_nil/1),
-    }
-  end
-
-  defp request_to_openai(%{title: title}) do
-    Task.async(fn ->
-      Phos.Models.OpenAI.completions(title)
-      |> parse_article_body()
-    end)
-  end
-
-  defp parse_article_body(%{status: status, body: body}) when status == 200 do
-    Enum.map(body, fn data ->
-      Map.get(data, "choices")
-      |> List.first()
-    end)
-    |> Enum.group_by(&Map.get(&1, "index"))
-    |> Enum.map(fn {_k, values} ->
-      Enum.map(values, &Map.get(&1, "text"))
-      |> Enum.join()
-      |> String.trim_leading()
-      |> String.trim_leading("\n")
-    end)
-  end
-  defp parse_article_body(_), do: ""
-  
 end
