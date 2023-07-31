@@ -151,8 +151,9 @@ defmodule Phos.Message do
 
   """
   def list_messages_by_geohashes(hash, opts\\ []) when is_integer(hash) do
+    yesterday = NaiveDateTime.utc_now() |> NaiveDateTime.add(-60 * 60 * 24 * 100)
     Phos.Message.Memory
-    |> where([m], m.loc_subject_id == ^hash)
+    |> where([m], m.loc_subject_id == ^hash and m.inserted_at > ^yesterday)
     |> preload([:user_source, :orb_subject])
     |> Repo.Paginated.all(opts)
   end

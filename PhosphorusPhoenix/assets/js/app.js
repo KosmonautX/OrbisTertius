@@ -3,23 +3,16 @@
 // If you want to use Phoenix channels, run `mix help phx.gen.channel`
 // to get started and then uncomment the line below.
 import Hooks from "./hooks";
-// Include phoenix_html to handle method=PUT/DELETE in forms and buttons.
-//
-// Establish Phoenix Socket and LiveView configuration.
-import {
-    Socket
-} from "phoenix";
-import {
-    LiveSocket
-} from "phoenix_live_view";
+import { Socket } from "phoenix";
+import { LiveSocket } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
-import ModalApplication, {
-    VideoMute
-} from "./modal_application";
+import ModalApplication, { VideoMute } from "./modal_application";
 
 let csrfToken = document
     .querySelector("meta[name='csrf-token']")
     .getAttribute("content");
+
+
 let liveSocket = new LiveSocket("/live", Socket, {
     params: {
         _csrf_token: csrfToken,
@@ -36,7 +29,7 @@ let liveSocket = new LiveSocket("/live", Socket, {
             };
         },
     },
-    hooks: Hooks,
+    hooks: Hooks
 });
 
 // Show progress bar on live navigation and form submits
@@ -46,11 +39,16 @@ topbar.config({
     },
     shadowColor: "rgba(0, 0, 0, .3)",
 });
-window.addEventListener("phx:page-loading-start", (info) =>
-    topbar.delayedShow(200)
-);
+window.addEventListener("phx:page-loading-start", info => {
+    if (info.detail.kind == "redirect") {
+        const main = document.querySelector("main");
+        main.classList.add("phx-page-loading")
+    }
+})
 
 window.addEventListener("phx:page-loading-stop", (info) => {
+    const main = document.querySelector("main");
+    main.classList.remove("phx-page-loading")
     VideoMute();
     topbar.hide();
     if (
@@ -106,7 +104,7 @@ if (themeToggleDarkIcon && themeToggleLightIcon) {
 
     var themeToggleBtn = document.getElementById("theme-toggle");
 
-    themeToggleBtn.addEventListener("click", function() {
+    themeToggleBtn.addEventListener("click", function () {
         // toggle icons inside button
         themeToggleDarkIcon.classList.toggle("hidden");
         themeToggleLightIcon.classList.toggle("hidden");
@@ -134,9 +132,6 @@ if (themeToggleDarkIcon && themeToggleLightIcon) {
     });
 }
 
-
-
-
 // connect if there are any LiveViews on the page
 liveSocket.connect();
 liveSocket.enableDebug();
@@ -147,15 +142,5 @@ liveSocket.enableDebug();
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket;
 
-// You can include dependencies in two ways.
-//
-// The simplest option is to put them in assets/vendor and
-// import them using relative paths:
-//
-//     import "../vendor/some-package.js"
-//
-// Alternatively, you can `npm install some-package --prefix assets` and import
-// them using a path starting with the package name:
-//
-//     import "some-package"
-//
+
+

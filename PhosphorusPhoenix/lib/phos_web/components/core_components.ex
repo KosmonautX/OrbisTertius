@@ -884,7 +884,7 @@ defmodule PhosWeb.CoreComponents do
 
   def admin_navbar(assigns) do
     ~H"""
-    <nav class="lg:bg-gray-50 bg-white flex px-4 font-poppins py-4 w-64 h-screen border border-gray-100">
+    <nav class="lg:bg-gray-50 bg-white flex px-4 font-poppins py-4 w-64 h-screen">
       <ul class="flex-col min-w-full flex flex-col list-none" id="navbar">
         <li :for={item <- @item} class="items-center">
           <.link
@@ -907,7 +907,7 @@ defmodule PhosWeb.CoreComponents do
   @spec nav_banner_admin(any) :: Phoenix.LiveView.Rendered.t()
   def nav_banner_admin(assigns) do
     ~H"""
-    <nav class="bg-white fixed w-full z-10 top-0 left-0 border-b border-gray-200 text-base font-bold p-3 font-poppins">
+    <nav class="bg-white fixed w-full z-10 top-0 left-0 text-base font-bold p-3 font-poppins">
       <div class=" flex flex-wrap items-center justify-between mx-auto">
         <a href="" class="flex items-center">
           <.logo type="banner" class="h-8 ml-4"></.logo>
@@ -1586,7 +1586,7 @@ defmodule PhosWeb.CoreComponents do
       )
 
     ~H"""
-    <div class="w-full mx-auto dark:bg-gray-900 dark:lg:bg-gray-800 bg-white flex h-screen w-full flex-col">
+    <div class="w-full mx-auto dark:bg-gray-900 dark:lg:bg-gray-800 bg-white flex h-screen w-full flex-col bg-opacity-75">
       <div class="px-2 md:px-6 lg:px-2 flex w-full items-center gap-4">
         <.user_info_bar
           class="dark:bg-gray-900"
@@ -1609,7 +1609,7 @@ defmodule PhosWeb.CoreComponents do
           </:actions>
         </.user_info_bar>
       </div>
-      <div class="flex flex-1 items-center justify-center bg-white dark:bg-gray-900 lg:dark:bg-gray-800">
+      <div class="flex flex-1 items-center justify-center bg-white dark:bg-gray-900 lg:dark:bg-gray-800 bg-opacity-50">
         <.preview_modal :if={@media != []} id={"#{@id}-scry-orb-#{@orb.id}"} media={@media} />
       </div>
 
@@ -1629,11 +1629,11 @@ defmodule PhosWeb.CoreComponents do
           show_comment={false}
         />
         <p class="font-medium text-sm dark:text-white text-gray-700 px-2 py-1">
-          Liked by bbeebbub and others
+          <!-- Liked by bbeebbub and others -->
         </p>
         <hr />
         <span class="dark:text-white text-gray-400 font-normal text-sm lg:text-base mt-2 mb-2 px-2">
-          23 comments
+          <%= @orb.comment_count%> comments
         </span>
         <hr />
       </div>
@@ -1653,7 +1653,7 @@ defmodule PhosWeb.CoreComponents do
       <div :if={!is_nil(@media)}>
         <div :for={m <- @media} class="relative">
           <img
-            class="max-h-full max-w-full object-contain flex justify-center items-center"
+            class="max-h-full max-w-full object-contain flex justify-center items-center bg-opacity-100"
             src={m.url}
             loading="lazy"
           />
@@ -1662,7 +1662,7 @@ defmodule PhosWeb.CoreComponents do
       <div :if={length(@media) > 1}>
         <button
           type="button"
-          class="absolute inset-y-2/4	 right-0  flex items-center justify-center px-2 cursor-pointer group focus:outline-none"
+          class="absolute inset-y-2/4 right-0  flex items-center justify-center px-2 cursor-pointer group focus:outline-none"
         >
           <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white group-focus:outline-none dark:group-focus:ring-gray-800/70 dark:bg-gray-800/30 dark:group-hover:bg-gray-800/60">
             <Heroicons.chevron_right class="h-6 w-6 dark:text-white" />
@@ -1994,8 +1994,8 @@ defmodule PhosWeb.CoreComponents do
           </div>
         </div>
         <div class={[
-          @show_padding == false && "lg:mt-4",
-          "relative flex justify-center items-center lg:mt-8 mt-5"
+          @show_padding == true && "lg:mt-8",
+          "relative flex justify-center items-center lg:mt-4 mt-5"
         ]}>
           <div class="relative">
             <img
@@ -2008,11 +2008,11 @@ defmodule PhosWeb.CoreComponents do
             />
             <span class="lg:hidden block top-3 right-0 absolute md:w-9 md:h-9 h-7 w-7 bg-[#9747FF] rounded-full flex items-center justify-center">
               <.live_component
-              id={"#{@id}-user-hero-ally"}
-              module={PhosWeb.Component.AllyButton}
-              current_user={nil}
-              user={@user}
-              size="small"
+                id={"#{@id}-user-hero-ally"}
+                module={PhosWeb.Component.AllyButton}
+                current_user={nil}
+                user={@user}
+                size="small"
               />
             </span>
           </div>
@@ -2163,7 +2163,7 @@ defmodule PhosWeb.CoreComponents do
         <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
       </p>
 
-      <div class="flex items-center justify-center">
+      <div class="flex items-center justify-center gap-1">
         <a
           class="cursor-pointer"
           id={"#{@id}-sharebtn"}
@@ -2600,7 +2600,7 @@ defmodule PhosWeb.CoreComponents do
         class="w-full fixed inset-0 flex"
       >
         <div class="flex w-full absolute lg:inset-0 bottom-0 lg:items-center lg:justify-center">
-          <div class={["w-full lg:py-8", @main_width]}>
+          <div class={["w-full lg:py-8 rounded-none lg:rounded-2xl", @main_width]}>
             <.focus_wrap
               id={"#{@id}-container"}
               phx-mounted={@show && show_modal(@id)}
@@ -2686,7 +2686,7 @@ defmodule PhosWeb.CoreComponents do
     ~H"""
     <div class="font-poppins relative w-full">
       <img
-        class="object-cover w-full h-[26rem] lg:h-[32rem]"
+        class="object-cover w-full h-[26rem] lg:h-[30rem] rounded-none lg:rounded-3xl"
         src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/banner/lossless")}
         onerror="this.src='/images/default_banner.jpg';"
       />
@@ -2709,12 +2709,12 @@ defmodule PhosWeb.CoreComponents do
             </div>
           </div>
         </div>
-        <div class="flex flex-col font-poppins mt-4 mx-auto w-full px-4 md:px-10 py-2 rounded-[19px] bg-gray-200 bg-opacity-80 dark:bg-[#FCFCFC] dark:bg-opacity-10">
+        <div class="flex flex-col font-poppins mt-4 mx-auto w-full px-4 md:px-10 lg:px-2 py-2 rounded-[19px] bg-gray-200 bg-opacity-80 dark:bg-[#FCFCFC] dark:bg-opacity-10">
           <div class="flex justify-between items-center w-full gap-2">
-            <p class="lg:text-3xl md:text-2xl text-xl break-words font-bold text-gray-900  dark:text-white text-left  mb-1 lg:mb-0">
+            <p class="lg:text-3xl md:text-2xl text-xl break-words font-bold text-gray-900 dark:text-white text-left mb-1 lg:mb-0">
               <%= @user |> get_in([:public_profile, Access.key(:public_name, "-")]) %>
             </p>
-            <div class="flex gap-2">
+            <div class="flex gap-1">
               <a
                 id={"#{@id}-sharebtn"}
                 phx-click={JS.dispatch("phos:clipcopy", to: "##{@id}-copylink")}
@@ -2729,7 +2729,7 @@ defmodule PhosWeb.CoreComponents do
             </div>
           </div>
           <div class="space-y-1 md:space-y-2 break-words">
-            <p class="lg:text-base md:text-sm text-xs text-black font-semibold mt-0.5 dark:text-[#D1D1D1]">
+            <p class="lg:text-base text-sm  text-black font-semibold mt-0.5 dark:text-[#D1D1D1]">
               <%= @user |> get_in([:public_profile, Access.key(:occupation, "-")]) %>
             </p>
             <p class="text-black font-normal text-sm md:text-base dark:text-[#D1D1D1]">

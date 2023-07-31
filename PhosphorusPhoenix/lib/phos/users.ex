@@ -236,16 +236,11 @@ defmodule Phos.Users do
     user
     |> User.territorial_changeset(attrs)
     |> Repo.update()
-    # |> tap(fn x -> case x do
-    #      {:ok, %User{private_profile: %{geolocation: geolocation}}} = data ->
-    #        Task.start(fn -> self_publisher(geolocation, user.id) end)
-    #      err -> err
-    #    end)
   end
 
-  # defp self_publisher(past, user_id) do
-  #   Phos.PubSub.publish(user, {:orb, event}, loc_topic(loc))
-  # end
+  defp terra_publisher(%Phos.Users.Geolocation{} = terr, %User{} = user) do
+    Phos.PubSub.publish(terr , {:terra, "mutation"}, user)
+  end
 
   @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
   def update_integrations_user(%User{} = user, attrs) do
