@@ -27,6 +27,11 @@ defmodule Phos.TeleBot.Core.UserProfile do
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), parse_mode: "HTML", reply_markup: Button.build_main_menu_inlinekeyboard())
   end
 
+  def edit_location_prompt(telegram_id, "") do
+    {:ok, user} = BotCore.get_user_by_telegram(telegram_id)
+    ExGram.send_message(telegram_id, "<b>You can set up your home, work and live location</b>\n\n<u>Click on the button to set your location.</u>",
+      parse_mode: "HTML", reply_markup: Button.build_location_button(user))
+  end
   def edit_location_prompt(telegram_id, message_id) do
     {:ok, user} = BotCore.get_user_by_telegram(telegram_id)
     ExGram.edit_message_text("<b>You can set up your home, work and live location</b>\n\n<u>Click on the button to set your location.</u>",
@@ -111,8 +116,7 @@ defmodule Phos.TeleBot.Core.UserProfile do
       end
 
      else
-      err ->
-        IO.inspect("Something went wrong: set_user_profile_picture #{err}")
+      err -> BotCore.error_fallback(telegram_id, err)
     end
   end
 
@@ -130,5 +134,5 @@ defmodule Phos.TeleBot.Core.UserProfile do
     ExGram.edit_message_text(Template.profile_text_builder(user), chat_id: telegram_id, message_id: message_id |> String.to_integer(),
       parse_mode: "HTML", reply_markup: Button.build_settings_button(message_id))
   end
-  def open_user_profile(_,_), do: {:error, :user_not_found}
+  def open_user_profile(_, _), do: {:error, :user_not_found}
 end

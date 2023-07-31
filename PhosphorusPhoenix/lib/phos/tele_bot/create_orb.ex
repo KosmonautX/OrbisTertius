@@ -28,12 +28,12 @@ defmodule Phos.TeleBot.CreateOrb do
           nil -> nil
           %{geohash: geohash} -> geohash
         end
-      unless geohash do
-        send_location_update_message(branch.telegram_id, location_type)
-      else
+      if geohash do
         {_prev, branch} = get_and_update_in(branch.data.orb.central_geohash, &{&1, geohash})
         {_prev, branch} = get_and_update_in(branch.data.location_type, &{&1, String.to_atom(location_type)} )
         transition(branch, "media")
+      else
+        send_location_update_message(branch.telegram_id, location_type)
       end
     end
   end

@@ -355,7 +355,7 @@ defmodule Phos.TeleBot.Core do
       {:ok, user} ->
         user
       {:error, msg} ->
-        IO.inspect("Error occured registering \n #{msg}")
+        error_fallback(id, msg)
     end
   end
 
@@ -464,7 +464,6 @@ defmodule Phos.TeleBot.Core do
   end
 
   def error_fallback(telegram_id, err) do
-    IO.inspect("Error: #{inspect(err)}")
     error_fallback(telegram_id)
   end
   def error_fallback(telegram_id) do
@@ -475,10 +474,9 @@ defmodule Phos.TeleBot.Core do
 
   def dispatch_messages(events) do
     Enum.map(events, fn %{chat_id: chat_id, orb: orb} ->
-      with {:ok, user} = get_user_by_telegram(chat_id) do
+      with {:ok, user} <- get_user_by_telegram(chat_id) do
         text = case orb.media do
           true ->
-            IO.inspect "sending telegram photo message to #{chat_id}}"
             if String.contains?(PhosWeb.Endpoint.url, "localhost") do
               # For development
               ExGram.send_photo(chat_id, "https://d1e00ek4ebabms.cloudfront.net/production/f046ab80-21a7-40e8-b56e-6e8076d47a82.jpg",
@@ -491,13 +489,12 @@ defmodule Phos.TeleBot.Core do
                 reply_markup: Button.build_orb_notification_button(orb, user))
             end
           _ ->
-            IO.inspect("sending telegram message to #{chat_id}")
             ExGram.send_message(chat_id, Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
               reply_markup: Button.build_orb_notification_button(orb, user))
         end
         ExGram.send_message(chat_id, text, parse_mode: "HTML", reply_markup: Button.build_orb_notification_button(orb, user))
       else
-        {:error, :user_not_found} -> IO.inspect("User not found, unable to send ")
+        {:error, :user_not_found} -> :ok
       end
     end)
   end
@@ -530,7 +527,7 @@ defmodule Phos.TeleBot.Core do
 
 
   def post_orb(telegram_id) do
-    with {:ok, user} = get_user_by_telegram(telegram_id) do
+    with {:ok, user} <- get_user_by_telegram(telegram_id) do
       case user do
         %User{confirmed_at: nil} ->
           onboarding_register_text(telegram_id)
@@ -609,7 +606,7 @@ defmodule Phos.TeleBot.Core do
                 ExGram.send_message(telegram_id, "An email has been sent to #{text} if it exists. Please check your inbox and follow the instructions to link your account.\n\nIf you have wrongly entered your email, restart the /register process.")
                 StateManager.delete_state(telegram_id)
           else
-            {:valid, %{valid?: false, errors: [email: {"has already been taken",_}]}} ->
+            {:valid, %{valid?: false, errors: [email: {"has already been taken", _}]}} ->
               ExGram.send_message(telegram_id, "This email is in use. Would you like to link your telegram to your Scratchbac account?\n\n<u>Click on the Link Account button</u>", parse_mode: "HTML", reply_markup: Button.build_link_account_button())
               {_prev, branch} = get_and_update_in(branch.data.email, &{&1, text})
               Map.put(user_state, :branch, branch)
@@ -624,7 +621,7 @@ defmodule Phos.TeleBot.Core do
         case Users.update_pub_user(user, %{"username" => text}) do
           {:ok, _} ->
             post_orb(telegram_id)
-          {:error, %{valid?: false, errors: [username: {"has already been taken",_}]}} ->
+          {:error, %{valid?: false, errors: [username: {"has already been taken", _}]}} ->
             ExGram.send_message(telegram_id, "Username taken. Please choose another username.")
           {:error, %{valid?: false}} ->
             ExGram.send_message(telegram_id, "Username does not meet requirements.\n\n- <u>5 characters long</u>\n - <u>letters and numbers</u>\n\nPlease try again.", parse_mode: "HTML")

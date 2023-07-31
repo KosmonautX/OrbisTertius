@@ -39,6 +39,12 @@ defmodule Phos.TeleBot.Components.Button do
         ],
         [
           inline_keyboard_button(
+            "Set Location Now",
+            [callback_data: "edit_profile_location"]
+          )
+        ],
+        [
+          inline_keyboard_button(
             "FAQ",
             [callback_data: "start_faq" <> to_string(message_id)]
           ),
