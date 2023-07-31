@@ -26,7 +26,7 @@ defmodule Phos.TeleBot.CreateOrbFSM do
   def before_transition(struct, "location", "description"), do: print_description_prompt(struct)
   def before_transition(%{data: %{orb: %{payload: %{inner_title: _inner_title}}}} = struct, "description", "location"), do: print_location_prompt(struct)
   def before_transition(struct, "media", "location"), do: print_location_prompt(struct)
-  def before_transition(%{data: %{location_type: _type, orb: %{central_geohash: _geohash}}} = struct, "location", "media"), do: print_media_prompt(struct)
+  def before_transition(%{data: %{location_type: _type, orb: %{central_geohash: geohash}}} = struct, "location", "media") when not is_nil(geohash), do: print_media_prompt(struct)
   def before_transition(struct, "preview", "media"), do: print_media_prompt(struct)
   def before_transition(%{data: %{location_type: _type, orb: %{central_geohash: _geohash, payload: %{inner_title: _inner_title}}}} = struct, _initial_state, "preview"), do: print_preview_prompt(struct)
 
@@ -49,7 +49,7 @@ defmodule Phos.TeleBot.CreateOrbFSM do
   # end
 
   defp print_media_prompt(%{telegram_id: telegram_id} = struct) do
-    ExGram.send_message(telegram_id, "Almost there! Add an image to make things interesting?\n<i>(Use the 📎 button to attach image)</i>",
+    ExGram.send_message(telegram_id, "Almost there! Add an image to make things interesting?\n\n<i>(Use the 📎 button to attach image)</i>",
       parse_mode: "HTML", reply_markup: Button.build_createorb_media_inlinekeyboard())
     {:ok, struct}
   end

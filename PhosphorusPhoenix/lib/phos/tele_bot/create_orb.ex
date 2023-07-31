@@ -25,12 +25,16 @@ defmodule Phos.TeleBot.CreateOrb do
     else
       geohash =
         case Enum.find(user.private_profile.geolocation, fn loc -> loc.id == location_type end) do
-          nil -> send_location_update_message(branch.telegram_id, location_type)
+          nil -> nil
           %{geohash: geohash} -> geohash
         end
-      {_prev, branch} = get_and_update_in(branch.data.orb.central_geohash, &{&1, geohash})
-      {_prev, branch} = get_and_update_in(branch.data.location_type, &{&1, String.to_atom(location_type)} )
-      transition(branch, "media")
+      unless geohash do
+        send_location_update_message(branch.telegram_id, location_type)
+      else
+        {_prev, branch} = get_and_update_in(branch.data.orb.central_geohash, &{&1, geohash})
+        {_prev, branch} = get_and_update_in(branch.data.location_type, &{&1, String.to_atom(location_type)} )
+        transition(branch, "media")
+      end
     end
   end
   def set_location(%{telegram_id: telegram_id} = branch, text) do

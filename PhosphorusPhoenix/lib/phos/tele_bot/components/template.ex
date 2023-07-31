@@ -5,11 +5,11 @@ defmodule Phos.TeleBot.Components.Template do
 
   def start_menu_text_builder(assigns) do
     ~H"""
-    <b>About us!</b>
+    <b>👋 About us!</b>
 
     Our goal is to help people stay connected with their community. We want to help people find out what's happening around them, and to help them share their thoughts and feelings with their community.
 
-    To navigate around this bot, use the Menu button on the bottom left corner.
+    ↙️ To navigate around this bot, use the Menu button on the bottom left corner.
     """
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
   end
@@ -18,10 +18,10 @@ defmodule Phos.TeleBot.Components.Template do
     ~H"""
     Welcome to the ScratchBac Telegram Bot!
 
-    <u>Announcements</u>
+    <u>📢 Announcements</u>
       - Telegram Bot is now live!
 
-    To navigate around this bot, use the Menu button on the bottom left corner.
+    ↙️ To navigate around this bot, use the Menu button on the bottom left corner.
     """
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
   end
@@ -40,7 +40,7 @@ defmodule Phos.TeleBot.Components.Template do
 
   def onboarding_register_text_builder(assigns) do
     ~H"""
-    What is your email?
+    <b>What is your email?</b>
 
     Please provide us with a valid email, you will receive a confirmation email to confirm your registration.
     """
@@ -74,15 +74,15 @@ defmodule Phos.TeleBot.Components.Template do
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
   end
 
-  def onboarding_location_text_builder(assigns) do
+  def onboarding_text_builder(assigns) do
     ~H"""
     <b>About us!</b>
 
     Our goal is to help people stay connected with their community. We want to help people find out what's happening around them, and to help them share their thoughts and feelings with their community.
 
-    Set your location now to hear what's happening around you!
+    <u>You need to /register to use all our features such as /post</u>
 
-    <b>You need to /register to use all our features such as /post</b>
+    <i>Or.. you can start receiving posts by setting your location! <b>Main Menu > Profile > Set Location</b></i>
     """
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
   end
@@ -107,7 +107,7 @@ defmodule Phos.TeleBot.Components.Template do
     ~H"""
     <b>You have not set your <%= @location_type %> location</b>
 
-    Please update your location by clicking the button below.
+    <u>Click on the button below to update it.</u>
     """
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
   end

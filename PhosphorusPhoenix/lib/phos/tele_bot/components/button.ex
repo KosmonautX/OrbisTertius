@@ -62,13 +62,13 @@ defmodule Phos.TeleBot.Components.Button do
           ),
           inline_keyboard_button(
             "🔭 View Latest Posts",
-            [callback_data: "menu_latestposts" <> to_string(message_id)]
+            [callback_data: "menu_latestposts"]
           )
         ],
         [
           inline_keyboard_button(
             "👤 Profile",
-            [callback_data: "menu_openprofile" <> to_string(message_id)]
+            [callback_data: "menu_openprofile"]
           ),
           inline_keyboard_button(
             "📕 My Posts",
@@ -92,7 +92,7 @@ defmodule Phos.TeleBot.Components.Button do
         [
           inline_keyboard_button(
             "📔 Main Menu",
-            [callback_data: "start_mainmenu" <> to_string(message_id)]
+            [callback_data: "start_mainmenu"]
           )
         ]
       ]
@@ -143,7 +143,7 @@ defmodule Phos.TeleBot.Components.Button do
         [
           inline_keyboard_button(
             "📔 Main Menu",
-            [callback_data: "start_mainmenu" <> to_string(message_id)]
+            [callback_data: "start_mainmenu"]
           )
         ]
       ]
@@ -211,7 +211,7 @@ defmodule Phos.TeleBot.Components.Button do
         [
           inline_keyboard_button(
             "📔 Main Menu",
-            [callback_data: "start_mainmenu" <> to_string(message_id)]
+            [callback_data: "start_mainmenu"]
           )
         ]
       ]
@@ -224,7 +224,7 @@ defmodule Phos.TeleBot.Components.Button do
         [
           inline_keyboard_button(
             "Set #{loc_type}",
-            [callback_data: "edit_profile_locationtype" <> String.downcase(loc_type)]
+            [callback_data: "edit_profile_locationtype_" <> String.downcase(loc_type)]
           )
         ]
       ]
@@ -265,7 +265,7 @@ defmodule Phos.TeleBot.Components.Button do
         [
           inline_keyboard_button(
             "📔 Main Menu",
-            [callback_data: "start_mainmenu" <> to_string(message_id)]
+            [callback_data: "start_mainmenu"]
           )
         ]
       ]
@@ -305,6 +305,24 @@ defmodule Phos.TeleBot.Components.Button do
     else
       "#{PhosWeb.Endpoint.url}/memories/user/#{initiator.username}?token=#{Auth.generate_user!(user.id)}"
     end
+  end
+
+  def build_start_menu_inlinekeyboard(), do: build_start_menu_inlinekeyboard("")
+  def build_start_menu_inlinekeyboard(message_id) do
+    inline_keyboard_markup(
+      [
+        [
+          inline_keyboard_button(
+            "↩️ Back",
+            [callback_data: "start_startmenu" <> to_string(message_id)]
+          ),
+          inline_keyboard_button(
+            "📔 Main Menu",
+            [callback_data: "start_mainmenu" <> to_string(message_id)]
+          )
+        ]
+      ]
+    )
   end
 
   def build_main_menu_inlinekeyboard(), do: build_main_menu_inlinekeyboard("")

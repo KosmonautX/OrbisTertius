@@ -396,5 +396,6 @@ loc |> Enum.map(& &1.id) |> Enum.map(&:h3.to_string(&1))
 ```
 
 ```elixir
-614_268_985_654_902_783 |> :h3.to_string()
+Phos.Action.get_orb!("5f631db9-d0fe-4488-8bc8-0a546e74a3e8")
+|> Phos.Users.get_telegram_chat_ids_by_orb()
 ```

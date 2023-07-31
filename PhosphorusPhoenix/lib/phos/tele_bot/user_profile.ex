@@ -14,7 +14,7 @@ defmodule Phos.TeleBot.Core.UserProfile do
     |> StateManager.update_state(telegram_id)
 
     ExGram.edit_message_text("What shall we call you?", chat_id: telegram_id, message_id: message_id |> String.to_integer(),
-      parse_mode: "HTML", reply_markup: Button.build_main_menu_inlinekeyboard(message_id))
+      parse_mode: "HTML", reply_markup: Button.build_main_menu_inlinekeyboard())
   end
 
   def edit_bio_prompt(telegram_id, message_id) do
@@ -24,7 +24,7 @@ defmodule Phos.TeleBot.Core.UserProfile do
       metadata: %{message_id: message_id}})
     |> StateManager.update_state(telegram_id)
     ExGram.edit_message_text("Let's setup your bio. Share your hobbies or skills",
-      chat_id: telegram_id, message_id: message_id |> String.to_integer(), parse_mode: "HTML", reply_markup: Button.build_main_menu_inlinekeyboard(message_id))
+      chat_id: telegram_id, message_id: message_id |> String.to_integer(), parse_mode: "HTML", reply_markup: Button.build_main_menu_inlinekeyboard())
   end
 
   def edit_location_prompt(telegram_id, message_id) do
@@ -37,19 +37,36 @@ defmodule Phos.TeleBot.Core.UserProfile do
 
   def edit_locationtype_prompt(telegram_id, "live") do
     ExGram.send_message(telegram_id, "You must share your current/live location to update your location.\n\n<i>(Use the 📎 button to send location)</i>", parse_mode: "HTML")
-    {:ok, user_state} = StateManager.new_state(telegram_id)
-    user_state
-    |> Map.put(:branch, %ProfileFSM{telegram_id: telegram_id, state: "livelocation",
-      data: %{location_type: "live"}})
-    |> StateManager.update_state(telegram_id)
+    with {:ok, %{branch: %{path: "orb/create"}} = user_state} <- StateManager.get_state(telegram_id) do
+      user_state
+      |> Map.put(:branch, %ProfileFSM{telegram_id: telegram_id, state: "livelocation",
+        data: %{location_type: "live", return_to: "orb/create"}})
+      |> StateManager.update_state(telegram_id)
+    else
+      _ ->
+        {:ok, user_state} = StateManager.new_state(telegram_id)
+        user_state
+        |> Map.put(:branch, %ProfileFSM{telegram_id: telegram_id, state: "livelocation",
+          data: %{location_type: "live"}})
+        |> StateManager.update_state(telegram_id)
+    end
   end
+
   def edit_locationtype_prompt(telegram_id, location_type) do
     ExGram.send_message(telegram_id, "Please type your postal code or send your location for #{location_type} location.\n\n<i>(Use the 📎 button to send location)</i>", parse_mode: "HTML")
-    {:ok, user_state} = StateManager.new_state(telegram_id)
-    user_state
-    |> Map.put(:branch, %ProfileFSM{telegram_id: telegram_id, state: "location",
-      data: %{location_type: location_type}})
-    |> StateManager.update_state(telegram_id)
+    with {:ok, %{branch: %{path: "orb/create"}} = user_state} <- StateManager.get_state(telegram_id) do
+      user_state
+      |> Map.put(:branch, %ProfileFSM{telegram_id: telegram_id, state: "location",
+        data: %{location_type: location_type, return_to: "orb/create"}})
+      |> StateManager.update_state(telegram_id)
+    else
+      _ ->
+        {:ok, user_state} = StateManager.new_state(telegram_id)
+        user_state
+        |> Map.put(:branch, %ProfileFSM{telegram_id: telegram_id, state: "location",
+          data: %{location_type: location_type}})
+        |> StateManager.update_state(telegram_id)
+    end
   end
 
   def edit_picture_prompt(telegram_id, message_id) do
@@ -86,7 +103,7 @@ defmodule Phos.TeleBot.Core.UserProfile do
       ExGram.send_message(telegram_id, "Your profile picture has been updated!")
       StateManager.delete_state(telegram_id)
       case branch do
-        %{data: %{return_to: "post"}} ->
+        %{data: %{return_to: "orb/create"}} ->
           BotCore.post_orb(telegram_id)
         _ ->
           {:ok, user} = BotCore.get_user_by_telegram(telegram_id)
