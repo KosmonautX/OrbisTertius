@@ -74,7 +74,8 @@ defmodule PhosWeb.Router do
 
 
     live_session :required_authenticated_user,
-      on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Timezone, :timezone}] do
+      on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Menshen.Mounter, :timezone}] do
+
       live "/welcome", UserWelcomeLive, :welcome
 
       live "/orb/:id/show/:cid", OrbLive.Show, :show_ancestor
@@ -259,7 +260,7 @@ defmodule PhosWeb.Router do
       pipe_through [:browser, :require_authenticated_user]
 
       live_session :required_authenticated_user_dev,
-        on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Timezone, :timezone}] do
+        on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated},{PhosWeb.Menshen.Mounter, :timezone}] do
         live "/orb", OrbLive.Index, :index
         live "/orb/new", OrbLive.Index, :new
         live "/orb/sethome", OrbLive.Index, :sethome
@@ -303,7 +304,8 @@ defmodule PhosWeb.Router do
     end
 
     live_session :guest_if_not_logged_in,
-      on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Timezone, :timezone}] do
+      on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Menshen.Mounter, :timezone}] do
+
       live "/orb/:id", OrbLive.Show, :show
       live "/user/:username", UserProfileLive.Show, :show
       live "/user/:username/allies", UserProfileLive.Index, :allies

@@ -678,15 +678,23 @@ defmodule PhosWeb.CoreComponents do
 
   def admin_user_preview(assigns) do
     ~H"""
-    <div class="flex items-center space-x-4">
-      <div class="flex-shrink-0">
-        <.link navigate={"/user/#{@user.username}?bac"}>
-          <img
-            class="lg:w-12 lg:h-12 h-10 w-10 rounded-full object-cover"
-            src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossy")}
-            onerror="this.src='/images/default_banner.jpg';"
-          />
-        </.link>
+    <div class="flex max-w-sm font-poppins">
+      <.link :if={@user.username} navigate={"/user/#{@user.username}?bac"}>
+      <div>
+        <img
+          src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossy")}
+          onerror="this.src='/images/default_banner.jpg';"
+          class="xl:h-14 xl:w-14 lg:w-12 lg:h-12 mr-4 object-cover rounded-full "
+          alt="user5"
+        />
+      </div>
+      </.link>
+      <div class="flex flex-col xl:ml-1 lg:ml-2 -mb-2">
+
+        <h6 class="mb-0 leading-normal text-sm font-bold"><%= "#{@user.username}" %></h6>
+      <a href={"mailto: #{@user.email}"}>
+        <p class="mb-0 leading-tight text-sm text-gray-400"><%= "#{@user.email}" %></p>
+      </a>
       </div>
       <div class="flex-1 min-w-0">
         <p class="text-sm font-medium text-gray-900 truncate">
@@ -2049,6 +2057,7 @@ defmodule PhosWeb.CoreComponents do
   slot(:ally_button) do
     attr(:user, :map, doc: "user want to attached to")
     attr(:current_user, :map, doc: "current active user")
+    attr(:parent_pid, :any, doc: "current active pid")
     attr(:socket, :map, doc: "current active socket")
   end
 
@@ -2135,6 +2144,7 @@ defmodule PhosWeb.CoreComponents do
   slot(:ally_button) do
     attr(:user, :map, doc: "user want to attached to")
     attr(:current_user, :map, doc: "current active user")
+    attr(:parent_pid, :any, doc: "current active pid")
     attr(:socket, :map, doc: "current active socket")
   end
 

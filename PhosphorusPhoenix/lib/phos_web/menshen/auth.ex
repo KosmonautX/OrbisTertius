@@ -2,7 +2,7 @@ defmodule PhosWeb.Menshen.Auth do
   use Nebulex.Caching
 
   alias PhosWeb.Menshen.Role
-  alias Phos.Users.{Private_Profile}
+  alias Phos.Users.{PrivateProfile}
   alias Phos.Cache
 
   def generate_user!(id), do: generate_boni!(id)
@@ -56,7 +56,7 @@ defmodule PhosWeb.Menshen.Auth do
   end
 
   # geo utilities?
-  defp parse_territories(%{private_profile: %Private_Profile{geolocation: geolocations}}) do
+  defp parse_territories(%{private_profile: %PrivateProfile{geolocation: geolocations}}) do
     Enum.reduce(geolocations, %{}, fn %{id: name, chronolock: chronolock, geohash: hash}, acc ->
       Map.put(acc, String.downcase(name), %{radius: chronolock, hash: hash})
     end)
@@ -73,7 +73,7 @@ defmodule PhosWeb.Menshen.Auth do
   defp get_cert() do
     case Cache.get({Phos.External.GoogleCert, :get_cert}) do
       nil ->
-        case Phos.External.GoogleCert.get_Cert() do
+        case Phos.External.GoogleCert.get_cert() do
           {:ok, %{cert: cert, exp: ttl}} ->
             Cache.put({Phos.External.GoogleCert, :get_cert}, cert, ttl: ttl*1000)
           {:ok, cert}
@@ -89,9 +89,12 @@ defmodule PhosWeb.Menshen.Auth do
   # defp cert_legit(_), do: false
 
   defp verify_expiry(exp) do
-    cond do
-      exp > DateTime.utc_now() |> DateTime.to_unix() -> {:ok, exp}
-      true -> {:expired, exp}
+    DateTime.utc_now()
+    |> DateTime.to_unix()
+    |> Kernel.<(exp)
+    |> case do
+      true -> {:ok, exp}
+        _ -> {:expired, exp}
     end
   end
 end

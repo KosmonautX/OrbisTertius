@@ -96,12 +96,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
             ext_path = "#{path}.#{ext}"
             File.rename!(path, ext_path)
 
-            thumbnail =
-              ext_path
-              |> Mogrify.open()
-              |> Mogrify.format("jpeg")
-              |> Map.update(:path, "", fn path -> path <> "[5]" end)
-              |> Mogrify.save()
+            thumbnail = create_thumbnail(ext_path)
 
             {:ok, lossy_media} =
               Phos.Orbject.Structure.apply_media_changeset(%{
@@ -145,14 +140,18 @@ defmodule PhosWeb.OrbLive.FormComponent do
         {:ok, path}
       end)
 
-    orb_params =
-      unless Enum.empty?(file_uploaded) do
-        Map.replace(orb_params, "media", true)
-      else
-        orb_params
-      end
+    case Enum.empty?(file_uploaded) do
+      false -> save_orb(socket, socket.assigns.action, Map.replace(orb_params, "media", true))
+      _ -> save_orb(socket, socket.assigns.action, orb_params)
+    end
+  end
 
-    save_orb(socket, socket.assigns.action, orb_params)
+  defp create_thumbnail(ext_path) do
+    ext_path
+    |> Mogrify.open()
+    |> Mogrify.format("jpeg")
+    |> Map.update(:path, "", fn path -> path <> "[5]" end)
+    |> Mogrify.save()
   end
 
   defp error_to_string(:too_large), do: "Image too large"

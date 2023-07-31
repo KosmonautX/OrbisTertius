@@ -2,7 +2,7 @@ defmodule Phos.Users.User do
   use Ecto.Schema
   import Ecto.Changeset
   alias Phos.Action.{Orb}
-  alias Phos.Users.{Public_Profile, Private_Profile, Auth, RelationBranch, Integrations}
+  alias Phos.Users.{PublicProfile, PrivateProfile, Auth, RelationBranch, Integrations}
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "users" do
@@ -35,10 +35,10 @@ defmodule Phos.Users.User do
     has_many(:allies, RelationBranch, foreign_key: :user_id, where: [completed_at: {:not, nil}])
     # has_many :allies, through: [:branches, :friend]
 
-    has_one(:personal_orb, Orb, foreign_key: :id)
-    has_one(:private_profile, Private_Profile, references: :id, foreign_key: :user_id)
-    embeds_one(:public_profile, Public_Profile, on_replace: :update)
-    embeds_one(:integrations, Integrations, on_replace: :update)
+    has_one :personal_orb, Orb, foreign_key: :id
+    has_one :private_profile, PrivateProfile, references: :id, foreign_key: :user_id
+    embeds_one :public_profile, PublicProfile, on_replace: :update
+    embeds_one :integrations, Integrations, on_replace: :update
 
     timestamps()
   end
@@ -69,7 +69,7 @@ defmodule Phos.Users.User do
     user
     |> cast(attrs, [])
     |> cast_assoc(:personal_orb, with: &Orb.territorial_changeset/2)
-    |> cast_embed(:public_profile, with: &Public_Profile.territorial_changeset/2)
+    |> cast_embed(:public_profile, with: &PublicProfile.territorial_changeset/2)
     |> cast_assoc(:private_profile)
   end
 
@@ -86,7 +86,7 @@ defmodule Phos.Users.User do
     |> cast_assoc(:auths, with: &Auth.changeset/2)
     |> cast_assoc(:private_profile)
     |> cast_embed(:integrations, with: &Integrations.telegram_changeset/2)
-    |> cast_embed(:public_profile, with: &Public_Profile.changeset/2)
+    |> cast_embed(:public_profile, with: &PublicProfile.changeset/2)
   end
 
   def post_registration_changeset(%__MODULE__{} = user, attrs) do

@@ -151,7 +151,6 @@ defmodule PhosWeb.MemoryLive.Index do
 
   def handle_info(_, socket), do: {:noreply, socket}
 
-
   defp init_relations(%{assigns: %{current_user: user}} = socket) do
     %{
       data: relation_memories,

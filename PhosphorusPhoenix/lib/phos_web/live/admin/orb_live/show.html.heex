@@ -98,10 +98,10 @@
             <%= live_img_preview(entry) %>
             <figcaption><strong>Image</strong></figcaption>
           </figure>
-        </div>
 
-        <div :for={err <- upload_errors(@uploads.image)}>
-          <p class="alert alert-danger"><%= error_to_string(err) %></p>
+          <div :for={err <- upload_errors(@uploads.image, entry)}>
+            <p class="alert alert-danger"><%= error_to_string(err) %></p>
+          </div>
         </div>
 
         <div :if={@orb.media}>

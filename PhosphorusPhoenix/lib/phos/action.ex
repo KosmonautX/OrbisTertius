@@ -64,12 +64,12 @@ defmodule Phos.Action do
           from p in Orb,
             where: p.parent_id == ^id,
             select: %{count: count(p)}
-        ),
+        ), on: true,
         inner_lateral_join: c in subquery(
           from c in Phos.Comments.Comment,
-          where: c.orb_id == ^id,
-          select: %{count: count()}
-        ),
+            where: c.orb_id == ^id,
+            select: %{count: count()}
+        ), on: true,
         select_merge: %{number_of_repost: p.count, comment_count: c.count},
         limit: 1
     case Repo.one(query) do
@@ -82,7 +82,7 @@ defmodule Phos.Action do
     from(orbs in Orb,
       where: orbs.id == ^orb_id,
       inner_join: initiator in assoc(orbs, :initiator),
-      left_join: branch in assoc(initiator, :relations),
+      left_join: branch in assoc(initiator, :relations), 
       on: branch.friend_id == ^your_id,
       left_join: root in assoc(branch, :root),
       select_merge: %{initiator: %{initiator | self_relation: root}},
@@ -90,7 +90,7 @@ defmodule Phos.Action do
         from c in Phos.Comments.Comment,
         where: c.orb_id == ^orb_id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{comment_count: c.count})
       |> Repo.one()
   end
@@ -135,7 +135,7 @@ defmodule Phos.Action do
           where: c.orb_id == parent_as(:orb).id,
           select: %{count: count()}
         )
-      ),
+      ), on: true,
       select_merge: %{comment_count: c_count.count})
   end
 
@@ -176,7 +176,7 @@ defmodule Phos.Action do
           where: r.user_id == parent_as(:user).id and not is_nil(r.completed_at),
           select: %{count: count()}
         )
-      ),
+      ), on: true,
       left_lateral_join:
       mutual in subquery(
         from(r in Phos.Users.RelationBranch,
@@ -187,7 +187,7 @@ defmodule Phos.Action do
           select: %{friend | count: over(count(), :ally_partition)},
           windows: [ally_partition: [partition_by: :user_id]]
         )
-      ),
+      ), on: true,
       select_merge: %{mutual_count: mutual.count, ally_count: a_count.count, mutual: mutual})
       |> Repo.Paginated.all([page: page, sort_attribute: sort_attribute, limit: limit])
       |> (&(Map.put(&1, :data, &1.data |> Repo.Preloader.lateral(:orbs, [limit: 5])))).()
@@ -260,7 +260,7 @@ defmodule Phos.Action do
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:o).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{comment_count: c.count})
       |> Repo.Paginated.all(page, sort_attribute, limit)
   end
@@ -278,7 +278,7 @@ defmodule Phos.Action do
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:o).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{comment_count: c.count})
       |> Repo.Paginated.all(page, sort_attribute, limit)
   end
@@ -294,7 +294,7 @@ defmodule Phos.Action do
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:o).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{comment_count: c.count})
       |> Repo.Paginated.all(page, sort_attribute, limit)
   end
@@ -310,7 +310,7 @@ defmodule Phos.Action do
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:l).orb_id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{comment_count: c.count}
 
     Repo.all(query, limit: 32)
@@ -329,7 +329,7 @@ defmodule Phos.Action do
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:o).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{comment_count: c.count}
 
     Repo.all(query, limit: 32)
@@ -396,17 +396,20 @@ defmodule Phos.Action do
     |> Orb.admin_changeset(attrs)
     |> Repo.insert()
     |> case do
-         {:ok, orb} = data ->
-           orb = orb |> Repo.preload([:initiator])
-           spawn(fn ->
-             unless(Enum.member?(orb.traits, "mirage")) do
-               experimental_notify(orb)
-             end
-             #spawn(fn -> user_feeds_publisher(orb) end)
-           end)
-           data
+         {:ok, orb} -> notify_mirage(orb)
          err -> err
        end
+  end
+
+  defp notify_mirage(orb) do
+    orb = Repo.preload(orb, [:initiator])
+
+    case Enum.member?(orb.traits, "mirage") do
+      false -> spawn(fn -> experimental_notify(orb)end)
+      _ -> :ok
+    end
+
+    {:ok, orb}
   end
 
   # defp user_feeds_publisher(%{initiator_id: user_id} = orb) do

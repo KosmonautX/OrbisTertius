@@ -96,14 +96,12 @@ defmodule PhosWeb.MemoryLive.FormComponent do
 
   defp save_memory(%{assigns: %{rel: relation, current_user: user}} = socket, :new, params) do
     with user_destination <- get_receiver_id(relation, user),
-         {:ok, memory} <- Message.create_message(params) do
-      {:noreply,
-       socket
-       |> put_flash(:info, "Memory created successfully")
-       |> push_patch(to: socket.assigns.navigate)
-       |> push_event("scroll-on-send", %{})
-
-      }
+         memory_params <- Map.merge(params, %{"id" => Ecto.UUID.generate(), "user_destination_id" => user_destination}),
+         {:ok, _memory} <- Message.create_message(memory_params) do
+           {:noreply,
+             socket
+             |> put_flash(:info, "Memory created successfully")
+             |> push_navigate(to: socket.assigns.navigate)}
     else
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, changeset: changeset)}

@@ -131,17 +131,6 @@ defmodule Phos.Message do
   end
 
   @doc """
-  Returns last  messages by location
-
-  ## Examples
-
-      iex> list_messages_by_pair()
-      [%Echo{}, ...]
-
-  """
-
-
-  @doc """
   Returns paginated call of the messages by location
 
   ## Examples
@@ -208,20 +197,18 @@ defmodule Phos.Message do
 
   """
 
-  def create_message(
-        %{"id" => _mem_id, "user_source_id" => _u_id, "rel_subject_id" => rel_id} = attrs
-      ) do
-    with rel = Phos.Folk.get_relation!(rel_id),
-         mem_changeset <-
-           Phos.Message.Memory.gen_changeset(%Memory{}, attrs)
-           |> Ecto.Changeset.put_assoc(:last_rel_memory, rel),
-         {:ok, memory} <- Repo.insert(mem_changeset) do
-      memory
-      |> Repo.preload([:orb_subject, :user_source, [rel_subject: :branches]])
-      |> tap(&Phos.PubSub.publish(&1, {:memory, "formation"}, &1.rel_subject.branches))
-      |> (&{:ok, &1}).()
-    else
-      {:error, err} -> {:error, err}
+    def create_message(%{"id" => _mem_id, "user_source_id" => _u_id, "rel_subject_id" => rel_id} = attrs) do
+      with rel <- Phos.Folk.get_relation!(rel_id),
+           mem_changeset <- Phos.Message.Memory.gen_changeset(%Memory{}, attrs) |> Ecto.Changeset.put_assoc(:last_rel_memory, rel),
+           {:ok, memory} <- Repo.insert(mem_changeset) do
+        memory
+        |> Repo.preload([:orb_subject, :user_source, [rel_subject: :branches]])
+        |> tap(&Phos.PubSub.publish(&1, {:memory, "formation"}, &1.rel_subject.branches))
+        |> (&({:ok, &1})).()
+
+      else
+        {:error, err} -> {:error, err}
+
       _ -> {:error, :not_found}
       end
   end

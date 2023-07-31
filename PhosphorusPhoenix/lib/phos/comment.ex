@@ -151,7 +151,7 @@ defmodule Phos.Comments do
         from sc in Comment,
         where: sc.parent_id == parent_as(:c).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{child_count: sc.count}
     Repo.all(query)
   end
@@ -169,7 +169,7 @@ defmodule Phos.Comments do
         from sc in Comment,
         where: sc.parent_id == parent_as(:c).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{child_count: sc.count}
 
     Repo.all(query)
@@ -185,7 +185,7 @@ defmodule Phos.Comments do
       inner_lateral_join: sc in subquery(
         from sc in Comment,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{child_count: sc.count}
 
     Repo.Paginated.all(query, [page: page, asc: true])
@@ -202,7 +202,7 @@ defmodule Phos.Comments do
         from sc in Comment,
         where: sc.parent_id == parent_as(:c).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{child_count: sc.count}
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
@@ -242,7 +242,7 @@ defmodule Phos.Comments do
         from sc in Comment,
         where: sc.parent_id == parent_as(:c).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{child_count: sc.count}
 
     Repo.all(query)
@@ -261,7 +261,7 @@ defmodule Phos.Comments do
         from sc in Comment,
         where: sc.parent_id == parent_as(:c).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{child_count: sc.count}
 
     Repo.all(query)

@@ -34,8 +34,10 @@ defmodule PhosWeb.API.UserProfileController do
 
   def update_self(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, params) do
     user = Users.get_user!(id)
-    with {:ok, %User{} = user} <- Users.update_user(user, profile_constructor(user,params)) do
-      render(conn, :show, user_profile: user)
+
+    case Users.update_user(user, profile_constructor(user, params)) do
+      %User{} = updated_user -> render(conn, :show, user_profile: updated_user)
+      _ -> render(conn, :show, user_profile: user)
     end
   end
 

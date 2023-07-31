@@ -40,8 +40,8 @@ defmodule Phos.UsersFixtures do
     {:ok, user_created} = valid_user_attributes() |> Phos.Users.register_user()
 
     {:ok, user} =
-      %Phos.Users.Private_Profile{}
-      |> Phos.Users.Private_Profile.changeset(%{user_id: user_created.id})
+      %Phos.Users.PrivateProfile{}
+      |> Phos.Users.PrivateProfile.changeset(%{user_id: user_created.id})
       |> Ecto.Changeset.put_embed(:geolocation, [attrs])
       |> Phos.Repo.insert()
 

@@ -95,7 +95,8 @@ defmodule Phos.MixProject do
       # {:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
       {:ex_gram, "~> 0.40.0"},
       {:tesla, "~> 1.2"},
-      {:phx_live_storybook, github: "phenixdigital/phx_live_storybook", tag: "992062c", runtime: Mix.env() == :dev}
+      {:phx_live_storybook, github: "phenixdigital/phx_live_storybook", tag: "992062c", runtime: Mix.env() == :dev},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 

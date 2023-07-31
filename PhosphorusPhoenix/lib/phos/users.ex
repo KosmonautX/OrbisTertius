@@ -7,7 +7,7 @@ defmodule Phos.Users do
 
   import Ecto.Query, warn: false
   alias Phos.Repo
-  alias Phos.Users.{User, Private_Profile, Auth}
+  alias Phos.Users.{User, PrivateProfile, Auth}
   alias Phos.Cache
   alias Ecto.Multi
 
@@ -207,8 +207,8 @@ defmodule Phos.Users do
   end
 
   def create_private_profile(attrs \\ %{}) do
-    %Private_Profile{}
-    |> Private_Profile.changeset(attrs)
+    %PrivateProfile{}
+    |> PrivateProfile.changeset(attrs)
     |> Repo.insert()
   end
 
@@ -470,7 +470,7 @@ defmodule Phos.Users do
           where: r.user_id == parent_as(:user).id and not is_nil(r.completed_at),
           select: %{count: count()}
         )
-      ),
+      ), on: true,
       select_merge: %{ally_count: a_count.count})
   end
 
@@ -503,7 +503,7 @@ defmodule Phos.Users do
   end
 
   def get_private_profile!(id) do
-    Repo.get!(Private_Profile, id)
+    Repo.get!(PrivateProfile, id)
   end
 
   ## User registration

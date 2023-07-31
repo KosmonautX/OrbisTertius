@@ -7,7 +7,7 @@ defmodule PhosWeb.API.AuthNEmailController do
 
   def login(%Plug.Conn{assigns: %{current_user: anon}} = conn, %{"email" => email, "password" => password}) do
     with %Users.User{fyr_id: fyr_id} = user when not is_nil(fyr_id) <- Users.get_user_by_email_and_password(email, password),
-         token <- Phos.External.GoogleIdentity.gen_customToken(fyr_id) do
+         token <- Phos.External.GoogleIdentity.gen_custom_token(fyr_id) do
 
       render(conn, :login, user: user, token: token)
     else
@@ -15,7 +15,7 @@ defmodule PhosWeb.API.AuthNEmailController do
         # migrate fyr_id from anonymous user to user w email
         with %Users.User{email: nil, fyr_id: fyr_id} <- anon,
              :ok <- Users.migrate_fyr_user(anon, fyring_user),
-               token <- Phos.External.GoogleIdentity.gen_customToken(fyr_id) do
+               token <- Phos.External.GoogleIdentity.gen_custom_token(fyr_id) do
           render(conn, :login, user: fyring_user, token: token)
         end
 
@@ -28,7 +28,7 @@ defmodule PhosWeb.API.AuthNEmailController do
   #
   def register(%Plug.Conn{assigns: %{current_user: anon}} = conn, %{"email" => email, "password" => _password} = params) do
     with {:ok, user} <- Users.claim_anon_user(anon, params),
-         Phos.External.GoogleIdentity.link_email(anon.fyr_id, email) do
+         _ <- Phos.External.GoogleIdentity.link_email(anon.fyr_id, email) do
 
       Users.deliver_user_confirmation_instructions(user, &url(~p"/users/confirm/#{&1}"))
 

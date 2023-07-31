@@ -8,7 +8,7 @@ defmodule Phos.External.GoogleCert do
   #from that endpoint to know when to refresh the public keys.
 
 
-  def get_Cert() do
+  def get_cert() do
     retry with: exponential_backoff() |> randomize |> expiry(10_000) do
       get("")
     after
