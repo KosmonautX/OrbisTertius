@@ -263,7 +263,7 @@ defmodule PhosWeb.OrbLive.Show do
 
   # Other Orbs by User
   def handle_event(
-        "load-more",
+        "load-orbs",
         _,
         %{assigns: %{orbs: orbs_meta, orb: orb}} = socket
       ) do

@@ -35,7 +35,7 @@ defmodule PhosWeb.UserProfileLive.Show do
   end
 
   @impl true
-  def handle_event("load-more", _, %{assigns: %{ally_list: allies_meta, orbs: orbs_meta, current_user: curr, user: user}} = socket) do
+  def handle_event("load-orbs", _, %{assigns: %{ally_list: allies_meta, orbs: orbs_meta, current_user: curr, user: user}} = socket) do
     expected_ally_page = allies_meta.pagination.current + 1
     expected_orb_page = orbs_meta.pagination.current + 1
 
