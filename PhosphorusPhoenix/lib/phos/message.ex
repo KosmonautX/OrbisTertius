@@ -89,7 +89,7 @@ defmodule Phos.Message do
     query =
       Phos.Message.Memory
       |> where([m], m.rel_subject_id == ^rel_id)
-      |> preload([:user_source, :orb_subject])
+      |> preload([:user_source, :orb_subject, :mem_subject])
 
     case Keyword.get(opts, :page) do
       nil -> Repo.Paginated.all(query, opts)
@@ -197,18 +197,20 @@ defmodule Phos.Message do
 
   """
 
-    def create_message(%{"id" => _mem_id, "user_source_id" => _u_id, "rel_subject_id" => rel_id} = attrs) do
-      with rel <- Phos.Folk.get_relation!(rel_id),
-           mem_changeset <- Phos.Message.Memory.gen_changeset(%Memory{}, attrs) |> Ecto.Changeset.put_assoc(:last_rel_memory, rel),
-           {:ok, memory} <- Repo.insert(mem_changeset) do
-        memory
-        |> Repo.preload([:orb_subject, :user_source, [rel_subject: :branches]])
-        |> tap(&Phos.PubSub.publish(&1, {:memory, "formation"}, &1.rel_subject.branches))
-        |> (&({:ok, &1})).()
-
-      else
-        {:error, err} -> {:error, err}
-
+  def create_message(
+        %{"id" => _mem_id, "user_source_id" => _u_id, "rel_subject_id" => rel_id} = attrs
+      ) do
+    with rel = Phos.Folk.get_relation!(rel_id),
+         mem_changeset <-
+           Phos.Message.Memory.gen_changeset(%Memory{}, attrs)
+           |> Ecto.Changeset.put_assoc(:last_rel_memory, rel),
+         {:ok, memory} <- Repo.insert(mem_changeset) do
+      memory
+      |> Repo.preload([:orb_subject, :mem_subject,  :user_source, [rel_subject: :branches]])
+      |> tap(&Phos.PubSub.publish(&1, {:memory, "formation"}, &1.rel_subject.branches))
+      |> (&{:ok, &1}).()
+    else
+      {:error, err} -> {:error, err}
       _ -> {:error, :not_found}
       end
   end
@@ -220,7 +222,7 @@ defmodule Phos.Message do
       |> Ecto.Changeset.put_assoc(:last_loc_memory, loc)
       |> Repo.insert() do
         memory
-        |> Repo.preload([:orb_subject, :user_source, :loc_subject])
+        |> Repo.preload([:orb_subject, :mem_subject, :user_source, :loc_subject])
         |> tap(&Phos.PubSub.publish(&1, {:memory, "assembly"}, &1.loc_subject))
         |> (&({:ok, &1})).()
       else
