@@ -315,10 +315,10 @@ defmodule Phos.TeleBot.Core do
       [%ExGram.Model.InlineQueryResultArticle{
         id: "no_orbs",
         type: "article",
-        title: "No orbs found",
-        description: "No orbs found",
+        title: "No posts found",
+        description: "No posts found",
         input_message_content: %ExGram.Model.InputTextMessageContent{ %ExGram.Model.InputTextMessageContent{} |
-          message_text: "No orbs found", parse_mode: "HTML" },
+          message_text: "No posts found", parse_mode: "HTML" },
         url: "web.scratchbac.com",
         thumbnail_url: "https://d1e00ek4ebabms.cloudfront.net/production/f046ab80-21a7-40e8-b56e-6e8076d47a82.jpg"
       }]

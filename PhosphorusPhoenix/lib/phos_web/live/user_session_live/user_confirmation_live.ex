@@ -30,34 +30,49 @@ defmodule PhosWeb.UserConfirmationLive do
 
   def render(%{live_action: :edit_tg} = assigns) do
     ~H"""
-    <div class="flex flex-col h-screen justify-center items-center">
-      <.header>Confirm Account</.header>
+    <%!-- <.confirm_card
+      on_confirm={}
+    >
+      <:confirm>Confirm Account</:confirm>
+    </.confirm_card> --%>
 
-      <.simple_form :let={f} for={:user} id="confirmation_form" phx-submit="confirm_account_tg">
-        <.input field={{f, :token}} type="hidden" value={@token} />
-        <:actions>
-          <.button phx-disable-with="Confirming..." type="submit">Confirm my account</.button>
-        </:actions>
-      </.simple_form>
-      <p class="text-gray-600 font-bold mt-2 hidden">
-        <.link href={~p"/users/register"} class="font-semibold text-base text-teal-500 underline">
-          Register
-        </.link>
-        Or
-        <.link href={~p"/users/log_in"} class="font-semibold text-base text-teal-500 underline">
-          Log in
-        </.link>
-      </p>
+    <div
+      class="absolute inset-0 bg-gray-700 bg-opacity-70 flex flex-col justify-center items-center space-y-4"
+      >
+      <h1 class="mt-4 text-xl md:text-4xl text-center font-bold tracking-tight text-white">
+      <.header>Confirm Account</.header>
+        <.simple_form class="max-w-2xl p-4 space-y-4 rounded-2xl mt-4"
+          :let={f} for={%{}} as={:user} id="confirmation_form" phx-submit="confirm_account_tg">
+          <.input field={{f, :token}} type="hidden" value={@token} />
+          <:actions>
+            <.button phx-disable-with="Confirming..." type="submit">Confirm my account</.button>
+          </:actions>
+        </.simple_form>
+        <p class="text-gray-600 font-bold mt-2 hidden">
+          <.link href={~p"/users/register"} class="font-semibold text-base text-teal-500 underline">
+            Register
+          </.link>
+          Or
+          <.link href={~p"/users/log_in"} class="font-semibold text-base text-teal-500 underline">
+            Log in
+          </.link>
+        </p>
+      </h1>
     </div>
     """
   end
 
   def render(%{live_action: :bind_telegram} = assigns) do
     ~H"""
+    <img
+    class="object-cover h-screen w-full"
+    src="/images/user_splash.jpg"
+    alt="Background Image"
+    />
     <div class="flex flex-col h-screen justify-center items-center">
       <.header>Confirm Link</.header>
 
-      <.simple_form :let={f} for={:user} id="bind_account_form" phx-submit="bind_account">
+      <.simple_form :let={f} for={%{}} as={:user} id="bind_account_form" phx-submit="bind_account">
         <.input field={{f, :token}} type="hidden" value={@token} />
         <:actions>
           <.button phx-disable-with="Linking..." type="submit">Link my account</.button>

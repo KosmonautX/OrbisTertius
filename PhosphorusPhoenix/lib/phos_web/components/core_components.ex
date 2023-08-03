@@ -2288,6 +2288,57 @@ defmodule PhosWeb.CoreComponents do
   end
 
   @doc """
+   Render a card for user to confirm account and auth binding
+  """
+
+  # slot(:confirm) do
+  #   attr(:tone, :atom)
+  # end
+
+  # def confirm_card(assigns) do
+  #   ~H"""
+  #   <img
+  #     class="object-cover h-screen w-full"
+  #     src="/images/user_splash.jpg"
+  #     alt="Background Image"
+  #   />
+  #   <div class="fixed left-0 top-0 flex h-full w-full items-center justify-center bg-black bg-opacity-50 py-10">
+  #     <div class="max-h-full w-full max-w-xl overflow-y-auto sm:rounded-2xl bg-white">
+  #       <div class="w-full">
+  #         <div class="m-8 my-20 max-w-[400px] mx-auto">
+  #           <div class="mb-8">
+  #             <h1 class="mb-4 text-3xl font-extrabold"><%= heading %></h1>
+  #             <p class="text-gray-600">You're almost there!</p>
+  #           </div>
+  #           <div class="space-y-4">
+  #             <.simple_form class="max-w-2xl p-4 space-y-4 rounded-2xl mt-4"
+  #               :let={f} for={%{}} as={:user} id="confirmation_form" phx-submit="confirm_account_tg">
+  #               <.input field={{f, :token}} type="hidden" value={@token} />
+  #               <:actions>
+  #                 <.button phx-disable-with="Confirming..." type="submit"><%= render_slot(confirm) %></.button>
+  #               </:actions>
+  #             </.simple_form>
+  #             <.button
+  #               :for={confirm <- @confirm}
+  #               id={"#{@id}-confirm"}
+  #               tone={Map.get(confirm, :tone, :primary)}
+  #               phx-click={@on_confirm}
+  #               phx-disable-with
+  #               class="py-2 px-3"
+  #             >
+
+  #             </.button>
+  #             <button class="p-3 bg-black rounded-full text-white w-full font-semibold">Confirm / Bind</button>
+  #             <button class="p-3 bg-white border rounded-full w-full font-semibold">Back to Home</button>
+  #           </div>
+  #         </div>
+  #       </div>
+  #     </div>
+  #   </div>
+  #   """
+  # end
+
+  @doc """
    Render a chip is action of the orb view user express the recation
   """
   attr(:emoji, :any)
