@@ -319,7 +319,7 @@ defmodule Phos.TeleBot.Core do
         description: "No posts found",
         input_message_content: %ExGram.Model.InputTextMessageContent{ %ExGram.Model.InputTextMessageContent{} |
           message_text: "No posts found", parse_mode: "HTML" },
-        url: "web.scratchbac.com",
+        # url: "web.scratchbac.com",
         thumbnail_url: "https://d1e00ek4ebabms.cloudfront.net/production/f046ab80-21a7-40e8-b56e-6e8076d47a82.jpg"
       }]
     else
@@ -332,10 +332,10 @@ defmodule Phos.TeleBot.Core do
           input_message_content: %ExGram.Model.InputTextMessageContent{ %ExGram.Model.InputTextMessageContent{} |
             message_text: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML" },
           # Development
-          url: "web.scratchbac.com", #"#{PhosWeb.Endpoint.url}/orb/#{orb.id}}",
-          thumbnail_url: "https://d1e00ek4ebabms.cloudfront.net/production/f046ab80-21a7-40e8-b56e-6e8076d47a82.jpg", #Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless")
+          # url: "web.scratchbac.com", #"#{PhosWeb.Endpoint.url}/orb/#{orb.id}}",
+          # thumbnail_url: "https://d1e00ek4ebabms.cloudfront.net/production/f046ab80-21a7-40e8-b56e-6e8076d47a82.jpg",
           # url: "#{PhosWeb.Endpoint.url}/orb/#{orb.id}}",
-          # thumbnail_url: Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless"),
+          thumbnail_url: Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossy"),
           reply_markup: Button.build_orb_notification_button(orb, user)
         }
         _ -> nil
@@ -372,14 +372,14 @@ defmodule Phos.TeleBot.Core do
   end
 
   defp start_menu_text(telegram_id, nil) do
-    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, "https://d1e00ek4ebabms.cloudfront.net/production/f046ab80-21a7-40e8-b56e-6e8076d47a82.jpg",
+    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, "https://web.scratchbac.com/images/user_splash.jpg",
       caption: Template.start_menu_text_builder(%{}), parse_mode: "HTML")
     ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id,
       reply_markup: Button.build_start_inlinekeyboard(message_id))
   end
   defp start_menu_text(telegram_id, message_id) do
     ExGram.edit_message_media(%ExGram.Model.InputMediaPhoto{media:
-      "https://d1e00ek4ebabms.cloudfront.net/production/f046ab80-21a7-40e8-b56e-6e8076d47a82.jpg", type: "photo",
+      "https://web.scratchbac.com/images/user_splash.jpg", type: "photo",
       caption: Template.start_menu_text_builder(%{}), parse_mode: "HTML"},
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), reply_markup: Button.build_start_inlinekeyboard(message_id))
   end
@@ -393,13 +393,13 @@ defmodule Phos.TeleBot.Core do
   end
 
   defp main_menu_text(telegram_id, nil) do
-    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, "https://nyx.scrb.ac/images/user_splash.jpg",
+    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, "https://web.scratchbac.com/images/user_splash.jpg",
       caption: Template.main_menu_text_builder(%{}), parse_mode: "HTML")
     ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id, reply_markup: Button.build_menu_inlinekeyboard(message_id))
   end
   defp main_menu_text(telegram_id, message_id) do
     {:ok, %{message_id: message_id}} = ExGram.edit_message_media(%ExGram.Model.InputMediaPhoto{media:
-      "https://nyx.scrb.ac/images/user_splash.jpg", type: "photo", caption: Template.main_menu_text_builder(%{}), parse_mode: "HTML"},
+      "https://web.scratchbac.com/images/user_splash.jpg", type: "photo", caption: Template.main_menu_text_builder(%{}), parse_mode: "HTML"},
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), reply_markup: Button.build_menu_inlinekeyboard(message_id))
   end
 

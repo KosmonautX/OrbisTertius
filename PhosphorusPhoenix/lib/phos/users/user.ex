@@ -85,6 +85,7 @@ defmodule Phos.Users.User do
     |> cast(attrs, [:username, :email, :inserted_at])
     |> cast_assoc(:auths, with: &Auth.changeset/2)
     |> cast_assoc(:private_profile)
+    |> cast_assoc(:personal_orb, with: &Orb.personal_changeset/2)
     |> cast_embed(:integrations, with: &Integrations.telegram_changeset/2)
     |> cast_embed(:public_profile, with: &PublicProfile.changeset/2)
   end

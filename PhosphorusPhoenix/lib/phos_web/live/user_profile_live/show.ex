@@ -162,7 +162,7 @@ defmodule PhosWeb.UserProfileLive.Show do
       type: "website",
       # TODO fetch from media
       image: Phos.Orbject.S3.get!("USR", user.id, "public/profile/lossless"),
-      url: url(socket, ~p"/user/#{user.username}")
+      url: url(socket, ~p"/user/#{user.username || user.id}")
     })
   end
 

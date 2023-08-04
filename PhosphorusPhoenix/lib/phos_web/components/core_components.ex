@@ -2085,7 +2085,7 @@ defmodule PhosWeb.CoreComponents do
           >
             <div id={"#{@id}-copylink"} class="hidden">
               <%= PhosWeb.Endpoint.url() <>
-                path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
+                path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username || @user.id}") %>
             </div>
             <.share_btn
               type="share_btn"
@@ -2112,7 +2112,7 @@ defmodule PhosWeb.CoreComponents do
           </span>
         </p>
         <p class="lg:hidden block text-sm dark:text-white text-black font-semibold hover:underline hover:decoration-purple-600 dark:hover:decoration-white hover:decoration-solid hover:decoration-2 cursor-pointer">
-          <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@username}/allies")}>
+          <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@username || @id}/allies")}>
             <%= "#{@ally_count} | allies with @#{@user.username}'s and Others" %>
           </.link>
         </p>

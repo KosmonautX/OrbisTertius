@@ -35,7 +35,11 @@ defmodule PhosWeb.UserConfirmationLive do
     >
       <:confirm>Confirm Account</:confirm>
     </.confirm_card> --%>
-
+    <img
+    class="object-cover h-screen w-full"
+    src="/images/user_splash.jpg"
+    alt="Background Image"
+    />
     <div
       class="absolute inset-0 bg-gray-700 bg-opacity-70 flex flex-col justify-center items-center space-y-4"
       >
@@ -69,24 +73,28 @@ defmodule PhosWeb.UserConfirmationLive do
     src="/images/user_splash.jpg"
     alt="Background Image"
     />
-    <div class="flex flex-col h-screen justify-center items-center">
+    <div
+      class="absolute inset-0 bg-gray-700 bg-opacity-70 flex flex-col justify-center items-center space-y-4"
+      >
+      <h1 class="mt-4 text-xl md:text-4xl text-center font-bold tracking-tight text-white">
       <.header>Confirm Link</.header>
-
-      <.simple_form :let={f} for={%{}} as={:user} id="bind_account_form" phx-submit="bind_account">
-        <.input field={{f, :token}} type="hidden" value={@token} />
-        <:actions>
-          <.button phx-disable-with="Linking..." type="submit">Link my account</.button>
-        </:actions>
-      </.simple_form>
-      <p class="text-gray-600 font-bold mt-2 hidden">
-        <.link href={~p"/users/register"} class="font-semibold text-base text-teal-500 underline">
-          Register
-        </.link>
-        Or
-        <.link href={~p"/users/log_in"} class="font-semibold text-base text-teal-500 underline">
-          Log in
-        </.link>
-      </p>
+        <.simple_form class="max-w-2xl p-4 space-y-4 rounded-2xl mt-4"
+          :let={f} for={%{}} as={:user} id="bind_account_form" phx-submit="bind_account">
+          <.input field={{f, :token}} type="hidden" value={@token} />
+          <:actions>
+            <.button phx-disable-with="Linking..." type="submit">Link my account</.button>
+          </:actions>
+        </.simple_form>
+        <p class="text-gray-600 font-bold mt-2 hidden">
+          <.link href={~p"/users/register"} class="font-semibold text-base text-teal-500 underline">
+            Register
+          </.link>
+          Or
+          <.link href={~p"/users/log_in"} class="font-semibold text-base text-teal-500 underline">
+            Log in
+          </.link>
+        </p>
+      </h1>
     </div>
     """
   end

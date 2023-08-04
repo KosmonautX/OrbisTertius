@@ -82,7 +82,7 @@ defmodule Phos.TeleBot.Components.Template do
 
     <u>You need to /register to use all our features such as /post</u>
 
-    <i>Or.. you can start receiving posts by setting your location! <b>Main Menu > Profile > Set Location</b></i>
+    <i>Or.. you can start receiving posts by setting your location by clicking the "Set Location Now"!</i>
     """
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
   end
