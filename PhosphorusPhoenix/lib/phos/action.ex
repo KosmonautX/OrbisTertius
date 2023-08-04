@@ -116,7 +116,7 @@ defmodule Phos.Action do
   end
 
   def orbs_by_geohashes({hashes, your_id}) do
-    from(o in Phos.Action.Orb,
+    from(o in Orb,
       as: :orb,
       where: o.userbound != true,
       inner_join: l in Phos.Action.Orb_Location, on: l.location_id in ^hashes and l.orb_id == o.id,
@@ -138,6 +138,7 @@ defmodule Phos.Action do
   def orbs_by_geohashes({hashes, your_id}, opts) do
     limit = Keyword.get(opts, :limit, 24)
     orbs_by_geohashes({hashes, your_id})
+    |> maybe_search(Keyword.get(opts, :search, nil))
     |> Repo.Paginated.all([{:limit, limit} | opts])
     |> (&(Map.put(&1, :data, &1.data |> Phos.Repo.Preloader.lateral(:comments, limit: 3, order_by: {:asc, :inserted_at}, assocs: [:initiator, parent: [:initiator]])))).()
   end
@@ -231,7 +232,7 @@ defmodule Phos.Action do
     |> Repo.all()
   end
 
-  def orbs_by_friends(your_id, page, sort_attribute \\ :inserted_at, limit \\ 12) do
+  def orbs_by_friends(your_id) do
     from(orbs in Orb,
       as: :o,
       where: not fragment("? @> ?", orbs.traits, ^["mirage"]),
@@ -246,7 +247,13 @@ defmodule Phos.Action do
         select: %{count: count()}
       ),
       select_merge: %{comment_count: c.count})
-      |> Repo.Paginated.all(page, sort_attribute, limit)
+  end
+
+  def orbs_by_friends(your_id, opts) do
+    orbs_by_friends(your_id)
+      |> maybe_search(Keyword.get(opts, :search, nil))
+      |> Repo.Paginated.all(opts)
+      |> (&(Map.put(&1, :data, &1.data |> Phos.Repo.Preloader.lateral(:comments, limit: 3, order_by: {:asc, :inserted_at}, assocs: [:initiator, parent: [:initiator]])))).()
   end
 
 
@@ -828,14 +835,20 @@ defmodule Phos.Action do
       end
     end)
   end
+
+  defp maybe_search(query, nil), do: query
+  defp maybe_search(query, term) do
+    IO.inspect "searching"
+    where(query, fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^build_search_term(term)) or fragment("to_tsvector(?, title) @@ websearch_to_tsquery(?, ?)", "english", "english", ^term))
+  end
+
   defp build_base_search_query(term) do
-    from o in Orb,
-      where: fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^build_search_term(term)),
-      or_where: fragment("to_tsvector(?, title) @@ websearch_to_tsquery(?, ?)", "english", "english", ^term)
+    (from o in Orb)
+    |> maybe_search(term)
   end
 
   defp build_search_term(text) do
     String.split(text, " ")
     |> Enum.join(" or ")
   end
-end
+ end

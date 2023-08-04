@@ -6,7 +6,7 @@
          <Heroicons.magnifying_glass mini class="lg:h-5 lg:w-5 h-4 w-4  fill-white search-icon" />
          <Heroicons.x_mark mini  class="lg:h-5 lg:w-5 h-4 w-4 fill-white cancel-icon hidden" />
         </button>
-        <.simple_form :let={f} for={%Plug.Conn{}} method="get" phx-submit="search" class="hidden search-input rounded-lg">  
+        <.simple_form :let={f} for={%Plug.Conn{}} method="get" phx-submit="search" class="search-input rounded-lg">
           <.input field={{f, :q}} value={@search_query} required={true} placeholder="Enter your keyword" id="searchInput"/>
        </.simple_form>
       </div>

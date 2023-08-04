@@ -6,6 +6,7 @@ const SearchToggler = {
       this.searchIcon.addEventListener('click', this.toggleSearch.bind(this));
       this.cancelIcon.addEventListener('click', this.toggleSearch.bind(this));
     },
+
     toggleSearch() {
       this.searchIcon.classList.toggle('hidden');
       this.cancelIcon.classList.toggle('hidden');
@@ -17,4 +18,3 @@ const SearchToggler = {
   };
   
   export default SearchToggler;
-  

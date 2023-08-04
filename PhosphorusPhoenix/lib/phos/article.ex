@@ -23,6 +23,8 @@ defmodule Phos.Article do
     }
   end
 
+  ## build article context needs to change <> syntax tree and the pass to external in one go not 1 one by 1
+
   defp get_orb_information(orb) do
     paragraph = request_to_openai("Write me paragraph more than 2 sentences with topic #{orb.title}")
 
