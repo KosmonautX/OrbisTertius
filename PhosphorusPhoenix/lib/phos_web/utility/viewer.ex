@@ -70,6 +70,7 @@ defmodule PhosWeb.Util.Viewer do
       loc_subject_id: memory.loc_subject_id,
       rel_subject_id: memory.rel_subject_id,
       orb_subject_id: memory.orb_subject_id,
+      mem_subject_id: memory.mem_subject_id,
       com_subject_id: memory.com_subject_id,
       cluster_subject_id: memory.cluster_subject_id,
       action_path: memory.action_path,
