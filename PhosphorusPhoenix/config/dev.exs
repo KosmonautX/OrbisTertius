@@ -111,4 +111,9 @@ config :ex_aws, :retries,
 config :phos, Phos.External.HeimdallrClient,
   base_url: {System, :get_env, ["HEIMDALLR_ENDPOINT"]}
 
+config :nx, default_backend: EXLA.Backend
+
+config :phos, Phos.Models.TokenClassification,
+  model: "dslim/bert-base-NER",
+  token: "bert-base-cased"
 #config :link_preview, parsers: [LinkPreview.Parsers.Opengraph]
