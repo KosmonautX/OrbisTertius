@@ -89,7 +89,7 @@ defmodule Phos.Message do
     query =
       Phos.Message.Memory
       |> where([m], m.rel_subject_id == ^rel_id)
-      |> preload([:user_source, :orb_subject, :mem_subject])
+      |> preload([:user_source, :orb_subject, mem_subject: [:user_source]])
 
     case Keyword.get(opts, :page) do
       nil -> Repo.Paginated.all(query, opts)
@@ -154,7 +154,7 @@ defmodule Phos.Message do
     yesterday = NaiveDateTime.utc_now() |> NaiveDateTime.add(-60 * 60 * 24 * 100)
     Phos.Message.Memory
     |> where([m], m.loc_subject_id == ^hash and m.inserted_at > ^yesterday)
-    |> preload([:user_source, :orb_subject])
+    |> preload([:user_source, :orb_subject, mem_subject: [:user_source]])
     |> Repo.Paginated.all(opts)
   end
 
