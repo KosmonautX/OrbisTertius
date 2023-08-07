@@ -15,10 +15,6 @@ defmodule Phos.TeleBot.Core do
   alias Phos.TeleBot.Core.{UserProfile}
   alias Phos.TeleBot.Components.{Button, Template}
 
-  @user_splash "AgACAgQAAxkDAAJmR2TQcK4KCUY0QVR8aip6dvFFEoq2AAK5sTEbRYc8UktYX4dmDbg2AQADAgADdwADMAQ"
-  @guest_splash "AgACAgQAAxkDAAJmWWTQdW9XfL1dunHB-t7pASGhjV-nAAJMsTEb-6qFUiLueAfra-hWAQADAgADeQADMAQ"
-  @faqfeedback_splash "AgACAgQAAxkDAAJmdGTQl3CCePsV1ebS6qfpK7hPTVMEAAI7sTEb88SEUlWBJ8N103sgAQADAgADdwADMAQ"
-
   command("start", description: "Start using the Scratchbac bot")
   command("menu", description: "Show the main menu")
   command("help", description: "Show the help menu")
@@ -315,6 +311,7 @@ defmodule Phos.TeleBot.Core do
   def get_user_by_telegram(telegram_id), do: Users.get_user_by_telegram(telegram_id |> to_string())
 
   defp build_inlinequery_orbs(orbs, user) do
+    {:ok, user_splash} = Registry.meta(Registry.ExGram, :user_splash)
     if Enum.empty?(orbs) do
       [%ExGram.Model.InlineQueryResultArticle{
         id: "no_orbs",
@@ -324,7 +321,7 @@ defmodule Phos.TeleBot.Core do
         input_message_content: %ExGram.Model.InputTextMessageContent{ %ExGram.Model.InputTextMessageContent{} |
           message_text: "No posts found", parse_mode: "HTML" },
         # url: "web.scratchbac.com",
-        thumbnail_url: @user_splash
+        thumbnail_url: user_splash
       }]
     else
       Enum.map(orbs, fn (%{payload: payload}= orb) when not is_nil(payload) ->
@@ -337,9 +334,9 @@ defmodule Phos.TeleBot.Core do
             message_text: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML" },
           # Development
           # url: "web.scratchbac.com", #"#{PhosWeb.Endpoint.url}/orb/#{orb.id}}",
-          # thumbnail_url: "https://d1e00ek4ebabms.cloudfront.net/production/f046ab80-21a7-40e8-b56e-6e8076d47a82.jpg",
+          thumbnail_url: "https://d1e00ek4ebabms.cloudfront.net/production/f046ab80-21a7-40e8-b56e-6e8076d47a82.jpg",
           # url: "#{PhosWeb.Endpoint.url}/orb/#{orb.id}}",
-          thumbnail_url: Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossy"),
+          # thumbnail_url: Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossy"),
           reply_markup: Button.build_orb_notification_button(orb, user)
         }
         _ -> nil
@@ -376,14 +373,16 @@ defmodule Phos.TeleBot.Core do
   end
 
   defp start_menu_text(telegram_id, nil) do
-    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, @guest_splash,
+    {:ok, guest_splash} = Registry.meta(Registry.ExGram, :guest_splash)
+    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, guest_splash,
       caption: Template.start_menu_text_builder(%{}), parse_mode: "HTML")
     ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id,
       reply_markup: Button.build_start_inlinekeyboard(message_id))
   end
   defp start_menu_text(telegram_id, message_id) do
+    {:ok, guest_splash} = Registry.meta(Registry.ExGram, :guest_splash)
     ExGram.edit_message_media(%ExGram.Model.InputMediaPhoto{media:
-      @guest_splash, type: "photo",
+      guest_splash, type: "photo",
       caption: Template.start_menu_text_builder(%{}), parse_mode: "HTML"},
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), reply_markup: Button.build_start_inlinekeyboard(message_id))
   end
@@ -397,13 +396,15 @@ defmodule Phos.TeleBot.Core do
   end
 
   defp main_menu_text(telegram_id, nil) do
-    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, @user_splash,
+    {:ok, user_splash} = Registry.meta(Registry.ExGram, :user_splash)
+    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, user_splash,
       caption: Template.main_menu_text_builder(%{}), parse_mode: "HTML")
     ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id, reply_markup: Button.build_menu_inlinekeyboard(message_id))
   end
   defp main_menu_text(telegram_id, message_id) do
+    {:ok, user_splash} = Registry.meta(Registry.ExGram, :user_splash)
     {:ok, %{message_id: message_id}} = ExGram.edit_message_media(%ExGram.Model.InputMediaPhoto{media:
-      @user_splash, type: "photo", caption: Template.main_menu_text_builder(%{}), parse_mode: "HTML"},
+      user_splash, type: "photo", caption: Template.main_menu_text_builder(%{}), parse_mode: "HTML"},
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), reply_markup: Button.build_menu_inlinekeyboard(message_id))
   end
 
@@ -415,8 +416,9 @@ defmodule Phos.TeleBot.Core do
       reply_markup: Button.build_start_menu_inlinekeyboard(message_id))
   end
   defp faq(telegram_id, message_id) do
+    {:ok, faq_splash} = Registry.meta(Registry.ExGram, :faq_splash)
     {:ok, %{message_id: message_id}} = ExGram.edit_message_media(%ExGram.Model.InputMediaPhoto{media:
-      @faqfeedback_splash, type: "photo", caption: Template.faq_text_builder(%{}), parse_mode: "HTML"},
+      faq_splash, type: "photo", caption: Template.faq_text_builder(%{}), parse_mode: "HTML"},
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), reply_markup: Button.build_start_menu_inlinekeyboard(message_id))
   end
 
@@ -428,14 +430,16 @@ defmodule Phos.TeleBot.Core do
       reply_markup: Button.build_main_menu_inlinekeyboard(message_id))
   end
   defp feedback(telegram_id, message_id) do
+    {:ok, faq_splash} = Registry.meta(Registry.ExGram, :faq_splash)
     ExGram.edit_message_media(%ExGram.Model.InputMediaPhoto{media:
-    @faqfeedback_splash, type: "photo", caption: Template.feedback_text_builder(%{}), parse_mode: "HTML"},
+      faq_splash, type: "photo", caption: Template.feedback_text_builder(%{}), parse_mode: "HTML"},
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), reply_markup: Button.build_start_menu_inlinekeyboard(message_id))
   end
 
   defp onboard_text(telegram_id) do
     {:ok, user} = get_user_by_telegram(telegram_id)
-    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, @guest_splash,
+    {:ok, guest_splash} = Registry.meta(Registry.ExGram, :guest_splash)
+    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, guest_splash,
       caption: Template.onboarding_text_builder(%{}), parse_mode: "HTML")
     ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id,
       reply_markup: Button.build_start_inlinekeyboard(message_id))
@@ -478,7 +482,8 @@ defmodule Phos.TeleBot.Core do
           true ->
             if String.contains?(PhosWeb.Endpoint.url, "localhost") do
               # For development
-              ExGram.send_photo(chat_id, @user_splash,
+              {:ok, user_splash} = Registry.meta(Registry.ExGram, :user_splash)
+              ExGram.send_photo(chat_id, user_splash,
                 caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
                 reply_markup: Button.build_orb_notification_button(orb, user))
             else

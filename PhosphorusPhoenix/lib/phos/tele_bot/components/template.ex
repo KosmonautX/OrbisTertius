@@ -7,8 +7,6 @@ defmodule Phos.TeleBot.Components.Template do
     ~H"""
     <b>👋 About us!</b>
 
-    Our goal is to help people stay connected with their community. We want to help people find out what's happening around them, and to help them share their thoughts and feelings with their community.
-
     With over 112,000 monthly active users, 22,000 community event participants. We are known for developing multiple Phygital Gamified Campaigns that helped many brands in Singapore drive community engagement, foot traffic, sales and more!
 
     ↙️ To navigate around this bot, use the Menu button on the bottom left corner.
@@ -85,8 +83,6 @@ defmodule Phos.TeleBot.Components.Template do
   def onboarding_text_builder(assigns) do
     ~H"""
     <b>About us!</b>
-
-    Our goal is to help people stay connected with their community. We want to help people find out what's happening around them, and to help them share their thoughts and feelings with their community.
 
     With over 112,000 monthly active users, 22,000 community event participants. We are known for developing multiple Phygital Gamified Campaigns that helped many brands in Singapore drive community engagement, foot traffic, sales and more!
 
