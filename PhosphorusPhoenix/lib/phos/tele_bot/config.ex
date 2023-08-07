@@ -3,9 +3,6 @@ defmodule Phos.TeleBot.Config do
 
   def load() do
     Registry.put_meta(Registry.ExGram, {Phos.TeleBot.Core, :config}, config())
-    Registry.put_meta(Registry.ExGram, :guest_splash, "https://imgur.com/a/Z2vphEX")
-    Registry.put_meta(Registry.ExGram, :user_splash, "https://imgur.com/a/GgdHYqy")
-    Registry.put_meta(Registry.ExGram, :faq_splash, "https://imgur.com/a/hkFJfOo")
   end
 
   def get(key, default \\ "") do
