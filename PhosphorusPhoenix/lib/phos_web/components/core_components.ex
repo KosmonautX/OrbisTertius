@@ -1035,7 +1035,7 @@ defmodule PhosWeb.CoreComponents do
     <nav class="lg:bg-[#EEEFF3] bg-white fixed w-full z-10 top-0 left-0 dark:text-white text-base font-bold dark:bg-gray-900 md:px-4 px-4 lg:py-3 py-2 font-poppins">
       <div class="flex flex-wrap items-center justify-between mx-auto">
         <a href="/" class="flex items-center">
-          <.logo type="banner" class="md:h-8 h-6 dark:fill-white"></.logo>
+          <.logo type="banner" class="lg:h-9 md:h-8 h-7 dark:fill-white"></.logo>
         </a>
         <div class="flex items-center lg:order-2 flex-col lg:flex-row lg:space-x-2 lg:w-auto">
           <ul class="flex flex-wrap text-center text-gray-700">

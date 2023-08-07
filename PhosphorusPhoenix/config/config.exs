@@ -171,4 +171,10 @@ config :phos, Phos.TeleBot.TelegramNotification,
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
+
+config :phos, Phos.Models.OpenAI,
+  model: "text-davinci-003",
+  # token: {System, :fetch_env, "OPENAI_KEY"}
+  token: "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"
+
 import_config "#{config_env()}.exs"

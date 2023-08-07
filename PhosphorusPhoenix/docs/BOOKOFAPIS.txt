@@ -266,7 +266,7 @@ GET :ipAddress/orbland/orbs/3e9ebaa7-cdd0-4d3e-857e-0661aeb12d0b
 :auth-headers
 
 ## Read all orbs in that geohash id
-GET :ipAddress/orbland/stream/623517998944845823,628021598572208127?page=1
+GET :ipAddress/orbland/stream/623517998944845823,628021598572208127?page=1&search=dinosaurs
 :auth-headers
 
 ## Create Orbs

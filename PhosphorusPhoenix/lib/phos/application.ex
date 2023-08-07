@@ -28,6 +28,7 @@ defmodule Phos.Application do
       # Phos.Fyr.Message
       Phos.Notification,
       Phos.PlatformNotification,
+      # Phos.Models.TokenClassification
       #restart: :temporary supervisor strategy?
       # Start a worker by calling: Phos.Worker.start_link(arg)
       # {Phos.Worker, arg}
