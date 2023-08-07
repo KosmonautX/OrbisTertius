@@ -9,6 +9,8 @@ defmodule Phos.TeleBot.Components.Template do
 
     Our goal is to help people stay connected with their community. We want to help people find out what's happening around them, and to help them share their thoughts and feelings with their community.
 
+    With over 112,000 monthly active users, 22,000 community event participants. We are known for developing multiple Phygital Gamified Campaigns that helped many brands in Singapore drive community engagement, foot traffic, sales and more!
+
     ↙️ To navigate around this bot, use the Menu button on the bottom left corner.
     """
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
@@ -19,7 +21,7 @@ defmodule Phos.TeleBot.Components.Template do
     Welcome to the ScratchBac Telegram Bot!
 
     <u>📢 Announcements</u>
-      - Telegram Bot is now live!
+      - Scoops is now live! Scoops are AI generated articles using hyperlocal posts from our Scratchbac community. Read Scoops @ https://scrbac.com/chinatownscoops
 
     ↙️ To navigate around this bot, use the Menu button on the bottom left corner.
     """
@@ -50,19 +52,25 @@ defmodule Phos.TeleBot.Components.Template do
   def help_text_builder(assigns) do
     ~H"""
     Here is your inline help:
-      1. /start - To start using the bot
-
-      Additional information
+      - /start - To start using the bot
+      - /menu - Show the menu
       - /help - Show this help
       - /post - Post to a location
+      - /register - Register an account
+      - /profile - View your profile
+      - /myposts - View your posts
+      - /latestposts - View latest posts around you
     """
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
   end
 
   def faq_text_builder(assigns) do
     ~H"""
-    Is my location saved?
-    - No, we take a general location from you (1km), we do not save any location specific data even though we collect your postal code.
+    <u>Is my location saved?</u>
+    - No! We take a general location of you (1km area).
+
+    <u>How do I delete my account?</u>
+    - Contact @Scratchbac_Admin to delete your account.
     """
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
   end
@@ -79,6 +87,8 @@ defmodule Phos.TeleBot.Components.Template do
     <b>About us!</b>
 
     Our goal is to help people stay connected with their community. We want to help people find out what's happening around them, and to help them share their thoughts and feelings with their community.
+
+    With over 112,000 monthly active users, 22,000 community event participants. We are known for developing multiple Phygital Gamified Campaigns that helped many brands in Singapore drive community engagement, foot traffic, sales and more!
 
     <u>You need to /register to use all our features such as /post</u>
 

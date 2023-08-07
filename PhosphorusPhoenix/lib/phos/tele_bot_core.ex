@@ -15,6 +15,10 @@ defmodule Phos.TeleBot.Core do
   alias Phos.TeleBot.Core.{UserProfile}
   alias Phos.TeleBot.Components.{Button, Template}
 
+  @user_splash "AgACAgQAAxkDAAJmR2TQcK4KCUY0QVR8aip6dvFFEoq2AAK5sTEbRYc8UktYX4dmDbg2AQADAgADdwADMAQ"
+  @guest_splash "AgACAgQAAxkDAAJmWWTQdW9XfL1dunHB-t7pASGhjV-nAAJMsTEb-6qFUiLueAfra-hWAQADAgADeQADMAQ"
+  @faqfeedback_splash "AgACAgQAAxkDAAJmdGTQl3CCePsV1ebS6qfpK7hPTVMEAAI7sTEb88SEUlWBJ8N103sgAQADAgADdwADMAQ"
+
   command("start", description: "Start using the Scratchbac bot")
   command("menu", description: "Show the main menu")
   command("help", description: "Show the help menu")
@@ -320,7 +324,7 @@ defmodule Phos.TeleBot.Core do
         input_message_content: %ExGram.Model.InputTextMessageContent{ %ExGram.Model.InputTextMessageContent{} |
           message_text: "No posts found", parse_mode: "HTML" },
         # url: "web.scratchbac.com",
-        thumbnail_url: "https://web.scratchbac.com/images/user_splash.jpg"
+        thumbnail_url: @user_splash
       }]
     else
       Enum.map(orbs, fn (%{payload: payload}= orb) when not is_nil(payload) ->
@@ -372,14 +376,14 @@ defmodule Phos.TeleBot.Core do
   end
 
   defp start_menu_text(telegram_id, nil) do
-    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, "https://nyx.scrb.ac/images/guest_splash_lite.jpg",
+    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, @guest_splash,
       caption: Template.start_menu_text_builder(%{}), parse_mode: "HTML")
     ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id,
       reply_markup: Button.build_start_inlinekeyboard(message_id))
   end
   defp start_menu_text(telegram_id, message_id) do
     ExGram.edit_message_media(%ExGram.Model.InputMediaPhoto{media:
-      "https://nyx.scrb.ac/images/guest_splash_lite.jpg", type: "photo",
+      @guest_splash, type: "photo",
       caption: Template.start_menu_text_builder(%{}), parse_mode: "HTML"},
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), reply_markup: Button.build_start_inlinekeyboard(message_id))
   end
@@ -393,13 +397,13 @@ defmodule Phos.TeleBot.Core do
   end
 
   defp main_menu_text(telegram_id, nil) do
-    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, "https://web.scratchbac.com/images/user_splash.jpg",
+    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, @user_splash,
       caption: Template.main_menu_text_builder(%{}), parse_mode: "HTML")
     ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id, reply_markup: Button.build_menu_inlinekeyboard(message_id))
   end
   defp main_menu_text(telegram_id, message_id) do
     {:ok, %{message_id: message_id}} = ExGram.edit_message_media(%ExGram.Model.InputMediaPhoto{media:
-      "https://web.scratchbac.com/images/user_splash.jpg", type: "photo", caption: Template.main_menu_text_builder(%{}), parse_mode: "HTML"},
+      @user_splash, type: "photo", caption: Template.main_menu_text_builder(%{}), parse_mode: "HTML"},
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), reply_markup: Button.build_menu_inlinekeyboard(message_id))
   end
 
@@ -412,7 +416,7 @@ defmodule Phos.TeleBot.Core do
   end
   defp faq(telegram_id, message_id) do
     {:ok, %{message_id: message_id}} = ExGram.edit_message_media(%ExGram.Model.InputMediaPhoto{media:
-      "https://web.scratchbac.com/images/bgimg.png", type: "photo", caption: Template.faq_text_builder(%{}), parse_mode: "HTML"},
+      @faqfeedback_splash, type: "photo", caption: Template.faq_text_builder(%{}), parse_mode: "HTML"},
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), reply_markup: Button.build_start_menu_inlinekeyboard(message_id))
   end
 
@@ -425,18 +429,13 @@ defmodule Phos.TeleBot.Core do
   end
   defp feedback(telegram_id, message_id) do
     ExGram.edit_message_media(%ExGram.Model.InputMediaPhoto{media:
-    "https://web.scratchbac.com/images/bgimg.png", type: "photo", caption: Template.feedback_text_builder(%{}), parse_mode: "HTML"},
+    @faqfeedback_splash, type: "photo", caption: Template.feedback_text_builder(%{}), parse_mode: "HTML"},
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), reply_markup: Button.build_start_menu_inlinekeyboard(message_id))
   end
 
   defp onboard_text(telegram_id) do
     {:ok, user} = get_user_by_telegram(telegram_id)
-
-    # {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id,
-    #   Template.onboarding_location_text_builder(%{}), parse_mode: "HTML")
-    # ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id,
-    #   reply_markup: Button.build_location_button(user, message_id))
-    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, "https://nyx.scrb.ac/images/guest_splash_lite.jpg",
+    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, @guest_splash,
       caption: Template.onboarding_text_builder(%{}), parse_mode: "HTML")
     ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id,
       reply_markup: Button.build_start_inlinekeyboard(message_id))
@@ -479,7 +478,7 @@ defmodule Phos.TeleBot.Core do
           true ->
             if String.contains?(PhosWeb.Endpoint.url, "localhost") do
               # For development
-              ExGram.send_photo(chat_id, "https://web.scratchbac.com/images/user_splash.jpg",
+              ExGram.send_photo(chat_id, @user_splash,
                 caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
                 reply_markup: Button.build_orb_notification_button(orb, user))
             else
@@ -515,10 +514,15 @@ defmodule Phos.TeleBot.Core do
   end
   def open_myposts(telegram_id, query_id) do
     with {:ok, user} <- get_user_by_telegram(telegram_id) do
-      ExGram.send_message(telegram_id, "Loading your posts...")
-      %{data: orbs} = Phos.Action.orbs_by_initiators([user.id], 1)
-      build_inlinequery_orbs(orbs, user)
-      |> then(fn ans -> ExGram.answer_inline_query(to_string(query_id), ans) end)
+      case user do
+        %User{confirmed_at: _date, media: true, username: _username} ->
+          ExGram.send_message(telegram_id, "Loading your posts...")
+          %{data: orbs} = Phos.Action.orbs_by_initiators([user.id], 1)
+          build_inlinequery_orbs(orbs, user)
+          |> then(fn ans -> ExGram.answer_inline_query(to_string(query_id), ans) end)
+        %User{confirmed_at: nil} ->
+          ExGram.send_message(telegram_id, "You need to /register your account first before you can view your posts.")
+      end
     else
       {:error, :user_not_found} -> error_fallback(telegram_id, "User not found")
       err -> error_fallback(telegram_id, err)
