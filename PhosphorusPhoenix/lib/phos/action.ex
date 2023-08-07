@@ -82,7 +82,7 @@ defmodule Phos.Action do
     from(orbs in Orb,
       where: orbs.id == ^orb_id,
       inner_join: initiator in assoc(orbs, :initiator),
-      left_join: branch in assoc(initiator, :relations), 
+      left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,
       left_join: root in assoc(branch, :root),
       select_merge: %{initiator: %{initiator | self_relation: root}},
@@ -227,7 +227,7 @@ defmodule Phos.Action do
     from(l in Orb_Location,
       as: :l,
       where: l.location_id in ^hashes,
-      left_join: orbs in assoc(l, :orbs),
+      inner_join: orbs in assoc(l, :orbs),
       on: orbs.userbound == true,
       inner_join: initiator in assoc(orbs, :initiator),
       distinct: initiator.integrations["telegram_chat_id"],
@@ -849,12 +849,12 @@ defmodule Phos.Action do
     query = from o in Orb
     Enum.reduce(terms, query, fn %{phrase: term, label: label}, q ->
       case label do
-        "LOC" -> 
+        "LOC" ->
           case Phos.Mainland.World.find_hash(term) do
             nil -> q
             hash -> from r in q, join: l in Orb_Location, on: r.id == l.orb_id, or_where: l.location_id == ^hash
           end
-        _ -> 
+        _ ->
           or_where(q, fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^build_search_term(term)))
       end
     end)

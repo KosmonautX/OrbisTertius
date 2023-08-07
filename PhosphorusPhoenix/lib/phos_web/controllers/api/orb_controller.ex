@@ -1,7 +1,7 @@
 defmodule PhosWeb.API.OrbController do
   use PhosWeb, :controller
   use Phos.ParamsValidator, [
-    :id, :locations, :title, :media, :initiator_id, :traits, :active,
+    :id, :locations, :title, :initiator_id, :traits, :active,
     :source,  payload: [:when, :where, :info, :tip, :inner_title], rename: [:expires_in, :extinguish]
   ]
 
