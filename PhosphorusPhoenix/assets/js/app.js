@@ -104,7 +104,7 @@ window.addEventListener("phos:clipcopy", (event) => {
 // });
 
 
-// // Hide the input box initially
+// Hide the input box initially
 // searchInput.style.display = 'none';
 
 

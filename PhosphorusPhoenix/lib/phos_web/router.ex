@@ -120,6 +120,9 @@ defmodule PhosWeb.Router do
     live "/leaderboard/orb", LeaderboardLive.Index, :orb
 
     live "/notifications", NotificationLive.Index, :index
+
+    live "/articles", ArticleLive.Index, :index
+    live "/articles/posted", ArticleLive.Posted, :index
   end
 
   scope "/api", PhosWeb.API do
