@@ -16,7 +16,7 @@ defmodule PhosWeb.Admin.ArticleLive.Index do
     %{data: orbs, meta: meta} = Phos.Action.filter_orbs_by_keyword("")
     
     {:noreply, assign(socket,
-      article_modal: false,
+      article_title: "",
       selected_orb: %{},
       orbs: orbs,
       search_keyword: "",
@@ -41,6 +41,11 @@ defmodule PhosWeb.Admin.ArticleLive.Index do
   @impl true
   def handle_event("create-article", _params, %{assigns: %{selected_orb: orbs}} = socket) do
     IO.inspect(orbs)
-    {:noreply, assign(socket, selected_orb: orbs, article_modal: true)}
+    {:noreply, assign(socket, selected_orb: %{})}
+  end
+
+  @impl true
+  def handle_event("validate-article", %{"article" => %{"title" => title}}, socket) do
+    {:noreply, assign(socket, article_title: title)}
   end
 end

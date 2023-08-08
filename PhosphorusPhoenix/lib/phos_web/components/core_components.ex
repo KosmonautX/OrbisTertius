@@ -871,22 +871,25 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:title, :string, required: true)
   attr(:home_path, :string, required: true)
+  attr(:id, :string)
 
   slot :item,
     required: true,
     doc: "the slot for form actions, such as a submit button" do
     attr(:to, :string, required: true)
     attr(:title, :string, required: true)
-    attr(:icon, :string, required: true)
+    attr(:icon, :string)
     attr(:id, :string)
     attr(:name, :string)
+    attr(:child, :map)
+    attr(:parent, :string)
   end
 
   def admin_navbar(assigns) do
     ~H"""
     <nav class="lg:bg-gray-50 bg-white flex px-4 font-poppins py-4 w-64 h-screen">
-      <ul class="flex-col min-w-full flex flex-col list-none" id="navbar">
-        <li :for={item <- @item} class="items-center">
+      <ul class="flex-col min-w-full flex flex-col list-none" id={"navbar-#{@id}"}>
+        <li :for={item <- item_difuser(@item)} class="items-center relative">
           <.link
             navigate={item.to}
             class="text-sm uppercase py-3 font-bold block text-gray-500 hover:text-teal-400"
@@ -894,10 +897,52 @@ defmodule PhosWeb.CoreComponents do
             <i class={"fas mr-2 text-sm opacity-75 #{item.icon}"}></i>
             <%= item.title %>
           </.link>
+          <.admin_child_navbar item={item} :if={not is_nil(Map.get(item, :child))}/>
         </li>
       </ul>
     </nav>
     """
+  end
+
+  defp admin_child_navbar(assigns) do
+    ~H"""
+    <span class="w-8 absolute top-3 h-6 right-2">
+      <Heroicons.plus
+        id={"cursor-open-#{@item.id}"}
+        phx-click={JS.show(to: "#child-#{@item.id}") |> JS.hide() |> JS.show(to: "#cursor-close-#{@item.id}")}
+        class="w-4 h-4 text-gray-700 hover:text-teal-500 hover:cursor-pointer" />
+      <Heroicons.minus
+        id={"cursor-close-#{@item.id}"}
+        phx-click={JS.hide(to: "#child-#{@item.id}") |> JS.hide() |> JS.show(to: "#cursor-open-#{@item.id}")}
+        class="w-4 h-4 text-gray-700 hover:text-teal-500 hover:cursor-pointer hidden" />
+    </span>
+    <ul class="hidden pl-2" id={"child-#{@item.id}"}>
+      <li :for={child <- Map.get(@item, :child)}>
+        <.link
+          navigate={child.to}
+          class="text-sm uppercase py-3 font-bold block text-gray-500 hover:text-teal-400"
+        >
+          <i class={"fas mr-2 text-sm opacity-75 #{child.icon}"}></i>
+          <%= child.title %>
+        </.link>
+      </li>
+    </ul>
+    """
+  end
+
+  defp item_difuser(items) do
+    items
+    |> Enum.reduce(%{}, fn %{id: id} = val, acc ->
+      case Map.get(val, :parent) do
+        nil -> Map.put_new(acc, id, val)
+        parent ->
+          child = Map.get(acc, parent) |> Map.get(:child, [])
+          new_value = Map.get(acc, parent) |> Map.put(:child, [val | child])
+          Map.put(acc, parent, new_value)
+      end
+    end)
+    |> Map.values()
+    |> :lists.reverse()
   end
 
   @doc """

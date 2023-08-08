@@ -16,25 +16,26 @@
     <.nav_banner_admin></.nav_banner_admin>
     <div class="flex">
        <div class="fixed top-14 left-0 hidden lg:block">
-         <.admin_navbar title="ScratchBac Admin" home_path={~p"/admin"}>
-          <:item to={~p"/admin/dashboard"} title="Dashboard" id="dashboard" icon="fa-tv" />
-          <:item to={~p"/admin/orbs"} title="Orbs" id="orb" icon="fa-dharmachakra" />
-          <:item to={~p"/admin/users"} title="Users" id="users" icon="fa-user" />
-          <:item to={~p"/admin/leaderboard"} title="Leaderboard" id="leaderboard" icon="fa-trophy" />
-          <:item to={~p"/admin/notifications"} title="Notifications" id="notification" icon="fa-clock"/>
-          <:item to={~p"/admin/articles"} title="Articles" id="notification" icon="fa-newspaper"/>
+         <.admin_navbar title="ScratchBac Admin" id="admin-dekstop-navbar" home_path={~p"/admin"}>
+          <:item to={~p"/admin/dashboard"} title="Dashboard" id="dekstop-dashboard" icon="fa-tv" />
+          <:item to={~p"/admin/orbs"} title="Orbs" id="admin-dekstop-navbar-orb" icon="fa-dharmachakra" />
+          <:item to={~p"/admin/users"} title="Users" id="admin-dekstop-navbar-users" icon="fa-user" />
+          <:item to={~p"/admin/leaderboard"} title="Leaderboard" id="admin-dekstop-navbar-leaderboard" icon="fa-trophy" />
+          <:item to={~p"/admin/notifications"} title="Notifications" id="admin-dekstop-navbar-notification" icon="fa-clock"/>
+          <:item to={~p"/admin/articles"} title="Articles" id="admin-dekstop-navbar-article" icon="fa-newspaper" />
+          <:item to={~p"/admin/articles/posted"} title="Generated Article" id="admin-dekstop-navbar-generated-article" icon="fa-newspaper" parent="admin-dekstop-navbar-article" />
          </.admin_navbar>
        </div>
 
        <div id="nav-form" class="right-0 top-14 lg:hidden block fixed z-50" style="display: none;">
          <div class="inset-0 bg-zinc-50/90 transition-opacity">
-           <.admin_navbar title="ScratchBac Admin" home_path={~p"/admin"}>
-          <:item to={~p"/admin/dashboard"} title="Dashboard" id="dashboard" icon="fa-tv" />
-          <:item to={~p"/admin/orbs"} title="Orbs" id="orb" icon="fa-dharmachakra" />
-          <:item to={~p"/admin/users"} title="Users" id="users" icon="fa-user" />
-          <:item to={~p"/admin/leaderboard"} title="Leaderboard" id="leaderboard" icon="fa-trophy" />
-          <:item to={~p"/admin/notifications"} title="Notifications" id="notification" icon="fa-clock"/>
-          <:item to={~p"/admin/articles"} title="Articles" id="notification" icon="fa-newspaper"/>
+           <.admin_navbar title="ScratchBac Admin" id="admin-mobile-navbar" home_path={~p"/admin"}>
+          <:item to={~p"/admin/dashboard"} title="Dashboard" id="mobile-dashboard" icon="fa-tv" />
+          <:item to={~p"/admin/orbs"} title="Orbs" id="mobile-orb" icon="fa-dharmachakra" />
+          <:item to={~p"/admin/users"} title="Users" id="mobile-users" icon="fa-user" />
+          <:item to={~p"/admin/leaderboard"} title="Leaderboard" id="mobile-leaderboard" icon="fa-trophy" />
+          <:item to={~p"/admin/notifications"} title="Notifications" id="mobile-notification" icon="fa-clock"/>
+          <:item to={~p"/admin/articles"} title="Articles" id="mobile-article" icon="fa-newspaper"/>
          </.admin_navbar>
          </div>
        </div>
