@@ -124,10 +124,8 @@ defmodule PhosWeb.API.OrbController do
   def show_territory(%{assigns: %{current_user: user}} = conn, %{"id" => hashes, "page" => page, "search" => search}) do
     try do
       geohashes = String.split(hashes, ",")
-      |> Enum.map(fn hash ->
-        Enum.map([8,9,10], &(:h3.parent(String.to_integer(hash), &1))) end)
-        |> List.flatten()
-        |> Enum.uniq()
+      |> Enum.map(fn hash -> String.to_integer(hash) |> :h3.parent(8) end)
+      |> Enum.uniq()
       loc_orbs = Action.orbs_by_geohashes({geohashes, user.id}, [page: page, search: search])
       render(conn, :paginated, orbs: loc_orbs)
     rescue
