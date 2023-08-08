@@ -756,6 +756,18 @@ defmodule Phos.Action do
     Repo.Paginated.all(query, page, sort_attribute, limit)
   end
 
+  def filter_orbs_by_keyword(keyword, opts \\ []) do
+    page = Keyword.get(opts, :page, 1)
+    limit = Keyword.get(opts, :limit, 10)
+    sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
+    query = case Phos.Models.TokenClassification.classify(keyword) do
+      {:ok, [_ | _] = terms} -> build_search_query(terms)
+      _ -> build_base_search_query(keyword)
+    end |> preload(:initiator)
+
+    Repo.Paginated.all(query, page, sort_attribute, limit)
+  end
+
   def reorb(user_id, orb_id, message \\ "")
   def reorb(%Phos.Users.User{} = user, %Orb{} = orb, message), do: reorb(user.id, orb.id, message)
   def reorb(user_id, orb_id, message) when is_binary(user_id) and is_binary(orb_id) do
@@ -842,10 +854,12 @@ defmodule Phos.Action do
     where(query, fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^build_search_term(term)) or fragment("to_tsvector(?, title) @@ websearch_to_tsquery(?, ?)", "english", "english", ^term))
   end
 
-  defp build_base_search_query(term) do
-    (from o in Orb)
-    |> maybe_search(term)
+  defp build_base_search_query(term) when term != "" do
+    from o in Orb,
+      where: fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^build_search_term(term)),
+      or_where: fragment("to_tsvector(?, title) @@ websearch_to_tsquery(?, ?)", "english", "english", ^term)
   end
+  defp build_base_search_query(_term), do: from o in Orb
 
   defp build_search_term(text) do
     String.split(text, " ")

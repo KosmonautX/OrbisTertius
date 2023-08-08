@@ -1,0 +1,73 @@
+<section class="w-full max-h-fit transition duration-100 ease-out opacity-0 scale-95" {transition("opacity-0 scale-95", "opacity-100 scale-100")}>
+  <div class="flex flex-col px-2 md:px-10 py-2 w-full lg:bg-gray-50 bg-white  top-14">
+    <h1 class="text-2xl font-bold ">Article</h1>
+    <div class="flex mt-4 mb-2 w-full">
+      <.form :let={f} for= {%{}} as={:search} class="w-1/2" phx-change="search">
+        <div class="flex">
+          <.input field={{f, :q}} phx-debounce="200" placeholder="search orb by keyword" autocomplete="off" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+          <.button type="submit" class="button button-sm p-0 mx-2">Apply</.button>
+        </div>
+      </.form>
+    </div>
+  </div>
+
+  <div class="pb-16 hidden lg:block relative">
+    <.table id="orbs" rows={@orbs}>
+      <:col :let={orb} classes="sticky left-0" label="Check">
+        <.input type="checkbox" id={"checkbox_id_#{orb.id}"} name={orb.id} value={article_selector(@selected_orb, orb.id)} phx-click="select" phx-value-orb-id={orb.id} />
+      </:col>
+      <:col :let={orb} classes="sticky left-0" label="Initiator">
+        <.admin_user_preview user={orb.initiator} id={"admin_user_preview_for_#{orb.id}"} />
+      </:col>
+      <:col :let={orb} label="Title">
+        <.link navigate={~p"/admin/orbs/#{orb}"}>
+          <%= orb.title ||
+            orb
+            |> get_in([
+              Access.key(:payload, %{}),
+              Access.key(:inner_title, "nil")
+            ]) %>
+        </.link>
+      </:col>
+      <:col :let={orb} label="Traits"><%= inspect(orb.traits) %></:col>
+    </.table>
+  </div>
+
+  <div class="lg:hidden block">
+    <div class="grid md:grid-cols-2 gird-col gap-4  px-2 md:px-4 pb-24">
+      <.admin_grid :for={orb <- @orbs} user={orb.initiator} id={"admin-grid-for-#{orb.id}"} />
+    </div>
+  </div>
+</section>
+
+<div class="px-4 py-3 w-full sm:flex sm:flex-1 sm:items-center sm:justify-between bottom-0 fixed bg-white ">
+  <.live_component
+    module={PhosWeb.Components.Pagination}
+    limit={@limit}
+    meta={@pagination}
+    id="paginate"
+    route_path={~p"/admin/orbs"}
+    current={@current}
+  />
+
+</div>
+
+<.form :let={f} for={%{}} as={:article} class="w-1/2" phx-submit={show_modal("article-container")}>
+  <.button type="submit" class="button button-sm p-0 mx-2">Generate article</.button>
+</.form>
+
+<.modal id="article-container" show={@article_modal}>
+  <div class="p-4">
+    <h1 class="mt-4 mb-3 font-bold text-2xl">Pseudo-Article</h1>
+
+    <.simple_form for={:article} :let={f} for={%{}} phx-submit="generate-article">
+      <.input field={{f, :title}} label="Scoop title" placeholder="Enter title" />
+      <div class="mt-4">
+        <h2 class="text-lg font-semibold">Selected Orb(s)</h2>
+        <div :for={{id, orb} <- @selected_orb}>
+          <span><%= orb.title %></span>
+        </div>
+      </div>
+    </.simple_form>
+  </div>
+</.modal>

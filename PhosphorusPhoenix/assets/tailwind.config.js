@@ -6,7 +6,7 @@ module.exports = {
         extend: {
             fontFamily: {
                 poppins: ["Poppins"],
-                miller: ["Miller", "sans-serif"],
+                miller: ["Miller"],
             },
             width: {
                 '577': '36rem',

@@ -32,5 +32,4 @@ defmodule PhosWeb.OrbLive.News do
     }
     {:noreply, assign(socket, article: article)}
   end
-
 end
