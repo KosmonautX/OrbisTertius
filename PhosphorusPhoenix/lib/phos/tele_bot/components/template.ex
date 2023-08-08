@@ -16,8 +16,6 @@ defmodule Phos.TeleBot.Components.Template do
 
   def main_menu_text_builder(assigns) do
     ~H"""
-    Welcome to the ScratchBac Telegram Bot!
-
     <u>📢 Announcements</u>
       - Scoops is now live! Scoops are AI generated articles using hyperlocal posts from our Scratchbac community. Read Scoops @ https://scrbac.com/chinatownscoops
 
@@ -33,7 +31,7 @@ defmodule Phos.TeleBot.Components.Template do
 
     <u>Click on the "Register" button</u>
 
-    <i>Note: If you have already registered, do check your email or /register again</i>
+    <i>Note: If you have already registered, check your email or /register again</i>
     """
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
   end
@@ -86,9 +84,9 @@ defmodule Phos.TeleBot.Components.Template do
 
     With over 112,000 monthly active users, 22,000 community event participants. We are known for developing multiple Phygital Gamified Campaigns that helped many brands in Singapore drive community engagement, foot traffic, sales and more!
 
-    <u>You need to /register to use all our features such as /post</u>
+    Start receiving posts by setting your location by clicking the <u>"Set Location Now"</u> button.
 
-    <i>Or.. you can start receiving posts by setting your location by clicking the "Set Location Now"!</i>
+    ↙️ To navigate around this bot, use the Menu button on the bottom left corner.
     """
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
   end

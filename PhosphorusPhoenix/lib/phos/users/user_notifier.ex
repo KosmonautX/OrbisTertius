@@ -23,8 +23,6 @@ defmodule Phos.Users.UserNotifier do
   def deliver_confirmation_instructions(user, url) do
     deliver(user.email, "Confirmation instructions", """
 
-    ==============================
-
     Hi #{user.username},
 
     You can confirm your account by visiting the URL below:
@@ -33,7 +31,6 @@ defmodule Phos.Users.UserNotifier do
 
     If you didn't create an account with us, please ignore this.
 
-    ==============================
     """)
   end
 
@@ -43,8 +40,6 @@ defmodule Phos.Users.UserNotifier do
   def deliver_reset_password_instructions(user, url) do
     deliver(user.email, "Reset password instructions", """
 
-    ==============================
-
     Hi #{user.email},
 
     You can reset your password by visiting the URL below:
@@ -53,7 +48,6 @@ defmodule Phos.Users.UserNotifier do
 
     If you didn't request this change, please ignore this.
 
-    ==============================
     """)
   end
 
@@ -63,8 +57,6 @@ defmodule Phos.Users.UserNotifier do
   def deliver_update_email_instructions(user, url) do
     deliver(user.email, "Update email instructions", """
 
-    ==============================
-
     Hi #{user.email},
 
     You can change your email by visiting the URL below:
@@ -73,7 +65,6 @@ defmodule Phos.Users.UserNotifier do
 
     If you didn't request this change, please ignore this.
 
-    ==============================
     """)
   end
 
@@ -83,8 +74,6 @@ defmodule Phos.Users.UserNotifier do
   def deliver_telegram_link_instructions(user, url) do
     deliver(user.email, "Link instructions", """
 
-    ==============================
-
     Hi #{user.username},
 
     You can link your telegram account to your Scratchbac account by visiting the URL below:
@@ -93,7 +82,6 @@ defmodule Phos.Users.UserNotifier do
 
     If you didn't request to link your account with us, please ignore this.
 
-    ==============================
     """)
   end
 end

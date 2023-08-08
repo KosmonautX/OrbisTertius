@@ -267,21 +267,19 @@ defmodule Phos.TeleBot.Core do
   end
 
   def handle({:inline_query, %{"id" => query_id, "query" => type, "from" => %{"id" => telegram_id}}}) when type in ["home", "work", "live"] do
-    with {:ok, user} <- get_user_by_telegram(telegram_id) do
-      if user.private_profile do
-        case Enum.find(user.private_profile.geolocation, fn loc -> loc.id == type end) do
-          nil -> ExGram.send_message(telegram_id, Template.update_location_text_builder(%{location_type: type}),
-            parse_mode: "HTML", reply_markup: Button.build_location_specific_button(type))
-          %{geohash: geohash} ->
-            ExGram.send_message(telegram_id, "Loading posts from #{type} area...")
-            %{data: orbs} = Phos.Action.orbs_by_geohashes({[:h3.parent(geohash, 8)], user.id}, limit: 12)
-            build_inlinequery_orbs(orbs, user)
-            |> then(fn ans -> ExGram.answer_inline_query(to_string(query_id), ans) end)
-        end
-      else
-        "Not set"
+    with {:ok, %{private_profile: private_profile} = user} when not is_nil(private_profile) <- get_user_by_telegram(telegram_id) do
+      case Enum.find(private_profile.geolocation, fn loc -> loc.id == type end) do
+        nil -> ExGram.send_message(telegram_id, Template.update_location_text_builder(%{location_type: type}),
+          parse_mode: "HTML", reply_markup: Button.build_location_specific_button(type))
+        %{geohash: geohash} ->
+          ExGram.send_message(telegram_id, "Loading posts from #{type} area...")
+          %{data: orbs} = Phos.Action.orbs_by_geohashes({[:h3.parent(geohash, 8)], user.id}, limit: 12)
+          build_inlinequery_orbs(orbs, user)
+          |> then(fn ans -> ExGram.answer_inline_query(to_string(query_id), ans) end)
       end
     else
+      {:ok, _user} -> ExGram.send_message(telegram_id, Template.update_location_text_builder(%{location_type: type}),
+        parse_mode: "HTML", reply_markup: Button.build_location_specific_button(type))
       {:error, :user_not_found} -> error_fallback(telegram_id, "User not found")
       err -> error_fallback(telegram_id, err)
     end
@@ -516,11 +514,13 @@ defmodule Phos.TeleBot.Core do
   end
   defp open_latest_posts(%{tele_id: telegram_id} = user, message_id) do
     ExGram.edit_message_text(Template.latest_posts_text_builder(user), chat_id: telegram_id,
-      message_id: message_id |> String.to_integer(), parse_mode: "HTML", reply_markup: Button.build_latest_posts_inline_button(message_id |> String.to_integer()))
+      message_id: message_id |> String.to_integer(), parse_mode: "HTML",
+      reply_markup: Button.build_latest_posts_inline_button(message_id |> String.to_integer()))
   end
 
   def open_myposts(telegram_id) do
-    ExGram.send_message(telegram_id, "Click on the Button to view your posts.", parse_mode: "HTML", reply_markup: Button.build_myposts_inlinekeyboard())
+    ExGram.send_message(telegram_id, "<u>Click on the 📕 My Posts button to view your posts.</u>",
+      parse_mode: "HTML", reply_markup: Button.build_myposts_inlinekeyboard())
   end
   def open_myposts(telegram_id, query_id) do
     with {:ok, user} <- get_user_by_telegram(telegram_id) do
@@ -531,7 +531,8 @@ defmodule Phos.TeleBot.Core do
           build_inlinequery_orbs(orbs, user)
           |> then(fn ans -> ExGram.answer_inline_query(to_string(query_id), ans) end)
         %User{confirmed_at: nil} ->
-          ExGram.send_message(telegram_id, "You need to /register your account first before you can view your posts.")
+          ExGram.send_message(telegram_id, "You have not posted anything since you are not registered or confirmed your account!
+            \n<u>Click on the \"Register\" button</u>", parse_mode: "HTML", reply_markup: Button.build_onboarding_register_button())
       end
     else
       {:error, :user_not_found} -> error_fallback(telegram_id, "User not found")
