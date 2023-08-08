@@ -127,6 +127,24 @@ defmodule Phos.TeleBot.Core do
     end
   end
 
+  def handle({:video, %{"chat" => %{"id" => telegram_id}} = payload}) do
+    with {:ok, user} <- get_user_by_telegram(telegram_id),
+         {:ok, %{branch: branch}} <- StateManager.get_state(telegram_id),
+         {:ok, %{message_id: message_id}} <- ExGram.send_message(telegram_id, "Setting video...") do
+      case branch do
+        %{path: "orb/create", state: "media"} ->
+          ExGram.send_message(telegram_id, "Sorry, we do not support video uploads yet. Please attach an image instead.")
+        %{path: "orb/create"} ->
+          ExGram.send_message(telegram_id, "Please type a description for your post before uploading a media.")
+        _ -> nil
+      end
+      ExGram.delete_message(telegram_id, message_id)
+    else
+      {:error, :user_not_found} -> error_fallback(telegram_id, "User not found")
+      err -> error_fallback(telegram_id, err)
+    end
+  end
+
   # ====================
   # CALLBACK QUERY
   # ====================
@@ -335,7 +353,19 @@ defmodule Phos.TeleBot.Core do
         thumbnail_url: @user_splash
       }]
     else
-      Enum.map(orbs, fn (%{payload: payload}= orb) when not is_nil(payload) ->
+      Enum.map(orbs, fn (%{payload: payload} = orb) when not is_nil(payload) ->
+        media =
+          Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossy")
+          |> (fn media ->
+                for {path, url} <- media || [] do
+                  %Phos.Orbject.Structure.Media{
+                    ext: MIME.from_path(path) |> String.split("/") |> hd,
+                    url: url,
+                    mimetype: MIME.from_path(path)
+                  }
+                end
+              end).()
+          |> List.first()
         %ExGram.Model.InlineQueryResultArticle{
           id: orb.id,
           type: "article",
@@ -345,9 +375,9 @@ defmodule Phos.TeleBot.Core do
             message_text: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML" },
           # Development
           # url: "web.scratchbac.com", #"#{PhosWeb.Endpoint.url}/orb/#{orb.id}}",
-          thumbnail_url: "https://d1e00ek4ebabms.cloudfront.net/production/f046ab80-21a7-40e8-b56e-6e8076d47a82.jpg",
+          # thumbnail_url: "https://d1e00ek4ebabms.cloudfront.net/production/f046ab80-21a7-40e8-b56e-6e8076d47a82.jpg",
           # url: "#{PhosWeb.Endpoint.url}/orb/#{orb.id}}",
-          # thumbnail_url: Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossy"),
+          thumbnail_url: media.url,
           reply_markup: Button.build_orb_notification_button(orb, user)
         }
         _ -> nil
@@ -482,7 +512,7 @@ defmodule Phos.TeleBot.Core do
   def dispatch_messages(events) do
     Enum.map(events, fn %{chat_id: chat_id, orb: orb} ->
       with {:ok, user} <- get_user_by_telegram(chat_id) do
-        text = case orb.media do
+        case orb.media do
           true ->
             if String.contains?(PhosWeb.Endpoint.url, "localhost") do
               # For development
@@ -491,7 +521,19 @@ defmodule Phos.TeleBot.Core do
                 reply_markup: Button.build_orb_notification_button(orb, user))
             else
               # For production
-              ExGram.send_photo(chat_id, Phos.Orbject.S3.get!("ORB", orb.id, "public/banner/lossless"),
+              media =
+                Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless")
+                |> (fn media ->
+                      for {path, url} <- media || [] do
+                        %Phos.Orbject.Structure.Media{
+                          ext: MIME.from_path(path) |> String.split("/") |> hd,
+                          url: url,
+                          mimetype: MIME.from_path(path)
+                        }
+                      end
+                    end).()
+                |> List.first()
+              ExGram.send_photo(chat_id, media.url,
                 caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
                 reply_markup: Button.build_orb_notification_button(orb, user))
             end
@@ -499,7 +541,6 @@ defmodule Phos.TeleBot.Core do
             ExGram.send_message(chat_id, Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
               reply_markup: Button.build_orb_notification_button(orb, user))
         end
-        ExGram.send_message(chat_id, text, parse_mode: "HTML", reply_markup: Button.build_orb_notification_button(orb, user))
       else
         {:error, :user_not_found} -> :ok
       end

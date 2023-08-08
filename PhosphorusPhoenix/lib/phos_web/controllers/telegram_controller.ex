@@ -21,12 +21,14 @@ defmodule PhosWeb.TelegramController do
     case body_params do
       %{"message" => %{"location" => location} = message} ->
         {:ok, {:location, message}}
-      %{"message" => %{"photo" => photo} = message} ->
+      %{"message" => %{"photo" => _photo} = message} ->
         {:ok, {:photo, message}}
-      %{"message" => %{"sticker" => sticker} = message} ->
+      %{"message" => %{"video" => _video} = message} ->
+        {:ok, {:video, message}}
+      %{"message" => %{"sticker" => _sticker} = message} ->
         {:ok, {:sticker, message}}
-      %{"message" => %{"document" => document} = message} ->
-        {:ok, {:document, document}}
+      %{"message" => %{"document" => _document} = message} ->
+        {:ok, {:document, message}}
       %{"message" => message} ->
         {:ok, {:message, extract_command(message), message}}
       %{"callback_query" => query} ->

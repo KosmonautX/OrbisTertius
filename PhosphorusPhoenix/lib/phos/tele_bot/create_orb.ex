@@ -77,14 +77,31 @@ defmodule Phos.TeleBot.CreateOrb do
     end
   end
 
-  # def preview(%{telegram_id: telegram_id, data: %{media: %{media: media}} = data } = branch) do
-  #   transition(branch, "preview")
-  #   if Enum.empty?(media) do
-  #     ExGram.send_message(telegram_id, Template.orb_creation_preview_builder(data),
-  #       parse_mode: "HTML", reply_markup: Button.build_createorb_preview_inlinekeyboard())
+  # def set_video(%{tele_id: telegram_id} = user, payload) do
+  #   {:ok, %{branch: branch} = user_state} = StateManager.get_state(telegram_id)
+  #   orb_id = Ecto.UUID.generate()
+  #   media_map = [%{
+  #     "access": "public",
+  #     "essence": "banner"
+  #   }]
+  #   with {:ok, media_change} <- Phos.Orbject.Structure.apply_media_changeset(%{id: user.id, archetype: "ORB", media: media_map}) do
+  #     resolution = %{"150x150" => "public/banner/lossy", "1920x1080" => "public/banner/lossless"}
+  #     for res <- ["150x150", "1920x1080"] do
+  #       {:ok, dest} = Phos.Orbject.S3.put("ORB", orb_id , resolution[res])
+  #       {:ok, %{file_path: path}} = ExGram.get_file(payload |> get_in(["video", "file_id"]))
+  #       {:ok, %HTTPoison.Response{body: video}} = HTTPoison.get("https://api.telegram.org/file/bot#{Config.get(:bot_token)}/#{path}")
+  #       path = "/tmp/" <> (:crypto.strong_rand_bytes(30) |> Base.url_encode64()) <> ".mp4"
+  #       File.write!(path , video)
+  #       HTTPoison.put(dest, {:file, path})
+  #       File.rm(path)
+  #     end
+  #     {_prev, branch} = get_and_update_in(branch.data.orb.id, &{&1, orb_id})
+  #     {_prev, branch} = get_and_update_in(branch.data.media, &{&1, media_change})
+  #     Map.put(user_state, :branch, branch)
+  #     |> StateManager.update_state(telegram_id)
+  #     transition(branch, "preview")
   #   else
-  #     ExGram.send_photo(telegram_id, "https://media.cnn.com/api/v1/images/stellar/prod/191212182124-04-singapore-buildings.jpg?q=w_2994,h_1996,x_3,y_0,c_crop",
-  #       caption: Template.orb_creation_preview_builder(data), parse_mode: "HTML", reply_markup: Button.build_createorb_preview_inlinekeyboard())
+  #     err -> BotCore.error_fallback(telegram_id, err)
   #   end
   # end
 
