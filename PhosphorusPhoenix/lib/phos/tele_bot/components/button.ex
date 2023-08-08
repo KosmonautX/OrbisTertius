@@ -39,17 +39,17 @@ defmodule Phos.TeleBot.Components.Button do
         ],
         [
           inline_keyboard_button(
-            "Set Location Now",
+            "📍 Set Location Now",
             [callback_data: "edit_profile_location"]
           )
         ],
         [
           inline_keyboard_button(
-            "FAQ",
+            "❓ FAQ",
             [callback_data: "start_faq" <> to_string(message_id)]
           ),
           inline_keyboard_button(
-            "Feedback",
+            "📝 Feedback",
             [callback_data: "start_feedback" <> to_string(message_id)]
           )
         ]

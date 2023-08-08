@@ -349,23 +349,40 @@ defmodule Phos.TeleBot.Core do
         description: "No posts found",
         input_message_content: %ExGram.Model.InputTextMessageContent{ %ExGram.Model.InputTextMessageContent{} |
           message_text: "No posts found", parse_mode: "HTML" },
-        # url: "web.scratchbac.com",
         thumbnail_url: @user_splash
       }]
     else
       Enum.map(orbs, fn (%{payload: payload} = orb) when not is_nil(payload) ->
         media =
-          Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossy")
-          |> (fn media ->
-                for {path, url} <- media || [] do
-                  %Phos.Orbject.Structure.Media{
-                    ext: MIME.from_path(path) |> String.split("/") |> hd,
-                    url: url,
-                    mimetype: MIME.from_path(path)
-                  }
-                end
-              end).()
-          |> List.first()
+          Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner")
+          |> (fn
+            nil ->
+              []
+            media ->
+              for {path, url} <- media do
+                %Phos.Orbject.Structure.Media{
+                  ext: MIME.from_path(path),
+                  path: "public/banner" <> path,
+                  url: url,
+                  resolution:
+                    path
+                    |> String.split(".")
+                    |> hd()
+                    |> String.split("/")
+                    |> List.last()
+                }
+              end
+          end).()
+          |> Enum.filter(fn m -> m.resolution == "lossless" end)
+          |> List.wrap()
+
+        media =
+          if not Enum.empty?(media) and not String.contains?(hd(media).url, "localhost") do
+            media = hd(media).url
+          else
+            media = @user_splash
+          end
+
         %ExGram.Model.InlineQueryResultArticle{
           id: orb.id,
           type: "article",
@@ -373,11 +390,7 @@ defmodule Phos.TeleBot.Core do
           description: orb.payload.inner_title,
           input_message_content: %ExGram.Model.InputTextMessageContent{ %ExGram.Model.InputTextMessageContent{} |
             message_text: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML" },
-          # Development
-          # url: "web.scratchbac.com", #"#{PhosWeb.Endpoint.url}/orb/#{orb.id}}",
-          # thumbnail_url: "https://d1e00ek4ebabms.cloudfront.net/production/f046ab80-21a7-40e8-b56e-6e8076d47a82.jpg",
-          # url: "#{PhosWeb.Endpoint.url}/orb/#{orb.id}}",
-          thumbnail_url: media.url,
+          thumbnail_url: media,
           reply_markup: Button.build_orb_notification_button(orb, user)
         }
         _ -> nil
@@ -522,20 +535,38 @@ defmodule Phos.TeleBot.Core do
             else
               # For production
               media =
-                Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless")
-                |> (fn media ->
-                      for {path, url} <- media || [] do
-                        %Phos.Orbject.Structure.Media{
-                          ext: MIME.from_path(path) |> String.split("/") |> hd,
-                          url: url,
-                          mimetype: MIME.from_path(path)
-                        }
-                      end
-                    end).()
-                |> List.first()
-              ExGram.send_photo(chat_id, media.url,
-                caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
-                reply_markup: Button.build_orb_notification_button(orb, user))
+                Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner")
+                |> (fn
+                  nil ->
+                    []
+                  media ->
+                    for {path, url} <- media do
+                      %Phos.Orbject.Structure.Media{
+                        ext: MIME.from_path(path),
+                        path: "public/banner" <> path,
+                        url: url,
+                        resolution:
+                          path
+                          |> String.split(".")
+                          |> hd()
+                          |> String.split("/")
+                          |> List.last()
+                      }
+                    end
+                end).()
+                |> Enum.filter(fn m -> m.resolution == "lossless" end)
+                |> List.wrap()
+
+              case hd(media) do
+                %Phos.Orbject.Structure.Media{ext: ext} when ext in ["video"] ->
+                  ExGram.send_video(chat_id, hd(media).url,
+                    caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
+                    reply_markup: Button.build_orb_notification_button(orb, user))
+                %Phos.Orbject.Structure.Media{ext: ext} when ext in ["application", "image"] ->
+                  ExGram.send_photo(chat_id, hd(media).url,
+                    caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
+                    reply_markup: Button.build_orb_notification_button(orb, user))
+              end
             end
           _ ->
             ExGram.send_message(chat_id, Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
