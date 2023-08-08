@@ -8,6 +8,7 @@ defmodule Phos.Action do
   alias Phos.Repo
   alias Phos.Action.{Orb, Orb_Location}
   alias Phos.TeleBot.TelegramNotification, as: TN
+  use Retry
 
   @doc """
   Returns the list of orbs.
@@ -388,7 +389,22 @@ defmodule Phos.Action do
               experimental_notify(orb)
             end)
             Task.start(fn ->
-              TN.Collector.add(orb)
+              case orb.media do
+                true ->
+                  wait exponential_backoff() |> randomize |> expiry(10_000) do
+                    is_map(Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless"))
+                  after
+                    _ ->
+                      TN.Collector.add(orb)
+                      {:ok, "Media fetched"}
+                  else
+                    _ ->
+                      TN.Collector.add(%{orb | media: false})
+                      {:error, "Unable to get media"}
+                  end
+                false ->
+                  TN.Collector.add(orb)
+              end
             end)
            #spawn(fn -> user_feeds_publisher(orb) end)
            data

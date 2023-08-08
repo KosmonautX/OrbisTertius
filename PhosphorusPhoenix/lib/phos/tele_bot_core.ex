@@ -557,8 +557,8 @@ defmodule Phos.TeleBot.Core do
                 |> Enum.filter(fn m -> m.resolution == "lossless" end)
                 |> List.wrap()
 
-              case hd(media) do
-                %Phos.Orbject.Structure.Media{ext: ext} when ext in ["video"] ->
+              case media do
+                [%Phos.Orbject.Structure.Media{ext: ext} |_] when ext in ["video"] ->
                   ExGram.send_video(chat_id, hd(media).url,
                     caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
                     reply_markup: Button.build_orb_notification_button(orb, user))
@@ -566,6 +566,7 @@ defmodule Phos.TeleBot.Core do
                   ExGram.send_photo(chat_id, hd(media).url,
                     caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
                     reply_markup: Button.build_orb_notification_button(orb, user))
+                [] -> :ok
               end
             end
           _ ->
