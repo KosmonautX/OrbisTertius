@@ -424,6 +424,8 @@ defmodule PhosWeb.CoreComponents do
   )
 
   slot(:inner_block)
+  attr(:class, :string, default: nil, doc: "simple form class overide")
+
 
   def input(%{field: {f, field}} = assigns) do
     assigns
@@ -510,8 +512,8 @@ defmodule PhosWeb.CoreComponents do
         value={@value}
         class={[
           input_border(@errors),
-          "block w-full rounded-lg  border-zinc-300 dark:bg-gray-600 dark:border-gray-500  dark:placeholder-gray-400 dark:text-white font-poppins",
-          "text-zinc-900 focus:outline-none focus:ring-4 sm:text-sm sm:leading-6",
+          "block w-full rounded-lg dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white font-poppins",
+          "text-zinc-900 focus:outline-none focus:ring-4 sm:text-sm sm:leading-6 outline-none",
           "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400 phx-no-feedback:focus:ring-zinc-800/5"
         ]}
         {@rest}
@@ -522,7 +524,7 @@ defmodule PhosWeb.CoreComponents do
   end
 
   defp input_border([] = _errors),
-    do: "border-zinc-300 focus:border-zinc-400 focus:ring-zinc-800/5"
+    do: "focus:border-zinc-400 focus:ring-zinc-800/5"
 
   defp input_border([_ | _] = _errors),
     do: "placeholder-rose-300 border-rose-400 focus:border-rose-400 focus:ring-rose-400/10"

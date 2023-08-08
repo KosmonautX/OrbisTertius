@@ -1,17 +1,40 @@
 <div class="mt-20 p-4">
-  <div class="flex">
-    <.simple_form :let={f} for={%Plug.Conn{}} method="get" phx-submit="search" class="flex items-center">
-      <.input field={{f, :q}} value={@search_value} label="Search" required={true} placeholder="enter your keyword" />
-      <:actions>
-        <.button type="submit" phx-disable-with="Searching...">Search</.button>
-      </:actions>
-    </.simple_form>
+  <div class="flex gap-4 lg:max-w-sm">
+     <button type="button" phx-click={open_modal()}
+        class="text-gray-500 bg-gray-100 lg:bg-white hover:ring-gray-500 ring-gray-300 h-12 w-full items-center gap-2 rounded-md pl-2 pr-3 text-sm transition flex focus:[&:not(:focus-visible)]:outline-none">
+        <Heroicons.magnifying_glass mini class="h-5 w-5" />
+          Find something...
+     </button>
   </div>
-  <div id="search-result" class="flex flex-col" :if={length(@orbs) > 0}>
-    <div :for={orb <- @orbs} :if={length(@orbs) > 0} class="mt-2 flex">
-      <.link patch={~p"/orb/#{orb.id}"}>
-        <h1><%= orb.title %></h1>
-      </.link>
+  <div id="searchbar-dialog" class="hidden fixed inset-0 z-50" role="dialog" aria-modal="true"
+    phx-window-keydown={hide_modal()} phx-key="escape">
+     <div class="fixed inset-0 bg-zinc-400/25 backdrop-blur-sm opacity-100"></div>
+      <div class="fixed inset-0 overflow-y-auto px-4 py-4 sm:py-20 sm:px-6 md:py-32 lg:px-8 lg:py-[15vh]">
+       <div id="searchbox_container"
+         class="mx-auto overflow-hidden rounded-lg bg-white shadow-xl ring-zinc-900/7.5 md:max-w-xl opacity-100 scale-100 lg:p-6 p-2 w-full">
+          <div role="combobox" aria-haspopup="listbox" phx-click-away={hide_modal()} >
+            <.simple_form :let={f} for={%Plug.Conn{}} method="get" phx-submit="search">
+             <div class="relative">
+               <.input field={{f, :q}} id="search-input"
+                 class="[&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden [&::-webkit-search-results-button]:hidden [&::-webkit-search-results-decoration]:hidden"
+                 aria-autocomplete="both"
+                 aria-controls="searchbox__results_list"
+                 enterkeyhint="search" spellcheck="false" placeholder="enter your keyword" type="search" value={@search_value} tabindex="0"/>
+             </div>
+            </.simple_form>
+          </div>  
+          <ul class="divide-y divide-slate-200 overflow-y-auto text-sm journal-scroll py-2"
+            id="searchbox__results_list"
+            role="listbox">
+              <li :for={orb <- @orbs} id={"#{orb.id}"}>
+                <.link
+                  navigate={~p"/orb/#{orb.id}"}
+                  class="block p-4 hover:bg-slate-100 focus:outline-none focus:bg-slate-100 focus:text-sky-800">
+                  <p class="lg:text-base text-sm font-serif text-gray-700 font-semibold"><%= orb.title %></p>
+                </.link>
+              </li>
+          </ul>
+       </div>
+      </div>
     </div>
-  </div>
 </div>

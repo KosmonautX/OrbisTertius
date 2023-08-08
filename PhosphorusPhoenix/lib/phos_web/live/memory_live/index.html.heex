@@ -1,61 +1,43 @@
-    <div class="flex h-screen w-full font-poppins lg:bg-gray-100 bg-white dark:bg-gray-800">
-      <div class={["lg:w-3/12 w-full",
-        @live_action == :show && "hidden lg:block"]}>
-        <form phx-change="search"
-          class="relative text-gray-600 px-2 py-3 top-0 sticky z-10 lg:bg-white bg-[#FBFBFB] hidden lg:block dark:bg-gray-900 lg:dark:bg-gray-800">
-           <input phx-debounce="300" type="text" name="usersearch"
-             value={@usersearch} placeholder="Search in chat......"
-             autofocus autocomplete="off" list="matches"
-             class="block py-3 pl-3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-2xl focus:ring-purple-500 focus:border-purple-500 w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"/>
-        </form>
-        <div class="flex w-full items-center justify-between bg-white px-6 py-3  block lg:hidden fixed z-20 md:top-14 top-12 md:px-12 dark:bg-gray-900">
-          <Heroicons.archive_box class="h-5 w-5 text-gray-800 dark:text-zinc-300" />
-          <div class="flex items-center">
-            <p class="text-base font-semibold text-[#404252] dark:text-white">Chat</p>
-          </div>
-          <Heroicons.pencil_square class="h-5 w-5 text-gray-800 dark:text-zinc-300" />
-        </div>
-        <div class="md:mt-[104px] mt-24 lg:mt-0">
-          <.live_component
-          module={PhosWeb.Component.LastMessage}
-          id="desktop-last-message"
-          memories={@streams.relation_memories}
-          current_user={@current_user}
-          date={@timezone}
-          metadata={@relation_meta}/>
-        </div>
-        </div>
-
-       <div :if={@user} class="lg:w-9/12 w-full">
-        <div class="text-gray-600 w-full fixed md:top-14 top-12 lg:top-0 z-10">
-          <.chat_profile id={"desktop-chat-profile-for-#{@user.username}"} user={@user}/>
-        </div>
-        <div class="lg:mt-14 md:mt-28 mt-24">
-          <.live_component
-            module={PhosWeb.Components.ListMessage}
-            id="infinite-home-desktop"
-            memories={@streams.message_memories}
-            current_user={@current_user}
-            timezone={@timezone}
-            cursor={@message_cursor}
-            metadata={@message_meta}
-          />
-        </div>
-         <div class="bottom-0 z-10 fixed w-full lg:w-9/12">
-           <.live_component
-            module={PhosWeb.MemoryLive.FormComponent}
-            id={:new}
-            title={@page_title}
-            action={:new}
-            rel={@relation_id || (@user.self_relation && @user.self_relation.id) || nil}
-            current_user={@current_user}
-            memory={%Phos.Message.Memory{}}
-            navigate={~p"/memories/user/#{@user.username}"}
-            user={@user}/>
-         </div>
-       </div>
- </div>
-
+<div class="flex h-screen w-full font-poppins lg:bg-gray-100 bg-white dark:bg-gray-800">
+  <div class={["lg:w-3/12 w-full", @live_action == :show && "hidden lg:block"]}>
+   <form phx-change="search" class="relative text-gray-600 px-2 py-3 top-0 sticky z-10 lg:bg-white bg-[#FBFBFB] hidden lg:block dark:bg-gray-900 lg:dark:bg-gray-800">
+      <input phx-debounce="300" type="text" name="usersearch"
+      value={@usersearch} placeholder="Search in chat......"
+      autofocus autocomplete="off" list="matches"
+      class="block py-3 pl-3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-2xl focus:ring-purple-500 focus:border-purple-500 w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"/>
+   </form>
+   <div class="flex w-full items-center justify-between bg-white px-6 py-3  block lg:hidden fixed z-20 md:top-14 top-12 md:px-12 dark:bg-gray-900">
+     <Heroicons.archive_box class="h-5 w-5 text-gray-800 dark:text-zinc-300" />
+     <div class="flex items-center">
+       <p class="text-base font-semibold text-[#404252] dark:text-white">Chat</p>
+     </div>
+        <Heroicons.pencil_square class="h-5 w-5 text-gray-800 dark:text-zinc-300" />
+   </div>
+   <div class="md:mt-[104px] mt-24 lg:mt-0">
+      <.live_component module={PhosWeb.Component.LastMessage}
+       id="desktop-last-message" memories={@streams.relation_memories}
+       current_user={@current_user} date={@timezone} metadata={@relation_meta}/>
+   </div>
+  </div>
+  <div :if={@user} class="lg:w-9/12 w-full">
+    <div class="text-gray-600 w-full fixed md:top-14 top-12 lg:top-0 z-10">
+      <.chat_profile id={"desktop-chat-profile-for-#{@user.username}"} user={@user}/>
+    </div>
+    <div class="lg:mt-14 md:mt-28 mt-24">
+      <.live_component module={PhosWeb.Components.ListMessage}
+        id="infinite-home-desktop" memories={@streams.message_memories}
+        current_user={@current_user} timezone={@timezone}
+        cursor={@message_cursor} metadata={@message_meta}/>
+    </div>
+    <div class="bottom-0 z-10 fixed w-full lg:w-9/12">
+      <.live_component module={PhosWeb.MemoryLive.FormComponent} id={:new}
+        title={@page_title} action={:new}
+        rel={@relation_id || (@user.self_relation && @user.self_relation.id) || nil}
+        current_user={@current_user} memory={%Phos.Message.Memory{}}
+        navigate={~p"/memories/user/#{@user.username}"} user={@user}/>
+    </div>
+  </div>
+</div>
 
 <.gallerymodal
   :if={@live_action in [:media] and not is_nil(@media)}
@@ -63,45 +45,28 @@
   show={@live_action in [:media] and not is_nil(@media)}
   on_cancel={JS.patch(~p"/memories/user/#{@user.username}")}>
   <:information :if={@user}>
-    <img
-      src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossy")}
-      class="lg:w-14 lg:h-14 h-12 w-12 rounded-full object-cover "
-      onerror="this.src='/images/default_hand.jpg';"
-    />
+    <img src={Phos.Orbject.S3.get!("USR", @user.id, "public/profile/lossy")}
+    class="lg:w-14 lg:h-14 h-12 w-12 rounded-full object-cover "
+    onerror="this.src='/images/default_hand.jpg';"/>
   </:information>
-  
   <:title :if={@user}><%= @user.username %></:title>
-
   <:subtitle><%= get_date_time(@memory.inserted_at, @timezone) %></:subtitle>
-  <.live_component
-    :if={@media != []}
-    module={PhosWeb.Components.CarouselLiveView}
-    id="img-modal"
-    current_user={@current_user}
-    media={@media}
-  />
+  <.live_component :if={@media != []}
+   module={PhosWeb.Components.CarouselLiveView} id="img-modal"
+   current_user={@current_user} media={@media}/>
 </.gallerymodal>
 
 <.ally_modal
   :if={@live_action in [:ally] and @ally != nil}
-  id="User_ally"
-  main_width="lg:max-w-2xl"
+  id="User_ally" main_width="lg:max-w-2xl"
   show={@live_action in [:ally]}
   on_cancel={JS.patch(~p"/memories/user/#{@user.username}")}>
-  <.redirect_user
-    id="redirect-user"
-    user={@ally}
-    show_location={true}
-    show_img={false}
+  <.redirect_user id="redirect-user" user={@ally} show_location={true}
     username={@user.username}>
     <:actions>
-      <.live_component
-        id="user-info-ally"
-        module={PhosWeb.Component.AllyButton}
-        current_user={@current_user}
-        user={@user}
-        parent_pid={self()}
-      />
+     <.live_component id="user-info-ally"
+      module={PhosWeb.Component.AllyButton}
+      current_user={@current_user} user={@user} parent_pid={self()}/>
     </:actions>
   </.redirect_user>
 </.ally_modal>

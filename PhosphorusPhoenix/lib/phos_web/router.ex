@@ -79,6 +79,7 @@ defmodule PhosWeb.Router do
 
       live "/orb/article", OrbLive.Article, :index
       live "/orb/search", OrbLive.Search, :index
+      live "/orb/news", OrbLive.News, :index
 
       live "/orb/:id/show/:cid", OrbLive.Show, :show_ancestor
       live "/orb/:id/reply/:cid", OrbLive.Show, :reply
