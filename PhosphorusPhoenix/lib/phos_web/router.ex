@@ -122,7 +122,8 @@ defmodule PhosWeb.Router do
     live "/notifications", NotificationLive.Index, :index
 
     live "/articles", ArticleLive.Index, :index
-    live "/articles/posted", ArticleLive.Posted, :index
+    live "/articles/scoops", ArticleLive.Scoop, :index
+    live "/articles/scoops/:id", ArticleLive.ScoopDetail, :show
   end
 
   scope "/api", PhosWeb.API do

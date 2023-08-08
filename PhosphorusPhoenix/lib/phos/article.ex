@@ -74,4 +74,41 @@ defmodule Phos.Article do
     end)
     |> Task.await_many()
   end
+
+  def orb_notion_list do
+    Phos.External.Notion.orbs()
+    |> case do
+      [_ | _] = data -> Enum.map(data, &process_orb/1)
+      _ -> []
+    end
+  end
+
+  defp process_orb(orb) do
+    Map.get(orb, "properties")
+    |> Enum.map(fn {key, val} ->
+      {String.downcase(key), Phos.External.Notion.find_value(val)}
+    end)
+    |> Enum.into(%{})
+  end
+
+  def article_tits do
+    Phos.External.Notion.article_tits()
+    |> case do
+      [_ | _] = data -> Enum.map(data, &process_article_tit/1)
+      _ -> []
+    end
+  end
+
+  defp process_article_tit(%{"id" => id} = article) do
+    data = 
+      Map.get(article, "properties")
+      |> Enum.map(fn {key, val} ->
+        k = String.downcase(key) |> String.replace(" ", "_") |> String.replace("&", "_and_") |> String.to_atom()
+        {k, Phos.External.Notion.find_value(val)}
+      end)
+      |> Enum.into(%{})
+      |> Map.put(:id, id)
+
+    struct(__MODULE__.Scoop, data)
+  end
 end

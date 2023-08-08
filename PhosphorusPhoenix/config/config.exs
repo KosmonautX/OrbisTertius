@@ -116,6 +116,8 @@ config :fcmex,
 config :phos, Phos.External.Notion,
   token: {System, :get_env, "NOTION_TOKEN"},
   database: {System, :get_env, "NOTION_DATABASE"},
+  orb_database: {System, :get_env, "NOTION_ORB_DATABASE"},
+  article_database: {System, :get_env, "NOTION_ARTICLE_DATABASE"},
   notification_database: {System, :get_env, "NOTION_NOTIFICATION_DATABASE"}
 
 config :phos, Phos.PlatformNotification,
