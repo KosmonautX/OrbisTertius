@@ -24,6 +24,31 @@ defmodule Phos.External.Notion do
     end
   end
 
+  def orbs(query \\ %{}) do
+    case do_get_notion_data(orb_database(), query) do
+      {:ok, %HTTPoison.Response{body: body}} -> 
+        Map.get(body, "results", [])
+      {:error, err} -> HTTPoison.Error.message(err)
+    end
+  end
+
+  def article_tits(query \\ %{}) do
+    case do_get_notion_data(article_database(), query) do
+      {:ok, %HTTPoison.Response{body: body}} -> Map.get(body, "results", [])
+      {:error, err} -> HTTPoison.Error.message(err)
+    end
+  end
+
+  def find_value(%{"content" => data}), do: data
+  def find_value(%{"name" => data}), do: data
+  def find_value(%{"type" => type} = data) do
+    Map.get(data, type)
+    |> find_value()
+  end
+  def find_value(%{"id" => data}), do: data
+  def find_value([_ | _] = data), do: Enum.map(data, &find_value/1) |> Enum.join("\n")
+  def find_value(data), do: data
+
   def date_post(date) do
     date_query = %{
       "filter" => %{
@@ -37,6 +62,19 @@ defmodule Phos.External.Notion do
     case do_get_notion_data(database(), date_query) do
       {:ok, %HTTPoison.Response{body: body}} -> Map.get(body, "results", [])
       {:error, err} -> HTTPoison.Error.message(err)
+    end
+  end
+
+  defp create_page(database_id, data) do
+    retry with: constant_backoff(100) |> Stream.take(5) do
+      post("/pages", %{
+        parent: %{database_id: database_id},
+        properties: data
+      })
+    after
+      {:ok, _res} = response -> response
+    else
+      err -> err
     end
   end
 
@@ -88,6 +126,8 @@ defmodule Phos.External.Notion do
   defp notion_version, do: Keyword.get(config(), :version) ||  "2022-02-22"
   defp database, do: Keyword.get(config(), :database, "") |> eval_value()
   defp notification_database, do: Keyword.get(config(), :notification_database, "") |> eval_value()
+  defp article_database, do: Keyword.get(config(), :article_database, "") |> eval_value()
+  defp orb_database, do: Keyword.get(config(), :orb_database, "") |> eval_value()
   defp config(), do: Application.get_env(:phos, __MODULE__, [])
 
   defp eval_value({module, func, value}), do: apply(module, func, [value])

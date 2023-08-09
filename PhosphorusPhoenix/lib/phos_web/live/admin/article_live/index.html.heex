@@ -56,18 +56,28 @@
   <.button type="submit" class="button button-sm p-0 mx-2">Generate article</.button>
 </.form>
 
-<.modal id="article-container" show={@article_modal}>
-  <div class="p-4">
-    <h1 class="mt-4 mb-3 font-bold text-2xl">Pseudo-Article</h1>
+<.modal id="article-container" on_confirm={JS.push("create-article") |> hide_modal("article-container")}>
+  <:title>Pseudo-Article</:title>
 
-    <.simple_form for={:article} :let={f} for={%{}} phx-submit="generate-article">
-      <.input field={{f, :title}} label="Scoop title" placeholder="Enter title" />
+  <div class="p-4">
+    <.form id="article-form" :let={f} method="post" for={%{}} as={:article} phx-change="validate-article">
+      <.input field={{f, :title}}
+        required="true"
+        value={@article_title}
+        placeholder="Enter title" />
       <div class="mt-4">
         <h2 class="text-lg font-semibold">Selected Orb(s)</h2>
-        <div :for={{id, orb} <- @selected_orb}>
-          <span><%= orb.title %></span>
-        </div>
+        <.table id="selected_orbs" rows={Map.values(@selected_orb)}>
+          <:col :let={orb} classes="sticky left-0" label="Initiator">
+            <.admin_user_preview user={orb.initiator} id={"admin_user_preview_for_#{orb.id}"} />
+          </:col>
+          <:col :let={orb} label="Title"><%= orb.title %></:col>
+          <:col :let={orb} label="Traits"><%= inspect(orb.traits) %></:col>
+        </.table>
       </div>
-    </.simple_form>
+    </.form>
   </div>
+
+  <:confirm>Generate</:confirm>
+  <:cancel>Cancel</:cancel>
 </.modal>
