@@ -39,6 +39,20 @@ defmodule Phos.External.Notion do
     end
   end
 
+  def article_blocks(id) do
+    case do_get_notion_block_data(id) do
+      {:ok, %HTTPoison.Response{body: body}} -> body
+      {:error, err} -> HTTPoison.Error.message(err)
+    end
+  end
+
+  def article_block_children(id) do
+    case do_get_notion_block_children(id) do
+      {:ok, %HTTPoison.Response{body: body}} -> body
+      {:error, err} -> HTTPoison.Error.message(err)
+    end
+  end
+
   def find_value(%{"content" => data}), do: data
   def find_value(%{"name" => data}), do: data
   def find_value(%{"type" => type} = data) do
@@ -62,6 +76,26 @@ defmodule Phos.External.Notion do
     case do_get_notion_data(database(), date_query) do
       {:ok, %HTTPoison.Response{body: body}} -> Map.get(body, "results", [])
       {:error, err} -> HTTPoison.Error.message(err)
+    end
+  end
+
+  defp do_get_notion_block_data(page_id) do
+    retry with: constant_backoff(100) |> Stream.take(5) do
+      get("/blocks/#{page_id}")
+    after
+      {:ok, _res} = response -> response
+    else
+      err -> err
+    end
+  end
+
+  defp do_get_notion_block_children(page_id) do
+    retry with: constant_backoff(100) |> Stream.take(5) do
+      get("/blocks/#{page_id}/children")
+    after
+      {:ok, _res} = response -> response
+    else
+      err -> err
     end
   end
 
@@ -102,7 +136,8 @@ defmodule Phos.External.Notion do
     "https://api.notion.com/v1" <> url
   end
 
-  def process_request_body(body) when is_map(body)  do
+  def process_request_body(body) when is_bitstring(body), do: body
+  def process_request_body(body) when is_map(body) do
     Phoenix.json_library().encode!(body)
   end
 
@@ -116,6 +151,65 @@ defmodule Phos.External.Notion do
     |> Keyword.put_new(:"content-type", "application/json")
     |> Keyword.put_new(:"notion-version", notion_version())
   end
+
+  def block_value(%{"type" => "paragraph"} = data), do: find_text_and_annotation(data, "\n\n")
+  def block_value(%{"type" => "text"} = data), do: find_text_and_annotation(data, " ")
+  def block_value(%{"type" => "image", "image" => %{"caption" => caption}} = data) do
+    url = find_value(data) |> Map.get("url")
+
+    case caption do
+      [_ | _] -> "\n![#{Enum.join(caption)}](#{url})\n\n"
+      _ -> "\n![](#{url})\n\n"
+    end
+  end
+  def block_value(%{"type" => "heading_" <> number} = data) do
+    text = find_text_and_annotation(data, " ")
+    num = String.to_integer(number)
+    level = Enum.map(1..num, fn _ -> "#" end) |> Enum.join()
+
+    "\n#{level} #{text}\n"
+  end
+  def block_value(%{"type" => "callout", "has_children" => false} = data), do: find_text_and_annotation(data, " ")
+  def block_value(%{"type" => "callout", "id" => id} = data) do
+    text = find_text_and_annotation(data, " ")
+    case do_get_notion_block_children(id) do
+      {:ok, %HTTPoison.Response{body: %{"results" => [_ | _] = data}}} ->
+        final_text = 
+          [text | Enum.map(data, &block_value/1)]
+          |> Enum.join("\n")
+        "> #{final_text}\n\n"
+      _ -> text
+    end
+  end
+  def block_value(%{"type" => _type} = data) do
+    case find_value(data) do
+      [] -> ""
+      [_|_] = value -> Enum.join(value, "\n")
+      %{"title" => title} -> title
+      value -> find_text_and_annotation(value, " ")
+    end
+  end
+
+  defp find_text_and_annotation(data, joiner) do
+    case find_value(data) do
+      %{"rich_text" => []} -> "\n"
+      %{"rich_text" => [_|_] = value} ->
+        Enum.map(value, fn v ->
+          text = find_value(v)
+          annotation = find_annotation(v)
+          "#{annotation}#{text}#{String.reverse(annotation)}"
+        end)
+        |> Enum.join(joiner)
+      val -> val
+    end
+  end
+
+  defp find_annotation(%{"annotations" => ann}), do: Enum.map(ann, &find_annotation/1) |> Enum.join()
+  defp find_annotation({"code", true}), do: "`"
+  defp find_annotation({"bold", true}), do: "**"
+  defp find_annotation({"italic", true}), do: "**"
+  defp find_annotation({"strikethrough", true}), do: "~~"
+  defp find_annotation(_data), do: ""
 
   defp auth_method() do
     auth_type = Keyword.get(config(), :authorization_type, "Bearer") |> String.trim()

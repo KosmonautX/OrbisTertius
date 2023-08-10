@@ -111,4 +111,21 @@ defmodule Phos.Article do
 
     struct(__MODULE__.Scoop, data)
   end
+
+  def article_blocks(page_id) do
+    Phos.External.Notion.article_blocks(page_id)
+    |> case do
+      data when is_map(data) -> process_article_blocks(data)
+      _ -> %{}
+    end
+  end
+
+  defp process_article_blocks(%{"has_children" => true, "id" => id} = data) do
+    Phos.External.Notion.article_block_children(id)
+    |> case do
+      %{"results" => [_ | _] = data} -> Enum.map(data, &Phos.External.Notion.block_value/1) |> Enum.reject(&Kernel.is_map/1) |> Enum.join()
+      _ -> data
+    end
+  end
+  defp process_article_blocks(data), do: data
 end
