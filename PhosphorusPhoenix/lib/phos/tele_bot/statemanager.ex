@@ -41,4 +41,8 @@ defmodule Phos.TeleBot.StateManager do
   def delete_state(user_id) do
     Cache.delete(user_id)
   end
+
+  def list_active_states() do
+    Cache.all()
+  end
 end
