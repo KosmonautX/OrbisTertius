@@ -2,7 +2,6 @@ defmodule Phos.TeleBot.CreateOrb do
   alias Phos.TeleBot.Core, as: BotCore
   alias Phos.TeleBot.{Config, StateManager}
   alias Phos.TeleBot.Components.{Button, Template}
-  alias Phos.TeleBot.TelegramNotification, as: TN
 
   def create_fresh_orb_form(telegram_id) do
     {:ok, user_state} = StateManager.new_state(telegram_id)
@@ -37,12 +36,12 @@ defmodule Phos.TeleBot.CreateOrb do
       end
     end
   end
-  def set_location(%{telegram_id: telegram_id} = branch, text) do
+  def set_location(%{telegram_id: telegram_id} = _branch, _text) do
     ExGram.send_message(telegram_id, "Please use the location button to select.")
   end
   def set_location(branch, location_type, opts) when location_type in ["live"] do
     latlon = opts[:latlon]
-    {:ok, user} = BotCore.get_user_by_telegram(branch.telegram_id)
+    {:ok, _user} = BotCore.get_user_by_telegram(branch.telegram_id)
     {_prev, branch} = get_and_update_in(branch.data.orb.central_geohash, &{&1, :h3.from_geo(latlon, 10)} )
     {_prev, branch} = get_and_update_in(branch.data.location_type, &{&1, String.to_atom(location_type)} )
     transition(branch, "media")
@@ -52,14 +51,14 @@ defmodule Phos.TeleBot.CreateOrb do
     {:ok, %{branch: branch} = user_state} = StateManager.get_state(telegram_id)
     orb_id = Ecto.UUID.generate()
     media_map = [%{
-      "access": "public",
-      "essence": "banner"
+      access: "public",
+      essence: "banner"
     }]
     with {:ok, media_change} <- Phos.Orbject.Structure.apply_media_changeset(%{id: user.id, archetype: "ORB", media: media_map}) do
       resolution = %{"150x150" => "public/banner/lossy", "1920x1080" => "public/banner/lossless"}
       for res <- ["150x150", "1920x1080"] do
         {:ok, dest} = Phos.Orbject.S3.put("ORB", orb_id , resolution[res])
-        [hd | tail] = payload |> get_in(["photo"]) |> Enum.reverse()
+        [hd | _] = payload |> get_in(["photo"]) |> Enum.reverse()
         {:ok, %{file_path: path}} = ExGram.get_file(hd |> get_in(["file_id"]))
         {:ok, %HTTPoison.Response{body: image}} = HTTPoison.get("https://api.telegram.org/file/bot#{Config.get(:bot_token)}/#{path}")
         path = "/tmp/" <> (:crypto.strong_rand_bytes(30) |> Base.url_encode64()) <> ".png"
@@ -105,7 +104,7 @@ defmodule Phos.TeleBot.CreateOrb do
   #   end
   # end
 
-  def post(%{data: %{orb: orb, media: %{media: media}}} = branch, %{tele_id: telegram_id} = user) do
+  def post(%{data: %{orb: orb, media: %{media: media}}} = _branch, %{tele_id: telegram_id} = user) do
     params = %{
       "id" => orb.id,
       "expires_in" => "10000",
@@ -118,7 +117,7 @@ defmodule Phos.TeleBot.CreateOrb do
     }
 
     with {:ok, attrs} <- PhosWeb.API.OrbController.orb_constructor(user, params),
-        {:ok, %Phos.Action.Orb{} = orb} <- Phos.Action.create_orb(%{attrs | "media" => not Enum.empty?(media)}) do
+        {:ok, %Phos.Action.Orb{} = _orb} <- Phos.Action.create_orb(%{attrs | "media" => not Enum.empty?(media)}) do
             ExGram.send_message(telegram_id, "Creating post...")
             StateManager.delete_state(telegram_id)
         else

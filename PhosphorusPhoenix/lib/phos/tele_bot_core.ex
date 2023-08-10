@@ -515,6 +515,7 @@ defmodule Phos.TeleBot.Core do
 
   def error_fallback(telegram_id, err) do
     error_fallback(telegram_id)
+    IO.inspect err
   end
   def error_fallback(telegram_id) do
     StateManager.delete_state(telegram_id)
