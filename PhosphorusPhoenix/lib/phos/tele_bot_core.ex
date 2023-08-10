@@ -558,15 +558,15 @@ defmodule Phos.TeleBot.Core do
                 |> List.wrap()
 
               case media do
-                [%Phos.Orbject.Structure.Media{ext: ext} |_] when ext in ["video"] ->
+                [%Phos.Orbject.Structure.Media{ext: ext} | _] when ext in ["video"] ->
                   ExGram.send_video(chat_id, hd(media).url,
                     caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
                     reply_markup: Button.build_orb_notification_button(orb, user))
-                %Phos.Orbject.Structure.Media{ext: ext} when ext in ["application", "image"] ->
+                [%Phos.Orbject.Structure.Media{ext: ext} | _] when ext in ["application", "image"] ->
                   ExGram.send_photo(chat_id, hd(media).url,
                     caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
                     reply_markup: Button.build_orb_notification_button(orb, user))
-                [] -> :ok
+                _ -> :ok
               end
             end
           _ ->
