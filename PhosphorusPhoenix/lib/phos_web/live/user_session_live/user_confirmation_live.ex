@@ -29,6 +29,7 @@ defmodule PhosWeb.UserConfirmationLive do
   end
 
   def render(%{live_action: :edit_tg} = assigns) do
+    #TODO deeplink bac to telegram bot
     ~H"""
     <%!-- <.confirm_card
       on_confirm={}

@@ -10,9 +10,9 @@ defmodule PhosWeb.MemoryLive.Index do
     {:ok, init_relations(socket)}
   end
 
-  def mount(%{token: token} = params, _session, %{assigns: %{current_user: user}} = socket) when is_nil(user) do
-    with {:ok, claims} <- Auth.validate_user(token),
-        user = Users.get_user(claims["user_id"]) do
+  def mount(%{token: token}, _session, %{assigns: %{current_user: user}} = socket) when is_nil(user) do
+    with {:ok, claims} <- PhosWeb.Menshen.Auth.validate_user(token),
+        {:ok, user} <- mount_user(claims["user_id"]) do
       Phos.PubSub.subscribe("memory:user:#{user.id}")
       assign(socket, :current_user, user)
       {:ok, init_relations(socket)}
@@ -218,7 +218,7 @@ defmodule PhosWeb.MemoryLive.Index do
 
   defp list_more_chats(socket), do: socket
 
-  defp list_memories(user, relation_id, opts \\ [])
+  defp list_memories(user, relation_id, opts)
 
   defp list_memories(%{id: user_id} = _current_user, relation_id, opts),
     do: list_memories(user_id, relation_id, opts)
@@ -245,5 +245,12 @@ defmodule PhosWeb.MemoryLive.Index do
     |> Timex.shift(minutes: trunc(timezone.timezone_offset))
     |> Timex.format("{0D}-{0M}-{YYYY},{h12}:{m} {AM}")
     |> elem(1)
+  end
+
+  defp mount_user(id_or_username) do
+    case Phos.Users.get_user(id_or_username) do
+      %Phos.Users.User{} = user -> {:ok, user}
+      nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
+    end
   end
 end

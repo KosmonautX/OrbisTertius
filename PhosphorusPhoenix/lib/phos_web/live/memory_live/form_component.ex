@@ -72,7 +72,7 @@ defmodule PhosWeb.MemoryLive.FormComponent do
       end)
 
     memory_params =
-      unless Enum.empty?(file_uploaded) do
+      if !Enum.empty?(file_uploaded) do
         Map.replace(memory_params, "media", true)
       else
         memory_params
