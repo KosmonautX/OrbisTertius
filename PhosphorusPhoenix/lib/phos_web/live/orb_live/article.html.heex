@@ -1,66 +1,92 @@
-<div id="w-full flex justify-center items-center font-miller">
-  <div class="flex w-full items-center justify-center lg:py-3 py-2 lg:top-16 md:top-14 top-12 z-10 fixed bg-white lg:bg-[#EEEFF3] dark:bg-gray-900">
-    <div class="absolute inset-x-1 md:inset-x-2 flex flex-col items-end justify-end">
-      <div class="flex items-center justify-center gap-2">
-        <button type="button" class="flex items-center lg:w-9 lg:h-9 md:h-8 md:w-8 h-7 w-7 justify-center text-sm rounded-lg bg-purple-600">
-         <Heroicons.magnifying_glass mini class="lg:h-5 lg:w-5 h-4 w-4  fill-white search-icon" />
-         <Heroicons.x_mark mini  class="lg:h-5 lg:w-5 h-4 w-4 fill-white cancel-icon hidden" />
-        </button>
-        <.simple_form :let={f} for={%Plug.Conn{}} method="get" phx-submit="search" class="search-input rounded-lg">
-          <.input field={{f, :q}} value={@search_query} required={true} placeholder="Enter your keyword" id="searchInput"/>
-       </.simple_form>
-      </div>
-    </div>
-    <div class="flex">
-      <div class="flex flex-1 items-center justify-center">
-        <p class="lg:text-5xl md:text-4xl text-2xl uppercase font-semibold dark:text-white">Latest articles</p>
-      </div>
-    </div>
+ <div class="hidden bg-white lg:block"><br /><br /></div> 
+
+<section class="bg-white dark:bg-gray-900 font-miller">
+  <ul class="flex flex-wrap items-center justify-center lg:space-x-7 space-x-4 text-center text-sm font-normal py-4 lg:mt-4 md:mt-14 mt-12 bg-white w-full dark:bg-gray-900 dark:text-white">
+   <li class="cursor-pointer hover:underline hover:underline-offset-8">ATTRACTIONS</li>
+   <li class="cursor-pointer hover:underline hover:underline-offset-8">ENTERTAINMENT</li>
+   <li class="cursor-pointer hover:underline hover:underline-offset-8">FOOD</li>
+   <li class="cursor-pointer hover:underline hover:underline-offset-8">PEOPLE</li>
+   <li class="cursor-pointer hover:underline hover:underline-offset-8">CAFES</li>
+   <li class="cursor-pointer hover:underline hover:underline-offset-8">SHOPPING</li>
+   <li class="cursor-pointer hover:underline hover:underline-offset-8">ANIMALS</li>
+  </ul>
+
+  <div class="font-miller flex container mx-auto w-full flex-col items-center justify-center lg:px-48 px-4 md:px-10 dark:bg-gray-900 bg-white">
+    <div class="flex py-1 w-full items-center justify-center">
+     <div class="w-full text-center">
+       <p class="text-2xl font-semibold uppercase dark:text-white md:text-4xl lg:text-5xl">Scoops</p>
+     </div>
+     <div class="ml-auto">
+       <button type="button" phx-click={open_modal()} class="inline-flex items-center text-center">
+         <Heroicons.magnifying_glass mini class="lg:h-10 h-6 w-6 fill-black dark:fill-white" />
+       </button>
+     </div>
+   </div>
+   <hr class="h-1 w-full bg-black my-1"/>
   </div>
-  <div class="flex flex-col lg:gap-8 gap-2 lg:px-4 md:px-6 px-2 lg:flex-row lg:space-y-0 justify-center md:pt-32  pt-24">
-    <div class="flex lg:max-w-xl xl:max-w-2xl items-center justify-center w-full" id="search-result" :if={not is_nil(@article)}>
-      <article class="lg:space-y-3 md:space-y-2 space-y-0.5 lg:pt-2 pt-0 lg:mb-4 mb-0">
-        <h2 class="lg:text-4xl text-2xl font-semibold text-black lg:text-left text-center dark:text-gray-200"><%= Map.get(@article, :title) %></h2>
-        <p class="lg:text-left text-center text-lg dark:text-gray-300">Related article for<span class="font-bold italic text-purple-600"><%= inspect @search_query %></span></p>
-        <div :for={{par, index} <- Map.get(@article, :article) |>
-          Enum.with_index()}>
-          <div class="flex flex-col items-center">
-            <img src={Map.get(@article, :medias) |> Enum.at(index)} :if={not is_nil(Map.get(@article, :medias) |> Enum.at(index))} class="lg:h-96 h-80 w-full object-cover rounded-lg"/>
-            <p :for={text <- par} class="paragraph-font dark:text-gray-400"><%= text %></p>
+  
+  <div class="flex container mx-auto w-full flex-col items-center justify-center lg:px-48 px-4 md:px-10 dark:bg-gray-900 bg-white" id="search-result" :if={not is_nil(@article)}>
+   <div class="flex flex-col w-full mt-3 space-y-1">
+     <span class="font-bold text-sm lg:text-left text-center mt-2 dark:text-white">EXPLAINERS 
+      <i class="text-purple-600 font-bold">|</i> 
+      <span class="text-gray-700 font-normal dark:text-gray-300">JULY 25, 2023</span>
+     </span>
+    <h2 class="lg:text-4xl text-2xl font-medium	text-black lg:text-left text-center dark:text-gray-200"><%= Map.get(@article, :title) %></h2>
+       <div class="flex items-center space-x-2">
+         <div class="flex-shrink-0">
+           <img class="h-14 w-14" src="/images/demo.jpg" alt="Neil image" />
+         </div>
+         <div class="flex-1">
+           <p class="text-base font-medium italic text-black dark:text-white">By Nate Jones, 
+             <span class="font-normal text-gray-600 dark:text-gray-400">a Valuture senior writer covering movies and pop culutre</span>
+           </p>
+         </div>
+        </div>
+        <hr class="my-4"/>
+      </div>
+      <div class="mb-0 flex flex-col lg:flex-row xl:gap-20 lg:gap-10 gap-8 w-full mt-4 justify-center lg:mb-4">
+        <div class="flex w-full flex-1 lg:max-w-2xl flex-col">
+         <div :for={{par, index} <- Map.get(@article, :article) |>Enum.with_index()}>
+          <div class="flex flex-col mb-4">
+            <img src={Map.get(@article, :medias) |> Enum.at(index)} :if={not is_nil(Map.get(@article, :medias) |> Enum.at(index))} class="lg:h-96 h-80 w-full object-cover"/>
+            <p class="text-base dark:text-purple-600 lg:text-left text-center text-gray-500 font-bold mt-2">Photo by @sowmi1010</p>
+            <p :for={text <- par} class="paragraph-font text-base lg:text-lg text-black font-medium	 dark:text-gray-400 py-2"><%= text %></p>
+             <hr class="my-2 h-2 w-48 rounded border-2 bg-purple-600 dark:bg-gray-700 " />
           </div>
+         </div>
+         <div class="flex flex-wrap items-center justify-center gap-3 font-bold mt-3">
+           <span class="dark:text-white">Related categories:</span>
+           <span :for={category <- Map.get(@article, :traits)} class="lg:rounded-lg rounded-2xl bg-purple-600 px-1.5 py-0.5 text-base text-white font-miller tracking-wide	"><%= category %></span>
+         </div>
         </div>
-        <div class="flex flex-wrap items-center justify-center gap-3 font-bold">
-          <span class="dark:text-white">Related categories:</span>
-          <span :for={category <- Map.get(@article, :traits)} class="lg:rounded-lg rounded-2xl bg-purple-600 lg:px-2 px-1.5 lg:py-1.5 py-0.5 text-sm text-white"><%= category %></span>
+         <div class="flex  flex-1 w-full lg:max-w-sm flex-col">
+           <.editor_picks/>
         </div>
-      </article>
+      </div>
     </div>
-    <div class="flex-1 lg:max-w-sm w-full lg:items-start lg:justify-start lg:px-0 px-2">
-        <h5 class="text-center border-b-2 lg:py-3 py-2 border-black dark:border-gray-400 lg:text-4xl md:text-3xl text-2xl font-semibold text-gray-900 dark:text-gray-200">Latest Customers</h5>
-        <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
-          <li class="py-3 sm:py-4">
-            <div class="flex items-center space-x-4">
-              <div class="flex-shrink-0">
-                <img class="h-20 w-20" src="https://picsum.photos/200/300" alt="Neil image" />
-              </div>
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-lg font-bold text-gray-900 dark:text-gray-200">GILGO BEACH MURDERS</p>
-                <p class="truncate text-base font-normal text-gray-500 dark:text-gray-400">GILGO BEACH MURDERS JULY 25, 2023 My Boss, the Monster What else Rex Heuermann was up to as he allegedly committed the Gilgo Beach murders.</p>
-              </div>
+
+    
+    
+<div id="searchbar-dialog" class="hidden fixed inset-0 z-50" role="dialog" aria-modal="true"
+  phx-window-keydown={hide_modal()} phx-key="escape">
+   <div class="fixed inset-0 bg-zinc-400/25 backdrop-blur-sm opacity-100"></div>
+    <div class="fixed inset-0 overflow-y-auto px-4 py-4 sm:py-20 sm:px-6 md:py-32 lg:px-8 lg:py-[15vh]">
+      <div id="searchbox_container" class="mx-auto overflow-hidden rounded-lg bg-white dark:bg-gray-900 shadow-xl  ring-zinc-900/7.5 lg:max-w-2xl md:max-w-xl opacity-100 scale-100 lg:p-4 p-2 w-full">
+        <div role="combobox" aria-haspopup="listbox" phx-click-away={hide_modal()} >
+          <.simple_form :let={f} for={%Plug.Conn{}} method="get" phx-submit="search">
+            <div class="relative">
+              <.input field={{f, :q}} id="search-input"
+               class="[&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden [&::-webkit-search-results-button]:hidden [&::-webkit-search-results-decoration]:hidden"
+               aria-autocomplete="both" aria-controls="searchbox__results_list"
+               enterkeyhint="search" spellcheck="false" placeholder="enter your keyword" type="search" value={@search_query} required={true} tabindex="0"/>
             </div>
-          </li>
-          <li class="py-3 sm:py-4">
-            <div class="flex items-center space-x-4">
-              <div class="flex-shrink-0">
-                <img class="h-20 w-20" src="https://picsum.photos/200/300" alt="Bonnie image" />
-              </div>
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-lg font-bold text-gray-900 dark:text-gray-200">CONCERT REVIEW</p>
-                <p class="truncate text-base font-normal text-gray-500 dark:text-gray-400">Drake May Be on Tour But He’s Stuck in Neverland</p>
-              </div>
-            </div>
-          </li>
-        </ul>
+          </.simple_form>
+        </div>  
+          <.link navigate={~p"/orb/article"}>
+           <p class="px-1 my-2 text-center text-lg dark:text-gray-300 lg:text-left font-miller">Related article for<span class="font-bold italic text-purple-600"><%= inspect @search_query %></span></p>
+          </.link>
+          <.search_results/>
+       </div>
+      </div>
     </div>
-  </div>
-</div>
+</section>

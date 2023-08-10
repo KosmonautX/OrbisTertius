@@ -426,7 +426,6 @@ defmodule PhosWeb.CoreComponents do
   slot(:inner_block)
   attr(:class, :string, default: nil, doc: "simple form class overide")
 
-
   def input(%{field: {f, field}} = assigns) do
     assigns
     |> assign(field: nil)
@@ -899,7 +898,7 @@ defmodule PhosWeb.CoreComponents do
             <i class={"fas mr-2 text-sm opacity-75 #{item.icon}"}></i>
             <%= item.title %>
           </.link>
-          <.admin_child_navbar item={item} :if={not is_nil(Map.get(item, :child))}/>
+          <.admin_child_navbar :if={not is_nil(Map.get(item, :child))} item={item} />
         </li>
       </ul>
     </nav>
@@ -911,12 +910,18 @@ defmodule PhosWeb.CoreComponents do
     <span class="w-8 absolute top-3 h-6 right-2">
       <Heroicons.plus
         id={"cursor-open-#{@item.id}"}
-        phx-click={JS.show(to: "#child-#{@item.id}") |> JS.hide() |> JS.show(to: "#cursor-close-#{@item.id}")}
-        class="w-4 h-4 text-gray-700 hover:text-teal-500 hover:cursor-pointer" />
+        phx-click={
+          JS.show(to: "#child-#{@item.id}") |> JS.hide() |> JS.show(to: "#cursor-close-#{@item.id}")
+        }
+        class="w-4 h-4 text-gray-700 hover:text-teal-500 hover:cursor-pointer"
+      />
       <Heroicons.minus
         id={"cursor-close-#{@item.id}"}
-        phx-click={JS.hide(to: "#child-#{@item.id}") |> JS.hide() |> JS.show(to: "#cursor-open-#{@item.id}")}
-        class="w-4 h-4 text-gray-700 hover:text-teal-500 hover:cursor-pointer hidden" />
+        phx-click={
+          JS.hide(to: "#child-#{@item.id}") |> JS.hide() |> JS.show(to: "#cursor-open-#{@item.id}")
+        }
+        class="w-4 h-4 text-gray-700 hover:text-teal-500 hover:cursor-pointer hidden"
+      />
     </span>
     <ul class="hidden pl-2" id={"child-#{@item.id}"}>
       <li :for={child <- Map.get(@item, :child)}>
@@ -936,7 +941,9 @@ defmodule PhosWeb.CoreComponents do
     items
     |> Enum.reduce(%{}, fn %{id: id} = val, acc ->
       case Map.get(val, :parent) do
-        nil -> Map.put_new(acc, id, val)
+        nil ->
+          Map.put_new(acc, id, val)
+
         parent ->
           child = Map.get(acc, parent) |> Map.get(:child, [])
           new_value = Map.get(acc, parent) |> Map.put(:child, [val | child])
@@ -1680,7 +1687,7 @@ defmodule PhosWeb.CoreComponents do
         </p>
         <hr />
         <span class="dark:text-white text-gray-400 font-normal text-sm lg:text-base mt-2 mb-2 px-2">
-          <%= @orb.comment_count%> comments
+          <%= @orb.comment_count %> comments
         </span>
         <hr />
       </div>
@@ -2791,6 +2798,105 @@ defmodule PhosWeb.CoreComponents do
           </div>
         </div>
       </div>
+    </div>
+    """
+  end
+
+  def search_results(assigns) do
+    ~H"""
+    <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700 font-miller">
+      <li class="bg-white dark:bg-gray-900 px-2 py-3 sm:py-4">
+        <div class="flex items-center space-x-4">
+          <div class="min-w-0 flex-1 space-y-1">
+            <p class="lg:text-base dark:text-gray-400 text-sm font-semibold text-black">
+              Micro Salse <b class="text-purple-600"> | </b>
+              <span class="lg:text-sm text-xs text-gray-400 dark:text-gray-600"> May 10, 2023 </span>
+            </p>
+            <span class="lg:text-lg text-base font-bold text-gray-900 dark:text-gray-200">
+              Everything Worth Buying From Sephora’s Savings Event
+              <span class="lg:text-base text-sm font-normal text-gray-500 dark:text-gray-400">
+                Sephora has taken over my phone this week. My FYP on TikTok
+              </span>
+            </span>
+            <p class="lg:text-base text-sm font-medium italic text-gray-700 dark:text-gray-600">
+              By Sam Daly
+            </p>
+          </div>
+          <div class="flex-shrink-0">
+            <img
+              class="lg:h-28 lg:w-48 h-20 w-28"
+              src="https://picsum.photos/200/300"
+              alt="Neil image"
+            />
+          </div>
+        </div>
+      </li>
+    </ul>
+    """
+  end
+
+  def editor_picks(assigns) do
+    ~H"""
+    <div class="border-2 border-gray-400 p-6">
+      <p class="text-gray-900 font-normal italic text-center dark:text-gray-200">
+        Things you buy through our links may earn Vox Media a commission.
+      </p>
+    </div>
+    <div class="flex flex-col items-center my-6">
+      <h1 class="font-bold text-lg dark:text-white">EDITOR’S PICKS</h1>
+      <hr class="h-0.5 w-full bg-gray-900 mx-auto dark:bg-gray-700" />
+      <hr class="h-1 w-full mx-auto bg-black mt-0.5 dark:bg-gray-700" />
+      <ul role="list" class="divide-y w-full divide-gray-200 dark:divide-gray-700">
+        <li class="py-3 sm:py-4">
+          <div class="flex items-center space-x-4">
+            <div class="flex-shrink-0">
+              <img class="h-20 w-20" src="https://picsum.photos/200/300" alt="Neil image" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-lg font-bold text-gray-900 dark:text-gray-200">
+                GILGO BEACH MURDERS
+              </p>
+              <p class="truncate text-base font-normal text-gray-500 dark:text-gray-400">
+                GILGO BEACH MURDERS JULY 25, 2023 My Boss, the Monster What else Rex Heuermann was up to as he allegedly committed the Gilgo Beach murders.
+              </p>
+            </div>
+          </div>
+        </li>
+        <li class="py-3 sm:py-4">
+          <div class="flex items-center space-x-4">
+            <div class="flex-shrink-0">
+              <img class="h-20 w-20" src="https://picsum.photos/200/300" alt="Bonnie image" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-lg font-bold text-gray-900 dark:text-gray-200">
+                CONCERT REVIEW
+              </p>
+              <p class="truncate text-base font-normal text-gray-500 dark:text-gray-400">
+                Drake May Be on Tour But He’s Stuck in Neverland
+              </p>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+    """
+  end
+
+  attr :rest, :global
+
+  def search_input(assigns) do
+    ~H"""
+    <div class="relative ">
+      <!-- Heroicon name: mini/magnifying-glass -->
+      <input
+        {@rest}
+        type="text"
+        class="h-12 w-full border-none focus:ring-0 pl-11 pr-4 text-gray-800 placeholder-gray-400 sm:text-sm"
+        placeholder="Search the docs.."
+        role="combobox"
+        aria-expanded="false"
+        aria-controls="options"
+      />
     </div>
     """
   end
