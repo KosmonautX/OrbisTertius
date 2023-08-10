@@ -543,7 +543,7 @@ defmodule Phos.TeleBot.Core do
                   media ->
                     for {path, url} <- media do
                       %Phos.Orbject.Structure.Media{
-                        ext: MIME.from_path(path),
+                        ext: MIME.from_path(path) |> String.split("/") |> hd,
                         path: "public/banner" <> path,
                         url: url,
                         resolution:
@@ -560,9 +560,11 @@ defmodule Phos.TeleBot.Core do
 
               case media do
                 [%Phos.Orbject.Structure.Media{ext: ext} | _] when ext in ["video"] ->
-                  ExGram.send_video(chat_id, hd(media).url,
-                    caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
+                  ExGram.send_message(chat_id, Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
                     reply_markup: Button.build_orb_notification_button(orb, user))
+                  # ExGram.send_video(chat_id, hd(media).url,
+                  #   caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
+                  #   reply_markup: Button.build_orb_notification_button(orb, user))
                 [%Phos.Orbject.Structure.Media{ext: ext} | _] when ext in ["application", "image"] ->
                   ExGram.send_photo(chat_id, hd(media).url,
                     caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
