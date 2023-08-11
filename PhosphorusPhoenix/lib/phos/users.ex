@@ -283,6 +283,60 @@ defmodule Phos.Users do
     Repo.delete(user)
   end
 
+  @decorate cache_evict(cache: Cache, key: {User, :find, uid})
+  def delete_user(uid) do
+    u = Phos.Users.get_user(uid)
+
+    # u
+    # |> Phos.Users.delete_user()
+
+    from(c in Phos.Comments.Comment,
+      where: c.initiator_id == ^u.id
+    )
+    |> Phos.Repo.all()
+    |> Enum.map(fn c ->
+      from(p in Phos.Comments.Comment, where: p.parent_id == ^c.id)
+      |> Phos.Repo.all()
+      |> Enum.map(&Phos.Comments.delete_comment(&1))
+
+      Phos.Comments.delete_comment(c)
+    end)
+
+    from(m in Phos.Message.Memory,
+      where: m.user_source_id == ^u.id
+    )
+    |> Phos.Repo.all()
+    |> Enum.map(&Phos.Message.delete_memory(&1))
+
+    from(o in Phos.Action.Orb,
+      where: o.initiator_id == ^u.id
+    )
+    |> Phos.Repo.all()
+    |> Enum.map(&Phos.Action.delete_orb(&1))
+
+    from(u in Phos.Users.Auth,
+      where: u.user_id == ^u.id
+    )
+    |> Phos.Repo.all()
+    |> Enum.map(&Phos.Repo.delete!(&1))
+
+    from(r in Phos.Users.RelationBranch,
+      where: r.user_id == ^u.id,
+      inner_join: root in assoc(r, :root),
+      select: root
+    )
+    |> Phos.Repo.all()
+    |> Enum.map(&Phos.Folk.delete_relation(&1))
+
+    from(n in Phos.PlatformNotification.Store,
+      where: n.recipient_id == ^u.id
+    )
+    |> Phos.Repo.all()
+    |> Enum.map(&Phos.Repo.delete!(&1))
+
+    Phos.Users.delete_user(u)
+  end
+
   #   @doc """
   #   Returns an `%Ecto.Changeset{}` for tracking user changes.
 
