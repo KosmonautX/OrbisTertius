@@ -27,11 +27,11 @@
   
   <div class="flex container mx-auto w-full flex-col items-center justify-center lg:px-48 px-4 md:px-10 dark:bg-gray-900 bg-white" id="search-result" :if={not is_nil(@article)}>
    <div class="flex flex-col w-full mt-3 space-y-1">
-     <span class="font-bold text-sm lg:text-left text-center mt-2 dark:text-white">EXPLAINERS 
+     <span class="font-bold text-sm text-left mt-2 dark:text-white">EXPLAINERS 
       <i class="text-purple-600 font-bold">|</i> 
       <span class="text-gray-700 font-normal dark:text-gray-300">JULY 25, 2023</span>
      </span>
-    <h2 class="lg:text-4xl text-2xl font-medium	text-black lg:text-left text-center dark:text-gray-200"><%= Map.get(@article, :title) %></h2>
+    <h2 class="lg:text-4xl text-2xl font-medium	text-black text-left dark:text-gray-200"><%= Map.get(@article, :title) %></h2>
        <div class="flex items-center space-x-2">
          <div class="flex-shrink-0">
            <img class="h-14 w-14" src="/images/demo.jpg" alt="Neil image" />
@@ -49,20 +49,29 @@
          <div :for={{par, index} <- Map.get(@article, :article) |>Enum.with_index()}>
           <div class="flex flex-col mb-4">
             <img src={Map.get(@article, :medias) |> Enum.at(index)} :if={not is_nil(Map.get(@article, :medias) |> Enum.at(index))} class="lg:h-96 h-80 w-full object-cover"/>
-            <p class="text-base dark:text-purple-600 lg:text-left text-center text-gray-500 font-bold mt-2">Photo by @sowmi1010</p>
+            <p class="text-base dark:text-purple-600 text-left text-gray-500 font-bold mt-2">Photo by @sowmi1010</p>
             <p :for={text <- par} class="paragraph-font text-base lg:text-lg text-black font-medium	 dark:text-gray-400 py-2"><%= text %></p>
-             <hr class="my-2 h-2 w-48 rounded border-2 bg-purple-600 dark:bg-gray-700 " />
+             <hr class="h-2 w-48 bg-purple-600" />
           </div>
          </div>
          <div class="flex flex-wrap items-center justify-center gap-3 font-bold mt-3">
            <span class="dark:text-white">Related categories:</span>
-           <span :for={category <- Map.get(@article, :traits)} class="lg:rounded-lg rounded-2xl bg-purple-600 px-1.5 py-0.5 text-base text-white font-miller tracking-wide	"><%= category %></span>
+           <span :for={category <- Map.get(@article, :traits)} class="lg:rounded-lg rounded-2xl bg-purple-600 px-1.5 py-0.5 text-base text-white font-miller tracking-wide"><%= category %></span>
          </div>
         </div>
-         <div class="flex  flex-1 w-full lg:max-w-sm flex-col">
+         <div class="hidden lg:block flex flex-1 w-full lg:max-w-sm flex-col">
            <.editor_picks/>
-        </div>
+         </div>
       </div>
+      <hr class="w-full h-0.5 bg-gray-400 my-2"/>
+        <div class="py-2">
+          <h2 class="lg:text-left text-center lg:text-[30px] md:text-lg text-gray-700 font-normal px-2 dark:text-purple-600">LATEST NEWS FROM VULTURE</h2>
+          <.search_results
+          show_author={false}
+          show_info={false}
+          
+          />
+         </div>
     </div>
 
     
@@ -85,7 +94,8 @@
           <.link navigate={~p"/orb/article"}>
            <p class="px-1 my-2 text-center text-lg dark:text-gray-300 lg:text-left font-miller">Related article for<span class="font-bold italic text-purple-600"><%= inspect @search_query %></span></p>
           </.link>
-          <.search_results/>
+          <.search_results
+            show_author={true}/>
        </div>
       </div>
     </div>

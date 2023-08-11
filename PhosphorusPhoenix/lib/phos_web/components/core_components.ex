@@ -2802,29 +2802,52 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  attr(:show_author, :boolean)
+  attr(:show_info, :boolean, default: true)
+
   def search_results(assigns) do
     ~H"""
     <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700 font-miller">
       <li class="bg-white dark:bg-gray-900 px-2 py-3 sm:py-4">
-        <div class="flex items-center space-x-4">
+        <div class="flex lg:gap-10 gap-2 items-center space-x-4">
           <div class="min-w-0 flex-1 space-y-1">
             <p class="lg:text-base dark:text-gray-400 text-sm font-semibold text-black">
               Micro Salse <b class="text-purple-600"> | </b>
-              <span class="lg:text-sm text-xs text-gray-400 dark:text-gray-600"> May 10, 2023 </span>
-            </p>
-            <span class="lg:text-lg text-base font-bold text-gray-900 dark:text-gray-200">
-              Everything Worth Buying From Sephora’s Savings Event
-              <span class="lg:text-base text-sm font-normal text-gray-500 dark:text-gray-400">
-                Sephora has taken over my phone this week. My FYP on TikTok
+              <span class={[
+                @show_info == false && "text-purple-500",
+                "lg:text-sm text-xs text-gray-400 dark:text-gray-600"
+              ]}>
+                May 10, 2023
               </span>
+            </p>
+
+            <span class={[
+              @show_info == false && "lg:text-[28px]",
+              "lg:text-lg text-base font-bold text-gray-900 dark:text-gray-200"
+            ]}>
+              Everything Worth Buying From Sephora’s Savings Event
             </span>
-            <p class="lg:text-base text-sm font-medium italic text-gray-700 dark:text-gray-600">
+
+            <span class={[
+              @show_info == false && "lg:text-[20px]",
+              "lg:text-base text-sm font-normal text-gray-500 dark:text-gray-400"
+            ]}>
+              Sephora has taken over my phone this week. My FYP on TikTok
+            </span>
+
+            <p
+              :if={@show_author}
+              class="lg:text-base text-sm font-medium italic text-gray-700 dark:text-gray-600"
+            >
               By Sam Daly
             </p>
           </div>
           <div class="flex-shrink-0">
             <img
-              class="lg:h-28 lg:w-48 h-20 w-28"
+              class={[
+                @show_info == false && "lg:h-48 lg:w-80",
+                "lg:h-28 lg:w-48 h-20 w-28 object-cover float-right lg:float-none"
+              ]}
               src="https://picsum.photos/200/300"
               alt="Neil image"
             />
@@ -2858,21 +2881,6 @@ defmodule PhosWeb.CoreComponents do
               </p>
               <p class="truncate text-base font-normal text-gray-500 dark:text-gray-400">
                 GILGO BEACH MURDERS JULY 25, 2023 My Boss, the Monster What else Rex Heuermann was up to as he allegedly committed the Gilgo Beach murders.
-              </p>
-            </div>
-          </div>
-        </li>
-        <li class="py-3 sm:py-4">
-          <div class="flex items-center space-x-4">
-            <div class="flex-shrink-0">
-              <img class="h-20 w-20" src="https://picsum.photos/200/300" alt="Bonnie image" />
-            </div>
-            <div class="min-w-0 flex-1">
-              <p class="truncate text-lg font-bold text-gray-900 dark:text-gray-200">
-                CONCERT REVIEW
-              </p>
-              <p class="truncate text-base font-normal text-gray-500 dark:text-gray-400">
-                Drake May Be on Tour But He’s Stuck in Neverland
               </p>
             </div>
           </div>
