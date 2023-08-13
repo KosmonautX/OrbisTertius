@@ -119,7 +119,7 @@ defmodule Phos.Action do
     from(o in Orb,
       as: :orb,
       where: o.userbound != true and not fragment("? @> ?", o.traits, ^["exile"]),
-      inner_join: l in Phos.Action.Orb_Location, on: l.location_id in ^hashes and l.orb_id == o.id,
+      inner_join: l in Orb_Location, on: l.location_id in ^hashes and l.orb_id == o.id,
       inner_join: initiator in assoc(o, :initiator),
       left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,

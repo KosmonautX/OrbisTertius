@@ -138,7 +138,7 @@ PUT :ipAddress/userland/self/
             "resolution": "lossy"
         }
     ],
-    "traits": [],
+    "traits": ["exile"],
     "soulorb": {
         "title": "wow",
         "payload": {
