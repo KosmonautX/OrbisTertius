@@ -1,50 +1,60 @@
-<div class="mb-4 font-poppins">
+<div class="font-poppins">
   <h3 :if={not is_nil(@reply_comment)} class="text-sm font-bold text-gray-600 dark:text-white">
     <%= to_string(@action) %>: <%= @comment.body %>
   </h3>
-  <div class="relative flex flex-col justify-between">
+  <div class="relative w-full lg:mb-2 mb-0 lg:px-0 px-3">
     <.simple_form
       :let={f}
-      class="flex justify-between w-full"
       for={@changeset}
       id={@id}
       phx-target={@myself}
-      phx-submit={@action}
-    >
+      class="lg:px-1 px-0 lg:py-1 py-2 flex rounded-b-3xl rounded-none"
+      phx-submit={@action}>
       <div :if={@action == :edit and not is_nil(@comment)}>
         <.input field={{f, :body}} type="textarea" value={@comment.body} />
         <.input field={{f, :comment_id}} type="hidden" value={@comment.id} />
       </div>
-
-      <.input
-        :if={@action != :edit}
-        field={{f, :body}}
-        class="flex-1"
-        type="textarea"
-        hide_error={true}
-        placeholder="Add a comment..."
-      />
+      <div class="flex items-center justify-center w-full gap-2 lg:px-0 px-2">
+        <img
+          class="lg:w-12 lg:h-12 h-9 w-9 rounded-full object-cover shrink-0"
+          src={not is_nil(@current_user) and Phos.Orbject.S3.get!("USR", Map.get(@current_user, :id), "public/profile/lossy") || "https://picsum.photos/200/300"}
+          onerror="this.src='https://picsum.photos/200/300';"/>
+        <.input
+          :if={@action != :edit}
+          field={{f, :body}}
+          type="textarea"
+          class="w-full flex"
+          hide_error={true}
+          placeholder={"Reply to #{@orb.initiator.username} here..."}
+        />
+      </div>
 
       <:actions>
-        <button :if={not is_nil(@current_user)} type="submit" phx-disable-with="Saving..." class="absolute right-2.5 bottom-3.5">
-        <.send_btn type="send"/>
-        </button>
-      <a :if={is_nil(@current_user)} phx-click={show_modal("welcome_message")} class="absolute right-2.5 bottom-3.5">
-       <.send_btn type="send"/>
-      </a>
         <button
+          :if={not is_nil(@current_user)}
+          type="submit"
+          phx-disable-with="Saving..."
+          class="absolute inset-y-0 right-3 lg:right-2 md:right-4">
+          <.send_btn type="send" class="h-4 md:h-5"/>
+        </button>
 
+        <button
           :if={@action in [:reply, :edit]}
           type="reset"
-          class="absolute right-10 bottom-2"
+          class="absolute right-7  md:right-8"
           phx-click={"cancel-#{@action}"}
           phx-target={"#comment-#{@comment.id}"}
         >
-          <Heroicons.x_circle class="h-9 w-9 text-amber-400 font-bold mr-2 mb-1.5" />
+          <Heroicons.x_circle class="h-7 w-7 text-amber-400 mr-2 mb-1.5" />
         </button>
       </:actions>
 
-      <.input :if={not is_nil(@current_user)} field={{f, :initiator_id}} type="hidden" value={@current_user.id} />
+      <.input
+        :if={not is_nil(@current_user)}
+        field={{f, :initiator_id}}
+        type="hidden"
+        value={@current_user.id}
+      />
       <.input field={{f, :orb_id}} type="hidden" value={@orb.id} />
       <div :if={@action == :reply}>
         <.input field={{f, :parent_id}} type="hidden" value={@comment.id} />

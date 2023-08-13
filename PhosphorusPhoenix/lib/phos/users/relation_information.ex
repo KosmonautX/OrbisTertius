@@ -71,4 +71,28 @@ defmodule Phos.Users.RelationRoot do
     |> cast_assoc(:branches, with: &RelationBranch.complete_friendship_changeset/2)
     |> validate_required([:state])
   end
+
+  def transition_changeset(root = %{data: %RelationRoot{initiator_id: init, acceptor_id: acpt}}, _, "blocked", params) do
+    now = NaiveDateTime.utc_now()
+    branches = [
+      %{
+        "blocked_at" => now,
+        "friend_id" => init,
+        "user_id" => acpt
+      },
+      %{
+        "blocked_at" => now,
+        "friend_id" => acpt,
+        "user_id" => init
+      }
+    ]
+
+    branched_params = %{state: params["state"], branches: branches}
+
+    root.data
+    |> Repo.preload(:branches)
+    |> cast(branched_params , [:state])
+    |> cast_assoc(:branches, with: &RelationBranch.complete_blockship_changeset/2)
+    |> validate_required([:state])
+  end
 end

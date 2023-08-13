@@ -1,15 +1,28 @@
 defmodule Phos.PlatformNotification.Global do
   use GenServer
 
-  defstruct [:action_path, :active, :archetype, :archetype_id, :frequency, :id, :regions, :target_group, :title, :body , :time_condition, :trigger]
-
-  alias Phos.PlatformNotification, as: PN
+  defstruct [
+    :action_path,
+    :active,
+    :archetype,
+    :archetype_id,
+    :frequency,
+    :id,
+    :regions,
+    :target_group,
+    :title,
+    :body,
+    :time_condition,
+    :trigger
+  ]
 
   def start_link(opts), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
 
   @impl true
-  def init(_opts) do 
-    table = :ets.new(:platform_notification_global_registry, [:set, :protected, read_concurrency: true])
+  def init(_opts) do
+    table =
+      :ets.new(:platform_notification_global_registry, [:set, :protected, read_concurrency: true])
+
     {:ok, table}
   end
 
@@ -19,31 +32,39 @@ defmodule Phos.PlatformNotification.Global do
   end
 
   def execute(id) do
-    :logger.debug(%{
-      label: {Phos.PlatformNotification.Global, "execute notification with certain id"},
-      report: %{
-        module: __MODULE__,
-        id: id,
+    :logger.debug(
+      %{
+        label: {Phos.PlatformNotification.Global, "execute notification with certain id"},
+        report: %{
+          module: __MODULE__,
+          id: id
+        }
+      },
+      %{
+        domain: [:phos],
+        error_logger: %{tag: :debug_msg}
       }
-    }, %{
-      domain: [:phos],
-      error_logger: %{tag: :debug_msg}
-    })
+    )
+
     # execute the notification
     GenServer.cast(__MODULE__, {:execute, id})
   end
 
   def get(id) do
-    :logger.debug(%{
-      label: {Phos.PlatformNotification.Global, "get global notification with id"},
-      report: %{
-        module: __MODULE__,
-        id: id,
+    :logger.debug(
+      %{
+        label: {Phos.PlatformNotification.Global, "get global notification with id"},
+        report: %{
+          module: __MODULE__,
+          id: id
+        }
+      },
+      %{
+        domain: [:phos],
+        error_logger: %{tag: :debug_msg}
       }
-    }, %{
-      domain: [:phos],
-      error_logger: %{tag: :debug_msg}
-    })
+    )
+
     # execute the notification
     GenServer.call(__MODULE__, {:get, id})
   end
@@ -53,48 +74,60 @@ defmodule Phos.PlatformNotification.Global do
   end
 
   def renew do
-    :logger.debug(%{
-      label: {Phos.PlatformNotification.Global, "renewing all global notification"},
-      report: %{
-        module: __MODULE__,
-        action: :renew,
+    :logger.debug(
+      %{
+        label: {Phos.PlatformNotification.Global, "renewing all global notification"},
+        report: %{
+          module: __MODULE__,
+          action: :renew
+        }
+      },
+      %{
+        domain: [:phos],
+        error_logger: %{tag: :debug_msg}
       }
-    }, %{
-      domain: [:phos],
-      error_logger: %{tag: :debug_msg}
-    })
+    )
+
     # delete last scheduller and fetch new
     GenServer.cast(__MODULE__, :renew)
   end
 
   def start(id) do
-    :logger.debug(%{
-      label: {Phos.PlatformNotification.Global, "update global notification with id"},
-      report: %{
-        module: __MODULE__,
-        action: :start,
-        id: id,
+    :logger.debug(
+      %{
+        label: {Phos.PlatformNotification.Global, "update global notification with id"},
+        report: %{
+          module: __MODULE__,
+          action: :start,
+          id: id
+        }
+      },
+      %{
+        domain: [:phos],
+        error_logger: %{tag: :debug_msg}
       }
-    }, %{
-      domain: [:phos],
-      error_logger: %{tag: :debug_msg}
-    })
+    )
+
     # start
     GenServer.call(__MODULE__, {:update_status, id, true})
   end
 
   def stop(id) do
-    :logger.debug(%{
-      label: {Phos.PlatformNotification.Global, "update global notification with id"},
-      report: %{
-        module: __MODULE__,
-        action: :stop,
-        id: id,
+    :logger.debug(
+      %{
+        label: {Phos.PlatformNotification.Global, "update global notification with id"},
+        report: %{
+          module: __MODULE__,
+          action: :stop,
+          id: id
+        }
+      },
+      %{
+        domain: [:phos],
+        error_logger: %{tag: :debug_msg}
       }
-    }, %{
-      domain: [:phos],
-      error_logger: %{tag: :debug_msg}
-    })
+    )
+
     # stop
     GenServer.call(__MODULE__, {:update_status, id, false})
   end
@@ -119,7 +152,9 @@ defmodule Phos.PlatformNotification.Global do
       {:ok, data, true} ->
         send_notification(data)
         {:noreply, state}
-      _ -> {:noreply, state}
+
+      _ ->
+        {:noreply, state}
     end
   end
 
@@ -134,14 +169,19 @@ defmodule Phos.PlatformNotification.Global do
   @impl true
   def handle_call({:update_status, id, status}, _from, state) do
     case lookup(state, id) do
-      {:ok, _data, current_status} when current_status == status -> {:reply, "Cannot update status", state}
-      {:ok, %{id: id} = data, _current_status} -> 
+      {:ok, _data, current_status} when current_status == status ->
+        {:reply, "Cannot update status", state}
+
+      {:ok, %{id: id} = data, _current_status} ->
         Phos.External.Notion.update_platform_notification(id, %{
           properties: %{"Active" => %{"checkbox" => status}}
-        }) 
+        })
+
         GenServer.cast(__MODULE__, :renew)
         {:reply, Map.put(data, :active, status), state}
-      _ -> {:reply, "data not found", state}
+
+      _ ->
+        {:reply, "data not found", state}
     end
   end
 
@@ -154,7 +194,7 @@ defmodule Phos.PlatformNotification.Global do
 
   @impl true
   def handle_call(:list, _from, state) do
-    data = 
+    data =
       :ets.tab2list(state)
       |> Enum.map(fn {_id, d, active} ->
         Map.put(d, :active, active)
@@ -192,19 +232,19 @@ defmodule Phos.PlatformNotification.Global do
     |> Phos.Action.notifiers_by_geohashes()
     |> Enum.map(fn n -> n && Map.get(n, :fcm_token, nil) end)
     |> MapSet.new()
-    #|> batch
+    # |> batch
     |> tap(fn batch ->
-               Enum.chunk_every(batch, 499)
-               |> Enum.map(fn tokens ->
-                 Sparrow.FCM.V1.Notification.new(:token,
-                   tokens,
-                   data.title, data.body,
-                   %{action_path: action_path <> "/#{id}",
-                     cluster_id: "platform"})
-               end)
-               |> Enum.map(fn geonotif ->
-                 geonotif
-                 |> Sparrow.API.push() end)
-             end)
+      Enum.chunk_every(batch, 499)
+      |> Enum.map(fn tokens ->
+        Sparrow.FCM.V1.Notification.new(:token, tokens, data.title, data.body, %{
+          action_path: action_path <> "/#{id}",
+          cluster_id: "platform"
+        })
+      end)
+      |> Enum.map(fn geonotif ->
+        geonotif
+        |> Sparrow.API.push()
+      end)
+    end)
   end
 end

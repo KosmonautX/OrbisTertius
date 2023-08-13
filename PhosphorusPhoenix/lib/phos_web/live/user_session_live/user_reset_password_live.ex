@@ -8,9 +8,8 @@ defmodule PhosWeb.UserResetPasswordLive do
     <div class="flex flex-col h-screen justify-center items-center">
       <.header class="text-center">Reset Password</.header>
 
-      <.simple_form
+      <.simple_form class="max-w-2xl p-4 space-y-4 rounded-2xl mt-4"
         :let={f}
-        class="w-94 p-4"
         for={@changeset}
         id="reset_password_form"
         phx-submit="reset_password"

@@ -1,0 +1,75 @@
+<section class="bg-white" phx-drop-target={@uploads.image.ref}>
+  <div class="flex w-full flex-wrap gap-4 px-6  bg-[#F3F4F8] lg:bg-white dark:bg-gray-900 lg:dark:bg-gray-800">
+    <%= for entry <- @uploads.image.entries do %>
+      <article class="upload-entry relative py-1.5">
+        <figure class="w-32">
+          <.live_img_preview
+            class="h-32 w-32 object-cover rounded-2xl"
+            entry={entry}
+          />
+          <!--<figcaption class="text-[6px] lg:text-xs text-teal-500 break-words">
+            <%= entry.client_name %>
+          </figcaption>-->
+        </figure>
+        <!-- <progress class="h-1 w-24 lg:h-2 lg:w-32" value={entry.progress} max="100">
+          <%= entry.progress %>%
+        </progress>-->
+        <button
+          class="absolute right-0 top-2 rounded-full border px-2"
+          type="button"
+          phx-click="cancel-upload"
+          phx-value-ref={entry.ref}
+          aria-label="cancel"
+        >
+          &times;
+        </button>
+         <div :for={err <- upload_errors(@uploads.image, entry)} class="alert alert-danger">
+              <%= error_to_string(err) %>
+          </div>
+       </article>
+    <% end %>
+  </div>
+
+
+  <.simple_form
+    :let={f}
+    class="flex items-center justify-between relative lg:py-2 py-3 px-1 lg:px-0 bg-[#F3F4F8] lg:bg-white dark:bg-gray-900 lg:dark:bg-gray-800"
+    for={@changeset}
+    id={"#{@id}-memory-form"}
+    phx-target={@myself}
+    phx-change="validate"
+    phx-submit="save"
+    phx-hook="EnterSubmit">
+    <label :if={!is_nil(@rel)} class="flex items-center px-1.5">
+      <Heroicons.plus class="h-5 w-5 lg:h-6 lg:w-6 dark:text-white text-gray-700" />
+      <.live_file_input upload={@uploads.image} class="hidden" />
+    </label>
+    <.live_component
+        :if={is_nil(@rel) and !is_nil(@user)}
+        id={"#{@id}-ally-button"}
+        module={PhosWeb.Component.AllyButton}
+        current_user={@current_user}
+        socket={@socket}
+        size="small"
+        parent_pid={self()}
+        user={@user}
+      />
+    <.input
+      disabled = {is_nil(@rel) and !is_nil(@user)}
+      field={{f, :message}}
+      class="flex relative w-full bg-[#F9F9F9] dark:bg-gray-800 lg:dark:bg-gray-900 text-sm rounded-2xl block dark:placeholder-[#D1D1D1] dark:text-white px-3 py-1 text-gray-900 placeholder-[#B3B5BD]"
+      hide_error={true}
+      type="textarea" 
+      placeholder={if not is_nil(@rel), do: "Scratching...", else: "<-- Click Purple ➕ to ally before messaging!"}/>
+    <.input field={{f, :user_source_id}} type="hidden" value={@current_user.id} />
+    <.input :if={!is_nil(@rel)} field={{f, :rel_subject_id}} type="hidden" value={@rel} />
+    <:actions>
+      <button :if={!is_nil(@rel)} type="submit" phx-disable-with="Saving..." class="absolute right-4 inset-y-0">
+        <.chat_send type="send" />
+      </button>
+    </:actions>
+    
+
+  </.simple_form>
+  
+</section>

@@ -35,8 +35,25 @@ defmodule PhosWeb.ConnCase do
   end
 
   setup tags do
+
+    # start_owner uses a separate process to own the connection and
+    # this process will terminate after the dangling presence processes are DOWN
+    on_exit(fn ->
+      # does timer here make it more reliable(?)
+      :timer.sleep(100)
+      for pid <- PhosWeb.Presence.fetchers_pids() do
+        ref = Process.monitor(pid)
+        assert_receive {:DOWN, ^ref, _, _, _}, 1000
+      end
+    end)
+
+    # the owner of the connection will be a separate process (from the test process)
+    # that then we will terminate 
+
     pid = Ecto.Adapters.SQL.Sandbox.start_owner!(Phos.Repo, shared: not tags[:async])
+
     on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
+
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 

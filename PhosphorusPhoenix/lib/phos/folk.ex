@@ -63,12 +63,26 @@ defmodule Phos.Folk do
     |> where([b], b.user_id == ^id)
     |> join(:inner, [b], f in assoc(b, :friend))
     |> select([_b, f], f)
-    |> join(:inner, [b, _f], r in assoc(b, :root), as: :relation)
+    |> join(:inner, [b, _f], r in assoc(b, :root), as: :self_relation)
     |> select_merge([_b, f, root], %{f | self_relation: root} )
     |> join(:inner, [_b, r,  f], m in assoc(f, :last_memory))
     |> join(:left, [_b, _f, r, m], o in assoc(m, :orb_subject))
     |> select_merge([_b, f, r, m, o], %{f| self_relation: %{r | last_memory: %{m | orb_subject: o}}})
-    |> Repo.Paginated.all([{:sort_attribute, {:relation , :updated_at}} | opts])
+    |> Repo.Paginated.all([{:sort_attribute, {:self_relation , :updated_at}} | opts])
+  end
+
+  def search_last_messages(id, search, opts) when is_list(opts) do
+    search = "%#{search}%"
+    RelationBranch
+    |> where([b], b.user_id == ^id)
+    |> join(:inner, [b], f in assoc(b, :friend), on: ilike(f.username, ^search))
+    |> select([_b, f], f)
+    |> join(:inner, [b, _f], r in assoc(b, :root), as: :self_relation)
+    |> select_merge([_b, f, root], %{f | self_relation: root} )
+    |> join(:inner, [_b, r,  f], m in assoc(f, :last_memory))
+    |> join(:left, [_b, _f, r, m], o in assoc(m, :orb_subject))
+    |> select_merge([_b, f, r, m, o], %{f| self_relation: %{r | last_memory: %{m | orb_subject: o}}})
+    |> Repo.Paginated.all([{:sort_attribute, {:self_relation , :updated_at}} | opts])
   end
 
   #   @doc """
@@ -88,6 +102,25 @@ defmodule Phos.Folk do
     %RelationRoot{}
     |> RelationRoot.gen_branches_changeset(attrs)
     |> Repo.insert()
+    |> case do
+         {:ok, %RelationRoot{state: "requested"} = rel} = data ->
+           rel = rel
+           |> Repo.preload([:initiator])
+           spawn(fn ->
+             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.acceptor_id}", "#{rel.initiator.username}", "Requested to be your Ally. Accept to Chat! 👋",
+               %{title: "#{rel.initiator.username}",
+                 body: "Requested to be your Ally. Accept to Chat! 👋",
+                 action_path: "/folkland/self/requests",
+                 cluster_id: "folk_req",
+                 initiator_id: rel.initiator_id
+               })
+               |> Sparrow.FCM.V1.Notification.add_apns(Phos.PlatformNotification.Config.APNS.gen())
+               |> Sparrow.API.push()
+           end)
+           data
+         {:ok, %RelationRoot{}} = data -> data
+         err -> err
+       end
   end
 
   #   @doc """
@@ -163,32 +196,24 @@ defmodule Phos.Folk do
 
   """
   def add_friend(requested_id, acceptor_id, state \\ "requested")
+  def add_friend(requester_id, acceptor_id, "blocked") when requester_id != acceptor_id do
+    now = NaiveDateTime.utc_now()
+    %{"initiator_id" => requester_id,
+      "acceptor_id" => acceptor_id,
+      "branches" => [%{"user_id" => acceptor_id, "friend_id"=> requester_id, "blocked_at" => now},
+                     %{"user_id" => requester_id, "friend_id"=> acceptor_id, "blocked_at" => now}],
+      "state" => "blocked"}
+    |>
+    create_relation()
+  end
   def add_friend(requester_id, acceptor_id, state) when requester_id != acceptor_id do
-    payload = %{"initiator_id" => requester_id,
-                "acceptor_id" => acceptor_id,
-                "branches" => [%{"user_id" => acceptor_id, "friend_id"=> requester_id},
-                               %{"user_id" => requester_id, "friend_id"=> acceptor_id}],
-               "state" => state}
-    create_relation(payload)
-    |> case do
-         {:ok, %RelationRoot{state: "requested"} = rel} = data ->
-           rel = rel
-           |> Repo.preload([:initiator])
-           spawn(fn ->
-             Sparrow.FCM.V1.Notification.new(:topic, "USR.#{rel.acceptor_id}", "#{rel.initiator.username}", "Requested to be your Ally. Accept to Chat! 👋",
-               %{title: "#{rel.initiator.username}",
-                 body: "Requested to be your Ally. Accept to Chat! 👋",
-                 action_path: "/folkland/self/requests",
-                 cluster_id: "folk_req",
-                 initiator_id: rel.initiator_id
-               })
-               |> Sparrow.FCM.V1.Notification.add_apns(Phos.PlatformNotification.Config.APNS.gen())
-               |> Sparrow.API.push()
-           end)
-           data
-         {:ok, %RelationRoot{}} = data -> data
-         err -> err
-       end
+    %{"initiator_id" => requester_id,
+      "acceptor_id" => acceptor_id,
+      "branches" => [%{"user_id" => acceptor_id, "friend_id"=> requester_id},
+                     %{"user_id" => requester_id, "friend_id"=> acceptor_id}],
+      "state" => state}
+    |>
+    create_relation()
   end
   def add_friend(_requester_id, _acceptor_id, _state), do: {:error, "API not needed to connect to your own inner self"}
 
@@ -392,4 +417,10 @@ defmodule Phos.Folk do
 
   defp do_get_feeds(friend_ids), do: Phos.Action.list_orbs([initiator_id: friend_ids])
 
+  def set_last_read(relations, user_id) when is_list(relations) do
+    time  = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    from(r in RelationBranch, where: r.user_id == ^user_id and r.root_id in ^relations)
+    |> Repo.update_all(set: [last_read_at: time])
+  end
+  def set_last_read(relation, user_id), do: set_last_read([relation], user_id)
 end

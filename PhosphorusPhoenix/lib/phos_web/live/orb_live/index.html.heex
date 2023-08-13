@@ -3,32 +3,19 @@
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
     integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
-    crossorigin=""
-  />
+    crossorigin=""/>
   <script
     src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
     integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
-    crossorigin=""
-  >
+    crossorigin="">
   </script>
 </head>
-
-<h1 class="text-2xl font-bold md:mt-24 mt-14 dark:text-white">Listing Orbs</h1>
-
-<div :if={not is_nil(@current_user)}>
-  <.link class="dark:text-white" patch={~p"/orb/sethome"}>Set Home</.link>
-  <.link class="dark:text-white" patch={~p"/orb/setwork"}>Set Work</.link>
-</div>
-
-<div id="gps" phx-hook="InitPosition" phx-update="ignore" />
-
 <.modal
   :if={@live_action in [:setwork, :sethome]}
   id={"modal_for_#{@live_action}"}
   show={@live_action in [:sethome, :setwork]}
   on_cancel={JS.navigate(~p"/orb")}
-  on_confirm={JS.navigate(~p"/orb")}
->
+  on_confirm={JS.navigate(~p"/orb")}>
   <.live_component
     id={:setlocation}
     module={PhosWeb.OrbLive.MapComponent}
@@ -39,14 +26,12 @@
     return_to={~p"/orb"}
   />
 </.modal>
-
 <.modal
   :if={@live_action in [:new, :edit]}
   id={"modal_for_#{@live_action}"}
   show={@live_action in [:edit, :new]}
   on_cancel={JS.navigate(~p"/orb")}
-  on_confirm={JS.navigate(~p"/orb")}
->
+  on_confirm={JS.navigate(~p"/orb")}>
   <.live_component
     module={PhosWeb.OrbLive.FormComponent}
     id={@orb.id || :new}
@@ -59,31 +44,90 @@
   />
 </.modal>
 
-<div id="wrapper" phx-update="ignore">
-  <div id="map" phx-hook="InitIndexMap" style="height: 400px; z-index: -1"></div>
-</div>
-<div :for={{key, value} <- @addresses}>
-  <h2><%= String.capitalize(to_string(key)) %> Orbs</h2>
-  <.table id={"table_for_#{key}"} rows={location_fetcher(value, @geolocation)}>
-    <:col :let={orb} label="Title"><%= orb.title %></:col>
-    <:col :let={orb} label="Active"><%= orb.active %></:col>
-    <:col :let={orb} label="Extinguish"><%= orb.extinguish %></:col>
-    <:col :let={orb} label="Comments"><%= orb.comment_count %></:col>
+    <div class="fixed top-14 w-full bg-white z-10 dark:bg-gray-900">
+     <.tabs_mobile_view title="ScratchBac Admin" action={@live_action} home_path={~p"/orb"} >
+      <:information>
+        <Heroicons.bell class="h-6 w-6  text-gray-700 dark:text-white -mt-1 font-semibold" />
+      </:information>
+       <:item to={~p"/orb"} title="PPL" id="posts" icon="fa-clock"/>
+       <:item to={~p"/orb"} title="AROUND" id="posts" icon="fa-clock"/>
+       <:item to={~p"/orb"} title="FLLW" id="posts" icon="fa-clock"/>
+     </.tabs_mobile_view>
+    </div>
 
-    <:action :let={orb}>
-      <div id={"#{key}orb-#{orb.id}"}>
-        <.link href={~p"/orb/#{orb.id}"}>Show</.link>
+<section class="flex flex-col h-screen w-full">
+   <form class="flex items-center gap-1 top-20 mt-1 fixed z-10 bg-white w-full dark:bg-gray-900 p-2 lg:hidden block md:px-10">
+     <div class="flex flex-shrink-0 -space-x-4">
+      <img class="h-8 w-8 overflow-hidden rounded-full border-2 border-white dark:border-gray-800" src="https://picsum.photos/200/300" />
+      <img class="h-8 w-8 overflow-hidden rounded-full border-2 border-white dark:border-gray-800" src="https://picsum.photos/200/300" />
+      <img class="h-8 w-8 overflow-hidden rounded-full border-2 border-white dark:border-gray-800" src="https://picsum.photos/200/300" />
+     </div>
+     <div class="relative w-full">
+      <input type="text" id="simple-search" class="block w-full rounded-3xl bg-[#EEEFF3] p-2 pl-2 text-sm font-light placeholder-[#B3B5BD] dark:bg-[#282828] border-none hover:border-transparent" placeholder="10 pepole are near you right now"/>
+     </div>
+     <button type="submit" class="ml-2 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#EEEFF3] dark:bg-[#282828]"><Heroicons.map class="h-5 w-5 text-[#B3B5BD]" /></button>
+   </form>
 
-        <.link navigate={~p"/orb/#{orb.id}/edit"}>Edit</.link>
-
-        <.link phx-click={JS.push("delete", value: %{id: orb.id})} data-confirm="Are you sure?">
-          Delete
-        </.link>
+   <div class="mt-36 lg:mt-16 2xl:px-[600px] lg:px-36 xl:px-36">
+    <h1 class="text-2xl font-bold dark:text-white lg:px-0 px-2 md:px-10">Listing Orbs</h1>
+      <div :if={not is_nil(@current_user)} class="lg:px-0 px-2 md:px-10">
+        <.link class="dark:text-white" patch={~p"/orb/sethome"}>Set Home</.link>
+        <.link class="dark:text-white" patch={~p"/orb/setwork"}>Set Work</.link>
       </div>
-    </:action>
-  </.table>
-</div>
+      <div id="gps" phx-hook="InitPosition" phx-update="ignore" />
+        <div id="wrapper" phx-update="ignore">
+        <div id="map" phx-hook="InitIndexMap" class="flex items-center justify-center w-full max-auto h-96"  style="height: 400px; z-index: -1"></div>
+      </div>
+      <div :for={{key, value} <- @addresses}}>
+        <h2 class="lg:block hidden text-left font-semibold text-2xl dark:text-white border-b-2 border-black dark:border-white mb-2.5 py-2"><%= String.capitalize(to_string(key)) %> Orbs</h2>
+         <div id={"table_for_#{key}"} :for={orb <- location_fetcher(value, @geolocation)}>
+           <div class="my-2 rounded-b-3xl md:px-10 lg:px-0">
+            <.scry_orb id="orb"
+             orb={orb}
+             timezone={@timezone}
+             orb_color={true}
+             show_information={true}
+             show_padding={false}
+             profile_img={false}
+             show_user={true}
+             show_info={true}
+             show_location={false}
+             color={true}/>
 
-<div :if={not is_nil(@current_user)} class="my-6">
-  <.link class="dark:text-white text-base font-medium" patch={~p"/orb/new"}>New Orb</.link>
+            <div id={"#{key}orb-#{orb.id}"} class="text-xs font-bold text-gray-600 lg:px-3 lg:bg-white px-2  mx-3 dark:bg-gray-800 lg:mx-0 lg:dark:bg-gray-800 bg-[#F3F4F8] dark:text-white">
+             <.link phx-hook="transition"
+                 data-transition-from="transition-opacity duration-1000 ease-out"
+                 data-transition-to="opacity-100"
+                 navigate={~p"/orb/#{orb.id}"}
+                 class="transition-opacity duration-1000 ease-out opacity-100 link">Show</.link>
+
+              <.link navigate={~p"/orb/#{orb.id}/edit"}>Edit</.link>
+              <.link phx-click={JS.push("delete", value: %{id: orb.id})} data-confirm="Are you sure?">
+               Delete
+              </.link>
+            </div>
+
+             <div class="flex items-center lg:bg-white dark:bg-gray-900 gap-2 lg:dark:bg-gray-800 break-words lg:px-2 px-1 mx-3 lg:mx-0 dark:bg-gray-800 bg-[#F3F4F8] rounded-b-3xl pb-2">
+               <div class="flex flex-shrink-0 -space-x-1">
+                 <img class="h-6 w-6 overflow-hidden rounded-full border-2 border-white dark:border-gray-800" src="https://picsum.photos/200/300" />
+                 <img class="h-6 w-6 overflow-hidden rounded-full border-2 border-white dark:border-gray-800" src="https://picsum.photos/200/300" />
+                 <img class="h-6 w-6 overflow-hidden rounded-full border-2 border-white dark:border-gray-800" src="https://picsum.photos/200/300" />
+               </div> 
+                <p class="text-gray-900 font-normal lg:text-base text-sm dark:text-white">
+                   commented by <strong>username</strong> and <strong>others</strong>
+                </p>
+              </div>
+            </div>
+           </div>
+         </div>
+      </div>
+
+<div :if={not is_nil(@current_user)} class="fixed bottom-4 right-4">
+  <.link patch={~p"/orb/new"} id="New Orb">
+     <button type="button" class="text-white bg-teal-400 hover:bg-teal-800 font-semibold rounded-full h-14 w-14 dark:bg-teal-400 dark:hover:bg-teal-700 flex items-center justify-center">
+       <Heroicons.plus class="h-8 w-8 dark:text-white" />
+     <span class="sr-only">Icon description</span>
+     </button>
+  </.link>
 </div>
+</section>

@@ -1,32 +1,34 @@
 <!--desktop View -->
-<div class=" lg:bg-gray-100 bg-white dark:bg-gray-900 font-poppins">
+<div class=" lg:bg-gray-100 bg-white dark:bg-gray-900 font-poppins w-full ">
   <div class="hidden lg:block">
     <br />
     <br />
     <br />
   </div>
-  <div class="md:mt-0 mt-14 lg:px-20">
+  <div class="md:mt-0 mt-14 lg:flex lg:justify-center lg:items-center xl:gap-4 lg:gap-2">
     <div
       :if={not is_nil(@orb.initiator) && @orb.initiator}
-      class="flex lg:flex-row flex-col items-start mt-6 lg:gap-4"
+      class="flex flex-row  mt-6 lg:gap-4"
     >
       <!-- Desktop View in Orb View Profile-->
-      <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full max-w-full lg:w-3/12  lg:flex-none">
+      <div class="lg:block hidden mt-0 mb-6 md:mb-0 space-y-4 w-full 2xl:w-[384px] xl:w-[320px] lg:w-[300px]">
         <div>
           <.user_profile_banner
             id="orb-initiator-username"
             user={@orb.initiator}
             show_location={false}
-            main_height="lg:h-64"
-          >
-          </.user_profile_banner>
+            show_shadow=""
+            show_padding={false}
+            show_border={false}
+            main_height="lg:h-56"
+            text_color="text-white mt-2.5"
+          />
         </div>
         <div class="text-center">
           <.user_information_card_orb
             id="orb-initiator-public-profile"
             user={@orb.initiator}
-            flex=""
-          >
+            flex="">
             <:ally_button
               current_user={@current_user}
               user={@orb.initiator}
@@ -35,11 +37,12 @@
           </.user_information_card_orb>
         </div>
       </div>
+
       <!-- Post card and Comments-->
-      <div class="lg:hidden block w-full dark:bg-gray-900 sticky top-[50px] bg-white z-10 mb-2 md:mb-8">
-        <div class="flex flex-wrap items-center justify-center p-2 border-b border-gray-200">
+      <div class="lg:hidden block w-full dark:bg-gray-900 fixed md:top-14 top-12 bg-white z-10 mb-2 md:mb-8">
+        <div class="flex flex-wrap items-center justify-center px-2 py-2 md:py-3">
           <.link patch={~p"/user/#{@orb.initiator.username}"}>
-            <Heroicons.chevron_left class="w-6 h-6 dark:text-white font-semibold" />
+            <Heroicons.chevron_left class="md:w-6 md:h-6 h-5 w-5 dark:text-white font-semibold" />
           </.link>
           <span class="text-center text-base font-semibold text-gray-800 dark:text-white flex-1 items-center justify-center">
             <%= "#{@orb.initiator.username}'s Post" %>
@@ -47,7 +50,7 @@
         </div>
       </div>
 
-      <div class="lg:w-5/12 lg:flex-none w-full">
+      <div class="2xl:w-[580px] xl:w-[520px] lg:w-[400px] w-full">
         <.link patch={~p"/user/#{@orb.initiator.username}"}>
           <div class="hidden lg:block mb-2 w-full mx-auto">
             <span class="flex text-gray-600 dark:text-white text-base font-bold  mb-1.5">
@@ -58,41 +61,56 @@
             </span>
           </div>
         </.link>
-
-        <div class="w-full lg:rounded-3xl pb-5">
-          <.scry_orb id="orb" orb={@orb} timezone={@timezone} show_information={false} />
-          <.live_component
-            module={PhosWeb.CommentLive.IndexComponent}
-            id="commentindex"
-            timezone1={@timezone}
-            changeset={@changeset}
-            action="new"
-            orb={@orb}
-            comments={@comments}
-            reply_comment={nil}
-            edit_comment={nil}
-            current_user={@current_user}
-            socket={@socket}
-            live_action={@live_action}
-          />
-          <div
-            class="lg:hidden block bottom-0 z-10 fixed w-full px-4 bg-white dark:bg-gray-900"
-          >
-            <.live_component
-              module={PhosWeb.CommentLive.FormComponent}
-              changeset={@changeset}
-              current_user={@current_user}
+        <div class="w-full lg:px-0 md:px-10">
+          <div class="w-full lg:rounded-3xl pb-5 mt-10 md:mt-20 lg:mt-0">
+            <.scry_orb
+              id="orb"
               orb={@orb}
-              id={"create-root-comment-#{@orb.id}"}
-              target={nil}
-              action={:new}
+              timezone={@timezone}
+              show_information={true}
+              show_padding={false}
+              show_user={false}
+              show_location={false}
+              show_info={true}
+              color={true}
+              orb_color={false}
+              class="bg-white"
+            />
+            <.live_component
+              module={PhosWeb.CommentLive.IndexComponent}
+              id="commentindex"
+              timezone1={@timezone}
+              changeset={@changeset}
+              action="new"
+              orb={@orb}
+              root_comments={Phos.Comments.filter_root_comments_chrono(@comments)}
+              comments={@comments}
+              reply_comment={nil}
+              edit_comment={nil}
+              current_user={@current_user}
+              socket={@socket}
+              live_action={@live_action}
             />
           </div>
         </div>
+        <div class="lg:hidden block bottom-0 fixed w-full mx-auto bg-white dark:bg-gray-900 md:px-10 px-0">
+          <hr class="border dark:border-white" />
+          <.live_component
+            module={PhosWeb.CommentLive.FormComponent}
+            changeset={@changeset}
+            current_user={@current_user}
+            orb={@orb}
+            id={"create-root-comment-#{@orb.id}"}
+            target={nil}
+            action={:new}
+            color={true}
+          />
+        </div>
       </div>
+
       <!--Desktop Related Post-->
-      <div class="hidden lg:block w-full lg:w-4/12 lg:flex-none">
-        <h5 class="text-left font-semibold text-2xl dark:text-white mb-2">
+      <div class="hidden lg:block w-full 2xl:w-[448px] xl:w-[384px] lg:w-[320px] ">
+        <h5 class="text-left font-semibold text-lg dark:text-white mb-1">
           <%= "Other Posts by #{@orb.initiator.username}" %>
         </h5>
         <.live_component
@@ -100,18 +118,27 @@
           id="infinite-home"
           data={@streams.orbs}
           timezone1={@timezone}
+          color={true}
+          profile_img={false}
+          show_user={true}
+          show_info={false}
+          show_padding={true}
           meta={@orbs}
         />
       </div>
+
     </div>
   </div>
-  <.modal
+  <.gallerymodal
     :if={@live_action in [:show] and not is_nil(@media)}
     id="orb-media-preview"
     close_button={true}
-    show={@live_action in [:show] and not is_nil(@media)}
-  >
-    <.media_preview url={@media} />
-  </.modal>
-  <span :if={@streams.orbs |> Enum.count() < 3} class="hidden lg:block h-96 bg-gray-100" />
+    show={@live_action in [:show] and not is_nil(@media)}>
+    <.media_preview url={@media} orb={@orb} timezone={@timezone} id="orb-preview" />
+    <:title><%= "#{@orb.initiator.username}'s Post" %></:title>
+  </.gallerymodal>
+  <span
+    :if={@streams.orbs |> Enum.count() < 3}
+    class="hidden lg:block h-96 bg-gray-100 dark:bg-gray-900"
+  />
 </div>

@@ -1,4 +1,4 @@
-import {VideoMute} from "../modal_application"
+import { VideoMute } from "../modal_application";
 
 // assets/js/infinite_scroll.js
 export default Scroll = {
@@ -32,32 +32,50 @@ export default Scroll = {
     },
 };
 
-export const ScrollTop = {
+export const ScrollBottom = {
   mounted() {
-    let timer
-
-    this.scrolledElement = this.el.firstElementChild
+    this.scrolledElement = this.el
 
     if (!this.scrolledElement) return
-    if (this.scrolledElement.clientHeight > 0) this.scrolledElement.scrollTop = this.scrolledElement.clientHeight
-
-    this.height = this.scrolledElement.scrollHeight
 
     this.scrolledElement.addEventListener('scroll', ({ target }) => {
-      if (target.scrollTop <= 0) {
-        clearTimeout(timer)
-        timer = setTimeout(() => {
-          this.pushEvent("load-more", {})
-        }, 300)
+      if (target.scrollHeight - target.scrollTop <= (target.clientHeight + 50)) {
+        this.pushEvent("load-relations", {})
       }
     })
   },
+};
+
+export const ScrollTop = {
+  mounted() {
+    this.scrolledElement = this.el
+
+    if (!this.scrolledElement) return
+    this.scrolledElement.scrollTop = this.scrolledElement.scrollHeight
+    prevHeight = this.scrolledElement.scrollHeight    
+    this.scrolledElement.addEventListener('scroll', ({ target }) => {
+      prevScrollTop = target.scrollTop
+      if (target.scrollTop <= 150) {
+          this.pushEvent("load-messages", {})
+          this.el.scrollTop = this.el.scrollHeight - prevHeight + prevScrollTop
+          prevScrollTop = this.el.scrollTop
+          prevHeight = this.el.scrollHeight
+      }
+    });
+
+    this.handleEvent("scroll-on-send", () => {
+      this.el.scrollTop = this.el.scrollHeight
+    })
+
+
+  },
 
   updated() {
-    if (this.height != 0) {
-      this.scrolledElement.scrollTop = this.scrolledElement.scrollHeight - this.height
-      
-      if (this.scrolledElement.scrollHeight != this.height) this.height = this.scrolledElement.height
+    if (prevScrollTop != undefined) {
+      this.el.scrollTop = this.el.scrollHeight - prevHeight + prevScrollTop
+      prevScrollTop = this.el.scrollTop
+      prevHeight = this.el.scrollHeight
     }
-  }
-};
+    
+    }
+}

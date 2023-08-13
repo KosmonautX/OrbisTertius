@@ -22,6 +22,16 @@ defmodule Phos.Users do
   [%User{}, ...]
 
   """
+
+  defguard is_uuid?(value)
+  when is_bitstring(value) and
+         byte_size(value) == 36 and
+         binary_part(value, 8, 1) == "-" and
+         binary_part(value, 13, 1) == "-" and
+         binary_part(value, 18, 1) == "-" and
+         binary_part(value, 23, 1) == "-"
+
+
   def list_users do
     query = from(u in User)
     Repo.all(query)
@@ -54,6 +64,7 @@ defmodule Phos.Users do
   #   """
   def get_user_by_fyr(id), do: Repo.get_by(User, fyr_id: id) |> Repo.preload([:private_profile])
 
+  @decorate cacheable(cache: Phos.Cache, key: {User, username})
   def get_user_by_username(username), do: Repo.get_by(User, username: username)
 
   def filter_user_by_username(username, limit, page) do
@@ -62,6 +73,22 @@ defmodule Phos.Users do
     |> where([u], ilike(u.username, ^search))
     |> order_by([u], [u.username])
     |> Repo.Paginated.all(limit: limit, page: page, aggregate: false)
+  end
+
+  def get_user(id) when is_uuid?(id) do
+    fetch_user()
+    |> where([u], u.id == ^id)
+    |> Repo.one()
+  end
+
+  def get_user(username) when is_binary(username) do
+    fetch_user()
+    |> where([u], u.username == ^username)
+    |> Repo.one()
+  end
+
+  def fetch_user do
+    from u in User
   end
 
   def get_admin do
@@ -101,8 +128,19 @@ defmodule Phos.Users do
   end
 
   @decorate cacheable(cache: Cache, key: {User, :find, id}, opts: [ttl: @ttl])
-  def find_user_by_id(id) when is_bitstring(id) do
-    query = from u in User, where: u.id == ^id, limit: 1
+  def find_user_by_id(id) when is_uuid?(id) do
+    query = from u in User,
+    as: :user,
+    where: u.id == ^id,
+    limit: 1,
+    inner_lateral_join:
+    a_count in subquery(
+      from(r in Phos.Users.RelationBranch,
+        where: r.user_id == parent_as(:user).id and not is_nil(r.completed_at),
+        select: %{count: count()}
+      )
+    ),
+    select_merge: %{ally_count: a_count.count}
 
     case Repo.one(query) do
       %User{} = user -> {:ok, user |> Repo.preload(:private_profile)}
@@ -198,18 +236,12 @@ defmodule Phos.Users do
     user
     |> User.territorial_changeset(attrs)
     |> Repo.update()
-
-    # |> case do
-    #      {:ok, user} = data ->
-    #        spawn(fn -> discovery_publisher(user, attrs) end)
-    #      err -> err
-    #    end
   end
 
-  # defp discovery_publisher(past, present) do
-  #   dbg() ## add topic virtual feed to user object and send it down discovery feed
-  #   #Phos.PubSub.publish(%{orb | topic: loc}, {:orb, event}, loc_topic(loc))
-  # end
+  defp terra_publisher(%Phos.Users.Geolocation{} = terr, %User{} = user) do
+    Phos.PubSub.publish(terr , {:terra, "mutation"}, user)
+  end
+
   @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
   def update_integrations_user(%User{} = user, attrs) do
     user
@@ -378,16 +410,39 @@ defmodule Phos.Users do
   def get_territorial_user!(id),
     do: Repo.get!(User, id) |> Repo.preload([:private_profile, personal_orb: :locations])
 
-  def get_public_user(user_id, your_id) do
+  def get_public_user(user_id, your_id) when is_uuid?(your_id) do
     Phos.Repo.one(
       from u in User,
-        where: u.id == ^user_id,
-        left_join: branch in assoc(u, :relations),
-        on: branch.friend_id == ^your_id,
-        left_join: root in assoc(branch, :root),
-        select: u,
-        select_merge: %{self_relation: root}
-    )
+      as: :user,
+      where: u.id == ^user_id,
+      left_join: branch in assoc(u, :relations),
+      on: branch.friend_id == ^your_id,
+      left_join: root in assoc(branch, :root),
+      select: u,
+      select_merge: %{self_relation: root},
+      inner_lateral_join:
+      a_count in subquery(
+        from(r in Phos.Users.RelationBranch,
+          where: r.user_id == parent_as(:user).id and not is_nil(r.completed_at),
+          select: %{count: count()}
+        )
+      ),
+      select_merge: %{ally_count: a_count.count})
+  end
+
+  def get_public_user(user_id, _) do
+    Phos.Repo.one(
+      from u in User,
+      as: :user,
+      where: u.id == ^user_id,
+      inner_lateral_join:
+      a_count in subquery(
+        from(r in Phos.Users.RelationBranch,
+          where: r.user_id == parent_as(:user).id and not is_nil(r.completed_at),
+          select: %{count: count()}
+        )
+      ),
+      select_merge: %{ally_count: a_count.count})
   end
 
   def get_public_user_by_username(username, your_id) do
@@ -750,4 +805,5 @@ defmodule Phos.Users do
       {:error, :user, changeset, _} -> {:error, changeset}
     end
   end
+
 end

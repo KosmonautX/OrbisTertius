@@ -9,6 +9,7 @@ defmodule Phos.Repo.Paginated do
     filter = Keyword.get(opts, :filter, nil)
     page = Keyword.get(opts, :page, nil)
 
+
     query
     |> maybe_ascend(sort_attribute, ascending?)
     |> limit(^(limit + 1)) # last element not forwarded to client check downstream exists
@@ -37,8 +38,8 @@ defmodule Phos.Repo.Paginated do
   def all(query, opts) when is_list(opts) do
     limit = Keyword.get(opts, :limit, 12)
     sort = case Keyword.get(opts, :sort_attribute, :inserted_at) do
-             {_key, sort_attr} -> sort_attr
-             sort_attr -> sort_attr
+             {key, sort_attr} -> [key, sort_attr]
+             sort_attr -> [sort_attr]
            end
 
     dao = query
@@ -51,7 +52,7 @@ defmodule Phos.Repo.Paginated do
       # page-based
       {:ok, page} ->
         if Keyword.get(opts, :aggregate, true) do
-          total =  Phos.Repo.aggregate(query, :count, sort)
+          total =  Phos.Repo.aggregate(query, :count, List.last(sort))
           page_response(dao, page, total, limit)
         else
           page_response(dao, page, nil, limit)
@@ -66,7 +67,7 @@ defmodule Phos.Repo.Paginated do
               pagination: %{
                 downstream: true,
                 count: limit,
-                cursor: Map.get(head, sort) |> DateTime.from_naive!("UTC") |> DateTime.to_unix(:second)}}}
+                cursor: get_in(head, sort |> Enum.map(&Access.key(&1))) |> mutate_meta_attr}}}
 
           count != 0 ->
             [head | _ ] = dao |> Enum.reverse()
@@ -75,15 +76,15 @@ defmodule Phos.Repo.Paginated do
                 pagination: %{
                   count: count,
                   downstream: false,
-                  cursor: Map.get(head, sort) |> DateTime.from_naive!("UTC")  |> DateTime.to_unix(:second)}}}
+                  cursor: get_in(head, sort |> Enum.map(&Access.key(&1))) |> mutate_meta_attr}}}
 
           count == 0 ->
             %{data: [],
               meta: %{
                 pagination: %{
                   count: 0,
-                  downstream: false
-                  #cursor: Keyword.get(opts, :filter, nil) |> DateTime.from_naive!("UTC")  |> DateTime.to_unix(:second)
+                  downstream: false,
+                  cursor: Keyword.get(opts, :filter, nil) |> mutate_meta_attr
                 }}}
         end
      end
@@ -123,4 +124,9 @@ defmodule Phos.Repo.Paginated do
               }}}
         end
    end
+
+
+   defp mutate_meta_attr(%DateTime{} = dt), do: dt |> DateTime.from_naive!("UTC")  |> DateTime.to_unix(:second)
+   defp mutate_meta_attr(%NaiveDateTime{} = dt), do: NaiveDateTime.diff(dt, ~N[1970-01-01 00:00:00]) # seconds from unix time
+   defp mutate_meta_attr(attr), do: attr
 end

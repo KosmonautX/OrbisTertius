@@ -8,7 +8,8 @@ defmodule PhosWeb.API.UserProfileJSON do
       media_herald: Phos.Orbject.S3.put_all!(media),
     }
   end
-  def show(%{user_profile: profile}), do: %{ data: user_profile_json(profile)}
+  def show(%{my_profile: profile}), do: %{data: user_profile_json(profile) |> Map.put(:email, profile.email)}
+  def show(%{user_profile: profile}), do: %{data: user_profile_json(profile)}
   def show(%{integration: integration}), do: user_integration_json(integration)
 
   defp user_profile_json(profile), do: Viewer.user_mapper(profile)
