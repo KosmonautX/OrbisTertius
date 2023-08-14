@@ -87,6 +87,7 @@ defmodule PhosWeb.Util.Viewer do
         user_source_id: memory.user_source_id,
         loc_subject_id: memory.loc_subject_id,
         rel_subject_id: memory.rel_subject_id,
+        mem_subject_id: memory.mem_subject_id,
         orb_subject_id: memory.orb_subject_id,
         com_subject_id: memory.com_subject_id,
         cluster_subject_id: memory.cluster_subject_id,
@@ -192,7 +193,7 @@ defmodule PhosWeb.Util.Viewer do
            public_name: user.public_profile.public_name,
            profile_pic: user.public_profile.profile_pic,
            banner_pic: user.public_profile.banner_pic,
-           traits: user.public_profile.traits,
+           traits: (user.public_profile.traits || []) -- ["exile"],
            territories: user.public_profile.territories,
            # assemblies: Enum.reduce(user.public_profile.territories, [], fn terr, acc -> [loc_mapper(terr) | acc] end) |> Enum.uniq_by(&(&1.midhash)),
            places: user.public_profile.places

@@ -9,6 +9,7 @@ import { EnterSubmit } from "./enter_submit"
 import TransitionHook from "./transition"
 
 
+
 export default {
   InitPosition,
   InitIndexMap,

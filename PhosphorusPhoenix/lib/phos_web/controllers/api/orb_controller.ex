@@ -73,6 +73,10 @@ defmodule PhosWeb.API.OrbController do
 
         _ -> %{}
       end
+      |> then(fn orb ->
+        traits = user |> get_in([Access.key(:public_profile, %{}), Access.key(:traits, nil)]) || []
+        if Enum.member?(traits, "exile"), do: orb |> Map.delete("locations"), else: orb
+      end)
       |> Map.put("initiator_id", user.id)
       {:ok, Map.merge(constructor, options)}
     rescue
@@ -121,6 +125,27 @@ defmodule PhosWeb.API.OrbController do
     end
   end
 
+  def show_territory(%{assigns: %{current_user: user}} = conn, %{"id" => hashes, "page" => page, "search" => search}) do
+    try do
+      geohashes = String.split(hashes, ",")
+      |> Enum.map(fn hash -> String.to_integer(hash) |> :h3.parent(8) end)
+      |> Enum.uniq()
+      loc_orbs = Action.orbs_by_geohashes({geohashes, user.id}, [page: page, search: search])
+      render(conn, :paginated, orbs: loc_orbs)
+    rescue
+      ArgumentError -> {:error, :unprocessable_entity}
+    end
+  end
+
+  def show_territory(%{assigns: %{current_user: user}} = conn, %{"id" => hashes, "cursor" => cursor, "search" => search}) do
+    geohashes = String.split(hashes, ",")
+    |> Enum.map(fn hash -> String.to_integer(hash) |> :h3.parent(8) end)
+    |> Enum.uniq()
+    loc_orbs = Action.orbs_by_geohashes({geohashes, user.id} ,
+      [filter: String.to_integer(cursor) |> DateTime.from_unix!(:second), search: search])
+    render(conn, :paginated, orbs: loc_orbs)
+  end
+
   def show_territory(%{assigns: %{current_user: user}} = conn, %{"id" => hashes, "cursor" => cursor}) do
     geohashes = String.split(hashes, ",")
     |> Enum.map(fn hash -> String.to_integer(hash) |> :h3.parent(8) end)
@@ -146,13 +171,18 @@ defmodule PhosWeb.API.OrbController do
     render(conn, :paginated, orbs: loc_orbs)
   end
 
+  def show_friends(conn = %{assigns: %{current_user: %{id: id}}}, %{"page" => page, "search" => search}) do
+    orbs = Phos.Action.orbs_by_friends(id, [page: page, search: search])
+    render(conn, :paginated, orbs: orbs)
+  end
+
   def show_friends(conn = %{assigns: %{current_user: %{id: id}}}, %{"page" => page}) do
-    orbs = Phos.Action.orbs_by_friends(id, page)
+    orbs = Phos.Action.orbs_by_friends(id, [page: page])
     render(conn, :paginated, orbs: orbs)
   end
 
   def show_friends(conn = %{assigns: %{current_user: %{id: id}}}, _params) do
-    orbs = Phos.Action.orbs_by_friends(id, 1)
+    orbs = Phos.Action.orbs_by_friends(id, [page: 1])
     render(conn, :paginated, orbs: orbs)
   end
 
