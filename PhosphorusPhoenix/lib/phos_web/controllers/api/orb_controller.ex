@@ -73,6 +73,10 @@ defmodule PhosWeb.API.OrbController do
 
         _ -> %{}
       end
+      |> then(fn orb ->
+        traits = user |> get_in([Access.key(:public_profile, %{}), Access.key(:traits, nil)]) || []
+        if Enum.member?(traits, "exile"), do: orb |> Map.delete("locations"), else: orb
+      end)
       |> Map.put("initiator_id", user.id)
       {:ok, Map.merge(constructor, options)}
     rescue

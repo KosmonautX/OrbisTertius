@@ -59,58 +59,6 @@ defmodule PhosWeb.Admin.OrbLive.Show do
   end
 
   @impl true
-  def handle_event(
-        "trait_management",
-        %{"method" => "delete", "id" => id} = _params,
-        %{assigns: %{traits_form: val}} = socket
-      ) do
-    index = String.to_integer(id)
-    {:noreply, assign(socket, traits_form: List.delete_at(val, index))}
-  end
-
-  @impl true
-  def handle_event(
-        "trait_management",
-        %{"method" => "add"},
-        %{assigns: %{traits_form: val}} = socket
-      ) do
-    {:noreply, assign(socket, traits_form: val ++ [""])}
-  end
-
-  @impl true
-  def handle_event("trait_management", _params, socket) do
-    {:noreply, assign(socket, traits_form: [""])}
-  end
-
-  @impl true
-  def handle_event("trait_change", %{"orb" => trait_change} = _params, socket) do
-    traits = Map.values(trait_change)
-    {:noreply, assign(socket, :traits_form, traits)}
-  end
-
-  @impl true
-  def handle_event(
-        "save_trait",
-        %{"orb" => trait_change} = _params,
-        %{assigns: %{orb: orb}} = socket
-      ) do
-    traits = Map.values(trait_change)
-
-    case Action.update_admin_orb(orb, %{traits: traits}) do
-      {:ok, orb} ->
-        {:noreply,
-         socket
-         |> assign(orb: orb, traits_form: orb.traits, changeset: Ecto.Changeset.change(orb))
-         |> put_flash(:info, "orb traits updated.")}
-
-      _ ->
-        {:noreply,
-         socket
-         |> put_flash(:error, "orb traits failed to update")}
-    end
-  end
-
-  @impl true
   def handle_event("change_image", _params, %{assigns: %{orb: orb}} = socket) do
     resolution = %{"150x150" => "public/banner/lossy", "1920x1080" => "public/banner/lossless"}
 

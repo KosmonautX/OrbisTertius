@@ -193,7 +193,7 @@ defmodule PhosWeb.Util.Viewer do
            public_name: user.public_profile.public_name,
            profile_pic: user.public_profile.profile_pic,
            banner_pic: user.public_profile.banner_pic,
-           traits: user.public_profile.traits,
+           traits: (user.public_profile.traits || []) -- ["exile"],
            territories: user.public_profile.territories,
            # assemblies: Enum.reduce(user.public_profile.territories, [], fn terr, acc -> [loc_mapper(terr) | acc] end) |> Enum.uniq_by(&(&1.midhash)),
            places: user.public_profile.places
