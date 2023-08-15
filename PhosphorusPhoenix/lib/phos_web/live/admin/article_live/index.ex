@@ -43,6 +43,20 @@ defmodule PhosWeb.Admin.ArticleLive.Index do
   end
 
   @impl true
+  def handle_event("search", %{"search" => %{"q" => query}}, socket) do
+    case Phos.Action.filter_orbs_by_keyword(query) do
+      %{data: [_ | _] = orbs, meta: %{pagination: pagination}} ->
+        {:noreply, assign(socket,
+          orbs: orbs,
+          search_keyword: query,
+          limit: Map.get(pagination, :limit),
+          current: Map.get(pagination, :current),
+          pagination: pagination)}
+      _ -> {:noreply, socket}
+    end
+  end
+
+  @impl true
   def handle_event("create-article", params, %{assigns: %{selected_orb: _orbs}} = socket) do
     IO.inspect(params)
     {:noreply, assign(socket, selected_orb: %{})}

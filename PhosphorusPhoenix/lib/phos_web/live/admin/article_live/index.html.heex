@@ -4,8 +4,8 @@
     <div class="flex mt-4 mb-2 w-full">
       <.form :let={f} for= {%{}} as={:search} class="w-1/2" phx-change="search">
         <div class="flex">
-          <.input field={{f, :q}} phx-debounce="200" placeholder="search orb by keyword" autocomplete="off" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
-          <.button type="submit" class="button button-sm p-0 mx-2">Apply</.button>
+          <.input field={{f, :q}} phx-debounce="500" value={@search_keyword} placeholder="search orb by keyword"
+          autocomplete="off" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
         </div>
       </.form>
     </div>
