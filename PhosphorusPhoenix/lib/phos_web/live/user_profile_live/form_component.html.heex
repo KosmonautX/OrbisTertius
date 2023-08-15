@@ -44,5 +44,12 @@
         uploaded={@uploads}
       />
     </.simple_form>
+    <.live_component
+        module={PhosWeb.Components.TraitsInput}
+        id="Traits_Form"
+        traits={@user |> get_in([Access.key(:public_profile, %{}), Access.key(:traits, nil)]) || []}
+        changeset={@changeset}
+        entity={@user}
+    />
   </section>
 </div>
