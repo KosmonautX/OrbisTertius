@@ -16,7 +16,11 @@ defmodule PhosWeb.Admin.ArticleLive.Index do
     %{data: orbs, meta: meta} = Phos.Action.filter_orbs_by_keyword("")
     
     {:noreply, assign(socket,
+      existing_articles: [],
+      new_article_title: "",
+      existing_orbs: [],
       article_title: "",
+      article_type: "append",
       selected_orb: %{},
       orbs: orbs,
       search_keyword: "",
@@ -39,13 +43,36 @@ defmodule PhosWeb.Admin.ArticleLive.Index do
   end
 
   @impl true
-  def handle_event("create-article", _params, %{assigns: %{selected_orb: orbs}} = socket) do
-    IO.inspect(orbs)
+  def handle_event("create-article", params, %{assigns: %{selected_orb: _orbs}} = socket) do
+    IO.inspect(params)
     {:noreply, assign(socket, selected_orb: %{})}
   end
 
   @impl true
-  def handle_event("validate-article", %{"article" => %{"title" => title}}, socket) do
-    {:noreply, assign(socket, article_title: title)}
+  def handle_event("validate-article", %{"_target" => ["existing_article_id"], "existing_article_id" => type}, %{assigns: %{article_type: article_type}} = socket) when type != article_type do
+    case type do
+      "new" -> {:noreply, assign(socket, :article_type, "new")}
+      _ -> 
+        ids = Phos.Article.article_orbs(type)
+        {:noreply, assign(socket, existing_orbs: Phos.Action.filter_orbs_by_ids(ids), article_type: type)}
+    end
+  end
+
+  @impl true
+  def handle_event("validate-article", %{"article" => %{"search" => title}}, %{assigns: %{article_title: article_title}} = socket) when article_title != title and title != "" do
+    existing_articles = Phos.Article.search_article_by_title(title)
+    article_type = case length(existing_articles) do
+      0 -> "new"
+      _ -> "append"
+    end
+    {:noreply, assign(socket, existing_articles: existing_articles, article_type: article_type)}
+  end
+
+  @impl true
+  def handle_event("validate-article", %{"article" => %{"title" => title}}, socket), do: {:noreply, assign(socket, article_title: title)}
+
+  @impl true
+  def handle_event("validate-article", _params, socket) do
+    {:noreply, assign(socket, :article_type, "append")}
   end
 end

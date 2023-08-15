@@ -53,6 +53,22 @@ defmodule Phos.External.Notion do
     end
   end
 
+  def search_article(title) do
+    data = %{
+      "filter" => %{
+        "property" => "title",
+        "rich_text" => %{
+          "contains" => title
+        }
+      },
+      "sorts" => [%{"timestamp" => "last_edited_time", "direction" => "ascending"}]
+    }
+    case do_get_notion_data(article_database(), data) do
+      {:ok, %HTTPoison.Response{body: body}} -> body
+      {:error, err} -> HTTPoison.Error.message(err)
+    end
+  end
+
   def find_value(%{"content" => data}), do: data
   def find_value(%{"name" => data}), do: data
   def find_value(%{"type" => type} = data) do
