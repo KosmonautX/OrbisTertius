@@ -2099,7 +2099,7 @@ defmodule PhosWeb.CoreComponents do
         </p>
         <p>
           <span
-            :for={trait <- @user |> get_in([:public_profile, Access.key(:traits, "-")])}
+            :for={trait <- (@user |> get_in([:public_profile, Access.key(:traits, [])])) -- ["exile"]}
             class="text-gray-500 text-sm font-medium dark:text-[#777986]"
           >
             <%= "##{trait}" %>
@@ -2205,7 +2205,7 @@ defmodule PhosWeb.CoreComponents do
         </p>
 
         <span
-          :for={trait <- @user |> get_in([:public_profile, Access.key(:traits, "-")])}
+          :for={trait <- (@user |> get_in([:public_profile, Access.key(:traits, [])])) -- ["exile"]}
           class="text-gray-500 text-base font-normal dark:text-[#777986]"
         >
           <%= "##{trait}" %>
