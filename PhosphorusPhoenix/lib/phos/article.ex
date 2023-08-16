@@ -157,4 +157,20 @@ defmodule Phos.Article do
       |> List.first()
     end)
   end
+
+  def create_scoop(title, orbs) do
+    # 1. create page
+    Phos.External.Notion.create_article(%{
+      "title" => %{type: "title", value: title},
+      "tags" => %{type: "multi_select", value: ["GPT Generated", "Automated"]},
+    })
+    |> append_scoop(orbs)
+    # 2. append_scoop
+  end
+
+  def append_scoop(page_id, orbs) when is_bitstring(page_id) do
+    # 1. create orbeez page
+    # 2. append to article tits
+  end
+  def append_scoop(response, orbs), do: Map.get(response, "id") |> append_scoop(orbs)
 end

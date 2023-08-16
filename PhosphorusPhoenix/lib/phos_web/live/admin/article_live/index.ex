@@ -17,7 +17,6 @@ defmodule PhosWeb.Admin.ArticleLive.Index do
     
     {:noreply, assign(socket,
       existing_articles: [],
-      new_article_title: "",
       existing_orbs: [],
       article_title: "",
       article_type: "append",
@@ -57,7 +56,14 @@ defmodule PhosWeb.Admin.ArticleLive.Index do
   end
 
   @impl true
-  def handle_event("create-article", params, %{assigns: %{selected_orb: _orbs}} = socket) do
+  def handle_event("create-article", params, %{assigns: assigns} = socket) do
+    title = Map.get(assigns, :article_title)
+    selected_orb = Map.get(assigns, :selected_orb) |> Map.values()
+
+    case Map.get(assigns, :article_type) do
+      "new" -> Phos.Article.create_scoop(title, selected_orb)
+      id -> Phos.Article.append_scoop(id, selected_orb)
+    end
     IO.inspect(params)
     {:noreply, assign(socket, selected_orb: %{})}
   end

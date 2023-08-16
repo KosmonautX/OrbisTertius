@@ -115,11 +115,11 @@ defmodule Phos.External.Notion do
     end
   end
 
-  defp create_page(database_id, data) do
+  defp do_create_page(database_id, properties) do
     retry with: constant_backoff(100) |> Stream.take(5) do
       post("/pages", %{
         parent: %{database_id: database_id},
-        properties: data
+        properties: properties
       })
     after
       {:ok, _res} = response -> response
@@ -227,11 +227,79 @@ defmodule Phos.External.Notion do
   defp find_annotation({"strikethrough", true}), do: "~~"
   defp find_annotation(_data), do: ""
 
+  def create_orb_entry(data) do
+    case do_create_page(orb_database(), data) do
+      {:ok, %HTTPoison.Response{body: body}} -> body
+      {:error, err} -> HTTPoison.Error.message(err)
+    end
+  end
+
+  def create_article(data) do
+    case do_create_page(article_database(), to_notion_page_properties(data)) do
+      {:ok, %HTTPoison.Response{body: body}} -> body
+      {:error, err} -> HTTPoison.Error.message(err)
+    end
+  end
+
   defp auth_method() do
     auth_type = Keyword.get(config(), :authorization_type, "Bearer") |> String.trim()
     auth_token = Keyword.get(config(), :token, "")
     "#{auth_type} #{auth_token}"
   end
+
+  defp to_notion_page_properties(data) do
+    Enum.map(data, fn {k, v} ->
+      {k, notion_page_definition(v)}
+    end)
+    |> Enum.into(%{})
+  end
+
+  defp notion_page_definition(%{type: type, value: value}) when type == "number" do
+    Map.new()
+    |> Map.put(type, value)
+  end
+
+  defp notion_page_definition(%{type: type, value: value}) when type == "select" do
+    Map.new()
+    |> Map.put(type, %{"name" => value})
+  end
+
+  defp notion_page_definition(%{type: type, value: value}) when type == "date" do
+    Map.new()
+    |> Map.put(type, %{"start" => value})
+  end
+
+  defp notion_page_definition(%{type: type, value: value}) when type == "people" do
+    data = case value do
+      nil -> %{"object" => "user", "bot" => %{}}
+      _ -> %{"object" => "user", "id" => value}
+    end
+    Map.new()
+    |> Map.put(type, [data])
+  end
+
+  defp notion_page_definition(%{type: type, value: value}) when type == "files" do
+    Map.new()
+    |> Map.put(type, [%{"name" => "", "external" => %{"url" => value}}])
+  end
+
+  defp notion_page_definition(%{type: type, value: value}) when type == "multi_select" do
+    values = 
+      case value do
+        val when is_list(val) -> Enum.map(val, fn v -> %{"name" => v} end)
+        _ -> [%{"name" => value}]
+      end
+
+    Map.new()
+    |> Map.put(type, values)
+  end
+
+  defp notion_page_definition(%{type: type, value: value}) do
+    Map.new()
+    |> Map.put(type, [%{"text" => %{"content" => value}}])
+  end
+  defp notion_page_definition("number"), do: notion_page_definition(%{type: "number", value: 0})
+  defp notion_page_definition(type), do: notion_page_definition(%{type: type, value: ""})
 
   defp notion_version, do: Keyword.get(config(), :version) ||  "2022-02-22"
   defp database, do: Keyword.get(config(), :database, "") |> eval_value()
