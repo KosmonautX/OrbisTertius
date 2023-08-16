@@ -128,4 +128,33 @@ defmodule Phos.Article do
     end
   end
   defp process_article_blocks(data), do: data
+
+  def search_article_by_title(title) do
+    Phos.External.Notion.search_article(title)
+    |> case do
+      %{"results" => [_ | _] = data} -> Enum.map(data, &process_article_tit/1)
+      _ -> []
+    end
+  end
+
+  def article_orbs(article_id) do
+    query = %{
+      "filter" => %{
+        "property" => "article_tits",
+        "relation" => %{
+          "contains" => article_id
+        }
+      }
+    }
+
+    Phos.External.Notion.orbs(query)
+    |> Enum.map(fn data ->
+      process_orb(data)
+      |> Map.get("orb")
+      |> String.split("/")
+      |> List.last()
+      |> String.split("?")
+      |> List.first()
+    end)
+  end
 end

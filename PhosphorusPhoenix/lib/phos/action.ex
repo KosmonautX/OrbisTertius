@@ -767,6 +767,12 @@ defmodule Phos.Action do
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
   end
+  
+  def filter_orbs_by_ids(ids) do
+    query = from p in __MODULE__.Orb, preload: [:initiator], where: p.id in ^ids
+
+    Repo.all(query)
+  end
 
   def reorb(user_id, orb_id, message \\ "")
   def reorb(%Phos.Users.User{} = user, %Orb{} = orb, message), do: reorb(user.id, orb.id, message)

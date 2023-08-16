@@ -4,8 +4,8 @@
     <div class="flex mt-4 mb-2 w-full">
       <.form :let={f} for= {%{}} as={:search} class="w-1/2" phx-change="search">
         <div class="flex">
-          <.input field={{f, :q}} phx-debounce="200" placeholder="search orb by keyword" autocomplete="off" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
-          <.button type="submit" class="button button-sm p-0 mx-2">Apply</.button>
+          <.input field={{f, :q}} phx-debounce="500" value={@search_keyword} placeholder="search orb by keyword"
+          autocomplete="off" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
         </div>
       </.form>
     </div>
@@ -61,10 +61,46 @@
 
   <div class="p-4">
     <.form id="article-form" :let={f} method="post" for={%{}} as={:article} phx-change="validate-article">
-      <.input field={{f, :title}}
+      <.input field={{f, :search}}
         required="true"
-        value={@article_title}
-        placeholder="Enter title" />
+        disabled={@article_type == "new" and length(@existing_articles) > 0}
+        phx-debounce="2000"
+        placeholder="Search article title" />
+
+      <div class="mt-4" :if={length(@existing_articles) > 0}>
+        <select value={@article_type} name="existing_article_id" class="border-zinc-300 focus:border-zinc-400 focus:ring-zinc-800/5 block w-full rounded-lg border-zinc-300 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white font-poppins text-zinc-900 focus:outline-none focus:ring-4 sm:text-sm sm:leading-6 phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400 phx-no-feedback:focus:ring-zinc-800/5">
+          <option :for={data <- @existing_articles} value={data.id}><%= "#{data.title} (#{data.author})" %></option>
+          <option value="new" selected={@article_type == "new"}>Write new article</option>
+        </select>
+
+        <div class="mt-4" :if={@article_type == "new"}>
+          <.input field={{f, :title}}
+            label="Input new title for selected orb(s)"
+            value={@article_title}
+            phx-debounce="500"
+            placeholder="Enter article title" />
+        </div>
+
+        <div class="mt-4" :if={@article_type != "new"}>
+          <h2 class="text-lg font-semibold">Existing Orb(s)</h2>
+          <.table id="existing_orbs" rows={@existing_orbs}>
+            <:col :let={orb} classes="sticky left-0" label="Initiator">
+              <.admin_user_preview user={orb.initiator} id={"admin_user_preview_for_#{orb.id}"} />
+            </:col>
+            <:col :let={orb} label="Title"><%= orb.title %></:col>
+            <:col :let={orb} label="Traits"><%= inspect(orb.traits) %></:col>
+          </.table>
+        </div>
+      </div>
+
+      <div class="mt-4" :if={length(@existing_articles) == 0 and @article_type == "new"} >
+          <.input field={{f, :title}}
+            label="Input new title for selected orb(s)"
+            value={@article_title}
+            phx-debounce="500"
+            placeholder="Enter article title" />
+      </div>
+
       <div class="mt-4">
         <h2 class="text-lg font-semibold">Selected Orb(s)</h2>
         <.table id="selected_orbs" rows={Map.values(@selected_orb)}>
