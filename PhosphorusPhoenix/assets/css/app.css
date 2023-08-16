@@ -4,6 +4,8 @@
 @import "tailwindcss/typography";
 
 @import "../vendor/css/glide.core.min";
+@import "../vendor/fonts/Miller/miller.css";
+@import "../vendor/fonts/Poppins/poppins.css";
 
 /* This file is for your main application CSS */
 

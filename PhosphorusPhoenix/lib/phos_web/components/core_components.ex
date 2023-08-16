@@ -2807,7 +2807,7 @@ defmodule PhosWeb.CoreComponents do
 
   def search_results(assigns) do
     ~H"""
-    <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700 font-miller">
+    <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700 font-Miller">
       <li class="bg-white dark:bg-gray-900 px-2 py-3 sm:py-4">
         <div class="flex lg:gap-10 gap-2 items-center space-x-4">
           <div class="min-w-0 flex-1 space-y-1">
@@ -2858,6 +2858,20 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
+  def article_tabs(assigns) do
+    ~H"""
+    <ul class="flex flex-wrap items-center justify-center lg:space-x-7 space-x-4 text-center text-sm font-normal py-4 lg:mt-4 md:mt-14 mt-12 bg-white w-full dark:bg-gray-900 dark:text-white">
+      <li class="cursor-pointer hover:underline hover:underline-offset-8">ATTRACTIONS</li>
+      <li class="cursor-pointer hover:underline hover:underline-offset-8">ENTERTAINMENT</li>
+      <li class="cursor-pointer hover:underline hover:underline-offset-8">FOOD</li>
+      <li class="cursor-pointer hover:underline hover:underline-offset-8">PEOPLE</li>
+      <li class="cursor-pointer hover:underline hover:underline-offset-8">CAFES</li>
+      <li class="cursor-pointer hover:underline hover:underline-offset-8">SHOPPING</li>
+      <li class="cursor-pointer hover:underline hover:underline-offset-8">ANIMALS</li>
+    </ul>
+    """
+  end
+
   def editor_picks(assigns) do
     ~H"""
     <div class="border-2 border-gray-400 p-6">
@@ -2890,21 +2904,97 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  attr :rest, :global
+  def open_modal(js \\ %JS{}) do
+    js
+    |> JS.show(
+      to: "#searchbox_container",
+      transition:
+        {"transition ease-out duration-200", "opacity-0 scale-95", "opacity-100 scale-100"}
+    )
+    |> JS.show(
+      to: "#searchbar-dialog",
+      transition: {"transition ease-in duration-100", "opacity-0", "opacity-100"}
+    )
+    |> JS.focus(to: "#search-input")
+  end
 
-  def search_input(assigns) do
+  def hide_searchmodal(js \\ %JS{}) do
+    js
+    |> JS.hide(
+      to: "#searchbar-searchbox_container",
+      transition:
+        {"transition ease-in duration-100", "opacity-100 scale-100", "opacity-0 scale-95"}
+    )
+    |> JS.hide(
+      to: "#searchbar-dialog",
+      transition: {"transition ease-in duration-100", "opacity-100", "opacity-0"}
+    )
+  end
+
+  slot(:inner_block, required: true)
+
+  def search_modal(assigns) do
     ~H"""
-    <div class="relative ">
-      <!-- Heroicon name: mini/magnifying-glass -->
-      <input
-        {@rest}
-        type="text"
-        class="h-12 w-full border-none focus:ring-0 pl-11 pr-4 text-gray-800 placeholder-gray-400 sm:text-sm"
-        placeholder="Search the docs.."
-        role="combobox"
-        aria-expanded="false"
-        aria-controls="options"
-      />
+    <div
+      id="searchbar-dialog"
+      class="hidden fixed inset-0 z-50"
+      role="dialog"
+      aria-modal="true"
+      phx-window-keydown={hide_searchmodal()}
+      phx-key="escape"
+    >
+      <div class="fixed inset-0 bg-zinc-400/25 backdrop-blur-sm opacity-100"></div>
+      <div class="fixed inset-0 overflow-y-auto px-4 py-4 sm:py-20 sm:px-6 md:py-32 lg:px-8 lg:py-[15vh]">
+        <div
+          id="searchbox_container"
+          class="mx-auto overflow-hidden rounded-lg bg-white dark:bg-gray-900 shadow-xl  ring-zinc-900/7.5 lg:max-w-2xl md:max-w-xl opacity-100 scale-100 lg:p-4 p-2 w-full"
+        >
+          <div role="combobox" aria-haspopup="listbox" phx-click-away={hide_searchmodal()}>
+            <%= render_slot(@inner_block) %>
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  defp show_active_content(js \\ %JS{}, to) do
+    js
+    |> JS.hide(to: "div.tab_content")
+    |> JS.show(to: to)
+  end
+
+  defp set_active_tab(js \\ %JS{}, tab) do
+    js
+    |> JS.remove_class("active-tab", to: "a.active-tab")
+    |> JS.add_class("active-tab", to: tab)
+  end
+
+  attr(:title, :string, required: true)
+  attr(:id, :string)
+
+  slot :item,
+    required: true,
+    doc: "the slot for form actions, such as a submit button" do
+    attr(:title, :string, required: true)
+    attr(:id, :string)
+  end
+
+  def tabs(assigns) do
+    ~H"""
+    <div class="container">
+      <ul class="flex flex-wrap items-center justify-center py-4 text-center text-base font-bold text-gray-700 md:py-8">
+        <li :for={item <- @item} class="tab_option">
+          <button
+            id={@id}
+            class="tab active-tab mb-3 mr-3 px-5 py-2.5 hover:border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-300 rounded-full"
+            phx-click={set_active_tab(@id) |> show_active_content(@id)}
+
+          >
+            <%= item.title %>
+          </button>
+        </li>
+      </ul>
     </div>
     """
   end

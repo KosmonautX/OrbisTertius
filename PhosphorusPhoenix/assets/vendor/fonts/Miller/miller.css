@@ -1,10 +1,8 @@
 /* poppins-300 - latin */
 @font-face {
-    font-display: swap;
-    /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
     font-family: 'Miller';
     font-style: normal;
     font-weight: 300;
-    src: url('Miller/miller-display-webfont.woff2') format('woff2'),
-        url('Miller/miller-display-webfont.woff') format('woff');
+    src: url('miller-display-webfont.woff') format('woff2'),
+        url('miller-display-webfont.woff') format('woff');
 }
