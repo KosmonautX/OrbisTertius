@@ -53,6 +53,14 @@ defmodule Phos.External.Notion do
     end
   end
 
+  def append_page(page_id, data) do
+    case do_notion_update_block_children(page_id, data) do
+      {:ok, %HTTPoison.Response{body: body}} -> body
+      {:error, err} -> HTTPoison.Error.message(err)
+        d -> d
+    end
+  end
+
   def search_article(title) do
     data = %{
       "filter" => %{
@@ -148,6 +156,16 @@ defmodule Phos.External.Notion do
     end
   end
 
+  defp do_notion_update_block_children(block_id, data) do
+    retry with: constant_backoff(100) |> Stream.take(5) do
+      post("/blocks/#{block_id}/children", to_notion_block_properties(data))
+    after
+      {:ok, _res} = response -> response
+    else
+      err -> err
+    end
+  end
+
   def process_request_url(url) do
     "https://api.notion.com/v1" <> url
   end
@@ -228,7 +246,7 @@ defmodule Phos.External.Notion do
   defp find_annotation(_data), do: ""
 
   def create_orb_entry(data) do
-    case do_create_page(orb_database(), data) do
+    case do_create_page(orb_database(), to_notion_page_properties(data)) do
       {:ok, %HTTPoison.Response{body: body}} -> body
       {:error, err} -> HTTPoison.Error.message(err)
     end
@@ -254,6 +272,15 @@ defmodule Phos.External.Notion do
     |> Enum.into(%{})
   end
 
+  defp to_notion_block_properties(data) do
+    child = Enum.map(data, fn {k, v} ->
+      %{"type" => k}
+      |> Map.put(k, notion_block_definition(k, v))
+    end)
+
+    %{children: child}
+  end
+
   defp notion_page_definition(%{type: type, value: value}) when type == "number" do
     Map.new()
     |> Map.put(type, value)
@@ -268,7 +295,6 @@ defmodule Phos.External.Notion do
     Map.new()
     |> Map.put(type, %{"start" => value})
   end
-
   defp notion_page_definition(%{type: type, value: value}) when type == "people" do
     data = case value do
       nil -> %{"object" => "user", "bot" => %{}}
@@ -283,6 +309,34 @@ defmodule Phos.External.Notion do
     |> Map.put(type, [%{"name" => "", "external" => %{"url" => value}}])
   end
 
+  defp notion_page_definition(%{type: type, value: [_|_] = value}) when type == "relation" do
+    Map.new()
+    |> Map.put(type, Enum.map(value, fn v -> %{"id" => v} end))
+  end
+  defp notion_page_definition(%{type: type, value: value}) when type == "relation", do: notion_page_definition(%{type: type, value: [value]})
+
+  defp notion_page_definition(%{type: type, value: value}) when type == "url" do
+    Map.new()
+    |> Map.put(type, value)
+  end
+
+  defp notion_page_definition(%{type: type, value: value, caption: caption}) when type in ["file", "image"] do
+    Map.new()
+    |> Map.put(type, %{file: %{
+      caption: caption,
+      type: "external",
+      external: %{
+        url: value
+      }
+    }})
+  end
+
+  defp notion_page_definition(%{type: type} = map) when type in ["file", "image"] do
+    map
+    |> Map.put(:caption, [])
+    |> notion_page_definition()
+  end
+
   defp notion_page_definition(%{type: type, value: value}) when type == "multi_select" do
     values = 
       case value do
@@ -293,6 +347,36 @@ defmodule Phos.External.Notion do
     Map.new()
     |> Map.put(type, values)
   end
+
+  defp notion_block_definition("heading_" <> _number, value), do: %{"rich_text" => rich_value(value, "text")}
+  defp notion_block_definition("paragraph", value), do: %{"rich_text" => rich_value(value, "text")}
+  defp notion_block_definition("image", value), do: %{"type" => "external", "external" => value}
+
+  defp notion_block_definition(_key, value) do
+    value
+  end
+
+  defp rich_value(value, type) when is_list(value) and type == "text" do
+
+    Enum.map(value, fn v ->
+      [text, link] = case v do
+        %{link: l, value: val} -> [val, l]
+        %{value: val} -> [val, nil]
+        d -> [d, nil]
+      end
+
+      %{"type" => type}
+      |> Map.put(type, %{"content" => text, "link" => link})
+    end)
+  end
+  defp rich_value(value, type) when is_list(value) do
+    Enum.map(value, fn v ->
+      %{"type" => type}
+      |> Map.put(type, value)
+    end)
+  end
+  defp rich_value(value, type), do: rich_value([value], type)
+
 
   defp notion_page_definition(%{type: type, value: value}) do
     Map.new()
