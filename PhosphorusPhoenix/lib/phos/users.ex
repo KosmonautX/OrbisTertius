@@ -954,30 +954,34 @@ defmodule Phos.Users do
   end
 
   def bind_user_multi(%{tele_user: %{integrations: %{telegram_chat_id: telegram_id}} = tele_user, email: email} = user) do
-    main_user = get_user_by_email(email) |> Repo.preload([:auths])
+    main_user = get_user_by_email(email) |> Phos.Repo.preload([:auths])
 
     query =
       from a in Auth,
         where: a.auth_id == ^telegram_id and a.auth_provider == "telegram"
     auth = Repo.one(query)
 
-    params = %{
-      id: main_user.id,
-      auths: [
-        %{
-          auth_id: telegram_id,
-          auth_provider: "telegram"
-        }
-      ],
-      integrations: %{
-        telegram_chat_id: to_string(telegram_id)
-      }
+    auth_params = %{
+      auth_id: telegram_id,
+      user_id: main_user.id,
+      auth_provider: "telegram"
     }
 
+    integration_params =
+      if main_user.integrations do
+        %{
+          integrations: %{Map.from_struct(main_user.integrations) |
+            telegram_chat_id: to_string(telegram_id)
+          }
+        }
+      else
+        %{integrations: %{telegram_chat_id: to_string(telegram_id)}}
+      end
+
     Multi.new()
-    |> Multi.delete(:auth, auth)
-    |> Multi.update(:user, User.telegram_changeset(main_user, params))
-    # |> Multi.update(:user, User.confirm_changeset(user)) #might need another field? confirmed_at already exist before user is linked
+    |> Multi.delete(:old_auth, auth)
+    |> Multi.insert(:insert_tele_auth, Auth.changeset(%Auth{}, auth_params), on_conflict: :replace_all, conflict_target: [:user_id, :auth_id, :auth_provider])
+    |> Multi.update(:user, User.telegram_changeset(main_user, integration_params))
     |> Multi.delete_all(:tokens, UserToken.user_and_contexts_query(tele_user, ["bind_telegram"]))
   end
 end
