@@ -2,7 +2,7 @@ defmodule PhosWeb.Util.DOMParser do
 
   def extract_page_from_markdown(md) when is_binary(md) do
     extract_link_from_markdown(md)
-    |> LinkPreview.create()
+    #|> LinkPreview.create()
   end
   def extract_link_from_markdown(md) when is_binary(md) do
     {:ok, ast, _} = EarmarkParser.as_ast(md)

@@ -29,14 +29,15 @@ defmodule PhosWeb.UserProfileLive.Show do
      |> stream_assign(:ally_list, allies)}
   end
 
+  def mount(_,_,_), do: raise PhosWeb.ErrorLive.FourOFour, message: "Has let go his earthly tether"
+
   @impl true
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
   @impl true
-  def handle_event("load-orbs", _, %{assigns: %{ally_list: allies_meta, orbs: orbs_meta, current_user: curr, user: user}} = socket) do
-    expected_ally_page = allies_meta.pagination.current + 1
+  def handle_event("load-orbs", _, %{assigns: %{ally_list: _allies_meta, orbs: orbs_meta, current_user: _curr, user: user}} = socket) do
     expected_orb_page = orbs_meta.pagination.current + 1
 
     {:noreply, socket |> stream_assign(:orbs, ScrollOrb.check_more_orb(user.id, expected_orb_page))}
@@ -168,12 +169,12 @@ defmodule PhosWeb.UserProfileLive.Show do
 
   # look to integrate Repo.Paginated.all() :meta
 
-  defp load_more_streams(socket, %{orbs: %{data: orbs, meta:  orbs_meta}}, %{allies: %{data: allies, meta: allies_meta}}) do
-    Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
-    |> then(&Enum.reduce(orbs, &1, fn orb, acc -> stream_insert(acc, :orbs, orb) end))
-    |> assign(orbs: orbs_meta)
-    |> assign(ally_list: allies_meta)
-  end
+  # defp load_more_streams(socket, %{orbs: %{data: orbs, meta:  orbs_meta}}, %{allies: %{data: allies, meta: allies_meta}}) do
+  #   Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
+  #   |> then(&Enum.reduce(orbs, &1, fn orb, acc -> stream_insert(acc, :orbs, orb) end))
+  #   |> assign(orbs: orbs_meta)
+  #   |> assign(ally_list: allies_meta)
+  # end
 
   defp stream_assign(socket, key, %{data: data, meta: meta} = _params) do
     socket

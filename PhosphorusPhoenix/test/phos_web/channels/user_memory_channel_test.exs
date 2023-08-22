@@ -8,7 +8,8 @@ defmodule PhosWeb.UserMemoryChannelTest do
 
   setup do
     user = user_fixture()
-    {:ok, socket} = PhosWeb.UserSocket.connect(%{"token" => Auth.generate_user!(user.id)},
+    {:ok, socket} = PhosWeb.UserSocket.connect(%{
+          "token" => Auth.generate_user!(user.id)},
       socket(PhosWeb.UserSocket, "user_id", %{some: "assigns"}), %{})
     {:ok, _, socket} = subscribe_and_join(socket, UserMemoryChannel, "memory:user:#{user.id}")
 

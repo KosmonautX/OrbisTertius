@@ -11,7 +11,6 @@ defmodule PhosWeb.OrbLive.Search do
 
   @impl true
   def handle_params(_params, _url, socket) do
-    IO.inspect("no params")
     {:noreply, assign(socket, search_value: "", orbs: [])}
   end
 

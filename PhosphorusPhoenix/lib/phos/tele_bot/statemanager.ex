@@ -22,7 +22,7 @@ defmodule Phos.TeleBot.StateManager do
 
   def set_state(user_id, struct) when is_integer(user_id) do
     with {:ok, _} <- get_state(user_id) do
-      {prev, updated_struct} =
+      {_prev, updated_struct} =
         Cache.get_and_update(user_id, fn curr_struct ->
           {curr_struct, struct}
         end, ttl: @ttl)

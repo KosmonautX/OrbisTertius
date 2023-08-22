@@ -7,12 +7,12 @@ defmodule PhosWeb.API.OrbController do
 
   alias Phos.Action
   alias Phos.Action.Orb
-  alias Phos.TeleBot.TelegramNotification, as: TN
 
   action_fallback PhosWeb.API.FallbackController
 
   # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X GET 'http://localhost:4000/api/comments'
 
+  @spec index(Plug.Conn.t(), any) :: Plug.Conn.t()
   def index(conn, _params) do
     orbs = Action.list_orbs()
     render(conn, :index, orbs: orbs)
@@ -169,7 +169,7 @@ defmodule PhosWeb.API.OrbController do
     geohashes = String.split(hashes, ",")
     |> Enum.map(fn hash -> String.to_integer(hash) |> :h3.parent(8) end)
     |> Enum.uniq()
-    loc_orbs = Action.orbs_by_geohashes({geohashes, user.id}, 1)
+    loc_orbs = Action.orbs_by_geohashes({geohashes, user.id}, [page: 1])
     render(conn, :paginated, orbs: loc_orbs)
   end
 
@@ -218,6 +218,7 @@ defmodule PhosWeb.API.OrbController do
       |> render(:show, orb: orb)
     else
       false -> {:error, :unauthorized}
+    error -> error
     end
   end
 
@@ -230,6 +231,7 @@ defmodule PhosWeb.API.OrbController do
       send_resp(conn, :no_content, "")
     else
       false -> {:error, :unauthorized}
+    error -> error
     end
   end
 

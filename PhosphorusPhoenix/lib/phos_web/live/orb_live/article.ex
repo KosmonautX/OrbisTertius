@@ -16,7 +16,7 @@ defmodule PhosWeb.OrbLive.Article do
   end
 
   @impl true
-  def handle_info(:search, %{assigns: %{search_query: query} = _assigns} = socket) do
+  def handle_info(:search, %{assigns: %{search_query: _} = _assigns} = socket) do
     article = %{
       article: [
         ["If you're looking to host a BBQ party near Jurong West, you may want to check out some of these places:\n\n1. Jurong Lake Park - This park is located near Jurong West and it provides a great spot for a BBQ party. You can plan a gathering here and have a great time with your guests.\n\n2. National Parks – There are a few national parks located near the Jurong West area. These parks provide a great backdrop for an outdoor","A great place for hosting a BBQ party near Jurong West is at Kranji Reservoir Park. The park has many BBQ pits available for rent at nominal fees and also plenty of open spaces for activities. Additionally, many restaurants located nearby offer catering services and there are ample parking spots available for your convenience."],

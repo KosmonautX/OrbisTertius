@@ -2,19 +2,17 @@ defmodule Phos.TeleBot.ProfileFSM do
   defstruct [:telegram_id, :state, data: %{return_to: ""}, path: "self/update", metadata: %{message_id: ""}]
   alias Phos.TeleBot.{StateManager}
   alias Phos.TeleBot.Core, as: BotCore
-  alias Phos.TeleBot.Components.{Button, Template}
   alias PhosWeb.Util.Geographer
 
   ## routing of state
   def update_user_location(telegram_id, latlon, desc) do
-    with {:ok, %{id: user_id, private_profile: private_profile} = user} <- BotCore.get_user_by_telegram(telegram_id),
+    with {:ok, %{id: user_id, private_profile: private_profile}} <- BotCore.get_user_by_telegram(telegram_id),
          {:ok, %{branch: %{data: %{location_type: type}}}} <- StateManager.get_state(telegram_id) do
       geolocation =
         case private_profile do
           nil ->
             []
           _ ->
-            geolocation =
               Enum.map(private_profile.geolocation, fn loc ->
                 Map.from_struct(loc)
                 |> Map.delete(:chronolock)

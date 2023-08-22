@@ -208,8 +208,6 @@ defmodule PhosWeb.MemoryLive.Index do
       meta: %{pagination: %{cursor: new_cursor}} = metadata
     } = memories_by_user(user, filter: NaiveDateTime.add(~N[1970-01-01 00:00:00], cursor, :second))
 
-    IO.inspect(cursor |> DateTime.from_unix(:second), label: "load-more")
-
     socket
     |> stream(:relation_memories, relation_memories)
     |> assign(:relation_cursor, new_cursor )

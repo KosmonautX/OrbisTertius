@@ -4,7 +4,6 @@ defmodule Phos.TeleBot.TelegramNotification.Collector do
   @moduledoc """
 
   """
-  alias Phos.TeleBot.TelegramNotification, as: TN
 
   def start_link(_number) do
     GenStage.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -24,7 +23,7 @@ defmodule Phos.TeleBot.TelegramNotification.Collector do
     # enqueue items
     updated_queue =
       Enum.reduce(event, queue, fn msg, acc ->
-        updated_queue = :queue.in(msg, acc)
+        :queue.in(msg, acc)
       end)
 
     dispatch_events(updated_queue, :queue.len(updated_queue), from, [])

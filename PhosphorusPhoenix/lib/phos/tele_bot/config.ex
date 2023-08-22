@@ -1,5 +1,4 @@
 defmodule Phos.TeleBot.Config do
-  @channel_id "@emmausdev2"
 
   def load() do
     Registry.put_meta(Registry.ExGram, {Phos.TeleBot.Core, :config}, config())

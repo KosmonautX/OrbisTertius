@@ -140,6 +140,7 @@ defmodule Phos.Users do
         select: %{count: count()}
       )
     ),
+    on: true,
     select_merge: %{ally_count: a_count.count}
 
     case Repo.one(query) do
@@ -238,10 +239,6 @@ defmodule Phos.Users do
     |> Repo.update()
   end
 
-  defp terra_publisher(%Phos.Users.Geolocation{} = terr, %User{} = user) do
-    Phos.PubSub.publish(terr , {:terra, "mutation"}, user)
-  end
-
   @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
   def update_integrations_user(%User{} = user, attrs) do
     user
@@ -299,6 +296,7 @@ defmodule Phos.Users do
       |> Phos.Repo.all()
       |> Enum.map(&Phos.Comments.delete_comment(&1))
 
+
       Phos.Comments.delete_comment(c)
     end)
 
@@ -332,7 +330,7 @@ defmodule Phos.Users do
       where: n.recipient_id == ^u.id
     )
     |> Phos.Repo.all()
-    |> Enum.map(&Phos.Repo.delete!(&1))
+    |> Enum.each(&Phos.Repo.delete!(&1))
 
     Phos.Users.delete_user(u)
   end
@@ -439,7 +437,6 @@ defmodule Phos.Users do
   def get_telegram_chat_ids_by_orb(%Phos.Action.Orb{central_geohash: nil}), do: []
   def get_telegram_chat_ids_by_orb(orb) do
     orb = orb |> Repo.preload([:initiator])
-    telegram_chat_ids =
       :h3.parent(orb.central_geohash, 8)
       |> List.wrap()
       |> Phos.Action.telegram_chat_id_by_geohashes()
@@ -540,6 +537,7 @@ defmodule Phos.Users do
           select: %{count: count()}
         )
       ),
+      on: true,
       select_merge: %{ally_count: a_count.count})
   end
 
@@ -953,8 +951,8 @@ defmodule Phos.Users do
     end
   end
 
-  def bind_user_multi(%{tele_user: %{integrations: %{telegram_chat_id: telegram_id}} = tele_user, email: email} = user) do
-    main_user = get_user_by_email(email) |> Phos.Repo.preload([:auths])
+  def bind_user_multi(%{tele_user: %{integrations: %{telegram_chat_id: telegram_id}} = tele_user, email: email}) do
+    main_user = get_user_by_email(email) |> Repo.preload([:auths])
 
     query =
       from a in Auth,

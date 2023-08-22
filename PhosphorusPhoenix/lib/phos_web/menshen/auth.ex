@@ -5,7 +5,8 @@ defmodule PhosWeb.Menshen.Auth do
   alias Phos.Users.{PrivateProfile}
   alias Phos.Cache
 
-  def generate_user!(id), do: generate_boni!(id)
+  def generate_user!(id) when is_binary(id) , do: generate_boni!(id)
+  def generate_user!(_) , do: nil
 
   def validate_user(token) do
     token
@@ -36,21 +37,27 @@ defmodule PhosWeb.Menshen.Auth do
 
   def generate_boni, do: Role.Boni.generate_and_sign()
 
-  def generate_boni!(user_id) do
-    {:ok, jwt, _claims} = Role.Boni.generate_and_sign(%{user_id: user_id})
+  def generate_boni!(uid) when is_binary(uid) do
+    case Role.Boni.generate_and_sign(%{"user_id" => uid}) do
+      {:ok, jwt, _claims} -> jwt
+      _ -> nil
+    end
+   end
+
+  def generate_boni!(_) do
+    {:ok, jwt, _claims} = Role.Boni.generate_and_sign(%{"user_id" => "Hanuman"})
     jwt
   end
 
-  def generate_boni!() do
-     Role.Boni.generate_and_sign!(%{user_id: "Hanuman"})
-  end
+  def generate_boni!, do: Role.Boni.generate_and_sign!(%{"user_id" => "Hanuman"})
+
 
   def generate_user(user_id) do
     {:ok, user} = Phos.Users.find_user_by_id(user_id)
-    %{user_id: user.id,
-      fyr_id: user.fyr_id,
-      territory: parse_territories(user),
-      username: user.username}
+    %{"user_id"=> user.id,
+      "fyr_id"=> user.fyr_id,
+      "territory"=> parse_territories(user),
+      "username"=> user.username}
     #|> Role.Boni.generate_claims
     |> Role.Pleb.generate_and_sign()
   end

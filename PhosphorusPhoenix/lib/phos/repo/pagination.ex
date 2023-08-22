@@ -126,7 +126,7 @@ defmodule Phos.Repo.Paginated do
    end
 
 
-   defp mutate_meta_attr(%DateTime{} = dt), do: dt |> DateTime.from_naive!("UTC")  |> DateTime.to_unix(:second)
+   defp mutate_meta_attr(%DateTime{} = dt), do: DateTime.to_unix(dt, :second)
    defp mutate_meta_attr(%NaiveDateTime{} = dt), do: NaiveDateTime.diff(dt, ~N[1970-01-01 00:00:00]) # seconds from unix time
    defp mutate_meta_attr(attr), do: attr
 end

@@ -134,7 +134,7 @@ defmodule PhosWeb.UserConfirmationLive do
 
   def handle_event("confirm_account_tg", %{"user" => %{"token" => token}}, socket) do
     case Users.confirm_user(token) do
-      {:ok, %{integrations: %{telegram_chat_id: telegram_id}} = user} ->
+      {:ok, %{integrations: %{telegram_chat_id: telegram_id}}} ->
         ExGram.send_message(telegram_id, "Your account has been confirmed successfully! You can now /post")
         {:noreply,
          socket
@@ -163,7 +163,7 @@ defmodule PhosWeb.UserConfirmationLive do
   # leaked token giving the user access to the account.
   def handle_event("bind_account", %{"user" => %{"token" => token}}, socket) do
     case Users.bind_user(token) do
-      {:ok, %{integrations: %{telegram_chat_id: telegram_id}} = user} ->
+      {:ok, %{integrations: %{telegram_chat_id: telegram_id}}} ->
         ExGram.send_message(telegram_id, "Your account has been binded successfully! You can now /post")
         {:noreply,
          socket

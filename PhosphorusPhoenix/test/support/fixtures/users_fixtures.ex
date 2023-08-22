@@ -25,7 +25,7 @@ defmodule Phos.UsersFixtures do
     user
   end
 
-  def temp_tele_user_fixture(attrs \\ %{}) do
+  def temp_tele_user_fixture(_attrs \\ %{}) do
     options =
       %{
         "sub" => "#{Enum.random(1000000..3999999)}",

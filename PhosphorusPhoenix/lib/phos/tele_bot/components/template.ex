@@ -1,6 +1,6 @@
 defmodule Phos.TeleBot.Components.Template do
   use Phoenix.Component
-  import PhosWeb.Endpoint, only: [url: 0]
+  #import PhosWeb.Endpoint, only: [url: 0]
   use PhosWeb, :html
 
   def start_menu_text_builder(assigns) do

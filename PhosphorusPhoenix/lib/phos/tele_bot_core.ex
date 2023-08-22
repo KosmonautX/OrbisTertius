@@ -127,8 +127,8 @@ defmodule Phos.TeleBot.Core do
     end
   end
 
-  def handle({:video, %{"chat" => %{"id" => telegram_id}} = payload}) do
-    with {:ok, user} <- get_user_by_telegram(telegram_id),
+  def handle({:video, %{"chat" => %{"id" => telegram_id}}}) do
+    with {:ok, _user} <- get_user_by_telegram(telegram_id),
          {:ok, %{branch: branch}} <- StateManager.get_state(telegram_id),
          {:ok, %{message_id: message_id}} <- ExGram.send_message(telegram_id, "Setting video...") do
       case branch do
@@ -174,36 +174,6 @@ defmodule Phos.TeleBot.Core do
           onboarding_username(telegram_id, payload)
         end
     end
-  end
-
-  def onboarding_register(telegram_id) do
-    {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id, Template.onboarding_register_text_builder(%{}), parse_mode: "HTML")
-    {:ok, user_state} = StateManager.new_state(telegram_id)
-    user_state
-    |> Map.put(:branch, %OnboardingFSM{telegram_id: telegram_id, state: "register",
-      metadata: %{message_id: message_id}})
-    |> StateManager.update_state(telegram_id)
-  end
-
-  def onboarding_linkaccount(telegram_id) do
-    with {:ok, %{branch: %{data: %{email: email}}}} <- StateManager.get_state(telegram_id),
-         %User{} = user <- Users.get_user_by_email(email) do
-      Users.deliver_telegram_bind_confirmation_instructions(user, telegram_id, &url(~p"/users/bind/telegram/#{&1}"))
-      ExGram.send_message(telegram_id, "An email has been sent to #{email} if it exists. Please check your inbox and follow the instructions to link your account.")
-      StateManager.delete_state(telegram_id)
-    else
-      err -> error_fallback(telegram_id, err)
-    end
-  end
-
-  def onboarding_username(telegram_id, payload) do
-    {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id, Template.edit_profile_username_text_builder(%{}),
-        parse_mode: "HTML", reply_markup: Button.build_choose_username_keyboard(payload |> get_in(["message", "chat", "username"])))
-    {:ok, user_state} = StateManager.new_state(telegram_id)
-    user_state
-    |> Map.put(:branch, %OnboardingFSM{telegram_id: telegram_id, state: "username",
-      metadata: %{message_id: message_id}})
-    |> StateManager.update_state(telegram_id)
   end
 
   def handle({:callback_query, %{"data" => "menu_" <> type, "message" => %{"chat" => %{"id" => telegram_id}}}}) do
@@ -312,7 +282,7 @@ defmodule Phos.TeleBot.Core do
     with {:ok, %{branch: branch }} <- StateManager.get_state(telegram_id) do
       case branch do
         %{path: "self/update"} ->
-          with {:ok, user} <- ProfileFSM.update_user_location(telegram_id, {lat, lon}, Phos.Mainland.World.locate(:h3.from_geo({lat, lon}, 11))) do
+          with {:ok, _user} <- ProfileFSM.update_user_location(telegram_id, {lat, lon}, Phos.Mainland.World.locate(:h3.from_geo({lat, lon}, 11))) do
             case branch do
               %{data: %{return_to: "orb/create"}} ->
                 post_orb(telegram_id)
@@ -378,9 +348,9 @@ defmodule Phos.TeleBot.Core do
 
         media =
           if not Enum.empty?(media) and not String.contains?(hd(media).url, "localhost") do
-            media = hd(media).url
+            hd(media).url
           else
-            media = @user_splash
+            @user_splash
           end
 
         %ExGram.Model.InlineQueryResultArticle{
@@ -412,6 +382,36 @@ defmodule Phos.TeleBot.Core do
       {:error, msg} ->
         error_fallback(id, msg)
     end
+  end
+
+  def onboarding_register(telegram_id) do
+    {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id, Template.onboarding_register_text_builder(%{}), parse_mode: "HTML")
+    {:ok, user_state} = StateManager.new_state(telegram_id)
+    user_state
+    |> Map.put(:branch, %OnboardingFSM{telegram_id: telegram_id, state: "register",
+      metadata: %{message_id: message_id}})
+    |> StateManager.update_state(telegram_id)
+  end
+
+  def onboarding_linkaccount(telegram_id) do
+    with {:ok, %{branch: %{data: %{email: email}}}} <- StateManager.get_state(telegram_id),
+         %User{} = user <- Users.get_user_by_email(email) do
+      Users.deliver_telegram_bind_confirmation_instructions(user, telegram_id, &url(~p"/users/bind/telegram/#{&1}"))
+      ExGram.send_message(telegram_id, "An email has been sent to #{email} if it exists. Please check your inbox and follow the instructions to link your account.")
+      StateManager.delete_state(telegram_id)
+    else
+      err -> error_fallback(telegram_id, err)
+    end
+  end
+
+  def onboarding_username(telegram_id, payload) do
+    {:ok, %{message_id: message_id}} = ExGram.send_message(telegram_id, Template.edit_profile_username_text_builder(%{}),
+        parse_mode: "HTML", reply_markup: Button.build_choose_username_keyboard(payload |> get_in(["message", "chat", "username"])))
+    {:ok, user_state} = StateManager.new_state(telegram_id)
+    user_state
+    |> Map.put(:branch, %OnboardingFSM{telegram_id: telegram_id, state: "username",
+      metadata: %{message_id: message_id}})
+    |> StateManager.update_state(telegram_id)
   end
 
   defp start_menu(telegram_id), do: start_menu(telegram_id, nil)
@@ -453,7 +453,7 @@ defmodule Phos.TeleBot.Core do
     ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id, reply_markup: Button.build_menu_inlinekeyboard(message_id))
   end
   defp main_menu_text(telegram_id, message_id) do
-    {:ok, %{message_id: message_id}} = ExGram.edit_message_media(%ExGram.Model.InputMediaPhoto{media:
+    {:ok, %{message_id: _message_id}} = ExGram.edit_message_media(%ExGram.Model.InputMediaPhoto{media:
       @user_splash, type: "photo", caption: Template.main_menu_text_builder(%{}), parse_mode: "HTML"},
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), reply_markup: Button.build_menu_inlinekeyboard(message_id))
   end
@@ -466,7 +466,7 @@ defmodule Phos.TeleBot.Core do
       reply_markup: Button.build_main_menu_inlinekeyboard(message_id))
   end
   defp faq(telegram_id, message_id) do
-    {:ok, %{message_id: message_id}} = ExGram.edit_message_media(%ExGram.Model.InputMediaPhoto{media:
+    {:ok, %{message_id: _message_id}} = ExGram.edit_message_media(%ExGram.Model.InputMediaPhoto{media:
       @faq_splash, type: "photo", caption: Template.faq_text_builder(%{}), parse_mode: "HTML"},
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), reply_markup: Button.build_start_menu_inlinekeyboard(message_id))
   end
@@ -485,7 +485,7 @@ defmodule Phos.TeleBot.Core do
   end
 
   defp onboard_text(telegram_id) do
-    {:ok, user} = get_user_by_telegram(telegram_id)
+    {:ok, _user} = get_user_by_telegram(telegram_id)
     {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, @guest_splash,
       caption: Template.onboarding_text_builder(%{}), parse_mode: "HTML")
     ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id,
@@ -501,7 +501,7 @@ defmodule Phos.TeleBot.Core do
       {:user_exist, false} ->
         create_user(%{"id" => telegram_id})
         :ok
-      {:integrations_exist, {:ok, %{tele_id: tele_id} = user}} ->
+      {:integrations_exist, {:ok, %{tele_id: _tele_id} = user}} ->
         params = %{integrations: %{telegram_chat_id: telegram_id |> to_string()}}
         User.telegram_changeset(user, params)
         |> Phos.Repo.update()
@@ -652,7 +652,7 @@ defmodule Phos.TeleBot.Core do
           nil ->
             ExGram.send_message(telegram_id, "Invalid postal code. Please try again.")
           %{"road_name" => road_name, "lat" => lat, "lon" => lon} ->
-            with {:ok, user} <- ProfileFSM.update_user_location(telegram_id, {String.to_float(lat), String.to_float(lon)}, road_name) do
+            with {:ok, _user} <- ProfileFSM.update_user_location(telegram_id, {String.to_float(lat), String.to_float(lon)}, road_name) do
               StateManager.delete_state(telegram_id)
               case branch do
                 %{data: %{return_to: "orb/create"}} ->
@@ -691,7 +691,7 @@ defmodule Phos.TeleBot.Core do
       %{path: "self/onboarding", state: "register"} ->
         with {:email_changeset, changeset} <- {:email_changeset, User.email_changeset(user, %{email: text})},
              {:valid, %{valid?: true} = changeset} <- {:valid, changeset},
-             {:ok, %{branch: branch} = user_state} <- StateManager.get_state(telegram_id) do
+             {:ok, %{branch: _branch}} <- StateManager.get_state(telegram_id) do
                 {:ok, user} = Phos.Repo.update(changeset)
                 Users.deliver_user_confirmation_instructions(user, &url(~p"/users/confirmtg/#{&1}"))
                 ExGram.send_message(telegram_id, "An email has been sent to #{text} if it exists. Please check your inbox and follow the instructions to link your account.\n\nIf you have wrongly entered your email, restart the /register process.")

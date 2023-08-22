@@ -56,7 +56,7 @@ defmodule PhosWeb.API.UserProfileController do
     end
   end
 
-  defp validate_territory(%{private_profile: %{geolocation: past_territory}} = user, wished_territory) when is_list(wished_territory) do
+  defp validate_territory(%{private_profile: %{geolocation: _past_territory}} = user, wished_territory) when is_list(wished_territory) do
     Geographer.validate_territory(user, wished_territory)
   end
 

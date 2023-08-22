@@ -1,5 +1,5 @@
 defmodule Phos.TeleBot.Core.UserProfile do
-  alias Phos.TeleBot.{Config, StateManager, CreateOrb, ProfileFSM}
+  alias Phos.TeleBot.{Config, StateManager, ProfileFSM}
   alias Phos.TeleBot.Core, as: BotCore
   alias Phos.TeleBot.StateManager
   alias Phos.TeleBot.Components.{Template, Button}
@@ -90,21 +90,26 @@ defmodule Phos.TeleBot.Core.UserProfile do
       essence: "profile",
       resolution: "lossy"
     }]
-    with {:ok, media} <- Phos.Orbject.Structure.apply_media_changeset(%{id: user.id, archetype: "USR", media: media}),
+    with {:ok, _media} <- Phos.Orbject.Structure.apply_media_changeset(%{id: user.id, archetype: "USR", media: media}),
      {:ok, %User{} = user} <- Users.update_user(user, %{media: true}) do
       resolution = %{"150x150" => "lossy", "1920x1080" => "lossless"}
-      for res <- ["150x150", "1920x1080"] do
+      Enum.each(["150x150", "1920x1080"], fn res ->
         {:ok, dest} = Phos.Orbject.S3.put("USR", user.id, "public/profile/#{resolution[res]}")
-        [hd | tail] = payload |> get_in(["photo"]) |> Enum.reverse()
+        [hd | _tail] = payload |> get_in(["photo"]) |> Enum.reverse()
         {:ok, %{file_path: path}} = ExGram.get_file(hd |> get_in(["file_id"]))
-        {:ok, %HTTPoison.Response{body: image} = response} = HTTPoison.get("https://api.telegram.org/file/bot#{Config.get(:bot_token)}/#{path}")
+        {:ok, %HTTPoison.Response{body: image}} = HTTPoison.get("https://api.telegram.org/file/bot#{Config.get(:bot_token)}/#{path}")
         path = "/tmp/" <> (:crypto.strong_rand_bytes(30) |> Base.url_encode64()) <> ".png"
         File.write!(path , image)
-        HTTPoison.put(dest, {:file, path})
+        compressed_image =
+            path
+            |> Mogrify.open()
+            |> Mogrify.resize(res)
+            |> Mogrify.save()
+        HTTPoison.put(dest, {:file, compressed_image.path})
         File.rm(path)
-      end
+      end)
 
-      {:ok, %{branch: branch } = user_state} = StateManager.get_state(telegram_id)
+      {:ok, %{branch: branch}} = StateManager.get_state(telegram_id)
       ExGram.send_message(telegram_id, "Your profile picture has been updated!")
       StateManager.delete_state(telegram_id)
       case branch do

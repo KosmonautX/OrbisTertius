@@ -691,17 +691,17 @@ defmodule PhosWeb.CoreComponents do
       </.link>
       <div class="flex flex-col xl:ml-1 lg:ml-2 -mb-2">
 
-        <h6 class="mb-0 leading-normal text-sm font-bold"><%= "#{@user.username}" %></h6>
+        <h6 class="mb-0 leading-normal text-sm font-bold"><%= "@#{@user.username}" %></h6>
       <a href={"mailto: #{@user.email}"}>
         <p class="mb-0 leading-tight text-sm text-gray-400"><%= "#{@user.email}" %></p>
       </a>
       </div>
-      <div class="flex-1 min-w-0">
+      <div :if={@user.public_profile} class="flex-1 px-2 min-w-0">
         <p class="text-sm font-medium text-gray-900 truncate">
-          <%= "#{@user.username}" %>
+          <%= "🕵 #{@user.public_profile.public_name}" %>
         </p>
-        <p href={"mailto: #{@user.email}"} class="lg:text-sm text-xs text-gray-500 truncate">
-          <%= "#{@user.email}" %>
+        <p class="text-sm  text-gray-500 truncate">
+          <%= "🧭 #{(@user.public_profile.places || [] )|> Enum.map(&(&1.location_description || ""))}" %>
         </p>
       </div>
     </div>
@@ -1745,10 +1745,11 @@ defmodule PhosWeb.CoreComponents do
       assign(
         assigns,
         :page,
-        case LinkPreview.create(assigns.link) do
-          {:ok, page} -> page
-          _ -> nil
-        end
+        # case LinkPreview.create(assigns.link) do
+        #   {:ok, page} -> page
+        #   _ -> nil
+        # end
+        nil
       )
 
     ~H"""
@@ -2053,6 +2054,7 @@ defmodule PhosWeb.CoreComponents do
   attr(:id, :string, required: true)
   slot(:actions)
   slot(:allies)
+  attr(:ally_count, :integer)
 
   slot(:ally_button) do
     attr(:user, :map, doc: "user want to attached to")
@@ -2287,9 +2289,9 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  @doc """
-   Render a card for user to confirm account and auth binding
-  """
+  # @doc """
+  #  Render a card for user to confirm account and auth binding
+  # """
 
   # slot(:confirm) do
   #   attr(:tone, :atom)

@@ -1,10 +1,8 @@
 defmodule PhosWeb.UserProfileControllerTest do
   use PhosWeb.ConnCase
 
-  import Phos.ActionFixtures
-
   @create_attrs %{
-    "territory": [
+    territory: [
       %{
           "id" => "home",
           "geohash" => 627779412520177663,
@@ -14,7 +12,7 @@ defmodule PhosWeb.UserProfileControllerTest do
   }
 
   @update_attrs %{
-    "territory": [
+    territory: [
       %{
         "id" => "home",
         "geohash" => 627779412520177663,
@@ -29,24 +27,16 @@ defmodule PhosWeb.UserProfileControllerTest do
   }
 
   @invalid_geohash_attrs %{
-    "territory": [
+    territory: [
       %{
-          "id" => "work",
-          "geohash" => 162779410029711359,
-          "location_description" => "Bukit Panjang"
+        "id" => "work",
+        "geohash" => 162779410029711359,
+        "location_description" => "Bukit Panjang"
       }
     ]
   }
 
-  @invalid_atomkey__attrs %{
-    "territory": [
-      %{
-          id: "work",
-          geohash: 627779410029711359,
-          location_description: "Bukit Panjang"
-      }
-    ]
-  }
+
 
   setup %{conn: conn} do
     {:ok, conn: conn
@@ -56,7 +46,7 @@ defmodule PhosWeb.UserProfileControllerTest do
   describe "index" do
     setup [:inject_user_token]
 
-    test "update self territory with no existing geolocation", %{conn: conn, user: user} do
+    test "update self territory with no existing geolocation", %{conn: conn, user: _user} do
 
       conn = put(conn, ~p"/api/userland/self/territory", @create_attrs)
       assert %{"profile" => %{"private" => %{"data" => %{"geolocation" => geolocation}}}} = json_response(conn, 200)["data"]
@@ -67,7 +57,7 @@ defmodule PhosWeb.UserProfileControllerTest do
       }] = geolocation
     end
 
-    test "update self territory with existing geolocation", %{conn: conn, user: user} do
+    test "update self territory with existing geolocation", %{conn: conn, user: _user} do
       conn = put(conn, ~p"/api/userland/self/territory", @update_attrs)
       assert %{"profile" => %{"private" => %{"data" => %{"geolocation" => geolocation}}}} = json_response(conn, 200)["data"]
       assert [
@@ -84,7 +74,7 @@ defmodule PhosWeb.UserProfileControllerTest do
       ] = geolocation
     end
 
-    test "update self territory using same geohashes", %{conn: conn, user: user} do
+    test "update self territory using same geohashes", %{conn: conn, user: _user} do
       conn = put(conn, ~p"/api/userland/self/territory", @update_attrs)
       assert %{"profile" => %{"private" => %{"data" => %{"geolocation" => geolocation}}}} = json_response(conn, 200)["data"]
       assert [
@@ -101,10 +91,10 @@ defmodule PhosWeb.UserProfileControllerTest do
       ] = geolocation
 
       conn = put(conn, ~p"/api/userland/self/territory", @update_attrs)
-      assert %{"profile" => %{"private" => %{"data" => %{"geolocation" => geolocation}}}} = json_response(conn, 200)["data"]
+      assert %{"profile" => %{"private" => %{"data" => %{"geolocation" => ^geolocation}}}} = json_response(conn, 200)["data"]
     end
 
-    test "update self territory with invalid geohash", %{conn: conn, user: user} do
+    test "update self territory with invalid geohash", %{conn: conn, user: _user} do
       conn = put(conn, ~p"/api/userland/self/territory", @invalid_geohash_attrs)
       assert %{"errors" => %{"message" => "Unprocessable Entity"}} = json_response(conn, 422)
     end

@@ -1,9 +1,6 @@
 defmodule Phos.TeleBot.OnboardingFSM do
   defstruct [:telegram_id, :state, path: "self/onboarding", data: %{email: ""},
     metadata: %{message_id: ""}]
-  alias Phos.TeleBot.{StateManager, CreateOrb}
-  alias Phos.TeleBot.Components.{Template, Button}
-  alias Phos.TeleBot.Core, as: BotCore
 
   # States: "register", "linkaccount", "username"
 

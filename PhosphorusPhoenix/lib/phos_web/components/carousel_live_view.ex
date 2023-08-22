@@ -15,8 +15,8 @@ defmodule PhosWeb.Components.CarouselLiveView do
   def handle_event("previous", _, %{assigns: %{index: index, media: media}} = socket) do
     new_index = index - 1
 
-    if new_index < 0 do
-      new_index = length(media) - 1
+    new_index = if new_index < 0 do
+      length(media) - 1
     end
 
     {:noreply, socket |> assign(index: new_index)}

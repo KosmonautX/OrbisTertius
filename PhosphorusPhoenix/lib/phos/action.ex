@@ -385,7 +385,8 @@ defmodule Phos.Action do
     |> case do
          {:ok, orb} = data ->
             orb = orb |> Repo.preload([:initiator])
-            Task.start(fn ->
+           Task.Supervisor.start_child(Phos.TaskSupervisor,
+             fn ->
               experimental_notify(orb)
             end)
             Task.start(fn ->
@@ -409,7 +410,6 @@ defmodule Phos.Action do
            #spawn(fn -> user_feeds_publisher(orb) end)
            data
          err ->
-          IO.inspect(err)
           err
        end
   end

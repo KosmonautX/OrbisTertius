@@ -35,6 +35,7 @@ defmodule Phos.Application do
       ExGram, # This will setup the Registry.ExGram
       # {Phos.TeleBot, [method: :polling, token: token]},
       Phos.TeleBot,
+      {Task.Supervisor, name: Phos.TaskSupervisor}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

@@ -58,7 +58,7 @@ defmodule Phos.TeleBot.Components.Button do
   end
 
   def build_menu_inlinekeyboard(), do: build_menu_inlinekeyboard("")
-  def build_menu_inlinekeyboard(message_id) do
+  def build_menu_inlinekeyboard(_message_id) do
     inline_keyboard_markup(
       [
         [
@@ -86,7 +86,7 @@ defmodule Phos.TeleBot.Components.Button do
   end
 
   def build_myposts_inlinekeyboard(), do: build_myposts_inlinekeyboard("")
-  def build_myposts_inlinekeyboard(message_id) do
+  def build_myposts_inlinekeyboard(_message_id) do
     inline_keyboard_markup(
       [
         [
@@ -193,7 +193,7 @@ defmodule Phos.TeleBot.Components.Button do
   end
 
   def build_location_button(user), do: build_location_button(user, "")
-  def build_location_button(user, message_id) do
+  def build_location_button(user, _message_id) do
     inline_keyboard_markup(
       [
         [
@@ -251,7 +251,7 @@ defmodule Phos.TeleBot.Components.Button do
   end
 
   def build_latest_posts_inline_button(), do: build_latest_posts_inline_button("")
-  def build_latest_posts_inline_button(message_id) do
+  def build_latest_posts_inline_button(_message_id) do
     inline_keyboard_markup(
       [
         [
@@ -429,7 +429,7 @@ defmodule Phos.TeleBot.Components.Button do
   def inline_keyboard_markup(buttons) do
     %ExGram.Model.InlineKeyboardMarkup{inline_keyboard: buttons}
   end
-  def inline_keyboard_button(text) do
+  def inline_keyboard_button(_text) do
   end
   def inline_keyboard_button(text, opts) do
     callback_data = opts[:callback_data] || nil

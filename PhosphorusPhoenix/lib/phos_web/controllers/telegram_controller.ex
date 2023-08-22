@@ -19,7 +19,7 @@ defmodule PhosWeb.TelegramController do
   defp parse_update(body_params) do
   # require IEx; IEx.pry()
     case body_params do
-      %{"message" => %{"location" => location} = message} ->
+      %{"message" => %{"location" => _location} = message} ->
         {:ok, {:location, message}}
       %{"message" => %{"photo" => _photo} = message} ->
         {:ok, {:photo, message}}
