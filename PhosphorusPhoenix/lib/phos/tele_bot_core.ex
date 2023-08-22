@@ -68,7 +68,7 @@ defmodule Phos.TeleBot.Core do
 
   def handle({:message, :register, %{"chat" => %{"id" => telegram_id}}}) do
     case get_user_by_telegram(telegram_id) do
-      {:ok, %{tele_id: telegram_id, confirmed_at: date}} when not is_nil(date) ->
+      {:ok, %{tele_id: telegram_id, email: email}} when not is_nil(email) ->
         ExGram.send_message(telegram_id, "You have completed registration!")
       {:ok, _} ->
         onboarding_register_text(telegram_id)
@@ -418,7 +418,7 @@ defmodule Phos.TeleBot.Core do
   defp start_menu(telegram_id, message_id) do
     StateManager.delete_state(telegram_id)
     start_main_menu_check_and_register(telegram_id)
-    with {:ok, %{confirmed_at: date}} when not is_nil(date) <- get_user_by_telegram(telegram_id) do
+    with {:ok, %{email: email}} when not is_nil(email) <- get_user_by_telegram(telegram_id) do
       start_menu_text(telegram_id, message_id)
     else
       _ ->
@@ -601,12 +601,12 @@ defmodule Phos.TeleBot.Core do
   def open_myposts(telegram_id, query_id) do
     with {:ok, user} <- get_user_by_telegram(telegram_id) do
       case user do
-        %User{confirmed_at: _date, media: true, username: _username} ->
+        %User{email: _email, media: true, username: _username} ->
           ExGram.send_message(telegram_id, "Loading your posts...")
           %{data: orbs} = Phos.Action.orbs_by_initiators([user.id], 1)
           build_inlinequery_orbs(orbs, user)
           |> then(fn ans -> ExGram.answer_inline_query(to_string(query_id), ans) end)
-        %User{confirmed_at: nil} ->
+        %User{email: nil} ->
           ExGram.send_message(telegram_id, "You have not posted anything since you are not registered or confirmed your account!
             \n<u>Click on the \"Register\" button</u>", parse_mode: "HTML", reply_markup: Button.build_onboarding_register_button())
       end
@@ -620,7 +620,7 @@ defmodule Phos.TeleBot.Core do
   def post_orb(telegram_id) do
     with {:ok, user} <- get_user_by_telegram(telegram_id) do
       case user do
-        %User{confirmed_at: nil} ->
+        %User{email: nil} ->
           onboarding_register_text(telegram_id)
         %User{username: nil} ->
           ExGram.send_message(telegram_id, Template.incomplete_profile_text_builder(%{}),
@@ -632,7 +632,7 @@ defmodule Phos.TeleBot.Core do
           |> StateManager.update_state(telegram_id)
           ExGram.send_message(telegram_id, "Almost there! You need to set your user profile picture first.\n\n<i>(Use the 📎 button to attach image)</i>",
             parse_mode: "HTML")
-        %User{confirmed_at: _date, media: true, username: _username} ->
+        %User{email: _email, media: true, username: _username} ->
           CreateOrb.create_fresh_orb_form(telegram_id)
         err -> error_fallback(telegram_id, err)
       end

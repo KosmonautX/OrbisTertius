@@ -284,7 +284,7 @@ defmodule Phos.TeleBot.Components.Button do
         [
           inline_keyboard_button(
             "🌐 Open on Web",
-            [url: parse_inline_orb_profileurl(orb)]
+            [url: parse_inline_orb_url(orb, user)]
           )
         ],
         [
@@ -297,11 +297,11 @@ defmodule Phos.TeleBot.Components.Button do
     )
   end
 
-  defp parse_inline_orb_profileurl(orb) do
+  defp parse_inline_orb_url(orb, user) do
     if String.contains?(PhosWeb.Endpoint.url, "localhost") do
       "web.scratchbac.com/"
     else
-      "#{PhosWeb.Endpoint.url}/orb/#{orb.id}"
+      "#{PhosWeb.Endpoint.url}/orb/#{orb.id}?token=#{Auth.generate_user!(user.id)}"
     end
   end
 
