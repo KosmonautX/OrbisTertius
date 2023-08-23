@@ -2117,7 +2117,7 @@ defmodule PhosWeb.CoreComponents do
           </span>
         </p>
         <p class="lg:hidden block text-sm dark:text-white text-black font-semibold hover:underline hover:decoration-purple-600 dark:hover:decoration-white hover:decoration-solid hover:decoration-2 cursor-pointer">
-          <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@username || @id}/allies")}>
+          <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username || @id}/allies")}>
             <%= "#{@ally_count} | allies with @#{@user.username}'s and Others" %>
           </.link>
         </p>

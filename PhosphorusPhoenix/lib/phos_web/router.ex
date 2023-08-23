@@ -271,18 +271,22 @@ defmodule PhosWeb.Router do
 
         live "/orb/:id/edit", OrbLive.Index, :edit
         live "/orb/:id/show/edit", OrbLive.Show, :edit
+      end
+    end
+  else
+    scope "/", PhosWeb do
+      pipe_through [:browser, :require_authenticated_user]
 
-        live "/memories/:id/edit", MemoryLive.Index, :edit
+      live_session :required_authenticated_user_dev,
+        on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated},{PhosWeb.Menshen.Mounter, :timezone}] do
+        get "/orb", ErrorController, :_404
 
-        live "/memories/:id", MemoryLive.Show, :show
-        live "/memories/:id/show/edit", MemoryLive.Show, :edit
+        get "/orb/new", ErrorController, :_404
+        get "/orb/sethome", ErrorController, :_404
+        get "/orb/setwork", ErrorController, :_404
 
-        live "/reveries", ReverieLive.Index, :index
-        live "/reveries/new", ReverieLive.Index, :new
-        live "/reveries/:id/edit", ReverieLive.Index, :edit
-
-        live "/reveries/:id", ReverieLive.Show, :show
-        live "/reveries/:id/show/edit", ReverieLive.Show, :edit
+        get "/orb/:id/edit", ErrorController, :_404
+        get "/orb/:id/show/edit", ErrorController, :_404
       end
     end
   end
