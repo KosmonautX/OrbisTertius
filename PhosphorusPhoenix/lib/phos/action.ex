@@ -4,6 +4,7 @@ defmodule Phos.Action do
   """
 
   import Ecto.Query, warn: false
+  import Pgvector.Ecto.Query, warn: false
 
   alias Phos.Repo
   alias Phos.Action.{Orb, Orb_Location}
@@ -766,6 +767,19 @@ defmodule Phos.Action do
     end |> preload(:initiator)
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
+  end
+
+  def filter_orb_by_similarities(keyword) do
+    case Phos.Models.TextEmbedding.run(keyword) do
+      {:ok, [_ | _] = result} -> build_similarities_query(result)
+      _ -> {:error, "Error"}
+    end
+  end
+
+  defp build_similarities_query(result) do
+    # query = from p in __MODULE__.Orb, preload: [:initiator], select_merge: %{distance: cosine_distance(p.embedding, ^result)}
+    query = from p in __MODULE__.Orb, preload: [:initiator], where: cosine_distance(p.embedding, ^result) < 0.05
+    Repo.Paginated.all(query, 1, :inserted_at, 20)
   end
   
   def filter_orbs_by_ids(ids) do

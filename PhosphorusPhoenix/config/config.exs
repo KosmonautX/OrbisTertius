@@ -142,4 +142,9 @@ config :phos, Phos.Models.OpenAI,
   # token: {System, :fetch_env, "OPENAI_KEY"}
   token: "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"
 
+
+config :phos, Phos.Models.TextEmbedding,
+  source: :hf,
+  model: "thenlper/gte-base"
+
 import_config "#{config_env()}.exs"
