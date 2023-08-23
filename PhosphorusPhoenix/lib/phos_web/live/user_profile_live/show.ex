@@ -29,7 +29,7 @@ defmodule PhosWeb.UserProfileLive.Show do
      |> stream_assign(:ally_list, allies)}
   end
 
-  def mount(_,_,_), do: raise PhosWeb.ErrorLive.FourOFour, message: "Has let go his earthly tether"
+  def mount(_,_,_), do: (raise PhosWeb.ErrorLive.FourOFour, message: "Has let go his earthly tether")
 
   @impl true
   def handle_params(params, _url, socket) do

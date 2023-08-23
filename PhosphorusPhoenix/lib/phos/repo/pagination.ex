@@ -20,8 +20,8 @@ defmodule Phos.Repo.Paginated do
   def query_builder(query, page, attr, limit), do: query_builder(query, [sort_attribute: attr, limit: limit, page: page])
 
   #named binding
-  defp maybe_ascend(query, {as, field}, false), do: from [{^as, x}] in query, order_by: [{:desc, field(x, ^field)}]
-  defp maybe_ascend(query, {as, field}, true), do: from [{^as, x}] in query, order_by: [{:asc, field(x, ^field)}]
+  defp maybe_ascend(query, {as, field}, false), do: from([{^as, x}] in query, order_by: [{:desc, field(x, ^field)}])
+  defp maybe_ascend(query, {as, field}, true), do: from([{^as, x}] in query, order_by: [{:asc, field(x, ^field)}])
   defp maybe_ascend(query, attr, false), do: query |> order_by(desc: ^attr)
   defp maybe_ascend(query, attr, true), do: query |> order_by(asc: ^attr)
   defp maybe_ascend(query, _attr, nil), do: query
