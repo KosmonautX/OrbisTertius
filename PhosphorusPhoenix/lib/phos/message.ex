@@ -222,7 +222,7 @@ defmodule Phos.Message do
       |> Ecto.Changeset.put_assoc(:last_loc_memory, loc)
       |> Repo.insert() do
         memory
-        |> Repo.preload([:orb_subject, :mem_subject, :user_source, :loc_subject])
+        |> Repo.preload([:orb_subject, :user_source, :loc_subject, mem_subject: [:user_source]])
         |> tap(&Phos.PubSub.publish(&1, {:memory, "assembly"}, &1.loc_subject))
         |> (&({:ok, &1})).()
       else

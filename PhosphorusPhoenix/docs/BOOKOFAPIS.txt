@@ -11,7 +11,6 @@
 :tate=FbXQKufaWFOUNIsVYsn5tdW1qUc2
 :jean=HMhn3DPO71h0cMYFh52vM1tBacX2
 :anon=ETCiVo6Rr3gniuI44Gq9f2a5Ldl1
-:albert=jFFb04f7PWNaPSu9mbpjqDPMDm83
 :javier=v78yYQpVjlUaOsmzKguPoXcGqqw2
 :jiayi=3f6idzconSaWU31lQpcwXl3q8623
 :princeton_id=9bf9c443-f89b-460a-972d-6704ae66823d
@@ -25,7 +24,7 @@
 :antoine_id=3d534547-eed2-4ab2-acc8-ebf0ae03aaa5
 #:lky_id=4b2d6d8d-7781-4a20-b868-b0e0db245b85
 :aang_id=58c146d2-407f-49d5-a74d-0d9362e73be9
-:zuko_id=a5475ccc-07a8-40d2-ab16-5ef9795b4cf8
+:zuko_id=6f6c7d30-4447-4687-8fb9-f95a2de82957
 :owen_id=233e50b1-5507-4a3c-96a7-b6339e8d27f4
 :tate_id=5e7ed96c-f444-43e5-96e9-fe44bba1a664
 :fcm=dLZMhagGRxq4Hf4W317OYn:APA91bGU1F3v0buosL5N8mVOrlPS2byiDygytKZIrZseDndXFFROsbfep-Ux7hCLsy5kv0MFTBTMmCz98lrI18ICWhWr_N81jae_05ubab-qgDptsUEpl-x5BugJZgZlzgqIQUtRv0GU
@@ -42,11 +41,11 @@ Content-Type: application/json
 User-Agent: Emacs27
 ##
 ## Generate Client-side JWT
-GET :localipAddress/devland/flameon?user=:zuko_id
+GET :localipAddress/devland/flameon?user=:lky_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
-GET :localipAddress/devland/lankaonfyr?fyr_id=:albert
+GET :localipAddress/devland/lankaonfyr?fyr_id=:jiayi
 -> run-hook (restclient-set-var ":fyr_token" (cdr (assq 'payload (json-read))))
 
 
@@ -123,8 +122,30 @@ POST :ipAddress/userland/auth/email/reset_password
 PUT :ipAddress/userland/self/
 :auth-headers
 {
-    "username": "kenneths",
-    "public_name": "Albert the Robot"
+    "bio": "alberto robotos",
+    "username": "umbrage",
+    "public_name": "Albert the Robot",
+    "birthday": 16123442423,
+    "media": [
+        {
+            "access": "public",
+            "essence": "banner",
+            "resolution": "lossless"
+        },
+        {
+            "access": "public",
+            "essence": "profile",
+            "resolution": "lossy"
+        }
+    ],
+    "traits": ["exile"],
+    "soulorb": {
+        "title": "wow",
+        "payload": {
+            "inner_title": "longer wow"
+}},
+    "occupation": "bloatwarengingeer",
+    "profile_pic": 3
 }
 ## Read userdata of Others Profile
 GET :ipAddress/userland/others/:lky_id
@@ -242,7 +263,7 @@ GET :ipAddress/orbland/orbs/3e9ebaa7-cdd0-4d3e-857e-0661aeb12d0b
 :auth-headers
 
 ## Read all orbs in that geohash id
-GET :ipAddress/orbland/stream/623517998944845823,628021598572208127?page=1&search=dinosaurs
+GET :ipAddress/orbland/stream/614268617233530879?page=1&search=dinosaurs
 :auth-headers
 
 ## Create Orbs
