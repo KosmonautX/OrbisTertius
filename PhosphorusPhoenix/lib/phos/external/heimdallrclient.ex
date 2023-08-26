@@ -46,11 +46,16 @@ defmodule Phos.External.HeimdallrClient do
 
   def process_request_body(""), do: ""
 
-  def process_request_body(body), do: body |> Jason.encode!()
+  def process_request_body(body) when is_map(body), do: body |> Jason.encode!()
+
+  def process_request_body(_), do: nil
 
 
-  def process_request_headers(headers), do: headers ++
+  def process_request_headers(headers) when is_list(headers), do: headers ++
     [{:authorization, authorize!()}, {:"Content-Type", "application/json"}]
+
+
+  def process_request_headers(headers), do: headers
 
   defp config do
     Application.get_env(:phos, __MODULE__, [])

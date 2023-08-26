@@ -32,6 +32,10 @@ defmodule Phos.Application do
       #restart: :temporary supervisor strategy?
       # Start a worker by calling: Phos.Worker.start_link(arg)
       # {Phos.Worker, arg}
+      ExGram, # This will setup the Registry.ExGram
+      # {Phos.TeleBot, [method: :polling, token: token]},
+      Phos.TeleBot,
+      {Task.Supervisor, name: Phos.TaskSupervisor}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

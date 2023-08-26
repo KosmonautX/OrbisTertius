@@ -44,7 +44,7 @@ defmodule PhosWeb.AuthChannel do
   end
 
 
-  defp load_geolocation(%Phos.Users.User{id: id, username: username, private_profile: %Phos.Users.Private_Profile{geolocation: geolocations}} = user, socket) do
+  defp load_geolocation(%Phos.Users.User{id: id, username: username, private_profile: %Phos.Users.PrivateProfile{geolocation: geolocations}} = user, socket) do
     teritories = Enum.reduce(geolocations, %{}, fn %{chronolock: chronolock, geohash: hash, location_description: desc}, acc ->
       Map.put(acc, String.downcase(desc), %{radius: chronolock, hash: :h3.to_string(hash)})
     end)

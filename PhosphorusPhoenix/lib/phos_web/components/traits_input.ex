@@ -2,6 +2,7 @@ defmodule PhosWeb.Components.TraitsInput do
   use PhosWeb, :live_component
 
 
+  @impl true
   def update(%{traits: traits, changeset: changeset} = assigns, socket) do
     {:ok,
      socket
@@ -11,6 +12,7 @@ defmodule PhosWeb.Components.TraitsInput do
     }
   end
 
+  @impl true
   def render(assigns) do
     ~H"""
     <div class="w-full p-2 mt-4">

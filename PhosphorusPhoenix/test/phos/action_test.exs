@@ -76,10 +76,10 @@ defmodule Phos.ActionTest do
       orb = orb_fixture(%{
         "traits" => ["sample", "test"],
         "locations" => 
-          [12345678901234]
+          [12_345_678_901_234]
           |> Enum.map(fn v -> %{"id" => v} end)})
 
-      assert orbs = Action.get_orb_by_trait_geo([12345678901234], ["sample"])
+      assert orbs = Action.get_orb_by_trait_geo([12_345_678_901_234], ["sample"])
       assert length(orbs) == 1
       assert List.first(orbs).orb_id == orb.id
     end
@@ -88,10 +88,10 @@ defmodule Phos.ActionTest do
       orb = orb_fixture(%{
         "traits" => ["sample", "test"],
         "locations" => 
-          [12345678901234]
+          [12_345_678_901_234]
           |> Enum.map(fn v -> %{"id" => v} end)})
 
-      assert orbs = Action.get_orb_by_trait_geo([12345678901234], "sample")
+      assert orbs = Action.get_orb_by_trait_geo([12_345_678_901_234], "sample")
       assert length(orbs) == 1
       assert List.first(orbs).orb_id == orb.id
     end

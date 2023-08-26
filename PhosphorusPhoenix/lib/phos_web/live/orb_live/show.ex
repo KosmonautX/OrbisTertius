@@ -263,7 +263,7 @@ defmodule PhosWeb.OrbLive.Show do
 
   # Other Orbs by User
   def handle_event(
-        "load-more",
+        "load-orbs",
         _,
         %{assigns: %{orbs: orbs_meta, orb: orb}} = socket
       ) do
@@ -352,9 +352,9 @@ defmodule PhosWeb.OrbLive.Show do
     end
   end
 
-  defp stream_assign(socket, key, %{data: data, meta: meta}, opts \\ []) do
+  defp stream_assign(socket, key, %{data: data, meta: meta} = _params) do
     socket
-    |> stream(key, data, opts)
+    |> stream(key, data)
     |> assign(key, meta)
   end
 end

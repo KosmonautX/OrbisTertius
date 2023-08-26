@@ -52,7 +52,6 @@ config :phos, Phos.OAuthStrategy,
   ],
   telegram: [
     host: "http://localhost:4002",
-    botname: "telegram_bot_name"
   ]
 
 config :ex_aws, :retries,

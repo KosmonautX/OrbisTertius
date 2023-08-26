@@ -4,6 +4,7 @@ defmodule PhosWeb.API.UserProfileController do
   alias Phos.Users
   alias Phos.Users.User
   alias Phos.Orbject
+  alias PhosWeb.Util.Geographer
 
   action_fallback PhosWeb.API.FallbackController
 
@@ -33,8 +34,9 @@ defmodule PhosWeb.API.UserProfileController do
 
   def update_self(%Plug.Conn{assigns: %{current_user: %{id: id}}} = conn, params) do
     user = Users.get_user!(id)
-    with {:ok, %User{} = user} <- Users.update_user(user, profile_constructor(user,params)) do
-      render(conn, :show, user_profile: user)
+    case Users.update_user(user, profile_constructor(user, params)) do
+      {:ok, %User{} = updated_user} -> render(conn, :show, user_profile: updated_user)
+      {:error, changeset} -> {:error, changeset}
     end
   end
 
@@ -54,44 +56,16 @@ defmodule PhosWeb.API.UserProfileController do
     end
   end
 
-  defp validate_territory(%{private_profile: %{geolocation: past_territory}}, wished_territory) when is_list(wished_territory) do
-    past = past_territory |> Enum.into(%{},fn loc -> {loc.id, loc} end)
-    wished_territory |> Enum.reject(fn wish -> !(!Map.has_key?(past, wish["id"]) or (past[wish["id"]].geohash != wish["geohash"]))   end)
+  defp validate_territory(%{private_profile: %{geolocation: _past_territory}} = user, wished_territory) when is_list(wished_territory) do
+    Geographer.validate_territory(user, wished_territory)
   end
 
-  defp validate_territory(%{private_profile: _}, wished_territory) when is_list(wished_territory) do
-    wished_territory
+  defp validate_territory(%{private_profile: _} = user, wished_territory) when is_list(wished_territory) do
+    Geographer.validate_territory(user, wished_territory)
   end
 
-  defp parse_territory(user , wished_territory) when is_list(wished_territory) do
-    try do
-      present_territory = wished_territory
-      |> Enum.map(fn loc -> :h3.parent(loc["geohash"], 11) end)
-      |> Enum.map(fn hash -> :h3.parent(hash, 8) |> :h3.k_ring(1) end)
-      |>  List.flatten() |> Enum.uniq()
-
-      places = wished_territory
-      |> Enum.map(fn loc ->
-        hash = :h3.parent(loc["geohash"], 8)
-        %{"geohash" => hash,
-          "id" => loc["id"],
-          "location_description" => hash |> Phos.Mainland.World.locate()}
-      end)
-      |> Enum.reject(fn loc -> loc["id"] == "live" end)
-
-      %{"private_profile" => %{"user_id" => user.id, "geolocation" => wished_territory},
-        "public_profile" => %{"territories" => present_territory, "places" => places},
-        "personal_orb" => %{
-          "id" => (if is_nil(user.personal_orb), do: Ecto.UUID.generate(), else: user.personal_orb.id),
-          "active" => true,
-          "userbound" => true,
-          "initiator_id" => user.id,
-          "locations" =>  present_territory |> Enum.map(fn hash -> %{"id" => hash} end)
-        }
-      }
-    rescue
-      ArgumentError -> {:error, :unprocessable_entity}
-    end
+  defp parse_territory(user, wished_territory) when is_list(wished_territory) do
+    Geographer.parse_territory(user, wished_territory)
   end
 
   def update_beacon(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"fcm_token" => token, "beacon" => %{"scope" => false}} = params) do

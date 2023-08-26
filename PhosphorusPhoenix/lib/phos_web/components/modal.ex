@@ -25,7 +25,7 @@ defmodule PhosWeb.Components.Modal do
     <div class="overflow-scroll flex items-start justify-center fixed inset-0 bg-black/50 z-30">
       <div class="h-6/12 w-10/12 md:w-8/12 xl:w-1/2">
         <div class="absolute top-2 right-2">
-          <i class="fa-solid fa-xmark cursor-pointer" phx-click={onClose(assigns)} phx-target={onCloseTarget(assigns)}></i>
+          <i class="fa-solid fa-xmark cursor-pointer" phx-click={on_close(assigns)} phx-target={on_close_target(assigns)}></i>
         </div>
         <.live_component module={PhosWeb.Components.Card} title={@title} id={"modal_for_#{@title}"}>
           <%= render_slot(@inner_block) %>
@@ -39,9 +39,9 @@ defmodule PhosWeb.Components.Modal do
     """
   end
 
-  defp onClose(%{onClose: event}), do: event
-  defp onClose(_), do: "close-modal-for-myself"
+  defp on_close(%{onClose: event}), do: event
+  defp on_close(_), do: "close-modal-for-myself"
 
-  defp onCloseTarget(%{onClose: _event}), do: nil
-  defp onCloseTarget(%{myself: target}), do: target
+  defp on_close_target(%{onClose: _event}), do: nil
+  defp on_close_target(%{myself: target}), do: target
 end

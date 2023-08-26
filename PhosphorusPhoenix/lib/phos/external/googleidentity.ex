@@ -3,19 +3,19 @@ defmodule Phos.External.GoogleIdentity do
   use Retry
 
   def link_email(fyr_id, email) do
-    case set_AccountInfo(%{idToken: gen_idToken(fyr_id), email: email}) do
+    case set_account_info(%{idToken: gen_id_token(fyr_id), email: email}) do
     {:ok, %HTTPoison.Response{body: %{"email" => email}}} -> email
 
     {:error, err} -> raise RuntimeError, HTTPoison.Error.message(err)
    end
   end
 
-  def gen_customToken(fyr_id) do
+  def gen_custom_token(fyr_id) do
     create_custom_token(fyr_id)
   end
 
-  def gen_idToken(fyr_id) do
-    case verify_CustomToken(%{token: create_custom_token(fyr_id), returnSecureToken: true}) do
+  def gen_id_token(fyr_id) do
+    case verify_custom_token(%{token: create_custom_token(fyr_id), returnSecureToken: true}) do
     {:ok, %HTTPoison.Response{body: %{"idToken" => idToken}}} -> idToken
 
     {:error, err} -> raise RuntimeError, HTTPoison.Error.message(err)
@@ -32,7 +32,7 @@ defmodule Phos.External.GoogleIdentity do
 
   def process_request_body(body) when is_map(body), do: Jason.encode!(body)
 
-  defp verify_CustomToken(params) do
+  defp verify_custom_token(params) do
     retry with: exponential_backoff() |> randomize |> expiry(10_000) do
       post("verifyCustomToken", params)
     after
@@ -42,7 +42,7 @@ defmodule Phos.External.GoogleIdentity do
     end
   end
 
-  defp set_AccountInfo(params) do
+  defp set_account_info(params) do
     retry with: exponential_backoff() |> randomize |> expiry(10_000) do
       post("setAccountInfo", params)
     after

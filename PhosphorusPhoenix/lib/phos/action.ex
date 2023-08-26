@@ -7,6 +7,8 @@ defmodule Phos.Action do
 
   alias Phos.Repo
   alias Phos.Action.{Orb, Orb_Location}
+  alias Phos.TeleBot.TelegramNotification, as: TN
+  use Retry
 
   @doc """
   Returns the list of orbs.
@@ -63,12 +65,12 @@ defmodule Phos.Action do
           from p in Orb,
             where: p.parent_id == ^id,
             select: %{count: count(p)}
-        ),
+        ), on: true,
         inner_lateral_join: c in subquery(
           from c in Phos.Comments.Comment,
-          where: c.orb_id == ^id,
-          select: %{count: count()}
-        ),
+            where: c.orb_id == ^id,
+            select: %{count: count()}
+        ), on: true,
         select_merge: %{number_of_repost: p.count, comment_count: c.count},
         limit: 1
     case Repo.one(query) do
@@ -89,7 +91,7 @@ defmodule Phos.Action do
         from c in Phos.Comments.Comment,
         where: c.orb_id == ^orb_id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{comment_count: c.count})
       |> Repo.one()
   end
@@ -107,12 +109,15 @@ defmodule Phos.Action do
   def active_orbs_by_geohashes(hashes) do
     from(l in Orb_Location,
       where: l.location_id in ^hashes,
-      left_join: orbs in assoc(l, :orbs),
-      where: orbs.active == true,
-      preload: [orbs: :initiator],
-      order_by: [desc: orbs.inserted_at])
-      |> Repo.all(limit: 32)
-      |> Enum.map(fn orb -> orb.orbs end)
+      inner_join: orbs in assoc(l, :orbs),
+      where: orbs.active == true and orbs.userbound != true,
+      select: orbs,
+      inner_join: initiator in assoc(orbs, :initiator),
+      select_merge: %{initiator: initiator},
+      order_by: [desc: orbs.inserted_at],
+      limit: 8)
+      |> Repo.all()
+      # |> Enum.map(fn orb -> orb.orbs end)
   end
 
   def orbs_by_geohashes({hashes, your_id}) do
@@ -131,7 +136,7 @@ defmodule Phos.Action do
           where: c.orb_id == parent_as(:orb).id,
           select: %{count: count()}
         )
-      ),
+      ), on: true,
       select_merge: %{comment_count: c_count.count})
   end
 
@@ -173,7 +178,7 @@ defmodule Phos.Action do
           where: r.user_id == parent_as(:user).id and not is_nil(r.completed_at),
           select: %{count: count()}
         )
-      ),
+      ), on: true,
       left_lateral_join:
       mutual in subquery(
         from(r in Phos.Users.RelationBranch,
@@ -184,7 +189,7 @@ defmodule Phos.Action do
           select: %{friend | count: over(count(), :ally_partition)},
           windows: [ally_partition: [partition_by: :user_id]]
         )
-      ),
+      ), on: true,
       select_merge: %{mutual_count: mutual.count, ally_count: a_count.count, mutual: mutual})
       |> Repo.Paginated.all([page: page, sort_attribute: sort_attribute, limit: limit])
       |> (&(Map.put(&1, :data, &1.data |> Repo.Preloader.lateral(:orbs, [limit: 5])))).()
@@ -219,6 +224,18 @@ defmodule Phos.Action do
       |> Repo.all()
   end
 
+  def telegram_chat_id_by_geohashes(hashes) do
+    from(l in Orb_Location,
+      as: :l,
+      where: l.location_id in ^hashes,
+      inner_join: orbs in assoc(l, :orbs),
+      on: orbs.userbound == true,
+      inner_join: initiator in assoc(orbs, :initiator),
+      distinct: initiator.integrations["telegram_chat_id"],
+      select: initiator.integrations)
+      |> Repo.all()
+  end
+
   def orb_initiator_by_geohashes(hashes) do
     from(l in Orb_Location,
       as: :l,
@@ -245,7 +262,7 @@ defmodule Phos.Action do
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:o).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{comment_count: c.count})
   end
 
@@ -269,7 +286,7 @@ defmodule Phos.Action do
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:o).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{comment_count: c.count})
       |> Repo.Paginated.all(page, sort_attribute, limit)
   end
@@ -285,7 +302,7 @@ defmodule Phos.Action do
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:o).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{comment_count: c.count})
       |> Repo.Paginated.all(page, sort_attribute, limit)
   end
@@ -301,7 +318,7 @@ defmodule Phos.Action do
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:l).orb_id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{comment_count: c.count}
 
     Repo.all(query, limit: 32)
@@ -320,7 +337,7 @@ defmodule Phos.Action do
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:o).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{comment_count: c.count}
 
     Repo.all(query, limit: 32)
@@ -367,13 +384,33 @@ defmodule Phos.Action do
     |> Repo.insert()
     |> case do
          {:ok, orb} = data ->
-           orb = orb |> Repo.preload([:initiator])
-           Task.start(fn ->
-             experimental_notify(orb)
-           end)
+            orb = orb |> Repo.preload([:initiator])
+           Task.Supervisor.start_child(Phos.TaskSupervisor,
+             fn ->
+              experimental_notify(orb)
+            end)
+            Task.start(fn ->
+              case orb.media do
+                true ->
+                  wait exponential_backoff() |> randomize |> expiry(10_000) do
+                    is_map(Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless"))
+                  after
+                    _ ->
+                      TN.Collector.add(orb)
+                      {:ok, "Media fetched"}
+                  else
+                    _ ->
+                      TN.Collector.add(%{orb | media: false})
+                      {:error, "Unable to get media"}
+                  end
+                false ->
+                  TN.Collector.add(orb)
+              end
+            end)
            #spawn(fn -> user_feeds_publisher(orb) end)
            data
-         err -> err
+         err ->
+          err
        end
   end
 
@@ -382,17 +419,20 @@ defmodule Phos.Action do
     |> Orb.admin_changeset(attrs)
     |> Repo.insert()
     |> case do
-         {:ok, orb} = data ->
-           orb = orb |> Repo.preload([:initiator])
-           spawn(fn ->
-             unless(Enum.member?(orb.traits, "mirage")) do
-               experimental_notify(orb)
-             end
-             #spawn(fn -> user_feeds_publisher(orb) end)
-           end)
-           data
+         {:ok, orb} -> notify_mirage(orb)
          err -> err
        end
+  end
+
+  defp notify_mirage(orb) do
+    orb = Repo.preload(orb, [:initiator])
+
+    case Enum.member?(orb.traits, "mirage") do
+      false -> spawn(fn -> experimental_notify(orb)end)
+      _ -> :ok
+    end
+
+    {:ok, orb}
   end
 
   # defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
@@ -825,12 +865,12 @@ defmodule Phos.Action do
     query = from o in Orb
     Enum.reduce(terms, query, fn %{phrase: term, label: label}, q ->
       case label do
-        "LOC" -> 
+        "LOC" ->
           case Phos.Mainland.World.find_hash(term) do
             nil -> q
             hash -> from r in q, join: l in Orb_Location, on: r.id == l.orb_id, or_where: l.location_id == ^hash
           end
-        _ -> 
+        _ ->
           or_where(q, fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^build_search_term(term)))
       end
     end)

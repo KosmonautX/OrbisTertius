@@ -12,6 +12,7 @@ defmodule PhosWeb.API.OrbController do
 
   # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X GET 'http://localhost:4000/api/comments'
 
+  @spec index(Plug.Conn.t(), any) :: Plug.Conn.t()
   def index(conn, _params) do
     orbs = Action.list_orbs()
     render(conn, :index, orbs: orbs)
@@ -57,7 +58,7 @@ defmodule PhosWeb.API.OrbController do
     end
   end
 
-  defp orb_constructor(user, params) do
+  def orb_constructor(user, params) do
     constructor = sanitize(params)
     try do
       options = case params do
@@ -78,6 +79,8 @@ defmodule PhosWeb.API.OrbController do
         if Enum.member?(traits, "exile"), do: orb |> Map.delete("locations"), else: orb
       end)
       |> Map.put("initiator_id", user.id)
+
+      # IO.inspect(Map.merge(constructor, options))
       {:ok, Map.merge(constructor, options)}
     rescue
       ArgumentError -> {:error, :unprocessable_entity}
@@ -114,9 +117,10 @@ defmodule PhosWeb.API.OrbController do
     try do
       geohashes = String.split(hashes, ",")
       |> Enum.map(fn hash ->
-        Enum.map([8,9,10], &(:h3.parent(String.to_integer(hash), &1))) end)
+        Enum.map([8, 9, 10], &(:h3.parent(String.to_integer(hash), &1))) end)
         |> List.flatten()
         |> Enum.uniq()
+
       traits = String.split(trait, ",") |> Enum.uniq()
       loc_orbs = Action.orbs_by_geotraits({geohashes, user.id}, traits, [page: page])
       render(conn, :paginated, orbs: loc_orbs)
@@ -167,7 +171,7 @@ defmodule PhosWeb.API.OrbController do
     geohashes = String.split(hashes, ",")
     |> Enum.map(fn hash -> String.to_integer(hash) |> :h3.parent(8) end)
     |> Enum.uniq()
-    loc_orbs = Action.orbs_by_geohashes({geohashes, user.id}, 1)
+    loc_orbs = Action.orbs_by_geohashes({geohashes, user.id}, [page: 1])
     render(conn, :paginated, orbs: loc_orbs)
   end
 
@@ -216,6 +220,7 @@ defmodule PhosWeb.API.OrbController do
       |> render(:show, orb: orb)
     else
       false -> {:error, :unauthorized}
+    error -> error
     end
   end
 
@@ -228,6 +233,7 @@ defmodule PhosWeb.API.OrbController do
       send_resp(conn, :no_content, "")
     else
       false -> {:error, :unauthorized}
+    error -> error
     end
   end
 

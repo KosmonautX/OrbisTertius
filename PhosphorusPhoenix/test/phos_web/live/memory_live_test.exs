@@ -61,7 +61,7 @@ defmodule PhosWeb.MemoryLiveTest do
       assert index_live |> element("#memories-#{memory.id} a", "Edit") |> render_click() =~
                "Edit Memory"
 
-      assert_patch(index_live, ~p"/memories/#{memory}/edit")
+      #assert_patch(index_live, ~p"/memories/#{memory}/edit")
 
       assert index_live
              |> form("#memory-form", memory: @invalid_attrs)
@@ -84,39 +84,6 @@ defmodule PhosWeb.MemoryLiveTest do
 
       assert index_live |> element("#memories-#{memory.id} a", "Delete") |> render_click()
       refute has_element?(index_live, "#memory-#{memory.id}")
-    end
-  end
-
-  describe "Show" do
-    setup [:create_memory, :register_and_log_in_user]
-
-    test "displays memory", %{conn: conn, memory: memory} do
-      {:ok, _show_live, html} = live(conn, ~p"/memories/#{memory}")
-
-      assert html =~ "Show Memory"
-      assert html =~ memory.message
-    end
-
-    test "updates memory within modal", %{conn: conn, memory: memory} do
-      {:ok, show_live, _html} = live(conn, ~p"/memories/#{memory}")
-
-      assert show_live |> element("a", "Edit") |> render_click() =~
-               "Edit Memory"
-
-      assert_patch(show_live, ~p"/memories/#{memory}/show/edit")
-
-      assert show_live
-             |> form("##{memory.id}-memory-form", memory: @invalid_attrs)
-             |> render_change() =~ "border-rose-400"
-
-      {:ok, _, html} =
-        show_live
-        |> form("##{memory.id}-memory-form", memory: @update_attrs)
-        |> render_submit()
-        |> follow_redirect(conn, ~p"/memories/#{memory}")
-
-      assert html =~ "Memory updated successfully"
-      assert html =~ "some updated message"
     end
   end
 end

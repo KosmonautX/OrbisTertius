@@ -678,22 +678,30 @@ defmodule PhosWeb.CoreComponents do
 
   def admin_user_preview(assigns) do
     ~H"""
-    <div class="flex items-center space-x-4">
-      <div class="flex-shrink-0">
-        <.link navigate={"/user/#{@user.username}?bac"}>
-          <img
-            class="lg:w-12 lg:h-12 h-10 w-10 rounded-full object-cover"
-            src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossy")}
-            onerror="this.src='/images/default_banner.jpg';"
-          />
-        </.link>
+    <div class="flex max-w-sm font-poppins">
+      <.link :if={@user.username} navigate={"/user/#{@user.username}?bac"}>
+      <div>
+        <img
+          src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossy")}
+          onerror="this.src='/images/default_banner.jpg';"
+          class="xl:h-14 xl:w-14 lg:w-12 lg:h-12 mr-4 object-cover rounded-full "
+          alt="user5"
+        />
       </div>
-      <div class="flex-1 min-w-0">
+      </.link>
+      <div class="flex flex-col xl:ml-1 lg:ml-2 -mb-2">
+
+        <h6 class="mb-0 leading-normal text-sm font-bold"><%= "@#{@user.username}" %></h6>
+      <a href={"mailto: #{@user.email}"}>
+        <p class="mb-0 leading-tight text-sm text-gray-400"><%= "#{@user.email}" %></p>
+      </a>
+      </div>
+      <div :if={@user.public_profile} class="flex-1 px-2 min-w-0">
         <p class="text-sm font-medium text-gray-900 truncate">
-          <%= "#{@user.username}" %>
+          <%= "🕵 #{@user.public_profile.public_name}" %>
         </p>
-        <p href={"mailto: #{@user.email}"} class="lg:text-sm text-xs text-gray-500 truncate">
-          <%= "#{@user.email}" %>
+        <p class="text-sm  text-gray-500 truncate">
+          <%= "🧭 #{(@user.public_profile.places || [] )|> Enum.map(&(&1.location_description || ""))}" %>
         </p>
       </div>
     </div>
@@ -1740,10 +1748,11 @@ defmodule PhosWeb.CoreComponents do
       assign(
         assigns,
         :page,
-        case LinkPreview.create(assigns.link) do
-          {:ok, page} -> page
-          _ -> nil
-        end
+        # case LinkPreview.create(assigns.link) do
+        #   {:ok, page} -> page
+        #   _ -> nil
+        # end
+        nil
       )
 
     ~H"""
@@ -2048,10 +2057,12 @@ defmodule PhosWeb.CoreComponents do
   attr(:id, :string, required: true)
   slot(:actions)
   slot(:allies)
+  attr(:ally_count, :integer)
 
   slot(:ally_button) do
     attr(:user, :map, doc: "user want to attached to")
     attr(:current_user, :map, doc: "current active user")
+    attr(:parent_pid, :any, doc: "current active pid")
     attr(:socket, :map, doc: "current active socket")
   end
 
@@ -2079,7 +2090,7 @@ defmodule PhosWeb.CoreComponents do
           >
             <div id={"#{@id}-copylink"} class="hidden">
               <%= PhosWeb.Endpoint.url() <>
-                path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username}") %>
+                path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username || @user.id}") %>
             </div>
             <.share_btn
               type="share_btn"
@@ -2099,14 +2110,14 @@ defmodule PhosWeb.CoreComponents do
         </p>
         <p>
           <span
-            :for={trait <- @user |> get_in([:public_profile, Access.key(:traits, "-")])}
+            :for={trait <- (@user |> get_in([:public_profile, Access.key(:traits, [])])) -- ["exile"]}
             class="text-gray-500 text-sm font-medium dark:text-[#777986]"
           >
             <%= "##{trait}" %>
           </span>
         </p>
         <p class="lg:hidden block text-sm dark:text-white text-black font-semibold hover:underline hover:decoration-purple-600 dark:hover:decoration-white hover:decoration-solid hover:decoration-2 cursor-pointer">
-          <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@username}/allies")}>
+          <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/user/#{@user.username || @id}/allies")}>
             <%= "#{@ally_count} | allies with @#{@user.username}'s and Others" %>
           </.link>
         </p>
@@ -2138,6 +2149,7 @@ defmodule PhosWeb.CoreComponents do
   slot(:ally_button) do
     attr(:user, :map, doc: "user want to attached to")
     attr(:current_user, :map, doc: "current active user")
+    attr(:parent_pid, :any, doc: "current active pid")
     attr(:socket, :map, doc: "current active socket")
   end
 
@@ -2205,7 +2217,7 @@ defmodule PhosWeb.CoreComponents do
         </p>
 
         <span
-          :for={trait <- @user |> get_in([:public_profile, Access.key(:traits, "-")])}
+          :for={trait <- ((@user |> get_in([:public_profile, Access.key(:traits, nil)])) || [] -- ["exile"])}
           class="text-gray-500 text-base font-normal dark:text-[#777986]"
         >
           <%= "##{trait}" %>
@@ -2279,6 +2291,57 @@ defmodule PhosWeb.CoreComponents do
     </.ally_modal>
     """
   end
+
+  # @doc """
+  #  Render a card for user to confirm account and auth binding
+  # """
+
+  # slot(:confirm) do
+  #   attr(:tone, :atom)
+  # end
+
+  # def confirm_card(assigns) do
+  #   ~H"""
+  #   <img
+  #     class="object-cover h-screen w-full"
+  #     src="/images/user_splash.jpg"
+  #     alt="Background Image"
+  #   />
+  #   <div class="fixed left-0 top-0 flex h-full w-full items-center justify-center bg-black bg-opacity-50 py-10">
+  #     <div class="max-h-full w-full max-w-xl overflow-y-auto sm:rounded-2xl bg-white">
+  #       <div class="w-full">
+  #         <div class="m-8 my-20 max-w-[400px] mx-auto">
+  #           <div class="mb-8">
+  #             <h1 class="mb-4 text-3xl font-extrabold"><%= heading %></h1>
+  #             <p class="text-gray-600">You're almost there!</p>
+  #           </div>
+  #           <div class="space-y-4">
+  #             <.simple_form class="max-w-2xl p-4 space-y-4 rounded-2xl mt-4"
+  #               :let={f} for={%{}} as={:user} id="confirmation_form" phx-submit="confirm_account_tg">
+  #               <.input field={{f, :token}} type="hidden" value={@token} />
+  #               <:actions>
+  #                 <.button phx-disable-with="Confirming..." type="submit"><%= render_slot(confirm) %></.button>
+  #               </:actions>
+  #             </.simple_form>
+  #             <.button
+  #               :for={confirm <- @confirm}
+  #               id={"#{@id}-confirm"}
+  #               tone={Map.get(confirm, :tone, :primary)}
+  #               phx-click={@on_confirm}
+  #               phx-disable-with
+  #               class="py-2 px-3"
+  #             >
+
+  #             </.button>
+  #             <button class="p-3 bg-black rounded-full text-white w-full font-semibold">Confirm / Bind</button>
+  #             <button class="p-3 bg-white border rounded-full w-full font-semibold">Back to Home</button>
+  #           </div>
+  #         </div>
+  #       </div>
+  #     </div>
+  #   </div>
+  #   """
+  # end
 
   @doc """
    Render a chip is action of the orb view user express the recation
@@ -2739,7 +2802,7 @@ defmodule PhosWeb.CoreComponents do
               <%= @user |> get_in([:public_profile, Access.key(:bio, "-")]) %>
             </p>
             <span
-              :for={trait <- @user |> get_in([:public_profile, Access.key(:traits, "-")])}
+              :for={trait <- (@user |> get_in([:public_profile, Access.key(:traits, [])])) -- ["exile"]}
               class="text-gray-500 text-sm  md:text-base font-medium dark:text-[#777986]"
             >
               <%= "##{trait}" %>

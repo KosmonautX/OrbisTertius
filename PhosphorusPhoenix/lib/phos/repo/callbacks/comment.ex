@@ -3,6 +3,7 @@ defmodule Phos.Repo.Callbacks.Comment do
 
   alias Phos.PlatformNotification, as: PN
 
+  @impl true
   def callback(:insert, data) do
     data
     |> Phos.Repo.preload([:parent, :orb, :initiator])

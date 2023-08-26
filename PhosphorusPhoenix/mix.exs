@@ -7,6 +7,9 @@ defmodule Phos.MixProject do
       version: "0.1.0",
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
+      elixirc_options: [
+        warnings_as_errors: true
+      ],
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -70,14 +73,14 @@ defmodule Phos.MixProject do
       {:ssl_verify_fun, "~> 1.1"},
       {:ecto_psql_extras, "~> 0.7.10"},
       {:mint, "~> 1.0"},
-      {:castore, "~> 0.1.0"},
-      {:tailwind, "~> 0.1", runtime: Mix.env() == :dev},
+      {:castore, "~> 0.1.3"},
+      {:tailwind, "~> 0.2", runtime: Mix.env() == :dev},
       {:timex, "~> 3.7"},
       {:earmark, "~>1.4.36"},
       {:html_sanitize_ex, "~> 1.4"},
       {:prom_ex, github: "KosmonautX/prom_ex"},
-      {:fsmx, "~> 0.2.0"},
-      {:nebulex, "~> 2.4"},
+      {:fsmx, "~> 0.4"},
+      {:nebulex, "~> 2.5.1"},
       {:shards, "~> 1.0"},
       {:decorator, "~> 1.4"},
       {:fcmex, github: "KosmonautX/fcmex"},
@@ -86,8 +89,8 @@ defmodule Phos.MixProject do
       # comments
       {:ecto_ltree, "~> 0.3.0"},
       {:sparrow, github: "Scratchbac/sparrow", tag: "062400e"},
-      {:bumblebee, "~> 0.3.0"},
-      {:exla, ">= 0.0.0"},
+      {:bumblebee, "~> 0.3.0", runtime: Mix.env() == :dev},
+      {:exla, ">= 0.0.0", runtime: Mix.env() == :dev},
       #debugging
       {:rexbug, "~> 1.0"},
       {:poison, "4.0.1", override: true},
@@ -95,8 +98,10 @@ defmodule Phos.MixProject do
       {:req, github: "wojtekmach/req"},
       # { :uuid, "~> 1.1" },
       # {:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
-      {:phx_live_storybook,
-       github: "phenixdigital/phx_live_storybook", tag: "992062c", runtime: Mix.env() == :dev}
+      {:ex_gram, "~> 0.40.0"},
+      {:tesla, "~> 1.2"},
+      {:phx_live_storybook, github: "phenixdigital/phx_live_storybook", tag: "992062c", runtime: Mix.env() == :dev},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 

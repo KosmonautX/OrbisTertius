@@ -1,7 +1,6 @@
 defmodule Phos.Article.Content do
   use Ecto.Schema
 
-  import Ecto.Changeset
 
   @primary_key {:id, Ecto.UUID, autogenerate: false}
   schema "articles" do

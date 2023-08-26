@@ -52,12 +52,12 @@ defmodule PhosWeb.Components.ScrollAlly do
 
   # ally_list is a wrapper fn around Folk.friends() according to current_user, user found in socket
 
-  defp ally_list(current_user, friend, page, limit)
 
+  defp ally_list(current_user, friend, page, limit \\ 24)
   defp ally_list(%Phos.Users.User{id: id} = _current_user, friend, page, limit),
     do: ally_list(id, friend, page, limit)
 
-  defp ally_list(current_user, %Phos.Users.User{id: id} = _friend, page, limit \\ 24),
+  defp ally_list(current_user, %Phos.Users.User{id: id} = _friend, page, limit),
     do: ally_list(current_user, id, page, limit)
 
   defp ally_list(current_user_id, friend_id, page, limit)
@@ -82,7 +82,7 @@ defmodule PhosWeb.Components.ScrollAlly do
 
   defp ally_list(_, _, _, _), do: []
 
-  def check_more_ally(currid, userid, expected_ally_page, limit) do
-    ally_list(currid, userid, expected_ally_page, 24)
+  def check_more_ally(currid, userid, expected_ally_page, _limit) do
+    ally_list(currid, userid, expected_ally_page)
   end
 end

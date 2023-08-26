@@ -61,7 +61,6 @@ defmodule PhosWeb.Router do
       live "/users/reset_password", UserForgotPasswordLive, :new
       live "/users/reset_password/:token", UserResetPasswordLive, :edit
     end
-
     post "/users/log_in", UserSessionController, :create
   end
 
@@ -73,8 +72,10 @@ defmodule PhosWeb.Router do
       live "/begin", UserWelcomeLive, :onboard
     end
 
+
     live_session :required_authenticated_user,
-      on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Timezone, :timezone}] do
+      on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Menshen.Mounter, :timezone}] do
+
       live "/welcome", UserWelcomeLive, :welcome
 
       live "/orb/article", OrbLive.Article, :index
@@ -216,6 +217,10 @@ defmodule PhosWeb.Router do
     post "/:provider/callback", AuthController, :apple_callback
   end
 
+  scope "/telegram", PhosWeb do
+    post "/:token", TelegramController, :webhook
+  end
+
   # Enables LiveDashboard only for development
   #
   # If you want to use the LiveDashboard in production, you should put
@@ -258,7 +263,7 @@ defmodule PhosWeb.Router do
       pipe_through [:browser, :require_authenticated_user]
 
       live_session :required_authenticated_user_dev,
-        on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Timezone, :timezone}] do
+        on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated},{PhosWeb.Menshen.Mounter, :timezone}] do
         live "/orb", OrbLive.Index, :index
         live "/orb/new", OrbLive.Index, :new
         live "/orb/sethome", OrbLive.Index, :sethome
@@ -266,18 +271,22 @@ defmodule PhosWeb.Router do
 
         live "/orb/:id/edit", OrbLive.Index, :edit
         live "/orb/:id/show/edit", OrbLive.Show, :edit
+      end
+    end
+  else
+    scope "/", PhosWeb do
+      pipe_through [:browser, :require_authenticated_user]
 
-        live "/memories/:id/edit", MemoryLive.Index, :edit
+      live_session :required_authenticated_user_dev,
+        on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated},{PhosWeb.Menshen.Mounter, :timezone}] do
+        get "/orb", ErrorController, :_404
 
-        live "/memories/:id", MemoryLive.Show, :show
-        live "/memories/:id/show/edit", MemoryLive.Show, :edit
+        get "/orb/new", ErrorController, :_404
+        get "/orb/sethome", ErrorController, :_404
+        get "/orb/setwork", ErrorController, :_404
 
-        live "/reveries", ReverieLive.Index, :index
-        live "/reveries/new", ReverieLive.Index, :new
-        live "/reveries/:id/edit", ReverieLive.Index, :edit
-
-        live "/reveries/:id", ReverieLive.Show, :show
-        live "/reveries/:id/show/edit", ReverieLive.Show, :edit
+        get "/orb/:id/edit", ErrorController, :_404
+        get "/orb/:id/show/edit", ErrorController, :_404
       end
     end
   end
@@ -291,14 +300,19 @@ defmodule PhosWeb.Router do
 
     get "/users/log_out", UserSessionController, :delete
 
+    get "/bot/telegram_signup", TelegramController, :create
+
     live_session :current_user,
       on_mount: [{PhosWeb.Menshen.Gate, :mount_current_user}] do
       live "/users/confirm/:token", UserConfirmationLive, :edit
+      live "/users/confirmtg/:token", UserConfirmationLive, :edit_tg
       live "/users/confirm", UserConfirmationInstructionsLive, :new
+      live "/users/bind/telegram/:token", UserConfirmationLive, :bind_telegram
     end
 
     live_session :guest_if_not_logged_in,
-      on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Timezone, :timezone}] do
+      on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Menshen.Mounter, :timezone}] do
+
       live "/orb/:id", OrbLive.Show, :show
       live "/user/:username", UserProfileLive.Show, :show
       live "/user/:username/allies", UserProfileLive.Index, :allies
