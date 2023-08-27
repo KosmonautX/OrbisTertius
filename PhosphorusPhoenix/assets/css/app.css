@@ -4,158 +4,182 @@
 @import "tailwindcss/typography";
 
 @import "../vendor/css/glide.core.min";
-@import "../vendor/fonts/Miller/miller.css";
-@import "../vendor/fonts/Poppins/poppins.css";
 
 /* This file is for your main application CSS */
 
 /* Alerts and form errors used by phx.new */
 .alert {
-    padding: 15px;
-    margin-bottom: 20px;
-    border: 1px solid transparent;
-    border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-radius: 4px;
 }
 
 .alert-info {
-    color: #31708f;
-    background-color: #d9edf7;
-    border-color: #bce8f1;
+  color: #31708f;
+  background-color: #d9edf7;
+  border-color: #bce8f1;
 }
 
 .alert-warning {
-    color: #8a6d3b;
-    background-color: #fcf8e3;
-    border-color: #faebcc;
+  color: #8a6d3b;
+  background-color: #fcf8e3;
+  border-color: #faebcc;
 }
 
 .alert-danger {
-    color: #a94442;
-    background-color: #f2dede;
-    border-color: #ebccd1;
+  color: #a94442;
+  background-color: #f2dede;
+  border-color: #ebccd1;
 }
 
 .alert p {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .alert:empty {
-    display: none;
+  display: none;
 }
 
 .invalid-feedback {
-    color: #a94442;
-    display: block;
-    margin: -1rem 0 2rem;
+  color: #a94442;
+  display: block;
+  margin: -1rem 0 2rem;
 }
 
 /* LiveView specific classes for your customization */
 .phx-no-feedback.invalid-feedback,
 .phx-no-feedback .invalid-feedback {
-    display: none;
+  display: none;
 }
 
 .phx-click-loading {
-    opacity: 0.5;
-    transition: opacity 1s ease-out;
+  opacity: 0.5;
+  transition: opacity 1s ease-out;
 }
 
 .phx-loading {
-    cursor: wait;
+  cursor: wait;
 }
 
 .phx-modal {
-    opacity: 1 !important;
-    opacity: 1 !important;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.4);
-    background-color: rgba(0, 0, 0, 0.4);
+  opacity: 1 !important;
+  opacity: 1 !important;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
 .phx-modal-content {
-    background-color: #fefefe;
-    margin: 15vh auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
+  background-color: #fefefe;
+  margin: 15vh auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
 }
 
 .phx-modal-close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
 }
 
 .phx-modal-close:hover,
 .phx-modal-close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .fade-in-scale {
-    animation: 0.2s ease-in 0s normal forwards 1 fade-in-scale-keys;
+  animation: 0.2s ease-in 0s normal forwards 1 fade-in-scale-keys;
 }
 
 .fade-out-scale {
-    animation: 0.2s ease-out 0s normal forwards 1 fade-out-scale-keys;
+  animation: 0.2s ease-out 0s normal forwards 1 fade-out-scale-keys;
 }
 
 .fade-in {
-    animation: 0.2s ease-out 0s normal forwards 1 fade-in-keys;
+  animation: 0.2s ease-out 0s normal forwards 1 fade-in-keys;
 }
 
 .fade-out {
-    animation: 0.2s ease-out 0s normal forwards 1 fade-out-keys;
+  animation: 0.2s ease-out 0s normal forwards 1 fade-out-keys;
 }
 
 .img-double-border {
-    box-shadow: 0 0 0 4px white, 0 0 0 8px #9747ff;
+  box-shadow: 0 0 0 4px white, 0 0 0 8px #9747ff;
 }
 
 .journal-scroll::-webkit-scrollbar {
-    width: 4px;
-    height: 2px;
-    cursor: pointer;
-    /*background-color: rgba(229, 231, 235, var(--bg-opacity));*/
+  width: 4px;
+  height: 2px;
+  cursor: pointer;
+  /*background-color: rgba(229, 231, 235, var(--bg-opacity));*/
 }
 
 .journal-scroll::-webkit-scrollbar-track {
-    background-color: rgba(229, 231, 235, var(--bg-opacity));
-    cursor: pointer;
-    /*background: red;*/
+  background-color: rgba(229, 231, 235, var(--bg-opacity));
+  cursor: pointer;
+  /*background: red;*/
 }
+
 
 
 .journal-scroll::-webkit-scrollbar-thumb {
-    cursor: pointer;
-    background-color: #a0aec0;
-    /*outline: 1px solid slategrey;*/
+  cursor: pointer;
+  background-color: #a0aec0;
+  /*outline: 1px solid slategrey;*/
 }
 
+
+
 .paragraph-font {
-    text-align: center;
-    text-align: justify;
+  font-size: 1rem;
+  margin: 10px; /* Set the margin to your desired value */
+  text-align: center;
+  text-align: justify;
+  text-indent: 30px;
+  font-family: "Miller", "Georgia", serif; /* Use Miller font as the first choice, then fallback to Georgia and finally a generic serif font */
+}
+
+
+.date-time {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+}
+
+
+.subhead {
+  text-transform: uppercase;
+  border-bottom: 2px solid #2f2f2f;
+  border-top: 2px solid #2f2f2f;
+  padding: 12px 0 12px 0;
+}
+
+.head_new {
+  font-family: "Miller", "Georgia", serif; /* Use Miller font as the first choice, then fallback to Georgia and finally a generic serif font */
+  display: inline-block;
 }
 
 
 .tab-active::after {
-    content: "";
-    display: block;
-    height: 3px;
-    background-color: #000;
-    /* Replace with your desired underline color */
-    margin-top: -3px;
+  content: "";
+  display: block;
+  height: 3px;
+  background-color: #000;
+  /* Replace with your desired underline color */
+  margin-top: -3px;
 }
 
 .accordion-content {
-    display: none;
+  display: none;
 }
 
 /*
@@ -167,93 +191,99 @@
 */
 
 .accordion-item:checked~.accordion-content {
-    max-height: 1000px;
-    /* Adjust this value based on your content height */
-    transition: max-height 0.3s ease-in;
+  max-height: 1000px;
+  /* Adjust this value based on your content height */
+  transition: max-height 0.3s ease-in;
 }
 
 .closed-icon {
-    display: block;
+  display: block;
 }
 
 .open-icon {
-    display: none;
+  display: none;
 }
 
 .accordion-item:checked~.label .closed-icon {
-    display: none;
+  display: none;
 }
 
 .accordion-item:checked~.label .open-icon {
-    display: block;
+  display: block;
 }
 
 .modal-toggle {
-    display: none;
+  display: none;
 }
 
 .modal {
-    display: none;
-    position: fixed;
-    right: 0;
-    top: 0;
-    width: 44px;
-    height: 100vh;
+  display: none;
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 44px;
+  height: 100vh;
 }
 
 .modal-toggle:checked+.modal {
-    display: block;
+  display: block;
 }
 
 #book-search-form {
-    display: none;
+  display: none;
 }
 
 #nav-form {
-    display: none;
+  display: none;
 }
 
+#conteneur {
+  width: 90%;
+  max-width: 1150px;
+  margin: auto;
+  text-align: center;
+}
 
 @keyframes fade-in-scale-keys {
-    0% {
-        scale: 0.95;
-        opacity: 0;
-    }
+  0% {
+    scale: 0.95;
+    opacity: 0;
+  }
 
-    100% {
-        scale: 1;
-        opacity: 1;
-    }
+  100% {
+    scale: 1;
+    opacity: 1;
+  }
 }
 
 @keyframes fade-out-scale-keys {
-    0% {
-        scale: 1;
-        opacity: 1;
-    }
+  0% {
+    scale: 1;
+    opacity: 1;
+  }
 
-    100% {
-        scale: 0.95;
-        opacity: 0;
-    }
+  100% {
+    scale: 0.95;
+    opacity: 0;
+  }
 }
 
 @keyframes fade-in-keys {
-    0% {
-        opacity: 0;
-    }
+  0% {
+    opacity: 0;
+  }
 
-    100% {
-        opacity: 1;
-    }
+  100% {
+    opacity: 1;
+  }
 }
 
 @keyframes fade-out-keys {
-    0% {
-        opacity: 1;
-    }
+  0% {
+    opacity: 1;
+  }
 
-    100% {
-        opacity: 0;
-    }
+  100% {
+    opacity: 0;
+  }
 }

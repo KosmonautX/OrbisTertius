@@ -3,16 +3,10 @@
 // If you want to use Phoenix channels, run `mix help phx.gen.channel`
 // to get started and then uncomment the line below.
 import Hooks from "./hooks";
-import {
-    Socket
-} from "phoenix";
-import {
-    LiveSocket
-} from "phoenix_live_view";
+import { Socket } from "phoenix";
+import { LiveSocket } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
-import ModalApplication, {
-    VideoMute
-} from "./modal_application";
+import ModalApplication, { VideoMute } from "./modal_application";
 
 let csrfToken = document
     .querySelector("meta[name='csrf-token']")
@@ -76,7 +70,7 @@ window.addEventListener("phos:clipcopy", (event) => {
     if ("share" in navigator) {
         const text = event.target.textContent;
         navigator.share({
-            title: document.querySelector('meta[property="og:title"]') ? .content,
+            title: document.querySelector('meta[property="og:title"]')?.content,
             url: text,
         });
     } else if ("clipboard" in navigator) {
@@ -110,7 +104,7 @@ window.addEventListener("phos:clipcopy", (event) => {
 // });
 
 
-// Hide the input box initially
+// // Hide the input box initially
 // searchInput.style.display = 'none';
 
 
@@ -135,7 +129,7 @@ if (themeToggleDarkIcon && themeToggleLightIcon) {
 
     var themeToggleBtn = document.getElementById("theme-toggle");
 
-    themeToggleBtn.addEventListener("click", function() {
+    themeToggleBtn.addEventListener("click", function () {
         // toggle icons inside button
         themeToggleDarkIcon.classList.toggle("hidden");
         themeToggleLightIcon.classList.toggle("hidden");
@@ -172,3 +166,6 @@ liveSocket.enableDebug();
 // >> liveSocket.enableLatencySim(1000)  // enabled for duration of browser session
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket;
+
+
+

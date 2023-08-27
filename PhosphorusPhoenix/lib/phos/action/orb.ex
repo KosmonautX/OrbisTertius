@@ -47,7 +47,7 @@ defmodule Phos.Action.Orb do
     |> cast_embed(:payload)
     |> cast_assoc(:locations)
     |> validate_required([:id, :title, :active, :media, :extinguish, :initiator_id])
-    |> validate_exclude_subset(:traits, ~w(admin pin personal))
+    |> validate_exclude_subset(:traits, ~w(admin pin personal exile mirage))
     #|> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 
@@ -61,7 +61,7 @@ defmodule Phos.Action.Orb do
     |> cast(attrs, [:title, :active, :media, :traits, :embedding])
     |> cast_embed(:payload)
     |> validate_required([:active, :title])
-    |> validate_exclude_subset(:traits, ~w(admin personal pin), message: "unnatural traits")
+    |> validate_exclude_subset(:traits, ~w(admin personal pin exile mirage), message: "unnatural traits")
     |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 
@@ -71,7 +71,7 @@ defmodule Phos.Action.Orb do
     |> cast(attrs, [:id, :active, :userbound, :initiator_id, :traits, :title])
     |> cast_embed(:payload)
     |> validate_required([:id, :active, :userbound, :initiator_id])
-    |> validate_exclude_subset(:traits, ~w(admin pin))
+    |> validate_exclude_subset(:traits, ~w(admin pin exile mirage))
     |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 

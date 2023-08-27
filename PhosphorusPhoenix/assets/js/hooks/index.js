@@ -10,6 +10,7 @@ import TransitionHook from "./transition"
 import SearchToggler from "./search_toggler"
 
 
+
 export default {
   InitPosition,
   InitIndexMap,

@@ -119,8 +119,8 @@ defmodule Phos.Action do
   def orbs_by_geohashes({hashes, your_id}) do
     from(o in Orb,
       as: :orb,
-      where: o.userbound != true,
-      inner_join: l in Phos.Action.Orb_Location, on: l.location_id in ^hashes and l.orb_id == o.id,
+      where: o.userbound != true and not fragment("? @> ?", o.traits, ^["exile"]),
+      inner_join: l in Orb_Location, on: l.location_id in ^hashes and l.orb_id == o.id,
       inner_join: initiator in assoc(o, :initiator),
       left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,
@@ -159,7 +159,7 @@ defmodule Phos.Action do
       as: :l,
       where: l.location_id in ^hashes,
       inner_join: orbs in assoc(l, :orbs),
-      where: orbs.userbound == true and fragment("? != '[]'", orbs.traits),
+      where: orbs.userbound == true and fragment("? != '[]'", orbs.traits) and not fragment("? @> ?", orbs.traits, ^["exile"]),
       inner_join: initiator in assoc(orbs, :initiator),
       as: :user,
       select: initiator,
@@ -224,7 +224,7 @@ defmodule Phos.Action do
     from(l in Orb_Location,
       as: :l,
       where: l.location_id in ^hashes,
-      left_join: orbs in assoc(l, :orbs),
+      inner_join: orbs in assoc(l, :orbs),
       on: orbs.userbound == true,
       inner_join: initiator in assoc(orbs, :initiator),
       on: initiator.integrations["beacon"]["location"]["scope"] == true,
@@ -870,15 +870,15 @@ defmodule Phos.Action do
 
   defp maybe_search(query, nil), do: query
   defp maybe_search(query, term) do
-    IO.inspect "searching"
     where(query, fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^build_search_term(term)) or fragment("to_tsvector(?, title) @@ websearch_to_tsquery(?, ?)", "english", "english", ^term))
   end
 
-  defp build_base_search_query(term) when term != "" do
-    from o in Orb,
-      where: fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^build_search_term(term)),
-      or_where: fragment("to_tsvector(?, title) @@ websearch_to_tsquery(?, ?)", "english", "english", ^term)
+  defp build_base_search_query(term) do
+    (from o in Orb)
+    |> maybe_search(term)
   end
+
+
   defp build_base_search_query(_term), do: from o in Orb
 
   defp build_search_term(text) do
