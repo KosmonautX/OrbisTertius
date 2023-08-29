@@ -7,7 +7,7 @@ defmodule Phos.Users do
 
   import Ecto.Query, warn: false
   alias Phos.Repo
-  alias Phos.Users.{User, Private_Profile, Auth}
+  alias Phos.Users.{User, PrivateProfile, Auth}
   alias Phos.Cache
   alias Ecto.Multi
 
@@ -140,6 +140,7 @@ defmodule Phos.Users do
         select: %{count: count()}
       )
     ),
+    on: true,
     select_merge: %{ally_count: a_count.count}
 
     case Repo.one(query) do
@@ -207,8 +208,8 @@ defmodule Phos.Users do
   end
 
   def create_private_profile(attrs \\ %{}) do
-    %Private_Profile{}
-    |> Private_Profile.changeset(attrs)
+    %PrivateProfile{}
+    |> PrivateProfile.changeset(attrs)
     |> Repo.insert()
   end
 
@@ -236,10 +237,6 @@ defmodule Phos.Users do
     user
     |> User.territorial_changeset(attrs)
     |> Repo.update()
-  end
-
-  defp terra_publisher(%Phos.Users.Geolocation{} = terr, %User{} = user) do
-    Phos.PubSub.publish(terr , {:terra, "mutation"}, user)
   end
 
   @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
@@ -283,6 +280,61 @@ defmodule Phos.Users do
     Repo.delete(user)
   end
 
+  @decorate cache_evict(cache: Cache, key: {User, :find, uid})
+  def delete_user(uid) do
+    u = Phos.Users.get_user(uid)
+
+    # u
+    # |> Phos.Users.delete_user()
+
+    from(c in Phos.Comments.Comment,
+      where: c.initiator_id == ^u.id
+    )
+    |> Phos.Repo.all()
+    |> Enum.map(fn c ->
+      from(p in Phos.Comments.Comment, where: p.parent_id == ^c.id)
+      |> Phos.Repo.all()
+      |> Enum.map(&Phos.Comments.delete_comment(&1))
+
+
+      Phos.Comments.delete_comment(c)
+    end)
+
+    from(m in Phos.Message.Memory,
+      where: m.user_source_id == ^u.id
+    )
+    |> Phos.Repo.all()
+    |> Enum.map(&Phos.Message.delete_memory(&1))
+
+    from(o in Phos.Action.Orb,
+      where: o.initiator_id == ^u.id
+    )
+    |> Phos.Repo.all()
+    |> Enum.map(&Phos.Action.delete_orb(&1))
+
+    from(u in Phos.Users.Auth,
+      where: u.user_id == ^u.id
+    )
+    |> Phos.Repo.all()
+    |> Enum.map(&Phos.Repo.delete!(&1))
+
+    from(r in Phos.Users.RelationBranch,
+      where: r.user_id == ^u.id,
+      inner_join: root in assoc(r, :root),
+      select: root
+    )
+    |> Phos.Repo.all()
+    |> Enum.map(&Phos.Folk.delete_relation(&1))
+
+    from(n in Phos.PlatformNotification.Store,
+      where: n.recipient_id == ^u.id
+    )
+    |> Phos.Repo.all()
+    |> Enum.each(&Phos.Repo.delete!(&1))
+
+    Phos.Users.delete_user(u)
+  end
+
   #   @doc """
   #   Returns an `%Ecto.Changeset{}` for tracking user changes.
 
@@ -296,11 +348,30 @@ defmodule Phos.Users do
     User.changeset(user, attrs)
   end
 
+  def get_user_by_telegram(id) when is_binary(id) do
+    case do_query_from_auth(id, "telegram") do
+      %Auth{user: user} ->
+        {:ok, %{user | tele_id: id} }
+      err -> {:error, err}
+    end
+  end
+
+  def get_user_by_telegram(id), do: to_string(id) |> get_user_by_telegram()
+
+  def telegram_user_exists?(id) when is_binary(id) do
+    case do_query_from_auth(id, "telegram") do
+      %Auth{} -> true
+      _ -> false
+    end
+  end
+  def telegram_user_exists?(id), do: to_string(id) |> telegram_user_exists?()
+
+
   @doc """
   Authenticate a user from oauth provider
   """
   def from_auth(%{"sub" => id, "provider" => provider} = resp) do
-    case do_query_from_auth(id, provider) do
+    case do_query_from_auth(to_string(id), provider) do
       nil -> create_new_user(id, provider, resp)
       %Auth{} = auth -> {:ok, auth.user}
       _ -> {:error, "Error occured"}
@@ -313,26 +384,37 @@ defmodule Phos.Users do
   defp do_query_from_auth(id, provider) do
     Repo.one(
       from a in Auth,
-        preload: [:user],
-        where: a.auth_id == ^id and a.auth_provider == ^provider,
-        limit: 1
+      preload: [user: [[:private_profile, personal_orb: :locations]]],
+      where: a.auth_id == ^id and a.auth_provider == ^provider,
+      limit: 1
     )
   end
 
-  defp create_new_user(id, provider, %{"auth_date" => _date}) when provider == "telegram" do
+  defp create_new_user(id, provider, _params) when provider == "telegram" do
     params = %{
       auths: [
         %{
-          auth_id: id,
+          auth_id: to_string(id),
           auth_provider: to_string(provider)
         }
-      ]
+      ],
+      integrations: %{
+        telegram_chat_id: to_string(id)
+      },
+      public_profile: %{birthday: "",
+                        bio: "I'm new to Scratchbac!",
+                        public_name: "",
+                        occupation: "",
+                        traits: [],
+                        profile_pic: Enum.random(1..6),
+                        banner_pic: Enum.random(1..6)}
     }
 
     %User{}
     |> User.telegram_changeset(params)
     |> Repo.insert()
   end
+
 
   defp create_new_user(id, provider, %{"email" => email}) do
     params = %{
@@ -350,6 +432,19 @@ defmodule Phos.Users do
       {:ok, auth} -> {:ok, auth.user}
       error -> error
     end
+  end
+
+  def get_telegram_chat_ids_by_orb(%Phos.Action.Orb{central_geohash: nil}), do: []
+  def get_telegram_chat_ids_by_orb(orb) do
+    orb = orb |> Repo.preload([:initiator])
+      :h3.parent(orb.central_geohash, 8)
+      |> List.wrap()
+      |> Phos.Action.telegram_chat_id_by_geohashes()
+      |> Enum.reduce([],
+       fn %{telegram_chat_id: chat_id}, acc when not is_nil(chat_id) ->
+            [%{orb: orb, chat_id: chat_id} | acc]
+          _, acc -> acc
+      end)
   end
 
   alias Phos.Users.{User, UserToken, UserNotifier}
@@ -426,7 +521,7 @@ defmodule Phos.Users do
           where: r.user_id == parent_as(:user).id and not is_nil(r.completed_at),
           select: %{count: count()}
         )
-      ),
+      ), on: true,
       select_merge: %{ally_count: a_count.count})
   end
 
@@ -442,6 +537,7 @@ defmodule Phos.Users do
           select: %{count: count()}
         )
       ),
+      on: true,
       select_merge: %{ally_count: a_count.count})
   end
 
@@ -459,7 +555,7 @@ defmodule Phos.Users do
   end
 
   def get_private_profile!(id) do
-    Repo.get!(Private_Profile, id)
+    Repo.get!(PrivateProfile, id)
   end
 
   ## User registration
@@ -806,4 +902,84 @@ defmodule Phos.Users do
     end
   end
 
+    ## Link Telegram -> Web
+
+  @doc """
+  Delivers the confirmation email instructions to the given user.
+
+  ## Examples
+
+  iex> deliver_user_confirmation_instructions(user, &Routes.user_confirmation_url(conn, :edit, &1))
+  {:ok, %{to: ..., body: ...}}
+
+  iex> deliver_user_confirmation_instructions(confirmed_user, &Routes.user_confirmation_url(conn, :edit, &1))
+  {:error, :already_confirmed}
+
+  """
+  def deliver_telegram_bind_confirmation_instructions(%User{} = user, telegram_id, bindtelegram_url_fun)
+      when is_function(bindtelegram_url_fun, 1) do
+
+      {encoded_token, user_token} = UserToken.build_email_token_for_bind_account(user, telegram_id, "bind_telegram")
+      Repo.insert!(user_token)
+      UserNotifier.deliver_telegram_link_instructions(user, bindtelegram_url_fun.(encoded_token))
+  end
+
+  @doc """
+  Binds a user by the given token.
+
+  If the token matches, the user account is marked as confirmed, telegram_id is
+  added to the user integrations and the token is deleted.
+  """
+  # def bind_user(token) do
+  #   with {:ok, query} <- UserToken.verify_email_token_query(token, "confirm"),
+  #        %User{} = user <- Repo.one(query),
+  #        {:ok, %{user: user}} <- Repo.transaction(confirm_user_multi(user)) do
+  #     {:ok, user}
+  #   else
+  #     _ -> :error
+  #   end
+  # end
+
+  def bind_user(token) do
+    with {:ok, query} <- UserToken.verify_bindaccount_token_query(token, "bind_telegram"),
+        user when not is_nil(user) <- Repo.one(query), # this user struct is a special struct with only email and telegram user
+        {:ok, %{user: user}} <- Repo.transaction(bind_user_multi(user)) do
+      {:ok, user}
+    else
+    _ ->
+      :error
+    end
+  end
+
+  def bind_user_multi(%{tele_user: %{integrations: %{telegram_chat_id: telegram_id}} = tele_user, email: email}) do
+    main_user = get_user_by_email(email) |> Repo.preload([:auths])
+
+    query =
+      from a in Auth,
+        where: a.auth_id == ^telegram_id and a.auth_provider == "telegram"
+    auth = Repo.one(query)
+
+    auth_params = %{
+      auth_id: telegram_id,
+      user_id: main_user.id,
+      auth_provider: "telegram"
+    }
+
+    integration_params =
+      if main_user.integrations do
+        %{
+          integrations: %{Map.from_struct(main_user.integrations) |
+            telegram_chat_id: to_string(telegram_id)
+          }
+        }
+      else
+        %{integrations: %{telegram_chat_id: to_string(telegram_id)}}
+      end
+
+    Multi.new()
+    |> Multi.delete(:old_auth, auth)
+    |> Multi.insert(:insert_tele_auth, Auth.changeset(%Auth{}, auth_params), on_conflict: :replace_all, conflict_target: [:user_id, :auth_id, :auth_provider])
+    |> Multi.update(:user, User.telegram_changeset(main_user, integration_params))
+    |> Multi.delete_all(:tokens, UserToken.user_and_contexts_query(tele_user, ["bind_telegram"]))
+  end
 end

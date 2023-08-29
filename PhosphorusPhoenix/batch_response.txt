@@ -6,16 +6,6 @@ POST /v1/projects/scratchbac-norbandy/messages:send
 Content-Type: application/json
 Accept: application/json
 
-{"message":{"android":{"notification":{"channel_id":"sb_irohs_tea","default_sound":false,"icon":"@drawable/ic_stat_sbhand","sound":"kabuki.wav"}},"apns":{"headers":{"apns-priority":"5","authorization":""},"payload":{"aps":{"badge":0,"content-available":0}}},"data":{"action_path":"/orbland/orbs/ebf28fff-ba5d-4ad4-8dcc-4bca33f94101","body":"aikido style","cluster_id":"folk_orb","initiator_id":"3d534547-eed2-4ab2-acc8-ebf0ae03aaa5","silent":"false","title":"deexupery from Following"},"notification":{"body":"aikido style","title":"deexupery from Following"},"token":null}}
-
---subrequest_boundary
-Content-Type: application/http
-Content-Transfer-Encoding: binary
-
-POST /v1/projects/scratchbac-norbandy/messages:send
-Content-Type: application/json
-Accept: application/json
-
-{"message":{"android":{"notification":{"channel_id":"sb_irohs_tea","default_sound":false,"icon":"@drawable/ic_stat_sbhand","sound":"kabuki.wav"}},"apns":{"headers":{"apns-priority":"5","authorization":""},"payload":{"aps":{"badge":0,"content-available":0}}},"data":{"action_path":"/orbland/orbs/ebf28fff-ba5d-4ad4-8dcc-4bca33f94101","body":"aikido style","cluster_id":"folk_orb","initiator_id":"3d534547-eed2-4ab2-acc8-ebf0ae03aaa5","silent":"false","title":"deexupery from Following"},"notification":{"body":"aikido style","title":"deexupery from Following"},"token":"djMNQPoHR_6l5FlC3x_91Y:APA91bFPf8PiG7a0A0zwb9jKJD5JNFogFdPseKOyzyF9htiyM4HQhfl4NVo9j1C4dHnPuWFpR6qIYpGn13ABaKlB7EvI62U4l5ug_TlM-dwFRTETJKPhBVeNiC0Kn46uBSeut9_FIKOo"}}
+{"message":{"apns":{"headers":{"apns-priority":"5","authorization":""},"payload":{"aps":{"badge":0,"content-available":0}}},"data":{"action_path":"/comland/comments/root/1db59778-7aff-47e2-b8d3-e300f8aeda44","cluster_id":"0bb4a7c7-b076-4db1-ba00-4134cc27105e"},"notification":{"body":"does it work now?","title":"ghetto replied"},"token":"cVGTIe5Z2E0gvswPuBlBNt:APA91bEars1tsoe_JuTu_tzDo3xcABS1eszMs8OvkdUIDUoSW4yLJfcVsgeS4edMDH_3-uZM7bQJ_jFNFwIW8bBCZnpXND5VTk6CiQrYHUfrkv3sLb5mC85ABktRURgXX6jAHlvAWSOA"}}
 
 --subrequest_boundary--

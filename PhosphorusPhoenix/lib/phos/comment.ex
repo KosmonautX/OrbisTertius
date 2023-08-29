@@ -97,6 +97,14 @@ defmodule Phos.Comments do
   defp notify_initiator(comment), do: comment
 
   defp notify_self(%{orb: %{initiator_id: orb_init_id} = orb, initiator_id: init_id, parent_id: nil} = comment) when orb_init_id != init_id do
+    with user <- Phos.Users.get_user(orb_init_id),
+      user_integrations when is_map(user_integrations) <- user.integrations,
+      true <- Map.has_key?(user_integrations, :telegram_chat_id) do
+      ExGram.send_message(user_integrations.telegram_chat_id, "Reply from #{comment.initiator.username}: #{comment.body}",
+        parse_mode: "HTML", reply_markup: Phos.TeleBot.Components.Button.build_orb_notification_button(orb, user))
+    else
+      _ -> :ok
+    end
     PN.notify({"broadcast", "COM", comment.id, "reply_orb_root"},
       memory: %{user_source_id: init_id, com_subject_id: comment.id, orb_subject_id: orb.id},
       to: orb_init_id,
@@ -151,7 +159,7 @@ defmodule Phos.Comments do
         from sc in Comment,
         where: sc.parent_id == parent_as(:c).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{child_count: sc.count}
     Repo.all(query)
   end
@@ -169,7 +177,7 @@ defmodule Phos.Comments do
         from sc in Comment,
         where: sc.parent_id == parent_as(:c).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{child_count: sc.count}
 
     Repo.all(query)
@@ -185,7 +193,7 @@ defmodule Phos.Comments do
       inner_lateral_join: sc in subquery(
         from sc in Comment,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{child_count: sc.count}
 
     Repo.Paginated.all(query, [page: page, asc: true])
@@ -202,7 +210,7 @@ defmodule Phos.Comments do
         from sc in Comment,
         where: sc.parent_id == parent_as(:c).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{child_count: sc.count}
 
     Repo.Paginated.all(query, page, sort_attribute, limit)
@@ -242,7 +250,7 @@ defmodule Phos.Comments do
         from sc in Comment,
         where: sc.parent_id == parent_as(:c).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{child_count: sc.count}
 
     Repo.all(query)
@@ -261,7 +269,7 @@ defmodule Phos.Comments do
         from sc in Comment,
         where: sc.parent_id == parent_as(:c).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{child_count: sc.count}
 
     Repo.all(query)

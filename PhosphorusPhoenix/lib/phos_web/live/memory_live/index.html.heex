@@ -61,8 +61,10 @@
   id="User_ally" main_width="lg:max-w-2xl"
   show={@live_action in [:ally]}
   on_cancel={JS.patch(~p"/memories/user/#{@user.username}")}>
-  <.redirect_user id="redirect-user" user={@ally} show_location={true}
-    username={@user.username}>
+  <.redirect_user
+    id="redirect-user"
+    user={@ally}
+    show_location={true}>
     <:actions>
      <.live_component id="user-info-ally"
       module={PhosWeb.Component.AllyButton}

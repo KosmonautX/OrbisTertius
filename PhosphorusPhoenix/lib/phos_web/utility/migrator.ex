@@ -67,36 +67,33 @@ defmodule PhosWeb.Util.Migrator do
     |> Multi.run(:email, fn _repo, _ -> {:ok, Map.get(data, "email")} end)
     |> Multi.run(:payload, fn _repo, %{providers: providers, email: email} ->
       {:ok, %{"fyr_id" => data["localId"], "email" => email_provider(providers) || email}} end)
-    |> Multi.run(:user, fn _repo, %{payload: %{"email" => email} = payload} when is_binary(email) ->
-      case Users.get_user_by_email(email) do
-        %Users.User{fyr_id: nil} = user ->
-                  user
-                  |> Users.User.fyr_registration_changeset(%{fyr_id: data["localId"]})
-                  |> Phos.Repo.update()
-
-        %Users.User{} = user -> {:ok, user}
-            nil ->
-              case Users.get_user_by_fyr(data["localId"]) do
-                %Users.User{} = user ->
-                  user
-                  |> Users.User.changeset(%{email: email})
-                  |> Phos.Repo.update()
-                nil ->
-                  Users.create_user(payload)
-                end
-      end
-      _repo, %{payload: %{"fyr_id" => fyr_id} = payload} ->
-        case Users.get_user_by_fyr(fyr_id) do
-                %Users.User{} = user -> {:ok, user}
-                nil -> Users.create_user(payload)
-        end
-    end)
+    |> Multi.run(:user, &cast_fyr_user(&1, &2, data))
     |> Multi.insert_all(:registered_providers, Users.Auth, &insert_with_provider/1, on_conflict: :replace_all, conflict_target: [:user_id, :auth_id, :auth_provider])
     |> Phos.Repo.transaction()
     |> case do
       {:ok, data} -> data
       {:error, err} -> err
       {:error, name, fields, required} -> %{name: name, fields: fields, required: required}
+    end
+  end
+
+  defp cast_fyr_user(_repo, %{payload: %{"email" => email} = payload}, data) when is_binary(email) do
+    case Users.get_user_by_email(email) do
+      %Users.User{fyr_id: nil} = user ->
+        user
+        |> Users.User.fyr_registration_changeset(%{fyr_id: data["localId"]})
+        |> Phos.Repo.update()
+
+      %Users.User{} = user -> {:ok, user}
+      nil -> 
+        Users.get_user_by_fyr(data["localId"])
+        |> cast_nil_user_by_fyr(payload)
+    end
+  end
+  defp cast_fyr_user(_repo, %{payload: %{"fyr_id" => fyr_id} = payload}, _data) do
+    case Users.get_user_by_fyr(fyr_id) do
+      %Users.User{} = user -> {:ok, user}
+      nil -> Users.create_user(payload)
     end
   end
 
@@ -126,4 +123,10 @@ defmodule PhosWeb.Util.Migrator do
 
   defp insert_with_provider(_), do: []
 
+  defp cast_nil_user_by_fyr(%Users.User{} = user, %{"email" => email}) do
+    user
+    |> Users.User.changeset(%{email: email})
+    |> Phos.Repo.update()
+  end
+  defp cast_nil_user_by_fyr(_, payload), do: Users.create_user(payload)
 end

@@ -61,7 +61,7 @@ defmodule Phos.Orbject.S3 do
          true <- response.status_code >= 200 and response.status_code < 300,
          [_ |_] <- response.body.contents,
            addresses <- (for obj <- response.body.contents, into: %{} do
-                                  {path_suffix(obj.key, root_path), signer!(:get,obj.key)} end) do
+                                  {path_suffix(obj.key, root_path), signer!(:get, obj.key)} end) do
       {:ok, addresses}
     else
       [] -> {:ok, nil}
@@ -114,7 +114,7 @@ defmodule Phos.Orbject.S3 do
 
     ExAws.Config.new(:s3, config) |>
       ExAws.S3.presigned_url(action, config.bucket, path,
-        [expires_in: 88888, virtual_host: false, query_params: [{"ContentType", "application/octet-stream"}]])
+        [expires_in: 88_888, virtual_host: false, query_params: [{"ContentType", "application/octet-stream"}]])
   end
 
   defp path_constructor(archetype, uuid, m = %Orbject.Structure.Media{count: 0}) do

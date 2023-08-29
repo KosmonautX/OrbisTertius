@@ -1,7 +1,6 @@
 defmodule PhosWeb.UserSocket do
   use Phoenix.Socket
 
-  alias PhosWeb.Presence
   alias PhosWeb.Menshen.Auth
 
   # A Socket handler

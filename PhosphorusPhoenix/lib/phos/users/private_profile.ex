@@ -1,4 +1,4 @@
-defmodule Phos.Users.Private_Profile do
+defmodule Phos.Users.PrivateProfile do
   use Ecto.Schema
   import Ecto.Changeset
   alias Phos.Users.{User, Geolocation}

@@ -505,4 +505,62 @@ defmodule Phos.UsersTest do
       refute inspect(%User{password: "123456"}) =~ "password: \"123456\""
     end
   end
+
+  describe "deliver_telegram_bind_confirmation_instructions/3" do
+    setup do
+      %{user: user_fixture(),
+        tele_user: temp_tele_user_fixture()
+      }
+    end
+
+    test "sends token through notification", %{user: user, tele_user: tele_user} do
+      auth = Enum.find(tele_user.auths, fn map -> map.auth_provider == "telegram" end)
+      token =
+        extract_user_token(fn url ->
+          Users.deliver_telegram_bind_confirmation_instructions(user, auth.auth_id , url)
+        end)
+
+      {:ok, token} = Base.url_decode64(token, padding: false)
+      assert user_token = Repo.get_by(UserToken, token: :crypto.hash(:sha256, token))
+      assert user_token.user_id == tele_user.id
+      assert user_token.sent_to == user.email
+      assert user_token.context == "bind_telegram"
+    end
+  end
+
+  describe "bind_user/1" do
+    setup do
+      user = user_fixture()
+      tele_user = temp_tele_user_fixture()
+
+      auth = Enum.find(tele_user.auths, fn map -> map.auth_provider == "telegram" end)
+
+      token =
+        extract_user_token(fn url ->
+          Users.deliver_telegram_bind_confirmation_instructions(user, auth.auth_id, url)
+        end)
+
+      %{user: user, tele_user: tele_user, token: token}
+    end
+
+    test "confirms the bind with a valid token", %{user: user, token: token} do
+      assert {:ok, confirmed_user} = Users.bind_user(token)
+      assert confirmed_user.integrations.telegram_chat_id
+      assert Repo.get!(User, user.id).integrations.telegram_chat_id
+      refute Repo.get_by(UserToken, user_id: user.id)
+    end
+
+    test "does not bind with invalid token", %{user: user, tele_user: tele_user} do
+      assert Users.bind_user("oops") == :error
+      refute Repo.get!(User, user.id).integrations["telegram_chat_id"]
+      assert Repo.get_by(UserToken, user_id: tele_user.id)
+    end
+
+    test "does not bind if token expired", %{user: user, tele_user: tele_user, token: token} do
+      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
+      assert Users.bind_user(token) == :error
+      refute Repo.get!(User, user.id).integrations["telegram_chat_id"]
+      assert Repo.get_by(UserToken, user_id: tele_user.id)
+    end
+  end
 end

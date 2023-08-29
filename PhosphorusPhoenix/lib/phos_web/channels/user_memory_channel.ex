@@ -1,7 +1,5 @@
 defmodule PhosWeb.UserMemoryChannel do
   use PhosWeb, :channel
-
-  alias PhosWeb.Presence
   alias PhosWeb.Util.Viewer
 
   def join("memory:user:" <> id, _payload, socket) do
@@ -46,7 +44,7 @@ defmodule PhosWeb.UserMemoryChannel do
         |> List.flatten()
         |> terra_mapper()
         |> tap(&push(socket, "assembly_initiation", &1))
-        |> Enum.map(fn {hash, _} -> terra_track(hash, socket) end)
+        |> Enum.each(fn {hash, _} -> terra_track(hash, socket) end)
 
         _ ->
         push(socket, "assembly_initiation", %{})
@@ -66,7 +64,7 @@ defmodule PhosWeb.UserMemoryChannel do
     {:noreply, socket}
   end
 
-  def handle_info(msg, socket) do
+  def handle_info(_msg, socket) do
     {:noreply, socket}
   end
 

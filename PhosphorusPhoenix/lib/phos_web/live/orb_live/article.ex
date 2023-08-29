@@ -16,7 +16,7 @@ defmodule PhosWeb.OrbLive.Article do
   end
 
   @impl true
-  def handle_info(:search, %{assigns: %{search_query: query} = _assigns} = socket) do
+  def handle_info(:search, %{assigns: %{search_query: _} = _assigns} = socket) do
     article = %{
       article: [
         [

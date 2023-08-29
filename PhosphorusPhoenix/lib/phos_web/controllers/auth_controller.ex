@@ -47,7 +47,7 @@ defmodule PhosWeb.AuthController do
         |> do_authenticate(conn)
       _ ->
         conn
-        |> put_flash(:error, "Failed authenticate via #{String.capitalize(provider)}.")
+        |> put_flash(:error, "Failed authenticate via " <> to_string(provider))
         |> redirect(to: "/")
     end
   end

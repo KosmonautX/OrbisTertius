@@ -96,12 +96,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
             ext_path = "#{path}.#{ext}"
             File.rename!(path, ext_path)
 
-            thumbnail =
-              ext_path
-              |> Mogrify.open()
-              |> Mogrify.format("jpeg")
-              |> Map.update(:path, "", fn path -> path <> "[5]" end)
-              |> Mogrify.save()
+            thumbnail = create_thumbnail(ext_path)
 
             {:ok, lossy_media} =
               Phos.Orbject.Structure.apply_media_changeset(%{
@@ -145,14 +140,18 @@ defmodule PhosWeb.OrbLive.FormComponent do
         {:ok, path}
       end)
 
-    orb_params =
-      unless Enum.empty?(file_uploaded) do
-        Map.replace(orb_params, "media", true)
-      else
-        orb_params
-      end
+    case Enum.empty?(file_uploaded) do
+      false -> save_orb(socket, socket.assigns.action, Map.replace(orb_params, "media", true))
+      _ -> save_orb(socket, socket.assigns.action, orb_params)
+    end
+  end
 
-    save_orb(socket, socket.assigns.action, orb_params)
+  defp create_thumbnail(ext_path) do
+    ext_path
+    |> Mogrify.open()
+    |> Mogrify.format("jpeg")
+    |> Map.update(:path, "", fn path -> path <> "[5]" end)
+    |> Mogrify.save()
   end
 
   defp error_to_string(:too_large), do: "Image too large"
@@ -179,7 +178,7 @@ defmodule PhosWeb.OrbLive.FormComponent do
 
   defp save_orb(socket, :new, orb_params) do
     ## TODO swap with create orb with publish
-    case Action.create_orb_and_publish(orb_params) do
+    case Action.create_orb(orb_params) do
       {:ok, _orb} ->
         {:noreply,
          socket
@@ -189,6 +188,16 @@ defmodule PhosWeb.OrbLive.FormComponent do
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, changeset: changeset)}
     end
+    # case Action.create_orb_and_publish(orb_params) do
+    #   {:ok, _orb} ->
+    #     {:noreply,
+    #      socket
+    #      |> put_flash(:info, "Orb created successfully")
+    #      |> push_redirect(to: socket.assigns.return_to)}
+
+    #   {:error, %Ecto.Changeset{} = changeset} ->
+    #     {:noreply, assign(socket, changeset: changeset)}
+    # end
   end
 
   defp orb_loc_publisher(orb, event, to_locations) do

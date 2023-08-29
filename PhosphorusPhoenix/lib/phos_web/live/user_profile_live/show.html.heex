@@ -40,7 +40,6 @@
       :if={not is_nil(@user.public_profile)}
       id="user_info"
       user={@user}
-      username={@user.username}
       ally_count={@ally_count}
     >
       <:actions>
@@ -104,7 +103,6 @@
     <.tabs_mobile_view
       title="ScratchBac Admin"
       home_path={~p"/admin"}
-      username={@user.username}
     >
       <:item to={~p"/user/{@username}"} title="POSTS" id="posts" icon="fa-clock" />
     </.tabs_mobile_view>
@@ -145,7 +143,6 @@
     id="redirect-user"
     user={@ally}
     show_location={true}
-    show_img={false}
     username={@user.username}>
     <:actions>
       <.live_component

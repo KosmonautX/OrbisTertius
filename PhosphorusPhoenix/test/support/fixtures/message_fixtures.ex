@@ -7,7 +7,7 @@ defmodule Phos.MessageFixtures do
   Generate a memory.
   """
   def memory_fixture(attrs \\ %{}) do
-    %{id: user_id} = user = Phos.UsersFixtures.user_fixture()
+    %{id: user_id} = Phos.UsersFixtures.user_fixture()
 
     {:ok, memory} =
       attrs

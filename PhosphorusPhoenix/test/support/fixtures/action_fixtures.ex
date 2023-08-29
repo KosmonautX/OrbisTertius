@@ -10,7 +10,7 @@ defmodule Phos.ActionFixtures do
   Generate a orb.
   """
   def orb_fixture(attrs \\ %{}) do
-    %{id: user_id} = user = user_fixture()
+    %{id: user_id} = user_fixture()
 
     {:ok, orb} =
       attrs
@@ -37,7 +37,7 @@ defmodule Phos.ActionFixtures do
   @spec orb_fixture_no_location(any) ::
           nil | [%{optional(atom) => any}] | %{optional(atom) => any}
   def orb_fixture_no_location(attrs \\ %{}) do
-    %{id: user_id} = user = user_fixture()
+    %{id: user_id} = user_fixture()
 
     {:ok, orb} =
       attrs
