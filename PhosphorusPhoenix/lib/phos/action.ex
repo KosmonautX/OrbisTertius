@@ -918,9 +918,6 @@ defmodule Phos.Action do
     |> maybe_search(term)
   end
 
-
-  defp build_base_search_query(_term), do: from o in Orb
-
   defp build_search_term(text) do
     String.split(text, " ")
     |> Enum.join(" or ")

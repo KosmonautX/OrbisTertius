@@ -348,6 +348,13 @@ defmodule Phos.External.Notion do
     |> Map.put(type, values)
   end
 
+  defp notion_page_definition(%{type: type, value: value}) do
+    Map.new()
+    |> Map.put(type, [%{"text" => %{"content" => value}}])
+  end
+  defp notion_page_definition("number"), do: notion_page_definition(%{type: "number", value: 0})
+  defp notion_page_definition(type), do: notion_page_definition(%{type: type, value: ""})
+
   defp notion_block_definition("heading_" <> _number, value), do: %{"rich_text" => rich_value(value, "text")}
   defp notion_block_definition("paragraph", value), do: %{"rich_text" => rich_value(value, "text")}
   defp notion_block_definition("image", value), do: %{"type" => "external", "external" => value}
@@ -370,20 +377,12 @@ defmodule Phos.External.Notion do
     end)
   end
   defp rich_value(value, type) when is_list(value) do
-    Enum.map(value, fn v ->
+    Enum.map(value, fn _v ->
       %{"type" => type}
       |> Map.put(type, value)
     end)
   end
   defp rich_value(value, type), do: rich_value([value], type)
-
-
-  defp notion_page_definition(%{type: type, value: value}) do
-    Map.new()
-    |> Map.put(type, [%{"text" => %{"content" => value}}])
-  end
-  defp notion_page_definition("number"), do: notion_page_definition(%{type: "number", value: 0})
-  defp notion_page_definition(type), do: notion_page_definition(%{type: type, value: ""})
 
   defp notion_version, do: Keyword.get(config(), :version) ||  "2022-02-22"
   defp database, do: Keyword.get(config(), :database, "") |> eval_value()

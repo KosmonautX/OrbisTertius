@@ -3024,7 +3024,7 @@ defmodule PhosWeb.CoreComponents do
     """
   end
 
-  defp show_active_content(js \\ %JS{}, to) do
+  defp show_active_content(js, to) do
     js
     |> JS.hide(to: "div.tab_content")
     |> JS.show(to: to)

@@ -35,7 +35,7 @@
 
   <div class="lg:hidden block">
     <div class="grid md:grid-cols-2 gird-col gap-4  px-2 md:px-4 pb-24">
-      <.admin_grid :for={orb <- @orbs} user={orb.initiator} id={"admin-grid-for-#{orb.id}"} />
+      <.admin_grid :for={orb <- @orbs} orb={orb} user={orb.initiator} id={"admin-grid-for-#{orb.id}"} />
     </div>
   </div>
 </section>
@@ -52,7 +52,7 @@
 
 </div>
 
-<.form :let={f} for={%{}} as={:article} class="w-1/2" phx-submit={show_modal("article-container")}>
+<.form for={%{}} as={:article} class="w-1/2" phx-submit={show_modal("article-container")}>
   <.button type="submit" class="button button-sm p-0 mx-2">Generate article</.button>
 </.form>
 
