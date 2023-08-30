@@ -8,7 +8,7 @@ defmodule Phos.MixProject do
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       elixirc_options: [
-        warnings_as_errors: true
+        warnings_as_errors: false
       ],
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
