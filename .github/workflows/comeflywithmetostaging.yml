@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:latest
+        image: ks0m1c:fly_vector
         env:
           POSTGRES_DB: postgres
           POSTGRES_PASSWORD: root
