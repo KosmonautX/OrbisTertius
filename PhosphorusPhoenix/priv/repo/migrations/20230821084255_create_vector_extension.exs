@@ -8,7 +8,7 @@ defmodule Phos.Repo.Migrations.CreateVectorExtension do
       add :embedding, :vector, size: 768
     end
 
-    create index(:orbs, ["embedding vector_cosine_ops"], using: :ivfflat)
+    execute("CREATE INDEX ON orbs USING hnsw(embedding vector_l2_ops) WITH (m=16, ef_construction=64)")
   end
 
   def down do
@@ -16,7 +16,7 @@ defmodule Phos.Repo.Migrations.CreateVectorExtension do
       remove_if_exists :embedding, :vector
     end
 
-    drop_if_exists index(:orbs, ["embedding vector_cosine_ops"], mode: :cascade)
+    drop_if_exists index(:orbs, ["embedding vector_l2_ops"], mode: :cascade)
     execute("DROP EXTENSION IF EXISTS vector")
   end
 end
