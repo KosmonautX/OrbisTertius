@@ -89,8 +89,8 @@ defmodule Phos.MixProject do
       # comments
       {:ecto_ltree, "~> 0.3.0"},
       {:sparrow, github: "Scratchbac/sparrow", tag: "062400e"},
-      {:bumblebee, "~> 0.3.1", runtime: Mix.env() == :dev},
-      {:exla, ">= 0.0.0", runtime: Mix.env() == :dev},
+      {:bumblebee, "~> 0.3.1"},
+      {:exla, ">= 0.0.0"},
       #debugging
       {:rexbug, "~> 1.0"},
       {:poison, "4.0.1", override: true},
