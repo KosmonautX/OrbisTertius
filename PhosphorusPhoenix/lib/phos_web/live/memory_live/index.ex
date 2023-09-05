@@ -32,9 +32,10 @@ defmodule PhosWeb.MemoryLive.Index do
 
   defp apply_action(%{assigns: %{current_user: your}} = socket, :show, %{"username" => username}) do
     {%{data: mems, meta: meta}, rel_id} =
-      case user = Phos.Users.get_public_user_by_username(username, your.id) do
+      case user = Phos.Users.get_public_user(username, your.id) do
         %{self_relation: nil} -> {%{meta: %{}, data: []}, nil}
         %{self_relation: rel} -> {list_memories(user, rel.id, limit: 24), rel.id}
+        nil -> {%{meta: %{}, data: []}, nil}
       end
 
     send_update(PhosWeb.MemoryLive.FormComponent, id: :new_on_desktop, memory: %Memory{})
