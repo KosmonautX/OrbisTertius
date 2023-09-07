@@ -1,13 +1,15 @@
 defmodule Phos.Oracle do
   use Supervisor
-
+  @moduledoc """
+  Orchestrator for Models running on Phos
+  """
   def start_link(opts) do
     Supervisor.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
   def load_textembedder_serving do
-    {:ok, model} = Bumblebee.load_model(model_info(:textembedder, :model))
-    {:ok, token} = Bumblebee.load_tokenizer(model_info(:textembedder, :model))
+    {:ok, model} = Bumblebee.load_model({:hf, "thenlper/gte-base"})
+    {:ok, token} = Bumblebee.load_tokenizer({:hf, "thenlper/gte-base"})
 
     serving = Bumblebee.Text.TextEmbedding.text_embedding(model, token, embedding_processor: :l2_norm, defn_options: [compiler: EXLA])
 
@@ -23,14 +25,14 @@ defmodule Phos.Oracle do
   end
 
 
-  defp model_info(role, type) do
-    #Keyword.put_new(:dir, :code.priv_dir(:phos) |> to_string() |> Kernel.<>("/models"))
-    case Application.get_env(:phos, __MODULE__) |> Enum.into(%{}) do
-      %{^role => %{source: :local, dir: dir}} = conf -> {:local, "#{dir}/#{Keyword.get(conf, type)}"}
-      %{^role => conf} -> {:hf, Keyword.get(conf, type)}
-      _ -> "role mismatch"
-    end
-  end
+  # defp model_info(role, type) do
+  #   #Keyword.put_new(:dir, :code.priv_dir(:phos) |> to_string() |> Kernel.<>("/models"))
+  #   case Application.get_env(:phos, __MODULE__) |> Enum.into(%{}) do
+  #     %{^role => %{source: :local, dir: dir}} = conf -> {:local, "#{dir}/#{Keyword.get(conf, type)}"}
+  #     %{^role => conf} -> {:hf, Keyword.get(conf, type)}
+  #     _ -> "role mismatch"
+  #   end
+  # end
 
 
   @impl true

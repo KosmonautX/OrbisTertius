@@ -101,3 +101,6 @@ ENV BUMBLEBEE_CACHE_DIR=/app/.bumblebee
 ENV BUMBLEBEE_OFFLINE=true
 
 CMD ["/app/bin/server"]
+
+# Appended by flyctl
+
