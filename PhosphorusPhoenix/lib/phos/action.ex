@@ -801,31 +801,19 @@ defmodule Phos.Action do
     page = Keyword.get(opts, :page, 1)
     limit = Keyword.get(opts, :limit, 10)
     sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
-    query = case Phos.Models.TokenClassification.classify(keyword) do
-      {:ok, [_ | _] = terms} -> build_search_query(terms)
-      _ -> build_base_search_query(keyword)
-    end |> preload(:initiator)
+    # query = case Phos.Models.TokenClassification.classify(keyword) do
+    #   {:ok, [_ | _] = terms} -> build_search_query(terms)
+    #   _ ->
+    # end
 
-    Repo.Paginated.all(query, page, sort_attribute, limit)
-  end
-
-  def filter_orb_by_similarities(keyword) do
-    case Phos.Models.TextEmbedding.run(keyword) do
-      {:ok, [_ | _] = result} -> build_similarities_query(result)
-      _ -> {:error, "Error"}
-    end
-  end
-
-  defp build_similarities_query(result) do
-    # query = from p in __MODULE__.Orb, preload: [:initiator], select_merge: %{distance: cosine_distance(p.embedding, ^result)}
-    query = from p in __MODULE__.Orb, preload: [:initiator], where: cosine_distance(p.embedding, ^result) < 0.05
-    Repo.Paginated.all(query, 1, :inserted_at, 20)
+    build_base_search_query(keyword)
+    |> preload(:initiator)
+    |> Repo.Paginated.all(page, sort_attribute, limit)
   end
   
   def filter_orbs_by_ids(ids) do
-    query = from p in __MODULE__.Orb, preload: [:initiator], where: p.id in ^ids
-
-    Repo.all(query)
+    (from p in __MODULE__.Orb, preload: [:initiator], where: p.id in ^ids)
+    |> Repo.all()
   end
 
   def reorb(user_id, orb_id, message \\ "")
@@ -886,31 +874,45 @@ defmodule Phos.Action do
   end
 
   def search(search_term) do
-    case Phos.Models.TokenClassification.classify(search_term) do
-      {:ok, [_ | _] = terms} -> build_search_query(terms)
-      _ -> build_base_search_query(search_term)
-    end
+    build_base_search_query(search_term)
     |> Repo.all()
+    # case Phos.Models.TokenClassification.classify(search_term) do
+    #   {:ok, [_ | _] = terms} -> build_search_query(terms)
+    # end
   end
 
-  defp build_search_query(terms) do
-    query = from o in Orb
-    Enum.reduce(terms, query, fn %{phrase: term, label: label}, q ->
-      case label do
-        "LOC" ->
-          case Phos.Mainland.World.find_hash(term) do
-            nil -> q
-            hash -> from r in q, join: l in Orb_Location, on: r.id == l.orb_id, or_where: l.location_id == ^hash
-          end
-        _ ->
-          or_where(q, fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^build_search_term(term)))
-      end
-    end)
-  end
+  # defp build_search_query(terms) do
+  #   query = from o in Orb
+  #   Enum.reduce(terms, query, fn %{phrase: term, label: label}, q ->
+  #     case label do
+  #       "LOC" ->
+  #         case Phos.Mainland.World.find_hash(term) do
+  #           nil -> q
+  #           hash -> from r in q, join: l in Orb_Location, on: r.id == l.orb_id, or_where: l.location_id == ^hash
+  #         end
+  #       _ ->
+  #         or_where(q, fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^build_search_term(term)))
+  #     end
+  #   end)
+  # end
 
   defp maybe_search(query, nil), do: query
   defp maybe_search(query, term) do
     where(query, fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^build_search_term(term)) or fragment("to_tsvector(?, title) @@ websearch_to_tsquery(?, ?)", "english", "english", ^term))
+    |> filter_orb_by_similarities(term)
+  end
+
+  def filter_orb_by_similarities(query, keyword) do
+    case Phos.Models.TextEmbedding.run(keyword) do
+      {:ok, [_ | _] = result} ->
+        query |> build_distance_query(result)
+      _ -> query
+    end
+  end
+
+  defp build_distance_query(query, result) do
+    # query = from p in __MODULE__.Orb, preload: [:initiator], select_merge: %{distance: cosine_distance(p.embedding, ^result)}
+    or_where(query, [p], cosine_distance(p.embedding, ^result) < 0.05)
   end
 
   defp build_base_search_query(term) do
