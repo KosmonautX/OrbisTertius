@@ -63,8 +63,8 @@ RUN mix compile
 COPY config/runtime.exs config/
 
 # Download the HuggingFace models to cache them
-#RUN mix run -e 'Phos.Oracle.load_textembedder_serving()' --no-start
-RUN /app/bin/phos eval 'Phos.Oracle.load_textembedder_serving()'
+RUN mix run -e 'Phos.Oracle.load_textembedder_serving()' --no-start
+# RUN /app/bin/phos eval 'Phos.Oracle.load_textembedder_serving()'
 
 COPY rel rel
 RUN mix release
