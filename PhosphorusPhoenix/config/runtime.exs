@@ -193,7 +193,7 @@ if config_env() == :prod do
       host: System.get_env("GRAFANA_HOST"),
       auth_token: System.get_env("GRAFANA_TOKEN"),
       upload_dashboards_on_start: true,
-      folder_name: System.get_env("FLY_APP_NAME") <> "Dashboard",
+      folder_name: (System.get_env("FLY_APP_NAME") || "") <> "Dashboard",
       annotate_app_lifecycle: true
     ],
     metrics_server: [
