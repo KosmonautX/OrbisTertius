@@ -20,6 +20,9 @@ config :phos, PhosWeb.Endpoint, url: [host: "example.com", port: 80],
 # Do not print debug messages in production
 config :logger, :default_handler, level: :info
 
+config :logger, backends: [LoggerBackends.Console]
+config :logger, LoggerBackends.Console, []
+
 config :phos, Phos.External.HeimdallrClient,
   base_url: {System, :get_env, ["HEIMDALLR_ENDPOINT"]}
 

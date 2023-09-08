@@ -102,6 +102,8 @@ defmodule Phos.MixProject do
       {:ex_gram, "~> 0.40.0"},
       {:tesla, "~> 1.2"},
       {:phx_live_storybook, github: "phenixdigital/phx_live_storybook", tag: "992062c", runtime: Mix.env() == :dev},
+      # To Support Legacy Logger Backend since v1.15
+      {:logger_backends, "~> 1.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end

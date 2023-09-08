@@ -1,5 +1,4 @@
 defmodule PhosWeb.Router do
-  alias PhosWeb.DocumentLive
   use PhosWeb, :router
 
   import PhosWeb.Menshen.Gate
@@ -78,8 +77,6 @@ defmodule PhosWeb.Router do
       on_mount: [{PhosWeb.Menshen.Gate, :ensure_authenticated}, {PhosWeb.Menshen.Mounter, :timezone}] do
 
       live "/welcome", UserWelcomeLive, :welcome
-
-      live "/orb/documents", DocumentLive.Index
 
       live "/orb/article", OrbLive.Article, :index
       live "/orb/search", OrbLive.Search, :index
