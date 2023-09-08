@@ -20,10 +20,15 @@ config :phos, PhosWeb.Endpoint, url: [host: "example.com", port: 80],
 # Do not print debug messages in production
 config :logger, :default_handler, level: :info
 
-config :logger, backends: [LoggerBackends.Console]
-config :logger, LoggerBackends.Console,
+config :logger, backends: [LoggerBackends.Console],
   compile_time_purge_matching: [
     [level_lower_than: :info]
+  ]
+
+config :logger, LoggerBackends.Console,
+  compile_time_purge_matching: [
+    [level_lower_than: :info,
+     application: :sparrow]
   ]
 
 config :phos, Phos.External.HeimdallrClient,

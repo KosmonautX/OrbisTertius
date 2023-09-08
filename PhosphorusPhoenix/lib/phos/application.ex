@@ -33,6 +33,8 @@ defmodule Phos.Application do
       ExGram, # This will setup the Registry.ExGram
       Phos.TeleBot,
       {Task.Supervisor, name: Phos.TaskSupervisor}
+      # Finch API client for AWS SES
+      {Finch, name: Swoosh.Finch}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

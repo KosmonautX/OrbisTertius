@@ -48,7 +48,7 @@ defmodule Phos.MixProject do
       {:phoenix_live_dashboard, "~> 0.8"},
       {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
       {:dotenv_parser, "~> 2.0", runtime: Mix.env() == :dev},
-      {:swoosh, "~> 1.3"},
+      {:swoosh, "~> 1.11"},
       {:gen_smtp, "~> 1.2"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
@@ -95,6 +95,7 @@ defmodule Phos.MixProject do
       {:rexbug, "~> 1.0"},
       {:poison, "4.0.1", override: true},
       {:phoenix_view, "~> 2.0"}, # for error warning removal
+      {:finch, "~> 0.13.0"},
       {:req, github: "wojtekmach/req"},
       {:pgvector, "~> 0.2.0"},
       # { :uuid, "~> 1.1" },
