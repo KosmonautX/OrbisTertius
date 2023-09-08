@@ -18,7 +18,7 @@ config :phos, PhosWeb.Endpoint, url: [host: "example.com", port: 80],
     hsts: false]
 
 # Do not print debug messages in production
-config :logger, level: :info
+config :logger, :default_handler, level: :info
 
 config :phos, Phos.External.HeimdallrClient,
   base_url: {System, :get_env, ["HEIMDALLR_ENDPOINT"]}

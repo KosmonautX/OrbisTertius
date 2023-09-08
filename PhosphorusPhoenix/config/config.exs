@@ -60,7 +60,7 @@ config :esbuild,
 
 # Configures Elixir's Logger
 config :logger, :default_handler,
-  level: :error
+  level: :debug
 
 config :logger, :default_formatter,
   format: "$time $metadata[$level] $message\n",
@@ -93,7 +93,7 @@ config :phos, Phos.OAuthStrategy,
   ]
 
 config :tailwind,
-  version: "3.2.7",
+  version: "3.3.3",
   admin: [
     args: ~w(
       --config=tailwind.config.js

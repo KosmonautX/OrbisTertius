@@ -22,7 +22,7 @@ defmodule Phos.MixProject do
   def application do
     [
       mod: {Phos.Application, []},
-      extra_applications: [:logger, :runtime_tools, :inets]
+      extra_applications: [:lager, :logger, :runtime_tools, :inets]
       # extra_applications: [:logger, :runtime_tools, :wx]
     ]
   end
@@ -37,15 +37,15 @@ defmodule Phos.MixProject do
   defp deps do
     [
       {:bcrypt_elixir, "~> 3.0"},
-      {:phoenix, "~> 1.7.6", override: true},
+      {:phoenix, "~> 1.7.7", override: true},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.9"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 3.3"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 0.19.2", override: true},
+      {:phoenix_live_view, "~> 0.19.5", override: true},
       {:floki, ">= 0.34.0"},
-      {:phoenix_live_dashboard, "~> 0.7"},
+      {:phoenix_live_dashboard, "~> 0.8"},
       {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
       {:dotenv_parser, "~> 2.0", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.3"},

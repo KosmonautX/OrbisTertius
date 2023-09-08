@@ -28,7 +28,8 @@ config :phos, PhosWeb.Endpoint,
 config :phos, Phos.Mailer, adapter: Swoosh.Adapters.Test
 
 # Print only warnings and errors during test
-config :logger, level: :warn
+config :logger, :default_handler,
+  level: :warning
 # config :logger, level: :debug
 
 # Initialize plugs at runtime for faster test compilation
