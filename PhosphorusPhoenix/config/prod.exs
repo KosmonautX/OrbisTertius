@@ -21,7 +21,10 @@ config :phos, PhosWeb.Endpoint, url: [host: "example.com", port: 80],
 config :logger, :default_handler, level: :info
 
 config :logger, backends: [LoggerBackends.Console]
-config :logger, LoggerBackends.Console, []
+config :logger, LoggerBackends.Console,
+  compile_time_purge_matching: [
+    [level_lower_than: :info]
+  ]
 
 config :phos, Phos.External.HeimdallrClient,
   base_url: {System, :get_env, ["HEIMDALLR_ENDPOINT"]}
