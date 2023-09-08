@@ -32,7 +32,7 @@ defmodule Phos.Application do
       # {Phos.Worker, arg}
       ExGram, # This will setup the Registry.ExGram
       Phos.TeleBot,
-      {Task.Supervisor, name: Phos.TaskSupervisor}
+      {Task.Supervisor, name: Phos.TaskSupervisor},
       # Finch API client for AWS SES
       {Finch, name: Swoosh.Finch}
     ]

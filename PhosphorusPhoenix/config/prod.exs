@@ -18,7 +18,7 @@ config :phos, PhosWeb.Endpoint, url: [host: "example.com", port: 80],
     hsts: false]
 
 # Do not print debug messages in production
-config :logger, :default_handler, level: :info
+config :logger, level: :info
 
 config :logger, backends: [LoggerBackends.Console],
   compile_time_purge_matching: [
