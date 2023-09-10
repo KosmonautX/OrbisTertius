@@ -5,7 +5,7 @@ defmodule Phos.Repo.Migrations.CreateVectorExtension do
     execute("CREATE EXTENSION IF NOT EXISTS vector")
 
     alter table(:orbs) do
-      add :embedding, :vector, size: 768
+      add :embedding, :vector, size: 384
     end
 
     execute("CREATE INDEX ON orbs USING hnsw(embedding vector_l2_ops) WITH (m=16, ef_construction=64)")

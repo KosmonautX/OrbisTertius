@@ -393,7 +393,7 @@ defmodule Phos.Action do
             Task.start(fn ->
               case orb.media do
                 true ->
-                  wait exponential_backoff() |> randomize |> expiry(10_000) do
+                  wait exponential_backoff() |> randomize |> expiry(30_000) do
                     is_map(Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless"))
                   after
                     _ ->
@@ -407,6 +407,16 @@ defmodule Phos.Action do
                 false ->
                   TN.Collector.add(orb)
               end
+            end)
+            #index in pgvector
+            Task.start(fn ->
+              embed  = case orb do
+                %{payload: %{inner_title: title}} ->
+                  build_embedding("passage: " <> title)
+                %{title: title} ->
+                  build_embedding("passage: " <> title)
+              end
+              update_orb(orb, %{embedding: embed})
             end)
            #spawn(fn -> user_feeds_publisher(orb) end)
            data
@@ -903,10 +913,18 @@ defmodule Phos.Action do
   end
 
   def filter_orb_by_similarities(query, keyword) do
-    case Phos.Models.TextEmbedding.run(keyword) do
-      {:ok, [_ | _] = result} ->
-        query |> build_distance_query(result)
+    case build_embedding("query: " <> keyword) do
+      [_ | _] = result -> query |> build_distance_query(result)
       _ -> query
+    end
+  end
+
+  def build_embedding(text) do
+    with %{embedding: embed} <- Nx.Serving.batched_run(Phos.Oracle.TextEmbedder, text),
+         [_ | _] = result <- Nx.to_list(embed) do
+      result
+    else
+      _ -> nil
     end
   end
 
@@ -924,4 +942,4 @@ defmodule Phos.Action do
     String.split(text, " ")
     |> Enum.join(" or ")
   end
- end
+end

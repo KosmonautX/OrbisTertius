@@ -179,9 +179,9 @@ config :phos, Phos.Models.OpenAI,
 
 
 config :phos, Phos.Oracle,
-  textembedder: [
-  source: :hf,
-  model: "thenlper/gte-base"
-  ]
+  textembedder: %{
+    source: :hf,
+    model: "intfloat/e5-small-v2"
+  }
 
 import_config "#{config_env()}.exs"

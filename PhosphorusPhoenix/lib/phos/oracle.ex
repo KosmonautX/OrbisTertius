@@ -8,8 +8,8 @@ defmodule Phos.Oracle do
   end
 
   def load_textembedder_serving do
-    {:ok, model} = Bumblebee.load_model({:hf, "thenlper/gte-base"})
-    {:ok, token} = Bumblebee.load_tokenizer({:hf, "thenlper/gte-base"})
+    {:ok, model} = Bumblebee.load_model(model_info(:textembedder))
+    {:ok, token} = Bumblebee.load_tokenizer(model_info(:textembedder))
 
     serving = Bumblebee.Text.TextEmbedding.text_embedding(model, token, embedding_processor: :l2_norm, defn_options: [compiler: EXLA])
 
@@ -25,14 +25,13 @@ defmodule Phos.Oracle do
   end
 
 
-  # defp model_info(role, type) do
-  #   #Keyword.put_new(:dir, :code.priv_dir(:phos) |> to_string() |> Kernel.<>("/models"))
-  #   case Application.get_env(:phos, __MODULE__) |> Enum.into(%{}) do
-  #     %{^role => %{source: :local, dir: dir}} = conf -> {:local, "#{dir}/#{Keyword.get(conf, type)}"}
-  #     %{^role => conf} -> {:hf, Keyword.get(conf, type)}
-  #     _ -> "role mismatch"
-  #   end
-  # end
+  defp model_info(role) do
+    case Application.get_env(:phos, __MODULE__) |> Enum.into(%{}) do
+      %{^role => %{source: :local, dir: dir, model: model}} -> {:local, "#{dir}/#{model}"}
+      %{^role => %{source: :hf, model: model}} -> {:hf, model}
+      _ -> "role mismatch"
+    end
+  end
 
 
   @impl true
