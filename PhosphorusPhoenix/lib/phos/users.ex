@@ -154,7 +154,7 @@ defmodule Phos.Users do
     query = from u in User, where: u.email == ^email, limit: 1
 
     case Repo.one(query) do
-      %User{} = user -> Argon2.check_pass(user, password)
+      %User{} = user -> Argon2.verify_pass(password, user.hashed_password)
       _ -> authenticate(nil, nil)
     end
   end

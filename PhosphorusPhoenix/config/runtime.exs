@@ -110,11 +110,7 @@ end
 
 if config_env() == :prod do
   database_url =
-    System.get_env("DATABASE_URL") ||
-    raise """
-    environment variable DATABASE_URL is missing.
-    For example: ecto://USER:PASS@HOST/DATABASE
-    """
+    System.get_env("DATABASE_URL")
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6], else: []
 
@@ -142,8 +138,7 @@ if config_env() == :prod do
 
 
   app_name =
-    System.get_env("FLY_APP_NAME") ||
-    raise "FLY_APP_NAME not available"
+    System.get_env("FLY_APP_NAME")
 
   config :libcluster,
     debug: true,
@@ -195,10 +190,10 @@ if config_env() == :prod do
     manual_metrics_start_delay: :no_delay,
     drop_metrics_groups: [],
     grafana: [
-      host: System.get_env("GRAFANA_HOST") || raise("GRAFANA_HOST is required"),
-      auth_token: System.get_env("GRAFANA_TOKEN") || raise("GRAFANA_TOKEN is required"),
+      host: System.get_env("GRAFANA_HOST"),
+      auth_token: System.get_env("GRAFANA_TOKEN"),
       upload_dashboards_on_start: true,
-      folder_name: System.get_env("FLY_APP_NAME") <> "Dashboard",
+      folder_name: (System.get_env("FLY_APP_NAME") || "") <> "Dashboard",
       annotate_app_lifecycle: true
     ],
     metrics_server: [

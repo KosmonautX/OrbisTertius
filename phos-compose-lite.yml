@@ -3,7 +3,10 @@ version: '3.8'
 services:
   postgres:
     container_name: postgres_container
-    image: postgres
+    build:
+      context: ./GanapatiSQL
+      dockerfile: Localfile
+      #image: postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-root}

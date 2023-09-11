@@ -22,6 +22,9 @@ defmodule Phos.Action.Orb do
     field :comment_count, :integer, default: 0, virtual: true
     field :number_of_repost, :integer, default: 0, virtual: true
     field :path, Ltree
+    field :distance, :integer, default: 0, virtual: true
+
+    field :embedding, Pgvector.Ecto.Vector
 
     belongs_to :initiator, User, references: :id, type: Ecto.UUID
     belongs_to :parent, __MODULE__, references: :id, type: Ecto.UUID
@@ -40,7 +43,7 @@ defmodule Phos.Action.Orb do
   @doc false
   def changeset(%Orb{} = orb, attrs) do
     orb
-    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits, :path, :parent_id])
+    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits, :path, :parent_id, :embedding])
     |> cast_embed(:payload)
     |> cast_assoc(:locations)
     |> validate_required([:id, :title, :active, :media, :extinguish, :initiator_id])
@@ -55,7 +58,7 @@ defmodule Phos.Action.Orb do
   """
   def update_changeset(%Orb{} = orb, attrs) do
     orb
-    |> cast(attrs, [:title, :active, :media, :traits])
+    |> cast(attrs, [:title, :active, :media, :traits, :embedding])
     |> cast_embed(:payload)
     |> validate_required([:active, :title])
     |> validate_exclude_subset(:traits, ~w(admin personal pin exile mirage), message: "unnatural traits")
@@ -82,7 +85,7 @@ defmodule Phos.Action.Orb do
 
   def admin_changeset(%Orb{} = orb, attrs) do
     orb
-    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits])
+    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits, :embedding])
     |> cast_embed(:payload, with: &Orb_Payload.admin_changeset/2)
     |> cast_assoc(:locations)
     |> validate_required([:id, :title, :active, :media, :initiator_id])

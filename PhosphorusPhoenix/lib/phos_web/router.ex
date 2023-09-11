@@ -80,6 +80,7 @@ defmodule PhosWeb.Router do
 
       live "/orb/article", OrbLive.Article, :index
       live "/orb/search", OrbLive.Search, :index
+      live "/orb/news", OrbLive.News, :index
 
       live "/orb/:id/show/:cid", OrbLive.Show, :show_ancestor
       live "/orb/:id/reply/:cid", OrbLive.Show, :reply
@@ -96,7 +97,6 @@ defmodule PhosWeb.Router do
       live "/memories/new", MemoryLive.Index, :new
       live "/memories/user/:username", MemoryLive.Index, :show
       live "/memories/media/:id", MemoryLive.Index, :media
-
     end
   end
 
@@ -121,6 +121,10 @@ defmodule PhosWeb.Router do
     live "/leaderboard/orb", LeaderboardLive.Index, :orb
 
     live "/notifications", NotificationLive.Index, :index
+
+    live "/articles", ArticleLive.Index, :index
+    live "/articles/scoops", ArticleLive.Scoop, :index
+    live "/articles/scoops/:id", ArticleLive.ScoopDetail, :show
   end
 
   scope "/api", PhosWeb.API do
@@ -190,7 +194,7 @@ defmodule PhosWeb.Router do
       put "/reveries/:id", EchoController, :update_reverie
       get "/friends", FriendController, :index_last_memories
       get "/orbs/:id", EchoController, :show_orbs
-      #get "/assemblies", TerraController, :index_last_assemblies
+      # get "/assemblies", TerraController, :index_last_assemblies
       get "/territories/:id", EchoController, :show_territories
       get "/friends/:id", EchoController, :show_relations
       get "/friends/:id/orbs", EchoController, :show_relations_jump_orbs

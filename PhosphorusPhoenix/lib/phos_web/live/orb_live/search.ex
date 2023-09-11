@@ -17,7 +17,8 @@ defmodule PhosWeb.OrbLive.Search do
   @impl true
   def handle_event("search", %{"q" => query}, socket) do
     {:noreply,
-      socket
-      |> assign(orbs: Phos.Action.search(query), search_value: query)}
+     socket
+     |> assign(orbs: Phos.Action.search(query), search_value: query)}
   end
+
 end

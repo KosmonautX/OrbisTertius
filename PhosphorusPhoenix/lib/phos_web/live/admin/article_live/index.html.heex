@@ -1,0 +1,119 @@
+<section class="w-full max-h-fit transition duration-100 ease-out opacity-0 scale-95" {transition("opacity-0 scale-95", "opacity-100 scale-100")}>
+  <div class="flex flex-col px-2 md:px-10 py-2 w-full lg:bg-gray-50 bg-white  top-14">
+    <h1 class="text-2xl font-bold ">Article</h1>
+    <div class="flex mt-4 mb-2 w-full">
+      <.form :let={f} for= {%{}} as={:search} class="w-1/2" phx-change="search">
+        <div class="flex">
+          <.input field={{f, :q}} phx-debounce="500" value={@search_keyword} placeholder="search orb by keyword"
+          autocomplete="off" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+        </div>
+      </.form>
+    </div>
+  </div>
+
+  <div class="pb-16 hidden lg:block relative">
+    <.table id="orbs" rows={@orbs}>
+      <:col :let={orb} classes="sticky left-0" label="Check">
+        <.input type="checkbox" id={"checkbox_id_#{orb.id}"} name={orb.id} value={article_selector(@selected_orb, orb.id)} phx-click="select" phx-value-orb-id={orb.id} />
+      </:col>
+      <:col :let={orb} classes="sticky left-0" label="Initiator">
+        <.admin_user_preview user={orb.initiator} id={"admin_user_preview_for_#{orb.id}"} />
+      </:col>
+      <:col :let={orb} label="Title">
+        <.link navigate={~p"/admin/orbs/#{orb}"}>
+          <%= orb.title ||
+            orb
+            |> get_in([
+              Access.key(:payload, %{}),
+              Access.key(:inner_title, "nil")
+            ]) %>
+        </.link>
+      </:col>
+      <:col :let={orb} label="Traits"><%= inspect(orb.traits) %></:col>
+    </.table>
+  </div>
+
+  <div class="lg:hidden block">
+    <div class="grid md:grid-cols-2 gird-col gap-4  px-2 md:px-4 pb-24">
+      <.admin_grid :for={orb <- @orbs} orb={orb} user={orb.initiator} id={"admin-grid-for-#{orb.id}"} />
+    </div>
+  </div>
+</section>
+
+<div class="px-4 py-3 w-full sm:flex sm:flex-1 sm:items-center sm:justify-between bottom-0 fixed bg-white ">
+  <.live_component
+    module={PhosWeb.Components.Pagination}
+    limit={@limit}
+    meta={@pagination}
+    id="paginate"
+    route_path={~p"/admin/orbs"}
+    current={@current}
+  />
+
+</div>
+
+<.form for={%{}} as={:article} class="w-1/2" phx-submit={show_modal("article-container")}>
+  <.button type="submit" class="button button-sm p-0 mx-2">Generate article</.button>
+</.form>
+
+<.modal id="article-container" on_confirm={JS.push("create-article") |> hide_modal("article-container")}>
+  <:title>Pseudo-Article</:title>
+
+  <div class="p-4">
+    <.form id="article-form" :let={f} method="post" for={%{}} as={:article} phx-change="validate-article">
+      <.input field={{f, :search}}
+        required="true"
+        disabled={@article_type == "new" and length(@existing_articles) > 0}
+        phx-debounce="2000"
+        placeholder="Search article title" />
+
+      <div class="mt-4" :if={length(@existing_articles) > 0}>
+        <select value={@article_type} name="existing_article_id" class="border-zinc-300 focus:border-zinc-400 focus:ring-zinc-800/5 block w-full rounded-lg border-zinc-300 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white font-poppins text-zinc-900 focus:outline-none focus:ring-4 sm:text-sm sm:leading-6 phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400 phx-no-feedback:focus:ring-zinc-800/5">
+          <option :for={data <- @existing_articles} value={data.id}><%= "#{data.title} (#{data.author})" %></option>
+          <option value="new" selected={@article_type == "new"}>Write new article</option>
+        </select>
+
+        <div class="mt-4" :if={@article_type == "new"}>
+          <.input field={{f, :title}}
+            label="Input new title for selected orb(s)"
+            value={@article_title}
+            phx-debounce="500"
+            placeholder="Enter article title" />
+        </div>
+
+        <div class="mt-4" :if={@article_type != "new"}>
+          <h2 class="text-lg font-semibold">Existing Orb(s)</h2>
+          <.table id="existing_orbs" rows={@existing_orbs}>
+            <:col :let={orb} classes="sticky left-0" label="Initiator">
+              <.admin_user_preview user={orb.initiator} id={"admin_user_preview_for_#{orb.id}"} />
+            </:col>
+            <:col :let={orb} label="Title"><%= orb.title %></:col>
+            <:col :let={orb} label="Traits"><%= inspect(orb.traits) %></:col>
+          </.table>
+        </div>
+      </div>
+
+      <div class="mt-4" :if={length(@existing_articles) == 0 and @article_type == "new"} >
+          <.input field={{f, :title}}
+            label="Input new title for selected orb(s)"
+            value={@article_title}
+            phx-debounce="500"
+            placeholder="Enter article title" />
+      </div>
+
+      <div class="mt-4">
+        <h2 class="text-lg font-semibold">Selected Orb(s)</h2>
+        <.table id="selected_orbs" rows={Map.values(@selected_orb)}>
+          <:col :let={orb} classes="sticky left-0" label="Initiator">
+            <.admin_user_preview user={orb.initiator} id={"admin_user_preview_for_#{orb.id}"} />
+          </:col>
+          <:col :let={orb} label="Title"><%= orb.title %></:col>
+          <:col :let={orb} label="Traits"><%= inspect(orb.traits) %></:col>
+        </.table>
+      </div>
+    </.form>
+  </div>
+
+  <:confirm>Generate</:confirm>
+  <:cancel>Cancel</:cancel>
+</.modal>

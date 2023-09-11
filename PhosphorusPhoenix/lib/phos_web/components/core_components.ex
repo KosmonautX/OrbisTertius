@@ -424,6 +424,7 @@ defmodule PhosWeb.CoreComponents do
   )
 
   slot(:inner_block)
+  attr(:class, :string, default: nil, doc: "simple form class overide")
 
   def input(%{field: {f, field}} = assigns) do
     assigns
@@ -510,8 +511,8 @@ defmodule PhosWeb.CoreComponents do
         value={@value}
         class={[
           input_border(@errors),
-          "block w-full rounded-lg  border-zinc-300 dark:bg-gray-600 dark:border-gray-500  dark:placeholder-gray-400 dark:text-white font-poppins",
-          "text-zinc-900 focus:outline-none focus:ring-4 sm:text-sm sm:leading-6",
+          "block w-full rounded-lg dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white font-poppins",
+          "text-zinc-900 focus:outline-none focus:ring-4 sm:text-sm sm:leading-6 outline-none",
           "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400 phx-no-feedback:focus:ring-zinc-800/5"
         ]}
         {@rest}
@@ -522,7 +523,7 @@ defmodule PhosWeb.CoreComponents do
   end
 
   defp input_border([] = _errors),
-    do: "border-zinc-300 focus:border-zinc-400 focus:ring-zinc-800/5"
+    do: "focus:border-zinc-400 focus:ring-zinc-800/5"
 
   defp input_border([_ | _] = _errors),
     do: "placeholder-rose-300 border-rose-400 focus:border-rose-400 focus:ring-rose-400/10"
@@ -882,22 +883,25 @@ defmodule PhosWeb.CoreComponents do
 
   attr(:title, :string, required: true)
   attr(:home_path, :string, required: true)
+  attr(:id, :string)
 
   slot :item,
     required: true,
     doc: "the slot for form actions, such as a submit button" do
     attr(:to, :string, required: true)
     attr(:title, :string, required: true)
-    attr(:icon, :string, required: true)
+    attr(:icon, :string)
     attr(:id, :string)
     attr(:name, :string)
+    attr(:child, :map)
+    attr(:parent, :string)
   end
 
   def admin_navbar(assigns) do
     ~H"""
     <nav class="lg:bg-gray-50 bg-white flex px-4 font-poppins py-4 w-64 h-screen">
-      <ul class="flex-col min-w-full flex flex-col list-none" id="navbar">
-        <li :for={item <- @item} class="items-center">
+      <ul class="flex-col min-w-full flex flex-col list-none" id={"navbar-#{@id}"}>
+        <li :for={item <- item_difuser(@item)} class="items-center relative">
           <.link
             navigate={item.to}
             class="text-sm uppercase py-3 font-bold block text-gray-500 hover:text-teal-400"
@@ -905,10 +909,60 @@ defmodule PhosWeb.CoreComponents do
             <i class={"fas mr-2 text-sm opacity-75 #{item.icon}"}></i>
             <%= item.title %>
           </.link>
+          <.admin_child_navbar :if={not is_nil(Map.get(item, :child))} item={item} />
         </li>
       </ul>
     </nav>
     """
+  end
+
+  defp admin_child_navbar(assigns) do
+    ~H"""
+    <span class="w-8 absolute top-3 h-6 right-2">
+      <Heroicons.plus
+        id={"cursor-open-#{@item.id}"}
+        phx-click={
+          JS.show(to: "#child-#{@item.id}") |> JS.hide() |> JS.show(to: "#cursor-close-#{@item.id}")
+        }
+        class="w-4 h-4 text-gray-700 hover:text-teal-500 hover:cursor-pointer"
+      />
+      <Heroicons.minus
+        id={"cursor-close-#{@item.id}"}
+        phx-click={
+          JS.hide(to: "#child-#{@item.id}") |> JS.hide() |> JS.show(to: "#cursor-open-#{@item.id}")
+        }
+        class="w-4 h-4 text-gray-700 hover:text-teal-500 hover:cursor-pointer hidden"
+      />
+    </span>
+    <ul class="hidden pl-2" id={"child-#{@item.id}"}>
+      <li :for={child <- Map.get(@item, :child)}>
+        <.link
+          navigate={child.to}
+          class="text-sm uppercase py-3 font-bold block text-gray-500 hover:text-teal-400"
+        >
+          <i class={"fas mr-2 text-sm opacity-75 #{child.icon}"}></i>
+          <%= child.title %>
+        </.link>
+      </li>
+    </ul>
+    """
+  end
+
+  defp item_difuser(items) do
+    items
+    |> Enum.reduce(%{}, fn %{id: id} = val, acc ->
+      case Map.get(val, :parent) do
+        nil ->
+          Map.put_new(acc, id, val)
+
+        parent ->
+          child = Map.get(acc, parent) |> Map.get(:child, [])
+          new_value = Map.get(acc, parent) |> Map.put(:child, [val | child])
+          Map.put(acc, parent, new_value)
+      end
+    end)
+    |> Map.values()
+    |> :lists.reverse()
   end
 
   @doc """
@@ -1644,7 +1698,7 @@ defmodule PhosWeb.CoreComponents do
         </p>
         <hr />
         <span class="dark:text-white text-gray-400 font-normal text-sm lg:text-base mt-2 mb-2 px-2">
-          <%= @orb.comment_count%> comments
+          <%= @orb.comment_count %> comments
         </span>
         <hr />
       </div>
@@ -2810,6 +2864,203 @@ defmodule PhosWeb.CoreComponents do
           </div>
         </div>
       </div>
+    </div>
+    """
+  end
+
+  attr(:show_author, :boolean)
+  attr(:show_info, :boolean, default: true)
+
+  def search_results(assigns) do
+    ~H"""
+    <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700 font-Miller">
+      <li class="bg-white dark:bg-gray-900 px-2 py-3 sm:py-4">
+        <div class="flex lg:gap-10 gap-2 items-center space-x-4">
+          <div class="min-w-0 flex-1 space-y-1">
+            <p class="lg:text-base dark:text-gray-400 text-sm font-semibold text-black">
+              Micro Salse <b class="text-purple-600"> | </b>
+              <span class={[
+                @show_info == false && "text-purple-500",
+                "lg:text-sm text-xs text-gray-400 dark:text-gray-600"
+              ]}>
+                May 10, 2023
+              </span>
+            </p>
+
+            <span class={[
+              @show_info == false && "lg:text-[28px]",
+              "lg:text-lg text-base font-bold text-gray-900 dark:text-gray-200"
+            ]}>
+              Everything Worth Buying From Sephora’s Savings Event
+            </span>
+
+            <span class={[
+              @show_info == false && "lg:text-[20px]",
+              "lg:text-base text-sm font-normal text-gray-500 dark:text-gray-400"
+            ]}>
+              Sephora has taken over my phone this week. My FYP on TikTok
+            </span>
+
+            <p
+              :if={@show_author}
+              class="lg:text-base text-sm font-medium italic text-gray-700 dark:text-gray-600"
+            >
+              By Sam Daly
+            </p>
+          </div>
+          <div class="flex-shrink-0">
+            <img
+              class={[
+                @show_info == false && "lg:h-48 lg:w-80",
+                "lg:h-28 lg:w-48 h-20 w-28 object-cover float-right lg:float-none"
+              ]}
+              src="https://picsum.photos/200/300"
+              alt="Neil image"
+            />
+          </div>
+        </div>
+      </li>
+    </ul>
+    """
+  end
+
+  def article_tabs(assigns) do
+    ~H"""
+    <ul class="flex flex-wrap items-center justify-center lg:space-x-7 space-x-4 text-center text-sm font-normal py-4 lg:mt-4 md:mt-14 mt-12 bg-white w-full dark:bg-gray-900 dark:text-white">
+      <li class="cursor-pointer hover:underline hover:underline-offset-8">ATTRACTIONS</li>
+      <li class="cursor-pointer hover:underline hover:underline-offset-8">ENTERTAINMENT</li>
+      <li class="cursor-pointer hover:underline hover:underline-offset-8">FOOD</li>
+      <li class="cursor-pointer hover:underline hover:underline-offset-8">PEOPLE</li>
+      <li class="cursor-pointer hover:underline hover:underline-offset-8">CAFES</li>
+      <li class="cursor-pointer hover:underline hover:underline-offset-8">SHOPPING</li>
+      <li class="cursor-pointer hover:underline hover:underline-offset-8">ANIMALS</li>
+    </ul>
+    """
+  end
+
+  def editor_picks(assigns) do
+    ~H"""
+    <div class="border-2 border-gray-400 p-6">
+      <p class="text-gray-900 font-normal italic text-center dark:text-gray-200">
+        Things you buy through our links may earn Vox Media a commission.
+      </p>
+    </div>
+    <div class="flex flex-col items-center my-6">
+      <h1 class="font-bold text-lg dark:text-white">EDITOR’S PICKS</h1>
+      <hr class="h-0.5 w-full bg-gray-900 mx-auto dark:bg-gray-700" />
+      <hr class="h-1 w-full mx-auto bg-black mt-0.5 dark:bg-gray-700" />
+      <ul role="list" class="divide-y w-full divide-gray-200 dark:divide-gray-700">
+        <li class="py-3 sm:py-4">
+          <div class="flex items-center space-x-4">
+            <div class="flex-shrink-0">
+              <img class="h-20 w-20" src="https://picsum.photos/200/300" alt="Neil image" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-lg font-bold text-gray-900 dark:text-gray-200">
+                GILGO BEACH MURDERS
+              </p>
+              <p class="truncate text-base font-normal text-gray-500 dark:text-gray-400">
+                GILGO BEACH MURDERS JULY 25, 2023 My Boss, the Monster What else Rex Heuermann was up to as he allegedly committed the Gilgo Beach murders.
+              </p>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+    """
+  end
+
+  def open_modal(js \\ %JS{}) do
+    js
+    |> JS.show(
+      to: "#searchbox_container",
+      transition:
+        {"transition ease-out duration-200", "opacity-0 scale-95", "opacity-100 scale-100"}
+    )
+    |> JS.show(
+      to: "#searchbar-dialog",
+      transition: {"transition ease-in duration-100", "opacity-0", "opacity-100"}
+    )
+    |> JS.focus(to: "#search-input")
+  end
+
+  def hide_searchmodal(js \\ %JS{}) do
+    js
+    |> JS.hide(
+      to: "#searchbar-searchbox_container",
+      transition:
+        {"transition ease-in duration-100", "opacity-100 scale-100", "opacity-0 scale-95"}
+    )
+    |> JS.hide(
+      to: "#searchbar-dialog",
+      transition: {"transition ease-in duration-100", "opacity-100", "opacity-0"}
+    )
+  end
+
+  slot(:inner_block, required: true)
+
+  def search_modal(assigns) do
+    ~H"""
+    <div
+      id="searchbar-dialog"
+      class="hidden fixed inset-0 z-50"
+      role="dialog"
+      aria-modal="true"
+      phx-window-keydown={hide_searchmodal()}
+      phx-key="escape"
+    >
+      <div class="fixed inset-0 bg-zinc-400/25 backdrop-blur-sm opacity-100"></div>
+      <div class="fixed inset-0 overflow-y-auto px-4 py-4 sm:py-20 sm:px-6 md:py-32 lg:px-8 lg:py-[15vh]">
+        <div
+          id="searchbox_container"
+          class="mx-auto overflow-hidden rounded-lg bg-white dark:bg-gray-900 shadow-xl  ring-zinc-900/7.5 lg:max-w-2xl md:max-w-xl opacity-100 scale-100 lg:p-4 p-2 w-full"
+        >
+          <div role="combobox" aria-haspopup="listbox" phx-click-away={hide_searchmodal()}>
+            <%= render_slot(@inner_block) %>
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  defp show_active_content(js, to) do
+    js
+    |> JS.hide(to: "div.tab_content")
+    |> JS.show(to: to)
+  end
+
+  defp set_active_tab(js \\ %JS{}, tab) do
+    js
+    |> JS.remove_class("active-tab", to: "a.active-tab")
+    |> JS.add_class("active-tab", to: tab)
+  end
+
+  attr(:title, :string, required: true)
+  attr(:id, :string)
+
+  slot :item,
+    required: true,
+    doc: "the slot for form actions, such as a submit button" do
+    attr(:title, :string, required: true)
+    attr(:id, :string)
+  end
+
+  def tabs(assigns) do
+    ~H"""
+    <div class="container">
+      <ul class="flex flex-wrap items-center justify-center py-4 text-center text-base font-bold text-gray-700 md:py-8">
+        <li :for={item <- @item} class="tab_option">
+          <button
+            id={@id}
+            class="tab active-tab mb-3 mr-3 px-5 py-2.5 hover:border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-300 rounded-full"
+            phx-click={set_active_tab(@id) |> show_active_content(@id)}
+
+          >
+            <%= item.title %>
+          </button>
+        </li>
+      </ul>
     </div>
     """
   end

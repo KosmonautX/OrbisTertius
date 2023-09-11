@@ -23,7 +23,9 @@
         </:actions>
       </.simple_form>
      </div>
+
     <div class="relative w-full flex flex-col bg-white lg:mt-2 font-poppins md:px-14 px-2">
+
       <div>
         <table :if={@current_view == "See Top Users By"} class="w-full align-top text-slate-500 lg:text-base text-sm">
          <tr class="font-bold text-left uppercase text-slate-400">
@@ -38,6 +40,7 @@
          </tbody>
         </table>
       </div>
+
       <div class="hidden lg:block">
        <table :if={@current_view == "See Top Orbs By"} class="w-full align-top text-slate-500">
         <tr class="font-bold text-left uppercase text-slate-400 text-sm">
@@ -56,6 +59,7 @@
         </tbody>
        </table>
       </div>
+      
       <div :if={@current_view == "See Top Orbs By"} class="lg:hidden block">
        <div phx-update="stream" id="orbs" phx-viewport-bottom={@orb_meta.pagination.downstream && "load-more-orbs"} class="grid md:grid-cols-2 gap-2 md:mt-4 mt-0">
          <div :for={{dom_id, orb} <- @streams.orbs} id={dom_id}>

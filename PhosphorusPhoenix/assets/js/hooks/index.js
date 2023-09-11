@@ -7,6 +7,7 @@ import CarouselControl from "./carousel_control"
 import ModalApplication from "./modal_application"
 import { EnterSubmit } from "./enter_submit"
 import TransitionHook from "./transition"
+import SearchToggler from "./search_toggler"
 
 export default {
   InitPosition,
@@ -19,5 +20,6 @@ export default {
   ScrollTop,
   ScrollBottom,
   EnterSubmit,
-  TransitionHook
+  TransitionHook,
+  SearchToggler
 }

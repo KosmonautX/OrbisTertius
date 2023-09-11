@@ -12,7 +12,7 @@
 :jean=HMhn3DPO71h0cMYFh52vM1tBacX2
 :anon=ETCiVo6Rr3gniuI44Gq9f2a5Ldl1
 :javier=v78yYQpVjlUaOsmzKguPoXcGqqw2
-:jiayi=3f6idzconSaWU31lQpcwXl3q8623
+:jiayi=Zb2yO0VthIgN8207z3wmEo3KPEh1
 :princeton_id=9bf9c443-f89b-460a-972d-6704ae66823d
 :owentwo_id=973da4ae-48a6-498d-b988-548af3af99f6
 :satrio_id=b3cd35ef-83e2-448e-831d-f5ded1c39692
@@ -74,8 +74,8 @@ GET :ipAddress/userland/self/activity?cursor=16035029484071
 POST :ipAddress/userland/auth/email/register
 :auth-headers
 {
-    "email": "nonanon@bo.wen",
-    "password": "1234567890-="
+    "email": "shakyamuni@bo.wen",
+    "password": "1234567890-=1"
 }
 
 ## Login User via Email
@@ -123,7 +123,7 @@ PUT :ipAddress/userland/self/
 :auth-headers
 {
     "bio": "alberto robotos",
-    "username": "umbrage",
+    "username": "kenneth",
     "public_name": "Albert the Robot",
     "birthday": 16123442423,
     "media": [
@@ -138,7 +138,10 @@ PUT :ipAddress/userland/self/
             "resolution": "lossy"
         }
     ],
-    "traits": ["exile"],
+    "traits": [
+        "aikido",
+        "matrix"
+    ],
     "soulorb": {
         "title": "wow",
         "payload": {
@@ -263,7 +266,7 @@ GET :ipAddress/orbland/orbs/3e9ebaa7-cdd0-4d3e-857e-0661aeb12d0b
 :auth-headers
 
 ## Read all orbs in that geohash id
-GET :ipAddress/orbland/stream/614268617233530879?page=1&search=dinosaurs
+GET :ipAddress/orbland/stream/623517998944845823,628021598572208127?page=1&search=dinosaurs
 :auth-headers
 
 ## Create Orbs
@@ -275,7 +278,7 @@ POST :ipAddress/orbland/orbs
         "central_geohash": 628021598572208127
     },
     "title": "aikido style",
-    "inner_title": "xcape the matrix",
+    "inner_title": "Ranged thus for battle on the sacred plain-- On Kurukshetra--say, Sanjaya! say What wrought my people, and the Pandavas?",
     "info": "ba sing se",
     "active": "true",
     "media": [

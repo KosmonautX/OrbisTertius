@@ -22,7 +22,7 @@ defmodule Phos.MixProject do
   def application do
     [
       mod: {Phos.Application, []},
-      extra_applications: [:logger, :runtime_tools, :inets]
+      extra_applications: [:lager, :logger, :runtime_tools, :inets]
       # extra_applications: [:logger, :runtime_tools, :wx]
     ]
   end
@@ -37,18 +37,18 @@ defmodule Phos.MixProject do
   defp deps do
     [
       {:bcrypt_elixir, "~> 3.0"},
-      {:phoenix, "~> 1.7.6", override: true},
+      {:phoenix, "~> 1.7.7", override: true},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.9"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 3.3"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 0.19.2", override: true},
+      {:phoenix_live_view, "~> 0.19.5", override: true},
       {:floki, ">= 0.34.0"},
-      {:phoenix_live_dashboard, "~> 0.7"},
+      {:phoenix_live_dashboard, "~> 0.8"},
       {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
       {:dotenv_parser, "~> 2.0", runtime: Mix.env() == :dev},
-      {:swoosh, "~> 1.3"},
+      {:swoosh, "~> 1.11"},
       {:gen_smtp, "~> 1.2"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
@@ -89,18 +89,22 @@ defmodule Phos.MixProject do
       # comments
       {:ecto_ltree, "~> 0.3.0"},
       {:sparrow, github: "Scratchbac/sparrow", tag: "062400e"},
-      {:bumblebee, "~> 0.3.0", runtime: Mix.env() == :dev},
-      {:exla, ">= 0.0.0", runtime: Mix.env() == :dev},
+      {:bumblebee, "~> 0.3.1"},
+      {:exla, "~> 0.6.0"},
       #debugging
       {:rexbug, "~> 1.0"},
       {:poison, "4.0.1", override: true},
       {:phoenix_view, "~> 2.0"}, # for error warning removal
+      {:finch, "~> 0.13.0"},
       {:req, github: "wojtekmach/req"},
+      {:pgvector, "~> 0.2.0"},
       # { :uuid, "~> 1.1" },
       # {:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
       {:ex_gram, "~> 0.40.0"},
       {:tesla, "~> 1.2"},
       {:phx_live_storybook, github: "phenixdigital/phx_live_storybook", tag: "992062c", runtime: Mix.env() == :dev},
+      # To Support Legacy Logger Backend since v1.15
+      {:logger_backends, "~> 1.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end

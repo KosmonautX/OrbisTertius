@@ -4,6 +4,7 @@ defmodule Phos.Action do
   """
 
   import Ecto.Query, warn: false
+  import Pgvector.Ecto.Query, warn: false
 
   alias Phos.Repo
   alias Phos.Action.{Orb, Orb_Location}
@@ -392,7 +393,7 @@ defmodule Phos.Action do
             Task.start(fn ->
               case orb.media do
                 true ->
-                  wait exponential_backoff() |> randomize |> expiry(10_000) do
+                  wait exponential_backoff() |> randomize |> expiry(30_000) do
                     is_map(Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless"))
                   after
                     _ ->
@@ -406,6 +407,16 @@ defmodule Phos.Action do
                 false ->
                   TN.Collector.add(orb)
               end
+            end)
+            #index in pgvector
+            Task.start(fn ->
+              embed  = case orb do
+                %{payload: %{inner_title: title}} ->
+                  build_embedding("passage: " <> title)
+                %{title: title} ->
+                  build_embedding("passage: " <> title)
+              end
+              update_orb(orb, %{embedding: embed})
             end)
            #spawn(fn -> user_feeds_publisher(orb) end)
            data
@@ -796,6 +807,25 @@ defmodule Phos.Action do
     Repo.Paginated.all(query, page, sort_attribute, limit)
   end
 
+  def filter_orbs_by_keyword(keyword, opts \\ []) do
+    page = Keyword.get(opts, :page, 1)
+    limit = Keyword.get(opts, :limit, 10)
+    sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
+    # query = case Phos.Models.TokenClassification.classify(keyword) do
+    #   {:ok, [_ | _] = terms} -> build_search_query(terms)
+    #   _ ->
+    # end
+
+    build_base_search_query(keyword)
+    |> preload(:initiator)
+    |> Repo.Paginated.all(page, sort_attribute, limit)
+  end
+  
+  def filter_orbs_by_ids(ids) do
+    (from p in __MODULE__.Orb, preload: [:initiator], where: p.id in ^ids)
+    |> Repo.all()
+  end
+
   def reorb(user_id, orb_id, message \\ "")
   def reorb(%Phos.Users.User{} = user, %Orb{} = orb, message), do: reorb(user.id, orb.id, message)
   def reorb(user_id, orb_id, message) when is_binary(user_id) and is_binary(orb_id) do
@@ -854,32 +884,53 @@ defmodule Phos.Action do
   end
 
   def search(search_term) do
-    case Phos.Models.TokenClassification.classify(search_term) do
-      {:ok, [_ | _] = terms} -> build_search_query(terms)
-      _ -> build_base_search_query(search_term)
-    end
+    build_base_search_query(search_term)
     |> Repo.all()
+    # case Phos.Models.TokenClassification.classify(search_term) do
+    #   {:ok, [_ | _] = terms} -> build_search_query(terms)
+    # end
   end
 
-  defp build_search_query(terms) do
-    query = from o in Orb
-    Enum.reduce(terms, query, fn %{phrase: term, label: label}, q ->
-      case label do
-        "LOC" ->
-          case Phos.Mainland.World.find_hash(term) do
-            nil -> q
-            hash -> from r in q, join: l in Orb_Location, on: r.id == l.orb_id, or_where: l.location_id == ^hash
-          end
-        _ ->
-          or_where(q, fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^build_search_term(term)))
-      end
-    end)
-  end
+  # defp build_search_query(terms) do
+  #   query = from o in Orb
+  #   Enum.reduce(terms, query, fn %{phrase: term, label: label}, q ->
+  #     case label do
+  #       "LOC" ->
+  #         case Phos.Mainland.World.find_hash(term) do
+  #           nil -> q
+  #           hash -> from r in q, join: l in Orb_Location, on: r.id == l.orb_id, or_where: l.location_id == ^hash
+  #         end
+  #       _ ->
+  #         or_where(q, fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^build_search_term(term)))
+  #     end
+  #   end)
+  # end
 
   defp maybe_search(query, nil), do: query
   defp maybe_search(query, term) do
-    IO.inspect "searching"
     where(query, fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^build_search_term(term)) or fragment("to_tsvector(?, title) @@ websearch_to_tsquery(?, ?)", "english", "english", ^term))
+    |> filter_orb_by_similarities(term)
+  end
+
+  def filter_orb_by_similarities(query, keyword) do
+    case build_embedding("query: " <> keyword) do
+      [_ | _] = result -> query |> build_distance_query(result)
+      _ -> query
+    end
+  end
+
+  def build_embedding(text) do
+    with %{embedding: embed} <- Nx.Serving.batched_run(Phos.Oracle.TextEmbedder, text),
+         [_ | _] = result <- Nx.to_list(embed) do
+      result
+    else
+      _ -> nil
+    end
+  end
+
+  defp build_distance_query(query, result) do
+    # query = from p in __MODULE__.Orb, preload: [:initiator], select_merge: %{distance: cosine_distance(p.embedding, ^result)}
+    or_where(query, [p], cosine_distance(p.embedding, ^result) < 0.05)
   end
 
   defp build_base_search_query(term) do
@@ -891,4 +942,4 @@ defmodule Phos.Action do
     String.split(text, " ")
     |> Enum.join(" or ")
   end
- end
+end

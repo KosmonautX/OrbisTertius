@@ -46,7 +46,9 @@ config :phos, PhosWeb.Endpoint,
 config :phos, Phos.Mailer, adapter: Swoosh.Adapters.Local
 
 # Swoosh API client is needed for adapters other than SMTP.
-config :swoosh, :api_client, Swoosh.ApiClient.Finch
+config :swoosh,
+  api_client: Swoosh.ApiClient.Finch,
+  finch_name: Swoosh.Finch
 
 # Configure esbuild (the version is required)
 config :esbuild,
@@ -59,7 +61,10 @@ config :esbuild,
   ]
 
 # Configures Elixir's Logger
-config :logger, :console,
+config :logger, :default_handler,
+  level: :debug
+
+config :logger, :default_formatter,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
@@ -90,7 +95,7 @@ config :phos, Phos.OAuthStrategy,
   ]
 
 config :tailwind,
-  version: "3.2.7",
+  version: "3.3.3",
   admin: [
     args: ~w(
       --config=tailwind.config.js
@@ -140,6 +145,8 @@ config :phos, Phos.TeleBot.Core,
 config :phos, Phos.External.Notion,
   token: {System, :get_env, "NOTION_TOKEN"},
   database: {System, :get_env, "NOTION_DATABASE"},
+  orb_database: "b47fc73f3c054c10a2b74296937cdfb4",
+  article_database: "6f552e97275f453ba4edee2c3a532c0f",
   notification_database: {System, :get_env, "NOTION_NOTIFICATION_DATABASE"}
 
 config :phos, Phos.PlatformNotification,
@@ -169,5 +176,12 @@ config :phos, Phos.Models.OpenAI,
   model: "text-davinci-003",
   # token: {System, :fetch_env, "OPENAI_KEY"}
   token: "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"
+
+
+config :phos, Phos.Oracle,
+  textembedder: %{
+    source: :hf,
+    model: "intfloat/e5-small-v2"
+  }
 
 import_config "#{config_env()}.exs"
