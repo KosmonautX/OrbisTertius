@@ -83,6 +83,7 @@ defmodule Phos.Action do
   def get_orb(orb_id, your_id) do
     from(orbs in Orb,
       where: orbs.id == ^orb_id,
+      preload: [:blorbs],
       inner_join: initiator in assoc(orbs, :initiator),
       left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,

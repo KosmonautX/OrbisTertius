@@ -117,6 +117,16 @@ defmodule Phos.Orbject.S3 do
         [expires_in: 88_888, virtual_host: false, query_params: [{"ContentType", "application/octet-stream"}]])
   end
 
+  defp path_constructor(archetype, uuid, m = %Orbject.Structure.Media{essence_id: e_id}) do
+    "#{archetype}/#{uuid}#{unless is_nil(m.access),
+          do: "/#{m.access}"}#{unless is_nil(m.essence),
+          do: "/#{m.essence}"}#{unless is_nil(e_id),
+          do: "/#{e_id}"}#{unless is_nil(m.resolution),
+          do: "/#{m.resolution}"}#{unless is_nil(m.height),
+          do: "#{m.height}x#{m.width}"}#{unless is_nil(m.ext),
+          do: ".#{m.ext}"}"
+  end
+
   defp path_constructor(archetype, uuid, m = %Orbject.Structure.Media{count: 0}) do
     "#{archetype}/#{uuid}#{unless is_nil(m.access),
           do: "/#{m.access}"}#{unless is_nil(m.essence),

@@ -1,10 +1,16 @@
 defmodule Phos.Action.Orb do
+
+  @moduledoc """
+
+  Schema for Orbs the primitive for posting
+
+  """
   use Ecto.Schema
 
   import Ecto.Changeset
 
   alias EctoLtree.LabelTree, as: Ltree
-  alias Phos.Action.{Location,Orb, Orb_Payload, Orb_Location}
+  alias Phos.Action.{Location, Orb, Orb_Payload, Orb_Location, Blorb}
   alias Phos.Users.User
   alias Phos.Comments.Comment
 
@@ -30,10 +36,11 @@ defmodule Phos.Action.Orb do
     belongs_to :parent, __MODULE__, references: :id, type: Ecto.UUID
     #belongs_to :users, User, references: :id, foreign_key: :acceptor, type: Ecto.UUID
 
-    has_many :comments, Comment, references: :id, foreign_key: :orb_id
 
     has_many :locs, Orb_Location, references: :id, foreign_key: :orb_id
-    
+    has_many :comments, Comment, references: :id, foreign_key: :orb_id
+    has_many :blorbs, Blorb, references: :id, foreign_key: :orb_id
+
     many_to_many :locations, Location, join_through: Orb_Location, on_replace: :delete, on_delete: :delete_all#, join_keys: [id: :id, location_id: :location_id]
     embeds_one :payload, Orb_Payload, on_replace: :delete
 
@@ -43,9 +50,10 @@ defmodule Phos.Action.Orb do
   @doc false
   def changeset(%Orb{} = orb, attrs) do
     orb
-    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits, :path, :parent_id, :embedding])
+    |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits, :path, :parent_id, :embedding, :inserted_at])
     |> cast_embed(:payload)
     |> cast_assoc(:locations)
+    |> cast_assoc(:blorbs)
     |> validate_required([:id, :title, :active, :media, :extinguish, :initiator_id])
     |> validate_exclude_subset(:traits, ~w(admin pin personal exile mirage))
     #|> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])

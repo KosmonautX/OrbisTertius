@@ -12,6 +12,7 @@ defmodule Phos.Orbject.Structure do
     embeds_many :media, Media do
       field(:access, :string)
       field(:essence, :string)
+      field(:essence_id, :binary_id)
       field(:resolution, :string)
       field(:height, :integer)
       field(:width, :integer)
@@ -72,9 +73,9 @@ defmodule Phos.Orbject.Structure do
 
   def orb_media_changeset(structure, attrs) do
     structure
-    |> cast(attrs, [:access, :essence, :count, :resolution, :ext])
+    |> cast(attrs, [:access, :essence, :count, :resolution, :ext, :essence_id])
     |> validate_inclusion(:access, ["public"])
-    |> validate_inclusion(:essence, ["banner", "profile"])
+    |> validate_inclusion(:essence, ["banner", "profile", "blorb"])
     |> validate_number(:count, greater_than: -1, less_than: 6)
     |> validate_inclusion(:resolution, ["lossy", "lossless"])
     |> validate_inclusion(:ext, ["jpeg", "jpg", "png", "gif", "mp4", "mov", "mp3"])

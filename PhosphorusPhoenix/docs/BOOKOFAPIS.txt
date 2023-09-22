@@ -262,7 +262,7 @@ GET :ipAddress/folkland/self/blocked?page=1
 
 ### ! Orbland Calls
 ## Read Orb
-GET :ipAddress/orbland/orbs/3e9ebaa7-cdd0-4d3e-857e-0661aeb12d0b
+GET :ipAddress/orbland/orbs/:orb
 :auth-headers
 
 ## Read all orbs in that geohash id
@@ -281,16 +281,25 @@ POST :ipAddress/orbland/orbs
     "inner_title": "Ranged thus for battle on the sacred plain-- On Kurukshetra--say, Sanjaya! say What wrought my people, and the Pandavas?",
     "info": "ba sing se",
     "active": "true",
+    "creationtime": 1695263542,
     "media": [
         {
             "access": "public",
-            "essence": "banner"
+            "essence": "banner",
+            "count": 0
         },
         {
             "access": "public",
-            "essence": "banner",
+            "essence": "blorb",
             "resolution": "lossless",
             "count": 1
+        },
+        {
+            "access": "public",
+            "essence": "blorb",
+            "resolution": "lossless",
+            "count": 1,
+            "ext": "png"
         },
         {
             "access": "public",
@@ -319,11 +328,47 @@ POST :ipAddress/orbland/orbs
         }
         ],
     "expires_in": "10000",
-    "traits": ["personalpin"]
+    "traits": ["personalpin"],
+    "blorbs": [
+        {
+            "type": "txt",
+            "active": "true",
+            "character": {"content": "For him who has conquered the mind, the mind is the best of friends; but for one who has failed to do so, his very mind will be the greatest enemy."}
+        },
+        {
+            "type": "img",
+            "active": "true",
+            "character": {"count": 1,"ext": "png"}
+        }
+
+    ]
 }
 ## Update Orbs (Deactivate etc)
 ##
 PUT :ipAddress/orbland/orbs/:orb
+-> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (assq 'data (json-read)))))
+:auth-headers
+{
+    "geolocation": {
+        "central_geohash": 623276216935972863
+    },
+    "title": "yogafire",
+    "inner_title": "stay in the matrix",
+    "info": "ba sing se",
+    "active": "true",
+    "media": [
+        {
+        "access": "public",
+        "essence": "banner",
+        "resolution": "lossless"
+        }],
+    "expires_in": "10000",
+    "traits": ["holy", "mooncakes"]
+}
+
+## Add Blorb
+##
+PUT :ipAddress/orbland/orbs/:orb/blorb
 -> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (assq 'data (json-read)))))
 :auth-headers
 {

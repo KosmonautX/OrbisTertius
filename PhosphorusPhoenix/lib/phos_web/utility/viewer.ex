@@ -33,6 +33,7 @@ defmodule PhosWeb.Util.Viewer do
   def relationship_mapper(field, entity) do
     case field do
       {k, [%Phos.Comments.Comment{} | _] = comment} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.comment_mapper(comment)}}])
+      {k, [%Phos.Action.Blorb{} | _] = blorb} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.blorb_mapper(blorb)}}])
       {k , %Phos.Users.User{} = user} ->
         Map.new([{k,
                   %{data: PhosWeb.Util.Viewer.user_mapper(user),
@@ -40,6 +41,7 @@ defmodule PhosWeb.Util.Viewer do
 
       {k, %Phos.Action.Location{} = loc} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.loc_mapper(loc)}}])
       {k, %Phos.Action.Orb{} = orb} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.orb_mapper(orb)}}])
+      {k, %Phos.Action.Blorb{} = blorb} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.blorb_mapper(blorb)}}])
       {k, %Phos.Comments.Comment{} = comment} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.comment_mapper(comment)}}])
       {k, %Phos.Message.Memory{} = memory} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.memory_mapper(memory)}}])
       {k, %Phos.Users.RelationRoot{} = relation} ->
@@ -245,6 +247,27 @@ defmodule PhosWeb.Util.Viewer do
 
   defp parent_orb_mapper(%Phos.Action.Orb{} = orb), do: orb_mapper(orb)
   defp parent_orb_mapper(_), do: %{}
+
+  ## Blorb Mapper
+  def blorb_mapper(blorbs = [%Phos.Action.Blorb{} | _]), do: Enum.map(blorbs, &blorb_mapper/1)
+  def blorb_mapper(blorb = %Phos.Action.Blorb{}) do
+    %{
+      type: blorb.type,
+      active: blorb.active,
+      character: blorb_character_mapper(blorb)
+    }
+  end
+
+  def blorb_character_mapper(%{type: :txt, character: %Phos.Action.Blorb.Characteristics{} = c}) do
+      %{data: %{content: c.content, align: c.align},
+        links: %{}}
+  end
+
+  def blorb_character_mapper(%{id: _id, orb_id: _orb_id,  type: type, character: character}) when type in [:vid, :img] do
+      %{data: %{ext: character.ext}}
+  end
+
+  def blorb_character_mapper(_), do: %{}
 
   ## Comment Mapper
   def comment_mapper(comments = [%Phos.Comments.Comment{} | _]), do: Enum.map(comments, &comment_mapper/1)
