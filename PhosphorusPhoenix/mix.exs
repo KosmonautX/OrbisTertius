@@ -78,7 +78,7 @@ defmodule Phos.MixProject do
       {:timex, "~> 3.7"},
       {:earmark, "~>1.4.36"},
       {:html_sanitize_ex, "~> 1.4"},
-      # {:prom_ex, "~> 1.7.0"},
+      # {:prom_ex, "~> 1.7.1"},
       {:prom_ex, github: "KosmonautX/prom_ex"},
       {:fsmx, "~> 0.4"},
       {:nebulex, "~> 2.5.1"},
@@ -96,7 +96,7 @@ defmodule Phos.MixProject do
       {:rexbug, "~> 1.0"},
       {:poison, "4.0.1", override: true},
       {:phoenix_view, "~> 2.0"}, # for error warning removal
-      {:finch, "~> 0.13.0"},
+      {:finch, "~> 0.15.0"},
       {:req, github: "wojtekmach/req"},
       {:pgvector, "~> 0.2.0"},
       # { :uuid, "~> 1.1" },
