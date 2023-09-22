@@ -78,8 +78,8 @@ defmodule Phos.MixProject do
       {:timex, "~> 3.7"},
       {:earmark, "~>1.4.36"},
       {:html_sanitize_ex, "~> 1.4"},
-      {:prom_ex, "~> 1.8.0"}
-      #{:prom_ex, github: "KosmonautX/prom_ex"},
+      # {:prom_ex, "~> 1.7.0"},
+      {:prom_ex, github: "KosmonautX/prom_ex"},
       {:fsmx, "~> 0.4"},
       {:nebulex, "~> 2.5.1"},
       {:shards, "~> 1.0"},
