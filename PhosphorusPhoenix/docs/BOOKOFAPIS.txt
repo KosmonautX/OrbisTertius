@@ -266,7 +266,7 @@ GET :ipAddress/orbland/orbs/:orb
 :auth-headers
 
 ## Read all orbs in that geohash id
-GET :ipAddress/orbland/stream/623517998944845823,628021598572208127?page=1&search=dinosaurs
+GET :ipAddress/orbland/stream/623517998944845823,628021598572208127?page=1
 :auth-headers
 
 ## Create Orbs
@@ -279,52 +279,39 @@ POST :ipAddress/orbland/orbs
     },
     "title": "aikido style",
     "inner_title": "Ranged thus for battle on the sacred plain-- On Kurukshetra--say, Sanjaya! say What wrought my people, and the Pandavas?",
-    "info": "ba sing se",
+    "where": "ba sing se",
+    "info": "no war in ba sing se",
     "active": "true",
     "creationtime": 1695263542,
     "media": [
-        {
-            "access": "public",
-            "essence": "banner",
-            "count": 0
-        },
+
         {
             "access": "public",
             "essence": "blorb",
-            "resolution": "lossless",
-            "count": 1
+            "resolution": "lossy",
+            "count": 1,
+            "ext": "jpg"
         },
         {
             "access": "public",
             "essence": "blorb",
             "resolution": "lossless",
             "count": 1,
+            "ext": "jpg"
+        },
+        {
+            "access": "public",
+            "essence": "blorb",
+            "resolution": "lossless",
+            "count": 2,
             "ext": "png"
         },
         {
             "access": "public",
             "essence": "banner",
-            "resolution": "lossless",
-            "count": 2
-        },
-        {
-            "access": "public",
-            "essence": "banner",
-            "resolution": "lossless",
-            "count": 3,
-            "ext": "mp3"
-        },
-        {
-            "access": "public",
-            "essence": "banner",
-            "resolution": "lossless",
-            "count": 4
-        },
-        {
-            "access": "public",
-            "essence": "banner",
-            "resolution": "lossless",
-            "count": 5
+            "resolution": "lossy",
+            "count": 2,
+            "ext": "png"
         }
         ],
     "expires_in": "10000",
@@ -333,12 +320,19 @@ POST :ipAddress/orbland/orbs
         {
             "type": "txt",
             "active": "true",
-            "character": {"content": "For him who has conquered the mind, the mind is the best of friends; but for one who has failed to do so, his very mind will be the greatest enemy."}
+            "character": {"content": "For him who has conquered the mind, the mind is the best of friends; but for one who has failed to do so, his very mind will be the greatest enemy.",
+            "align": "left"
+}
         },
         {
             "type": "img",
             "active": "true",
             "character": {"count": 1,"ext": "png"}
+        },
+        {
+            "type": "img",
+            "active": "true",
+            "character": {"count": 2,"ext": "png"}
         }
 
     ]
