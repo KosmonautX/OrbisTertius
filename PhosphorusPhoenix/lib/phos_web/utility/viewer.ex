@@ -252,6 +252,7 @@ defmodule PhosWeb.Util.Viewer do
   def blorb_mapper(blorbs = [%Phos.Action.Blorb{} | _]), do: Enum.map(blorbs, &blorb_mapper/1)
   def blorb_mapper(blorb = %Phos.Action.Blorb{}) do
     %{
+      id: blorb.id,
       type: blorb.type,
       active: blorb.active,
       character: blorb_character_mapper(blorb)
