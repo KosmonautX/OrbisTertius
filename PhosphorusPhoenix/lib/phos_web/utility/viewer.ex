@@ -264,8 +264,8 @@ defmodule PhosWeb.Util.Viewer do
         links: %{}}
   end
 
-  def blorb_character_mapper(%{id: _id, orb_id: _orb_id,  type: type, character: character}) when type in [:vid, :img] do
-      %{data: %{ext: character.ext}}
+  def blorb_character_mapper(%{id: _id, orb_id: _orb_id,  type: type, character: %Phos.Action.Blorb.Characteristics{} = c}) when type in [:vid, :img] do
+      %{data: %{ext: c.ext}}
   end
 
   def blorb_character_mapper(_), do: %{}

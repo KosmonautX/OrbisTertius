@@ -33,6 +33,7 @@ defmodule Phos.Action.Blorb do
       blorb
       |> cast(attrs, [:type, :active, :initiator_id])
       |> typed_character_switch()
+      |> validate_required([:type, :character])
   end
 
   def typed_character_switch(changeset) do
