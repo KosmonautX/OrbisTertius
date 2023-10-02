@@ -5,7 +5,7 @@ defmodule PhosWeb.Util.DOMParser do
     #|> LinkPreview.create()
   end
   def extract_link_from_markdown(md) when is_binary(md) do
-    {:ok, ast, _} = EarmarkParser.as_ast(md)
+    {:ok, ast, _} = Earmark.Parser.as_ast(md)
     String.trim(extract_link_from_ast(ast, ""))
   end
 

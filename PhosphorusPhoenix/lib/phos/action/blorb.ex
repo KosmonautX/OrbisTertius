@@ -36,20 +36,21 @@ defmodule Phos.Action.Blorb do
       |> validate_required([:type, :character])
   end
 
-  def typed_character_switch(changeset) do
-    character_changeset = changeset.changes.type
-    |> case do
-         :txt ->
-           &txt_changeset(&1, &2)
-         :img ->
-           &img_changeset(&1, &2)
+  def typed_character_switch(%{changes: %{type: type}} = changeset) do
+    character_changeset = case type do
+                           :txt ->
+                             &txt_changeset(&1, &2)
+                           :img ->
+                             &img_changeset(&1, &2)
 
-         :vid ->
-           &vid_changeset(&1, &2)
-       end
+                           :vid ->
+                             &vid_changeset(&1, &2)
+                         end
 
     cast_embed(changeset, :character, with: character_changeset)
-   end
+  end
+
+  def typed_character_switch(changeset), do: validate_required(changeset, [:type])
 
   def txt_changeset(structure, attrs) do
     structure
