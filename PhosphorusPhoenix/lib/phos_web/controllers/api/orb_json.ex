@@ -24,7 +24,7 @@ defmodule PhosWeb.API.OrbJSON do
 
   # tie the media_ids based on count tags
   defp media_blorber(media, blorbs) do
-    b = blorbs |> Enum.map(fn %{type: :img, character: %{count: count}} = blorb -> {count, blorb}
+    b = blorbs |> Enum.map(fn %{type: type, character: %{count: count}} = blorb when type in [:vid, :img] -> {count, blorb}
       _ -> {nil, nil}
     end
     )

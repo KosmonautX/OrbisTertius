@@ -5,7 +5,7 @@ defmodule PhosWeb.API.BlorbController do
 #     character: [:content, :align, :resolution, :ext]
 #   ]
 
-#   alias Phos.Action.Orb
+# #   alias Phos.Action.Orb
 #   action_fallback PhosWeb.API.FallbackController
 
 #   def create(conn = %{assigns: %{current_user: user}}, params) do
@@ -19,7 +19,7 @@ defmodule PhosWeb.API.BlorbController do
 #     end
 #   end
 
-#   def update(conn = %{assigns: %{current_user: user}}, %{"id" => id} = params) do
+#   def update(conn = %{assigns: %{current_user: user}}, %{"id" => id}) do
 #     orb = Action.get_orb!(id)
 #     with true <- orb.initiator.id == user.id,
 #          {:ok, attrs} <- blorb_constructor(user, params),

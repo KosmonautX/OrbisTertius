@@ -284,7 +284,20 @@ POST :ipAddress/orbland/orbs
     "active": "true",
     "creationtime": 1695263542,
     "media": [
-
+    {
+            "access": "public",
+            "essence": "blorb",
+            "resolution": "lossless",
+            "count": 2,
+            "ext": "mp4"
+        },
+        {
+            "access": "public",
+            "essence": "blorb",
+            "resolution": "lossy",
+            "count": 2,
+            "ext": "jpg"
+        },
         {
             "access": "public",
             "essence": "blorb",
@@ -301,16 +314,14 @@ POST :ipAddress/orbland/orbs
         },
         {
             "access": "public",
-            "essence": "blorb",
+            "essence": "banner",
             "resolution": "lossless",
-            "count": 2,
             "ext": "png"
         },
         {
             "access": "public",
             "essence": "banner",
             "resolution": "lossy",
-            "count": 2,
             "ext": "png"
         }
         ],
@@ -322,7 +333,7 @@ POST :ipAddress/orbland/orbs
             "active": "true",
             "character": {"content": "For him who has conquered the mind, the mind is the best of friends; but for one who has failed to do so, his very mind will be the greatest enemy.",
             "align": "left"
-}
+            }
         },
         {
             "type": "img",
@@ -330,9 +341,9 @@ POST :ipAddress/orbland/orbs
             "character": {"count": 1,"ext": "png"}
         },
         {
-            "type": "img",
+            "type": "vid",
             "active": "true",
-            "character": {"count": 2,"ext": "png"}
+            "character": {"count": 2,"ext": "mp4"}
         }
 
     ]
