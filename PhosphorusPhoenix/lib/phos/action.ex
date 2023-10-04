@@ -943,4 +943,101 @@ defmodule Phos.Action do
     String.split(text, " ")
     |> Enum.join(" or ")
   end
+
+  ## Blorbs the building blocks of Orbs
+  alias Phos.Action.Blorb
+
+  @doc """
+  Returns the list of blorbs.
+
+  ## Examples
+
+      iex> list_blorbs()
+      [%Blorb{}, ...]
+
+  """
+  def list_blorbs do
+    Repo.all(Blorb)
+  end
+
+  @doc """
+  Gets a single blorb.
+
+  Raises `Ecto.NoResultsError` if the Blorb does not exist.
+
+  ## Examples
+
+      iex> get_blorb!(123)
+      %Blorb{}
+
+      iex> get_blorb!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_blorb!(id), do: Repo.get!(Blorb, id)
+
+  @doc """
+  Creates a blorb.
+
+  ## Examples
+
+      iex> create_blorb(%{field: value})
+      {:ok, %Blorb{}}
+
+      iex> create_blorb(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_blorb(attrs \\ %{}) do
+    %Blorb{}
+    |> Blorb.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a blorb.
+
+  ## Examples
+
+      iex> update_blorb(blorb, %{field: new_value})
+      {:ok, %Blorb{}}
+
+      iex> update_blorb(blorb, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_blorb(%Blorb{} = blorb, attrs) do
+    blorb
+    |> Blorb.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a blorb.
+
+  ## Examples
+
+      iex> delete_blorb(blorb)
+      {:ok, %Blorb{}}
+
+      iex> delete_blorb(blorb)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_blorb(%Blorb{} = blorb) do
+    Repo.delete(blorb)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking blorb changes.
+
+  ## Examples
+
+      iex> change_blorb(blorb)
+      %Ecto.Changeset{data: %Blorb{}}
+
+  """
+  def change_blorb(%Blorb{} = blorb, attrs \\ %{}) do
+    Blorb.changeset(blorb, attrs)
+  end
 end

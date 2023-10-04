@@ -165,4 +165,56 @@ defmodule Phos.ActionTest do
       assert reorb_1.number_of_repost == 1
     end
   end
+
+  describe "blorbs" do
+    alias Phos.Action.Blorb
+
+    import Phos.ActionFixtures
+
+    @invalid_attrs %{}
+
+    test "list_blorbs/0 returns all blorbs" do
+      blorb = blorb_fixture()
+      assert Action.list_blorbs() == [blorb]
+    end
+
+    test "get_blorb!/1 returns the blorb with given id" do
+      blorb = blorb_fixture()
+      assert Action.get_blorb!(blorb.id) == blorb
+    end
+
+    test "create_blorb/1 with valid data creates a blorb" do
+      valid_attrs = %{}
+
+      assert {:ok, %Blorb{} = blorb} = Action.create_blorb(valid_attrs)
+    end
+
+    test "create_blorb/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Action.create_blorb(@invalid_attrs)
+    end
+
+    test "update_blorb/2 with valid data updates the blorb" do
+      blorb = blorb_fixture()
+      update_attrs = %{}
+
+      assert {:ok, %Blorb{} = blorb} = Action.update_blorb(blorb, update_attrs)
+    end
+
+    test "update_blorb/2 with invalid data returns error changeset" do
+      blorb = blorb_fixture()
+      assert {:error, %Ecto.Changeset{}} = Action.update_blorb(blorb, @invalid_attrs)
+      assert blorb == Action.get_blorb!(blorb.id)
+    end
+
+    test "delete_blorb/1 deletes the blorb" do
+      blorb = blorb_fixture()
+      assert {:ok, %Blorb{}} = Action.delete_blorb(blorb)
+      assert_raise Ecto.NoResultsError, fn -> Action.get_blorb!(blorb.id) end
+    end
+
+    test "change_blorb/1 returns a blorb changeset" do
+      blorb = blorb_fixture()
+      assert %Ecto.Changeset{} = Action.change_blorb(blorb)
+    end
+  end
 end

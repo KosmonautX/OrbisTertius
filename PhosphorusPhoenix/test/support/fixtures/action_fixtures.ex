@@ -53,4 +53,18 @@ defmodule Phos.ActionFixtures do
 
     orb |> Phos.Repo.preload([:locations, :initiator])
   end
+
+  @doc """
+  Generate a blorb.
+  """
+  def blorb_fixture(attrs \\ %{}) do
+    {:ok, blorb} =
+      attrs
+      |> Enum.into(%{
+
+      })
+      |> Phos.Action.create_blorb()
+
+    blorb
+  end
 end
