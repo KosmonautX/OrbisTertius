@@ -85,6 +85,8 @@ defmodule Phos.Users.UserToken do
     build_hashed_token(telegram_id, context, user.email)
   end
 
+  def build_invitation_token(user, sent_to \\ nil), do: build_hashed_token(user, "invitation", sent_to)
+
   defp build_hashed_token(telegram_id, "bind_telegram", sent_to) do
     {:ok, user} = Phos.Users.get_user_by_telegram(to_string(telegram_id))
     token = :crypto.strong_rand_bytes(@rand_size)
@@ -99,8 +101,9 @@ defmodule Phos.Users.UserToken do
      }}
   end
 
-  defp build_hashed_token(user, context, sent_to) do
-    token = :crypto.strong_rand_bytes(@rand_size)
+  defp build_hashed_token(user, context, sent_to, options \\ []) do
+    rand_size = Keyword.get(options, :size, @rand_size)
+    token = :crypto.strong_rand_bytes(rand_size)
     hashed_token = :crypto.hash(@hash_algorithm, token)
 
     {Base.url_encode64(token, padding: false),

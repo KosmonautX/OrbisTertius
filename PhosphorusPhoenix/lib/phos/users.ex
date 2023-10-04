@@ -989,4 +989,26 @@ defmodule Phos.Users do
     |> Multi.update(:user, User.telegram_changeset(main_user, integration_params))
     |> Multi.delete_all(:tokens, UserToken.user_and_contexts_query(tele_user, ["bind_telegram"]))
   end
+
+  def invitation(%User{} = user) do
+    {_, token} = UserToken.build_invitation_token(user)
+    Repo.insert(token)
+  end
+  def invitation(user_id) when is_bitstring(user_id), do: get_user(user_id) |> invitation()
+  def invitation(_), do: {:error, "user id not found"}
+
+  def confirm_invitation(%User{} = user, token) do
+    query = UserToken.token_and_context_query(token, "invitation") |> limit(1) |> preload(:user)
+    case Repo.one(query) do
+      nil -> {:error, "token not found"}
+      ancestor -> put_ancestor(user, ancestor)
+    end
+  end
+  def confirm_invitation(user_id, token) when is_bitstring(user_id), do: get_user(user_id) |> confirm_invitation(token)
+  def confirm_invitation(_, _token), do: {:error, "user id not found"}
+
+  def put_ancestor(_user, _ancestor) do
+    # TODO: To be implemented
+    :ok
+  end
 end
