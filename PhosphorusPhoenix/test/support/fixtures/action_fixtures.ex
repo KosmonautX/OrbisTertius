@@ -31,40 +31,44 @@ defmodule Phos.ActionFixtures do
       })
       |> Phos.Action.create_orb()
 
-    orb |> Phos.Repo.preload([:locations, :initiator])
+      orb |> Phos.Repo.preload([:locations, :initiator])
   end
 
   @spec orb_fixture_no_location(any) ::
-          nil | [%{optional(atom) => any}] | %{optional(atom) => any}
+  nil | [%{optional(atom) => any}] | %{optional(atom) => any}
   def orb_fixture_no_location(attrs \\ %{}) do
     %{id: user_id} = user_fixture()
 
     {:ok, orb} =
       attrs
       |> Enum.into(%{
-        "id" => Ecto.UUID.generate(),
-        "active" => true,
-        "extinguish" => ~N[2022-05-20 12:12:00],
-        "media" => true,
-        "title" => "some title",
-        "initiator_id" => user_id
-      })
-      |> Phos.Action.create_orb()
+          "id" => Ecto.UUID.generate(),
+          "active" => true,
+          "extinguish" => ~N[2022-05-20 12:12:00],
+          "media" => true,
+          "title" => "some title",
+          "initiator_id" => user_id
+                   })
+                   |> Phos.Action.create_orb()
 
-    orb |> Phos.Repo.preload([:locations, :initiator])
+      orb |> Phos.Repo.preload([:locations, :initiator])
   end
 
   @doc """
-  Generate a blorb.
+  Generate a text blorb.
   """
   def blorb_fixture(attrs \\ %{}) do
+    %{id: user_id} = user_fixture()
     {:ok, blorb} =
       attrs
       |> Enum.into(%{
-
-      })
-      |> Phos.Action.create_blorb()
-
-    blorb
+          "id" => Ecto.UUID.generate(),
+          "active" => true,
+          "type" => "txt",
+          "initiator_id" => user_id,
+          "character" => %{"content" => "For him who has conquered the mind, the mind is the best of friends; but for one who has failed to do so, his very mind will be the greatest enemy."}
+                   })
+                   |> Phos.Action.create_blorb()
+      blorb |> Phos.Repo.preload([:initiator])
   end
 end

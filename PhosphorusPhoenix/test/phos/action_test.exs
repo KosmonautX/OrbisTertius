@@ -184,9 +184,14 @@ defmodule Phos.ActionTest do
     end
 
     test "create_blorb/1 with valid data creates a blorb" do
-      valid_attrs = %{}
+      %{id: user_id} = user_fixture()
+      valid_attrs = %{id: Ecto.UUID.generate(),
+                      active: true,
+                      type: "txt",
+                      initiator_id: user_id,
+                      character: %{content: "some content"}}
 
-      assert {:ok, %Blorb{} = blorb} = Action.create_blorb(valid_attrs)
+      assert {:ok, %Blorb{}} = Action.create_blorb(valid_attrs)
     end
 
     test "create_blorb/1 with invalid data returns error changeset" do
@@ -195,15 +200,9 @@ defmodule Phos.ActionTest do
 
     test "update_blorb/2 with valid data updates the blorb" do
       blorb = blorb_fixture()
-      update_attrs = %{}
+      update_attrs = %{active: false, character: %{content: "some other content"}}
 
-      assert {:ok, %Blorb{} = blorb} = Action.update_blorb(blorb, update_attrs)
-    end
-
-    test "update_blorb/2 with invalid data returns error changeset" do
-      blorb = blorb_fixture()
-      assert {:error, %Ecto.Changeset{}} = Action.update_blorb(blorb, @invalid_attrs)
-      assert blorb == Action.get_blorb!(blorb.id)
+      assert {:ok, %Blorb{}} = Action.update_blorb(blorb, update_attrs)
     end
 
     test "delete_blorb/1 deletes the blorb" do

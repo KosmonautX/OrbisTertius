@@ -412,10 +412,12 @@ defmodule Phos.Action do
             #index in pgvector
             Task.start(fn ->
               embed  = case orb do
-                %{payload: %{inner_title: title}} ->
+                %{payload: %{inner_title: title}} when is_binary(title) ->
                   build_embedding("passage: " <> title)
-                %{title: title} ->
+                %{title: title} when is_binary(title) ->
                   build_embedding("passage: " <> title)
+                _ ->
+                  nil
               end
               update_orb(orb, %{embedding: embed})
             end)
@@ -958,6 +960,7 @@ defmodule Phos.Action do
   """
   def list_blorbs do
     Repo.all(Blorb)
+    |> Repo.preload(:initiator)
   end
 
   @doc """
