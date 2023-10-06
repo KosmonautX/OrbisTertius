@@ -974,7 +974,7 @@ defmodule Phos.Action do
       ** (Ecto.NoResultsError)
 
   """
-  def get_blorb!(id), do: Repo.get!(Blorb, id)
+  def get_blorb!(id), do: Repo.get!(Blorb, id) |> Repo.preload(:initiator)
 
   @doc """
   Creates a blorb.

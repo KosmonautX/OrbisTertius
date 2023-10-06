@@ -380,15 +380,19 @@ PUT :ipAddress/orbland/orbs/:orb/blorbs
             "active": "true",
             "character": {"content": "For him who has conquered the mind, the mind is the best of friends; but for one who has failed to do so, his very mind will be the greatest enemy.",
             "align": "left"
-            }
+            },
+            "media": [{"access": "public","essence": "blorb","resolution": "lossless","ext": "png","count": null},
+            {"access": "public", "essence": "blorb", "resolution": "lossy", "ext": "png", "count": null},
+            {"access": "public", "essence": "profile", "resolution": "lossless", "ext": "png", "count": 1},
+            {"access": "public", "essence": "profile", "resolution": "lossy", "ext": "png", "count": 1}]
 }
 ## Update Blorbs
 PUT :ipAddress/orbland/orbs/:orb/blorbs/:blorb
--> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (assq 'data (json-read)))))
+-> run-hook (restclient-set-var ":blorb" (cdr (assq 'id (assq 'data (json-read)))))
 :auth-headers
 {
             "type": "txt",
-            "active": "true",
+            "active": "false",
             "character": {"content": "For him who has conquered the mind, the mind is the best of friends; but for one who has failed to do so, his very mind will be the greatest enemy.",
             "align": "right"
             }

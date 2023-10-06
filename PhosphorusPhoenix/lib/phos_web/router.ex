@@ -171,6 +171,7 @@ defmodule PhosWeb.Router do
     resources "/orbland/orbs", OrbController, except: [:new, :edit]
     put "/orbland/orbs/:orb_id/blorbs", BlorbController, :create
     put "/orbland/orbs/:orb_id/blorbs/:id", BlorbController, :update
+    delete "/orbland/orbs/:orb_id/blorbs/:id", BlorbController, :delete
     put "/orbland/orbs/:id/report", TribunalController, :report_orb
 
     resources "/orbland/comments", CommentController, except: [:new, :edit]

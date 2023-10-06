@@ -5,28 +5,38 @@ defmodule PhosWeb.API.BlorbController do
     character: [:content, :count, :align, :resolution, :ext]
   ]
 
-  alias Phos.Action.{Orb, Blorb}
+  alias Phos.Action
+  alias Phos.Action.Blorb
   action_fallback PhosWeb.API.FallbackController
 
-  def create(conn = %{assigns: %{current_user: user}}, %{"orb_id" => id}) do
+  def create(conn = %{assigns: %{current_user: user}}, params = %{"media" => [_|_] = media}) do
     with {:ok, attrs} <- blorb_constructor(user, params),
-         {:ok, %Orb{} = orb} <- Action.create_blorb(attrs) do
+         {:ok, media} <- Phos.Orbject.Structure.apply_media_changeset(%{id: attrs["id"], archetype: "ORB", media: media}),
+         {:ok, %Blorb{} = blorb} <- Action.create_blorb(attrs) do
+
       conn
       |> put_status(:created)
-      |> put_resp_header("location", ~p"/api/orbland/orbs/#{orb.id}")
-      |> render(:show, orb: orb)
+      |> render(:show, blorb: blorb, media: media)
     end
   end
 
-  def update(conn = %{assigns: %{current_user: user}}, %{"id" => id}) do
-    orb = Action.get_orb!(id)
-    with true <- orb.initiator.id == user.id,
+  def create(conn = %{assigns: %{current_user: user}}, params) do
+    with {:ok, attrs} <- blorb_constructor(user, params),
+         {:ok, %Blorb{} = blorb} <- Action.create_blorb(attrs) do
+      conn
+      |> put_status(:created)
+      |> render(:show, blorb: blorb)
+    end
+  end
+
+  def update(conn = %{assigns: %{current_user: user}}, %{"id" => id} = params) do
+    blorb = Action.get_blorb!(id)
+    with true <- blorb.initiator.id == user.id,
          {:ok, attrs} <- blorb_constructor(user, params),
-         {:ok, %Orb{} = orb} <- Action.update_orb(orb, attrs) do
+         {:ok, %Blorb{} = blorb} <- Action.update_blorb(blorb, attrs) do
       conn
       |> put_status(:ok)
-      |> put_resp_header("location", ~p"/api/orbland/orbs/#{orb.id}")
-      |> render(:show, orb: orb)
+      |> render(:show, blorb: blorb)
     else
       false -> {:error, :unauthorized}
     error -> error
@@ -34,9 +44,9 @@ defmodule PhosWeb.API.BlorbController do
   end
 
   def delete(conn = %{assigns: %{current_user: user}}, %{"id" => id}) do
-    orb = Action.get_orb!(id)
-    with true <- orb.initiator.id == user.id,
-         {:ok, %Orb{}} <- Action.delete_orb(orb) do
+    blorb = Action.get_blorb!(id)
+    with true <- blorb.initiator.id == user.id,
+         {:ok, %Blorb{}} <- Action.delete_blorb(blorb) do
       send_resp(conn, :no_content, "")
     else
       false -> {:error, :unauthorized}
