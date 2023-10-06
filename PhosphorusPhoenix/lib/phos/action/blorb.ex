@@ -31,7 +31,7 @@ defmodule Phos.Action.Blorb do
 
   def changeset(%Phos.Action.Blorb{} = blorb, attrs) do
       blorb
-      |> cast(attrs, [:type, :active, :initiator_id])
+      |> cast(attrs, [:type, :active, :orb_id, :initiator_id])
       |> typed_character_switch()
       |> validate_required([:type, :character])
   end
@@ -42,7 +42,6 @@ defmodule Phos.Action.Blorb do
                              &txt_changeset(&1, &2)
                            :img ->
                              &img_changeset(&1, &2)
-
                            :vid ->
                              &vid_changeset(&1, &2)
                          end
@@ -63,13 +62,13 @@ defmodule Phos.Action.Blorb do
     structure
     |> cast(attrs, [:ext, :count])
     |> validate_inclusion(:ext, ["jpeg", "jpg", "png", "gif"])
-    |> validate_required([:count])
+    |> validate_required([:ext])
   end
 
   def vid_changeset(structure, attrs) do
     structure
     |> cast(attrs, [:ext, :count])
     |> validate_inclusion(:ext, ["mp4", "mov"])
-    |> validate_required([:count])
+    |> validate_required([:ext])
   end
  end

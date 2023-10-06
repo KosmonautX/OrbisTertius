@@ -9,9 +9,9 @@ defmodule PhosWeb.API.BlorbController do
   alias Phos.Action.Blorb
   action_fallback PhosWeb.API.FallbackController
 
-  def create(conn = %{assigns: %{current_user: user}}, params = %{"media" => [_|_] = media}) do
+  def create(conn = %{assigns: %{current_user: user}}, params = %{"type" => type, "orb_id" => orb_id, "media" => [_|_] = media}) when type in ["img", "vid"] do
     with {:ok, attrs} <- blorb_constructor(user, params),
-         {:ok, media} <- Phos.Orbject.Structure.apply_media_changeset(%{id: attrs["id"], archetype: "ORB", media: media}),
+         {:ok, media} <- Phos.Orbject.Structure.apply_media_changeset(%{id: orb_id, archetype: "ORB", media: media}),
          {:ok, %Blorb{} = blorb} <- Action.create_blorb(attrs) do
 
       conn
@@ -20,7 +20,7 @@ defmodule PhosWeb.API.BlorbController do
     end
   end
 
-  def create(conn = %{assigns: %{current_user: user}}, params) do
+  def create(conn = %{assigns: %{current_user: user}}, %{"orb_id" => _orb_id} = params) do
     with {:ok, attrs} <- blorb_constructor(user, params),
          {:ok, %Blorb{} = blorb} <- Action.create_blorb(attrs) do
       conn

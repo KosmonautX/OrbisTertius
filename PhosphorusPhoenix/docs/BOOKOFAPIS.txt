@@ -376,15 +376,14 @@ PUT :ipAddress/orbland/orbs/:orb/blorbs
 -> run-hook (restclient-set-var ":blorb" (cdr (assq 'id (assq 'data (json-read)))))
 :auth-headers
 {
-            "type": "txt",
+            "type": "img",
             "active": "true",
             "character": {"content": "For him who has conquered the mind, the mind is the best of friends; but for one who has failed to do so, his very mind will be the greatest enemy.",
-            "align": "left"
+            "align": "left",
+            "ext": "png"
             },
             "media": [{"access": "public","essence": "blorb","resolution": "lossless","ext": "png","count": null},
-            {"access": "public", "essence": "blorb", "resolution": "lossy", "ext": "png", "count": null},
-            {"access": "public", "essence": "profile", "resolution": "lossless", "ext": "png", "count": 1},
-            {"access": "public", "essence": "profile", "resolution": "lossy", "ext": "png", "count": 1}]
+            {"access": "public", "essence": "blorb", "resolution": "lossy", "ext": "png", "count": null}]
 }
 ## Update Blorbs
 PUT :ipAddress/orbland/orbs/:orb/blorbs/:blorb

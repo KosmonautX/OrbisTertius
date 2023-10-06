@@ -39,6 +39,8 @@ defmodule Phos.Orbject.Structure do
            apply_orb_changeset(changeset)
          "MEM" ->
            apply_memory_changeset(changeset)
+         "BLRB" ->
+           apply_blorb_changeset(changeset)
        end
   end
 
@@ -60,6 +62,12 @@ defmodule Phos.Orbject.Structure do
     |> apply_action(:memory_media)
   end
 
+  def apply_blorb_changeset(changeset) do
+    changeset
+    |> cast_embed(:media, with: &Orbject.Structure.blorb_media_changeset/2)
+    |> apply_action(:memory_media)
+  end
+
 
   def user_media_changeset(structure, attrs) do
     structure
@@ -77,6 +85,16 @@ defmodule Phos.Orbject.Structure do
     |> validate_inclusion(:access, ["public"])
     |> validate_inclusion(:essence, ["banner", "profile", "blorb"])
     |> validate_number(:count, greater_than: -1, less_than: 6)
+    |> validate_inclusion(:resolution, ["lossy", "lossless"])
+    |> validate_inclusion(:ext, ["jpeg", "jpg", "png", "gif", "mp4", "mov", "mp3"])
+    |> validate_required([:access, :essence])
+  end
+
+  def blorb_media_changeset(structure, attrs) do
+    structure
+    |> cast(attrs, [:access, :essence, :resolution, :ext, :essence_id])
+    |> validate_inclusion(:access, ["public"])
+    |> validate_inclusion(:essence, ["blorb"])
     |> validate_inclusion(:resolution, ["lossy", "lossless"])
     |> validate_inclusion(:ext, ["jpeg", "jpg", "png", "gif", "mp4", "mov", "mp3"])
     |> validate_required([:access, :essence])
