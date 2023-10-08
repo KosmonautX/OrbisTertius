@@ -283,16 +283,16 @@ defmodule Phos.TeleBot.Components.Button do
       [
         [
           inline_keyboard_button(
-            "🌐 Open on Web",
+            "🦜 Comment on Web",
             [url: parse_inline_orb_url(orb, user)]
           )
         ],
-        [
-          inline_keyboard_button(
-            "💬 Chat",
-            [url: parse_inline_orb_chaturl(orb, user)]
-          )
-        ]
+        # [
+        #   inline_keyboard_button(
+        #     "🦜 Chat on Web",
+        #     [url: parse_inline_orb_chaturl(orb, user)]
+        #   )
+        # ]
       ]
     )
   end
@@ -305,21 +305,21 @@ defmodule Phos.TeleBot.Components.Button do
     end
   end
 
-  defp parse_inline_orb_chaturl(%{initiator: %{username: username}} = _orb, user) do
-    if String.contains?(PhosWeb.Endpoint.url, "localhost") do
-      "web.scratchbac.com/"
-    else
-      "#{PhosWeb.Endpoint.url}/memories/user/#{username}?token=#{Auth.generate_user!(user.id)}"
-    end
-  end
+  # defp parse_inline_orb_chaturl(%{initiator: %{username: username}} = _orb, user) do
+  #   if String.contains?(PhosWeb.Endpoint.url, "localhost") do
+  #     "web.scratchbac.com/"
+  #   else
+  #     "#{PhosWeb.Endpoint.url}/memories/user/#{username}?token=#{Auth.generate_user!(user.id)}"
+  #   end
+  # end
 
-  defp parse_inline_orb_chaturl(%{initiator_id: init_id}  = _orb, user) do
-    if String.contains?(PhosWeb.Endpoint.url, "localhost") do
-      "web.scratchbac.com/"
-    else
-      "#{PhosWeb.Endpoint.url}/memories/user/#{init_id}?token=#{Auth.generate_user!(user.id)}"
-    end
-  end
+  # defp parse_inline_orb_chaturl(%{initiator_id: init_id}  = _orb, user) do
+  #   if String.contains?(PhosWeb.Endpoint.url, "localhost") do
+  #     "web.scratchbac.com/"
+  #   else
+  #     "#{PhosWeb.Endpoint.url}/memories/user/#{init_id}?token=#{Auth.generate_user!(user.id)}"
+  #   end
+  # end
 
   def build_start_menu_inlinekeyboard(), do: build_start_menu_inlinekeyboard("")
   def build_start_menu_inlinekeyboard(message_id) do
