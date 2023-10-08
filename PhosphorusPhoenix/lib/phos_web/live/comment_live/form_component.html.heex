@@ -14,7 +14,7 @@
         <.input field={{f, :body}} type="textarea" value={@comment.body} />
         <.input field={{f, :comment_id}} type="hidden" value={@comment.id} />
       </div>
-      <div class="flex items-center justify-center w-full gap-2 lg:px-0 px-2">
+      <div class="flex items-center justify-start w-full gap-2 lg:px-0 px-2">
         <img
           class="lg:w-12 lg:h-12 h-9 w-9 rounded-full object-cover shrink-0"
           src={not is_nil(@current_user) and Phos.Orbject.S3.get!("USR", Map.get(@current_user, :id), "public/profile/lossy") || "https://picsum.photos/200/300"}
@@ -41,11 +41,11 @@
         <button
           :if={@action in [:reply, :edit]}
           type="reset"
-          class="absolute right-7  md:right-8"
+          class="absolute inset-y-0 right-7 lg:right-6 md:right-8"
           phx-click={"cancel-#{@action}"}
           phx-target={"#comment-#{@comment.id}"}
         >
-          <Heroicons.x_circle class="h-7 w-7 text-amber-400 mr-2 mb-1.5" />
+          <Heroicons.arrow_uturn_left class="h-7 w-7 text-amber-400 mr-4" />
         </button>
       </:actions>
 
