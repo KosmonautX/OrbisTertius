@@ -712,45 +712,48 @@ defmodule PhosWeb.CoreComponents do
   """
 
   @spec admin_grid(map) :: Phoenix.LiveView.Rendered.t()
-  def admin_grid(assigns) do
+  def admin_grid(%{user: user} = assigns) when is_map(user) do
     ~H"""
     <div class="w-full bg-gray-50 rounded-2xl flex flex-col items-center py-2 font-poppins justify-center">
+      <.link navigate={"/user/#{@user.username}?bac"}>
       <img
         class="md:w-24 md:h-24 h-20 w-20 rounded-full shadow-lg object-cover img-double-border"
         src={Phos.Orbject.S3.get!("USR", Map.get(@user, :id), "public/profile/lossless")}
         alt=""
         onerror="this.src='/images/default_hand.jpg';"
       />
-      <h5 class="text-lg md:text-xl font-bold tracking-tight text-gray-900">
-        <%= "#{@user.username}" %>
+      <h5 class="text-lg md:text-base font-bold tracking-tight text-gray-900">
+        <%= "@#{@user.username}" %>
       </h5>
-
+      </.link>
       <p class="text-gray-400 font-semibold flex gap-1">
         <span class="flex text-sm">
-          <Heroicons.user class="w-4 h-4 mr-2" /> USER NAME
+          <Heroicons.user class="w-4 h-4 mr-2" /> Title
         </span>
-        <span class="font-bold text-xs  text-gray-600 text-base -mt-1">
-          <%= @user |> get_in([Access.key(:public_profile, %{}), Access.key(:public_name, "")]) %>
+        <.link navigate={path(PhosWeb.Endpoint, PhosWeb.Router,~p"/admin/orbs/#{@orb}")}>
+        <span class="font-bold text-base  text-gray-600 text-lg -mt-1">
+          <%= @orb.title %>
         </span>
+        </.link>
       </p>
 
       <p class="text-gray-400 font-semibold  flex gap-1">
         <span class="flex text-sm">
-          <Heroicons.calendar class="w-4 h-4 mr-2" /> REVIEW DATE
+          <Heroicons.calendar class="w-4 h-4 mr-2" /> Posted On
         </span>
         <span class="font-bold text-gray-600 text-base text-xs -mt-1">
-          <%= @user |> get_in([Access.key(:public_profile, %{}), Access.key(:birthday, "")]) %>
+          <%= @orb.inserted_at %>
         </span>
       </p>
 
       <p class="text-gray-400 font-semibold flex gap-1">
         <span class="flex text-sm">
-          <Heroicons.adjustments_horizontal class="w-4 h-4 mr-2" />TAGS
+          <Heroicons.adjustments_horizontal class="w-4 h-4 mr-2" />Traits
         </span>
         <span
           :for={
             trait <-
-              @user |> get_in([Access.key(:public_profile, %{}), Access.key(:traits, nil)]) || []
+              @orb.traits || []
           }
           class="text-xs font-bold text-gray-600 text-base -mt-1"
         >
@@ -1027,7 +1030,7 @@ defmodule PhosWeb.CoreComponents do
     <nav class="lg:bg-[#EEEFF3] bg-white fixed w-full z-10 top-0 left-0 dark:text-white text-base font-bold dark:bg-gray-900 md:px-4 px-4 lg:py-3 py-2 font-poppins">
       <div class="flex flex-wrap items-center justify-between mx-auto">
         <a href="/" class="flex items-center">
-          <.logo type="banner" class="md:h-8 h-6 dark:fill-white"></.logo>
+          <.logo type="banner" class="lg:h-9 md:h-8 h-7 dark:fill-white"></.logo>
         </a>
         <div class="flex items-center lg:order-2 flex-col lg:flex-row lg:space-x-2 lg:w-auto">
           <ul class="flex flex-wrap text-center text-gray-700">
@@ -2096,7 +2099,7 @@ defmodule PhosWeb.CoreComponents do
         </p>
         <p>
           <span
-            :for={trait <- @user |> get_in([:public_profile, Access.key(:traits, "-")])}
+            :for={trait <- (@user |> get_in([:public_profile, Access.key(:traits, [])])) -- ["exile"]}
             class="text-gray-500 text-sm font-medium dark:text-[#777986]"
           >
             <%= "##{trait}" %>
@@ -2202,7 +2205,7 @@ defmodule PhosWeb.CoreComponents do
         </p>
 
         <span
-          :for={trait <- @user |> get_in([:public_profile, Access.key(:traits, "-")])}
+          :for={trait <- (@user |> get_in([:public_profile, Access.key(:traits, [])])) -- ["exile"]}
           class="text-gray-500 text-base font-normal dark:text-[#777986]"
         >
           <%= "##{trait}" %>

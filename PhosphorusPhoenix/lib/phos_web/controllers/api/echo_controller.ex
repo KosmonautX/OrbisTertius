@@ -1,7 +1,7 @@
 defmodule PhosWeb.API.EchoController do
   use PhosWeb, :controller
   use Phos.ParamsValidator, [
-    :id, :message, :user_source_id, :orb_subject_id, :loc_subject_id, :user_destination_id, :rel_subject_id, :media
+    :id, :message, :user_source_id, :mem_subject_id, :orb_subject_id, :loc_subject_id, :user_destination_id, :rel_subject_id, :media
   ]
   alias Phos.Message
   alias Phos.Message.Memory

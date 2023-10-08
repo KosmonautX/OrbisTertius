@@ -72,12 +72,11 @@ defmodule PhosWeb.MemoryLive.FormComponent do
       end)
 
     memory_params =
-      unless Enum.empty?(file_uploaded) do
-        Map.replace(memory_params, "media", true)
+      if !Enum.empty?(file_uploaded) do
+        Map.put(memory_params, "media", true)
       else
-        memory_params
+        Map.put(memory_params, "media", false)
       end
-
     save_memory(socket, socket.assigns.action, memory_params)
   end
 

@@ -130,17 +130,51 @@
   /*background: red;*/
 }
 
+
+
 .journal-scroll::-webkit-scrollbar-thumb {
   cursor: pointer;
   background-color: #a0aec0;
   /*outline: 1px solid slategrey;*/
 }
 
+
+
+.paragraph-font {
+  font-size: 1rem;
+  margin: 10px; /* Set the margin to your desired value */
+  text-align: center;
+  text-align: justify;
+  text-indent: 30px;
+  font-family: "Miller", "Georgia", serif; /* Use Miller font as the first choice, then fallback to Georgia and finally a generic serif font */
+}
+
+
+.date-time {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+}
+
+
+.subhead {
+  text-transform: uppercase;
+  border-bottom: 2px solid #2f2f2f;
+  border-top: 2px solid #2f2f2f;
+  padding: 12px 0 12px 0;
+}
+
+.head_new {
+  font-family: "Miller", "Georgia", serif; /* Use Miller font as the first choice, then fallback to Georgia and finally a generic serif font */
+  display: inline-block;
+}
+
+
 .tab-active::after {
   content: "";
   display: block;
   height: 3px;
-  background-color: #000; /* Replace with your desired underline color */
+  background-color: #000;
+  /* Replace with your desired underline color */
   margin-top: -3px;
 }
 
@@ -156,10 +190,11 @@
 }
 */
 
-.accordion-item:checked ~ .accordion-content {
-  max-height: 1000px; /* Adjust this value based on your content height */
+.accordion-item:checked~.accordion-content {
+  max-height: 1000px;
+  /* Adjust this value based on your content height */
   transition: max-height 0.3s ease-in;
-} 
+}
 
 .closed-icon {
   display: block;
@@ -169,11 +204,11 @@
   display: none;
 }
 
-.accordion-item:checked ~ .label .closed-icon {
+.accordion-item:checked~.label .closed-icon {
   display: none;
 }
 
-.accordion-item:checked ~ .label .open-icon {
+.accordion-item:checked~.label .open-icon {
   display: block;
 }
 
@@ -190,24 +225,31 @@
   height: 100vh;
 }
 
-.modal-toggle:checked + .modal {
+.modal-toggle:checked+.modal {
   display: block;
 }
 
 #book-search-form {
   display: none;
- }
- 
+}
 
 #nav-form {
   display: none;
- }
+}
+
+#conteneur {
+  width: 90%;
+  max-width: 1150px;
+  margin: auto;
+  text-align: center;
+}
 
 @keyframes fade-in-scale-keys {
   0% {
     scale: 0.95;
     opacity: 0;
   }
+
   100% {
     scale: 1;
     opacity: 1;
@@ -219,6 +261,7 @@
     scale: 1;
     opacity: 1;
   }
+
   100% {
     scale: 0.95;
     opacity: 0;
@@ -229,6 +272,7 @@
   0% {
     opacity: 0;
   }
+
   100% {
     opacity: 1;
   }
@@ -238,6 +282,7 @@
   0% {
     opacity: 1;
   }
+
   100% {
     opacity: 0;
   }

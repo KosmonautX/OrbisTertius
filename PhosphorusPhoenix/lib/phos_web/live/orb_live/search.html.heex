@@ -1,0 +1,17 @@
+<div class="mt-20 p-4">
+  <div class="flex">
+    <.simple_form :let={f} for={%Plug.Conn{}} method="get" phx-submit="search" class="flex items-center">
+      <.input field={{f, :q}} value={@search_value} label="Search" required={true} placeholder="enter your keyword" />
+      <:actions>
+        <.button type="submit" phx-disable-with="Searching...">Search</.button>
+      </:actions>
+    </.simple_form>
+  </div>
+  <div id="search-result" class="flex flex-col" :if={length(@orbs) > 0}>
+    <div :for={orb <- @orbs} :if={length(@orbs) > 0} class="mt-2 flex">
+      <.link patch={~p"/orb/#{orb.id}"}>
+        <h1><%= orb.title %></h1>
+      </.link>
+    </div>
+  </div>
+</div>

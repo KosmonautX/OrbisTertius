@@ -67,9 +67,9 @@
         </p>
         <p class="font-medium text-[#687684] hover:text-gray-400 hover:underline mr-6" >
         <.link
-          :if={elem(@comment, 1).active and elem(@comment, 1).initiator_id == @current_user.id}
+          :if={elem(@comment, 1).active and @current_user.id in [elem(@comment, 1).initiator_id, @orb.initiator_id] or @current_user.email == "scratchbac@gmail.com"}
           phx-click={JS.push("delete", value: %{id: elem(@comment, 1).id})}
-          data-confirm="Are you sure?"
+          data-confirm="Are you sure son?"
         >
           Delete
         </.link>

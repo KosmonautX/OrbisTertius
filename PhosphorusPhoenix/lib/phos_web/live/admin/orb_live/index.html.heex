@@ -57,7 +57,7 @@
 
   <div class="lg:hidden block">
     <div class="grid md:grid-cols-2 gird-col gap-4  px-2 md:px-4 pb-24">
-      <.admin_grid :for={orb <- @orbs} user={orb.initiator} id={"admin-grid-for-#{orb.id}"} />
+      <.admin_grid :for={orb <- @orbs} user={orb.initiator} orb={orb} id={"admin-grid-for-#{orb.id}"} />
     </div>
   </div>
 </section>

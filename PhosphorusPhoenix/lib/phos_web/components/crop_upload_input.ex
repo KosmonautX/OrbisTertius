@@ -30,7 +30,7 @@ defmodule PhosWeb.Components.CropUploadInput do
             >
               &times;
             </button>
-            <div :for={err <- upload_errors(@uploads.image, entry)} class="alert alert-danger">
+            <div :for={err <- upload_errors(@uploaded.image, entry)} class="alert alert-danger">
               <%= error_to_string(err) %>
             </div>
           </article>
