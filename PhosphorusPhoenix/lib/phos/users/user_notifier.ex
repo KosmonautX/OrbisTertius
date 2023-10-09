@@ -84,4 +84,17 @@ defmodule Phos.Users.UserNotifier do
 
     """)
   end
+
+  @doc """
+  Deliver instructions to confirm orb collaboration.
+  """
+  def deliver_orb_collaboration(%{orb: orb, user: user} = permission, _token) do
+    deliver(user.email, "Orb Collaboration invitation", """
+
+    #{orb.initiator.username} has added you to as a #{permission.action} to #{orb.title}.
+    Click this link below to confirm.
+
+    If you didn't want to collaborate, please ignore this.
+    """)
+  end
 end

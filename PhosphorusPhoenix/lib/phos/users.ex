@@ -990,13 +990,39 @@ defmodule Phos.Users do
     |> Multi.delete_all(:tokens, UserToken.user_and_contexts_query(tele_user, ["bind_telegram"]))
   end
 
-  def invitation(user, email \\ nil)
-  def invitation(%User{} = user, email) do
-    {token, user_token} = UserToken.build_invitation_token(user, email)
-    Repo.insert(user_token)
+  def invitation(orb, email \\ nil)
+  def invitation(%Phos.Action.Orb{initiator: %User{} = _initiator} = orb, email) do
+    {token, user_token} = UserToken.build_invitation_token(orb, email)
+
+    case Repo.insert(user_token) do
+      {:ok, result} ->
+        spawn(fn -> send_to_user_email(email, orb, result) end)
+
+        {:ok, token, result}
+      err -> err
+    end
   end
-  def invitation(user_id, email) when is_bitstring(user_id), do: get_user(user_id) |> invitation(email)
-  def invitation(_, _email), do: {:error, "user id not found"}
+  def invitation(%Phos.Action.Orb{initiator_id: _initiator_id} = orb, email) do
+    Repo.preload(orb, [:initiator])
+    |> invitation(email)
+  end
+  def invitation(orb_id, email) when is_bitstring(orb_id) do
+    Phos.Action.get_orb(orb_id)
+    |> case do
+      {:ok, orb} -> invitation(orb, email)
+      err -> err
+    end
+  end
+  def invitation(_, _email), do: {:error, "orb id not found"}
+
+  defp send_to_user_email(nil, _orb, _token), do: :ok
+  defp send_to_user_email(email, orb, token) do
+    user = get_user_by_email(email)
+    case Phos.Action.add_permission(orb, %{token: token, user: user, action: :invited}) do
+      {:ok, permission} -> UserNotifier.deliver_orb_collaboration(permission, "")
+      err -> err
+    end
+  end
 
   def confirm_invitation(%User{} = user, token) do
     with {:ok, query} <- UserToken.verify_invitation_token(token),
@@ -1005,12 +1031,17 @@ defmodule Phos.Users do
     else
       :error -> {:error, "build query error"}
       {:error, _msg} = msg -> msg
+      nil -> {:error, "token not found"}
       _ -> {:error, "unknown error"}
     end
   end
   def confirm_invitation(user_id, token) when is_bitstring(user_id), do: get_user(user_id) |> confirm_invitation(token)
   def confirm_invitation(_, _token), do: {:error, "user id not found"}
 
-  def associate_with_collab(user, token_owner) do
+  def associate_with_collab(user, %{context: "invitation:" <> orb_id} = owner) do
+    case Phos.Action.get_detail_permission(user.id, orb_id) do
+      nil -> Phos.Action.add_permission(orb_id, %{user: user, token: owner, action: :collab_invite})
+      permission -> Phos.Action.update_permission(permission, %{action: :collab_invite})
+    end
   end
 end

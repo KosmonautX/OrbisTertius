@@ -53,4 +53,17 @@ defmodule Phos.ActionFixtures do
 
     orb |> Phos.Repo.preload([:locations, :initiator])
   end
+
+  def orb_permission_fixture(attrs \\ %{}) do
+    orb  = Map.get(attrs, :orb, %{}) |> orb_fixture()
+    user = Map.get(attrs, :user, %{}) |> user_fixture()
+    action = Map.get(attrs, :action, :invited)
+
+    {:ok, permission} = Phos.Action.add_permission(orb, %{
+      user: user,
+      action: action
+    })
+    
+    permission
+  end
 end

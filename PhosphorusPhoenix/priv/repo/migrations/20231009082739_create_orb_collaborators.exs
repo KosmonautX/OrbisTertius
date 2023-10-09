@@ -4,11 +4,14 @@ defmodule Phos.Repo.Migrations.CreateOrbCollaborators do
   def change do
     create table(:orb_permissions, primary_key: false) do
       add :id, :uuid, primary_key: true
-      add :orb, references(:orbs, on_delete: :nothing, column: :id, type: :uuid)
-      add :user, references(:users, on_delete: :nothing, column: :id, type: :uuid)
-      add :state, :integer
+      add :orb_id, references(:orbs, on_delete: :nothing, column: :id, type: :uuid)
+      add :user_id, references(:users, on_delete: :nothing, column: :id, type: :uuid)
+      add :token_id, references(:users_tokens, on_delete: :nothing, column: :id)
+      add :action, :integer
 
       timestamps(type: :utc_datetime_usec)
     end
+
+    create unique_index(:orb_permissions, [:orb_id, :user_id])
   end
 end

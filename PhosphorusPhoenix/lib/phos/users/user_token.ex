@@ -85,7 +85,9 @@ defmodule Phos.Users.UserToken do
     build_hashed_token(telegram_id, context, user.email)
   end
 
-  def build_invitation_token(user, sent_to \\ nil), do: build_hashed_token(user, "invitation", sent_to)
+  def build_invitation_token(orb, sent_to \\ nil)
+  def build_invitation_token(%{initiator: user} = orb, sent_to), do: build_hashed_token(user, "invitation:#{orb.id}", sent_to)
+  def build_invitation_token(_, _), do: {"", %__MODULE__{}}
 
   defp build_hashed_token(telegram_id, "bind_telegram", sent_to) do
     {:ok, user} = Phos.Users.get_user_by_telegram(to_string(telegram_id))
@@ -209,7 +211,9 @@ defmodule Phos.Users.UserToken do
         token = :crypto.hash(@hash_algorithm, decoded_token)
         days  = days_for_context(context)
         query =
-          from t in token_and_context_query(token, context),
+          from t in __MODULE__,
+            where: t.token == ^token,
+            where: like(t.context, ^"#{context}:%"),
             where: t.inserted_at > ago(^days, "day"),
             preload: [:user],
             limit: 1,

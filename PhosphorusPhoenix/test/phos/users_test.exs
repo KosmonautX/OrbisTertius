@@ -584,4 +584,33 @@ defmodule Phos.UsersTest do
       refute user_token.sent_to
     end
   end
+
+  describe "confirm_invitation/2" do
+    setup do
+      orb  = Phos.ActionFixtures.orb_fixture()
+
+      %{initiator: orb.initiator, orb: orb}
+    end
+
+    test "confirm token without email", %{orb: orb} do
+      user = user_fixture()
+      assert {:ok, token, _user_token} = Users.invitation(orb)
+      assert {:ok, permission} = Users.confirm_invitation(user, token)
+      assert permission.action == :collab_invite
+      assert permission.token_id
+      assert permission.user_id == user.id
+      assert permission.orb_id == orb.id
+      assert permission.user_id != orb.initiator_id
+    end
+
+    test "confirm token with email", %{orb: orb} do
+      user = user_fixture()
+      assert {:ok, token, _user_token} = Users.invitation(orb, user.email)
+      assert {:ok, permission} = Users.confirm_invitation(user, token)
+      assert permission.action == :collab_invite
+      assert permission.token_id
+      assert permission.user_id == user.id
+      assert permission.orb_id == orb.id
+    end
+  end
 end
