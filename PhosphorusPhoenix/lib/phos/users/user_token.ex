@@ -169,6 +169,7 @@ defmodule Phos.Users.UserToken do
   defp days_for_context("confirm"), do: @confirm_validity_in_days
   defp days_for_context("bind_telegram"), do: @confirm_validity_in_days
   defp days_for_context("reset_password"), do: @reset_password_validity_in_days
+  defp days_for_context("invitation"), do: @reset_password_validity_in_days
 
   @doc """
   Checks if the token is valid and returns its underlying lookup query.
@@ -195,6 +196,26 @@ defmodule Phos.Users.UserToken do
 
         {:ok, query}
 
+      :error ->
+        :error
+    end
+  end
+
+  def verify_invitation_token(encoded_token) do
+    context = "invitation"
+
+    case Base.url_decode64(encoded_token, padding: false) do
+      {:ok, decoded_token} ->
+        token = :crypto.hash(@hash_algorithm, decoded_token)
+        days  = days_for_context(context)
+        query =
+          from t in token_and_context_query(token, context),
+            where: t.inserted_at > ago(^days, "day"),
+            preload: [:user],
+            limit: 1,
+            order_by: :inserted_at
+
+        {:ok, query}
       :error ->
         :error
     end

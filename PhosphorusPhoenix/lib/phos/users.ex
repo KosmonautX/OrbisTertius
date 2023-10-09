@@ -990,25 +990,27 @@ defmodule Phos.Users do
     |> Multi.delete_all(:tokens, UserToken.user_and_contexts_query(tele_user, ["bind_telegram"]))
   end
 
-  def invitation(%User{} = user) do
-    {_, token} = UserToken.build_invitation_token(user)
-    Repo.insert(token)
+  def invitation(user, email \\ nil)
+  def invitation(%User{} = user, email) do
+    {token, user_token} = UserToken.build_invitation_token(user, email)
+    Repo.insert(user_token)
   end
-  def invitation(user_id) when is_bitstring(user_id), do: get_user(user_id) |> invitation()
-  def invitation(_), do: {:error, "user id not found"}
+  def invitation(user_id, email) when is_bitstring(user_id), do: get_user(user_id) |> invitation(email)
+  def invitation(_, _email), do: {:error, "user id not found"}
 
   def confirm_invitation(%User{} = user, token) do
-    query = UserToken.token_and_context_query(token, "invitation") |> limit(1) |> preload(:user)
-    case Repo.one(query) do
-      nil -> {:error, "token not found"}
-      ancestor -> put_ancestor(user, ancestor)
+    with {:ok, query} <- UserToken.verify_invitation_token(token),
+          user_token when not is_nil(user_token) <- Repo.one(query) do
+      associate_with_collab(user, user_token)
+    else
+      :error -> {:error, "build query error"}
+      {:error, _msg} = msg -> msg
+      _ -> {:error, "unknown error"}
     end
   end
   def confirm_invitation(user_id, token) when is_bitstring(user_id), do: get_user(user_id) |> confirm_invitation(token)
   def confirm_invitation(_, _token), do: {:error, "user id not found"}
 
-  def put_ancestor(_user, _ancestor) do
-    # TODO: To be implemented
-    :ok
+  def associate_with_collab(user, token_owner) do
   end
 end

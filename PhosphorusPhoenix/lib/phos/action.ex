@@ -7,7 +7,7 @@ defmodule Phos.Action do
   import Pgvector.Ecto.Query, warn: false
 
   alias Phos.Repo
-  alias Phos.Action.{Orb, Orb_Location}
+  alias Phos.Action.{Orb, Orb_Location, Permission}
   alias Phos.TeleBot.TelegramNotification, as: TN
   use Retry
 
@@ -941,5 +941,11 @@ defmodule Phos.Action do
   defp build_search_term(text) do
     String.split(text, " ")
     |> Enum.join(" or ")
+  end
+
+  def add_permission(%Orb{} = orb, attrs) do
+    %Permission{}
+    |> Permission.changeset(Map.put(attrs, "orb_id", orb.id))
+    |> Repo.insert()
   end
 end

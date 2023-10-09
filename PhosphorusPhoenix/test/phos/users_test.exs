@@ -563,4 +563,25 @@ defmodule Phos.UsersTest do
       assert Repo.get_by(UserToken, user_id: tele_user.id)
     end
   end
+  
+  describe "invitation/2" do
+    setup do
+      orb  = Phos.ActionFixtures.orb_fixture()
+      user = user_fixture()
+
+      %{user: user, initiator: orb.initiator, orb: orb}
+    end
+
+    test "create invitation", %{user: user, orb: orb} do
+      assert {:ok, token, user_token} = Users.invitation(orb, user.email)
+      assert token
+      assert user_token.sent_to
+    end
+
+    test "create invitation with no email", %{user: user, orb: orb} do
+      assert {:ok, token, user_token} = Users.invitation(orb)
+      assert token
+      refute user_token.sent_to
+    end
+  end
 end
