@@ -31,7 +31,7 @@ defmodule PhosWeb.API.BlorbController do
 
   def update(conn = %{assigns: %{current_user: user}}, %{"id" => id} = params) do
     blorb = Action.get_blorb!(id)
-    with true <- blorb.initiator.id == user.id,
+    with true <- blorb.initiator_id == user.id,
          {:ok, attrs} <- blorb_constructor(user, params),
          {:ok, %Blorb{} = blorb} <- Action.update_blorb(blorb, attrs) do
       conn
@@ -45,7 +45,7 @@ defmodule PhosWeb.API.BlorbController do
 
   def delete(conn = %{assigns: %{current_user: user}}, %{"id" => id}) do
     blorb = Action.get_blorb!(id)
-    with true <- blorb.initiator.id == user.id,
+    with true <- blorb.initiator_id == user.id,
          {:ok, %Blorb{}} <- Action.delete_blorb(blorb) do
       send_resp(conn, :no_content, "")
     else
