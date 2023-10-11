@@ -255,6 +255,8 @@ defmodule PhosWeb.Util.Viewer do
       id: blorb.id,
       type: blorb.type,
       active: blorb.active,
+      initiator_id: blorb.initiator_id,
+      orb_id: blorb.orb_id,
       character: blorb_character_mapper(blorb)
     }
   end

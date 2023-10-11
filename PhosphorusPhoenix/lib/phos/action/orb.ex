@@ -55,9 +55,27 @@ defmodule Phos.Action.Orb do
     |> cast_assoc(:locations)
     |> cast_assoc(:blorbs)
     |> validate_required([:id, :title, :active, :media, :extinguish, :initiator_id])
+    |> set_blorb_initiators()
     |> validate_exclude_subset(:traits, ~w(admin pin personal exile mirage))
     #|> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
+
+  def set_blorb_initiators(%{changes: %{initiator_id: init_id, blorbs: blorb} = orb_changes} = orb_changeset) do
+    %{orb_changeset| changes: %{orb_changes | blorbs: Enum.map(blorb,
+         fn %{changes: blorb_changes} = blorb_changeset ->
+           %{blorb_changeset | changes: Map.put(blorb_changes, :initiator_id, init_id)} end)}}
+  end
+
+  def set_blorb_initiators(changeset), do: changeset
+
+  # @doc """
+  # Set same initiator as orb for blorbs upon creation due to shared provenance
+  # """
+  # def set_initiator(%Blorb{} = blorb, %Orb{} = orb) do
+  #   IO.inspect blorb
+  #   IO.inspect orb
+  #   %{blorb | initiator_id: orb.initiator_id}
+  # end
 
   @doc """
   Orb changeset for editing orb.
