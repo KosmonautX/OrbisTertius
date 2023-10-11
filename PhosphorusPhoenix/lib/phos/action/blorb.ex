@@ -29,27 +29,28 @@ defmodule Phos.Action.Blorb do
   end
 
   def changeset(%Phos.Action.Blorb{} = blorb, attrs) do
-      blorb
-      |> cast(attrs, [:type, :active, :orb_id, :initiator_id])
-      |> typed_character_switch(attrs)
-      |> validate_required([:type, :character])
+    blorb
+    |> cast(attrs, [:type, :active, :orb_id, :initiator_id])
+    |> typed_character_switch(attrs)
+    |> validate_required([:type, :character])
   end
 
   #when type changes
+  def typed_character_switch(changeset, %{type: type}), do: typed_character_switch(changeset, %{"type" => type})
   def typed_character_switch(changeset, %{"type" => type}) do
     character_changeset = case type do
-                           "txt" ->
-                             &txt_changeset(&1, &2)
-                           "img" ->
-                             &img_changeset(&1, &2)
-                           "vid" ->
-                             &vid_changeset(&1, &2)
-                         end
+                            "txt" ->
+                              &txt_changeset(&1, &2)
+                            "img" ->
+                              &img_changeset(&1, &2)
+                            "vid" ->
+                              &vid_changeset(&1, &2)
+                          end
 
     cast_embed(changeset, :character, with: character_changeset)
   end
 
-  # def typed_character_switch(changeset, _attrs), do: validate_required(changeset, [:type])
+  def typed_character_switch(changeset, _attrs), do: validate_required(changeset, [:type])
 
   def txt_changeset(structure, attrs) do
     structure
@@ -71,4 +72,4 @@ defmodule Phos.Action.Blorb do
     |> validate_inclusion(:ext, ["mp4", "mov"])
     |> validate_required([:ext])
   end
- end
+end
