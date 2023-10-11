@@ -13,7 +13,7 @@ defmodule Phos.Action.Blorb do
   schema "blorbs" do
     field :type, Ecto.Enum, values: [:txt, :img, :vid]
     field :active, :boolean, default: true
-    embeds_one :character, Characteristics do
+    embeds_one :character, Characteristics, on_replace: :delete do
       field(:content, :string)
       field(:align, :string, default: "justify")
       # media
@@ -22,7 +22,6 @@ defmodule Phos.Action.Blorb do
       field(:url, :string, virtual: true)
       field(:mimetype, :string, virtual: true)
     end
-
     belongs_to :orb, Phos.Action.Orb, references: :id, type: Ecto.UUID
     belongs_to :initiator, Phos.Users.User, references: :id, type: Ecto.UUID
 
@@ -32,24 +31,25 @@ defmodule Phos.Action.Blorb do
   def changeset(%Phos.Action.Blorb{} = blorb, attrs) do
       blorb
       |> cast(attrs, [:type, :active, :orb_id, :initiator_id])
-      |> typed_character_switch()
+      |> typed_character_switch(attrs)
       |> validate_required([:type, :character])
   end
 
-  def typed_character_switch(%{changes: %{type: type}} = changeset) do
+  #when type changes
+  def typed_character_switch(changeset, %{"type" => type}) do
     character_changeset = case type do
-                           :txt ->
+                           "txt" ->
                              &txt_changeset(&1, &2)
-                           :img ->
+                           "img" ->
                              &img_changeset(&1, &2)
-                           :vid ->
+                           "vid" ->
                              &vid_changeset(&1, &2)
                          end
 
     cast_embed(changeset, :character, with: character_changeset)
   end
 
-  def typed_character_switch(changeset), do: validate_required(changeset, [:type])
+  # def typed_character_switch(changeset, _attrs), do: validate_required(changeset, [:type])
 
   def txt_changeset(structure, attrs) do
     structure

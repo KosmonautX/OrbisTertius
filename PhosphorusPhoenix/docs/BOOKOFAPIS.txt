@@ -376,9 +376,9 @@ PUT :ipAddress/orbland/orbs/:orb/blorbs
 -> run-hook (restclient-set-var ":blorb" (cdr (assq 'id (assq 'data (json-read)))))
 :auth-headers
 {
-            "type": "img",
+            "type": "txt",
             "active": "true",
-            "character": {"content": "For him who has conquered the mind, the mind is the best of friends; but for one who has failed to do so, his very mind will be the greatest enemy.",
+            "character": {"content": "Shining bright like the Disc and the shattering cry of the conch",
             "align": "left",
             "ext": "png"
             },
@@ -386,18 +386,18 @@ PUT :ipAddress/orbland/orbs/:orb/blorbs
             {"access": "public", "essence": "blorb", "resolution": "lossy", "ext": "png", "count": null}]
 }
 ## Update Blorbs
-PUT :ipAddress/orbland/orbs/:orb/blorbs/:blorb
+PUT :ipAddress/orbland/orbs/:orb/blorbs/a97d3a96-6a80-402f-b51d-21bcd59efef6
 -> run-hook (restclient-set-var ":blorb" (cdr (assq 'id (assq 'data (json-read)))))
 :auth-headers
 {
             "type": "txt",
             "active": "false",
-            "character": {"content": "For him who has conquered the mind, the mind is the best of friends; but for one who has failed to do so, his very mind will be the greatest enemy.",
+            "character": {"content": "the mind is the best of friends; but for one who has failed to do so, his very mind will be the greatest enemy.",
             "align": "right"
             }
 }
 ## Pop Blorbs
-DELETE :ipAddress/orbland/orbs/:orb/blorbs/:blorb
+DELETE :ipAddress/orbland/orbs/:orb/blorbs/a7492c6c-7ee8-406c-818c-268aac18a284
 :auth-headers
 
 ## Report Orbs
