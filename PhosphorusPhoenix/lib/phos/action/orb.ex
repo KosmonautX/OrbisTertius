@@ -4,7 +4,7 @@ defmodule Phos.Action.Orb do
   import Ecto.Changeset
 
   alias EctoLtree.LabelTree, as: Ltree
-  alias Phos.Action.{Location,Orb, Orb_Payload, Orb_Location, Permission}
+  alias Phos.Action.{Location, Orb, Orb_Payload, Orb_Location, Permission}
   alias Phos.Users.User
   alias Phos.Comments.Comment
 

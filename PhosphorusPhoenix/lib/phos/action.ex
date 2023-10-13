@@ -388,7 +388,7 @@ defmodule Phos.Action do
             orb = orb |> Repo.preload([:initiator])
            Task.Supervisor.start_child(Phos.TaskSupervisor,
              fn ->
-              experimental_notify(orb)
+              notify(orb)
             end)
             Task.start(fn ->
               case orb.media do
@@ -439,7 +439,7 @@ defmodule Phos.Action do
     orb = Repo.preload(orb, [:initiator])
 
     case Enum.member?(orb.traits, "mirage") do
-      false -> spawn(fn -> experimental_notify(orb)end)
+      false -> spawn(fn -> notify(orb)end)
       _ -> :ok
     end
 
@@ -853,7 +853,28 @@ defmodule Phos.Action do
     create_orb(attrs)
   end
 
-  def experimental_notify(orb) do
+  # reduces down membership list
+  def notify(%Orb{members: [%Permission{member_id: member_id, action: act} | remember]} = orb) do
+    action_body = %{
+      collab_invite: "asked you to collab on a post",
+      mention: "mentioned you in a post"
+    }
+    Phos.PlatformNotification.notify({"broadcast", "ORB", orb.id, "action_orb_#{act}"},
+      memory: %{user_source_id: orb.initiator_id, orb_subject_id: orb.id},
+      to: member_id,
+      notification: %{
+        title: "#{orb.initiator.username} #{action_body[act]}",
+        body: orb.title,
+        silent: false
+      }, data: %{
+        cluster_id: orb.id,
+        action_path: "/orbland/orbs/#{orb.id}"
+      })
+
+    notify(%{orb | members: remember})
+  end
+
+  def notify(orb) do
     geonotifiers =
       notifiers_by_geohashes([orb.central_geohash], orb.initiator_id)
       |> Enum.map(fn n -> n && Map.get(n, :fcm_token, nil) end)
@@ -942,6 +963,8 @@ defmodule Phos.Action do
     String.split(text, " ")
     |> Enum.join(" or ")
   end
+
+  ## Orb Permissions and Membership
 
   def add_permission(%Orb{} = orb, attrs) do
     attributes = Enum.map(attrs, fn {k, v} -> {to_string(k), v} end) |> Enum.into(%{})

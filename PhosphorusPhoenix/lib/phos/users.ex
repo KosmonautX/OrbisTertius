@@ -990,6 +990,16 @@ defmodule Phos.Users do
     |> Multi.delete_all(:tokens, UserToken.user_and_contexts_query(tele_user, ["bind_telegram"]))
   end
 
+  def notifiers_by_users(user_ids) when is_list(user_ids) do
+    query = from u in User,
+      where: u.id in ^user_ids,
+      distinct: u.integrations["fcm_token"],
+      select: u.integrations
+
+    Repo.all(query)
+  end
+
+
   def invitation(orb, email \\ nil)
   def invitation(%Phos.Action.Orb{initiator: %User{} = _initiator} = orb, email) do
     {token, user_token} = UserToken.build_invitation_token(orb, email)
