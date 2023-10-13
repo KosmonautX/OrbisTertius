@@ -216,4 +216,28 @@ defmodule Phos.ActionTest do
       assert %Ecto.Changeset{} = Action.change_blorb(blorb)
     end
   end
+
+  describe "#permission/2" do
+    setup do
+      orb = orb_fixture()
+      user = Phos.UsersFixtures.user_fixture()
+
+      %{user: user, orb: orb}
+    end
+
+    test "can add permission without invitation", %{user: user, orb: orb} do
+      assert {:ok, permission} = Action.add_permission(orb, %{member: user, action: :collab})
+      assert permission.orb_id == orb.id
+      assert permission.member_id == user.id
+      assert permission.action == :collab
+    end
+
+    test "someone can mention you in orb", %{user: user, orb: orb} do
+      assert {:ok, permission} = Action.add_permission(orb, %{member: user, action: :mention})
+      assert permission.orb_id == orb.id
+      assert permission.member_id == user.id
+      assert permission.action == :mention
+
+    end
+  end
 end

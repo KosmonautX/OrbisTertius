@@ -22,7 +22,7 @@
 :brandon_id=b556571a-362e-4017-9894-f1eed0b39794
 :lky_id=6d7b0e7c-a633-4a8a-8d85-b8a493109bd4
 :antoine_id=3d534547-eed2-4ab2-acc8-ebf0ae03aaa5
-#:lky_id=4b2d6d8d-7781-4a20-b868-b0e0db245b85
+# :lky_id=4b2d6d8d-7781-4a20-b868-b0e0db245b85
 :aang_id=58c146d2-407f-49d5-a74d-0d9362e73be9
 :zuko_id=6f6c7d30-4447-4687-8fb9-f95a2de82957
 :owen_id=233e50b1-5507-4a3c-96a7-b6339e8d27f4
@@ -41,7 +41,7 @@ Content-Type: application/json
 User-Agent: Emacs27
 ##
 ## Generate Client-side JWT
-GET :localipAddress/devland/flameon?user=:lky_id
+GET :localipAddress/devland/flameon?user=:antoine_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
@@ -277,6 +277,10 @@ POST :ipAddress/orbland/orbs
     "geolocation": {
         "central_geohash": 628021598572208127
     },
+    "members": [{
+            "member_id": ":antoine_id",
+            "action": "collab_invite"
+    }],
     "title": "aikido style",
     "inner_title": "Ranged thus for battle on the sacred plain-- On Kurukshetra--say, Sanjaya! say What wrought my people, and the Pandavas?",
     "where": "ba sing se",
