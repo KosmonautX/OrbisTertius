@@ -1018,7 +1018,7 @@ defmodule Phos.Users do
   defp send_to_user_email(nil, _orb, _token), do: :ok
   defp send_to_user_email(email, orb, token) do
     user = get_user_by_email(email)
-    case Phos.Action.add_permission(orb, %{token: token, user: user, action: :invited}) do
+    case Phos.Action.add_permission(orb, %{token: token, user: user, action: :collab_invite}) do
       {:ok, permission} -> UserNotifier.deliver_orb_collaboration(permission, "")
       err -> err
     end
@@ -1040,7 +1040,7 @@ defmodule Phos.Users do
 
   def associate_with_collab(user, %{context: "invitation:" <> orb_id} = owner) do
     case Phos.Action.get_detail_permission(user.id, orb_id) do
-      nil -> Phos.Action.add_permission(orb_id, %{user: user, token: owner, action: :collab_invite})
+      nil -> Phos.Action.add_permission(orb_id, %{member: user, token: owner, action: :collab_invite})
       permission -> Phos.Action.update_permission(permission, %{action: :collab_invite})
     end
   end

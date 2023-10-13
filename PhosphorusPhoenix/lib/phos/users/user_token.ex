@@ -18,6 +18,7 @@ defmodule Phos.Users.UserToken do
     field :context, :string
     field :sent_to, :string
     belongs_to :user, Phos.Users.User, references: :id, type: Ecto.UUID
+    has_one :orb_permission, Phos.Orb.Permission, foreign_key: :token_id
 
     timestamps(updated_at: false)
   end

@@ -175,16 +175,16 @@ defmodule Phos.ActionTest do
     end
 
     test "can add permission without invitation", %{user: user, orb: orb} do
-      assert {:ok, permission} = Action.add_permission(orb, %{user: user, action: :collab})
+      assert {:ok, permission} = Action.add_permission(orb, %{member: user, action: :collab})
       assert permission.orb_id == orb.id
-      assert permission.user_id == user.id
+      assert permission.member_id == user.id
       assert permission.action == :collab
     end
 
     test "someone can mention you in orb", %{user: user, orb: orb} do
-      assert {:ok, permission} = Action.add_permission(orb, %{user: user, action: :mention})
+      assert {:ok, permission} = Action.add_permission(orb, %{member: user, action: :mention})
       assert permission.orb_id == orb.id
-      assert permission.user_id == user.id
+      assert permission.member_id == user.id
       assert permission.action == :mention
     end
   end

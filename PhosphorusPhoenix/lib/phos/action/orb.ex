@@ -4,7 +4,7 @@ defmodule Phos.Action.Orb do
   import Ecto.Changeset
 
   alias EctoLtree.LabelTree, as: Ltree
-  alias Phos.Action.{Location,Orb, Orb_Payload, Orb_Location}
+  alias Phos.Action.{Location,Orb, Orb_Payload, Orb_Location, Permission}
   alias Phos.Users.User
   alias Phos.Comments.Comment
 
@@ -31,6 +31,7 @@ defmodule Phos.Action.Orb do
     #belongs_to :users, User, references: :id, foreign_key: :acceptor, type: Ecto.UUID
 
     has_many :comments, Comment, references: :id, foreign_key: :orb_id
+    has_many :members, Permission, references: :id, foreign_key: :orb_id
 
     has_many :locs, Orb_Location, references: :id, foreign_key: :orb_id
     
@@ -46,6 +47,7 @@ defmodule Phos.Action.Orb do
     |> cast(attrs, [:id, :title, :active, :media, :extinguish, :source, :central_geohash, :initiator_id, :traits, :path, :parent_id, :embedding])
     |> cast_embed(:payload)
     |> cast_assoc(:locations)
+    |> cast_assoc(:members, with: &Permission.orb_changeset/2)
     |> validate_required([:id, :title, :active, :media, :extinguish, :initiator_id])
     |> validate_exclude_subset(:traits, ~w(admin pin personal exile mirage))
     #|> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])

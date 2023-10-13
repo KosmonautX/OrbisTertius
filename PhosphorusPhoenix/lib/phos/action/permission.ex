@@ -1,13 +1,17 @@
 defmodule Phos.Action.Permission do
   use Ecto.Schema
+  use Fsmx.Struct, transitions: %{
+    "collab_invite" => ["collab"],
+  }
   import Ecto.Changeset
 
   @primary_key false
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "orb_permissions" do
-    field :action, Ecto.Enum, values: [invited: 0, collab: 1, mention: 2, collab_invite: 3]
+    field :action, Ecto.Enum, values: [collab_invite: 0, collab: 1, mention: 2]
+
     belongs_to :orb, Phos.Action.Orb, type: Ecto.UUID, references: :id, foreign_key: :orb_id
-    belongs_to :user, Phos.Users.User, references: :id, type: Ecto.UUID
+    belongs_to :member, Phos.Users.User, references: :id, type: Ecto.UUID
     belongs_to :token, Phos.Users.UserToken, references: :id
 
     timestamps()
@@ -17,9 +21,16 @@ defmodule Phos.Action.Permission do
   def changeset(%__MODULE__{} = permission, attrs) do
     permission
     |> cast(attrs, [:action])
-    |> cast_association(attrs, [:orb, :user, :token])
-    |> validate_required([:action, :user, :orb])
-    |> unique_constraint([:user_id, :orb_id])
+    |> cast_association(attrs, [:orb, :member, :token])
+    |> validate_required([:action, :member, :orb])
+    |> unique_constraint([:member_id, :orb_id])
+  end
+
+  def orb_changeset(%__MODULE__{} = permission, attrs) do
+    permission
+    |> cast(attrs, [:action, :member_id])
+    |> validate_required([:action, :member_id])
+    |> unique_constraint([:member_id, :orb_id])
   end
 
   defp cast_association(changeset, _attrs, []), do: changeset

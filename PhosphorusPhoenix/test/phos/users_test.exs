@@ -578,7 +578,7 @@ defmodule Phos.UsersTest do
       assert user_token.sent_to
     end
 
-    test "create invitation with no email", %{user: user, orb: orb} do
+    test "create invitation with no email", %{user: _user, orb: orb} do
       assert {:ok, token, user_token} = Users.invitation(orb)
       assert token
       refute user_token.sent_to
@@ -598,9 +598,9 @@ defmodule Phos.UsersTest do
       assert {:ok, permission} = Users.confirm_invitation(user, token)
       assert permission.action == :collab_invite
       assert permission.token_id
-      assert permission.user_id == user.id
+      assert permission.member_id == user.id
       assert permission.orb_id == orb.id
-      assert permission.user_id != orb.initiator_id
+      assert permission.member_id != orb.initiator_id
     end
 
     test "confirm token with email", %{orb: orb} do
@@ -609,7 +609,7 @@ defmodule Phos.UsersTest do
       assert {:ok, permission} = Users.confirm_invitation(user, token)
       assert permission.action == :collab_invite
       assert permission.token_id
-      assert permission.user_id == user.id
+      assert permission.member_id == user.id
       assert permission.orb_id == orb.id
     end
   end

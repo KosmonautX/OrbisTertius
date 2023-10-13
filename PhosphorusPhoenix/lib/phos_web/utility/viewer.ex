@@ -33,6 +33,7 @@ defmodule PhosWeb.Util.Viewer do
   def relationship_mapper(field, entity) do
     case field do
       {k, [%Phos.Comments.Comment{} | _] = comment} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.comment_mapper(comment)}}])
+     {k, [%Phos.Action.Permission{} | _] = membership} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.membership_mapper(membership)}}])
       {k , %Phos.Users.User{} = user} ->
         Map.new([{k,
                   %{data: PhosWeb.Util.Viewer.user_mapper(user),
@@ -243,6 +244,18 @@ defmodule PhosWeb.Util.Viewer do
     end)
   end
 
+  def membership_mapper(members = [%Phos.Action.Permission{} | _]), do: Enum.map(members, &membership_mapper/1)
+  def membership_mapper(member) do
+    %{
+      membership_id: member.id,
+      action: member.action,
+      member_id: member.member_id,
+      media: %{"public/profile/lossy" => Phos.Orbject.S3.get!("USR", member.member_id, "public/profile/lossy")},
+      creationtime: DateTime.from_naive!(member.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
+      mutationtime: DateTime.from_naive!(member.updated_at, "Etc/UTC") |> DateTime.to_unix()
+    }
+  end
+
   defp parent_orb_mapper(%Phos.Action.Orb{} = orb), do: orb_mapper(orb)
   defp parent_orb_mapper(_), do: %{}
 
@@ -358,7 +371,7 @@ defmodule PhosWeb.Util.Viewer do
   # Index Live Orbs
   def live_orb_mapper(orbs) do
     Enum.filter(orbs, fn orb -> orb.active == true end)
-  end
+   end
 
   def loc_mapper(loc) when is_integer(loc) do
     %{

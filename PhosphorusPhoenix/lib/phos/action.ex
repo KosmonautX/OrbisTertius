@@ -951,14 +951,14 @@ defmodule Phos.Action do
   end
   def add_permission(orb_id, attrs), do: get_orb!(orb_id) |> add_permission(attrs)
 
-  def get_detail_permission(user_id, orb_id) do
-    query = from p in Permission, where: p.user_id == ^user_id and p.orb_id == ^orb_id, limit: 1
+  def get_detail_permission(member_id, orb_id) do
+    query = from p in Permission, where: p.member_id == ^member_id and p.orb_id == ^orb_id, limit: 1
     Repo.one(query)
   end
 
   def update_permission(%Permission{} = permission, attrs) do
     permission
-    |> Repo.preload([:user, :orb])
+    |> Repo.preload([:member, :orb])
     |> Permission.changeset(attrs)
     |> Repo.update()
   end
