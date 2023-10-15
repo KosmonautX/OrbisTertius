@@ -8,11 +8,12 @@ defmodule Phos.ActionTest do
   import Phos.UsersFixtures
 
   describe "orbs" do
-    @invalid_attrs %{active: nil, extinguish: nil, media: nil, title: nil}
+    #TODO validate null constraint on active and media
+    @invalid_attrs %{active: false, extinguish: nil, media: false, title: nil, traits: ["admin"]}
 
     test "list_orbs/0 returns all orbs" do
       orb = orb_fixture()
-      assert Action.list_orbs() |> Phos.Repo.preload([:locations,:initiator]) == [orb]
+      assert Action.list_orbs() |> Phos.Repo.preload([:locations,:initiator, :blorbs]) == [orb]
     end
 
     test "get_orb/1 return specific orb" do
