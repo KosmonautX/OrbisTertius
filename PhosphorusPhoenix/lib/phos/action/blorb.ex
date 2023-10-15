@@ -13,6 +13,7 @@ defmodule Phos.Action.Blorb do
   schema "blorbs" do
     field :type, Ecto.Enum, values: [:txt, :img, :vid]
     field :active, :boolean, default: true
+    field :pop, :boolean, default: false, virtual: true
     embeds_one :character, Characteristics, on_replace: :delete do
       field(:content, :string)
       field(:align, :string, default: "justify")
@@ -33,6 +34,14 @@ defmodule Phos.Action.Blorb do
     |> cast(attrs, [:type, :active, :orb_id, :initiator_id])
     |> typed_character_switch(attrs)
     |> validate_required([:type, :character])
+  end
+
+  def mutate_changeset(%Phos.Action.Blorb{} = blorb, attrs) do
+    blorb
+    |> cast(attrs, [:id, :type, :active, :orb_id])
+    |> typed_character_switch(attrs)
+    |> validate_required([:type, :character])
+    |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 
   #when type changes

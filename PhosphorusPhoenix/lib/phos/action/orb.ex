@@ -39,7 +39,7 @@ defmodule Phos.Action.Orb do
     has_many :members, Permission, references: :id, foreign_key: :orb_id
     has_many :locs, Orb_Location, references: :id, foreign_key: :orb_id
     has_many :comments, Comment, references: :id, foreign_key: :orb_id
-    has_many :blorbs, Blorb, references: :id, foreign_key: :orb_id
+    has_many :blorbs, Blorb, references: :id, foreign_key: :orb_id, on_replace: :delete
 
     many_to_many :locations, Location, join_through: Orb_Location, on_replace: :delete, on_delete: :delete_all#, join_keys: [id: :id, location_id: :location_id]
     embeds_one :payload, Orb_Payload, on_replace: :delete
@@ -66,8 +66,14 @@ defmodule Phos.Action.Orb do
          fn %{changes: blorb_changes} = blorb_changeset ->
            %{blorb_changeset | changes: Map.put(blorb_changes, :initiator_id, init_id)} end)}}
   end
-
   def set_blorb_initiators(changeset), do: changeset
+
+  def set_blorb_initiators(%{changes: %{blorbs: blorb} = orb_changes} = orb_changeset, %{initiator: init_id}) do
+    %{orb_changeset| changes: %{orb_changes | blorbs: Enum.map(blorb,
+         fn %{changes: blorb_changes} = blorb_changeset ->
+           %{blorb_changeset | changes: Map.put(blorb_changes, :initiator_id, init_id)} end)}}
+  end
+  def set_blorb_initiators(changeset, _attrs), do: changeset
 
   # @doc """
   # Set same initiator as orb for blorbs upon creation due to shared provenance
@@ -87,7 +93,7 @@ defmodule Phos.Action.Orb do
     orb
     |> cast(attrs, [:title, :active, :media, :traits, :embedding])
     |> cast_embed(:payload)
-    |> validate_required([:active, :title])
+    |> cast_assoc(:blorbs, with: &Blorb.mutate_changeset/2)
     |> validate_exclude_subset(:traits, ~w(admin personal pin exile mirage), message: "unnatural traits")
     |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end

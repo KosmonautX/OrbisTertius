@@ -98,7 +98,7 @@ defmodule Phos.Action do
       |> Repo.one()
   end
 
-  def get_orb!(id), do: Repo.get!(Orb, id) |> Repo.preload([:locations, :initiator])
+  def get_orb!(id), do: Repo.get!(Orb, id) |> Repo.preload([:locations, :initiator, :blorbs])
   def get_orb_by_fyr(id), do: Repo.get_by(Phos.Users.User, fyr_id: id)
 
   def list_all_active_orbs(options \\ []) do
@@ -494,6 +494,29 @@ defmodule Phos.Action do
   #       {:error, %Ecto.Changeset{}}
 
   #   """
+  #
+
+  def update_orb(%Orb{blorbs: [%Phos.Action.Blorb{} | _] = blorbs} = orb, %{"blorbs" => neue_b} = attrs) do
+    blorb_map = Enum.map(blorbs, fn %{id: id} = b -> {id, b} end) |> Enum.into(%{})
+    # make blorb key value enum through new_blorb update main blorb reducer
+    # for preload logic https://hexdocs.pm/ecto/Ecto.Changeset.html
+    {merged_blorb, preloaded_list} = Enum.reduce(neue_b, {blorb_map, []}, fn
+      %{"pop" => true, "id" => id}, {m, l} ->
+        {Map.delete(m, id), [m[id] | l] }
+      %{"id" => id} = mutate_b, {m, l} -> {Map.replace(m, id, mutate_b), [m[id] | l]}
+      append_b, {m, l} ->
+        {Map.put(m, Ecto.UUID.generate(), append_b), l}
+    end)
+
+    %{orb | blorbs: preloaded_list}
+    |> Orb.update_changeset(%{attrs | "blorbs" => merged_blorb
+                             |> Enum.reduce([], fn
+                               {_id, %Phos.Action.Blorb{}} , acc -> acc
+                                 {_id, b}, acc ->  [b | acc] end)
+                             })
+    |> Repo.update()
+  end
+
   def update_orb(%Orb{} = orb, attrs) do
     orb
     |> Orb.update_changeset(attrs)
@@ -1032,7 +1055,7 @@ defmodule Phos.Action do
   """
   def update_blorb(%Blorb{} = blorb, attrs) do
     blorb
-    |> Blorb.changeset(attrs)
+    |> Blorb.mutate_changeset(attrs)
     |> Repo.update()
   end
 
