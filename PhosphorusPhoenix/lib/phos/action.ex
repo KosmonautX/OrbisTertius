@@ -504,25 +504,34 @@ defmodule Phos.Action do
   #   """
   #
 
-  def update_orb(%Orb{blorbs: [%Phos.Action.Blorb{} | _] = blorbs} = orb, %{"blorbs" => neue_b} = attrs) do
+  def update_orb(%Orb{blorbs: [%Phos.Action.Blorb{} | _] = blorbs} = orb, %{"blorbs" => neue_b, "initiator_id" => init_id} = attrs) do
     blorb_map = Enum.map(blorbs, fn %{id: id} = b -> {id, b} end) |> Enum.into(%{})
     # make blorb key value enum through new_blorb update main blorb reducer
-    # for preload logic https://hexdocs.pm/ecto/Ecto.Changeset.html
+    # for preload logic https://hexdocs.pm/ecto/Ecto.Changeset.html#cast_assoc/3-partial-changes-for-many-style-associations
     {merged_blorb, preloaded_list} = Enum.reduce(neue_b, {blorb_map, []}, fn
       %{"pop" => true, "id" => id}, {m, l} ->
-        {Map.delete(m, id), [m[id] | l] }
+        case m[id]  do
+          nil -> {m, l}
+          d_blorb ->
+            if d_blorb.initiator_id == init_id or orb.initiator_id == init_id do
+              {Map.delete(m, id), [d_blorb | l]}
+            else
+              {m, l}
+            end
+        end
       %{"id" => id} = mutate_b, {m, l} when is_uuid?(id) -> {Map.replace(m, id, mutate_b), [m[id] | l]}
       append_b, {m, l} ->
         {Map.put(m, Ecto.UUID.generate(), append_b), l}
-    end)
+      end)
 
     %{orb | blorbs: preloaded_list}
-    |> Orb.update_changeset(%{attrs | "blorbs" => merged_blorb
-                             |> Enum.reduce([], fn
-                               {_id, %Phos.Action.Blorb{}} , acc -> acc
-                                 {_id, b}, acc ->  [b | acc] end)
+    |> Orb.update_changeset(%{attrs | "blorbs" =>
+                               merged_blorb
+                               |> Enum.reduce([], fn
+                                {_id, %Phos.Action.Blorb{}} , acc -> acc
+                                {_id, b}, acc ->  [Map.put(b, "initiator_id",init_id) | acc] end)
                              })
-    |> Repo.update()
+                             |> Repo.update()
   end
 
   def update_orb(%Orb{} = orb, attrs) do

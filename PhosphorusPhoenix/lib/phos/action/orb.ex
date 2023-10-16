@@ -39,7 +39,7 @@ defmodule Phos.Action.Orb do
     has_many :members, Permission, references: :id, foreign_key: :orb_id
     has_many :locs, Orb_Location, references: :id, foreign_key: :orb_id
     has_many :comments, Comment, references: :id, foreign_key: :orb_id
-    has_many :blorbs, Blorb, references: :id, foreign_key: :orb_id, on_replace: :delete
+    has_many :blorbs, Blorb, references: :id, foreign_key: :orb_id, on_replace: :delete_if_exists
 
     many_to_many :locations, Location, join_through: Orb_Location, on_replace: :delete, on_delete: :delete_all#, join_keys: [id: :id, location_id: :location_id]
     embeds_one :payload, Orb_Payload, on_replace: :delete
