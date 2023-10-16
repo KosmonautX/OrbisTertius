@@ -35,10 +35,11 @@ defmodule PhosWeb.Util.Migrator do
   def fyr_profile(token) do
     with {:ok, response} <- do_get_account_info(token),
          true <- response.status_code >= 200 and response.status_code < 300,
-           users <- insert_or_update_user(response.body) do
+           {:ok, users} <- insert_or_update_user(response.body) do
       {:ok, users}
     else
       {:error, err} -> {:error, err}
+      {:error, name, fields, required} -> {:error, %{name: name, fields: fields, required: required}}
     end
   end
 
@@ -70,11 +71,6 @@ defmodule PhosWeb.Util.Migrator do
     |> Multi.run(:user, &cast_fyr_user(&1, &2, data))
     |> Multi.insert_all(:registered_providers, Users.Auth, &insert_with_provider/1, on_conflict: :replace_all, conflict_target: [:user_id, :auth_id, :auth_provider])
     |> Phos.Repo.transaction()
-    |> case do
-      {:ok, data} -> data
-      {:error, err} -> err
-      {:error, name, fields, required} -> %{name: name, fields: fields, required: required}
-    end
   end
 
   defp cast_fyr_user(_repo, %{payload: %{"email" => email} = payload}, data) when is_binary(email) do

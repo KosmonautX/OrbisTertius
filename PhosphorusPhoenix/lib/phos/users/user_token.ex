@@ -18,6 +18,7 @@ defmodule Phos.Users.UserToken do
     field :context, :string
     field :sent_to, :string
     belongs_to :user, Phos.Users.User, references: :id, type: Ecto.UUID
+    has_one :orb_permission, Phos.Orb.Permission, foreign_key: :token_id
 
     timestamps(updated_at: false)
   end
@@ -85,6 +86,10 @@ defmodule Phos.Users.UserToken do
     build_hashed_token(telegram_id, context, user.email)
   end
 
+  def build_invitation_token(orb, sent_to \\ nil)
+  def build_invitation_token(%{initiator: user} = orb, sent_to), do: build_hashed_token(user, "invitation:#{orb.id}", sent_to)
+  def build_invitation_token(_, _), do: {"", %__MODULE__{}}
+
   defp build_hashed_token(telegram_id, "bind_telegram", sent_to) do
     {:ok, user} = Phos.Users.get_user_by_telegram(to_string(telegram_id))
     token = :crypto.strong_rand_bytes(@rand_size)
@@ -99,8 +104,9 @@ defmodule Phos.Users.UserToken do
      }}
   end
 
-  defp build_hashed_token(user, context, sent_to) do
-    token = :crypto.strong_rand_bytes(@rand_size)
+  defp build_hashed_token(user, context, sent_to, options \\ []) do
+    rand_size = Keyword.get(options, :size, @rand_size)
+    token = :crypto.strong_rand_bytes(rand_size)
     hashed_token = :crypto.hash(@hash_algorithm, token)
 
     {Base.url_encode64(token, padding: false),
@@ -166,6 +172,7 @@ defmodule Phos.Users.UserToken do
   defp days_for_context("confirm"), do: @confirm_validity_in_days
   defp days_for_context("bind_telegram"), do: @confirm_validity_in_days
   defp days_for_context("reset_password"), do: @reset_password_validity_in_days
+  defp days_for_context("invitation"), do: @reset_password_validity_in_days
 
   @doc """
   Checks if the token is valid and returns its underlying lookup query.
@@ -192,6 +199,28 @@ defmodule Phos.Users.UserToken do
 
         {:ok, query}
 
+      :error ->
+        :error
+    end
+  end
+
+  def verify_invitation_token(encoded_token) do
+    context = "invitation"
+
+    case Base.url_decode64(encoded_token, padding: false) do
+      {:ok, decoded_token} ->
+        token = :crypto.hash(@hash_algorithm, decoded_token)
+        days  = days_for_context(context)
+        query =
+          from t in __MODULE__,
+            where: t.token == ^token,
+            where: like(t.context, ^"#{context}:%"),
+            where: t.inserted_at > ago(^days, "day"),
+            preload: [:user],
+            limit: 1,
+            order_by: :inserted_at
+
+        {:ok, query}
       :error ->
         :error
     end

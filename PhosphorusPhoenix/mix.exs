@@ -39,7 +39,7 @@ defmodule Phos.MixProject do
       {:bcrypt_elixir, "~> 3.0"},
       {:phoenix, "~> 1.7.7", override: true},
       {:phoenix_ecto, "~> 4.4"},
-      {:ecto_sql, "~> 3.9"},
+      {:ecto_sql, "~> 3.10"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 3.3"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
@@ -78,6 +78,7 @@ defmodule Phos.MixProject do
       {:timex, "~> 3.7"},
       {:earmark, "~>1.4.36"},
       {:html_sanitize_ex, "~> 1.4"},
+      # {:prom_ex, "~> 1.7.1"},
       {:prom_ex, github: "KosmonautX/prom_ex"},
       {:fsmx, "~> 0.4"},
       {:nebulex, "~> 2.5.1"},
@@ -88,14 +89,14 @@ defmodule Phos.MixProject do
       {:uuid, "~> 1.1" },
       # comments
       {:ecto_ltree, "~> 0.3.0"},
-      {:sparrow, github: "Scratchbac/sparrow", tag: "062400e"},
+      {:sparrow, github: "Scratchbac/sparrow", tag: "79ae54b"},
       {:bumblebee, "~> 0.3.1"},
       {:exla, "~> 0.6.0"},
       #debugging
       {:rexbug, "~> 1.0"},
       {:poison, "4.0.1", override: true},
       {:phoenix_view, "~> 2.0"}, # for error warning removal
-      {:finch, "~> 0.13.0"},
+      {:finch, "~> 0.15.0"},
       {:req, github: "wojtekmach/req"},
       {:pgvector, "~> 0.2.0"},
       # { :uuid, "~> 1.1" },

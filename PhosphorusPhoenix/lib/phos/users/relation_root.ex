@@ -10,7 +10,7 @@ defmodule Phos.Users.RelationRoot do
 
   import Ecto.Changeset, warn: false
 
-  alias Phos.Users.{User,RelationBranch,RelationRoot}
+  alias Phos.Users.{User, RelationBranch, RelationRoot}
   alias Phos.Repo
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}

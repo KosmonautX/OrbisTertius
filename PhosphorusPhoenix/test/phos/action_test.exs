@@ -8,11 +8,12 @@ defmodule Phos.ActionTest do
   import Phos.UsersFixtures
 
   describe "orbs" do
-    @invalid_attrs %{active: nil, extinguish: nil, media: nil, title: nil}
+    #TODO validate null constraint on active and media
+    @invalid_attrs %{active: false, extinguish: nil, media: false, title: nil, traits: ["admin"]}
 
     test "list_orbs/0 returns all orbs" do
       orb = orb_fixture()
-      assert Action.list_orbs() |> Phos.Repo.preload([:locations,:initiator]) == [orb]
+      assert Action.list_orbs() |> Phos.Repo.preload([:locations,:initiator, :blorbs]) == [orb]
     end
 
     test "get_orb/1 return specific orb" do
@@ -163,6 +164,81 @@ defmodule Phos.ActionTest do
 
       {:ok, reorb_1} = Action.get_orb(reorb_1.id)
       assert reorb_1.number_of_repost == 1
+    end
+  end
+
+  describe "blorbs" do
+    alias Phos.Action.Blorb
+
+    import Phos.ActionFixtures
+
+    @invalid_attrs %{}
+
+    test "list_blorbs/0 returns all blorbs" do
+      blorb = blorb_fixture()
+      assert Action.list_blorbs() == [blorb]
+    end
+
+    test "get_blorb!/1 returns the blorb with given id" do
+      blorb = blorb_fixture()
+      assert Action.get_blorb!(blorb.id) == blorb
+    end
+
+    test "create_blorb/1 with valid data creates a blorb" do
+      %{id: user_id} = user_fixture()
+      valid_attrs = %{id: Ecto.UUID.generate(),
+                      active: true,
+                      type: "txt",
+                      initiator_id: user_id,
+                      character: %{content: "some content"}}
+
+      assert {:ok, %Blorb{}} = Action.create_blorb(valid_attrs)
+    end
+
+    test "create_blorb/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Action.create_blorb(@invalid_attrs)
+    end
+
+    test "update_blorb/2 with valid data updates the blorb" do
+      blorb = blorb_fixture()
+      update_attrs = %{active: false, character: %{content: "some other content"}}
+
+      assert {:ok, %Blorb{}} = Action.update_blorb(blorb, update_attrs)
+    end
+
+    test "delete_blorb/1 deletes the blorb" do
+      blorb = blorb_fixture()
+      assert {:ok, %Blorb{}} = Action.delete_blorb(blorb)
+      assert_raise Ecto.NoResultsError, fn -> Action.get_blorb!(blorb.id) end
+    end
+
+    test "change_blorb/1 returns a blorb changeset" do
+      blorb = blorb_fixture()
+      assert %Ecto.Changeset{} = Action.change_blorb(blorb)
+    end
+  end
+
+  describe "#permission/2" do
+    setup do
+      orb = orb_fixture()
+      user = Phos.UsersFixtures.user_fixture()
+
+      %{user: user, orb: orb}
+    end
+
+    test "can add permission without invitation", %{user: user, orb: orb} do
+      assert {:ok, permission} = Action.add_permission(orb, %{member: user, action: :collab})
+      assert permission.orb_id == orb.id
+      assert permission.member_id == user.id
+      assert permission.action == :collab
+    end
+
+    test "someone can mention you in orb", %{user: user, orb: orb} do
+      assert {:ok, permission} = Action.add_permission(orb, %{member: user, action: :mention})
+      assert permission.orb_id == orb.id
+      assert permission.member_id == user.id
+      assert permission.action == :mention
+
     end
   end
 end

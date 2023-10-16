@@ -7,7 +7,7 @@ defmodule Phos.Action do
   import Pgvector.Ecto.Query, warn: false
 
   alias Phos.Repo
-  alias Phos.Action.{Orb, Orb_Location}
+  alias Phos.Action.{Orb, Orb_Location, Permission}
   alias Phos.TeleBot.TelegramNotification, as: TN
   use Retry
 
@@ -83,6 +83,7 @@ defmodule Phos.Action do
   def get_orb(orb_id, your_id) do
     from(orbs in Orb,
       where: orbs.id == ^orb_id,
+      preload: [:blorbs],
       inner_join: initiator in assoc(orbs, :initiator),
       left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,
@@ -97,7 +98,7 @@ defmodule Phos.Action do
       |> Repo.one()
   end
 
-  def get_orb!(id), do: Repo.get!(Orb, id) |> Repo.preload([:locations, :initiator])
+  def get_orb!(id), do: Repo.get!(Orb, id) |> Repo.preload([:locations, :initiator, :blorbs])
   def get_orb_by_fyr(id), do: Repo.get_by(Phos.Users.User, fyr_id: id)
 
   def list_all_active_orbs(options \\ []) do
@@ -388,7 +389,7 @@ defmodule Phos.Action do
             orb = orb |> Repo.preload([:initiator])
            Task.Supervisor.start_child(Phos.TaskSupervisor,
              fn ->
-              experimental_notify(orb)
+              notify(orb)
             end)
             Task.start(fn ->
               case orb.media do
@@ -411,10 +412,12 @@ defmodule Phos.Action do
             #index in pgvector
             Task.start(fn ->
               embed  = case orb do
-                %{payload: %{inner_title: title}} ->
+                %{payload: %{inner_title: title}} when is_binary(title) ->
                   build_embedding("passage: " <> title)
-                %{title: title} ->
+                %{title: title} when is_binary(title) ->
                   build_embedding("passage: " <> title)
+                _ ->
+                  nil
               end
               update_orb(orb, %{embedding: embed})
             end)
@@ -439,7 +442,7 @@ defmodule Phos.Action do
     orb = Repo.preload(orb, [:initiator])
 
     case Enum.member?(orb.traits, "mirage") do
-      false -> spawn(fn -> experimental_notify(orb)end)
+      false -> spawn(fn -> notify(orb)end)
       _ -> :ok
     end
 
@@ -491,6 +494,29 @@ defmodule Phos.Action do
   #       {:error, %Ecto.Changeset{}}
 
   #   """
+  #
+
+  def update_orb(%Orb{blorbs: [%Phos.Action.Blorb{} | _] = blorbs} = orb, %{"blorbs" => neue_b} = attrs) do
+    blorb_map = Enum.map(blorbs, fn %{id: id} = b -> {id, b} end) |> Enum.into(%{})
+    # make blorb key value enum through new_blorb update main blorb reducer
+    # for preload logic https://hexdocs.pm/ecto/Ecto.Changeset.html
+    {merged_blorb, preloaded_list} = Enum.reduce(neue_b, {blorb_map, []}, fn
+      %{"pop" => true, "id" => id}, {m, l} ->
+        {Map.delete(m, id), [m[id] | l] }
+      %{"id" => id} = mutate_b, {m, l} -> {Map.replace(m, id, mutate_b), [m[id] | l]}
+      append_b, {m, l} ->
+        {Map.put(m, Ecto.UUID.generate(), append_b), l}
+    end)
+
+    %{orb | blorbs: preloaded_list}
+    |> Orb.update_changeset(%{attrs | "blorbs" => merged_blorb
+                             |> Enum.reduce([], fn
+                               {_id, %Phos.Action.Blorb{}} , acc -> acc
+                                 {_id, b}, acc ->  [b | acc] end)
+                             })
+    |> Repo.update()
+  end
+
   def update_orb(%Orb{} = orb, attrs) do
     orb
     |> Orb.update_changeset(attrs)
@@ -853,7 +879,28 @@ defmodule Phos.Action do
     create_orb(attrs)
   end
 
-  def experimental_notify(orb) do
+  # reduces down membership list
+  def notify(%Orb{members: [%Permission{member_id: member_id, action: act} | remember]} = orb) do
+    action_body = %{
+      collab_invite: "asked you to collab on a post",
+      mention: "mentioned you in a post"
+    }
+    Phos.PlatformNotification.notify({"broadcast", "ORB", orb.id, "action_orb_#{act}"},
+      memory: %{user_source_id: orb.initiator_id, orb_subject_id: orb.id},
+      to: member_id,
+      notification: %{
+        title: "#{orb.initiator.username} #{action_body[act]}",
+        body: orb.title,
+        silent: false
+      }, data: %{
+        cluster_id: orb.id,
+        action_path: "/orbland/orbs/#{orb.id}"
+      })
+
+    notify(%{orb | members: remember})
+  end
+
+  def notify(orb) do
     geonotifiers =
       notifiers_by_geohashes([orb.central_geohash], orb.initiator_id)
       |> Enum.map(fn n -> n && Map.get(n, :fcm_token, nil) end)
@@ -941,5 +988,124 @@ defmodule Phos.Action do
   defp build_search_term(text) do
     String.split(text, " ")
     |> Enum.join(" or ")
+  end
+
+  ## Blorbs the building blocks of Orbs
+  alias Phos.Action.Blorb
+
+  @doc """
+  Returns the list of blorbs.
+
+  ## Examples
+
+      iex> list_blorbs()
+      [%Blorb{}, ...]
+
+  """
+  def list_blorbs do
+    Repo.all(Blorb)
+    |> Repo.preload(:initiator)
+  end
+
+  @doc """
+  Gets a single blorb.
+
+  Raises `Ecto.NoResultsError` if the Blorb does not exist.
+
+  ## Examples
+
+      iex> get_blorb!(123)
+      %Blorb{}
+
+      iex> get_blorb!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_blorb!(id), do: Repo.get!(Blorb, id) |> Repo.preload(:initiator)
+
+  @doc """
+  Creates a blorb.
+
+  ## Examples
+
+      iex> create_blorb(%{field: value})
+      {:ok, %Blorb{}}
+
+      iex> create_blorb(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_blorb(attrs \\ %{}) do
+    %Blorb{}
+    |> Blorb.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a blorb.
+
+  ## Examples
+
+      iex> update_blorb(blorb, %{field: new_value})
+      {:ok, %Blorb{}}
+
+      iex> update_blorb(blorb, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_blorb(%Blorb{} = blorb, attrs) do
+    blorb
+    |> Blorb.mutate_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a blorb.
+
+  ## Examples
+
+      iex> delete_blorb(blorb)
+      {:ok, %Blorb{}}
+
+      iex> delete_blorb(blorb)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_blorb(%Blorb{} = blorb) do
+    Repo.delete(blorb)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking blorb changes.
+
+  ## Examples
+
+      iex> change_blorb(blorb)
+      %Ecto.Changeset{data: %Blorb{}}
+
+  """
+  def change_blorb(%Blorb{} = blorb, attrs \\ %{}) do
+    Blorb.changeset(blorb, attrs)
+  end
+  ## Orb Permissions and Membership
+
+  def add_permission(%Orb{} = orb, attrs) do
+    attributes = Enum.map(attrs, fn {k, v} -> {to_string(k), v} end) |> Enum.into(%{})
+    %Permission{}
+    |> Permission.changeset(Map.put(attributes, "orb", orb))
+    |> Repo.insert()
+  end
+  def add_permission(orb_id, attrs), do: get_orb!(orb_id) |> add_permission(attrs)
+
+  def get_detail_permission(member_id, orb_id) do
+    query = from p in Permission, where: p.member_id == ^member_id and p.orb_id == ^orb_id, limit: 1
+    Repo.one(query)
+  end
+
+  def update_permission(%Permission{} = permission, attrs) do
+    permission
+    |> Repo.preload([:member, :orb])
+    |> Permission.changeset(attrs)
+    |> Repo.update()
   end
 end

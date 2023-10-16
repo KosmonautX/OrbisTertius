@@ -1,8 +1,10 @@
 defmodule PhosWeb.API.OrbController do
   use PhosWeb, :controller
   use Phos.ParamsValidator, [
-    :id, :locations, :title, :media, :initiator_id, :traits, :active,
-    :source,  payload: [:when, :where, :info, :tip, :inner_title], rename: [:expires_in, :extinguish]
+    :id, :locations, :title, :media, :initiator_id, :traits, :active,:members, :blorbs,
+    payload: [:when, :where, :info, :tip, :inner_title],
+    rename: [:expires_in, :extinguish],
+    rename: [:creationtime, :inserted_at]
   ]
 
   alias Phos.Action
@@ -62,19 +64,19 @@ defmodule PhosWeb.API.OrbController do
     constructor = sanitize(params)
     try do
       options = case params do
-        # Normal post, accepts a map containing target and central geohash
-        # Generates 7x given the target
-        %{"geolocation" => %{"central_geohash" => central_geohash}} ->
-          locations = central_geohash |> :h3.parent(8) |> :h3.k_ring(1) |> Enum.map(&Map.new([{"id", &1}]))
-          %{"locations" => locations, "central_geohash" => central_geohash}
+                  # Normal post, accepts a map containing target and central geohash
+                  # Generates 7x given the target
+                  %{"geolocation" => %{"central_geohash" => central_geohash}} ->
+                    locations = central_geohash |> :h3.parent(8) |> :h3.k_ring(1) |> Enum.map(&Map.new([{"id", &1}]))
+                    %{"locations" => locations, "central_geohash" => central_geohash}
 
-        %{"geolocation" => %{"geohashes" => hashes}} ->
-          locations = Enum.map(hashes, &Map.new([{"id", &1}]))
-          %{"locations" => locations, "central_geohash" => List.first(hashes)}
+                  %{"geolocation" => %{"geohashes" => hashes}} ->
+                    locations = Enum.map(hashes, &Map.new([{"id", &1}]))
+                    %{"locations" => locations, "central_geohash" => List.first(hashes)}
 
-        _ -> %{}
-      end
-      |> Map.put("initiator_id", user.id)
+                  _ -> %{}
+                end
+                |> Map.put("initiator_id", user.id)
 
       # IO.inspect(Map.merge(constructor, options))
       {:ok, Map.merge(constructor, options)}
@@ -236,10 +238,13 @@ defmodule PhosWeb.API.OrbController do
   end
 
   def parse_params("id", data) when is_nil(data), do: Ecto.UUID.generate()
+  def parse_params("blorbs", data) when is_nil(data), do: []
   def parse_params("active", data) when is_nil(data), do: true
   def parse_params("source", _), do: :api
   def parse_params("extinguish", data) when not is_nil(data) do
     NaiveDateTime.utc_now()
     |> NaiveDateTime.add(String.to_integer(data))
   end
+  def parse_params("inserted_at", data) when not is_nil(data), do: DateTime.from_unix!(data, :second) |> DateTime.to_naive()
+  def parse_params("inserted_at", _), do: NaiveDateTime.utc_now()
 end

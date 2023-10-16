@@ -7,6 +7,22 @@ defmodule PhosWeb.OrbLive.Show do
   alias PhosWeb.Components.ScrollOrb
 
   @impl true
+
+
+  def mount(%{"token" => token}, _session, socket) do
+    {:ok,
+    with {:ok, %{"user_id" => user_id}} <- PhosWeb.Menshen.Auth.validate_user(token),
+         {:ok, user} <- mount_user(user_id) do
+      socket |> assign(:current_user, user)
+    else
+      _ -> socket
+    end
+    |> assign(:ally, false)
+    |> assign(:media, nil)
+    |> assign(:comment, %Comments.Comment{})}
+  end
+
+
   def mount(%{"id" => _id} = _params, _session, socket) do
     {:ok,
      socket
@@ -17,28 +33,29 @@ defmodule PhosWeb.OrbLive.Show do
 
   @impl true
   def handle_params(%{"id" => id} = params, _, socket) do
-    with %{assigns: %{current_user: %Phos.Users.User{} = _user}} <- socket do
+    with %{assigns: %{current_user: %Phos.Users.User{}}} <- socket do
       Phos.PubSub.subscribe("folks")
     end
 
-    with {:ok, orb} <- Action.get_orb(id) do
-      {:noreply,
-       socket
-       |> assign(:orb, orb)
-       |> tap(fn socket ->
-         Enum.member?(socket.assigns.orb.traits, "geolock") &&
-           raise PhosWeb.ErrorLive.FourOThree, message: "Go Outside Breathe Air"
-       end)
-       |> assign_meta(orb, params)
-       |> assign(:changeset, Comments.change_comment(%Comments.Comment{}))
-       |> apply_action(socket.assigns.live_action, params)
-       |> assign(:parent_pid, socket.transport_pid)
-       |> assign(
-         :comments,
+    case Action.get_orb(id) do
+      {:ok, orb} ->
+        {:noreply,
+         socket
+         |> assign(:orb, orb)
+         |> tap(fn socket ->
+           Enum.member?(socket.assigns.orb.traits, "geolock") &&
+             raise PhosWeb.ErrorLive.FourOThree, message: "Go Outside Breathe Air"
+         end)
+         |> assign_meta(orb, params)
+         |> assign(:changeset, Comments.change_comment(%Comments.Comment{}))
+         |> apply_action(socket.assigns.live_action, params)
+         |> assign(:parent_pid, socket.transport_pid)
+         |> assign(
+           :comments,
          Comments.get_root_comments_by_orb(orb.id) |> decode_to_comment_tuple_structure()
-       )
-       |> stream_assign(:orbs, Action.orbs_by_initiators([orb.initiator.id], 1))}
-    else
+         )
+         |> stream_assign(:orbs, Action.orbs_by_initiators([orb.initiator.id], 1))}
+
       {:error, :not_found} -> raise PhosWeb.ErrorLive.FourOFour, message: "Orb Not Found"
     end
   end
@@ -356,5 +373,13 @@ defmodule PhosWeb.OrbLive.Show do
     socket
     |> stream(key, data)
     |> assign(key, meta)
+  end
+
+
+  defp mount_user(id_or_username) do
+    case Phos.Users.get_user(id_or_username) do
+      %Phos.Users.User{} = user -> {:ok, user}
+      nil -> raise PhosWeb.ErrorLive.FourOFour, message: "User Not Found"
+    end
   end
 end

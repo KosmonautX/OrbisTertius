@@ -8,7 +8,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         build-essential \
         curl \
-        postgresql-server-dev-all \
+        postgresql-server-dev-15 \
         ca-certificates
 
 # Set the pgvector version
