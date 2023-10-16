@@ -481,6 +481,14 @@ defmodule Phos.Action do
     end
   end
 
+  defguard is_uuid?(value)
+  when is_bitstring(value) and
+         byte_size(value) == 36 and
+         binary_part(value, 8, 1) == "-" and
+         binary_part(value, 13, 1) == "-" and
+         binary_part(value, 18, 1) == "-" and
+         binary_part(value, 23, 1) == "-"
+
 
   #   @doc """
   #   Updates a orb.
@@ -503,7 +511,7 @@ defmodule Phos.Action do
     {merged_blorb, preloaded_list} = Enum.reduce(neue_b, {blorb_map, []}, fn
       %{"pop" => true, "id" => id}, {m, l} ->
         {Map.delete(m, id), [m[id] | l] }
-      %{"id" => id} = mutate_b, {m, l} -> {Map.replace(m, id, mutate_b), [m[id] | l]}
+      %{"id" => id} = mutate_b, {m, l} when is_uuid?(id) -> {Map.replace(m, id, mutate_b), [m[id] | l]}
       append_b, {m, l} ->
         {Map.put(m, Ecto.UUID.generate(), append_b), l}
     end)
