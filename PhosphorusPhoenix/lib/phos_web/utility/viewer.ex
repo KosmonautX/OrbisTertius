@@ -270,7 +270,9 @@ defmodule PhosWeb.Util.Viewer do
       active: blorb.active,
       initiator_id: blorb.initiator_id,
       orb_id: blorb.orb_id,
-      character: blorb_character_mapper(blorb)
+      character: blorb_character_mapper(blorb),
+      creationtime: DateTime.from_naive!(blorb.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
+      mutationtime: DateTime.from_naive!(blorb.updated_at, "Etc/UTC") |> DateTime.to_unix()
     }
   end
 
