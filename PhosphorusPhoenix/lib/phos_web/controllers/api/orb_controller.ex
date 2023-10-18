@@ -53,7 +53,7 @@ defmodule PhosWeb.API.OrbController do
   def create(conn = %{assigns: %{current_user: user}}, params) do
 
     with {:ok, attrs} <- orb_constructor(user, params),
-         {:ok, %Orb{} = orb} <- Action.create_orb(attrs) do
+         {:ok, %Orb{} = orb} <- Action.create_orb(%{attrs | "media" => false}) do
       conn
       |> put_status(:created)
       |> put_resp_header("location", ~p"/api/orbland/orbs/#{orb.id}")
