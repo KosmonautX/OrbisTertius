@@ -56,6 +56,21 @@ defmodule Phos.PlatformNotification.Producer do
     {:noreply, [], state}
   end
 
+  @doc """
+  ## Examples
+
+  {:notify, {"broadcast", "COM", comment.id, "reply_com"}, [memory: %{user_source_id: init_id, com_subject_id: comment.id, orb_subject_id: comment.orb_id},
+      to: parent_init_id,
+      notification: %{
+        title: "$comment.initiator.username commented",
+        body: comment.body,
+        silent: false
+      }, data: %{
+        cluster_id: comment.orb_id,
+        action_path: "/comland/comments/children/$comment.id"
+      }]}
+  """
+
   @impl true
   def handle_call({:notify, {type, entity, id, template_id}, options}, _from, state) do
     event = %{

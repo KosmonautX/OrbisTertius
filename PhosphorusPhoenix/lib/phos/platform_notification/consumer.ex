@@ -136,7 +136,7 @@ defmodule Phos.PlatformNotification.Consumer do
           domain: [:phos, :platform_notification],
           error_logger: %{tag: :warning_msg}
         })
-        GenStage.reply(from, {nil, :unknown_error, err})
+        GenStage.reply(from, {ids, :unknown_error, err})
     end
   end
   defp send_to_client(err, from), do: GenStage.reply(from, {nil, :file_error, err})
