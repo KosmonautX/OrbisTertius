@@ -21,6 +21,8 @@ defmodule Phos.Orbject.S3 do
   """
   alias Phos.Orbject
 
+  @bucket "orbistertius"
+
   def get(path) do
     signer(:get, path)
   end
@@ -57,7 +59,7 @@ defmodule Phos.Orbject.S3 do
 
 
   def get_all(root_path) do
-    with {:ok, response} <- ExAws.S3.list_objects_v2("orbistertius", prefix: root_path, encoding_type: "url") |> ExAws.request(),
+    with {:ok, response} <- ExAws.S3.list_objects_v2(@bucket, prefix: root_path, encoding_type: "url") |> ExAws.request(),
          true <- response.status_code >= 200 and response.status_code < 300,
          [_ |_] <- response.body.contents,
            addresses <- (for obj <- response.body.contents, into: %{} do
@@ -89,6 +91,14 @@ defmodule Phos.Orbject.S3 do
     end
   end
 
+  def delete_all(archetype, uuid, form \\ "") do
+    ExAws.S3.list_objects(@bucket, prefix: path_constructor(archetype, uuid, form))
+    |> ExAws.stream!()
+    |> Stream.map(& &1.key)
+    |> (&ExAws.S3.delete_all_objects(@bucket, &1)).()
+    |> ExAws.request()
+  end
+
 
   defp signer!(action, path) do
     {:ok, url} = signer(action, path)
@@ -96,7 +106,7 @@ defmodule Phos.Orbject.S3 do
   end
 
   defp signer(:headandget, path) do
-    ExAws.S3.head_object("orbistertius", path)
+    ExAws.S3.head_object(@bucket, path)
     |> ExAws.request!()
     ## with 200
     signer(:get, path)
@@ -107,7 +117,7 @@ defmodule Phos.Orbject.S3 do
   defp signer(action, path) do
     config = %{
       region: "ap-southeast-1",
-      bucket: "orbistertius",
+      bucket: @bucket,
       access_key_id: System.fetch_env!("AWS_ACCESS_KEY_ID"),
       secret_access_key: System.fetch_env!("AWS_SECRET_ACCESS_KEY")
     }

@@ -511,13 +511,21 @@ defmodule Phos.Action do
     {merged_blorb, preloaded_list} = Enum.reduce(neue_b, {blorb_map, []}, fn
       %{"pop" => true, "id" => id}, {m, l} ->
         case m[id]  do
-          nil -> {m, l}
-          d_blorb ->
+          %{type: type} = d_blorb when type in [:img, :vid] ->
+            Phos.Orbject.S3.delete_all("ORB", orb.id, "public/blorb/" <> id)
             if d_blorb.initiator_id == init_id or orb.initiator_id == init_id do
               {Map.delete(m, id), [d_blorb | l]}
             else
               {m, l}
             end
+          %{id: _id} = d_blorb  ->
+            if d_blorb.initiator_id == init_id or orb.initiator_id == init_id do
+              {Map.delete(m, id), [d_blorb | l]}
+            else
+              {m, l}
+            end
+
+          _ -> {m, l}
         end
       %{"id" => id} = mutate_b, {m, l} when is_uuid?(id) -> {Map.replace(m, id, mutate_b), [m[id] | l]}
       append_b, {m, l} ->
