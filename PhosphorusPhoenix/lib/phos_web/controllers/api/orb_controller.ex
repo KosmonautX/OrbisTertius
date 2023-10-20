@@ -194,7 +194,6 @@ defmodule PhosWeb.API.OrbController do
 
   def update(conn = %{assigns: %{current_user: user}}, params = %{"id" => id, "media" => [_|_] = media}) do
     orb = Action.get_orb!(id)
-    #TODO check for collaborator_invite
     with true <- orb.initiator.id == user.id,
          {:ok, attrs} <- orb_constructor(user, params),
          {:ok, media} <- Phos.Orbject.Structure.apply_media_changeset(%{id: id, archetype: "ORB", media: media}),
