@@ -83,7 +83,7 @@ defmodule Phos.Action do
   def get_orb(orb_id, your_id) do
     from(orbs in Orb,
       where: orbs.id == ^orb_id,
-      preload: [:blorbs],
+      preload: [:blorbs, :members],
       inner_join: initiator in assoc(orbs, :initiator),
       left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,
@@ -283,7 +283,7 @@ defmodule Phos.Action do
     from(o in Orb,
       as: :o,
       where: o.initiator_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]) and fragment("? @> ?", o.traits, ^traits),
-      preload: [:initiator],
+      preload: [:initiator, :members],
       inner_lateral_join: c in subquery(
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:o).id,
@@ -299,7 +299,7 @@ defmodule Phos.Action do
     from(o in Orb,
       as: :o,
       where: o.initiator_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]),
-      preload: [:initiator],
+      preload: [:initiator, :members],
       inner_lateral_join: c in subquery(
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:o).id,
