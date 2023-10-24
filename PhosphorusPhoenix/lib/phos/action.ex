@@ -391,10 +391,12 @@ defmodule Phos.Action do
              fn ->
                notify(orb)
              end)
-          Task.Supervisor.start_child(Phos.TaskSupervisor,
-            from(u in Phos.Users.User, update: [inc: [boon: 1]], where: u.id == ^orb.initiator_id)
-            |> Phos.Repo.update_all([])
-          )
+           Task.Supervisor.start_child(Phos.TaskSupervisor,
+             fn ->
+               from(u in Phos.Users.User, update: [inc: [boon: 1]], where: u.id == ^orb.initiator_id)
+               |> Phos.Repo.update_all([])
+             end
+           )
            Task.start(fn ->
              case orb.media do
                true ->
@@ -413,19 +415,18 @@ defmodule Phos.Action do
                  TN.Collector.add(orb)
              end
            end)
-           #index in pgvector
-           Task.Supervisor.start_child(Phos.TaskSupervisor,
-             fn ->
-               embed  = case orb do
-                          %{payload: %{inner_title: title}} when is_binary(title) ->
-                            build_embedding("passage: " <> title)
-                          %{title: title} when is_binary(title) ->
-                            build_embedding("passage: " <> title)
-                          _ ->
-                            nil
-                        end
-               update_orb(orb, %{embedding: embed})
-             end)
+           #index in pgvector, Test: Down Signal Takes much longer
+           Task.start(fn ->
+             embed  = case orb do
+                        %{payload: %{inner_title: title}} when is_binary(title) ->
+                          build_embedding("passage: " <> title)
+                        %{title: title} when is_binary(title) ->
+                          build_embedding("passage: " <> title)
+                        _ ->
+                          nil
+                      end
+             update_orb(orb, %{embedding: embed})
+           end)
            #spawn(fn -> user_feeds_publisher(orb) end)
            data
          err ->
