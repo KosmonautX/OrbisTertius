@@ -103,6 +103,9 @@ defmodule PhosWeb.Util.Viewer do
       confirmed_at: user.confirmed_at,
       fyr_id: user.fyr_id,
       profile: user_profile_mapper(user),
+      boon_count: user.boon,
+      boon_rank: user_boon_ranker(user.boon).rank,
+      boon_max: user_boon_ranker(user.boon).max,
       ally_count: user.ally_count,
       mutual_count: user.mutual_count,
       relationships: relationship_reducer(user),
@@ -168,6 +171,19 @@ defmodule PhosWeb.Util.Viewer do
           end
         end)}}
     end)
+  end
+
+  def user_boon_ranker(boon) when is_integer(boon) do
+    {rank, max} = cond  do
+      boon < 8 -> {"townfolk", 8}
+      boon < 13 -> {"apprentice", 13}
+      boon < 21 -> {"herald", 21}
+      boon < 34 -> {"initiate", 34}
+      boon < 55 -> {"legion", 55}
+      boon < 89 -> {"master", 89}
+      boon > 144 -> {"elder", 144}
+    end
+    %{rank: rank, max: max}
   end
 
   def user_public_mapper(user) do

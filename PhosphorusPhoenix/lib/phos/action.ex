@@ -386,45 +386,50 @@ defmodule Phos.Action do
     |> Repo.insert()
     |> case do
          {:ok, orb} = data ->
-            orb = orb |> Repo.preload([:initiator])
+           orb = orb |> Repo.preload([:initiator])
            Task.Supervisor.start_child(Phos.TaskSupervisor,
              fn ->
-              notify(orb)
-            end)
-            Task.start(fn ->
-              case orb.media do
-                true ->
-                  wait exponential_backoff() |> randomize |> expiry(30_000) do
-                    is_map(Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless"))
-                  after
-                    _ ->
-                      TN.Collector.add(orb)
-                      {:ok, "Media fetched"}
-                  else
-                    _ ->
-                      TN.Collector.add(%{orb | media: false})
-                      {:error, "Unable to get media"}
-                  end
-                false ->
-                  TN.Collector.add(orb)
-              end
-            end)
-            #index in pgvector
-            Task.start(fn ->
-              embed  = case orb do
-                %{payload: %{inner_title: title}} when is_binary(title) ->
-                  build_embedding("passage: " <> title)
-                %{title: title} when is_binary(title) ->
-                  build_embedding("passage: " <> title)
-                _ ->
-                  nil
-              end
-              update_orb(orb, %{embedding: embed})
-            end)
+               notify(orb)
+             end)
+          Task.Supervisor.start_child(Phos.TaskSupervisor,
+            from(u in Phos.Users.User, update: [inc: [boon: 1]], where: u.id == ^orb.initiator_id)
+            |> Phos.Repo.update_all([])
+          )
+           Task.start(fn ->
+             case orb.media do
+               true ->
+                 wait exponential_backoff() |> randomize |> expiry(30_000) do
+                   is_map(Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless"))
+                 after
+                   _ ->
+                     TN.Collector.add(orb)
+                     {:ok, "Media fetched"}
+                 else
+                   _ ->
+                     TN.Collector.add(%{orb | media: false})
+                   {:error, "Unable to get media"}
+                 end
+               false ->
+                 TN.Collector.add(orb)
+             end
+           end)
+           #index in pgvector
+           Task.Supervisor.start_child(Phos.TaskSupervisor,
+             fn ->
+               embed  = case orb do
+                          %{payload: %{inner_title: title}} when is_binary(title) ->
+                            build_embedding("passage: " <> title)
+                          %{title: title} when is_binary(title) ->
+                            build_embedding("passage: " <> title)
+                          _ ->
+                            nil
+                        end
+               update_orb(orb, %{embedding: embed})
+             end)
            #spawn(fn -> user_feeds_publisher(orb) end)
            data
          err ->
-          err
+           err
        end
   end
 
