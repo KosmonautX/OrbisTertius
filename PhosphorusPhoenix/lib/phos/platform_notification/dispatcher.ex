@@ -35,7 +35,7 @@ defmodule Phos.PlatformNotification.Dispatcher do
   end
 
   @impl true
-  def handle_info({_ref, {id, type, message}}, state) when type in [:retry, :error, :unknown_error] do
+  def handle_info({_ref, {id, type, message}}, state) when type in [:retry, :error, :unknown_error] and not is_nil(id) do
     stored = PN.get_notification(id)
     retry_attempt = stored.retry_attempt + 1
     next_attempt = DateTime.add(DateTime.utc_now(), retry_attempt * retry_after(), :minute)
@@ -44,7 +44,7 @@ defmodule Phos.PlatformNotification.Dispatcher do
   end
 
   @impl true
-  def handle_info({_ref, {ids, :errors, message}}, state) do
+  def handle_info({_ref, {ids, :errors, message}}, state) when not is_nil(ids) do
     PN.update_notifications(ids, %{error_reason: message, retry_attempt: 6, success: false})
     {:noreply, [], state}
   end
@@ -90,6 +90,10 @@ defmodule Phos.PlatformNotification.Dispatcher do
     {:noreply, [], state}
   end
 
+  def handle_info(_, _, state) do
+    {:noreply, [], state}
+  end
+
   defp filter_event_type(%{"type" => type} = data) when type in ["email", "push", "broadcast"] do
     {:ok, data}
   end
@@ -126,6 +130,7 @@ defmodule Phos.PlatformNotification.Dispatcher do
         err -> err
       end
   end
+
   defp insert_to_persistent_database(data)  do
     case get_recipient(data) do
       {:ok, recipient_id} -> PN.insert_notification(%{

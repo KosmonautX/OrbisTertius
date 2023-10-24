@@ -36,10 +36,10 @@ defmodule Phos.Action.Orb do
     belongs_to :parent, __MODULE__, references: :id, type: Ecto.UUID
     #belongs_to :users, User, references: :id, foreign_key: :acceptor, type: Ecto.UUID
 
-    has_many :members, Permission, references: :id, foreign_key: :orb_id
+    has_many :members, Permission, references: :id, foreign_key: :orb_id, on_replace: :delete_if_exists
     has_many :locs, Orb_Location, references: :id, foreign_key: :orb_id
     has_many :comments, Comment, references: :id, foreign_key: :orb_id
-    has_many :blorbs, Blorb, references: :id, foreign_key: :orb_id, on_replace: :delete
+    has_many :blorbs, Blorb, references: :id, foreign_key: :orb_id, on_replace: :delete_if_exists
 
     many_to_many :locations, Location, join_through: Orb_Location, on_replace: :delete, on_delete: :delete_all#, join_keys: [id: :id, location_id: :location_id]
     embeds_one :payload, Orb_Payload, on_replace: :delete
@@ -94,6 +94,7 @@ defmodule Phos.Action.Orb do
     |> cast(attrs, [:title, :active, :media, :traits, :embedding])
     |> cast_embed(:payload)
     |> cast_assoc(:blorbs, with: &Blorb.mutate_changeset/2)
+    |> cast_assoc(:members, with: &Permission.orb_changeset/2)
     |> validate_exclude_subset(:traits, ~w(admin personal pin exile mirage), message: "unnatural traits")
     |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end

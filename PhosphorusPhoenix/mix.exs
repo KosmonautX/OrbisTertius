@@ -89,7 +89,7 @@ defmodule Phos.MixProject do
       {:uuid, "~> 1.1" },
       # comments
       {:ecto_ltree, "~> 0.3.0"},
-      {:sparrow, github: "Scratchbac/sparrow", tag: "79ae54b"},
+      {:sparrow, github: "Scratchbac/sparrow", tag: "e37e459"},
       {:bumblebee, "~> 0.3.1"},
       {:exla, "~> 0.6.0"},
       #debugging

@@ -38,7 +38,7 @@ defmodule Phos.Action.Blorb do
 
   def mutate_changeset(%Phos.Action.Blorb{} = blorb, attrs) do
     blorb
-    |> cast(attrs, [:id, :type, :active, :orb_id])
+    |> cast(attrs, [:id, :type, :active, :orb_id, :initiator_id])
     |> typed_character_switch(attrs)
     |> validate_required([:type, :character])
     |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])

@@ -1,11 +1,13 @@
 defmodule Phos.Action.Permission do
   use Ecto.Schema
-  use Fsmx.Struct, transitions: %{
-    "collab_invite" => ["collab"],
-  }
   import Ecto.Changeset
 
-  @primary_key false
+  use Fsmx.Struct, state_field: :action, transitions: %{
+    :"*" => ["collab_invite", "mention"],
+    :collab_invite => "collab",
+    "mention" => "collab_invite"
+  }
+
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "orb_permissions" do
     field :action, Ecto.Enum, values: [collab_invite: 0, collab: 1, mention: 2]
@@ -28,9 +30,15 @@ defmodule Phos.Action.Permission do
 
   def orb_changeset(%__MODULE__{} = permission, attrs) do
     permission
+    |> Fsmx.transition_changeset(attrs["action"], attrs, [state_field: :action])
     |> cast(attrs, [:action, :member_id])
     |> validate_required([:action, :member_id])
     |> unique_constraint([:member_id, :orb_id])
+    |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
+  end
+
+  def transition_changeset(%{data: permission}, _ , _, _attrs) do
+    permission
   end
 
   defp cast_association(changeset, _attrs, []), do: changeset

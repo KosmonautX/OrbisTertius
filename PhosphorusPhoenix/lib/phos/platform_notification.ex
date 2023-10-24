@@ -123,6 +123,11 @@ defmodule Phos.PlatformNotification do
     |> Repo.update_all(set: attrs)
   end
 
+  def get_notification([_id | _] = ids) do
+    query = from s in Store, where: s.id in ^ids, preload: [:template, :recipient], limit: 1
+    Repo.one(query)
+  end
+
   def get_notification(id) do
     query = from s in Store, where: s.id == ^id, preload: [:template, :recipient], limit: 1
     Repo.one(query)
@@ -140,4 +145,4 @@ defmodule Phos.PlatformNotification do
 
     Repo.all(query)
   end
-end
+ end

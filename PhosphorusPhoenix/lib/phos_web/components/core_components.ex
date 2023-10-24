@@ -1442,7 +1442,7 @@ defmodule PhosWeb.CoreComponents do
         />
         <.orb_information
           :if={
-            is_binary(get_in(@orb, [Access.key(:payload), Access.key(:info)])) && !@show_information
+            is_binary(get_in(@orb, [Access.key(:payload), Access.key(:info)])) && @show_information
           }
           id={"#{@id}-scry-orb-#{@orb.id}"}
           title={@orb.payload.info}
@@ -1781,6 +1781,7 @@ defmodule PhosWeb.CoreComponents do
       "px-2 font-poppins break-words lg:dark:bg-gray-900 dark:bg-gray-900 lg:bg-white",
       @info_color
     ]}>
+    <br>
       <span class={[
         @show_info == false && "lg:text-xs",
         "prose prose-a:text-blue-500 dark:prose-a:text-white text-sm break-words overflow-hidden font-medium dark:prose-invert w-full dark:text-white",

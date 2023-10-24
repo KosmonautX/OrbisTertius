@@ -83,7 +83,7 @@ defmodule Phos.Action do
   def get_orb(orb_id, your_id) do
     from(orbs in Orb,
       where: orbs.id == ^orb_id,
-      preload: [:blorbs],
+      preload: [:blorbs, :members],
       inner_join: initiator in assoc(orbs, :initiator),
       left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,
@@ -283,7 +283,7 @@ defmodule Phos.Action do
     from(o in Orb,
       as: :o,
       where: o.initiator_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]) and fragment("? @> ?", o.traits, ^traits),
-      preload: [:initiator],
+      preload: [:initiator, :members],
       inner_lateral_join: c in subquery(
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:o).id,
@@ -299,7 +299,7 @@ defmodule Phos.Action do
     from(o in Orb,
       as: :o,
       where: o.initiator_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]),
-      preload: [:initiator],
+      preload: [:initiator, :members],
       inner_lateral_join: c in subquery(
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:o).id,
@@ -481,6 +481,14 @@ defmodule Phos.Action do
     end
   end
 
+  defguard is_uuid?(value)
+  when is_bitstring(value) and
+         byte_size(value) == 36 and
+         binary_part(value, 8, 1) == "-" and
+         binary_part(value, 13, 1) == "-" and
+         binary_part(value, 18, 1) == "-" and
+         binary_part(value, 23, 1) == "-"
+
 
   #   @doc """
   #   Updates a orb.
@@ -495,32 +503,82 @@ defmodule Phos.Action do
 
   #   """
   #
-
-  def update_orb(%Orb{blorbs: [%Phos.Action.Blorb{} | _] = blorbs} = orb, %{"blorbs" => neue_b} = attrs) do
+  def populate_blorbs({%Orb{blorbs: [%Phos.Action.Blorb{} | _] = blorbs} = orb, %{"blorbs" => neue_b, "initiator_id" => init_id} = attrs}) do
     blorb_map = Enum.map(blorbs, fn %{id: id} = b -> {id, b} end) |> Enum.into(%{})
     # make blorb key value enum through new_blorb update main blorb reducer
-    # for preload logic https://hexdocs.pm/ecto/Ecto.Changeset.html
+    # for preload logic https://hexdocs.pm/ecto/Ecto.Changeset.html#cast_assoc/3-partial-changes-for-many-style-associations
     {merged_blorb, preloaded_list} = Enum.reduce(neue_b, {blorb_map, []}, fn
       %{"pop" => true, "id" => id}, {m, l} ->
-        {Map.delete(m, id), [m[id] | l] }
-      %{"id" => id} = mutate_b, {m, l} -> {Map.replace(m, id, mutate_b), [m[id] | l]}
-      append_b, {m, l} ->
-        {Map.put(m, Ecto.UUID.generate(), append_b), l}
-    end)
+        # when pop is true:: intent is to delete blorb
+        case m[id]  do
+          %{type: type} = d_blorb when type in [:img, :vid] ->
+            # and associated media
+            if d_blorb.initiator_id == init_id or orb.initiator_id == init_id do
+              # if they have the permissions
+              Phos.Orbject.S3.delete_all("ORB", orb.id, "public/blorb/" <> id)
+              {Map.delete(m, id), [d_blorb | l]}
+            else
+              {m, l}
+            end
+          %{id: _id} = d_blorb  ->
+            # if not media still delete blorb
+            if d_blorb.initiator_id == init_id or orb.initiator_id == init_id do
+              {Map.delete(m, id), [d_blorb | l]}
+            else
+              {m, l}
+            end
 
-    %{orb | blorbs: preloaded_list}
-    |> Orb.update_changeset(%{attrs | "blorbs" => merged_blorb
-                             |> Enum.reduce([], fn
-                               {_id, %Phos.Action.Blorb{}} , acc -> acc
-                                 {_id, b}, acc ->  [b | acc] end)
-                             })
-    |> Repo.update()
+          _ -> {m, l}
+        end
+      %{"id" => id} = mutate_b, {m, l} when is_uuid?(id) ->
+        # if blorb already exists
+        {Map.replace(m, id, mutate_b), [m[id] | l]}
+      append_b, {m, l} ->
+        {Map.put(m, Ecto.UUID.generate(), Map.delete(append_b, "id")), l}
+      end)
+
+    {%{orb | blorbs: preloaded_list}, %{attrs | "blorbs" =>
+                               merged_blorb
+                               |> Enum.reduce([], fn
+                                {_id, %Phos.Action.Blorb{}} , acc -> acc
+                                {_id, b}, acc ->  [Map.put(b, "initiator_id", init_id) | acc] end)
+                             }}
   end
 
+  def populate_blorbs({orb, attrs}) do
+    {orb, attrs}
+  end
+
+  def populate_members({%Orb{initiator_id: orb_init_id, members: mem} = orb, %{"initiator_id" => init_id, "members" => [_ | _]} = attrs}) when orb_init_id == init_id and not is_list(mem) do
+      {%{orb | members: []}, attrs}
+  end
+
+  def populate_members({%Orb{initiator_id: orb_init_id} = orb, %{"initiator_id" => init_id} = attrs}) when orb_init_id == init_id do
+      {orb, attrs}
+  end
+
+  def populate_members({%Orb{} = orb, %{"initiator_id" => init_id} = attrs}) do
+      member_query = from p in Phos.Action.Permission, where: [member_id: ^init_id]
+      case orb |> Phos.Repo.preload([members: member_query]) do
+        %{members: [%{id: id}|_]} = orb -> {orb, Map.put(attrs, "members", [%{"id" =>id, "action" => "collab"}])}
+        _ ->
+          raise ArgumentError
+      end
+  end
+
+  def populate_members({orb, attrs}) do
+      {orb, attrs}
+  end
+
+
   def update_orb(%Orb{} = orb, attrs) do
-    orb
-    |> Orb.update_changeset(attrs)
-    |> Repo.update()
+    {orb, attrs}
+    |> populate_blorbs()
+    |> populate_members()
+    |> (fn
+      {orb, attrs} -> Orb.update_changeset(orb, attrs)
+      orb -> Orb.update_changeset(orb, attrs) end).()
+      |> Repo.update()
   end
 
   def update_admin_orb(%Orb{} = orb, attrs) do

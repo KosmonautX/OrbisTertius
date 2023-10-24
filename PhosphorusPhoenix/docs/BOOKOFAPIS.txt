@@ -361,16 +361,12 @@ PUT :ipAddress/orbland/orbs/:orb
     "geolocation": {
         "central_geohash": 623276216935972863
     },
+    "media_exists": true,
     "title": "yogafire",
     "inner_title": "stay in the matrix",
     "info": "ba sing se",
     "active": "true",
-    "media": [
-        {
-        "access": "public",
-        "essence": "banner",
-        "resolution": "lossless"
-        }],
+    "media": [],
     "expires_in": "10000",
     "traits": ["holy", "mooncakes"]
 }
