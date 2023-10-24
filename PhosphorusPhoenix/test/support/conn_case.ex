@@ -77,6 +77,12 @@ defmodule PhosWeb.ConnCase do
     %{conn: log_in_user(conn, user), user: user}
   end
 
+    def register_and_log_in_user_and_create_orb(%{conn: conn}) do
+    user = Phos.UsersFixtures.user_fixture()
+    orb = Phos.ActionFixtures.orb_fixture(%{"initiator_id" => user.id})
+    %{conn: log_in_user(conn, user), user: user, orb: orb}
+  end
+
   def inject_user_token(%{conn: conn}) do
     user = Phos.UsersFixtures.user_fixture()
     {:ok, token, _claims}= PhosWeb.Menshen.Auth.generate_user(user.id)

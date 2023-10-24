@@ -545,8 +545,11 @@ defmodule Phos.Action do
                              }}
   end
 
+  def populate_blorbs({orb, attrs}) do
+    {orb, attrs}
+  end
+
   def populate_members({%Orb{initiator_id: orb_init_id, members: mem} = orb, %{"initiator_id" => init_id, "members" => [_ | _]} = attrs}) when orb_init_id == init_id and not is_list(mem) do
-      IO.inspect("", label: "initiator adding members")
       {%{orb | members: []}, attrs}
   end
 
@@ -555,14 +558,16 @@ defmodule Phos.Action do
   end
 
   def populate_members({%Orb{} = orb, %{"initiator_id" => init_id} = attrs}) do
-      IO.inspect("", label: "user approving membership")
       member_query = from p in Phos.Action.Permission, where: [member_id: ^init_id]
       case orb |> Phos.Repo.preload([members: member_query]) do
         %{members: [%{id: id}|_]} = orb -> {orb, Map.put(attrs, "members", [%{"id" =>id, "action" => "collab"}])}
-        what ->
-          IO.inspect what
+        _ ->
           raise ArgumentError
       end
+  end
+
+  def populate_members({orb, attrs}) do
+      {orb, attrs}
   end
 
 
