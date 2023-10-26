@@ -384,75 +384,67 @@ defmodule Phos.Action do
     %Orb{}
     |> Orb.changeset(attrs)
     |> Repo.insert()
-    |> case do
-         {:ok, orb} = data ->
-           orb = orb |> Repo.preload([:initiator])
-           Task.Supervisor.start_child(Phos.TaskSupervisor,
-             fn ->
-               notify(orb)
-             end)
-           Task.Supervisor.start_child(Phos.TaskSupervisor,
-             fn ->
-               from(u in Phos.Users.User, update: [inc: [boon: 1]], where: u.id == ^orb.initiator_id)
-               |> Phos.Repo.update_all([])
-             end
-           )
-           Task.start(fn ->
-             case orb.media do
-               true ->
-                 wait exponential_backoff() |> randomize |> expiry(30_000) do
-                   is_map(Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless"))
-                 after
-                   _ ->
-                     TN.Collector.add(orb)
-                     {:ok, "Media fetched"}
-                 else
-                   _ ->
-                     TN.Collector.add(%{orb | media: false})
-                   {:error, "Unable to get media"}
-                 end
-               false ->
-                 TN.Collector.add(orb)
-             end
-           end)
-           #index in pgvector, Test: Down Signal Takes much longer
-           Task.start(fn ->
-             embed  = case orb do
-                        %{payload: %{inner_title: title}} when is_binary(title) ->
-                          build_embedding("passage: " <> title)
-                        %{title: title} when is_binary(title) ->
-                          build_embedding("passage: " <> title)
-                        _ ->
-                          nil
-                      end
-             update_orb(orb, %{embedding: embed})
-           end)
-           #spawn(fn -> user_feeds_publisher(orb) end)
-           data
-         err ->
-           err
-       end
+    |> tap(&case &1 do
+            {:ok, orb} ->
+              orb = orb |> Repo.preload([:initiator])
+              Task.Supervisor.start_child(Phos.TaskSupervisor,
+                fn ->
+                  notify(orb)
+                end)
+              Task.Supervisor.start_child(Phos.TaskSupervisor,
+                fn ->
+                  from(u in Phos.Users.User, update: [inc: [boon: 1]], where: u.id == ^orb.initiator_id)
+                  |> Phos.Repo.update_all([])
+                end
+              )
+              Task.start(fn ->
+                case orb.media do
+                  true ->
+                    wait exponential_backoff() |> randomize |> expiry(30_000) do
+                      is_map(Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless"))
+                    after
+                      _ ->
+                        TN.Collector.add(orb)
+                        {:ok, "Media fetched"}
+                    else
+                      _ ->
+                        TN.Collector.add(%{orb | media: false})
+                      {:error, "Unable to get media"}
+                    end
+                  false ->
+                    TN.Collector.add(orb)
+                end
+              end)
+              #index in pgvector, Test: Down Signal Takes much longer
+              Task.start(fn ->
+                embed  = case orb do
+                           %{payload: %{inner_title: title}} when is_binary(title) ->
+                             build_embedding("passage: " <> title)
+                           %{title: title} when is_binary(title) ->
+                             build_embedding("passage: " <> title)
+                           _ ->
+                             nil
+                         end
+                update_orb(orb, %{embedding: embed})
+              end)
+              #spawn(fn -> user_feeds_publisher(orb) end)
+              _ -> :ok
+    end)
   end
 
   def admin_create_orb(attrs \\ %{}) do
     %Orb{}
     |> Orb.admin_changeset(attrs)
     |> Repo.insert()
-    |> case do
-         {:ok, orb} -> notify_mirage(orb)
-         err -> err
-       end
+    |> tap(&(notify_mirage(&1)))
   end
 
   defp notify_mirage(orb) do
     orb = Repo.preload(orb, [:initiator])
-
     case Enum.member?(orb.traits, "mirage") do
       false -> spawn(fn -> notify(orb)end)
       _ -> :ok
     end
-
-    {:ok, orb}
   end
 
   # defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
@@ -573,7 +565,7 @@ defmodule Phos.Action do
   end
 
   def populate_members({orb, attrs}) do
-      {orb, attrs}
+    {orb, attrs}
   end
 
 
@@ -585,6 +577,14 @@ defmodule Phos.Action do
       {orb, attrs} -> Orb.update_changeset(orb, attrs)
       orb -> Orb.update_changeset(orb, attrs) end).()
       |> Repo.update()
+      |> tap(&case &1 do
+              {:ok, orb} ->
+                Task.Supervisor.start_child(Phos.TaskSupervisor,
+                  fn ->
+                    notify(orb)
+                  end)
+              err -> err
+    end)
   end
 
   def update_admin_orb(%Orb{} = orb, attrs) do
@@ -964,7 +964,7 @@ defmodule Phos.Action do
     notify(%{orb | members: remember})
   end
 
-  def notify(orb) do
+  def notify(%Orb{inserted_at: crt, updated_at: mut} = orb) when crt != mut do
     geonotifiers =
       notifiers_by_geohashes([orb.central_geohash], orb.initiator_id)
       |> Enum.map(fn n -> n && Map.get(n, :fcm_token, nil) end)
@@ -993,6 +993,8 @@ defmodule Phos.Action do
       action_path: "/orbland/orbs/#{orb.id}",
       cluster_id: "folk_orb")
   end
+
+  def notify(_), do: :ok
 
   def search(search_term) do
     build_base_search_query(search_term)

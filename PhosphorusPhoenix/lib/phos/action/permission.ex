@@ -6,6 +6,7 @@ defmodule Phos.Action.Permission do
     :"*" => ["collab_invite", "mention"],
     :collab_invite => "collab",
     "mention" => "collab_invite",
+    :mention => "collab_invite",
     :collab => "collab"
   }
 
