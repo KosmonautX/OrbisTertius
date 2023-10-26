@@ -5,7 +5,8 @@ defmodule Phos.Action.Permission do
   use Fsmx.Struct, state_field: :action, transitions: %{
     :"*" => ["collab_invite", "mention"],
     :collab_invite => "collab",
-    "mention" => "collab_invite"
+    "mention" => "collab_invite",
+    :collab => "collab"
   }
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}

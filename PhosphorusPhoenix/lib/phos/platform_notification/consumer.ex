@@ -79,7 +79,6 @@ defmodule Phos.PlatformNotification.Consumer do
   end
 
   defp execute_fcm_events(data, from) do
-    IO.inspect(data, label: "fcm")
     data
     |> create_fcm_spec()
     |> filter_user_token(from)
@@ -89,7 +88,6 @@ defmodule Phos.PlatformNotification.Consumer do
   defp create_fcm_spec(data) do
     Enum.reduce(data, {[], [], []}, fn d, {succeed_data, succeed_ids, failed_ids} ->
       message = __MODULE__.Fcm.get_template(d)
-      IO.inspect(message, label: "message")
       data = __MODULE__.Fcm.get_data(d)
 
       case decide_recipient(message, data, d) do
@@ -109,7 +107,6 @@ defmodule Phos.PlatformNotification.Consumer do
   end
 
   defp send_to_client({[%Sparrow.FCM.V1.Notification{} | _] = notifs, ids}, from) do
-    IO.inspect(notifs, label: "Notification Sending")
     case Sparrow.API.push(notifs) do
       :ok ->
         :logger.info(%{
