@@ -196,7 +196,7 @@ defmodule PhosWeb.API.OrbController do
     orb = Action.get_orb!(id)
     with {:ok, attrs} <- orb_constructor(user, params),
          {:ok, media} <- Phos.Orbject.Structure.apply_media_changeset(%{id: id, archetype: "ORB", media: media}),
-         {:ok, %Orb{} = orb} <- Action.update_orb(orb, %{attrs | "media" => true}) do
+         {:ok, %Orb{} = orb} <- Action.populate_and_update_orb(orb, %{attrs | "media" => true}) do
       conn
       |> put_status(:ok)
       |> put_resp_header("location", ~p"/api/orbland/orbs/#{orb.id}")
@@ -212,7 +212,7 @@ defmodule PhosWeb.API.OrbController do
   def update(conn = %{assigns: %{current_user: user}}, %{"id" => id} = params) do
     orb = Action.get_orb!(id)
     with {:ok, attrs} <- orb_constructor(user, params),
-         {:ok, %Orb{} = orb} <- Action.update_orb(orb, attrs) do
+         {:ok, %Orb{} = orb} <- Action.populate_and_update_orb(orb, attrs) do
       conn
       |> put_status(:ok)
       |> put_resp_header("location", ~p"/api/orbland/orbs/#{orb.id}")

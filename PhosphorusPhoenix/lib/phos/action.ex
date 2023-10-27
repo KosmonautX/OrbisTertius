@@ -547,8 +547,10 @@ defmodule Phos.Action do
     {orb, attrs}
   end
 
-  def populate_members({%Orb{initiator_id: orb_init_id, members: mem} = orb, %{"initiator_id" => init_id, "members" => [_ | _]} = attrs}) when orb_init_id == init_id and not is_list(mem) do
-      {%{orb | members: []}, attrs}
+  def populate_members({%Orb{initiator_id: orb_init_id, members: mem} = orb, %{"initiator_id" => init_id, "members" => new_mem} = attrs}) when orb_init_id == init_id and not is_list(mem) and is_list(new_mem) do
+    mem = Enum.map(new_mem, &(&1["member_id"]))
+    member_query = from p in Phos.Action.Permission, where: (p.member_id in ^mem) and  (p.orb_id == ^orb.id)
+      {orb |> Phos.Repo.preload([members: member_query]), attrs}
   end
 
   def populate_members({%Orb{initiator_id: orb_init_id} = orb, %{"initiator_id" => init_id} = attrs}) when orb_init_id == init_id do
@@ -556,7 +558,7 @@ defmodule Phos.Action do
   end
 
   def populate_members({%Orb{} = orb, %{"initiator_id" => init_id} = attrs}) do
-      member_query = from p in Phos.Action.Permission, where: [member_id: ^init_id]
+      member_query = from p in Phos.Action.Permission, where: (p.member_id == ^init_id) and  (p.orb_id == ^orb.id)
       case orb |> Phos.Repo.preload([members: member_query]) do
         %{members: [%{id: id}|_]} = orb -> {orb, Map.put(attrs, "members", [%{"id" =>id, "action" => "collab"}])}
         _ ->
@@ -568,16 +570,14 @@ defmodule Phos.Action do
     {orb, attrs}
   end
 
-
-  def update_orb(%Orb{} = orb, attrs) do
+  def populate_and_update_orb(%Orb{} = orb, attrs) do
     {orb, attrs}
     |> populate_blorbs()
     |> populate_members()
     |> (fn
-      {orb, attrs} -> Orb.update_changeset(orb, attrs)
-      orb -> Orb.update_changeset(orb, attrs) end).()
-      |> Repo.update()
-      |> tap(&case &1 do
+      {orb, attrs} -> update_orb(orb, attrs)
+      _ -> {:error, "Update Failed"} end).()
+    |> tap(&case &1 do
               {:ok, orb} ->
                 Task.Supervisor.start_child(Phos.TaskSupervisor,
                   fn ->
@@ -585,6 +585,13 @@ defmodule Phos.Action do
                   end)
               err -> err
     end)
+  end
+
+
+  def update_orb(%Orb{} = orb, attrs) do
+    orb
+    |> Orb.update_changeset(attrs)
+    |> Repo.update()
   end
 
   def update_admin_orb(%Orb{} = orb, attrs) do
