@@ -543,20 +543,24 @@ defmodule Phos.Action do
                              }}
   end
 
+  # no blorbs to populate
   def populate_blorbs({orb, attrs}) do
     {orb, attrs}
   end
 
+  # orb_initiator adding members
   def populate_members({%Orb{initiator_id: orb_init_id, members: mem} = orb, %{"initiator_id" => init_id, "members" => new_mem} = attrs}) when orb_init_id == init_id and not is_list(mem) and is_list(new_mem) do
     mem = Enum.map(new_mem, &(&1["member_id"]))
     member_query = from p in Phos.Action.Permission, where: (p.member_id in ^mem) and  (p.orb_id == ^orb.id)
       {orb |> Phos.Repo.preload([members: member_query]), attrs}
   end
 
+  # orb_initiator no members to add
   def populate_members({%Orb{initiator_id: orb_init_id} = orb, %{"initiator_id" => init_id} = attrs}) when orb_init_id == init_id do
       {orb, attrs}
   end
 
+  # collab updating with implicit check that member has rights to be collab with transition changeset check
   def populate_members({%Orb{} = orb, %{"initiator_id" => init_id} = attrs}) do
       member_query = from p in Phos.Action.Permission, where: (p.member_id == ^init_id) and  (p.orb_id == ^orb.id)
       case orb |> Phos.Repo.preload([members: member_query]) do
@@ -566,6 +570,7 @@ defmodule Phos.Action do
       end
   end
 
+  # nothing to do with members, pokemon clause should not trigger initiator_id tied @ controller params
   def populate_members({orb, attrs}) do
     {orb, attrs}
   end
@@ -948,6 +953,11 @@ defmodule Phos.Action do
       })
 
     create_orb(attrs)
+  end
+
+  def notify(%Orb{members: [%Permission{member_id: _member_id, action: act} = _member | remember]} = orb) when act in [:collab] do
+    #support collab using preload of permission member accepted ur collab invite
+    notify(%{orb | members: remember})
   end
 
   # reduces down membership list
