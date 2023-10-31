@@ -5,7 +5,9 @@ defmodule Phos.Action.Permission do
   use Fsmx.Struct, state_field: :action, transitions: %{
     :"*" => ["collab_invite", "mention"],
     :collab_invite => "collab",
-    "mention" => "collab_invite"
+    "mention" => "collab_invite",
+    :mention => "collab_invite",
+    :collab => "collab"
   }
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
@@ -31,7 +33,7 @@ defmodule Phos.Action.Permission do
   def orb_changeset(%__MODULE__{} = permission, attrs) do
     permission
     |> Fsmx.transition_changeset(attrs["action"], attrs, [state_field: :action])
-    |> cast(attrs, [:action, :member_id])
+    |> cast(attrs, [:id, :action, :member_id])
     |> validate_required([:action, :member_id])
     |> unique_constraint([:member_id, :orb_id])
     |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])

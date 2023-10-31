@@ -293,12 +293,14 @@ defmodule Phos.Action do
       |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
-  def orbs_by_initiators(user_ids, page, opts) do
+  def orbs_by_initiators([user_id | _] = user_ids, page, opts) do
     sort_attribute = Map.get(opts, :sort_attribute, :inserted_at)
     limit = Map.get(opts, :limit, 12)
     from(o in Orb,
       as: :o,
-      where: o.initiator_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]),
+      left_join: m in assoc(o, :members),
+      on: m.member_id in ^user_ids and m.action == :collab,
+      where: o.initiator_id == ^user_id or m.member_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]),
       preload: [:initiator, :members],
       inner_lateral_join: c in subquery(
         from c in Phos.Comments.Comment,
@@ -384,69 +386,67 @@ defmodule Phos.Action do
     %Orb{}
     |> Orb.changeset(attrs)
     |> Repo.insert()
-    |> case do
-         {:ok, orb} = data ->
-            orb = orb |> Repo.preload([:initiator])
-           Task.Supervisor.start_child(Phos.TaskSupervisor,
-             fn ->
-              notify(orb)
-            end)
-            Task.start(fn ->
-              case orb.media do
-                true ->
-                  wait exponential_backoff() |> randomize |> expiry(30_000) do
-                    is_map(Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless"))
-                  after
-                    _ ->
-                      TN.Collector.add(orb)
-                      {:ok, "Media fetched"}
-                  else
-                    _ ->
-                      TN.Collector.add(%{orb | media: false})
+    |> tap(&case &1 do
+            {:ok, orb} ->
+              orb = orb |> Repo.preload([:initiator])
+              Task.Supervisor.start_child(Phos.TaskSupervisor,
+                fn ->
+                  notify(orb)
+                end)
+              Task.Supervisor.start_child(Phos.TaskSupervisor,
+                fn ->
+                  from(u in Phos.Users.User, update: [inc: [boon: 1]], where: u.id == ^orb.initiator_id)
+                  |> Phos.Repo.update_all([])
+                end
+              )
+              Task.start(fn ->
+                case orb.media do
+                  true ->
+                    wait exponential_backoff() |> randomize |> expiry(30_000) do
+                      is_map(Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless"))
+                    after
+                      _ ->
+                        TN.Collector.add(orb)
+                        {:ok, "Media fetched"}
+                    else
+                      _ ->
+                        TN.Collector.add(%{orb | media: false})
                       {:error, "Unable to get media"}
-                  end
-                false ->
-                  TN.Collector.add(orb)
-              end
-            end)
-            #index in pgvector
-            Task.start(fn ->
-              embed  = case orb do
-                %{payload: %{inner_title: title}} when is_binary(title) ->
-                  build_embedding("passage: " <> title)
-                %{title: title} when is_binary(title) ->
-                  build_embedding("passage: " <> title)
-                _ ->
-                  nil
-              end
-              update_orb(orb, %{embedding: embed})
-            end)
-           #spawn(fn -> user_feeds_publisher(orb) end)
-           data
-         err ->
-          err
-       end
+                    end
+                  false ->
+                    TN.Collector.add(orb)
+                end
+              end)
+              #index in pgvector, Test: Down Signal Takes much longer
+              Task.start(fn ->
+                embed  = case orb do
+                           %{payload: %{inner_title: title}} when is_binary(title) ->
+                             build_embedding("passage: " <> title)
+                           %{title: title} when is_binary(title) ->
+                             build_embedding("passage: " <> title)
+                           _ ->
+                             nil
+                         end
+                update_orb(orb, %{embedding: embed})
+              end)
+              #spawn(fn -> user_feeds_publisher(orb) end)
+              _ -> :ok
+    end)
   end
 
   def admin_create_orb(attrs \\ %{}) do
     %Orb{}
     |> Orb.admin_changeset(attrs)
     |> Repo.insert()
-    |> case do
-         {:ok, orb} -> notify_mirage(orb)
-         err -> err
-       end
+    |> tap(&(notify_mirage(&1)))
   end
 
   defp notify_mirage(orb) do
     orb = Repo.preload(orb, [:initiator])
-
     case Enum.member?(orb.traits, "mirage") do
       false -> spawn(fn -> notify(orb)end)
       _ -> :ok
     end
-
-    {:ok, orb}
   end
 
   # defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
@@ -545,20 +545,26 @@ defmodule Phos.Action do
                              }}
   end
 
+  # no blorbs to populate
   def populate_blorbs({orb, attrs}) do
     {orb, attrs}
   end
 
-  def populate_members({%Orb{initiator_id: orb_init_id, members: mem} = orb, %{"initiator_id" => init_id, "members" => [_ | _]} = attrs}) when orb_init_id == init_id and not is_list(mem) do
-      {%{orb | members: []}, attrs}
+  # orb_initiator adding members
+  def populate_members({%Orb{initiator_id: orb_init_id, members: mem} = orb, %{"initiator_id" => init_id, "members" => new_mem} = attrs}) when orb_init_id == init_id and not is_list(mem) and is_list(new_mem) do
+    mem = Enum.map(new_mem, &(&1["member_id"]))
+    member_query = from p in Phos.Action.Permission, where: (p.member_id in ^mem) and  (p.orb_id == ^orb.id)
+      {orb |> Phos.Repo.preload([members: member_query]), attrs}
   end
 
+  # orb_initiator no members to add
   def populate_members({%Orb{initiator_id: orb_init_id} = orb, %{"initiator_id" => init_id} = attrs}) when orb_init_id == init_id do
       {orb, attrs}
   end
 
+  # collab updating with implicit check that member has rights to be collab with transition changeset check
   def populate_members({%Orb{} = orb, %{"initiator_id" => init_id} = attrs}) do
-      member_query = from p in Phos.Action.Permission, where: [member_id: ^init_id]
+      member_query = from p in Phos.Action.Permission, where: (p.member_id == ^init_id) and  (p.orb_id == ^orb.id)
       case orb |> Phos.Repo.preload([members: member_query]) do
         %{members: [%{id: id}|_]} = orb -> {orb, Map.put(attrs, "members", [%{"id" =>id, "action" => "collab"}])}
         _ ->
@@ -566,19 +572,33 @@ defmodule Phos.Action do
       end
   end
 
+  # nothing to do with members, pokemon clause should not trigger initiator_id tied @ controller params
   def populate_members({orb, attrs}) do
-      {orb, attrs}
+    {orb, attrs}
   end
 
-
-  def update_orb(%Orb{} = orb, attrs) do
+  def populate_and_update_orb(%Orb{} = orb, attrs) do
     {orb, attrs}
     |> populate_blorbs()
     |> populate_members()
     |> (fn
-      {orb, attrs} -> Orb.update_changeset(orb, attrs)
-      orb -> Orb.update_changeset(orb, attrs) end).()
-      |> Repo.update()
+      {orb, attrs} -> update_orb(orb, attrs)
+      _ -> {:error, "Update Failed"} end).()
+    |> tap(&case &1 do
+              {:ok, orb} ->
+                Task.Supervisor.start_child(Phos.TaskSupervisor,
+                  fn ->
+                    notify(orb)
+                  end)
+              err -> err
+    end)
+  end
+
+
+  def update_orb(%Orb{} = orb, attrs) do
+    orb
+    |> Orb.update_changeset(attrs)
+    |> Repo.update()
   end
 
   def update_admin_orb(%Orb{} = orb, attrs) do
@@ -937,8 +957,13 @@ defmodule Phos.Action do
     create_orb(attrs)
   end
 
+  def notify(%Orb{members: [%Permission{member_id: _member_id, action: act} = _member | remember]} = orb) when act in [:collab] do
+    #support collab using preload of permission member accepted ur collab invite
+    notify(%{orb | members: remember})
+  end
+
   # reduces down membership list
-  def notify(%Orb{members: [%Permission{member_id: member_id, action: act} | remember]} = orb) do
+  def notify(%Orb{members: [%Permission{member_id: member_id, action: act} | remember]} = orb) when act in [:mention, :collab_invite] do
     action_body = %{
       collab_invite: "asked you to collab on a post",
       mention: "mentioned you in a post"
@@ -958,7 +983,7 @@ defmodule Phos.Action do
     notify(%{orb | members: remember})
   end
 
-  def notify(orb) do
+  def notify(%Orb{inserted_at: crt, updated_at: mut} = orb) when crt != mut do
     geonotifiers =
       notifiers_by_geohashes([orb.central_geohash], orb.initiator_id)
       |> Enum.map(fn n -> n && Map.get(n, :fcm_token, nil) end)
@@ -987,6 +1012,8 @@ defmodule Phos.Action do
       action_path: "/orbland/orbs/#{orb.id}",
       cluster_id: "folk_orb")
   end
+
+  def notify(_), do: :ok
 
   def search(search_term) do
     build_base_search_query(search_term)

@@ -11,6 +11,7 @@ defmodule Phos.Users.User do
     field(:role, :string)
     field(:media, :boolean, default: false)
     field(:fyr_id, :string)
+    field(:boon, :integer)
 
     field(:password, :string, virtual: true, redact: true)
     field(:hashed_password, :string, redact: true)

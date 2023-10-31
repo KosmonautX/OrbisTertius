@@ -41,7 +41,7 @@ Content-Type: application/json
 User-Agent: Emacs27
 ##
 ## Generate Client-side JWT
-GET :localipAddress/devland/flameon?user=:antoine_id
+GET :localipAddress/devland/flameon?user=:lky_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
@@ -123,7 +123,7 @@ PUT :ipAddress/userland/self/
 :auth-headers
 {
     "bio": "alberto robotos",
-    "username": "kenneth",
+    "username": "aikido",
     "public_name": "Albert the Robot",
     "birthday": 16123442423,
     "media": [
@@ -140,7 +140,8 @@ PUT :ipAddress/userland/self/
     ],
     "traits": [
         "aikido",
-        "matrix"
+        "matrix",
+        "crest:SBQ#food"
     ],
     "soulorb": {
         "title": "wow",
@@ -279,7 +280,7 @@ POST :ipAddress/orbland/orbs
     },
     "members": [{
             "member_id": ":antoine_id",
-            "action": "collab_invite"
+            "action": "mention"
     }],
     "title": "aikido style",
     "inner_title": "Ranged thus for battle on the sacred plain-- On Kurukshetra--say, Sanjaya! say What wrought my people, and the Pandavas?",
@@ -355,20 +356,44 @@ POST :ipAddress/orbland/orbs
 ## Update Orbs (Deactivate etc)
 ##
 PUT :ipAddress/orbland/orbs/:orb
--> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (assq 'data (json-read)))))
 :auth-headers
 {
-    "geolocation": {
-        "central_geohash": 623276216935972863
-    },
-    "media_exists": true,
-    "title": "yogafire",
-    "inner_title": "stay in the matrix",
-    "info": "ba sing se",
-    "active": "true",
-    "media": [],
-    "expires_in": "10000",
-    "traits": ["holy", "mooncakes"]
+   "geolocation":{
+      "central_geohash":614268617233530879
+   },
+   "title":"Helo",
+   "creationTime":1698390237954,
+   "inner_title":"Helo",
+   "active":true,
+   "media":[
+
+   ],
+   "expires_in":"2592000",
+   "where":"monkey creatives",
+   "members":[
+   {
+            "member_id": ":antoine_id",
+            "action": "collab_invite"
+    }
+   ],
+   "traits":[
+
+   ],
+   "blorbs":[
+      {
+         "active":true,
+         "character":{
+            "count":null,
+            "ext":null,
+            "content":"Hhh",
+            "align":"center"
+         },
+         "id":null,
+         "type":"txt",
+         "pop":false
+      }
+   ],
+   "media_exists":false
 }
 
 ## Append Blorb
