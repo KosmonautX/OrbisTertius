@@ -293,12 +293,14 @@ defmodule Phos.Action do
       |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
-  def orbs_by_initiators(user_ids, page, opts) do
+  def orbs_by_initiators([user_id | _] = user_ids, page, opts) do
     sort_attribute = Map.get(opts, :sort_attribute, :inserted_at)
     limit = Map.get(opts, :limit, 12)
     from(o in Orb,
       as: :o,
-      where: o.initiator_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]),
+      left_join: m in assoc(o, :members),
+      on: m.member_id in ^user_ids and m.action == :collab,
+      where: o.initiator_id == ^user_id or m.member_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]),
       preload: [:initiator, :members],
       inner_lateral_join: c in subquery(
         from c in Phos.Comments.Comment,
@@ -961,7 +963,7 @@ defmodule Phos.Action do
   end
 
   # reduces down membership list
-  def notify(%Orb{members: [%Permission{member_id: member_id, action: act} | remember]} = orb) do
+  def notify(%Orb{members: [%Permission{member_id: member_id, action: act} | remember]} = orb) when act in [:mention, :collab_invite] do
     action_body = %{
       collab_invite: "asked you to collab on a post",
       mention: "mentioned you in a post"
