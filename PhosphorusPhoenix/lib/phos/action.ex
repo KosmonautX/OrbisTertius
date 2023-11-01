@@ -147,7 +147,11 @@ defmodule Phos.Action do
     orbs_by_geohashes({hashes, your_id})
     |> maybe_search(Keyword.get(opts, :search, nil))
     |> Repo.Paginated.all([{:limit, limit} | opts])
-    |> (&(Map.put(&1, :data, &1.data |> Phos.Repo.Preloader.lateral(:comments, limit: 3, order_by: {:asc, :inserted_at}, assocs: [:initiator, parent: [:initiator]])))).()
+    |> (&(Map.put(&1, :data,
+            &1.data
+            |> Phos.Repo.Preloader.lateral(:comments, limit: 3, order_by: {:asc, :inserted_at}, assocs: [:initiator, parent: [:initiator]])
+            |> Phos.Repo.Preloader.lateral(:members, limit: 2, order_by: {:asc, :inserted_at}, assocs: [:member], where: dynamic([p], field(p, :action) == :collab))
+            ))).()
   end
 
 
@@ -957,8 +961,27 @@ defmodule Phos.Action do
     create_orb(attrs)
   end
 
-  def notify(%Orb{members: [%Permission{member_id: _member_id, action: act} = _member | remember]} = orb) when act in [:collab] do
-    #support collab using preload of permission member accepted ur collab invite
+  def notify(%Orb{members: [%Permission{action: :collab} = member | remember]} = orb) do
+    action_body = %{
+      collab: "has begun collabing on your post",
+    }
+    case member |> Phos.Repo.preload([:member]) do
+      #support collab using preload of permission member accepted ur collab invite
+      %{member: %{username: username}} ->
+        Phos.PlatformNotification.notify({"broadcast", "ORB", orb.id, "action_orb_collab"},
+          memory: %{user_source_id: orb.initiator_id, orb_subject_id: orb.id},
+          to: orb.initiator_id,
+          notification: %{
+            title: "#{username} #{action_body[:collab]}",
+            body: orb.title,
+            silent: false
+          }, data: %{
+            cluster_id: orb.id,
+            action_path: "/orbland/orbs/#{orb.id}"
+          })
+        _ -> :ok
+    end
+
     notify(%{orb | members: remember})
   end
 

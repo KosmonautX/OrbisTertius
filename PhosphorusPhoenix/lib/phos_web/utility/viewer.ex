@@ -271,6 +271,7 @@ defmodule PhosWeb.Util.Viewer do
     %{
       membership_id: member.id,
       action: member.action,
+      relationships: relationship_reducer(member),
       member_id: member.member_id,
       media: %{"public/profile/lossy" => Phos.Orbject.S3.get!("USR", member.member_id, "public/profile/lossy")},
       creationtime: DateTime.from_naive!(member.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
