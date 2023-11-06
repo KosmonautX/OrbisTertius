@@ -97,7 +97,8 @@ defmodule Phos.Action do
       select_merge: %{comment_count: c.count})
       |> Repo.one()
       |> (fn %Orb{} = orb -> Map.put(orb, :members, Enum.reduce(orb.members, {:cont, []}, fn
-            %{action: :collab} = member, {:cont, acc} -> {:halt, [Repo.preload(member, :member) | acc]}
+            %{action: :mention} = member, {:cont, acc} -> {:cont_collab, [Repo.preload(member, :member) | acc]}
+            %{action: :collab} = member, {state, acc} when state in [:cont, :cont_collab] -> {:halt, [Repo.preload(member, :member) | acc]}
             member, {state, acc} -> {state, [member| acc]}
             end) |> elem(1))
        err -> err
@@ -157,7 +158,7 @@ defmodule Phos.Action do
     |> (&(Map.put(&1, :data,
             &1.data
             |> Phos.Repo.Preloader.lateral(:comments, limit: 3, order_by: {:asc, :inserted_at}, assocs: [:initiator, parent: [:initiator]])
-            |> Phos.Repo.Preloader.lateral(:members, limit: 2, order_by: {:asc, :inserted_at}, assocs: [:member], where: dynamic([p], field(p, :action) == :collab))
+            |> Phos.Repo.Preloader.lateral(:members, limit: 2, order_by: {:asc, :inserted_at}, assocs: [:member], where: dynamic([p], field(p, :action) != :collab_invite))
             ))).()
   end
 
