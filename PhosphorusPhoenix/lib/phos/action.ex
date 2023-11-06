@@ -96,10 +96,12 @@ defmodule Phos.Action do
       ), on: true,
       select_merge: %{comment_count: c.count})
       |> Repo.one()
-      |> (&(Map.put(&1, :members, Enum.reduce(&1.members, {:cont, []}, fn
-      %{action: :collab} = member, {:cont, acc} -> {:halt, [Repo.preload(member, :member) | acc]}
-      member, {state, acc} -> {state, [member| acc]}
-    end) |> elem(1)))).()
+      |> (fn %Orb{} = orb -> Map.put(orb, :members, Enum.reduce(orb.members, {:cont, []}, fn
+            %{action: :collab} = member, {:cont, acc} -> {:halt, [Repo.preload(member, :member) | acc]}
+            member, {state, acc} -> {state, [member| acc]}
+            end) |> elem(1))
+       err -> err
+    end).()
 
   end
 
