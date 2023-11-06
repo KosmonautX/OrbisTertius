@@ -60,7 +60,7 @@ defmodule Phos.Action do
     # parent_path = "*.#{Phos.Utility.Encoder.encode_lpath(id)}.*"
     query =
       from o in Orb,
-        preload: [:locations, :initiator, :parent],
+        preload: [:locations, :initiator],
         where: o.id == ^id,
         inner_lateral_join: p in subquery(
           from p in Orb,
@@ -96,6 +96,11 @@ defmodule Phos.Action do
       ), on: true,
       select_merge: %{comment_count: c.count})
       |> Repo.one()
+      |> (&(Map.put(&1, :members, Enum.reduce(&1.members, {:cont, []}, fn
+      %{action: :collab} = member, {:cont, acc} -> {:halt, [Repo.preload(member, :member) | acc]}
+      member, {state, acc} -> {state, [member| acc]}
+    end) |> elem(1)))).()
+
   end
 
   def get_orb!(id), do: Repo.get!(Orb, id) |> Repo.preload([:locations, :initiator, :blorbs])
@@ -143,7 +148,7 @@ defmodule Phos.Action do
   end
 
   def orbs_by_geohashes({hashes, your_id}, opts) do
-    limit = Keyword.get(opts, :limit, 24)
+    limit = Keyword.get(opts, :limit, 12)
     orbs_by_geohashes({hashes, your_id})
     |> maybe_search(Keyword.get(opts, :search, nil))
     |> Repo.Paginated.all([{:limit, limit} | opts])
@@ -969,7 +974,7 @@ defmodule Phos.Action do
       #support collab using preload of permission member accepted ur collab invite
       %{member: %{username: username}} ->
         Phos.PlatformNotification.notify({"broadcast", "ORB", orb.id, "action_orb_collab"},
-          memory: %{user_source_id: orb.initiator_id, orb_subject_id: orb.id},
+          memory: %{user_source_id: member.member_id, orb_subject_id: orb.id},
           to: orb.initiator_id,
           notification: %{
             title: "#{username} #{action_body[:collab]}",

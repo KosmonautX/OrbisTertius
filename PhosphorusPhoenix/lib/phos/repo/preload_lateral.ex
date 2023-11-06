@@ -69,7 +69,7 @@ defmodule Phos.Repo.Preloader do
   end
 
   defp results_to_struct(entities, s) do
-    Enum.map(entities, fn x -> struct(s,x |> Map.delete(:__struct__)) end)
+    Enum.map(entities, fn x -> struct(s, x |> Map.delete(:__struct__)) end)
   end
 
   defp maybe_preload_assocs(entities, nil), do: entities
