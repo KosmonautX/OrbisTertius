@@ -1014,7 +1014,7 @@ defmodule Phos.Action do
     notify(%{orb | members: remember})
   end
 
-  def notify(%Orb{inserted_at: crt, updated_at: mut} = orb) when crt != mut do
+  def notify(%Orb{inserted_at: crt, updated_at: mut} = orb) when crt == mut do
     geonotifiers =
       notifiers_by_geohashes([orb.central_geohash], orb.initiator_id)
       |> Enum.map(fn n -> n && Map.get(n, :fcm_token, nil) end)
