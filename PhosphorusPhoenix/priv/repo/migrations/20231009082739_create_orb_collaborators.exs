@@ -4,9 +4,9 @@ defmodule Phos.Repo.Migrations.CreateOrbCollaborators do
   def change do
     create table(:orb_permissions, primary_key: false) do
       add :id, :uuid, primary_key: true
-      add :orb_id, references(:orbs, on_delete: :nothing, column: :id, type: :uuid)
+      add :orb_id, references(:orbs, on_delete: :delete_all, column: :id, type: :uuid)
       add :member_id, references(:users, on_delete: :nothing, column: :id, type: :uuid)
-      add :token_id, references(:users_tokens, on_delete: :nothing, column: :id)
+      add :token_id, references(:users_tokens, on_delete: :nilify_all, column: :id)
       add :action, :integer
 
       timestamps(type: :utc_datetime_usec)

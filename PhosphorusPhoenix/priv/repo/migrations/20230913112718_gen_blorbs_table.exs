@@ -8,7 +8,7 @@ defmodule Phos.Repo.Migrations.GenBlorbsTable do
       add :active, :boolean, default: true, null: true
       add :character, :jsonb
       add :initiator_id, references(:users, column: :id, type: :uuid)
-      add :orb_id, references(:orbs, column: :id, type: :uuid)
+      add :orb_id, references(:orbs, column: :id, type: :uuid, on_delete: :delete_all)
 
       timestamps()
     end

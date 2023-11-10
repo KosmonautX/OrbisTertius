@@ -41,7 +41,7 @@ Content-Type: application/json
 User-Agent: Emacs27
 ##
 ## Generate Client-side JWT
-GET :localipAddress/devland/flameon?user=:antoine_id
+GET :localipAddress/devland/flameon?user=:lky_id
 -> run-hook (restclient-set-var ":token" (cdr (assq 'payload (json-read))))
 
 ## Generate Google Identity idToken for Firebase Auth
@@ -395,6 +395,10 @@ PUT :ipAddress/orbland/orbs/:orb
    ],
    "media_exists":false
 }
+
+## Delete Orb
+DELETE :ipAddress/orbland/orbs/:orb/
+:auth-headers
 
 ## Append Blorb
 PUT :ipAddress/orbland/orbs/:orb/blorbs
