@@ -673,6 +673,13 @@ defmodule Phos.Action do
     |> Enum.map(fn mem -> Phos.Message.update_memory(mem, %{orb_subject_id: nil})
     end)
 
+    if orb.media do
+      try do
+      Phos.Orbject.S3.delete_all("ORB", orb.id)
+      rescue
+        _ -> IO.puts("Media delete ops failed for: " <> orb.id)
+     end
+    end
     Repo.delete(orb)
   end
 
