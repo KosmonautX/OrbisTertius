@@ -23,6 +23,7 @@ defmodule Phos.MixProject do
     [
       mod: {Phos.Application, []},
       extra_applications: [:lager, :logger, :runtime_tools, :inets]
+      # :wx, :observer
       # extra_applications: [:logger, :runtime_tools, :wx]
     ]
   end
@@ -89,7 +90,7 @@ defmodule Phos.MixProject do
       {:uuid, "~> 1.1" },
       # comments
       {:ecto_ltree, "~> 0.3.0"},
-      {:sparrow, github: "Scratchbac/sparrow", tag: "e37e459"},
+      {:sparrow, github: "satrionugroho/sparrow", tag: "v1.0.3"},
       {:bumblebee, "~> 0.3.1"},
       {:exla, "~> 0.6.0"},
       #debugging
