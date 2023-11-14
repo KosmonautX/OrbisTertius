@@ -23,6 +23,14 @@ defmodule Phos.Orbject.S3 do
 
   @bucket "orbistertius"
 
+  defguard is_uuid?(value)
+  when is_bitstring(value) and
+         byte_size(value) == 36 and
+         binary_part(value, 8, 1) == "-" and
+         binary_part(value, 13, 1) == "-" and
+         binary_part(value, 18, 1) == "-" and
+         binary_part(value, 23, 1) == "-"
+
   def get(path) do
     signer(:get, path)
   end
@@ -156,7 +164,7 @@ defmodule Phos.Orbject.S3 do
           do: ".#{m.ext}"}"
   end
 
-  defp path_constructor(archetype, uuid, form) do
+  defp path_constructor(archetype, uuid, form) when is_uuid?(uuid) do
     "#{archetype}/#{uuid}/#{form}"
   end
 

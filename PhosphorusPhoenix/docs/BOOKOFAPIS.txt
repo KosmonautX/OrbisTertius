@@ -280,7 +280,7 @@ POST :ipAddress/orbland/orbs
     },
     "members": [{
             "member_id": ":antoine_id",
-            "action": "mention"
+            "action": "collab_invite"
     }],
     "title": "aikido style",
     "inner_title": "Ranged thus for battle on the sacred plain-- On Kurukshetra--say, Sanjaya! say What wrought my people, and the Pandavas?",
@@ -373,7 +373,7 @@ PUT :ipAddress/orbland/orbs/:orb
    "members":[
    {
             "member_id": ":antoine_id",
-            "action": "collab_invite"
+            "action": "collab"
     }
    ],
    "traits":[
@@ -395,6 +395,10 @@ PUT :ipAddress/orbland/orbs/:orb
    ],
    "media_exists":false
 }
+
+## Delete Orb
+DELETE :ipAddress/orbland/orbs/:orb/
+:auth-headers
 
 ## Append Blorb
 PUT :ipAddress/orbland/orbs/:orb/blorbs

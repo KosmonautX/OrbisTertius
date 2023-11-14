@@ -60,7 +60,7 @@ defmodule Phos.Action do
     # parent_path = "*.#{Phos.Utility.Encoder.encode_lpath(id)}.*"
     query =
       from o in Orb,
-        preload: [:locations, :initiator, :parent],
+        preload: [:locations, :initiator],
         where: o.id == ^id,
         inner_lateral_join: p in subquery(
           from p in Orb,
@@ -96,6 +96,14 @@ defmodule Phos.Action do
       ), on: true,
       select_merge: %{comment_count: c.count})
       |> Repo.one()
+      |> (fn %Orb{} = orb -> Map.put(orb, :members, Enum.reduce(orb.members, {:cont, []}, fn
+            %{action: :mention} = member, {:cont, acc} -> {:cont_collab, [Repo.preload(member, :member) | acc]}
+            %{action: :collab} = member, {state, acc} when state in [:cont, :cont_collab] -> {:halt, [Repo.preload(member, :member) | acc]}
+            member, {state, acc} -> {state, [member| acc]}
+            end) |> elem(1))
+       err -> err
+    end).()
+
   end
 
   def get_orb!(id), do: Repo.get!(Orb, id) |> Repo.preload([:locations, :initiator, :blorbs])
@@ -143,11 +151,15 @@ defmodule Phos.Action do
   end
 
   def orbs_by_geohashes({hashes, your_id}, opts) do
-    limit = Keyword.get(opts, :limit, 24)
+    limit = Keyword.get(opts, :limit, 12)
     orbs_by_geohashes({hashes, your_id})
     |> maybe_search(Keyword.get(opts, :search, nil))
     |> Repo.Paginated.all([{:limit, limit} | opts])
-    |> (&(Map.put(&1, :data, &1.data |> Phos.Repo.Preloader.lateral(:comments, limit: 3, order_by: {:asc, :inserted_at}, assocs: [:initiator, parent: [:initiator]])))).()
+    |> (&(Map.put(&1, :data,
+            &1.data
+            |> Phos.Repo.Preloader.lateral(:comments, limit: 3, order_by: {:asc, :inserted_at}, assocs: [:initiator, parent: [:initiator]])
+            |> Phos.Repo.Preloader.lateral(:members, limit: 2, order_by: {:asc, :inserted_at}, assocs: [:member], where: dynamic([p], field(p, :action) != :collab_invite))
+            ))).()
   end
 
 
@@ -661,6 +673,13 @@ defmodule Phos.Action do
     |> Enum.map(fn mem -> Phos.Message.update_memory(mem, %{orb_subject_id: nil})
     end)
 
+    if orb.media do
+      try do
+      Phos.Orbject.S3.delete_all("ORB", orb.id)
+      rescue
+        _ -> IO.puts("Media delete ops failed for: " <> orb.id)
+     end
+    end
     Repo.delete(orb)
   end
 
@@ -957,8 +976,27 @@ defmodule Phos.Action do
     create_orb(attrs)
   end
 
-  def notify(%Orb{members: [%Permission{member_id: _member_id, action: act} = _member | remember]} = orb) when act in [:collab] do
-    #support collab using preload of permission member accepted ur collab invite
+  def notify(%Orb{members: [%Permission{action: :collab} = member | remember]} = orb) do
+    action_body = %{
+      collab: "has begun collabing on your post",
+    }
+    case member |> Phos.Repo.preload([:member]) do
+      #support collab using preload of permission member accepted ur collab invite
+      %{member: %{username: username}} ->
+        Phos.PlatformNotification.notify({"broadcast", "ORB", orb.id, "action_orb_collab"},
+          memory: %{user_source_id: member.member_id, orb_subject_id: orb.id},
+          to: orb.initiator_id,
+          notification: %{
+            title: "#{username} #{action_body[:collab]}",
+            body: orb.title,
+            silent: false
+          }, data: %{
+            cluster_id: orb.id,
+            action_path: "/orbland/orbs/#{orb.id}"
+          })
+        _ -> :ok
+    end
+
     notify(%{orb | members: remember})
   end
 
@@ -983,7 +1021,7 @@ defmodule Phos.Action do
     notify(%{orb | members: remember})
   end
 
-  def notify(%Orb{inserted_at: crt, updated_at: mut} = orb) when crt != mut do
+  def notify(%Orb{inserted_at: crt, updated_at: mut} = orb) when crt == mut do
     geonotifiers =
       notifiers_by_geohashes([orb.central_geohash], orb.initiator_id)
       |> Enum.map(fn n -> n && Map.get(n, :fcm_token, nil) end)
