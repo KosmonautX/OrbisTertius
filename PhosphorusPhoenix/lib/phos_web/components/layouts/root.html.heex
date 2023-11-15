@@ -14,7 +14,9 @@
     <meta :if={assigns[:redirect]} http-equiv="Refresh" content={"0; URL=scrb://host/" <> assigns[:meta][:mobile_redirect]} />
     <.meta_tags contents={assigns[:meta]} />
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
-    <link phx-track-static rel="stylesheet" href={~p"/assets/vendor/fonts/Poppins/poppins.css"} />
+    <link phx-track-static rel="stylesheet" href={~p"/assets/vendor/fonts/Poppins/poppins.css"}
+    <link phx-track-static rel="stylesheet" href={~p"/assets/vendor/fonts/Miller/miller.css"}
+    />
 
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}/>
 <!-- Google tag (gtag.js) -->

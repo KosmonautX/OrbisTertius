@@ -25,10 +25,10 @@ defmodule PhosWeb.API.EchoController do
   def show_relations(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => rel_id, "cursor" => cursor}),
     do: render(conn, :paginated, memories: Message.list_messages_by_relation({rel_id, your_id}, [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond)]))
 
-  def show_territories(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => territory_id, "cursor" => cursor, "asc" => "true"}),
+  def show_territories(%Plug.Conn{assigns: %{current_user: %{id: _your_id}}} = conn, %{"id" => territory_id, "cursor" => cursor, "asc" => "true"}),
     do: render(conn, :paginated, memories: Message.list_messages_by_geohashes(String.to_integer(territory_id), [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond), asc: true]))
 
-  def show_territories(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => territory_id, "cursor" => cursor}),
+  def show_territories(%Plug.Conn{assigns: %{current_user: %{id: _your_id}}} = conn, %{"id" => territory_id, "cursor" => cursor}),
     do: render(conn, :paginated, memories: Message.list_messages_by_geohashes(String.to_integer(territory_id), [filter: String.to_integer(cursor) |> DateTime.from_unix!(:millisecond)]))
 
   def show_orbs(%Plug.Conn{assigns: %{current_user: %{id: your_id}}} = conn, %{"id" => orb_id, "page" => page}),

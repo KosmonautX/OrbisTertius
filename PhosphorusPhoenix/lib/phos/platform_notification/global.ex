@@ -1,20 +1,7 @@
 defmodule Phos.PlatformNotification.Global do
   use GenServer
 
-  defstruct [
-    :action_path,
-    :active,
-    :archetype,
-    :archetype_id,
-    :frequency,
-    :id,
-    :regions,
-    :target_group,
-    :title,
-    :body,
-    :time_condition,
-    :trigger
-  ]
+  defstruct [:action_path, :active, :archetype, :archetype_id, :frequency, :id, :regions, :target_group, :title, :body , :time_condition, :trigger]
 
   def start_link(opts), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
 

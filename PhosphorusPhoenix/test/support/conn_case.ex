@@ -36,23 +36,29 @@ defmodule PhosWeb.ConnCase do
 
   setup tags do
 
-    # start_owner uses a separate process to own the connection and
-    # this process will terminate after the dangling presence processes are DOWN
+    # start_owner uses a separate process to own the connection
+    # the owner of the connection will be a separate process (from the test process)
+    # that then we will terminate
+
+    pid = Ecto.Adapters.SQL.Sandbox.start_owner!(Phos.Repo, shared: not tags[:async])
+
     on_exit(fn ->
+
       # does timer here make it more reliable(?)
       :timer.sleep(100)
+
+      # this process will terminate after the dangling presence processes are DOWN
       for pid <- PhosWeb.Presence.fetchers_pids() do
         ref = Process.monitor(pid)
         assert_receive {:DOWN, ^ref, _, _, _}, 1000
       end
-    end)
 
-    # the owner of the connection will be a separate process (from the test process)
-    # that then we will terminate 
-
-    pid = Ecto.Adapters.SQL.Sandbox.start_owner!(Phos.Repo, shared: not tags[:async])
-
-    on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
+      # assert child processes to task supervisor such as notifications are down
+      for pid <- Task.Supervisor.children(Phos.TaskSupervisor) do
+        ref = Process.monitor(pid)
+        assert_receive {:DOWN, ^ref, _, _, _}, 1000
+      end
+      Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
 
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
@@ -69,6 +75,12 @@ defmodule PhosWeb.ConnCase do
     user = Phos.UsersFixtures.user_fixture()
 
     %{conn: log_in_user(conn, user), user: user}
+  end
+
+    def register_and_log_in_user_and_create_orb(%{conn: conn}) do
+    user = Phos.UsersFixtures.user_fixture()
+    orb = Phos.ActionFixtures.orb_fixture(%{"initiator_id" => user.id})
+    %{conn: log_in_user(conn, user), user: user, orb: orb}
   end
 
   def inject_user_token(%{conn: conn}) do

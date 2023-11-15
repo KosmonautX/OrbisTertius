@@ -30,7 +30,7 @@ defmodule Phos.PubSub do
 
   def publish(%Phos.Message.Memory{user_source: user} = message, event, %Phos.Users.RelationBranch{user_id: user_id}) do
         PubSub.broadcast(__MODULE__, "memory:user:#{user_id}", {__MODULE__, event, message})
-        if(user_id != user.id) do
+        if user_id != user.id do
           Sparrow.FCM.V1.Notification.new(:topic, "USR.#{user_id}", "Message from #{user.username}", message.message,
           %{title: "Message from #{user.username}",
             body: message.message,

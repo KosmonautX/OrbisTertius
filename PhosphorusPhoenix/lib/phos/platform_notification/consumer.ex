@@ -34,44 +34,14 @@ defmodule Phos.PlatformNotification.Consumer do
   defp execute_mail_events([], _from), do: :ok
   defp execute_mail_events([store | tail], from) do
     case __MODULE__.Email.send(store) do
-      {:ok, result} -> 
-        :logger.info(%{
-          label: {Phos.PlatformNotification.Consumer, "success send notification from email"},
-          report: %{
-            module: __MODULE__,
-            executor: __MODULE__.Email,
-            data: result,
-          }
-        }, %{
-          domain: [:phos, :platform_notification],
-          error_logger: %{tag: :info_msg}
-        })
+      {:ok, _result} -> 
+        _ = write_log(:info, "success send notification from email", nil)
         GenStage.reply(from, {store.id, :success})
       {:error, msg} ->
-        :logger.info(%{
-          label: {Phos.PlatformNotification.Consumer, "failed sent notification from email"},
-          report: %{
-            module: __MODULE__,
-            executor: __MODULE__.Email,
-            message: msg,
-          }
-        }, %{
-          domain: [:phos, :platform_notification],
-          error_logger: %{tag: :info_msg}
-        })
+        _ = write_log(:warning, "failed sending notification from email", msg)
         GenStage.reply(from, {store.id, :error, msg})
       err ->
-        :logger.info(%{
-          label: {Phos.PlatformNotification.Consumer, "error sent notification from email"},
-          report: %{
-            module: __MODULE__,
-            executor: __MODULE__.Email,
-            message: err
-          }
-        }, %{
-          domain: [:phos, :platform_notification],
-          error_logger: %{tag: :info_msg}
-        })
+        _ = write_log(:warning, "error sending notification from email", err)
         GenStage.reply(from, {store.id, :unknown_error, err})
     end
 
@@ -79,73 +49,54 @@ defmodule Phos.PlatformNotification.Consumer do
   end
 
   defp execute_fcm_events(data, from) do
-    IO.inspect(data, label: "fcm")
     data
     |> create_fcm_spec()
-    |> filter_user_token(from)
-    |> send_to_client(from)
+    |> Enum.each(&send_to_client(&1, from))
   end
 
   defp create_fcm_spec(data) do
-    Enum.reduce(data, {[], [], []}, fn d, {succeed_data, succeed_ids, failed_ids} ->
+    Enum.reduce(data, %{}, fn d, acc ->
       message = __MODULE__.Fcm.get_template(d)
-      IO.inspect(message, label: "message")
-      data = __MODULE__.Fcm.get_data(d)
+      body    = get_in(message, [Access.key(:body, "")])
+      title   = get_in(message, [Access.key(:title, "")])
+      token   = get_in(d, [Access.key(:recipient, %{}), Access.key(:integrations, %{}), Access.key(:fcm_token, "")])
+      data    = __MODULE__.Fcm.get_data(d)
 
-      case decide_recipient(message, data, d) do
-        {:ok, msg} -> {[msg | succeed_data], [d.id | succeed_ids], failed_ids}
-        {:error, _} -> {succeed_data, succeed_ids, [d.id | failed_ids]}
-      end
+      Sparrow.FCM.V1.Notification.new(:token, token, title, body, data)
+      |> Sparrow.FCM.V1.Notification.add_apns(Phos.PlatformNotification.Config.APNS.gen())
+      |> then(fn n ->
+        Map.put(acc, d.id, n)
+      end)
     end)
   end
 
-  defp filter_user_token({succeed_data, succeed_ids, failed_ids}, from) when length(failed_ids) > 0 do
-    spawn(fn -> GenStage.reply(from, {failed_ids, :errors, "User doesn't have FCM Token"}) end)
-    {succeed_data, succeed_ids}
+  defp send_to_client({id, notif}, from) do
+    Sparrow.API.push(notif)
+    |> handle_result(id, from)
   end
 
-  defp filter_user_token({succeed_data, succeed_ids, _failed_ids}, _from) do
-    {succeed_data, succeed_ids}
+  defp handle_result(:ok, id, from) do
+    _ = write_log(:info, "success sending notification", nil)
+    _ = GenStage.reply(from, {id, :success})
   end
 
-  defp send_to_client({[%Sparrow.FCM.V1.Notification{} | _] = notifs, ids}, from) do
-    IO.inspect(notifs, label: "Notification Sending")
-    case Sparrow.API.push(notifs) do
-      :ok ->
-        :logger.info(%{
-          label: {Phos.PlatformNotification.Consumer, "success batching notification to fcm"},
-          report: %{
-            module: __MODULE__,
-            executor: __MODULE__.Fcm,
-            succeed_data: ids,
-          }
-        }, %{
-          domain: [:phos, :platform_notification],
-          error_logger: %{tag: :info_msg}
-        })
-        GenStage.reply(from, {ids, :success})
-      err ->
-        :logger.warning(%{
-          label: {Phos.PlatformNotification.Consumer, "error batching notification to fcm"},
-          report: %{
-            module: __MODULE__,
-            executor: __MODULE__.Fcm,
-            error_message: err
-          }
-        }, %{
-          domain: [:phos, :platform_notification],
-          error_logger: %{tag: :warning_msg}
-        })
-        GenStage.reply(from, {nil, :unknown_error, err})
-    end
-  end
-  defp send_to_client(err, from), do: GenStage.reply(from, {nil, :file_error, err})
-
-  defp decide_recipient(%{title: title} = msg, data, %{recipient: %{integrations: %{fcm_token: token}}}) when not is_nil(token) do
-    {:ok, Sparrow.FCM.V1.Notification.new(:token, token, title, get_in(msg, [:body]) || "", data)
-    |> Sparrow.FCM.V1.Notification.add_apns(Phos.PlatformNotification.Config.APNS.gen())}
+  defp handle_result(err, id, from) do
+    _ = write_log(:warning, "error sending notification", err)
+    _ = GenStage.reply(from, {id, :error})
   end
 
-  defp decide_recipient(_message, _data, _recipient), do: {:error, "User doesn't have FCM Token"}
-
+  defp write_log(type, msg, error) do
+    apply(:logger, type, [%{
+      label: {Phos.PlatformNotification.Consumer, msg},
+      report: %{
+        module: __MODULE__,
+        executor: __MODULE__.Fcm,
+        error_message: error
+      }
+    }, %{
+        domain: [:phos, :platform_notification],
+        error_logger: %{tag: type}
+      }
+    ])
+  end
 end

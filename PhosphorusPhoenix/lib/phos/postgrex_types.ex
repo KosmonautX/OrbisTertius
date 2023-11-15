@@ -1,4 +1,4 @@
 Postgrex.Types.define(
   Phos.PostgresTypes,
-  [EctoLtree.Postgrex.Lquery, EctoLtree.Postgrex.Ltree] ++ Ecto.Adapters.Postgres.extensions()
+  [EctoLtree.Postgrex.Lquery, EctoLtree.Postgrex.Ltree, Pgvector.Extensions.Vector] ++ Ecto.Adapters.Postgres.extensions()
 )

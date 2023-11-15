@@ -376,3 +376,26 @@ end)
 |> Enum.find(fn l -> l.id == "home" end)
 |> (& &1.geohash).()
 ```
+
+## 🤖 Alberto Roboto
+
+```elixir
+Phos.Action.telegram_chat_id_by_geohashes([614_268_985_654_902_783])
+```
+
+```elixir
+%{personal_orb: %{locations: loc}, private_profile: geo} =
+  Phos.Users.get_user_by_username("ggggggg")
+  |> Phos.Repo.preload(personal_orb: [:locations], private_profile: [])
+```
+
+```elixir
+loc |> Enum.map(& &1.id) |> Enum.map(&:h3.to_string(&1))
+
+# geo
+```
+
+```elixir
+Phos.Action.get_orb!("5f631db9-d0fe-4488-8bc8-0a546e74a3e8")
+|> Phos.Users.get_telegram_chat_ids_by_orb()
+```

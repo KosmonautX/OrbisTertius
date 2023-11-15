@@ -21,7 +21,6 @@ defmodule PhosWeb.UserLoginLive do
         for={%{}}
         as={:user}
         action={~p"/users/log_in"}
-        as={:user}
         phx-update="ignore"
       >
         <.input field={{f, :email}} type="email" label="Email" required />

@@ -1,4 +1,4 @@
-defmodule Phos.Users.Public_Profile do
+defmodule Phos.Users.PublicProfile do
   use Ecto.Schema
   import Ecto.Changeset
 

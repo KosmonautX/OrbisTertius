@@ -1,8 +1,11 @@
 defmodule PhosWeb.API.OrbController do
   use PhosWeb, :controller
   use Phos.ParamsValidator, [
-    :id, :locations, :title, :media, :initiator_id, :traits, :active,
-    :source,  payload: [:when, :where, :info, :tip, :inner_title], rename: [:expires_in, :extinguish]
+    :id, :locations, :title, :media, :initiator_id, :traits, :active, :members, :blorbs,
+    payload: [:when, :where, :info, :tip, :inner_title],
+    rename: [:expires_in, :extinguish],
+    rename: [:creationtime, :inserted_at],
+    rename: [:media_exists, :media]
   ]
 
   alias Phos.Action
@@ -12,6 +15,7 @@ defmodule PhosWeb.API.OrbController do
 
   # curl -H "Content-Type: application/json" -H "Authorization:$(curl -X GET 'http://localhost:4000/api/devland/flameon?user_id=d9476604-f725-4068-9852-1be66a046efd' | jq -r '.payload')" -X GET 'http://localhost:4000/api/comments'
 
+  @spec index(Plug.Conn.t(), any) :: Plug.Conn.t()
   def index(conn, _params) do
     orbs = Action.list_orbs()
     render(conn, :index, orbs: orbs)
@@ -49,7 +53,7 @@ defmodule PhosWeb.API.OrbController do
   def create(conn = %{assigns: %{current_user: user}}, params) do
 
     with {:ok, attrs} <- orb_constructor(user, params),
-         {:ok, %Orb{} = orb} <- Action.create_orb(attrs) do
+         {:ok, %Orb{} = orb} <- Action.create_orb(%{attrs | "media" => false}) do
       conn
       |> put_status(:created)
       |> put_resp_header("location", ~p"/api/orbland/orbs/#{orb.id}")
@@ -57,27 +61,25 @@ defmodule PhosWeb.API.OrbController do
     end
   end
 
-  defp orb_constructor(user, params) do
+  def orb_constructor(user, params) do
     constructor = sanitize(params)
     try do
       options = case params do
-        # Normal post, accepts a map containing target and central geohash
-        # Generates 7x given the target
-        %{"geolocation" => %{"central_geohash" => central_geohash}} ->
-          locations = central_geohash |> :h3.parent(8) |> :h3.k_ring(1) |> Enum.map(&Map.new([{"id", &1}]))
-          %{"locations" => locations, "central_geohash" => central_geohash}
+                  # Normal post, accepts a map containing target and central geohash
+                  # Generates 7x given the target
+                  %{"geolocation" => %{"central_geohash" => central_geohash}} ->
+                    locations = central_geohash |> :h3.parent(8) |> :h3.k_ring(1) |> Enum.map(&Map.new([{"id", &1}]))
+                    %{"locations" => locations, "central_geohash" => central_geohash}
 
-        %{"geolocation" => %{"geohashes" => hashes}} ->
-          locations = Enum.map(hashes, &Map.new([{"id", &1}]))
-          %{"locations" => locations, "central_geohash" => List.first(hashes)}
+                  %{"geolocation" => %{"geohashes" => hashes}} ->
+                    locations = Enum.map(hashes, &Map.new([{"id", &1}]))
+                    %{"locations" => locations, "central_geohash" => List.first(hashes)}
 
-        _ -> %{}
-      end
-      |> then(fn orb ->
-        traits = user |> get_in([Access.key(:public_profile, %{}), Access.key(:traits, nil)]) || []
-        if Enum.member?(traits, "exile"), do: orb |> Map.delete("locations"), else: orb
-      end)
-      |> Map.put("initiator_id", user.id)
+                  _ -> %{}
+                end
+                |> Map.put("initiator_id", user.id)
+
+      # IO.inspect(Map.merge(constructor, options))
       {:ok, Map.merge(constructor, options)}
     rescue
       ArgumentError -> {:error, :unprocessable_entity}
@@ -114,9 +116,10 @@ defmodule PhosWeb.API.OrbController do
     try do
       geohashes = String.split(hashes, ",")
       |> Enum.map(fn hash ->
-        Enum.map([8,9,10], &(:h3.parent(String.to_integer(hash), &1))) end)
+        Enum.map([8, 9, 10], &(:h3.parent(String.to_integer(hash), &1))) end)
         |> List.flatten()
         |> Enum.uniq()
+
       traits = String.split(trait, ",") |> Enum.uniq()
       loc_orbs = Action.orbs_by_geotraits({geohashes, user.id}, traits, [page: page])
       render(conn, :paginated, orbs: loc_orbs)
@@ -128,8 +131,10 @@ defmodule PhosWeb.API.OrbController do
   def show_territory(%{assigns: %{current_user: user}} = conn, %{"id" => hashes, "page" => page, "search" => search}) do
     try do
       geohashes = String.split(hashes, ",")
-      |> Enum.map(fn hash -> String.to_integer(hash) |> :h3.parent(8) end)
-      |> Enum.uniq()
+      |> Enum.map(fn hash ->
+        Enum.map([8,9,10], &(:h3.parent(String.to_integer(hash), &1))) end)
+        |> List.flatten()
+        |> Enum.uniq()
       loc_orbs = Action.orbs_by_geohashes({geohashes, user.id}, [page: page, search: search])
       render(conn, :paginated, orbs: loc_orbs)
     rescue
@@ -167,7 +172,7 @@ defmodule PhosWeb.API.OrbController do
     geohashes = String.split(hashes, ",")
     |> Enum.map(fn hash -> String.to_integer(hash) |> :h3.parent(8) end)
     |> Enum.uniq()
-    loc_orbs = Action.orbs_by_geohashes({geohashes, user.id}, 1)
+    loc_orbs = Action.orbs_by_geohashes({geohashes, user.id}, [page: 1])
     render(conn, :paginated, orbs: loc_orbs)
   end
 
@@ -189,10 +194,9 @@ defmodule PhosWeb.API.OrbController do
 
   def update(conn = %{assigns: %{current_user: user}}, params = %{"id" => id, "media" => [_|_] = media}) do
     orb = Action.get_orb!(id)
-    with true <- orb.initiator.id == user.id,
-         {:ok, attrs} <- orb_constructor(user, params),
+    with {:ok, attrs} <- orb_constructor(user, params),
          {:ok, media} <- Phos.Orbject.Structure.apply_media_changeset(%{id: id, archetype: "ORB", media: media}),
-         {:ok, %Orb{} = orb} <- Action.update_orb(orb, %{attrs | "media" => true}) do
+         {:ok, %Orb{} = orb} <- Action.populate_and_update_orb(orb, %{attrs | "media" => true}) do
       conn
       |> put_status(:ok)
       |> put_resp_header("location", ~p"/api/orbland/orbs/#{orb.id}")
@@ -207,15 +211,15 @@ defmodule PhosWeb.API.OrbController do
 
   def update(conn = %{assigns: %{current_user: user}}, %{"id" => id} = params) do
     orb = Action.get_orb!(id)
-    with true <- orb.initiator.id == user.id,
-         {:ok, attrs} <- orb_constructor(user, params),
-         {:ok, %Orb{} = orb} <- Action.update_orb(orb, attrs) do
+    with {:ok, attrs} <- orb_constructor(user, params),
+         {:ok, %Orb{} = orb} <- Action.populate_and_update_orb(orb, attrs) do
       conn
       |> put_status(:ok)
       |> put_resp_header("location", ~p"/api/orbland/orbs/#{orb.id}")
       |> render(:show, orb: orb)
     else
       false -> {:error, :unauthorized}
+    error -> error
     end
   end
 
@@ -228,14 +232,18 @@ defmodule PhosWeb.API.OrbController do
       send_resp(conn, :no_content, "")
     else
       false -> {:error, :unauthorized}
+    error -> error
     end
   end
 
   def parse_params("id", data) when is_nil(data), do: Ecto.UUID.generate()
+  def parse_params("blorbs", data) when is_nil(data), do: []
   def parse_params("active", data) when is_nil(data), do: true
   def parse_params("source", _), do: :api
   def parse_params("extinguish", data) when not is_nil(data) do
     NaiveDateTime.utc_now()
     |> NaiveDateTime.add(String.to_integer(data))
   end
+  def parse_params("inserted_at", data) when not is_nil(data), do: DateTime.from_unix!(data, :second) |> DateTime.to_naive()
+  def parse_params("inserted_at", _), do: NaiveDateTime.utc_now()
 end

@@ -35,10 +35,11 @@ defmodule PhosWeb.Util.Migrator do
   def fyr_profile(token) do
     with {:ok, response} <- do_get_account_info(token),
          true <- response.status_code >= 200 and response.status_code < 300,
-           users <- insert_or_update_user(response.body) do
+           {:ok, users} <- insert_or_update_user(response.body) do
       {:ok, users}
     else
       {:error, err} -> {:error, err}
+      {:error, name, fields, required} -> {:error, %{name: name, fields: fields, required: required}}
     end
   end
 
@@ -65,38 +66,32 @@ defmodule PhosWeb.Util.Migrator do
     Multi.new()
     |> Multi.run(:providers, fn _repo, _ -> {:ok, Map.get(data, "providerUserInfo")} end)
     |> Multi.run(:email, fn _repo, _ -> {:ok, Map.get(data, "email")} end)
-    |> Multi.run(:payload, fn _repo, %{providers: providers, email: email} ->
-      {:ok, %{"fyr_id" => data["localId"], "email" => email_provider(providers) || email}} end)
-    |> Multi.run(:user, fn _repo, %{payload: %{"email" => email} = payload} when is_binary(email) ->
-      case Users.get_user_by_email(email) do
-        %Users.User{fyr_id: nil} = user ->
-                  user
-                  |> Users.User.fyr_registration_changeset(%{fyr_id: data["localId"]})
-                  |> Phos.Repo.update()
-
-        %Users.User{} = user -> {:ok, user}
-            nil ->
-              case Users.get_user_by_fyr(data["localId"]) do
-                %Users.User{} = user ->
-                  user
-                  |> Users.User.changeset(%{email: email})
-                  |> Phos.Repo.update()
-                nil ->
-                  Users.create_user(payload)
-                end
-      end
-      _repo, %{payload: %{"fyr_id" => fyr_id} = payload} ->
-        case Users.get_user_by_fyr(fyr_id) do
-                %Users.User{} = user -> {:ok, user}
-                nil -> Users.create_user(payload)
-        end
-    end)
+    |> Multi.run(:verified, fn _repo, _ -> {:ok, Map.get(data, "emailVerified")} end)
+    |> Multi.run(:payload, fn _repo, %{providers: providers, email: email, verified: verified} ->
+      {:ok, %{"fyr_id" => data["localId"], "email" => email_provider(providers) || email, "confirmed_at" => verified && NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second) || nil}} end)
+    |> Multi.run(:user, &cast_fyr_user(&1, &2))
     |> Multi.insert_all(:registered_providers, Users.Auth, &insert_with_provider/1, on_conflict: :replace_all, conflict_target: [:user_id, :auth_id, :auth_provider])
     |> Phos.Repo.transaction()
-    |> case do
-      {:ok, data} -> data
-      {:error, err} -> err
-      {:error, name, fields, required} -> %{name: name, fields: fields, required: required}
+  end
+
+  defp cast_fyr_user(_repo, %{payload: %{"email" => email, "fyr_id" => fyr_id} = payload}) when is_binary(email) do
+    case Users.get_user_by_email(email) do
+      %Users.User{fyr_id: nil} = user ->
+        user
+        |> Users.User.fyr_registration_changeset(%{fyr_id: fyr_id})
+        |> Phos.Repo.update()
+
+      %Users.User{} = user -> {:ok, user}
+      nil -> 
+        Users.get_user_by_fyr(fyr_id)
+        |> cast_nil_user_by_fyr(payload)
+    end
+  end
+
+  defp cast_fyr_user(_repo, %{payload: %{"fyr_id" => fyr_id} = payload}) do
+    case Users.get_user_by_fyr(fyr_id) do
+      %Users.User{} = user -> {:ok, user}
+      nil -> Users.create_user(payload)
     end
   end
 
@@ -126,4 +121,12 @@ defmodule PhosWeb.Util.Migrator do
 
   defp insert_with_provider(_), do: []
 
+  # if fyr_id tie this email to them
+  defp cast_nil_user_by_fyr(%Users.User{} = user, %{"email" => _email} = payload) do
+    user
+    |> Users.User.changeset(payload)
+    |> Phos.Repo.update()
+  end
+  # else create user with this email and fyr_id
+  defp cast_nil_user_by_fyr(_, payload), do: Users.create_user(payload)
 end

@@ -20,18 +20,21 @@ defmodule Phos.Application do
       PhosWeb.Endpoint,
       Phos.PromEx,
       Phos.Cache,
-
       {Cluster.Supervisor, [topologies, [name: Phos.ClusterSupervisor]]},
       PhosWeb.Presence,
       {PhosWeb.Watcher, [name: PhosWeb.Watcher, pubsub_server: Phos.PubSub, pool_size: :erlang.system_info(:schedulers_online)]},
-      # Start the Firbase Cloud Messaging Dispatcher
-      # Phos.Fyr.Message
       Phos.Notification,
       Phos.PlatformNotification,
       # Phos.Models.TokenClassification
+      Phos.Oracle,
       #restart: :temporary supervisor strategy?
       # Start a worker by calling: Phos.Worker.start_link(arg)
       # {Phos.Worker, arg}
+      ExGram, # This will setup the Registry.ExGram
+      Phos.TeleBot,
+      {Task.Supervisor, name: Phos.TaskSupervisor},
+      # Finch API client for AWS SES
+      {Finch, name: Swoosh.Finch}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

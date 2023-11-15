@@ -1,0 +1,28 @@
+<section class="w-full max-h-fit transition duration-100 ease-out opacity-0 scale-95" {transition("opacity-0 scale-95", "opacity-100 scale-100")}>
+  <div class="flex flex-col px-2 md:px-10 py-2 w-full lg:bg-gray-50 bg-white  top-14">
+    <h1 class="text-2xl font-bold ">Article Scoops</h1>
+    <div class="flex mt-4 mb-2 w-full">
+      <.form :let={f} for= {%{}} as={:search} class="w-1/2" phx-change="search">
+        <div class="flex">
+          <.input field={{f, :q}} phx-debounce="200" placeholder="search orb by keyword" autocomplete="off" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+          <.button type="submit" class="button button-sm p-0 mx-2">Apply</.button>
+        </div>
+      </.form>
+    </div>
+  </div>
+
+  <div class="pb-16 hidden lg:block relative">
+    <.table id="orbs" rows={@scoops}>
+      <:col :let={data} classes="sticky left-0" label="Title">
+        <.link navigate={~p"/admin/articles/scoops/#{data.id}"}>
+          <%= data.title %>
+        </.link>
+      </:col>
+      <:col :let={data} label="Author"><%= data.author %></:col>
+      <:col :let={data} label="Deadline"><%= deadline_status(data.deadline) %></:col>
+      <:col :let={data} label="Status"><%= data.status %></:col>
+      <:col :let={data} label="Tags"><%= data.tags %></:col>
+    </.table>
+  </div>
+
+</section>

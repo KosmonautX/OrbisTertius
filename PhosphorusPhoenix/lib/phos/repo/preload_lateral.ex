@@ -58,19 +58,18 @@ defmodule Phos.Repo.Preloader do
      Repo.all(query)
       |> results_to_struct(assoc_queryable)
       |> maybe_preload_assocs(preload_assocs)
-      |> Enum.group_by(fn entity -> Map.get(entity,related_key) end)
+      |> Enum.group_by(fn entity -> Map.get(entity, related_key) end)
 
     add_results_to_entities(entities, assoc, results)
-
   end
 
   def lateral(%_source_queryable{} = entity, assoc, opts) do
     [preloaded_entity] = lateral([entity], assoc, opts)
     preloaded_entity
-    end
+  end
 
   defp results_to_struct(entities, s) do
-    Enum.map(entities, fn x -> struct(s,x |> Map.delete(:__struct__)) end)
+    Enum.map(entities, fn x -> struct(s, x |> Map.delete(:__struct__)) end)
   end
 
   defp maybe_preload_assocs(entities, nil), do: entities

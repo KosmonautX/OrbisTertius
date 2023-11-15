@@ -5,7 +5,7 @@ defmodule PhosWeb.Timezone do
   @timezone "UTC"
   @timezone_offset 0
 
-  def on_mount(:timezone, _params, session, socket) do
+  def on_mount(:timezone, _params, _session, socket) do
     locale = get_connect_params(socket)["_locale"] || @default_locale
     timezone = get_connect_params(socket)["_timezone"] || @timezone
     timezone_offset = get_connect_params(socket)["_timezone_offset"] || @timezone_offset

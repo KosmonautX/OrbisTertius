@@ -12,7 +12,7 @@
 :jean=HMhn3DPO71h0cMYFh52vM1tBacX2
 :anon=ETCiVo6Rr3gniuI44Gq9f2a5Ldl1
 :javier=v78yYQpVjlUaOsmzKguPoXcGqqw2
-:jiayi=3f6idzconSaWU31lQpcwXl3q8623
+:jiayi=Zb2yO0VthIgN8207z3wmEo3KPEh1
 :princeton_id=9bf9c443-f89b-460a-972d-6704ae66823d
 :owentwo_id=973da4ae-48a6-498d-b988-548af3af99f6
 :satrio_id=b3cd35ef-83e2-448e-831d-f5ded1c39692
@@ -22,7 +22,7 @@
 :brandon_id=b556571a-362e-4017-9894-f1eed0b39794
 :lky_id=6d7b0e7c-a633-4a8a-8d85-b8a493109bd4
 :antoine_id=3d534547-eed2-4ab2-acc8-ebf0ae03aaa5
-#:lky_id=4b2d6d8d-7781-4a20-b868-b0e0db245b85
+# :lky_id=4b2d6d8d-7781-4a20-b868-b0e0db245b85
 :aang_id=58c146d2-407f-49d5-a74d-0d9362e73be9
 :zuko_id=6f6c7d30-4447-4687-8fb9-f95a2de82957
 :owen_id=233e50b1-5507-4a3c-96a7-b6339e8d27f4
@@ -74,8 +74,8 @@ GET :ipAddress/userland/self/activity?cursor=16035029484071
 POST :ipAddress/userland/auth/email/register
 :auth-headers
 {
-    "email": "nonanon@bo.wen",
-    "password": "1234567890-="
+    "email": "shakyamuni@bo.wen",
+    "password": "1234567890-=1"
 }
 
 ## Login User via Email
@@ -123,7 +123,7 @@ PUT :ipAddress/userland/self/
 :auth-headers
 {
     "bio": "alberto robotos",
-    "username": "umbrage",
+    "username": "aikido",
     "public_name": "Albert the Robot",
     "birthday": 16123442423,
     "media": [
@@ -138,7 +138,11 @@ PUT :ipAddress/userland/self/
             "resolution": "lossy"
         }
     ],
-    "traits": ["exile"],
+    "traits": [
+        "aikido",
+        "matrix",
+        "crest:SBQ#food"
+    ],
     "soulorb": {
         "title": "wow",
         "payload": {
@@ -259,11 +263,11 @@ GET :ipAddress/folkland/self/blocked?page=1
 
 ### ! Orbland Calls
 ## Read Orb
-GET :ipAddress/orbland/orbs/3e9ebaa7-cdd0-4d3e-857e-0661aeb12d0b
+GET :ipAddress/orbland/orbs/:orb
 :auth-headers
 
 ## Read all orbs in that geohash id
-GET :ipAddress/orbland/stream/614268617233530879?page=1&search=dinosaurs
+GET :ipAddress/orbland/stream/623517998944845823,628021598572208127?page=1
 :auth-headers
 
 ## Create Orbs
@@ -274,72 +278,156 @@ POST :ipAddress/orbland/orbs
     "geolocation": {
         "central_geohash": 628021598572208127
     },
+    "members": [{
+            "member_id": ":antoine_id",
+            "action": "collab_invite"
+    }],
     "title": "aikido style",
-    "inner_title": "xcape the matrix",
-    "info": "ba sing se",
+    "inner_title": "Ranged thus for battle on the sacred plain-- On Kurukshetra--say, Sanjaya! say What wrought my people, and the Pandavas?",
+    "where": "ba sing se",
+    "info": "no war in ba sing se",
     "active": "true",
+    "creationtime": 1695263542,
     "media": [
+    {
+            "access": "public",
+            "essence": "blorb",
+            "resolution": "lossless",
+            "count": 2,
+            "ext": "mp4"
+        },
         {
             "access": "public",
-            "essence": "banner"
+            "essence": "blorb",
+            "resolution": "lossy",
+            "count": 2,
+            "ext": "jpg"
+        },
+        {
+            "access": "public",
+            "essence": "blorb",
+            "resolution": "lossy",
+            "count": 1,
+            "ext": "jpg"
+        },
+        {
+            "access": "public",
+            "essence": "blorb",
+            "resolution": "lossless",
+            "count": 1,
+            "ext": "jpg"
         },
         {
             "access": "public",
             "essence": "banner",
             "resolution": "lossless",
-            "count": 1
+            "ext": "png"
         },
         {
             "access": "public",
             "essence": "banner",
-            "resolution": "lossless",
-            "count": 2
-        },
-        {
-            "access": "public",
-            "essence": "banner",
-            "resolution": "lossless",
-            "count": 3,
-            "ext": "mp3"
-        },
-        {
-            "access": "public",
-            "essence": "banner",
-            "resolution": "lossless",
-            "count": 4
-        },
-        {
-            "access": "public",
-            "essence": "banner",
-            "resolution": "lossless",
-            "count": 5
+            "resolution": "lossy",
+            "ext": "png"
         }
         ],
     "expires_in": "10000",
-    "traits": ["personalpin"]
+    "traits": ["personalpin"],
+    "blorbs": [
+        {
+            "type": "txt",
+            "active": "true",
+            "character": {"content": "For him who has conquered the mind, the mind is the best of friends; but for one who has failed to do so, his very mind will be the greatest enemy.",
+            "align": "left"
+            }
+        },
+        {
+            "type": "img",
+            "active": "true",
+            "character": {"count": 1,"ext": "png"}
+        },
+        {
+            "type": "vid",
+            "active": "true",
+            "character": {"count": 2,"ext": "mp4"}
+        }
+
+    ]
 }
 ## Update Orbs (Deactivate etc)
 ##
 PUT :ipAddress/orbland/orbs/:orb
--> run-hook (restclient-set-var ":orb" (cdr (assq 'orb_uuid (assq 'data (json-read)))))
 :auth-headers
 {
-    "geolocation": {
-        "central_geohash": 623276216935972863
-    },
-    "title": "yogafire",
-    "inner_title": "stay in the matrix",
-    "info": "ba sing se",
-    "active": "true",
-    "media": [
-        {
-        "access": "public",
-        "essence": "banner",
-        "resolution": "lossless"
-        }],
-    "expires_in": "10000",
-    "traits": ["holy", "mooncakes"]
+   "geolocation":{
+      "central_geohash":614268617233530879
+   },
+   "title":"Helo",
+   "creationTime":1698390237954,
+   "inner_title":"Helo",
+   "active":true,
+   "media":[
+
+   ],
+   "expires_in":"2592000",
+   "where":"monkey creatives",
+   "members":[
+   {
+            "member_id": ":antoine_id",
+            "action": "collab"
+    }
+   ],
+   "traits":[
+
+   ],
+   "blorbs":[
+      {
+         "active":true,
+         "character":{
+            "count":null,
+            "ext":null,
+            "content":"Hhh",
+            "align":"center"
+         },
+         "id":null,
+         "type":"txt",
+         "pop":false
+      }
+   ],
+   "media_exists":false
 }
+
+## Delete Orb
+DELETE :ipAddress/orbland/orbs/:orb/
+:auth-headers
+
+## Append Blorb
+PUT :ipAddress/orbland/orbs/:orb/blorbs
+-> run-hook (restclient-set-var ":blorb" (cdr (assq 'id (assq 'data (json-read)))))
+:auth-headers
+{
+            "type": "txt",
+            "active": "true",
+            "character": {"content": "Shining bright like the Disc and the shattering cry of the conch",
+            "align": "left",
+            "ext": "png"
+            },
+            "media": [{"access": "public","essence": "blorb","resolution": "lossless","ext": "png","count": null},
+            {"access": "public", "essence": "blorb", "resolution": "lossy", "ext": "png", "count": null}]
+}
+## Update Blorbs
+PUT :ipAddress/orbland/orbs/:orb/blorbs/a97d3a96-6a80-402f-b51d-21bcd59efef6
+-> run-hook (restclient-set-var ":blorb" (cdr (assq 'id (assq 'data (json-read)))))
+:auth-headers
+{
+            "type": "txt",
+            "active": "false",
+            "character": {"content": "the mind is the best of friends; but for one who has failed to do so, his very mind will be the greatest enemy.",
+            "align": "right"
+            }
+}
+## Pop Blorbs
+DELETE :ipAddress/orbland/orbs/:orb/blorbs/a7492c6c-7ee8-406c-818c-268aac18a284
+:auth-headers
 
 ## Report Orbs
 PUT :ipAddress/orbland/orbs/e4c01173-f944-4d78-993f-bf4c6fb7cb3a/report
@@ -439,7 +527,8 @@ POST :ipAddress/memland/memories
 :auth-headers
 {
     "message": "14",
-    "loc_subject_id": 614554999420092415
+    "loc_subject_id": 614554999420092415,
+    "media": [{"access": "public", "essence": "profile", "resolution": "lossless", "ext": "png", "count": null}, {"access": "public", "essence": "profile", "resolution": "lossy", "ext": "png", "count": null}, {"access": "public", "essence": "profile", "resolution": "lossless", "ext": "png", "count": 1}, {"access": "public", "essence": "profile", "resolution": "lossy", "ext": "png", "count": 1}]
 }
 
 ### Medialand

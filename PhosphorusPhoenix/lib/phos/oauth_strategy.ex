@@ -36,7 +36,7 @@ defmodule Phos.OAuthStrategy do
       |> Map.put("sub", id)
       |> Map.put("provider", "telegram")
       |> Map.delete("id")
-    {:ok, %{user: user}}
+      {:ok, %{user: user}}
     else
       {:error, params}
     end
@@ -61,10 +61,10 @@ defmodule Phos.OAuthStrategy do
     conf = config!("telegram", "html")
     default_host = path(PhosWeb.Endpoint, PhosWeb.Router, ~p"/auth/telegram/callback")
     host = case Keyword.get(conf, :host) do
-      nil -> default_host
-      "" -> default_host
-      h -> h
-    end
+             nil -> default_host
+             "" -> default_host
+             h -> h
+           end
     path = Keyword.get(conf, :redirect_uri)
     Keyword.put(conf, :redirect_uri, host <> path)
     |> Keyword.put(:host, host)
@@ -76,9 +76,9 @@ defmodule Phos.OAuthStrategy do
     Application.get_env(:phos, __MODULE__)
     |> Keyword.get(provider)
     |> case do
-      nil -> raise "Configuration for #{provider} not found."
-      config -> default_config(config, provider, format)
-    end
+         nil -> raise "Configuration for #{provider} not found."
+         config -> default_config(config, provider, format)
+       end
   end
   defp config!(provider, _), do: raise "No provider configuration for #{provider}"
 
@@ -100,9 +100,9 @@ defmodule Phos.OAuthStrategy do
     uri
     |> URI.new()
     |> case do
-      {:ok, uri} -> https_auth(uri)
-      _ -> ""
-    end
+         {:ok, uri} -> https_auth(uri)
+         _ -> ""
+       end
   end
   defp https_auth(%URI{host: "localhost"} = uri), do: URI.to_string(uri)
   defp https_auth(%URI{} = uri) do

@@ -12,102 +12,87 @@ defmodule PhosWeb.Util.Viewer do
   alias Phos.Orbject.S3
 
   # Relationship Mapper
+  def relationship_mapper({:self_relation, %Phos.Users.RelationRoot{} = self_relation}, entity) do
+    %{self:
+      %{data: %{PhosWeb.Util.Viewer.user_relation_mapper(self_relation) | self_initiated: self_relation.initiator_id != entity.id},
+        links: %{self: path(PhosWeb.Endpoint, Router, ~p"/api/folkland/others/#{entity.id}")}}}
+  end
+
+  def relationship_mapper({:orbs, [_ | _] = orbs}, entity) do
+    %{orbs:
+      %{data: PhosWeb.Util.Viewer.orb_mapper(orbs),
+        links: %{history: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{entity.id}/history")}}}
+  end
+  def relationship_mapper({:mutual, user}, _entity) when is_map(user) do
+    Map.new([{:mutual,
+              %{data: PhosWeb.Util.Viewer.user_mapper(user),
+                links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{user.id}")}}}])
+
+  end
+
   def relationship_mapper(field, entity) do
     case field do
-      {:self_relation, %Phos.Users.RelationRoot{} = self_relation} ->
-
-        %{self:
-          %{data: %{PhosWeb.Util.Viewer.user_relation_mapper(self_relation) | self_initiated: self_relation.initiator_id != entity.id},
-            links: %{self: path(PhosWeb.Endpoint, Router, ~p"/api/folkland/others/#{entity.id}")}}}
-
-
-      {:orbs, [%Phos.Action.Orb{} | _] = orbs} ->
-        %{orbs:
-          %{data: PhosWeb.Util.Viewer.orb_mapper(orbs),
-          links: %{history: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{entity.id}/history")}}}
-
-      {k, [%Phos.Comments.Comment{} | _] = comment} ->
-
-        Map.new([{k, %{data: PhosWeb.Util.Viewer.comment_mapper(comment)}}])
-
-
+      {k, [%Phos.Comments.Comment{} | _] = comment} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.comment_mapper(comment)}}])
+      {k, [%Phos.Action.Blorb{} | _] = blorb} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.blorb_mapper(blorb)}}])
+      {k, [%Phos.Action.Permission{} | _] = membership} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.membership_mapper(membership)}}])
       {k , %Phos.Users.User{} = user} ->
         Map.new([{k,
                   %{data: PhosWeb.Util.Viewer.user_mapper(user),
                     links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{user.id}")}}}])
 
-      {k, %Phos.Action.Location{} = loc} ->
-
-        Map.new([{k, %{data: PhosWeb.Util.Viewer.loc_mapper(loc)}}])
-
-      {k, %Phos.Action.Orb{} = orb} ->
-
-        Map.new([{k, %{data: PhosWeb.Util.Viewer.orb_mapper(orb)}}])
-
-      {k, %Phos.Comments.Comment{} = comment} ->
-
-        Map.new([{k, %{data: PhosWeb.Util.Viewer.comment_mapper(comment)}}])
-
-      {k, %Phos.Message.Memory{} = memory} ->
-
-        Map.new([{k, %{data: PhosWeb.Util.Viewer.memory_mapper(memory)}}])
-
+      {k, %Phos.Action.Location{} = loc} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.loc_mapper(loc)}}])
+      {k, %Phos.Action.Orb{} = orb} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.orb_mapper(orb)}}])
+      {k, %Phos.Action.Blorb{} = blorb} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.blorb_mapper(blorb)}}])
+      {k, %Phos.Comments.Comment{} = comment} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.comment_mapper(comment)}}])
+      {k, %Phos.Message.Memory{} = memory} -> Map.new([{k, %{data: PhosWeb.Util.Viewer.memory_mapper(memory)}}])
       {k, %Phos.Users.RelationRoot{} = relation} ->
-
         Map.new([{k, %{data: %{PhosWeb.Util.Viewer.user_relation_mapper(relation) | self_initiated: relation.initiator_id != entity.id},
-            links: %{self: path(PhosWeb.Endpoint, Router, ~p"/api/folkland/others/#{relation.initiator_id}")}}}])
-
-      {:mutual , user} when is_map(user) ->
-        Map.new([{:mutual,
-                  %{data: PhosWeb.Util.Viewer.user_mapper(user),
-                    links: %{profile: path(PhosWeb.Endpoint, Router, ~p"/api/userland/others/#{user.id}")}}}])
-
+                       links: %{self: path(PhosWeb.Endpoint, Router, ~p"/api/folkland/others/#{relation.initiator_id}")}}}])
       _ -> %{}
-
     end
   end
 
 
-  def relationship_reducer(entity) do
-        entity
-        |> Map.from_struct()
-        |> Enum.reduce(%{}, fn({k,v}, acc) -> Map.merge(acc, relationship_mapper({k,v}, entity)) end)
-  end
 
+  def relationship_reducer(entity) do
+    entity
+    |> Map.from_struct()
+    |> Enum.reduce(%{}, fn({k, v}, acc) -> Map.merge(acc, relationship_mapper({k, v}, entity)) end)
+  end
 
   def memory_mapper(memories = [%Phos.Message.Memory{} | _]), do: Enum.map(memories, &memory_mapper/1)
   def memory_mapper(memory) do
-      %{just_a_memory_mapper(memory) | relationships: relationship_reducer(memory)}
+    %{just_a_memory_mapper(memory) | relationships: relationship_reducer(memory)}
   end
 
   def just_a_memory_mapper(memory) do
-      %{
-        id: memory.id,
-        relationships: %{},
-        user_source_id: memory.user_source_id,
-        loc_subject_id: memory.loc_subject_id,
-        rel_subject_id: memory.rel_subject_id,
-        mem_subject_id: memory.mem_subject_id,
-        orb_subject_id: memory.orb_subject_id,
-        com_subject_id: memory.com_subject_id,
-        cluster_subject_id: memory.cluster_subject_id,
-        action_path: memory.action_path,
-        message: memory.message,
-        creationtime: memory.inserted_at |> DateTime.to_unix(:millisecond),
-        mutationtime: memory.updated_at |> DateTime.to_unix(:millisecond),
-        media: (if memory.media, do: S3.get_all!("MEM", memory.id, "public")),
-        media_exists: memory.media
-      }
+    %{
+      id: memory.id,
+      relationships: %{},
+      user_source_id: memory.user_source_id,
+      loc_subject_id: memory.loc_subject_id,
+      rel_subject_id: memory.rel_subject_id,
+      orb_subject_id: memory.orb_subject_id,
+      mem_subject_id: memory.mem_subject_id,
+      com_subject_id: memory.com_subject_id,
+      cluster_subject_id: memory.cluster_subject_id,
+      action_path: memory.action_path,
+      message: memory.message,
+      creationtime: memory.inserted_at |> DateTime.to_unix(:millisecond),
+      mutationtime: memory.updated_at |> DateTime.to_unix(:millisecond),
+      media: (if memory.media, do: S3.get_all!("MEM", memory.id, "public")),
+      media_exists: memory.media
+    }
   end
 
   def reverie_mapper(reverie) do
-      %{
-        id: reverie.id,
-        relationships: relationship_reducer(reverie),
-        read: reverie.read,
-        creationtime: DateTime.from_naive!(reverie.inserted_at, "Etc/UTC") |> DateTime.to_unix(:millisecond),
-        mutationtime: DateTime.from_naive!(reverie.updated_at, "Etc/UTC") |> DateTime.to_unix(:millisecond),
-      }
+    %{
+      id: reverie.id,
+      relationships: relationship_reducer(reverie),
+      read: reverie.read,
+      creationtime: DateTime.from_naive!(reverie.inserted_at, "Etc/UTC") |> DateTime.to_unix(:millisecond),
+      mutationtime: DateTime.from_naive!(reverie.updated_at, "Etc/UTC") |> DateTime.to_unix(:millisecond),
+    }
   end
 
   # User Mapper
@@ -118,6 +103,12 @@ defmodule PhosWeb.Util.Viewer do
       confirmed_at: user.confirmed_at,
       fyr_id: user.fyr_id,
       profile: user_profile_mapper(user),
+      boon: %{
+        count: user.boon,
+        rank: user_boon_ranker(user.boon).rank,
+        min: user_boon_ranker(user.boon).min,
+        max: user_boon_ranker(user.boon).max
+      },
       ally_count: user.ally_count,
       mutual_count: user.mutual_count,
       relationships: relationship_reducer(user),
@@ -162,26 +153,41 @@ defmodule PhosWeb.Util.Viewer do
   def user_integration_mapper(%{integrations: profile}) do
     (if profile && !is_nil(profile) && Ecto.assoc_loaded?(profile) do
       %{data: %{
-           fcm_token: profile.fcm_token,
-           beacon: (if profile.beacon do
-             for {k , v}  <- Map.from_struct(profile.beacon), into: %{} do
-                     case k do
-                       :scope ->
-                         {:scope, v}
-                       _ ->
-                     {k,
-                      (unless is_nil(v) do
-                       %{scope: v.scope,
-                           subscribe: v.subscribe,
-                           unsubscribe: v.unsubscribe
-                          }
-                       else
-                         %{}
-                       end)}
-                    end
-                  end
-           end)}}
-      end)
+        fcm_token: profile.fcm_token,
+        beacon: (if profile.beacon do
+          for {k , v}  <- Map.from_struct(profile.beacon), into: %{} do
+            case k do
+              :scope ->
+                {:scope, v}
+              _ ->
+                {k,
+                  (if is_nil(v) do 
+                    %{}
+                  else
+                    %{
+                      scope: v.scope,
+                      subscribe: v.subscribe,
+                      unsubscribe: v.unsubscribe
+                    }
+                  end)}
+            end
+          end
+        end)}}
+    end)
+  end
+
+  def user_boon_ranker(boon) when is_integer(boon) do
+    {rank, min, max} = cond  do
+      boon < 8 -> {"townfolk", 8, 13}
+      boon < 13 -> {"recruit", 13, 21}
+      boon < 21 -> {"apprentice", 21, 34}
+      boon < 34 -> {"herald", 34, 55}
+      boon < 55 -> {"initiate", 55, 89}
+      boon < 89 -> {"legion", 89, 144}
+      boon < 144 -> {"master", 144, 233}
+      boon > 233 -> {"elder", 233, 888}
+    end
+    %{rank: rank, min: min, max: max}
   end
 
   def user_public_mapper(user) do
@@ -260,8 +266,47 @@ defmodule PhosWeb.Util.Viewer do
     end)
   end
 
+  def membership_mapper(members = [%Phos.Action.Permission{} | _]), do: Enum.map(members, &membership_mapper/1)
+  def membership_mapper(member) do
+    %{
+      membership_id: member.id,
+      action: member.action,
+      relationships: relationship_reducer(member),
+      member_id: member.member_id,
+      media: %{"public/profile/lossy" => Phos.Orbject.S3.get!("USR", member.member_id, "public/profile/lossy")},
+      creationtime: DateTime.from_naive!(member.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
+      mutationtime: DateTime.from_naive!(member.updated_at, "Etc/UTC") |> DateTime.to_unix()
+    }
+  end
+
   defp parent_orb_mapper(%Phos.Action.Orb{} = orb), do: orb_mapper(orb)
   defp parent_orb_mapper(_), do: %{}
+
+  ## Blorb Mapper
+  def blorb_mapper(blorbs = [%Phos.Action.Blorb{} | _]), do: Enum.map(blorbs, &blorb_mapper/1)
+  def blorb_mapper(blorb = %Phos.Action.Blorb{}) do
+    %{
+      id: blorb.id,
+      type: blorb.type,
+      active: blorb.active,
+      initiator_id: blorb.initiator_id,
+      orb_id: blorb.orb_id,
+      character: blorb_character_mapper(blorb),
+      creationtime: DateTime.from_naive!(blorb.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
+      mutationtime: DateTime.from_naive!(blorb.updated_at, "Etc/UTC") |> DateTime.to_unix()
+    }
+  end
+
+  def blorb_character_mapper(%{type: :txt, character: %Phos.Action.Blorb.Characteristics{} = c}) do
+      %{data: %{content: c.content, align: c.align},
+        links: %{}}
+  end
+
+  def blorb_character_mapper(%{id: _id, orb_id: _orb_id,  type: type, character: %Phos.Action.Blorb.Characteristics{} = c}) when type in [:vid, :img] do
+      %{data: %{ext: c.ext}}
+  end
+
+  def blorb_character_mapper(_), do: %{}
 
   ## Comment Mapper
   def comment_mapper(comments = [%Phos.Comments.Comment{} | _]), do: Enum.map(comments, &comment_mapper/1)
@@ -279,9 +324,7 @@ defmodule PhosWeb.Util.Viewer do
       creationtime: DateTime.from_naive!(comment.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
       mutationtime: DateTime.from_naive!(comment.updated_at, "Etc/UTC") |> DateTime.to_unix()
     }
-
   end
-
 
   def post_orb_mapper(orbs) do
     Enum.map(orbs, fn orb ->
@@ -304,8 +347,8 @@ defmodule PhosWeb.Util.Viewer do
         %{live:
           %{
             populate: !Enum.member?(orb.traits, "pin"),
-            geohashes: Enum.reduce_while(orb.locations,[],fn o, acc ->
-              unless length(acc) > 8, do: {:cont, [o.id |> :h3.to_string |> to_string() | acc]}, else: {:halt, acc} end),
+            geohashes: Enum.reduce_while(orb.locations, [], fn o, acc ->
+              if length(acc) > 8, do: {:halt, acc}, else: {:cont, [o.id |> :h3.to_string() |> to_string() | acc]} end),
             target: :h3.get_resolution(orb.central_geohash),
             geolock: true
           }}}
@@ -353,7 +396,7 @@ defmodule PhosWeb.Util.Viewer do
         subject_archetype: echo.subject_archetype,
         subject: echo.subject,
         message: echo.message,
-        time: DateTime.from_naive!(echo.inserted_at,"Etc/UTC") |> DateTime.to_unix(),
+        time: DateTime.from_naive!(echo.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
         creationtime: DateTime.from_naive!(echo.inserted_at, "Etc/UTC") |> DateTime.to_unix(),
         mutationtime: DateTime.from_naive!(echo.updated_at, "Etc/UTC") |> DateTime.to_unix()
       }
@@ -377,7 +420,7 @@ defmodule PhosWeb.Util.Viewer do
   # Index Live Orbs
   def live_orb_mapper(orbs) do
     Enum.filter(orbs, fn orb -> orb.active == true end)
-  end
+   end
 
   def loc_mapper(loc) when is_integer(loc) do
     %{
