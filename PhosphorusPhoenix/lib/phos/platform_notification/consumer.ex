@@ -76,12 +76,12 @@ defmodule Phos.PlatformNotification.Consumer do
   end
 
   defp handle_result(:ok, id, from) do
-    _ = write_log(:info, "success sending notification", nil)
+    _ = write_log(:info, "success to sparrow", nil)
     _ = GenStage.reply(from, {id, :success})
   end
 
   defp handle_result(err, id, from) do
-    _ = write_log(:warning, "error sending notification", err)
+    _ = write_log(:warning, "error from sparrow", err)
     _ = error_reply(from, id, err)
   end
 
@@ -90,10 +90,11 @@ defmodule Phos.PlatformNotification.Consumer do
   defp error_reply(from, id, {:error, :QUOTA_EXCEEDED}), do: GenStage.reply(from, {id, :QUOTA_EXCEEDED, "FCM quota exceeded"})
   defp error_reply(from, id, {:error, err}), do: GenStage.reply(from, {id, :retry, err})
 
-  defp write_log(type, msg, error) do
+  defp write_log(type, src, error) do
     apply(:logger, type, [%{
-      label: {Phos.PlatformNotification.Consumer, msg},
+      label: {Phos.PlatformNotification.Consumer},
       report: %{
+        error_source: src,
         module: __MODULE__,
         executor: __MODULE__.Fcm,
         error_message: error
