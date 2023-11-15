@@ -44,33 +44,14 @@ defmodule Phos.PlatformNotification.Dispatcher do
   end
 
   @impl true
-  def handle_info({_ref, {ids, :errors, message}}, state) when not is_nil(ids) do
-    PN.update_notifications(ids, %{error_reason: message, retry_attempt: 6, success: false})
+  def handle_info({_ref, {id, :error, message}}, state) when is_bitstring(id) do
+    PN.update_notifications(id, %{error_reason: message, retry_attempt: 6, success: false})
     {:noreply, [], state}
   end
 
   @impl true
-  def handle_info({_ref, {_ids, :file_error, message}}, state) do
-    :logger.debug(%{
-      label: {Phos.PlatformNotification.Global, message},
-      report: %{
-        module: __MODULE__,
-        action: :stop,
-        message: message
-      }
-    }, %{
-      domain: [:phos],
-      error_logger: %{tag: :debug_msg}
-    })
-
+  def handle_info({_ref, {_id, err, _message}}, state) when err in [:INVALID_ARGUMENT, :UNREGISTERED, :QUOTA_EXCEEDED], do:
     {:noreply, [], state}
-  end
-
-  @impl true
-  def handle_info({_ref, {ids, :success}}, state) when is_list(ids) do
-    PN.update_notifications(ids, %{success: true})
-    {:noreply, [], state}
-  end
 
   @impl true
   def handle_info({_ref, {id, :success}}, state) do

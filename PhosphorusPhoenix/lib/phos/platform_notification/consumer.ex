@@ -82,8 +82,13 @@ defmodule Phos.PlatformNotification.Consumer do
 
   defp handle_result(err, id, from) do
     _ = write_log(:warning, "error sending notification", err)
-    _ = GenStage.reply(from, {id, :error})
+    _ = error_reply(from, id, err)
   end
+
+  defp error_reply(from, id, {:error, :UNREGISTERED}), do: GenStage.reply(from, {id, :UNREGISTERED, "token is invalid"})
+  defp error_reply(from, id, {:error, :INVALID_ARGUMENT}), do: GenStage.reply(from, {id, :INVALID_ARGUMENT, "client doesn't have FCM token"})
+  defp error_reply(from, id, {:error, :QUOTA_EXCEEDED}), do: GenStage.reply(from, {id, :QUOTA_EXCEEDED, "FCM quota exceeded"})
+  defp error_reply(from, id, {:error, err}), do: GenStage.reply(from, {id, :retry, err})
 
   defp write_log(type, msg, error) do
     apply(:logger, type, [%{
