@@ -50,8 +50,17 @@ defmodule Phos.PlatformNotification.Dispatcher do
   end
 
   @impl true
-  def handle_info({_ref, {_id, err, _message}}, state) when err in [:INVALID_ARGUMENT, :UNREGISTERED, :QUOTA_EXCEEDED], do:
-    {:noreply, [], state}
+  def handle_info({_ref, {id, err, _message}}, state) when err in [:UNREGISTERED] do
+    with %{recipient: user} <- PN.get_notification(id),
+         {:ok, _} <- Phos.Users.update_integrations_user(user, %{"integrations" => %{"fcm_token" => nil}}) do
+      {:noreply, [], state}
+    else
+      _ -> {:noreply, [], state}
+    end
+  end
+
+  def handle_info({_ref, {_id, err, _message}}, state) when err in [:INVALID_ARGUMENT, :QUOTA_EXCEEDED], do:
+{:noreply, [], state}
 
   @impl true
   def handle_info({_ref, {id, :success}}, state) do
