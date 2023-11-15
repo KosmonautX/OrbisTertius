@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:latest
+        image: ankane/pgvector:v0.5.0
         env:
           POSTGRES_DB: postgres
           POSTGRES_PASSWORD: root
@@ -31,8 +31,8 @@ jobs:
     - name: Set up Elixir
       uses: erlef/setup-elixir@885971a72ed1f9240973bd92ab57af8c1aa68f24
       with:
-        elixir-version: '1.14.2' # Define the elixir version [required]
-        otp-version: '25.0' # Define the OTP version [required]
+        elixir-version: '1.15.7' # Define the elixir version [required]
+        otp-version: '25' # Define the OTP version [required]
     - name: Restore dependencies cache
       uses: actions/cache@v2
       with:
