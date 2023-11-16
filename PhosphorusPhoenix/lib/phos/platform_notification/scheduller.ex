@@ -58,7 +58,7 @@ defmodule Phos.PlatformNotification.Scheduller do
       error_logger: %{tag: :debug_msg}
     })
 
-    PN.active_notification()
+    PN.active_notification(timer())
     |> run_notification_timer()
   end
 
