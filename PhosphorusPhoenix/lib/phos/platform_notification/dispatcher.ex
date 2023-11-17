@@ -43,7 +43,7 @@ defmodule Phos.PlatformNotification.Dispatcher do
 
   @impl true
   def handle_info({_ref, {id, :error, message}}, state) when is_bitstring(id) do
-    PN.update_notifications(id, %{error_reason: message, retry_attempt: 6, success: false})
+    PN.update_notifications(id, %{error_reason: inspect(message), retry_attempt: 6, success: false})
     {:noreply, [], state}
   end
 
@@ -58,11 +58,14 @@ defmodule Phos.PlatformNotification.Dispatcher do
     end
   end
 
+  @impl true
   def handle_info({_ref, {id, :INVALID_ARGUMENT, _message}}, state) do 
     stored = PN.get_notification(id)
     increment_retry_logic(stored, :INVALID_ARGUMENT) # thow to invalid state
     {:noreply, [], state}
   end
+
+  @impl true
   def handle_info({_ref, {_id, :QUOTA_EXCEEDED, _message}}, state), do: {:noreply, [], state}
 
   @impl true
@@ -83,7 +86,7 @@ defmodule Phos.PlatformNotification.Dispatcher do
     {:noreply, [], state}
   end
 
-  def handle_info(_, _, state) do
+  def handle_info(_, _msg, state) do
     {:noreply, [], state}
   end
 
@@ -102,7 +105,7 @@ defmodule Phos.PlatformNotification.Dispatcher do
   defp increment_retry_logic(notification, message) do
     retry_attempt = retry_by_error(notification, message)
     next_attempt = next_attempt_by_error(retry_attempt, message)
-    PN.update_notification(notification, %{error_reason: message, next_execute_at: next_attempt, retry_attempt: retry_attempt, success: retry_attempt > 5})
+    PN.update_notification(notification, %{error_reason: inspect(message), next_execute_at: next_attempt, retry_attempt: retry_attempt, success: false})
   end
 
   defp retry_by_error(_notif, :INVALID_ARGUMENT), do: 6 # invalid argument cannot be retried
