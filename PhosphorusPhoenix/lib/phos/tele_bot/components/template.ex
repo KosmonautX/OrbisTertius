@@ -159,7 +159,7 @@ defmodule Phos.TeleBot.Components.Template do
     ~H"""
     📋 <b></b> <%= @payload.inner_title %>
 
-    👤 From: <%= @initiator.username %>
+    👤 From: <a href={"#{PhosWeb.Endpoint.url}/user/#{@initiator.username}"}>@<%= @initiator.username %></a>
     <%!-- 🔸Posted On: <%= @inserted_at |> DateTime.from_naive!("UTC") |> Timex.format("{D}-{0M}-{YYYY}") |> elem(1) %> --%>
     📍 <%= @central_geohash |> Phos.Mainland.World.locate() %>
     <%!-- 💚 <b>Info:</b> <%= @payload.info %> --%>
