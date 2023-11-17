@@ -41,7 +41,7 @@ defmodule Phos.PlatformNotification.Producer do
   Notify is used to create notifier to consumer and filtered in dispatcher
   """
   @spec notify(event :: PN.t(), options :: Keyword.t(), timeout :: non_neg_integer()) :: :ok
-  def notify(event, options, timeout \\ 5000) do
+  def notify(event, options, timeout \\ 35_000) do
     GenStage.call(__MODULE__, {:notify, event, options}, timeout)
   end
 
