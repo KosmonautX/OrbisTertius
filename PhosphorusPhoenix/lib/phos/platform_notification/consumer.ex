@@ -35,13 +35,13 @@ defmodule Phos.PlatformNotification.Consumer do
   defp execute_mail_events([store | tail], from) do
     case __MODULE__.Email.send(store) do
       {:ok, _result} -> 
-        _ = write_log(:info, "success send notification from email", nil)
+        _ = write_log(:info, {"success send notification from email", store.id}, nil)
         GenStage.reply(from, {store.id, :success})
       {:error, msg} ->
-        _ = write_log(:warning, "failed sending notification from email", msg)
+        _ = write_log(:warning, {"failed sending notification from email", store.id}, msg)
         GenStage.reply(from, {store.id, :error, msg})
       err ->
-        _ = write_log(:warning, "error sending notification from email", err)
+        _ = write_log(:warning, {"error sending notification from email", store.id}, err)
         GenStage.reply(from, {store.id, :unknown_error, err})
     end
 
@@ -76,19 +76,26 @@ defmodule Phos.PlatformNotification.Consumer do
   end
 
   defp handle_result(:ok, id, from) do
-    _ = write_log(:info, "success sending notification", nil)
+    _ = write_log(:info, {"success to sparrow", id}, nil)
     _ = GenStage.reply(from, {id, :success})
   end
 
   defp handle_result(err, id, from) do
-    _ = write_log(:warning, "error sending notification", err)
-    _ = GenStage.reply(from, {id, :error})
+    _ = write_log(:warning, {"error from sparrow", id}, err)
+    _ = error_reply(from, id, err)
   end
 
-  defp write_log(type, msg, error) do
+  defp error_reply(from, id, {:error, :UNREGISTERED}), do: GenStage.reply(from, {id, :UNREGISTERED, "token is invalid"})
+  defp error_reply(from, id, {:error, :INVALID_ARGUMENT}), do: GenStage.reply(from, {id, :INVALID_ARGUMENT, "client doesn't have FCM token"})
+  defp error_reply(from, id, {:error, :QUOTA_EXCEEDED}), do: GenStage.reply(from, {id, :QUOTA_EXCEEDED, "FCM quota exceeded"})
+  defp error_reply(from, id, {:error, err}), do: GenStage.reply(from, {id, :retry, err})
+
+  defp write_log(type, {src_msg, src_id}, error) do
     apply(:logger, type, [%{
-      label: {Phos.PlatformNotification.Consumer, msg},
+      label: {Phos.PlatformNotification.Consumer},
       report: %{
+        source_id: src_id,
+        error_source: src_msg,
         module: __MODULE__,
         executor: __MODULE__.Fcm,
         error_message: error
