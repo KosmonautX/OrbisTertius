@@ -9,20 +9,23 @@ defmodule Phos.ParamsValidator do
       case param do
         key when is_atom(key) or is_binary(key) -> getter(module, data, to_string(key), acc)
         {:rename, [key, to]} -> rename(module, data, to_string(key), to_string(to), acc)
-        {key, nested} when is_list(nested) ->
-          case reducer(module, nested, data) do
-            temp when is_map(temp) ->
-              Map.keys(temp)
-              |> length()
-              |> case do
-                0 -> acc
-                _ -> Map.put(acc, to_string(key), temp)
-              end
-            temp -> Map.put(acc, to_string(key), temp)
-          end
+        {key, nested} when is_list(nested) -> nested_reduce(module, nested, acc, key, data)
         _ -> acc
       end
     end)
+  end
+
+  defp nested_reduce(module, nested, acc, key, data) do
+    case reducer(module, nested, data) do
+      temp when is_map(temp) ->
+        Map.keys(temp)
+        |> length()
+        |> case do
+          0 -> acc
+          _ -> Map.put(acc, to_string(key), temp)
+        end
+      temp -> Map.put(acc, to_string(key), temp)
+    end
   end
 
   defp rename(module, data, key, to, acc) do

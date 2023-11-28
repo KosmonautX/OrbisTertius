@@ -5,6 +5,7 @@ defmodule Phos.Users.Integrations do
   @primary_key false
   embedded_schema do
     field(:fcm_token, :string)
+    field(:telegram_chat_id, :string)
     embeds_one :beacon, Beacon, on_replace: :update, primary_key: false do
       field :scope, :boolean, default: true
       embeds_one :location, Location, on_replace: :update, primary_key: false do
@@ -32,6 +33,11 @@ defmodule Phos.Users.Integrations do
   def location_beacon_changeset(beacon, attrs) do
     beacon
     |> cast(attrs, [:scope, :subscribe, :unsubscribe])
+  end
+
+  def telegram_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:telegram_chat_id])
   end
 
 end

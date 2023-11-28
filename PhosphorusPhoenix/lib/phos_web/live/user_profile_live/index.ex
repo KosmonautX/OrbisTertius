@@ -36,7 +36,7 @@ defmodule PhosWeb.UserProfileLive.Index do
     def handle_event(
       "load-orbs",
       _,
-      %{assigns: %{orbs: orbs_meta, current_user: curr, user: user}} =
+      %{assigns: %{orbs: orbs_meta, current_user: _curr, user: user}} =
         socket
     ) do
   expected_orb_page = orbs_meta.pagination.current + 1

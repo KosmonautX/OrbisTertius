@@ -123,6 +123,11 @@ defmodule Phos.PlatformNotification do
     |> Repo.update_all(set: attrs)
   end
 
+  def get_notification([_id | _] = ids) do
+    query = from s in Store, where: s.id in ^ids, preload: [:template, :recipient], limit: 1
+    Repo.one(query)
+  end
+
   def get_notification(id) do
     query = from s in Store, where: s.id == ^id, preload: [:template, :recipient], limit: 1
     Repo.one(query)
@@ -133,11 +138,12 @@ defmodule Phos.PlatformNotification do
     Repo.one(query)
   end
 
-  def active_notification() do
+  def active_notification(time_span \\ 1) do
     time = DateTime.utc_now()
-    query = from s in Store, where: s.retry_attempt <= 5 and s.next_execute_at <= ^time
+    span = DateTime.add(time, -time_span, :minute)
+    query = from s in Store, where: s.retry_attempt <= 5 and s.next_execute_at <= ^time and s.next_execute_at >= ^span
     query = where(query, [s], is_nil(s.success) or s.success == false)
 
     Repo.all(query)
   end
-end
+ end

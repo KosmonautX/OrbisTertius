@@ -2,7 +2,7 @@ defmodule Phos.Users.User do
   use Ecto.Schema
   import Ecto.Changeset
   alias Phos.Action.{Orb}
-  alias Phos.Users.{Public_Profile, Private_Profile, Auth, RelationBranch, Integrations}
+  alias Phos.Users.{PublicProfile, PrivateProfile, Auth, RelationBranch, Integrations}
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "users" do
@@ -11,6 +11,7 @@ defmodule Phos.Users.User do
     field(:role, :string)
     field(:media, :boolean, default: false)
     field(:fyr_id, :string)
+    field(:boon, :integer)
 
     field(:password, :string, virtual: true, redact: true)
     field(:hashed_password, :string, redact: true)
@@ -29,14 +30,16 @@ defmodule Phos.Users.User do
     field :count, :integer, default: 0, virtual: true
     field :online_at, :integer, virtual: true
 
+    field :tele_id, :integer, virtual: true
+
     # has_many :pending_relations, RelationBranch, foreign_key: :user_id, where: [completed_at: nil]
     has_many(:allies, RelationBranch, foreign_key: :user_id, where: [completed_at: {:not, nil}])
     # has_many :allies, through: [:branches, :friend]
 
-    has_one(:personal_orb, Orb, foreign_key: :id)
-    has_one(:private_profile, Private_Profile, references: :id, foreign_key: :user_id)
-    embeds_one(:public_profile, Public_Profile, on_replace: :update)
-    embeds_one(:integrations, Integrations, on_replace: :update)
+    has_one :personal_orb, Orb, foreign_key: :id
+    has_one :private_profile, PrivateProfile, references: :id, foreign_key: :user_id
+    embeds_one :public_profile, PublicProfile, on_replace: :update
+    embeds_one :integrations, Integrations, on_replace: :update
 
     timestamps()
   end
@@ -44,7 +47,7 @@ defmodule Phos.Users.User do
   @doc false
   def changeset(%Phos.Users.User{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :media, :email, :fyr_id])
+    |> cast(attrs, [:username, :media, :email, :fyr_id, :confirmed_at])
     # |> validate_required(:email)
     |> cast_embed(:public_profile)
     |> cast_assoc(:private_profile)
@@ -67,7 +70,7 @@ defmodule Phos.Users.User do
     user
     |> cast(attrs, [])
     |> cast_assoc(:personal_orb, with: &Orb.territorial_changeset/2)
-    |> cast_embed(:public_profile, with: &Public_Profile.territorial_changeset/2)
+    |> cast_embed(:public_profile, with: &PublicProfile.territorial_changeset/2)
     |> cast_assoc(:private_profile)
   end
 
@@ -80,8 +83,12 @@ defmodule Phos.Users.User do
   @doc false
   def telegram_changeset(%__MODULE__{} = user, attrs) do
     user
-    |> cast(attrs, [:username, :email])
+    |> cast(attrs, [:username, :email, :inserted_at])
     |> cast_assoc(:auths, with: &Auth.changeset/2)
+    |> cast_assoc(:private_profile)
+    |> cast_assoc(:personal_orb, with: &Orb.personal_changeset/2)
+    |> cast_embed(:integrations, with: &Integrations.telegram_changeset/2)
+    |> cast_embed(:public_profile, with: &PublicProfile.changeset/2)
   end
 
   def post_registration_changeset(%__MODULE__{} = user, attrs) do

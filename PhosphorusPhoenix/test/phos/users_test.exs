@@ -505,4 +505,112 @@ defmodule Phos.UsersTest do
       refute inspect(%User{password: "123456"}) =~ "password: \"123456\""
     end
   end
+
+  describe "deliver_telegram_bind_confirmation_instructions/3" do
+    setup do
+      %{user: user_fixture(),
+        tele_user: temp_tele_user_fixture()
+      }
+    end
+
+    test "sends token through notification", %{user: user, tele_user: tele_user} do
+      auth = Enum.find(tele_user.auths, fn map -> map.auth_provider == "telegram" end)
+      token =
+        extract_user_token(fn url ->
+          Users.deliver_telegram_bind_confirmation_instructions(user, auth.auth_id , url)
+        end)
+
+      {:ok, token} = Base.url_decode64(token, padding: false)
+      assert user_token = Repo.get_by(UserToken, token: :crypto.hash(:sha256, token))
+      assert user_token.user_id == tele_user.id
+      assert user_token.sent_to == user.email
+      assert user_token.context == "bind_telegram"
+    end
+  end
+
+  describe "bind_user/1" do
+    setup do
+      user = user_fixture()
+      tele_user = temp_tele_user_fixture()
+
+      auth = Enum.find(tele_user.auths, fn map -> map.auth_provider == "telegram" end)
+
+      token =
+        extract_user_token(fn url ->
+          Users.deliver_telegram_bind_confirmation_instructions(user, auth.auth_id, url)
+        end)
+
+      %{user: user, tele_user: tele_user, token: token}
+    end
+
+    test "confirms the bind with a valid token", %{user: user, token: token} do
+      assert {:ok, confirmed_user} = Users.bind_user(token)
+      assert confirmed_user.integrations.telegram_chat_id
+      assert Repo.get!(User, user.id).integrations.telegram_chat_id
+      refute Repo.get_by(UserToken, user_id: user.id)
+    end
+
+    test "does not bind with invalid token", %{user: user, tele_user: tele_user} do
+      assert Users.bind_user("oops") == :error
+      refute Repo.get!(User, user.id).integrations["telegram_chat_id"]
+      assert Repo.get_by(UserToken, user_id: tele_user.id)
+    end
+
+    test "does not bind if token expired", %{user: user, tele_user: tele_user, token: token} do
+      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
+      assert Users.bind_user(token) == :error
+      refute Repo.get!(User, user.id).integrations["telegram_chat_id"]
+      assert Repo.get_by(UserToken, user_id: tele_user.id)
+    end
+  end
+  
+  describe "invitation/2" do
+    setup do
+      orb  = Phos.ActionFixtures.orb_fixture()
+      user = user_fixture()
+
+      %{user: user, initiator: orb.initiator, orb: orb}
+    end
+
+    test "create invitation", %{user: user, orb: orb} do
+      assert {:ok, token, user_token} = Users.invitation(orb, user.email)
+      assert token
+      assert user_token.sent_to
+    end
+
+    test "create invitation with no email", %{user: _user, orb: orb} do
+      assert {:ok, token, user_token} = Users.invitation(orb)
+      assert token
+      refute user_token.sent_to
+    end
+  end
+
+  describe "confirm_invitation/2" do
+    setup do
+      orb  = Phos.ActionFixtures.orb_fixture()
+
+      %{initiator: orb.initiator, orb: orb}
+    end
+
+    test "confirm token without email", %{orb: orb} do
+      user = user_fixture()
+      assert {:ok, token, _user_token} = Users.invitation(orb)
+      assert {:ok, permission} = Users.confirm_invitation(user, token)
+      assert permission.action == :collab_invite
+      assert permission.token_id
+      assert permission.member_id == user.id
+      assert permission.orb_id == orb.id
+      assert permission.member_id != orb.initiator_id
+    end
+
+    test "confirm token with email", %{orb: orb} do
+      user = user_fixture()
+      assert {:ok, token, _user_token} = Users.invitation(orb, user.email)
+      assert {:ok, permission} = Users.confirm_invitation(user, token)
+      assert permission.action == :collab_invite
+      assert permission.token_id
+      assert permission.member_id == user.id
+      assert permission.orb_id == orb.id
+    end
+  end
 end

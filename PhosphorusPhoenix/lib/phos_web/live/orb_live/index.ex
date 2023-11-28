@@ -195,13 +195,13 @@ defmodule PhosWeb.OrbLive.Index do
   end
 
   defp loc_subscriber(present, []) do
-    present |> Enum.map(fn new -> Phos.PubSub.subscribe(loc_topic(new)) end)
+    present |> Enum.each(fn new -> Phos.PubSub.subscribe(loc_topic(new)) end)
     present
   end
 
   defp loc_subscriber(present, past) do
-    (present -- past) |> Enum.map(fn new -> new |> loc_topic() |> Phos.PubSub.subscribe() end)
-    (past -- present) |> Enum.map(fn old -> old |> loc_topic() |> Phos.PubSub.unsubscribe() end)
+    (present -- past) |> Enum.each(fn new -> new |> loc_topic() |> Phos.PubSub.subscribe() end)
+    (past -- present) |> Enum.each(fn old -> old |> loc_topic() |> Phos.PubSub.unsubscribe() end)
     present
   end
 

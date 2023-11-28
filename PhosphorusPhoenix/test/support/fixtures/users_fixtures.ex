@@ -25,12 +25,23 @@ defmodule Phos.UsersFixtures do
     user
   end
 
+  def temp_tele_user_fixture(_attrs \\ %{}) do
+    options =
+      %{
+        "sub" => "#{Enum.random(1000000..3999999)}",
+        "provider" => "telegram",
+      }
+
+    {:ok, user} = Phos.Users.from_auth(options)
+    user
+  end
+
   def user_pte_prof_fixture(attrs \\ %{}) do
     {:ok, user_created} = valid_user_attributes() |> Phos.Users.register_user()
 
     {:ok, user} =
-      %Phos.Users.Private_Profile{}
-      |> Phos.Users.Private_Profile.changeset(%{user_id: user_created.id})
+      %Phos.Users.PrivateProfile{}
+      |> Phos.Users.PrivateProfile.changeset(%{user_id: user_created.id})
       |> Ecto.Changeset.put_embed(:geolocation, [attrs])
       |> Phos.Repo.insert()
 

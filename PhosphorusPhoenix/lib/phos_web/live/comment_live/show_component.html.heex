@@ -36,7 +36,7 @@
 
       <div class="flex w-full justify-between text-xs dark:text-[#777986]">
         <p
-          :if={not is_nil(@current_user)}
+          :if={not is_nil(@current_user) and depth(elem(@comment,1)) < 2 }
           class="font-medium text-[#687684] hover:text-gray-400 hover:underline mr-6"
         >
           <.link
@@ -110,7 +110,6 @@
         phx-click={
           JS.push("toggle_more_replies")
           |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}")
-          |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}")
           |> JS.toggle(to: "#showreply-#{elem(@comment, 1).id}")
           |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")
         }
@@ -131,7 +130,6 @@
         phx-click={
           JS.push("toggle_more_replies")
           |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}")
-          |> JS.toggle(to: "#morereplies-#{elem(@comment, 1).id}")
           |> JS.toggle(to: "#hidereply-#{elem(@comment, 1).id}")
           |> JS.toggle(to: "#showreply-#{elem(@comment, 1).id}")
         }
@@ -142,7 +140,7 @@
       </.link>
     </div>
 
-    <div id={"initshowreply-#{elem(@comment, 1).id}"} class="flex gap-2 mt-3">
+    <div :if={!@loading} id={"initshowreply-#{elem(@comment, 1).id}"} class="flex gap-2 mt-3">
       <hr class="-ml-1.5 lg:w-10 w-6 border-[#B3B5BD]" />
       <.link
         class="lg:ml-2 ml-1.5 -mt-2"

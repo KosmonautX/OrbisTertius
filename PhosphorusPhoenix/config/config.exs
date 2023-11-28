@@ -7,6 +7,20 @@
 # General application configuration
 import Config
 
+config :phos, Phos.TeleBot.Cache,
+  # When using :shards as backend
+  # backend: :shards,
+  # GC interval for pushing new generation: 12 hrs
+  gc_interval: :timer.hours(12),
+  # Max 1 million entries in cache
+  max_size: 1_000_000,
+  # Max 2 GB of memory
+  allocated_memory: 2_000_000_000,
+  # GC min timeout: 10 sec
+  gc_cleanup_min_timeout: :timer.seconds(10),
+  # GC max timeout: 10 min
+  gc_cleanup_max_timeout: :timer.minutes(10)
+
 config :phos,
   ecto_repos: [Phos.Repo]
 
@@ -32,7 +46,9 @@ config :phos, PhosWeb.Endpoint,
 config :phos, Phos.Mailer, adapter: Swoosh.Adapters.Local
 
 # Swoosh API client is needed for adapters other than SMTP.
-# config :swoosh, :api_client, false
+config :swoosh,
+  api_client: Swoosh.ApiClient.Finch,
+  finch_name: Swoosh.Finch
 
 # Configure esbuild (the version is required)
 config :esbuild,
@@ -45,7 +61,10 @@ config :esbuild,
   ]
 
 # Configures Elixir's Logger
-config :logger, :console,
+config :logger, :default_handler,
+  level: :debug
+
+config :logger, :default_formatter,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
@@ -71,13 +90,12 @@ config :phos, Phos.OAuthStrategy,
     http_adapter: Assent.HTTPAdapter.Mint
   ],
   telegram: [
-    # https://endpoint.com
-    host: {System, :get_env, ["TELEGRAM_REDIRECT_HOST"]},
+    host: {System, :get_env, ["TELEGRAM_REDIRECT_HOST"]}, #"5fba-220-255-157-189.ngrok-free.app/telegram_signup",
     bot_id: {System, :get_env, ["TELEGRAM_BOT_ID"]}
   ]
 
 config :tailwind,
-  version: "3.2.7",
+  version: "3.3.3",
   admin: [
     args: ~w(
       --config=tailwind.config.js
@@ -110,12 +128,25 @@ config :phos, Phos.Cache,
     partitions: 2
   ]
 
+config :phos, Phos.TeleBot.Cache,
+  primary: [
+    gc_interval: :timer.hours(12),
+    backend: :shards,
+    partitions: 2
+  ]
+
 config :fcmex,
   json_library: Jason
+
+config :phos, Phos.TeleBot.Core,
+  callback_url: {PhosWeb.Router.Helpers, :telegram_url, [PhosWeb.Endpoint, :create]}, #"//5fba-220-255-157-189.ngrok-free.app/bot/telegram_signup",
+  bot_token: {System, :get_env, ["TELEGRAM_BOT_ID"]}
 
 config :phos, Phos.External.Notion,
   token: {System, :get_env, "NOTION_TOKEN"},
   database: {System, :get_env, "NOTION_DATABASE"},
+  orb_database: "b47fc73f3c054c10a2b74296937cdfb4",
+  article_database: "6f552e97275f453ba4edee2c3a532c0f",
   notification_database: {System, :get_env, "NOTION_NOTIFICATION_DATABASE"}
 
 config :phos, Phos.PlatformNotification,
@@ -123,6 +154,12 @@ config :phos, Phos.PlatformNotification,
   time_interval: 3,
   min_demand: 5,
   max_demand: 8
+
+config :phos, Phos.TeleBot.TelegramNotification,
+  worker: 8,
+  time_interval: 3,
+  min_demand: 2,
+  max_demand: 5
 
 # config :sparrow,
 #   pool_enabled: true,
@@ -139,5 +176,12 @@ config :phos, Phos.Models.OpenAI,
   model: "text-davinci-003",
   # token: {System, :fetch_env, "OPENAI_KEY"}
   token: "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"
+
+
+config :phos, Phos.Oracle,
+  textembedder: %{
+    source: :hf,
+    model: "intfloat/e5-small-v2"
+  }
 
 import_config "#{config_env()}.exs"

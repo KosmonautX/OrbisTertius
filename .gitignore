@@ -7,3 +7,4 @@ WolfSmoke/node_modules
 .localstack/data/recorded_api_calls.json
 /PhosphorusPhoenix/log
 /PhosphorusPhoenix/priv/data/sparrow_config.json
+/PhosphorusPhoenix/batch_response.txt

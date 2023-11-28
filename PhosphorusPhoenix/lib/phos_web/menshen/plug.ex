@@ -8,21 +8,21 @@ defmodule PhosWeb.Menshen.Plug do
   def authorized_user(conn, _opts) do
     with [jwt | _tail] when is_binary(jwt) <- get_req_header(conn, "authorization"),
          {:ok , claims} <- Auth.validate_user(jwt) do
-      conn |> shallPass(claims)
+      conn |> shall_pass(claims)
       else
-        _ -> conn |> shallNotPass
+        _ -> conn |> shall_no_pass()
     end
   end
 
-  defp shallPass(conn, %Phos.Users.User{} = user), do: assign(conn, :current_user, user)
-  defp shallPass(conn, %{"user_id" => user_id} = _claims) do
+  defp shall_pass(conn, %Phos.Users.User{} = user), do: assign(conn, :current_user, user)
+  defp shall_pass(conn, %{"user_id" => user_id} = _claims) do
     case Phos.Users.find_user_by_id(user_id) do
-      {:ok, user} -> shallPass(conn, user)
-      _ -> shallNotPass(conn)
+      {:ok, user} -> shall_pass(conn, user)
+      _ -> shall_no_pass(conn)
     end
   end
 
-  defp shallNotPass(conn) do
+  defp shall_no_pass(conn) do
     conn
     |> put_status(:unauthorized)
     |> resp(401, "Begone Heathen")

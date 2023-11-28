@@ -21,6 +21,16 @@ defmodule Phos.Orbject.S3 do
   """
   alias Phos.Orbject
 
+  @bucket "orbistertius"
+
+  defguard is_uuid?(value)
+  when is_bitstring(value) and
+         byte_size(value) == 36 and
+         binary_part(value, 8, 1) == "-" and
+         binary_part(value, 13, 1) == "-" and
+         binary_part(value, 18, 1) == "-" and
+         binary_part(value, 23, 1) == "-"
+
   def get(path) do
     signer(:get, path)
   end
@@ -57,11 +67,11 @@ defmodule Phos.Orbject.S3 do
 
 
   def get_all(root_path) do
-    with {:ok, response} <- ExAws.S3.list_objects_v2("orbistertius", prefix: root_path, encoding_type: "url") |> ExAws.request(),
+    with {:ok, response} <- ExAws.S3.list_objects_v2(@bucket, prefix: root_path, encoding_type: "url") |> ExAws.request(),
          true <- response.status_code >= 200 and response.status_code < 300,
          [_ |_] <- response.body.contents,
            addresses <- (for obj <- response.body.contents, into: %{} do
-                                  {path_suffix(obj.key, root_path), signer!(:get,obj.key)} end) do
+                                  {path_suffix(obj.key, root_path), signer!(:get, obj.key)} end) do
       {:ok, addresses}
     else
       [] -> {:ok, nil}
@@ -89,6 +99,14 @@ defmodule Phos.Orbject.S3 do
     end
   end
 
+  def delete_all(archetype, uuid, form \\ "") do
+    ExAws.S3.list_objects(@bucket, prefix: path_constructor(archetype, uuid, form))
+    |> ExAws.stream!()
+    |> Stream.map(& &1.key)
+    |> (&ExAws.S3.delete_all_objects(@bucket, &1)).()
+    |> ExAws.request()
+  end
+
 
   defp signer!(action, path) do
     {:ok, url} = signer(action, path)
@@ -96,7 +114,7 @@ defmodule Phos.Orbject.S3 do
   end
 
   defp signer(:headandget, path) do
-    ExAws.S3.head_object("orbistertius", path)
+    ExAws.S3.head_object(@bucket, path)
     |> ExAws.request!()
     ## with 200
     signer(:get, path)
@@ -107,14 +125,24 @@ defmodule Phos.Orbject.S3 do
   defp signer(action, path) do
     config = %{
       region: "ap-southeast-1",
-      bucket: "orbistertius",
+      bucket: @bucket,
       access_key_id: System.fetch_env!("AWS_ACCESS_KEY_ID"),
       secret_access_key: System.fetch_env!("AWS_SECRET_ACCESS_KEY")
     }
 
     ExAws.Config.new(:s3, config) |>
       ExAws.S3.presigned_url(action, config.bucket, path,
-        [expires_in: 88888, virtual_host: false, query_params: [{"ContentType", "application/octet-stream"}]])
+        [expires_in: 88_888, virtual_host: false, query_params: [{"ContentType", "application/octet-stream"}]])
+  end
+
+  defp path_constructor(archetype, uuid, m = %Orbject.Structure.Media{essence_id: e_id}) when not is_nil(e_id) do
+    "#{archetype}/#{uuid}#{unless is_nil(m.access),
+          do: "/#{m.access}"}#{unless is_nil(m.essence),
+          do: "/#{m.essence}"}#{unless is_nil(e_id),
+          do: "/#{e_id}"}#{unless is_nil(m.resolution),
+          do: "/#{m.resolution}"}#{unless is_nil(m.height),
+          do: "#{m.height}x#{m.width}"}#{unless is_nil(m.ext),
+          do: ".#{m.ext}"}"
   end
 
   defp path_constructor(archetype, uuid, m = %Orbject.Structure.Media{count: 0}) do
@@ -136,7 +164,7 @@ defmodule Phos.Orbject.S3 do
           do: ".#{m.ext}"}"
   end
 
-  defp path_constructor(archetype, uuid, form) do
+  defp path_constructor(archetype, uuid, form) when is_uuid?(uuid) do
     "#{archetype}/#{uuid}/#{form}"
   end
 

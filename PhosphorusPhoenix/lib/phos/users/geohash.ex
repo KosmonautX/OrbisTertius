@@ -11,9 +11,20 @@ defmodule Phos.Users.Geolocation do
   end
 
   @doc false
+  def changeset(orb, %{id: _id} = attrs) do
+    orb
+    |> cast(attrs |> Map.put_new_lazy(:chronolock, &__MODULE__.timelock/0), [:id, :location_description, :geohash, :chronolock])
+    |> validate()
+  end
+
   def changeset(orb, attrs) do
     orb
     |> cast(attrs |> Map.put_new_lazy("chronolock", &__MODULE__.timelock/0), [:id, :location_description, :geohash, :chronolock])
+    |> validate()
+  end
+
+  def validate(changeset) do
+    changeset
     |> validate_required([:id, :geohash])
     |> validate_inclusion(:id, ["home", "work", "live"])
     |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])

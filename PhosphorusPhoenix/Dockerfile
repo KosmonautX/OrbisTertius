@@ -11,9 +11,9 @@
 #   - https://pkgs.org/ - resource for finding needed packages
 #   - Ex: hexpm/elixir:1.14.0-erlang-25.1.2-debian-bullseye-20221004-slim
 #
-ARG ELIXIR_VERSION=1.14.2
-ARG OTP_VERSION=25.1.2
-ARG DEBIAN_VERSION=bullseye-20221004-slim
+ARG ELIXIR_VERSION=1.15.5
+ARG OTP_VERSION=26.0.2
+ARG DEBIAN_VERSION=bullseye-20230612-slim
 
 ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
 ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
@@ -33,6 +33,8 @@ RUN mix local.hex --force && \
 
 # set build ENV
 ENV MIX_ENV="prod"
+# Set Bumblebee Models Cache Directory
+ENV BUMBLEBEE_CACHE_DIR="/app/.bumblebee"
 
 # install mix dependencies
 COPY mix.exs mix.lock ./
@@ -60,6 +62,10 @@ RUN mix compile
 # Changes to config/runtime.exs don't require recompiling the code
 COPY config/runtime.exs config/
 
+# Download the HuggingFace models to cache them
+RUN mix run -e 'Phos.Oracle.load_textembedder_serving()' --no-start
+# RUN /app/bin/phos eval 'Phos.Oracle.load_textembedder_serving()'
+
 COPY rel rel
 RUN mix release
 
@@ -67,7 +73,7 @@ RUN mix release
 # the compiled release and other runtime necessities
 FROM ${RUNNER_IMAGE}
 
-RUN apt-get update -y && apt-get install -y libstdc++6 openssl curl libncurses5 locales ffmpeg graphicsmagick-imagemagick-compat\
+RUN apt-get update -y && apt-get install -y libstdc++6 openssl libncurses5 locales ffmpeg graphicsmagick-imagemagick-compat\
   && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
 # Set the locale
@@ -85,11 +91,17 @@ ENV MIX_ENV="prod"
 
 # Only copy the final release from the build stage
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/phos ./
+COPY --from=builder --chown=nobody:root /app/.bumblebee/ ./.bumblebee
 
 USER nobody
+
+ENV ECTO_IPV6 true
+ENV ERL_AFLAGS "-proto_dist inet6_tcp"
+
+ENV BUMBLEBEE_CACHE_DIR=/app/.bumblebee
+ENV BUMBLEBEE_OFFLINE=true
 
 CMD ["/app/bin/server"]
 
 # Appended by flyctl
-ENV ECTO_IPV6 true
-ENV ERL_AFLAGS "-proto_dist inet6_tcp"
+

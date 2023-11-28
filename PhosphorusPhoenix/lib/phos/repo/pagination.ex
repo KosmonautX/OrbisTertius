@@ -20,8 +20,8 @@ defmodule Phos.Repo.Paginated do
   def query_builder(query, page, attr, limit), do: query_builder(query, [sort_attribute: attr, limit: limit, page: page])
 
   #named binding
-  defp maybe_ascend(query, {as, field}, false), do: from [{^as, x}] in query, order_by: [{:desc, field(x, ^field)}]
-  defp maybe_ascend(query, {as, field}, true), do: from [{^as, x}] in query, order_by: [{:asc, field(x, ^field)}]
+  defp maybe_ascend(query, {as, field}, false), do: from([{^as, x}] in query, order_by: [{:desc, field(x, ^field)}])
+  defp maybe_ascend(query, {as, field}, true), do: from([{^as, x}] in query, order_by: [{:asc, field(x, ^field)}])
   defp maybe_ascend(query, attr, false), do: query |> order_by(desc: ^attr)
   defp maybe_ascend(query, attr, true), do: query |> order_by(asc: ^attr)
   defp maybe_ascend(query, _attr, nil), do: query
@@ -119,14 +119,14 @@ defmodule Phos.Repo.Paginated do
                 current: page,
                 count: count,
                 total: total,
-                start: (unless (count==0), do: (page - 1) * limit + 1, else: (page - 1) * limit + count),
+                start: (if count == 0, do: (page - 1) * limit + count, else: (page - 1) * limit + 1),
                 end: (page - 1) * limit + count
               }}}
         end
    end
 
 
-   defp mutate_meta_attr(%DateTime{} = dt), do: dt |> DateTime.from_naive!("UTC")  |> DateTime.to_unix(:second)
+   defp mutate_meta_attr(%DateTime{} = dt), do: DateTime.to_unix(dt, :second)
    defp mutate_meta_attr(%NaiveDateTime{} = dt), do: NaiveDateTime.diff(dt, ~N[1970-01-01 00:00:00]) # seconds from unix time
    defp mutate_meta_attr(attr), do: attr
 end

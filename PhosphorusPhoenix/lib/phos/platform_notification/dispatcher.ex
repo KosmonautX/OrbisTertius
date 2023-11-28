@@ -35,42 +35,38 @@ defmodule Phos.PlatformNotification.Dispatcher do
   end
 
   @impl true
-  def handle_info({_ref, {id, type, message}}, state) when type in [:retry, :error, :unknown_error] do
+  def handle_info({_ref, {id, type, message}}, state) when type in [:retry, :error, :unknown_error] and not is_nil(id) do
     stored = PN.get_notification(id)
-    retry_attempt = stored.retry_attempt + 1
-    next_attempt = DateTime.add(DateTime.utc_now(), retry_attempt * retry_after(), :minute)
-    PN.update_notification(stored, %{error_reason: message, next_execute_at: next_attempt, retry_attempt: retry_attempt, success: retry_attempt > 5})
+    _ = increment_retry_logic(stored, message)
     {:noreply, [], state}
   end
 
   @impl true
-  def handle_info({_ref, {ids, :errors, message}}, state) do
-    PN.update_notifications(ids, %{error_reason: message, retry_attempt: 6, success: false})
+  def handle_info({_ref, {id, :error, message}}, state) when is_bitstring(id) do
+    PN.update_notifications(id, %{error_reason: inspect(message), retry_attempt: 6, success: false})
     {:noreply, [], state}
   end
 
   @impl true
-  def handle_info({_ref, {_ids, :file_error, message}}, state) do
-    :logger.debug(%{
-      label: {Phos.PlatformNotification.Global, message},
-      report: %{
-        module: __MODULE__,
-        action: :stop,
-        message: message
-      }
-    }, %{
-      domain: [:phos],
-      error_logger: %{tag: :debug_msg}
-    })
+  def handle_info({_ref, {id, :UNREGISTERED = err, _message}}, state) do
+    with %{recipient: user} = notif <- PN.get_notification(id),
+         _ <- increment_retry_logic(notif, err), # change the fcm_token to nil cause INVALID_ARGUMENT from sparrow
+         {:ok, _} <- Phos.Users.update_integrations_user(user, %{"integrations" => %{"fcm_token" => nil}}) do
+      {:noreply, [], state}
+    else
+      _ -> {:noreply, [], state}
+    end
+  end
 
+  @impl true
+  def handle_info({_ref, {id, :INVALID_ARGUMENT, _message}}, state) do 
+    stored = PN.get_notification(id)
+    increment_retry_logic(stored, :INVALID_ARGUMENT) # thow to invalid state
     {:noreply, [], state}
   end
 
   @impl true
-  def handle_info({_ref, {ids, :success}}, state) when is_list(ids) do
-    PN.update_notifications(ids, %{success: true})
-    {:noreply, [], state}
-  end
+  def handle_info({_ref, {_id, :QUOTA_EXCEEDED, _message}}, state), do: {:noreply, [], state}
 
   @impl true
   def handle_info({_ref, {id, :success}}, state) do
@@ -90,6 +86,10 @@ defmodule Phos.PlatformNotification.Dispatcher do
     {:noreply, [], state}
   end
 
+  def handle_info(_, _msg, state) do
+    {:noreply, [], state}
+  end
+
   defp filter_event_type(%{"type" => type} = data) when type in ["email", "push", "broadcast"] do
     {:ok, data}
   end
@@ -101,6 +101,18 @@ defmodule Phos.PlatformNotification.Dispatcher do
   end
   defp filter_event_entity({:reply, %{"notification_id" => _id} = data}), do: {:reply, data}
   defp filter_event_entity(:error), do: :error
+
+  defp increment_retry_logic(notification, message) do
+    retry_attempt = retry_by_error(notification, message)
+    next_attempt = next_attempt_by_error(retry_attempt, message)
+    PN.update_notification(notification, %{error_reason: inspect(message), next_execute_at: next_attempt, retry_attempt: retry_attempt, success: false})
+  end
+
+  defp retry_by_error(_notif, :INVALID_ARGUMENT), do: 6 # invalid argument cannot be retried
+  defp retry_by_error(notification, _msg), do: notification.retry_attempt + 1
+
+  defp next_attempt_by_error(delay, :INVALID_ARGUMENT), do: DateTime.add(DateTime.utc_now(), -delay * retry_after(), :minute) # add backdate
+  defp next_attempt_by_error(delay, _), do: DateTime.add(DateTime.utc_now(), delay * retry_after(), :minute)
 
   defp retry_after do
     PN.config()
@@ -126,6 +138,7 @@ defmodule Phos.PlatformNotification.Dispatcher do
         err -> err
       end
   end
+
   defp insert_to_persistent_database(data)  do
     case get_recipient(data) do
       {:ok, recipient_id} -> PN.insert_notification(%{

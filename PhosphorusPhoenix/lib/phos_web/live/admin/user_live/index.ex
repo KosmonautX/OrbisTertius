@@ -43,10 +43,11 @@ defmodule PhosWeb.Admin.UserLive.Index do
   end
 
   def handle_event(
-        "load-more",
-        _params,
-        %{assigns: %{search: search, limit: limit, user_meta: %{pagination: pagination}}} = socket
-      ) do
+    "load-more",
+    _params,
+    %{assigns: %{search: search, limit: limit, user_meta: %{pagination: pagination}}} = socket
+    ) do
+
     expected_page = pagination.current + 1
 
     %{data: new_users, meta: new_meta} =

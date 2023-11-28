@@ -37,7 +37,18 @@ defmodule Phos.DataCase do
   """
   def setup_sandbox(tags) do
     pid = Ecto.Adapters.SQL.Sandbox.start_owner!(Phos.Repo, shared: not tags[:async])
-    on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
+
+    on_exit(fn ->
+      for pid <- PhosWeb.Presence.fetchers_pids() do
+        ref = Process.monitor(pid)
+        assert_receive {:DOWN, ^ref, _, _, _}, 1000
+      end
+
+      for pid <- Task.Supervisor.children(Phos.TaskSupervisor) do
+        ref = Process.monitor(pid)
+        assert_receive {:DOWN, ^ref, _, _, _}, 1000
+      end
+      Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
   end
 
   @doc """

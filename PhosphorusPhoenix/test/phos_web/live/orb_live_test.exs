@@ -6,29 +6,18 @@ defmodule PhosWeb.OrbLiveTest do
 
   @create_attrs %{"title" => "some title", "extinguish" => "2022-12-02T13:31:00", "source" => :web, "location" => :all, "radius" => 8, "payload" => %{"info" => "some info", "tip" => "some tip", "when" => "some when", "where" => "some where"}}
   @update_attrs %{"title" => "updated title", "active" => true, "extinguish" => "2022-12-02T13:31:00", "source" => :web, "location" => :all, "radius" => 8, "payload" => %{"info" => "updated info", "tip" => "updated tip", "when" => "updated when", "where" => "updated where"}}
-  #@invalid_attrs %{"active" => true, "extinguish" => %{day: 21, hour: 7, minute: 22, month: 5, year: 2022}, "source" => :web, "location" => :home, "radius" => 8, "payload" => %{"info" => "some info", "tip" => "some tip", "when" => "some when", "where" => "some where"}}
-  #@no_location_update_attrs %{"title" => "updated title", "active" => true, "extinguish" => "2022-12-02T13:31:00", "source" => :web, "radius" => 8, "payload" => %{"info" => "updated info", "tip" => "updated tip", "when" => "updated when", "where" => "updated where"}}
-  # @create_attrs %{active: true, extinguish: %{day: 21, hour: 7, minute: 22, month: 5, year: 2022}, media: true, title: "some title"}
-  # @update_attrs %{active: false, extinguish: %{day: 22, hour: 7, minute: 22, month: 5, year: 2022}, media: false, title: "some updated title"}
-  # @invalid_attrs %{active: false, extinguish: %{day: 30, hour: 7, minute: 22, month: 2, year: 2022}, media: false, title: nil}
 
   defp create_orb(_) do
     orb = orb_fixture()
     %{orb: orb}
   end
 
-  # defp create_pte_profile(_) do
-  #   user = user_pte_prof_fixture(%{id: "home", geohash: 623276216934563839, chronolock: 1653079771, location_description: nil})
-  #   %{user: user}
-  # end
-
   describe "Index" do
-    setup [:create_orb, :register_and_log_in_user]
-    # setup [:create_orb, :create_pte_profile]
+    setup [:register_and_log_in_user_and_create_orb]
 
     test "lists all orbs", %{conn: conn, user: user} do
-      %Users.Private_Profile{}
-        |> Users.Private_Profile.changeset(%{user_id: user.id})
+      %Users.PrivateProfile{}
+        |> Users.PrivateProfile.changeset(%{user_id: user.id})
         |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623276216934563839, chronolock: 1653079771, location_description: nil}])
         |> Phos.Repo.insert()
       {:ok, index_live, _html} = live(conn, ~p"/orb")
@@ -48,9 +37,9 @@ defmodule PhosWeb.OrbLiveTest do
 
     test "saves new orb", %{conn: conn, user: user} do
       {:ok, _ecto_insert} =
-        %Users.Private_Profile{}
-        |> Users.Private_Profile.changeset(%{user_id: user.id})
-        |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623276216934563839, chronolock: 1653079771, location_description: nil}])
+        %Users.PrivateProfile{}
+        |> Users.PrivateProfile.changeset(%{user_id: user.id})
+        |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623_276_216_934_563_839, chronolock: 1_653_079_771, location_description: nil}])
         |> Phos.Repo.insert()
 
       {:ok, index_live, _html} = live(conn, ~p"/orb")
@@ -72,9 +61,9 @@ defmodule PhosWeb.OrbLiveTest do
 
     test "updates orb in listing", %{conn: conn, orb: orb, user: user} do
       {:ok, _ecto_insert} =
-        %Users.Private_Profile{}
-        |> Users.Private_Profile.changeset(%{user_id: user.id})
-        |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623276216934563839, chronolock: 1653079771, location_description: nil}])
+        %Users.PrivateProfile{}
+        |> Users.PrivateProfile.changeset(%{user_id: user.id})
+        |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623_276_216_934_563_839, chronolock: 1_653_079_771, location_description: nil}])
         |> Phos.Repo.insert()
       {:ok, index_live, _html} = live(conn, ~p"/orb")
 
@@ -98,9 +87,9 @@ defmodule PhosWeb.OrbLiveTest do
 
     test "deletes orb in listing", %{conn: conn, orb: orb, user: user} do
       {:ok, _ecto_insert} =
-        %Users.Private_Profile{}
-        |> Users.Private_Profile.changeset(%{user_id: user.id})
-        |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623276216934563839, chronolock: 1653079771, location_description: nil}])
+        %Users.PrivateProfile{}
+        |> Users.PrivateProfile.changeset(%{user_id: user.id})
+        |> Ecto.Changeset.put_embed(:geolocation, [%{id: "home", geohash: 623_276_216_934_563_839, chronolock: 1_653_079_771, location_description: nil}])
         |> Phos.Repo.insert()
       {:ok, index_live, _html} = live(conn, ~p"/orb")
       assert index_live

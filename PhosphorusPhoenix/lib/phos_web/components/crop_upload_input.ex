@@ -34,6 +34,7 @@ defmodule PhosWeb.Components.CropUploadInput do
               <%= error_to_string(err) %>
             </div>
           </article>
+
           <.button type="submit" phx-disable-with="Saving...">Save</.button>
         </.modal>
       <% end %>

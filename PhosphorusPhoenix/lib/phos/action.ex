@@ -4,9 +4,12 @@ defmodule Phos.Action do
   """
 
   import Ecto.Query, warn: false
+  import Pgvector.Ecto.Query, warn: false
 
   alias Phos.Repo
-  alias Phos.Action.{Orb, Orb_Location}
+  alias Phos.Action.{Orb, Orb_Location, Permission}
+  alias Phos.TeleBot.TelegramNotification, as: TN
+  use Retry
 
   @doc """
   Returns the list of orbs.
@@ -57,18 +60,18 @@ defmodule Phos.Action do
     # parent_path = "*.#{Phos.Utility.Encoder.encode_lpath(id)}.*"
     query =
       from o in Orb,
-        preload: [:locations, :initiator, :parent],
+        preload: [:locations, :initiator],
         where: o.id == ^id,
         inner_lateral_join: p in subquery(
           from p in Orb,
             where: p.parent_id == ^id,
             select: %{count: count(p)}
-        ),
+        ), on: true,
         inner_lateral_join: c in subquery(
           from c in Phos.Comments.Comment,
-          where: c.orb_id == ^id,
-          select: %{count: count()}
-        ),
+            where: c.orb_id == ^id,
+            select: %{count: count()}
+        ), on: true,
         select_merge: %{number_of_repost: p.count, comment_count: c.count},
         limit: 1
     case Repo.one(query) do
@@ -80,6 +83,7 @@ defmodule Phos.Action do
   def get_orb(orb_id, your_id) do
     from(orbs in Orb,
       where: orbs.id == ^orb_id,
+      preload: [:blorbs, :members],
       inner_join: initiator in assoc(orbs, :initiator),
       left_join: branch in assoc(initiator, :relations),
       on: branch.friend_id == ^your_id,
@@ -89,12 +93,20 @@ defmodule Phos.Action do
         from c in Phos.Comments.Comment,
         where: c.orb_id == ^orb_id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{comment_count: c.count})
       |> Repo.one()
+      |> (fn %Orb{} = orb -> Map.put(orb, :members, Enum.reduce(orb.members, {:cont, []}, fn
+            %{action: :mention} = member, {:cont, acc} -> {:cont_collab, [Repo.preload(member, :member) | acc]}
+            %{action: :collab} = member, {state, acc} when state in [:cont, :cont_collab] -> {:halt, [Repo.preload(member, :member) | acc]}
+            member, {state, acc} -> {state, [member| acc]}
+            end) |> elem(1))
+       err -> err
+    end).()
+
   end
 
-  def get_orb!(id), do: Repo.get!(Orb, id) |> Repo.preload([:locations, :initiator])
+  def get_orb!(id), do: Repo.get!(Orb, id) |> Repo.preload([:locations, :initiator, :blorbs])
   def get_orb_by_fyr(id), do: Repo.get_by(Phos.Users.User, fyr_id: id)
 
   def list_all_active_orbs(options \\ []) do
@@ -107,12 +119,15 @@ defmodule Phos.Action do
   def active_orbs_by_geohashes(hashes) do
     from(l in Orb_Location,
       where: l.location_id in ^hashes,
-      left_join: orbs in assoc(l, :orbs),
-      where: orbs.active == true,
-      preload: [orbs: :initiator],
-      order_by: [desc: orbs.inserted_at])
-      |> Repo.all(limit: 32)
-      |> Enum.map(fn orb -> orb.orbs end)
+      inner_join: orbs in assoc(l, :orbs),
+      where: orbs.active == true and orbs.userbound != true,
+      select: orbs,
+      inner_join: initiator in assoc(orbs, :initiator),
+      select_merge: %{initiator: initiator},
+      order_by: [desc: orbs.inserted_at],
+      limit: 8)
+      |> Repo.all()
+      # |> Enum.map(fn orb -> orb.orbs end)
   end
 
   def orbs_by_geohashes({hashes, your_id}) do
@@ -131,16 +146,20 @@ defmodule Phos.Action do
           where: c.orb_id == parent_as(:orb).id,
           select: %{count: count()}
         )
-      ),
+      ), on: true,
       select_merge: %{comment_count: c_count.count})
   end
 
   def orbs_by_geohashes({hashes, your_id}, opts) do
-    limit = Keyword.get(opts, :limit, 24)
+    limit = Keyword.get(opts, :limit, 12)
     orbs_by_geohashes({hashes, your_id})
     |> maybe_search(Keyword.get(opts, :search, nil))
     |> Repo.Paginated.all([{:limit, limit} | opts])
-    |> (&(Map.put(&1, :data, &1.data |> Phos.Repo.Preloader.lateral(:comments, limit: 3, order_by: {:asc, :inserted_at}, assocs: [:initiator, parent: [:initiator]])))).()
+    |> (&(Map.put(&1, :data,
+            &1.data
+            |> Phos.Repo.Preloader.lateral(:comments, limit: 3, order_by: {:asc, :inserted_at}, assocs: [:initiator, parent: [:initiator]])
+            |> Phos.Repo.Preloader.lateral(:members, limit: 2, order_by: {:asc, :inserted_at}, assocs: [:member], where: dynamic([p], field(p, :action) != :collab_invite))
+            ))).()
   end
 
 
@@ -173,7 +192,7 @@ defmodule Phos.Action do
           where: r.user_id == parent_as(:user).id and not is_nil(r.completed_at),
           select: %{count: count()}
         )
-      ),
+      ), on: true,
       left_lateral_join:
       mutual in subquery(
         from(r in Phos.Users.RelationBranch,
@@ -184,7 +203,7 @@ defmodule Phos.Action do
           select: %{friend | count: over(count(), :ally_partition)},
           windows: [ally_partition: [partition_by: :user_id]]
         )
-      ),
+      ), on: true,
       select_merge: %{mutual_count: mutual.count, ally_count: a_count.count, mutual: mutual})
       |> Repo.Paginated.all([page: page, sort_attribute: sort_attribute, limit: limit])
       |> (&(Map.put(&1, :data, &1.data |> Repo.Preloader.lateral(:orbs, [limit: 5])))).()
@@ -219,6 +238,18 @@ defmodule Phos.Action do
       |> Repo.all()
   end
 
+  def telegram_chat_id_by_geohashes(hashes) do
+    from(l in Orb_Location,
+      as: :l,
+      where: l.location_id in ^hashes,
+      inner_join: orbs in assoc(l, :orbs),
+      on: orbs.userbound == true,
+      inner_join: initiator in assoc(orbs, :initiator),
+      distinct: initiator.integrations["telegram_chat_id"],
+      select: initiator.integrations)
+      |> Repo.all()
+  end
+
   def orb_initiator_by_geohashes(hashes) do
     from(l in Orb_Location,
       as: :l,
@@ -245,7 +276,7 @@ defmodule Phos.Action do
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:o).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{comment_count: c.count})
   end
 
@@ -264,28 +295,30 @@ defmodule Phos.Action do
     from(o in Orb,
       as: :o,
       where: o.initiator_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]) and fragment("? @> ?", o.traits, ^traits),
-      preload: [:initiator],
+      preload: [:initiator, :members],
       inner_lateral_join: c in subquery(
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:o).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{comment_count: c.count})
       |> Repo.Paginated.all(page, sort_attribute, limit)
   end
 
-  def orbs_by_initiators(user_ids, page, opts) do
+  def orbs_by_initiators([user_id | _] = user_ids, page, opts) do
     sort_attribute = Map.get(opts, :sort_attribute, :inserted_at)
     limit = Map.get(opts, :limit, 12)
     from(o in Orb,
       as: :o,
-      where: o.initiator_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]),
-      preload: [:initiator],
+      left_join: m in assoc(o, :members),
+      on: m.member_id in ^user_ids and m.action == :collab,
+      where: o.initiator_id == ^user_id or m.member_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]),
+      preload: [:initiator, :members],
       inner_lateral_join: c in subquery(
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:o).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{comment_count: c.count})
       |> Repo.Paginated.all(page, sort_attribute, limit)
   end
@@ -301,7 +334,7 @@ defmodule Phos.Action do
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:l).orb_id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{comment_count: c.count}
 
     Repo.all(query, limit: 32)
@@ -320,7 +353,7 @@ defmodule Phos.Action do
         from c in Phos.Comments.Comment,
         where: c.orb_id == parent_as(:o).id,
         select: %{count: count()}
-      ),
+      ), on: true,
       select_merge: %{comment_count: c.count}
 
     Repo.all(query, limit: 32)
@@ -365,34 +398,67 @@ defmodule Phos.Action do
     %Orb{}
     |> Orb.changeset(attrs)
     |> Repo.insert()
-    |> case do
-         {:ok, orb} = data ->
-           orb = orb |> Repo.preload([:initiator])
-           Task.start(fn ->
-             experimental_notify(orb)
-           end)
-           #spawn(fn -> user_feeds_publisher(orb) end)
-           data
-         err -> err
-       end
+    |> tap(&case &1 do
+            {:ok, orb} ->
+              orb = orb |> Repo.preload([:initiator])
+              Task.Supervisor.start_child(Phos.TaskSupervisor,
+                fn ->
+                  notify(orb)
+                end)
+              Task.Supervisor.start_child(Phos.TaskSupervisor,
+                fn ->
+                  from(u in Phos.Users.User, update: [inc: [boon: 1]], where: u.id == ^orb.initiator_id)
+                  |> Phos.Repo.update_all([])
+                end
+              )
+              Task.start(fn ->
+                case orb.media do
+                  true ->
+                    wait exponential_backoff() |> randomize |> expiry(30_000) do
+                      is_map(Phos.Orbject.S3.get_all!("ORB", orb.id, "public/banner/lossless"))
+                    after
+                      _ ->
+                        TN.Collector.add(orb)
+                        {:ok, "Media fetched"}
+                    else
+                      _ ->
+                        TN.Collector.add(%{orb | media: false})
+                      {:error, "Unable to get media"}
+                    end
+                  false ->
+                    TN.Collector.add(orb)
+                end
+              end)
+              #index in pgvector, Test: Down Signal Takes much longer
+              Task.start(fn ->
+                embed  = case orb do
+                           %{payload: %{inner_title: title}} when is_binary(title) ->
+                             build_embedding("passage: " <> title)
+                           %{title: title} when is_binary(title) ->
+                             build_embedding("passage: " <> title)
+                           _ ->
+                             nil
+                         end
+                update_orb(orb, %{embedding: embed})
+              end)
+              #spawn(fn -> user_feeds_publisher(orb) end)
+              _ -> :ok
+    end)
   end
 
   def admin_create_orb(attrs \\ %{}) do
     %Orb{}
     |> Orb.admin_changeset(attrs)
     |> Repo.insert()
-    |> case do
-         {:ok, orb} = data ->
-           orb = orb |> Repo.preload([:initiator])
-           spawn(fn ->
-             unless(Enum.member?(orb.traits, "mirage")) do
-               experimental_notify(orb)
-             end
-             #spawn(fn -> user_feeds_publisher(orb) end)
-           end)
-           data
-         err -> err
-       end
+    |> tap(&(notify_mirage(&1)))
+  end
+
+  defp notify_mirage(orb) do
+    orb = Repo.preload(orb, [:initiator])
+    case Enum.member?(orb.traits, "mirage") do
+      false -> spawn(fn -> notify(orb)end)
+      _ -> :ok
+    end
   end
 
   # defp user_feeds_publisher(%{initiator_id: user_id} = orb) do
@@ -427,6 +493,14 @@ defmodule Phos.Action do
     end
   end
 
+  defguard is_uuid?(value)
+  when is_bitstring(value) and
+         byte_size(value) == 36 and
+         binary_part(value, 8, 1) == "-" and
+         binary_part(value, 13, 1) == "-" and
+         binary_part(value, 18, 1) == "-" and
+         binary_part(value, 23, 1) == "-"
+
 
   #   @doc """
   #   Updates a orb.
@@ -440,6 +514,99 @@ defmodule Phos.Action do
   #       {:error, %Ecto.Changeset{}}
 
   #   """
+  #
+  def populate_blorbs({%Orb{blorbs: [%Phos.Action.Blorb{} | _] = blorbs} = orb, %{"blorbs" => neue_b, "initiator_id" => init_id} = attrs}) do
+    blorb_map = Enum.map(blorbs, fn %{id: id} = b -> {id, b} end) |> Enum.into(%{})
+    # make blorb key value enum through new_blorb update main blorb reducer
+    # for preload logic https://hexdocs.pm/ecto/Ecto.Changeset.html#cast_assoc/3-partial-changes-for-many-style-associations
+    {merged_blorb, preloaded_list} = Enum.reduce(neue_b, {blorb_map, []}, fn
+      %{"pop" => true, "id" => id}, {m, l} ->
+        # when pop is true:: intent is to delete blorb
+        case m[id]  do
+          %{type: type} = d_blorb when type in [:img, :vid] ->
+            # and associated media
+            if d_blorb.initiator_id == init_id or orb.initiator_id == init_id do
+              # if they have the permissions
+              Phos.Orbject.S3.delete_all("ORB", orb.id, "public/blorb/" <> id)
+              {Map.delete(m, id), [d_blorb | l]}
+            else
+              {m, l}
+            end
+          %{id: _id} = d_blorb  ->
+            # if not media still delete blorb
+            if d_blorb.initiator_id == init_id or orb.initiator_id == init_id do
+              {Map.delete(m, id), [d_blorb | l]}
+            else
+              {m, l}
+            end
+
+          _ -> {m, l}
+        end
+      %{"id" => id} = mutate_b, {m, l} when is_uuid?(id) ->
+        # if blorb already exists
+        {Map.replace(m, id, mutate_b), [m[id] | l]}
+      append_b, {m, l} ->
+        {Map.put(m, Ecto.UUID.generate(), Map.delete(append_b, "id")), l}
+      end)
+
+    {%{orb | blorbs: preloaded_list}, %{attrs | "blorbs" =>
+                               merged_blorb
+                               |> Enum.reduce([], fn
+                                {_id, %Phos.Action.Blorb{}} , acc -> acc
+                                {_id, b}, acc ->  [Map.put(b, "initiator_id", init_id) | acc] end)
+                             }}
+  end
+
+  # no blorbs to populate
+  def populate_blorbs({orb, attrs}) do
+    {orb, attrs}
+  end
+
+  # orb_initiator adding members
+  def populate_members({%Orb{initiator_id: orb_init_id, members: mem} = orb, %{"initiator_id" => init_id, "members" => new_mem} = attrs}) when orb_init_id == init_id and not is_list(mem) and is_list(new_mem) do
+    mem = Enum.map(new_mem, &(&1["member_id"]))
+    member_query = from p in Phos.Action.Permission, where: (p.member_id in ^mem) and  (p.orb_id == ^orb.id)
+      {orb |> Phos.Repo.preload([members: member_query]), attrs}
+  end
+
+  # orb_initiator no members to add
+  def populate_members({%Orb{initiator_id: orb_init_id} = orb, %{"initiator_id" => init_id} = attrs}) when orb_init_id == init_id do
+      {orb, attrs}
+  end
+
+  # collab updating with implicit check that member has rights to be collab with transition changeset check
+  def populate_members({%Orb{} = orb, %{"initiator_id" => init_id} = attrs}) do
+      member_query = from p in Phos.Action.Permission, where: (p.member_id == ^init_id) and  (p.orb_id == ^orb.id)
+      case orb |> Phos.Repo.preload([members: member_query]) do
+        %{members: [%{id: id}|_]} = orb -> {orb, Map.put(attrs, "members", [%{"id" =>id, "action" => "collab"}])}
+        _ ->
+          raise ArgumentError
+      end
+  end
+
+  # nothing to do with members, pokemon clause should not trigger initiator_id tied @ controller params
+  def populate_members({orb, attrs}) do
+    {orb, attrs}
+  end
+
+  def populate_and_update_orb(%Orb{} = orb, attrs) do
+    {orb, attrs}
+    |> populate_blorbs()
+    |> populate_members()
+    |> (fn
+      {orb, attrs} -> update_orb(orb, attrs)
+      _ -> {:error, "Update Failed"} end).()
+    |> tap(&case &1 do
+              {:ok, orb} ->
+                Task.Supervisor.start_child(Phos.TaskSupervisor,
+                  fn ->
+                    notify(orb)
+                  end)
+              err -> err
+    end)
+  end
+
+
   def update_orb(%Orb{} = orb, attrs) do
     orb
     |> Orb.update_changeset(attrs)
@@ -506,6 +673,13 @@ defmodule Phos.Action do
     |> Enum.map(fn mem -> Phos.Message.update_memory(mem, %{orb_subject_id: nil})
     end)
 
+    if orb.media do
+      try do
+      Phos.Orbject.S3.delete_all("ORB", orb.id)
+      rescue
+        _ -> IO.puts("Media delete ops failed for: " <> orb.id)
+     end
+    end
     Repo.delete(orb)
   end
 
@@ -756,6 +930,25 @@ defmodule Phos.Action do
     Repo.Paginated.all(query, page, sort_attribute, limit)
   end
 
+  def filter_orbs_by_keyword(keyword, opts \\ []) do
+    page = Keyword.get(opts, :page, 1)
+    limit = Keyword.get(opts, :limit, 10)
+    sort_attribute = Keyword.get(opts, :sort_attribute, :inserted_at)
+    # query = case Phos.Models.TokenClassification.classify(keyword) do
+    #   {:ok, [_ | _] = terms} -> build_search_query(terms)
+    #   _ ->
+    # end
+
+    build_base_search_query(keyword)
+    |> preload(:initiator)
+    |> Repo.Paginated.all(page, sort_attribute, limit)
+  end
+  
+  def filter_orbs_by_ids(ids) do
+    (from p in __MODULE__.Orb, preload: [:initiator], where: p.id in ^ids)
+    |> Repo.all()
+  end
+
   def reorb(user_id, orb_id, message \\ "")
   def reorb(%Phos.Users.User{} = user, %Orb{} = orb, message), do: reorb(user.id, orb.id, message)
   def reorb(user_id, orb_id, message) when is_binary(user_id) and is_binary(orb_id) do
@@ -783,7 +976,52 @@ defmodule Phos.Action do
     create_orb(attrs)
   end
 
-  def experimental_notify(orb) do
+  def notify(%Orb{members: [%Permission{action: :collab} = member | remember]} = orb) do
+    action_body = %{
+      collab: "has begun collabing on your post",
+    }
+    case member |> Phos.Repo.preload([:member]) do
+      #support collab using preload of permission member accepted ur collab invite
+      %{member: %{username: username}} ->
+        Phos.PlatformNotification.notify({"broadcast", "ORB", orb.id, "action_orb_collab"},
+          memory: %{user_source_id: member.member_id, orb_subject_id: orb.id},
+          to: orb.initiator_id,
+          notification: %{
+            title: "#{username} #{action_body[:collab]}",
+            body: orb.title,
+            silent: false
+          }, data: %{
+            cluster_id: orb.id,
+            action_path: "/orbland/orbs/#{orb.id}"
+          })
+        _ -> :ok
+    end
+
+    notify(%{orb | members: remember})
+  end
+
+  # reduces down membership list
+  def notify(%Orb{members: [%Permission{member_id: member_id, action: act} | remember]} = orb) when act in [:mention, :collab_invite] do
+    action_body = %{
+      collab_invite: "asked you to collab on a post",
+      mention: "mentioned you in a post"
+    }
+    Phos.PlatformNotification.notify({"broadcast", "ORB", orb.id, "action_orb_#{act}"},
+      memory: %{user_source_id: orb.initiator_id, orb_subject_id: orb.id},
+      to: member_id,
+      notification: %{
+        title: "#{orb.initiator.username} #{action_body[act]}",
+        body: orb.title,
+        silent: false
+      }, data: %{
+        cluster_id: orb.id,
+        action_path: "/orbland/orbs/#{orb.id}"
+      })
+
+    notify(%{orb | members: remember})
+  end
+
+  def notify(%Orb{inserted_at: crt, updated_at: mut} = orb) when crt == mut do
     geonotifiers =
       notifiers_by_geohashes([orb.central_geohash], orb.initiator_id)
       |> Enum.map(fn n -> n && Map.get(n, :fcm_token, nil) end)
@@ -813,33 +1051,56 @@ defmodule Phos.Action do
       cluster_id: "folk_orb")
   end
 
+  def notify(_), do: :ok
+
   def search(search_term) do
-    case Phos.Models.TokenClassification.classify(search_term) do
-      {:ok, [_ | _] = terms} -> build_search_query(terms)
-      _ -> build_base_search_query(search_term)
-    end
+    build_base_search_query(search_term)
     |> Repo.all()
+    # case Phos.Models.TokenClassification.classify(search_term) do
+    #   {:ok, [_ | _] = terms} -> build_search_query(terms)
+    # end
   end
 
-  defp build_search_query(terms) do
-    query = from o in Orb
-    Enum.reduce(terms, query, fn %{phrase: term, label: label}, q ->
-      case label do
-        "LOC" -> 
-          case Phos.Mainland.World.find_hash(term) do
-            nil -> q
-            hash -> from r in q, join: l in Orb_Location, on: r.id == l.orb_id, or_where: l.location_id == ^hash
-          end
-        _ -> 
-          or_where(q, fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^build_search_term(term)))
-      end
-    end)
-  end
+  # defp build_search_query(terms) do
+  #   query = from o in Orb
+  #   Enum.reduce(terms, query, fn %{phrase: term, label: label}, q ->
+  #     case label do
+  #       "LOC" ->
+  #         case Phos.Mainland.World.find_hash(term) do
+  #           nil -> q
+  #           hash -> from r in q, join: l in Orb_Location, on: r.id == l.orb_id, or_where: l.location_id == ^hash
+  #         end
+  #       _ ->
+  #         or_where(q, fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^build_search_term(term)))
+  #     end
+  #   end)
+  # end
 
   defp maybe_search(query, nil), do: query
   defp maybe_search(query, term) do
-    IO.inspect "searching"
     where(query, fragment("to_tsvector(?, traits::text) @@ websearch_to_tsquery(?, ?)", "english", "english", ^build_search_term(term)) or fragment("to_tsvector(?, title) @@ websearch_to_tsquery(?, ?)", "english", "english", ^term))
+    |> filter_orb_by_similarities(term)
+  end
+
+  def filter_orb_by_similarities(query, keyword) do
+    case build_embedding("query: " <> keyword) do
+      [_ | _] = result -> query |> build_distance_query(result)
+      _ -> query
+    end
+  end
+
+  def build_embedding(text) do
+    with %{embedding: embed} <- Nx.Serving.batched_run(Phos.Oracle.TextEmbedder, text),
+         [_ | _] = result <- Nx.to_list(embed) do
+      result
+    else
+      _ -> nil
+    end
+  end
+
+  defp build_distance_query(query, result) do
+    # query = from p in __MODULE__.Orb, preload: [:initiator], select_merge: %{distance: cosine_distance(p.embedding, ^result)}
+    or_where(query, [p], cosine_distance(p.embedding, ^result) < 0.05)
   end
 
   defp build_base_search_query(term) do
@@ -851,4 +1112,123 @@ defmodule Phos.Action do
     String.split(text, " ")
     |> Enum.join(" or ")
   end
- end
+
+  ## Blorbs the building blocks of Orbs
+  alias Phos.Action.Blorb
+
+  @doc """
+  Returns the list of blorbs.
+
+  ## Examples
+
+      iex> list_blorbs()
+      [%Blorb{}, ...]
+
+  """
+  def list_blorbs do
+    Repo.all(Blorb)
+    |> Repo.preload(:initiator)
+  end
+
+  @doc """
+  Gets a single blorb.
+
+  Raises `Ecto.NoResultsError` if the Blorb does not exist.
+
+  ## Examples
+
+      iex> get_blorb!(123)
+      %Blorb{}
+
+      iex> get_blorb!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_blorb!(id), do: Repo.get!(Blorb, id) |> Repo.preload(:initiator)
+
+  @doc """
+  Creates a blorb.
+
+  ## Examples
+
+      iex> create_blorb(%{field: value})
+      {:ok, %Blorb{}}
+
+      iex> create_blorb(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_blorb(attrs \\ %{}) do
+    %Blorb{}
+    |> Blorb.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a blorb.
+
+  ## Examples
+
+      iex> update_blorb(blorb, %{field: new_value})
+      {:ok, %Blorb{}}
+
+      iex> update_blorb(blorb, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_blorb(%Blorb{} = blorb, attrs) do
+    blorb
+    |> Blorb.mutate_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a blorb.
+
+  ## Examples
+
+      iex> delete_blorb(blorb)
+      {:ok, %Blorb{}}
+
+      iex> delete_blorb(blorb)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_blorb(%Blorb{} = blorb) do
+    Repo.delete(blorb)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking blorb changes.
+
+  ## Examples
+
+      iex> change_blorb(blorb)
+      %Ecto.Changeset{data: %Blorb{}}
+
+  """
+  def change_blorb(%Blorb{} = blorb, attrs \\ %{}) do
+    Blorb.changeset(blorb, attrs)
+  end
+  ## Orb Permissions and Membership
+
+  def add_permission(%Orb{} = orb, attrs) do
+    attributes = Enum.map(attrs, fn {k, v} -> {to_string(k), v} end) |> Enum.into(%{})
+    %Permission{}
+    |> Permission.changeset(Map.put(attributes, "orb", orb))
+    |> Repo.insert()
+  end
+  def add_permission(orb_id, attrs), do: get_orb!(orb_id) |> add_permission(attrs)
+
+  def get_detail_permission(member_id, orb_id) do
+    query = from p in Permission, where: p.member_id == ^member_id and p.orb_id == ^orb_id, limit: 1
+    Repo.one(query)
+  end
+
+  def update_permission(%Permission{} = permission, attrs) do
+    permission
+    |> Repo.preload([:member, :orb])
+    |> Permission.changeset(attrs)
+    |> Repo.update()
+  end
+end

@@ -29,19 +29,15 @@ defmodule PhosWeb.UserProfileLive.Show do
      |> stream_assign(:ally_list, allies)}
   end
 
+  def mount(_,_,_), do: (raise PhosWeb.ErrorLive.FourOFour, message: "Has let go his earthly tether")
+
   @impl true
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
   @impl true
-
-  def handle_event(
-        "load-orbs",
-        _,
-        %{assigns: %{orbs: orbs_meta, current_user: curr, user: user}} =
-          socket
-      ) do
+  def handle_event("load-orbs", _, %{assigns: %{ally_list: _allies_meta, orbs: orbs_meta, current_user: _curr, user: user}} = socket) do
     expected_orb_page = orbs_meta.pagination.current + 1
 
     {:noreply, socket |> stream_assign(:orbs, ScrollOrb.check_more_orb(user.id, expected_orb_page))}
@@ -138,7 +134,7 @@ defmodule PhosWeb.UserProfileLive.Show do
   end
 
   defp apply_action(socket, :edit, params) do
-    if(socket.assigns.current_user.username == params["username"]) do
+    if socket.assigns.current_user.username == params["username"] do
       socket
       |> assign(:page_title, "Updating Profile")
     else
@@ -167,15 +163,22 @@ defmodule PhosWeb.UserProfileLive.Show do
       type: "website",
       # TODO fetch from media
       image: Phos.Orbject.S3.get!("USR", user.id, "public/profile/lossless"),
-      url: url(socket, ~p"/user/#{user.username}")
+      url: url(socket, ~p"/user/#{user.username || user.id}")
     })
   end
 
   # look to integrate Repo.Paginated.all() :meta
 
-  defp stream_assign(socket, key, %{data: data, meta: meta}, opts \\ []) do
+  # defp load_more_streams(socket, %{orbs: %{data: orbs, meta:  orbs_meta}}, %{allies: %{data: allies, meta: allies_meta}}) do
+  #   Enum.reduce(allies, socket, fn ally, acc -> stream_insert(acc, :ally_list, ally) end)
+  #   |> then(&Enum.reduce(orbs, &1, fn orb, acc -> stream_insert(acc, :orbs, orb) end))
+  #   |> assign(orbs: orbs_meta)
+  #   |> assign(ally_list: allies_meta)
+  # end
+
+  defp stream_assign(socket, key, %{data: data, meta: meta} = _params) do
     socket
-    |> stream(key, data, opts)
+    |> stream(key, data)
     |> assign(key, meta)
   end
 end
