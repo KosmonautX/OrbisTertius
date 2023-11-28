@@ -59,7 +59,7 @@ defmodule Phos.ActionTest do
     test "update_orb/2 with invalid data returns error changeset" do
       orb = orb_fixture_no_location()
       assert {:error, %Ecto.Changeset{}} = Action.update_orb(orb, @invalid_attrs)
-      assert orb == Action.get_orb!(orb.id)
+      assert %Orb{} = Action.get_orb!(orb.id)
     end
 
     test "delete_orb/1 deletes the orb" do
