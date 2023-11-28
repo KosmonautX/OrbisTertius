@@ -332,7 +332,7 @@ defmodule Phos.Action do
       as: :o,
       left_join: m in assoc(o, :members),
       on: m.member_id in ^user_ids and m.action == :collab,
-      where: o.initiator_id == ^user_id or m.member_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]),
+      where: (o.initiator_id == ^user_id or m.member_id in ^user_ids) and not fragment("? @> ?", o.traits, ^["mirage"]),
       preload: [:initiator, :members],
       inner_lateral_join: c in subquery(
         from c in Phos.Comments.Comment,
