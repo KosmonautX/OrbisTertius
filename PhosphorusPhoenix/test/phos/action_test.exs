@@ -13,7 +13,7 @@ defmodule Phos.ActionTest do
 
     test "list_orbs/0 returns all orbs" do
       orb = orb_fixture()
-      assert Action.list_orbs() |> Phos.Repo.preload([:locations,:initiator, :blorbs]) == [orb]
+      assert Action.list_orbs() |> Phos.Repo.preload([:locations, :blorbs]) |> Phos.Repo.unpreload(:initiator) == [orb]
     end
 
     test "get_orb/1 return specific orb" do
@@ -27,7 +27,7 @@ defmodule Phos.ActionTest do
 
     test "get_orb!/1 returns the orb with given id" do
       orb = orb_fixture()
-      assert Action.get_orb!(orb.id) == orb
+      assert Action.get_orb!(orb.id) |> Phos.Repo.unpreload(:initiator) == orb
     end
 
     test "create_orb/1 with valid data creates a orb" do

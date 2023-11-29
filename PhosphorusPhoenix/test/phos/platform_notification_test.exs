@@ -9,6 +9,7 @@ defmodule Phos.PlatformNotificationTest do
     # :ok = Ecto.Adapters.SQL.Sandbox.checkout(Phos.Repo)
 
     orb = orb_fixture()
+    |> Phos.Repo.preload(:initiator)
     %{orb: orb, user: orb.initiator}
   end
 
