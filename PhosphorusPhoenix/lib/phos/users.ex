@@ -597,16 +597,16 @@ defmodule Phos.Users do
   {:error, %Ecto.Changeset{}}
 
   """
-  def claim_anon_user(%User{email: nil} = user, attrs) do
-    user
-    |> User.registration_changeset(attrs)
-    |> Repo.update()
-  end
+  @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
+  def claim_anon_user(user, attrs) do
+    case user do
+      %User{email: nil} -> user
+      |> User.registration_changeset(attrs)
+      |> Repo.update()
 
-  def claim_anon_user(_user, _attrs) do
-    {:error, "email already registered for user"}
-  end
-
+      _ -> {:error, "email already registered for user"}
+    end
+   end
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking user changes.
 

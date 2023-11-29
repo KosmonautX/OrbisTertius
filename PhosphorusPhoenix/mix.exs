@@ -82,7 +82,7 @@ defmodule Phos.MixProject do
       # {:prom_ex, "~> 1.7.1"},
       {:prom_ex, github: "KosmonautX/prom_ex"},
       {:fsmx, "~> 0.4"},
-      {:nebulex, "~> 2.5.1"},
+      {:nebulex, "~> 2.5.2"},
       {:shards, "~> 1.0"},
       {:decorator, "~> 1.4"},
       {:fcmex, github: "KosmonautX/fcmex"},

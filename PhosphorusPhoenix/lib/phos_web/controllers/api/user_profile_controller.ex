@@ -104,7 +104,7 @@ defmodule PhosWeb.API.UserProfileController do
       "personal_orb" => %{"id" => (if is_nil(user.personal_orb), do: Ecto.UUID.generate(), else: user.personal_orb.id),
                           "userbound" => true,
                           "initiator_id" => user.id,
-                          "traits" => params["traits"],
+                          "traits" => (if !is_nil(params["soulorb"]), do: params["soulorb"]["traits"], else: params["traits"]),
                           "title" => (if !is_nil(params["soulorb"]), do: params["soulorb"]["title"]),
                           "payload" => (if !is_nil(params["soulorb"]), do: params["soulorb"]["payload"])
                          } |> purge_nil()
