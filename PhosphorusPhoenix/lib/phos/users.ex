@@ -250,13 +250,15 @@ defmodule Phos.Users do
                 fn ->
                   bot_name = "lalalandbot"
                   {:ok, %{id: bot_id}} = Phos.Users.find_user_by_id(bot_name)
-                  Phos.Action.update_orb(orb |> Repo.preload([:blorbs, :members]), %{blorbs: [%{type: "txt",
-                                                                                                initiator_id: bot_id,
-                                                                                                character: %{content:
-                                                                                                             "Welcome to Lalaland, this is your first collaborative memory with @#{bot_name}
-                                                                                                             Try adding a Text or Media Block!"}}], members: [%{id: bot_id, action: "collab"}]})
-                  Phos.PlatformNotification.notify({"broadcast", "ORB", orb.id, "action_orb_collab_invite"},
+                  {:ok, %Phos.Action.Orb{}} = Phos.Action.update_orb(orb
+                  |> Repo.preload([:blorbs, :members]),
+                    %{blorbs: [%{type: "txt",
+                                 initiator_id: bot_id,
+                                 character: %{content:
+                                              "Welcome to Lalaland, this is your first collaborative memory with @#{bot_name}
+                                              Try adding a Text or Media Block!"}}], members: [%{"member_id" => bot_id, "action" => "mention"}]})
 
+                  Phos.PlatformNotification.notify({"broadcast", "ORB", orb.id, "action_orb_collab_invite"},
                     memory: %{user_source_id: bot_id, orb_subject_id: orb.id},
                     to: user.id,
                     notification: %{
