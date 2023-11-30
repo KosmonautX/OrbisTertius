@@ -22,7 +22,7 @@ defmodule Phos.MixProject do
   def application do
     [
       mod: {Phos.Application, []},
-      extra_applications: [:lager, :logger, :runtime_tools, :inets]
+      extra_applications: [:lager, :logger, :runtime_tools, :inets, :wx, :observer]
       # :wx, :observer
       # extra_applications: [:logger, :runtime_tools, :wx]
     ]
