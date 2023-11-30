@@ -22,7 +22,7 @@ defmodule Phos.MixProject do
   def application do
     [
       mod: {Phos.Application, []},
-      extra_applications: [:lager, :logger, :runtime_tools, :inets, :wx, :observer]
+      extra_applications: [:lager, :logger, :runtime_tools, :inets]
       # :wx, :observer
       # extra_applications: [:logger, :runtime_tools, :wx]
     ]
@@ -85,7 +85,6 @@ defmodule Phos.MixProject do
       {:nebulex, "~> 2.5.1"},
       {:shards, "~> 1.0"},
       {:decorator, "~> 1.4"},
-      {:fcmex, github: "KosmonautX/fcmex"},
       {:retry, "~> 0.17"},
       {:uuid, "~> 1.1" },
       # comments
@@ -95,10 +94,11 @@ defmodule Phos.MixProject do
       {:exla, "~> 0.6.0"},
       #debugging
       {:rexbug, "~> 1.0"},
+      {:gen_stage, "~> 1.2"},
       {:poison, "4.0.1", override: true},
       {:phoenix_view, "~> 2.0"}, # for error warning removal
       {:finch, "~> 0.15.0"},
-      {:req, github: "wojtekmach/req"},
+      {:req, "~> 0.4.0"},
       {:pgvector, "~> 0.2.0"},
       # { :uuid, "~> 1.1" },
       # {:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
