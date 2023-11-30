@@ -52,12 +52,17 @@ defmodule Phos.PlatformNotification.Subscription do
 
   @impl true
   def handle_call({:registered, token}, _from, state) do
-    case do_get_list(token) do
-      {:ok, %HTTPoison.Response{status_code: 200} = resp} ->
-        res = Jason.decode!(resp.body)
+    case get_info(token) do
+      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+        res = Jason.decode!(body)
         topics = get_in(res, [Access.key("rel", %{}), Access.key("topics", %{})]) |> Map.keys()
         scope  = Map.get(res, "scope")
         {:reply, {:ok, %{topics: topics, scope: scope}}, state}
+
+      {:ok, %HTTPoison.Response{status_code: err_code, body: body}} when err_code in [400, 404, 500] ->
+        res = Jason.decode!(body)
+        {:reply, {:error, res["error"]}, state}
+
       {:error, err} ->
         {:reply, {:error, err.body}, state}
     end
@@ -85,7 +90,7 @@ defmodule Phos.PlatformNotification.Subscription do
     HTTPoison.post(@default_endpoint <> path, body, headers())
   end
 
-  defp do_get_list(token) do
+  defp get_info(token) do
     path = "/iid/info/#{token}?details=true"
     HTTPoison.get(@default_endpoint <> path, headers())
   end

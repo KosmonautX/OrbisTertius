@@ -89,7 +89,7 @@ defmodule Phos.MixProject do
       {:uuid, "~> 1.1" },
       # comments
       {:ecto_ltree, "~> 0.3.0"},
-      {:sparrow, github: "satrionugroho/sparrow", tag: "v1.0.3"},
+      {:sparrow, sparrow_dep()},
       {:bumblebee, "~> 0.3.1"},
       {:exla, "~> 0.6.0"},
       #debugging
@@ -109,6 +109,14 @@ defmodule Phos.MixProject do
       {:logger_backends, "~> 1.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
+  end
+
+  defp sparrow_dep() do
+    if path = System.get_env("SPARROW_PATH") do
+      [path: path]
+    else
+      [github: "satrionugroho/sparrow", tag: "v1.0.3"]
+    end
   end
 
   # Aliases are shortcuts or tasks specific to the current project.

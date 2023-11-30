@@ -135,8 +135,6 @@ config :phos, Phos.TeleBot.Cache,
     partitions: 2
   ]
 
-config :fcmex,
-  json_library: Jason
 
 config :phos, Phos.TeleBot.Core,
   callback_url: {PhosWeb.Router.Helpers, :telegram_url, [PhosWeb.Endpoint, :create]}, #"//5fba-220-255-157-189.ngrok-free.app/bot/telegram_signup",
