@@ -31,7 +31,7 @@ defmodule Phos.ActionFixtures do
       })
       |> Phos.Action.create_orb()
 
-      orb |> Phos.Repo.preload([:locations, :initiator, :blorbs])
+      orb |> Phos.Repo.preload([:locations, :blorbs])
   end
 
   @spec orb_fixture_no_location(any) ::

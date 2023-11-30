@@ -149,6 +149,19 @@ defmodule Phos.Users do
     end
   end
 
+  @decorate cacheable(cache: Cache, key: {User, :find, username}, opts: [ttl: @ttl])
+  def find_user_by_id(username) when is_binary(username) do
+    query = from u in User,
+    as: :user,
+    where: u.username == ^username,
+    limit: 1
+
+    case Repo.one(query) do
+      %User{} = user -> {:ok, user}
+      nil -> {:error, "User not found"}
+    end
+  end
+
   def authenticate(email, password) when is_bitstring(email) and is_bitstring(password) do
     email = String.downcase(email)
     query = from u in User, where: u.email == ^email, limit: 1
@@ -230,6 +243,36 @@ defmodule Phos.Users do
     user
     |> User.personal_changeset(attrs)
     |> Repo.update()
+    |> tap(&case &1 do
+            {:ok, %{personal_orb: %{traits: ["mirage", "phase:tutorial"]} = orb} = user}  ->
+              # Tutorial Orb
+              Task.Supervisor.start_child(Phos.TaskSupervisor,
+                fn ->
+                  bot_name = "lalalandbot"
+                  {:ok, %{id: bot_id}} = Phos.Users.find_user_by_id(bot_name)
+                  {:ok, %Phos.Action.Orb{}} = Phos.Action.update_orb(orb
+                  |> Repo.preload([:blorbs, :members]),
+                    %{blorbs: [%{type: "txt",
+                                 initiator_id: bot_id,
+                                 character: %{content:
+                                              "Welcome to Lalaland, this is your first collaborative memory with @#{bot_name}
+                                              Try adding a Text or Media Block!"}}], members: [%{"member_id" => bot_id, "action" => "mention"}]})
+
+                  Phos.PlatformNotification.notify({"broadcast", "ORB", orb.id, "action_orb_collab_invite"},
+                    memory: %{user_source_id: bot_id, orb_subject_id: orb.id},
+                    to: user.id,
+                    notification: %{
+                      title: "#{bot_name} asked you to collab on a memory!",
+                      body: orb.title,
+                      silent: false
+                    }, data: %{
+                      cluster_id: orb.id,
+                      action_path: "/orbland/orbs/#{orb.id}"
+                    })
+
+                end)
+            _ -> :ok
+    end)
   end
 
   @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
@@ -597,16 +640,16 @@ defmodule Phos.Users do
   {:error, %Ecto.Changeset{}}
 
   """
-  def claim_anon_user(%User{email: nil} = user, attrs) do
-    user
-    |> User.registration_changeset(attrs)
-    |> Repo.update()
-  end
+  @decorate cache_evict(cache: Cache, key: {User, :find, user.id})
+  def claim_anon_user(user, attrs) do
+    case user do
+      %User{email: nil} -> user
+      |> User.registration_changeset(attrs)
+      |> Repo.update()
 
-  def claim_anon_user(_user, _attrs) do
-    {:error, "email already registered for user"}
-  end
-
+      _ -> {:error, "email already registered for user"}
+    end
+   end
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking user changes.
 

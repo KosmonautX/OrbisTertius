@@ -105,7 +105,7 @@ defmodule Phos.Action.Orb do
     |> cast(attrs, [:id, :active, :userbound, :initiator_id, :traits, :title])
     |> cast_embed(:payload)
     |> validate_required([:id, :active, :userbound, :initiator_id])
-    |> validate_exclude_subset(:traits, ~w(admin pin exile mirage))
+    |> validate_exclude_subset(:traits, ~w(admin pin exile))
     |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 

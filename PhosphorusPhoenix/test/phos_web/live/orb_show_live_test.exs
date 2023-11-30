@@ -17,6 +17,7 @@ defmodule PhosWeb.OrbShowLiveTest do
     setup [:create_orb, :register_and_log_in_user]
 
     test "show_orb_profile", %{conn: conn, orb: orb} do
+      orb = orb |> Phos.Repo.preload(:initiator)
       {:ok, _show_live, html} = live(conn, ~p"/orb/#{orb.id}")
       assert html =~ orb.initiator.username
       assert html =~ orb.payload.where
