@@ -101,13 +101,14 @@ defmodule PhosWeb.API.UserProfileController do
                             "profile_pic" => params["profile_pic"],
                             "banner_pic" => params["banner_pic"]
                            } |> purge_nil(),
-      "personal_orb" => %{"id" => (if is_nil(user.personal_orb), do: Ecto.UUID.generate(), else: user.personal_orb.id),
+      "personal_orb" => (if !is_nil(params["soulorb"]), do: %{"id" => (if is_nil(user.personal_orb), do: Ecto.UUID.generate(), else: user.personal_orb.id),
                           "userbound" => true,
+                          "active" => true,
                           "initiator_id" => user.id,
                           "traits" => (if !is_nil(params["soulorb"]), do: params["soulorb"]["traits"], else: params["traits"]),
                           "title" => (if !is_nil(params["soulorb"]), do: params["soulorb"]["title"]),
                           "payload" => (if !is_nil(params["soulorb"]), do: params["soulorb"]["payload"])
-                         } |> purge_nil()
+                         } |> purge_nil())
     } |> purge_nil()
   end
 
