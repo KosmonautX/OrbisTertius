@@ -1,8 +1,8 @@
-name: StageFlight 🎭🪁
+name: Flight to Lalaland 🎭🪁
 
 on:
   pull_request:
-    branches: [ staging/nyx, staging/orph ]
+    branches: [ production/orph ]
 
 jobs:
   test:
@@ -63,6 +63,6 @@ jobs:
         env:
           FLY_PROJECT_PATH: PhosphorusPhoenix
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-          FLY_APP: nyx
+          FLY_APP: orph
         with:
           args: "deploy"
