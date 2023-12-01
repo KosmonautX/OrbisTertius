@@ -23,7 +23,6 @@ defmodule Phos.Application do
       {Cluster.Supervisor, [topologies, [name: Phos.ClusterSupervisor]]},
       PhosWeb.Presence,
       {PhosWeb.Watcher, [name: PhosWeb.Watcher, pubsub_server: Phos.PubSub, pool_size: :erlang.system_info(:schedulers_online)]},
-      Phos.Notification,
       Phos.PlatformNotification,
       # Phos.Models.TokenClassification
       Phos.Oracle,

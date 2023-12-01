@@ -69,8 +69,8 @@ defmodule PhosWeb.API.UserProfileController do
   end
 
   def update_beacon(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"fcm_token" => token, "beacon" => %{"scope" => false}} = params) do
-    with true <- !Fcmex.unregistered?(token),
-         {:ok, %{}} <- Fcmex.Subscription.unsubscribe("USR." <> user.id, token),
+    with {:ok, _} <- Phos.PlatformNotification.list_subscription(token),
+         {:ok, %{success: 1}} <- Phos.PlatformNotification.unsubscribe(token, "USR." <> user.id),
          {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => params}) do
       render(conn, :show, integration: user_integration)
     else
@@ -79,8 +79,8 @@ defmodule PhosWeb.API.UserProfileController do
   end
 
   def update_beacon(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"fcm_token" => token} = params) do
-    with true <- !Fcmex.unregistered?(token),
-         {:ok, %{}} <- Fcmex.Subscription.subscribe("USR." <> user.id, token),
+    with {:ok, _} <- Phos.PlatformNotification.list_subscription(token),
+         {:ok, %{success: 1}} <- Phos.PlatformNotification.subscribe(token, "USR." <> user.id),
          {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => params}) do
       render(conn, :show, integration: user_integration)
     else

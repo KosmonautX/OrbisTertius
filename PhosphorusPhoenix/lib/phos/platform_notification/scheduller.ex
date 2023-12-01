@@ -30,7 +30,7 @@ defmodule Phos.PlatformNotification.Scheduller do
       label: {Phos.PlatformNotification.Scheduller, :timer},
       report: %{
         module: __MODULE__,
-        action: "schedulled timer every #{timer()}ms",
+        action: "scheduled timer every #{timer()}ms",
         current_time: now_time,
       }
     }, %{
