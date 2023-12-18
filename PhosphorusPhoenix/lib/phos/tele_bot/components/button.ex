@@ -301,7 +301,7 @@ defmodule Phos.TeleBot.Components.Button do
     if String.contains?(PhosWeb.Endpoint.url, "localhost") do
       "web.scratchbac.com/"
     else
-      "#{PhosWeb.Endpoint.url}/orb/#{orb.id}?token=#{Auth.generate_user!(user.id)}"
+      "#{PhosWeb.Endpoint.url}/orb/#{orb.id}?token=#{Auth.generate_user!(user.id, 604800)}"
     end
   end
 

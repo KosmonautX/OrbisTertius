@@ -15,9 +15,9 @@ defmodule Phos.TeleBot.Core do
   alias Phos.TeleBot.Core.{UserProfile}
   alias Phos.TeleBot.Components.{Button, Template}
 
-  @guest_splash "https://imgur.com/a/Z2vphEX"
-  @user_splash "https://imgur.com/a/GgdHYqy"
-  @faq_splash "https://imgur.com/a/hkFJfOo"
+  @guest_splash "AgACAgUAAxkBAAEoURFlf9sWVgzpZleYW_58tHRKVgZMdAACKLoxG6ea6Vd1SRhAOLgrqQEAAwIAA3cAAzME"
+  @user_splash "AgACAgUAAxkBAAEoUPtlf9NL4JwI08eO5TFz3elNjUmVqQACDroxG-GOAAFUgAKJK0zVwTkBAAMCAAN5AAMzBA"
+  @faq_splash "AgACAgUAAxkBAAEoURVlf9yWDqOMHuy4ggICsBr2idmFTAACI7oxG-GOAAFUoTWn6g112f4BAAMCAAN4AAMzBA"
 
   command("start", description: "Start using the Scratchbac bot")
   command("menu", description: "Show the main menu")
@@ -318,9 +318,7 @@ defmodule Phos.TeleBot.Core do
         title: "No posts found",
         description: "No posts found",
         input_message_content: %ExGram.Model.InputTextMessageContent{ %ExGram.Model.InputTextMessageContent{} |
-          message_text: "No posts found", parse_mode: "HTML" },
-        thumbnail_url: @user_splash
-      }]
+          message_text: "No posts found", parse_mode: "HTML" }}]
     else
       Enum.map(orbs, fn (%{payload: payload} = orb) when not is_nil(payload) ->
         media =
@@ -350,7 +348,7 @@ defmodule Phos.TeleBot.Core do
           if not Enum.empty?(media) and not String.contains?(hd(media).url, "localhost") do
             hd(media).url
           else
-            @user_splash
+            nil
           end
 
         %ExGram.Model.InlineQueryResultArticle{
