@@ -57,7 +57,7 @@ defmodule Phos.Action.Orb do
     |> cast_assoc(:members, with: &Permission.orb_changeset/2)
     |> validate_required([:id, :title, :active, :media, :extinguish, :initiator_id])
     |> set_blorb_initiators()
-    |> validate_exclude_subset(:traits, ~w(admin pin personal exile mirage))
+    |> validate_exclude_subset(:traits, ~w(admin pin personal exile))
     #|> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 
@@ -105,7 +105,7 @@ defmodule Phos.Action.Orb do
     |> cast(attrs, [:id, :active, :userbound, :initiator_id, :traits, :title])
     |> cast_embed(:payload)
     |> validate_required([:id, :active, :userbound, :initiator_id])
-    |> validate_exclude_subset(:traits, ~w(admin pin exile mirage))
+    |> validate_exclude_subset(:traits, ~w(admin pin exile))
     |> Map.put(:repo_opts, [on_conflict: {:replace_all_except, [:id]}, conflict_target: :id])
   end
 

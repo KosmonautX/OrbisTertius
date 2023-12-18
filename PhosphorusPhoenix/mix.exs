@@ -82,23 +82,23 @@ defmodule Phos.MixProject do
       # {:prom_ex, "~> 1.7.1"},
       {:prom_ex, github: "KosmonautX/prom_ex"},
       {:fsmx, "~> 0.4"},
-      {:nebulex, "~> 2.5.1"},
+      {:nebulex, "~> 2.5.2"},
       {:shards, "~> 1.0"},
       {:decorator, "~> 1.4"},
-      {:fcmex, github: "KosmonautX/fcmex"},
       {:retry, "~> 0.17"},
       {:uuid, "~> 1.1" },
       # comments
       {:ecto_ltree, "~> 0.3.0"},
-      {:sparrow, github: "satrionugroho/sparrow", tag: "v1.0.3"},
+      {:sparrow, sparrow_dep()},
       {:bumblebee, "~> 0.3.1"},
       {:exla, "~> 0.6.0"},
       #debugging
       {:rexbug, "~> 1.0"},
+      {:gen_stage, "~> 1.2"},
       {:poison, "4.0.1", override: true},
       {:phoenix_view, "~> 2.0"}, # for error warning removal
       {:finch, "~> 0.15.0"},
-      {:req, github: "wojtekmach/req"},
+      {:req, "~> 0.4.0"},
       {:pgvector, "~> 0.2.0"},
       # { :uuid, "~> 1.1" },
       # {:phx_live_storybook, "~> 0.4.0", runtime: Mix.env() == :dev}
@@ -109,6 +109,14 @@ defmodule Phos.MixProject do
       {:logger_backends, "~> 1.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
+  end
+
+  defp sparrow_dep() do
+    if path = System.get_env("SPARROW_PATH") do
+      [path: path]
+    else
+      [github: "satrionugroho/sparrow", tag: "v1.0.3"]
+    end
   end
 
   # Aliases are shortcuts or tasks specific to the current project.

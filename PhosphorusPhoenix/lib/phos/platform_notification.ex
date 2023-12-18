@@ -8,7 +8,7 @@ defmodule Phos.PlatformNotification do
 
   @type t :: {notification_type(), entity(), entity_id(), message_type()}
 
-  alias __MODULE__.{Producer, Dispatcher, Consumer, Global, Store, Scheduller, Template}
+  alias __MODULE__.{Producer, Dispatcher, Consumer, Global, Store, Scheduller, Template, Subscription}
 
   import Ecto.Query, warn: false
 
@@ -37,6 +37,10 @@ defmodule Phos.PlatformNotification do
   If consumer failed the execution, should tell the dispatcher the event is failed, and Dispatcher should reschedule after certain amount of time
   """
 
+  defdelegate subscribe(token, topic, opts \\ []), to: Subscription
+  defdelegate unsubscribe(token, topic, opts \\ []), to: Subscription
+  defdelegate list_subscription(token), to: Subscription, as: :registered
+
   def start_link(opts) do
     Supervisor.start_link(__MODULE__, opts, name: __MODULE__)
   end
@@ -45,7 +49,7 @@ defmodule Phos.PlatformNotification do
   def init(_opts) do
     number    = Keyword.get(config(), :worker, 10)
     workers   = Enum.map(1..number, fn n -> Supervisor.child_spec({Consumer, []}, id: :"platform_notification_worker_#{n}") end)
-    children  = [Producer, Dispatcher, Scheduller, Global | workers]
+    children  = [Producer, Dispatcher, Scheduller, Global, Subscription | workers]
 
     Supervisor.init(children, strategy: :one_for_one)
   end
