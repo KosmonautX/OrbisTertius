@@ -15,7 +15,7 @@ defmodule Phos.TeleBot.Core do
   alias Phos.TeleBot.Core.{UserProfile}
   alias Phos.TeleBot.Components.{Button, Template}
 
-  @guest_splash "AgACAgUAAxkBAAEoURFlf9sWVgzpZleYW_58tHRKVgZMdAACKLoxG6ea6Vd1SRhAOLgrqQEAAwIAA3cAAzME"
+  @guest_splash "AgACAgUAAxkBAAEoUTllf-jifpOpFwg37k1iTbzQBLWOtAACPLoxG-GOAAFU-kFx_yYVKLUBAAMCAAN3AAMzBA"
   @user_splash "AgACAgUAAxkBAAEoUPtlf9NL4JwI08eO5TFz3elNjUmVqQACDroxG-GOAAFUgAKJK0zVwTkBAAMCAAN5AAMzBA"
   @faq_splash "AgACAgUAAxkBAAEoURVlf9yWDqOMHuy4ggICsBr2idmFTAACI7oxG-GOAAFUoTWn6g112f4BAAMCAAN4AAMzBA"
 
