@@ -210,7 +210,6 @@ defmodule Phos.Action do
       #|> (&(Map.put(&1, :data, &1.data |> Repo.Preloader.lateral(:allies, [limit: 3, order_by: {:desc, :completed_at}, assocs: [:friend]])))).()
   end
 
-  #TODO filter only blocked users instead of all users with potential relationships
   def notifiers_by_geohashes(hashes) do
     from(l in Orb_Location,
       as: :l,

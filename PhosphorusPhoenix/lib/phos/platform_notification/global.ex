@@ -210,6 +210,25 @@ defmodule Phos.PlatformNotification.Global do
     :ets.insert(table, {id, schedule, active})
   end
 
+  defp send_notification(%{regions: ["Global"], action_path: action_path, archetype_id: id} = data) do
+    Phos.Users.list_notifiers()
+    |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end)
+    # |> batch
+    |> tap(fn batch ->
+      Enum.chunk_every(batch, 499)
+      |> Enum.map(fn tokens ->
+        Sparrow.FCM.V1.Notification.new(:token, tokens, data.title, data.body, %{
+          action_path: action_path <> "/#{id}",
+          cluster_id: "platform"
+        })
+      end)
+      |> Enum.map(fn geonotif ->
+        geonotif
+        |> Sparrow.API.push()
+      end)
+    end)
+  end
+
   defp send_notification(%{regions: regions, action_path: action_path, archetype_id: id} = data) do
     # {:ok, mem} = Phos.Message.create_memory(%{user_source_id: Phos.Users.get_admin().id, orb_subject_id: id, message: "pltfrm_orb"})
     Phos.External.Sector.get()
