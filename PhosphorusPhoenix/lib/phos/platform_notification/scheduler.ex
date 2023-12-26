@@ -124,11 +124,11 @@ defmodule Phos.PlatformNotification.Scheduler do
   end
 
 
-  defp running_global_notification(%{frequency: _} = data) do
+  defp running_global_notification(%{frequency: _} = _data) do
     :ok
   end
 
-  defp do_send_global_notification(%{id: id, time_condition: time} = data) do
+  defp do_send_global_notification(%{id: id, time_condition: time} = _data) do
     case Time.diff(current_time(), time) do
       t when t > 0 ->
         case t * 1000 < timer() do
