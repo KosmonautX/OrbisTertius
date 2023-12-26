@@ -34,6 +34,7 @@ defmodule Phos.PlatformNotification.Global do
     )
 
     # execute the notification
+    IO.inspect(id, label: "executing")
     GenServer.cast(__MODULE__, {:execute, id})
   end
 

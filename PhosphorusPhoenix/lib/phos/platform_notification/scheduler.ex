@@ -1,4 +1,4 @@
-defmodule Phos.PlatformNotification.Scheduller do
+defmodule Phos.PlatformNotification.Scheduler do
   use GenServer
 
   @default_timer :timer.minutes(5)
@@ -6,7 +6,7 @@ defmodule Phos.PlatformNotification.Scheduller do
   alias Phos.PlatformNotification, as: PN
 
   @doc """
-  start_link used to start this module and run the scheduller based on config
+  start_link used to start this module and run the scheduler based on config
   """
   @spec start_link(opts :: Keyword.t()) :: :ok | :error
   def start_link(opts), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
@@ -27,7 +27,7 @@ defmodule Phos.PlatformNotification.Scheduller do
   def handle_info(:timer, state) do
     now_time = current_time()
     :logger.debug(%{
-      label: {Phos.PlatformNotification.Scheduller, :timer},
+      label: {Phos.PlatformNotification.Scheduler, :timer},
       report: %{
         module: __MODULE__,
         action: "scheduled timer every #{timer()}ms",
@@ -48,7 +48,7 @@ defmodule Phos.PlatformNotification.Scheduller do
 
   defp database_notification do
     :logger.debug(%{
-      label: {Phos.PlatformNotification.Scheduller, :database_notification},
+      label: {Phos.PlatformNotification.Scheduler, :database_notification},
       report: %{
         module: __MODULE__,
         action: "execute failed/pending notification",
@@ -64,7 +64,7 @@ defmodule Phos.PlatformNotification.Scheduller do
 
   defp notion_notification do
     :logger.debug(%{
-      label: {Phos.PlatformNotification.Scheduller, :notion_notification},
+      label: {Phos.PlatformNotification.Scheduler, :notion_notification},
       report: %{
         module: __MODULE__,
         action: "executing global notification",
@@ -110,15 +110,22 @@ defmodule Phos.PlatformNotification.Scheduller do
       _ -> nil
     end
   end
+
   defp running_global_notification(%{frequency: "weekly"} = data) do
-    case Timex.weekday(current_time()) do
-      1 -> do_send_global_notification(data)
+    case Timex.weekday(data.time_condition) == Timex.weekday(current_time()) do
+      true -> do_send_global_notification(data)
       _ -> nil
     end
   end
 
-  defp running_global_notification(%{frequency: _} = _data) do
-    nil
+
+  defp running_global_notification(%{frequency: "daily"} = data) do
+      do_send_global_notification(data)
+  end
+
+
+  defp running_global_notification(%{frequency: _} = data) do
+    IO.inspect data
   end
 
   defp do_send_global_notification(%{id: id, time_condition: time} = _data) do
