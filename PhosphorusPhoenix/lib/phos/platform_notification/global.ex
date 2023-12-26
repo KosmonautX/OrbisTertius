@@ -10,6 +10,8 @@ defmodule Phos.PlatformNotification.Global do
     table =
       :ets.new(:platform_notification_global_registry, [:set, :protected, read_concurrency: true])
 
+    GenServer.cast(__MODULE__, :renew)
+
     {:ok, table}
   end
 

@@ -13,7 +13,6 @@ defmodule Phos.PlatformNotification.Scheduler do
 
   @impl true
   def init(_opts) do
-    Phos.PlatformNotification.Global.renew()
     Process.send_after(self(), :timer, timer())
     {:ok, []}
   end
@@ -113,6 +112,7 @@ defmodule Phos.PlatformNotification.Scheduler do
   end
 
   defp running_global_notification(%{frequency: "weekly"} = data) do
+    IO.inspect(data, label: "weekly")
     case Timex.weekday(data.time_condition) == Timex.weekday(current_time()) do
       true -> do_send_global_notification(data)
       _ -> nil
@@ -129,10 +129,15 @@ defmodule Phos.PlatformNotification.Scheduler do
     IO.inspect data
   end
 
-  defp do_send_global_notification(%{id: id, time_condition: time} = _data) do
+  defp do_send_global_notification(%{id: id, time_condition: time} = data) do
     case Time.diff(current_time(), time) do
-      t when t > 0 -> case t < timer() do
-          true -> PN.Global.execute(id)
+      t when t > 0 ->
+        IO.inspect t, label: "time interval"
+        IO.inspect timer(), label: "timer gap"
+        case t * 1000 < timer() do
+          true ->
+            IO.inspect data
+            PN.Global.execute(id)
           _ -> nil
         end
       _ -> nil
