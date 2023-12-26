@@ -8,7 +8,7 @@ defmodule Phos.PlatformNotification do
 
   @type t :: {notification_type(), entity(), entity_id(), message_type()}
 
-  alias __MODULE__.{Producer, Dispatcher, Consumer, Global, Store, Scheduller, Template, Subscription}
+  alias __MODULE__.{Producer, Dispatcher, Consumer, Global, Store, Scheduler, Template, Subscription}
 
   import Ecto.Query, warn: false
 
@@ -16,11 +16,11 @@ defmodule Phos.PlatformNotification do
 
   @moduledoc """
   PlatformNotification used to generate notification with flexibility
-  Notification can be triggered using manual notify, or scheduller
+  Notification can be triggered using manual notify, or scheduler
 
   The schema is
 
-  [Scheduller] <-> [Store]
+  [Scheduler] <-> [Store]
        |             |
   [Producer] -> [Dispatcher] <-> [Consumer]
 
@@ -28,7 +28,7 @@ defmodule Phos.PlatformNotification do
   Dispatcher module to filter and get some data and pass to the Customer
   If The customer failed to execute the events, It return to the dispatcher and should be retry in desired seconds
 
-  Scheduller used to check every minute, and if there is any notification should execute, the module will execute based on the specification
+  Scheduler used to check every minute defined by timecondition in config, and if there is any notification should execute, the module will execute based on the specification
   Store is the notification message store. Can be composed, JSON based and linked to the persistent database. To track the history and etc.
 
   Consumer can be more than one worker(s) specified in the config file
@@ -49,7 +49,7 @@ defmodule Phos.PlatformNotification do
   def init(_opts) do
     number    = Keyword.get(config(), :worker, 10)
     workers   = Enum.map(1..number, fn n -> Supervisor.child_spec({Consumer, []}, id: :"platform_notification_worker_#{n}") end)
-    children  = [Producer, Dispatcher, Scheduller, Global, Subscription | workers]
+    children  = [Producer, Dispatcher, Scheduler, Global, Subscription | workers]
 
     Supervisor.init(children, strategy: :one_for_one)
   end

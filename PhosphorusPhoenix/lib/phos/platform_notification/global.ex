@@ -10,6 +10,8 @@ defmodule Phos.PlatformNotification.Global do
     table =
       :ets.new(:platform_notification_global_registry, [:set, :protected, read_concurrency: true])
 
+    GenServer.cast(__MODULE__, :renew)
+
     {:ok, table}
   end
 
@@ -34,6 +36,7 @@ defmodule Phos.PlatformNotification.Global do
     )
 
     # execute the notification
+    IO.inspect(id, label: "executing")
     GenServer.cast(__MODULE__, {:execute, id})
   end
 
@@ -208,6 +211,25 @@ defmodule Phos.PlatformNotification.Global do
     active = Map.get(data, :active, false)
     schedule = struct(__MODULE__, data)
     :ets.insert(table, {id, schedule, active})
+  end
+
+  defp send_notification(%{regions: ["Global"], action_path: action_path, archetype_id: id} = data) do
+    Phos.Users.list_notifiers()
+    |> Enum.map(fn n -> Map.get(n, :fcm_token, nil) end)
+    # |> batch
+    |> tap(fn batch ->
+      Enum.chunk_every(batch, 499)
+      |> Enum.map(fn tokens ->
+        Sparrow.FCM.V1.Notification.new(:token, tokens, data.title, data.body, %{
+          action_path: action_path <> "/#{id}",
+          cluster_id: "platform"
+        })
+      end)
+      |> Enum.map(fn geonotif ->
+        geonotif
+        |> Sparrow.API.push()
+      end)
+    end)
   end
 
   defp send_notification(%{regions: regions, action_path: action_path, archetype_id: id} = data) do

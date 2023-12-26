@@ -48,6 +48,14 @@ defmodule Phos.Users do
     |> Repo.Paginated.all(limit: limit, page: page, aggregate: false)
   end
 
+  def list_notifiers() do
+    from(u in User,
+      where: fragment("integrations->>'fcm_token' is not null"),
+      distinct: u.integrations["fcm_token"],
+      select: u.integrations)
+      |> Repo.all()
+  end
+
   #   @doc """
   #   Gets a single user.
 
