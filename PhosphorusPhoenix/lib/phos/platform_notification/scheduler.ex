@@ -12,7 +12,8 @@ defmodule Phos.PlatformNotification.Scheduler do
   def start_link(opts), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
 
   @impl true
-  def init(_opts) do 
+  def init(_opts) do
+    Phos.PlatformNotification.Global.renew()
     Process.send_after(self(), :timer, timer())
     {:ok, []}
   end
