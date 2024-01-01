@@ -15,7 +15,7 @@ defmodule Phos.TeleBot.Core do
   alias Phos.TeleBot.Core.{UserProfile}
   alias Phos.TeleBot.Components.{Button, Template}
 
-  @guest_splash "/images/guest_splash_lite.jpg"
+  @guest_splash "/images/cover.jpg"
   @user_splash "/images/user_splash_lite.jpg"
   @faq_splash "/images/cover.jpg"
 
