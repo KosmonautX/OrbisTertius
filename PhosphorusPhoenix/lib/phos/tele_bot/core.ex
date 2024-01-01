@@ -15,9 +15,9 @@ defmodule Phos.TeleBot.Core do
   alias Phos.TeleBot.Core.{UserProfile}
   alias Phos.TeleBot.Components.{Button, Template}
 
-  @guest_splash "AgACAgUAAxkBAAEoUTllf-jifpOpFwg37k1iTbzQBLWOtAACPLoxG-GOAAFU-kFx_yYVKLUBAAMCAAN3AAMzBA"
-  @user_splash "AgACAgUAAxkBAAEoUPtlf9NL4JwI08eO5TFz3elNjUmVqQACDroxG-GOAAFUgAKJK0zVwTkBAAMCAAN5AAMzBA"
-  @faq_splash "AgACAgUAAxkBAAEoURVlf9yWDqOMHuy4ggICsBr2idmFTAACI7oxG-GOAAFUoTWn6g112f4BAAMCAAN4AAMzBA"
+  @guest_splash "/images/guest_splash_lite.jpg"
+  @user_splash "/images/user_splash_lite.jpg"
+  @faq_splash "/images/cover.jpg"
 
   command("start", description: "Start using the Scratchbac bot")
   command("menu", description: "Show the main menu")
@@ -425,14 +425,14 @@ defmodule Phos.TeleBot.Core do
   end
 
   defp start_menu_text(telegram_id, nil) do
-    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, @guest_splash,
+    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, PhosWeb.Endpoint.url() <> @guest_splash,
       caption: Template.start_menu_text_builder(%{}), parse_mode: "HTML")
     ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id,
       reply_markup: Button.build_start_inlinekeyboard(message_id))
   end
   defp start_menu_text(telegram_id, message_id) do
     ExGram.edit_message_media(%ExGram.Model.InputMediaPhoto{media:
-      @guest_splash, type: "photo",
+      PhosWeb.Endpoint.url() <>  @guest_splash, type: "photo",
       caption: Template.start_menu_text_builder(%{}), parse_mode: "HTML"},
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), reply_markup: Button.build_start_inlinekeyboard(message_id))
   end
@@ -446,45 +446,45 @@ defmodule Phos.TeleBot.Core do
   end
 
   defp main_menu_text(telegram_id, nil) do
-    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, @user_splash,
+    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, PhosWeb.Endpoint.url() <>  @user_splash,
       caption: Template.main_menu_text_builder(%{}), parse_mode: "HTML")
     ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id, reply_markup: Button.build_menu_inlinekeyboard(message_id))
   end
   defp main_menu_text(telegram_id, message_id) do
     {:ok, %{message_id: _message_id}} = ExGram.edit_message_media(%ExGram.Model.InputMediaPhoto{media:
-      @user_splash, type: "photo", caption: Template.main_menu_text_builder(%{}), parse_mode: "HTML"},
+      PhosWeb.Endpoint.url() <> @user_splash, type: "photo", caption: Template.main_menu_text_builder(%{}), parse_mode: "HTML"},
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), reply_markup: Button.build_menu_inlinekeyboard(message_id))
   end
 
   defp faq(telegram_id, ""), do: faq(telegram_id, nil)
   defp faq(telegram_id, nil) do
-    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, @faq_splash,
+    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, PhosWeb.Endpoint.url() <>  @faq_splash,
       caption: Template.faq_text_builder(%{}), parse_mode: "HTML")
     ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id,
       reply_markup: Button.build_main_menu_inlinekeyboard(message_id))
   end
   defp faq(telegram_id, message_id) do
     {:ok, %{message_id: _message_id}} = ExGram.edit_message_media(%ExGram.Model.InputMediaPhoto{media:
-      @faq_splash, type: "photo", caption: Template.faq_text_builder(%{}), parse_mode: "HTML"},
+      PhosWeb.Endpoint.url() <> @faq_splash, type: "photo", caption: Template.faq_text_builder(%{}), parse_mode: "HTML"},
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), reply_markup: Button.build_start_menu_inlinekeyboard(message_id))
   end
 
   defp feedback(telegram_id, ""), do: feedback(telegram_id, nil)
   defp feedback(telegram_id, nil) do
-    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, @faq_splash,
+    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, PhosWeb.Endpoint.url() <>  @faq_splash,
       caption: Template.feedback_text_builder(%{}), parse_mode: "HTML")
     ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id,
       reply_markup: Button.build_main_menu_inlinekeyboard(message_id))
   end
   defp feedback(telegram_id, message_id) do
     ExGram.edit_message_media(%ExGram.Model.InputMediaPhoto{media:
-      @faq_splash, type: "photo", caption: Template.feedback_text_builder(%{}), parse_mode: "HTML"},
+      PhosWeb.Endpoint.url() <> @faq_splash, type: "photo", caption: Template.feedback_text_builder(%{}), parse_mode: "HTML"},
       chat_id: telegram_id, message_id: message_id |> String.to_integer(), reply_markup: Button.build_start_menu_inlinekeyboard(message_id))
   end
 
   defp onboard_text(telegram_id) do
     {:ok, _user} = get_user_by_telegram(telegram_id)
-    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, @guest_splash,
+    {:ok, %{message_id: message_id}} = ExGram.send_photo(telegram_id, PhosWeb.Endpoint.url() <> @guest_splash,
       caption: Template.onboarding_text_builder(%{}), parse_mode: "HTML")
     ExGram.edit_message_reply_markup(chat_id: telegram_id, message_id: message_id,
       reply_markup: Button.build_start_inlinekeyboard(message_id))
@@ -528,7 +528,7 @@ defmodule Phos.TeleBot.Core do
           true ->
             if String.contains?(PhosWeb.Endpoint.url, "localhost") do
               # For development
-              ExGram.send_photo(chat_id, @user_splash,
+              ExGram.send_photo(chat_id, PhosWeb.Endpoint.url() <> @user_splash,
                 caption: Template.orb_telegram_orb_builder(orb), parse_mode: "HTML",
                 reply_markup: Button.build_orb_notification_button(orb, user))
             else
