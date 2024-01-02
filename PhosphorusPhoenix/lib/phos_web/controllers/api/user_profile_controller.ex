@@ -69,8 +69,8 @@ defmodule PhosWeb.API.UserProfileController do
   end
 
   def update_beacon(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"fcm_token" => token, "beacon" => %{"scope" => false}} = params) do
-    with true <- !Fcmex.unregistered?(token),
-         {:ok, %{}} <- Fcmex.Subscription.unsubscribe("USR." <> user.id, token),
+    with {:ok, _} <- Phos.PlatformNotification.list_subscription(token),
+         {:ok, %{success: 1}} <- Phos.PlatformNotification.unsubscribe(token, "USR." <> user.id),
          {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => params}) do
       render(conn, :show, integration: user_integration)
     else
@@ -79,8 +79,8 @@ defmodule PhosWeb.API.UserProfileController do
   end
 
   def update_beacon(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"fcm_token" => token} = params) do
-    with true <- !Fcmex.unregistered?(token),
-         {:ok, %{}} <- Fcmex.Subscription.subscribe("USR." <> user.id, token),
+    with {:ok, _} <- Phos.PlatformNotification.list_subscription(token),
+         {:ok, %{success: 1}} <- Phos.PlatformNotification.subscribe(token, "USR." <> user.id),
          {:ok, %User{} = user_integration} <- Users.update_integrations_user(user, %{"integrations" => params}) do
       render(conn, :show, integration: user_integration)
     else
@@ -101,13 +101,14 @@ defmodule PhosWeb.API.UserProfileController do
                             "profile_pic" => params["profile_pic"],
                             "banner_pic" => params["banner_pic"]
                            } |> purge_nil(),
-      "personal_orb" => %{"id" => (if is_nil(user.personal_orb), do: Ecto.UUID.generate(), else: user.personal_orb.id),
+      "personal_orb" => (if !is_nil(params["soulorb"]), do: %{"id" => (if is_nil(user.personal_orb), do: Ecto.UUID.generate(), else: user.personal_orb.id),
                           "userbound" => true,
+                          "active" => true,
                           "initiator_id" => user.id,
-                          "traits" => params["traits"],
+                          "traits" => (if !is_nil(params["soulorb"]), do: params["soulorb"]["traits"], else: params["traits"]),
                           "title" => (if !is_nil(params["soulorb"]), do: params["soulorb"]["title"]),
                           "payload" => (if !is_nil(params["soulorb"]), do: params["soulorb"]["payload"])
-                         } |> purge_nil()
+                         } |> purge_nil())
     } |> purge_nil()
   end
 

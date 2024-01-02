@@ -5,6 +5,7 @@ defmodule PhosWeb.Menshen.Auth do
   alias Phos.Users.{PrivateProfile}
   alias Phos.Cache
 
+  def generate_user!(id, exp) when is_binary(id), do: generate_boni!(id, exp)
   def generate_user!(id) when is_binary(id) , do: generate_boni!(id)
   def generate_user!(_) , do: nil
 
@@ -37,12 +38,19 @@ defmodule PhosWeb.Menshen.Auth do
 
   def generate_boni, do: Role.Boni.generate_and_sign()
 
+  def generate_boni!(uid, exp) when is_binary(uid) do
+    case Role.Boni.generate_and_sign(%{"user_id" => uid, "exp" => System.os_time(:second) + exp}) do
+      {:ok, jwt, _claims} -> jwt
+      _ -> nil
+    end
+  end
+
   def generate_boni!(uid) when is_binary(uid) do
     case Role.Boni.generate_and_sign(%{"user_id" => uid}) do
       {:ok, jwt, _claims} -> jwt
       _ -> nil
     end
-   end
+  end
 
   def generate_boni!(_) do
     {:ok, jwt, _claims} = Role.Boni.generate_and_sign(%{"user_id" => "Hanuman"})

@@ -210,7 +210,6 @@ defmodule Phos.Action do
       #|> (&(Map.put(&1, :data, &1.data |> Repo.Preloader.lateral(:allies, [limit: 3, order_by: {:desc, :completed_at}, assocs: [:friend]])))).()
   end
 
-  #TODO filter only blocked users instead of all users with potential relationships
   def notifiers_by_geohashes(hashes) do
     from(l in Orb_Location,
       as: :l,
@@ -288,6 +287,26 @@ defmodule Phos.Action do
   end
 
 
+  def orbs_by_initiator(user_id, page, opts \\ %{})
+  def orbs_by_initiator(user_id, page, opts) do
+    sort_attribute = Map.get(opts, :sort_attribute, :inserted_at)
+    limit = Map.get(opts, :limit, 12)
+    from(o in Orb,
+      as: :o,
+      left_join: m in assoc(o, :members),
+      on: m.member_id == ^user_id and m.action == :collab,
+      where: o.initiator_id == ^user_id or m.member_id == ^user_id,
+      preload: [:initiator, :members],
+      inner_lateral_join: c in subquery(
+        from c in Phos.Comments.Comment,
+        where: c.orb_id == parent_as(:o).id,
+        select: %{count: count()}
+      ), on: true,
+      select_merge: %{comment_count: c.count})
+      |> Repo.Paginated.all(page, sort_attribute, limit)
+  end
+
+
   def orbs_by_initiators(user_ids, page, opts \\ %{})
   def orbs_by_initiators(user_ids, page, %{"traits" => traits} = opts) do
     sort_attribute = Map.get(opts, :sort_attribute, :inserted_at)
@@ -312,7 +331,7 @@ defmodule Phos.Action do
       as: :o,
       left_join: m in assoc(o, :members),
       on: m.member_id in ^user_ids and m.action == :collab,
-      where: o.initiator_id == ^user_id or m.member_id in ^user_ids and not fragment("? @> ?", o.traits, ^["mirage"]),
+      where: (o.initiator_id == ^user_id or m.member_id in ^user_ids) and not fragment("? @> ?", o.traits, ^["mirage"]),
       preload: [:initiator, :members],
       inner_lateral_join: c in subquery(
         from c in Phos.Comments.Comment,

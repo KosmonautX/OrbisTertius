@@ -16,10 +16,11 @@ defmodule Phos.TeleBot.Components.Template do
 
   def main_menu_text_builder(assigns) do
     ~H"""
-    <u>📢 Announcements</u>
-      - Scoops is now live! Scoops are AI generated articles using hyperlocal posts from our Scratchbac community. Read Scoops @ https://scrbac.com/chinatownscoops
+    <b>📍Scratchbac is your hyperlocal community.</b>
+    Connect with people 2km around you.
+    Find out more: www.scratchbac.com
 
-    ↙️ To navigate around this bot, use the Menu button on the bottom left corner.
+    ↙️ To navigate around this bot, use the Menu button on the bottom left corner or type /menu on your keyboard.
     """
     |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
   end
