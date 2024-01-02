@@ -185,7 +185,9 @@ defmodule PhosWeb.Util.Viewer do
       boon < 55 -> {"initiate", 55, 89}
       boon < 89 -> {"legion", 89, 144}
       boon < 144 -> {"master", 144, 233}
+      boon < 234 -> {"master", 144, 233}
       boon > 233 -> {"elder", 233, 888}
+      true -> {"mage", 888, 1200}
     end
     %{rank: rank, min: min, max: max}
   end
