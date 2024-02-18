@@ -172,8 +172,7 @@ config :phos, Phos.TeleBot.TelegramNotification,
 
 config :phos, Phos.Models.OpenAI,
   model: "text-davinci-003",
-  # token: {System, :fetch_env, "OPENAI_KEY"}
-  token: "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"
+  token: {System, :fetch_env, "OPENAI_KEY"}
 
 
 config :phos, Phos.Oracle,
